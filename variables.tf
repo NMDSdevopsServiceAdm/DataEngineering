@@ -20,3 +20,15 @@ variable "aws_secret_key" {
 variable "region" {
   default = "eu-west-2"
 }
+
+variable "glue_db_name" {
+  default = "data_engineering_glue_db"
+}
+
+variable "glue_db_crawler_name" {
+  default = "data_engineering_glue_crawler"
+}
+
+variable "glue_iam_role" {
+  default = "arn:aws:iam::344210435447:role/SfCGlueRole"
+}
