@@ -15,8 +15,8 @@ variable "aws_secret_key" {
   description = "Secret key for AWS - displayed when IAM user is created"
   type        = string
   sensitive   = true
-
 }
+
 variable "region" {
   default = "eu-west-2"
 }
