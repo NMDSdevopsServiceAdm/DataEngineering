@@ -1,6 +1,3 @@
-"""
-test_csv_to_parquet.py
-"""
 import unittest
 from jobs import csv_to_parquet
 from pyspark.sql import SparkSession
