@@ -33,9 +33,12 @@ def collect_arguments():
     parser.add_argument(
         "--destination", help="A destination directory for outputting parquet files", required=True)
     parser.add_argument(
-        "--delimiter", help="A custom delimiter, default is ','", required=False)
+        "--delimiter", help="Specify a custom field delimiter", required=False, default=",")
 
     args, unknown = parser.parse_known_args()
+
+    if args.delimiter:
+        print(f"Utilising custom delimiter '{args.delimiter}'")
 
     return args.source, args.destination, args.delimiter
 
