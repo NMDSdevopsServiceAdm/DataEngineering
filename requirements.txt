@@ -1,0 +1,5 @@
+pyspark==3.2.0
+boto3==1.20.7
+pylint==2.11.1
+autopep8==1.6.0
+awsglue-local==1.0.2

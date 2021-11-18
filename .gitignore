@@ -1,9 +1,5 @@
 # ------ vscode ------ #
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 *.code-workspace
 
 # Local History for Visual Studio Code
@@ -53,3 +49,9 @@ terraform.rc
 
 # Ignore terraform lock
 .terraform.lock.hcl
+
+
+
+# ------ python ------ #
+.python-version
+
