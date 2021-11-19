@@ -5,27 +5,11 @@ import argparse
 DATE_COLUMN_IDENTIFIER = "date"
 RAW_DATE_FORMAT = "dd/mm/yyyy"
 
-"""
-- Read in file
-- display top row
-- determine field types
-
-- select all date fields
-selected_columns = [column for column in df.columns if "date" in column]
-
-- format all date fields
-df.withColumn(column,to_timestamp(column, "dd/mm/yyyy"))
-
-
-- write back to original df
-- format all int fields
-"""
-
 
 def main(source, destination):
     df = read_parquet(source)
     df = format_date_fields(df)
-    df.limit(1).show()
+    write_parquet(df, destination)
 
 
 def format_date_fields(df):
@@ -50,7 +34,7 @@ def read_parquet(source):
 
 
 def write_parquet(df, destination):
-    pass
+    df.write.parquet(destination)
 
 
 def collect_arguments():
@@ -61,9 +45,6 @@ def collect_arguments():
         "--destination", help="A destination directory for outputting parquet files", required=True)
 
     args, unknown = parser.parse_known_args()
-
-    if args.delimiter:
-        print(f"Utilising custom delimiter '{args.delimiter}'")
 
     return args.source, args.destination
 
