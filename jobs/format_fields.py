@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 import argparse
+import sys
 
 DATE_COLUMN_IDENTIFIER = "date"
 RAW_DATE_FORMAT = "dd/mm/yyyy"
@@ -28,7 +29,7 @@ def read_parquet(source):
         .appName("sfc_data_engineering_csv_to_parquet") \
         .getOrCreate()
 
-    df = spark.read.parquet(source, header=True)
+    df = spark.read.parquet(source)
 
     return df
 
