@@ -22,7 +22,7 @@ class CSVToParquetTests(unittest.TestCase):
 
     def test_read(self):
         df = csv_to_parquet.read_csv(self.test_csv_path)
-        self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
+        self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
         self.assertEqual(df.count(), 3)
 
     def test_read_with_custom_delimiter(self):
