@@ -1,4 +1,4 @@
-col_a,col_b,col_c
-1,a,tuna
-2,b,salmon
-3,c,cod
+col_a,col_b,col_c,date_col
+1,a,tuna,28/11/1993
+2,b,salmon,12/12/2012
+3,c,cod,18/1/2021
