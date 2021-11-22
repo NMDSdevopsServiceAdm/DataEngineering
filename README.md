@@ -1,14 +1,36 @@
 # DataEngineering
 
-Welcome to the Skills for Care Data Engineering repository.
+## Welcome to the Skills for Care Data Engineering repository.
 
 This repository contains the following:
 - Terraform infrustructure as code for pipeline deployment on AWS
-- TODO 
+- Spark jobs for feature extraction data transformations
 
 
-________
-## Deploying the Pipeline
+
+<br>
+<br>
+
+# Building the project
+First install pipenv, the python environment manager.
+```
+brew install pipenv
+```
+
+Clone the project
+```
+git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
+```
+Create virtual environment and install dependencies
+```
+cd DataEngineering
+pipenv install --dev
+```
+
+<br>
+<br>
+
+# Deploying the Pipeline
 
 Terraform docs can be found here:  https://www.terraform.io/docs/cli/run/index.html
 

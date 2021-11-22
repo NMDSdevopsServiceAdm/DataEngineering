@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[requires]
+python_full_version = "3.9.7"
+
+[packages]
+requests = "*"
+pyspark = "3.2.0"
+boto3 = "1.20.7"
+
+
+[dev-packages]
+pytest = "*"
+pylint = "2.11.1"
+autopep8 = "1.6.0"
