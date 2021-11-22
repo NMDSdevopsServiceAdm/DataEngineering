@@ -43,6 +43,7 @@ jobs:
   deploy_scripts:
     docker:
       - image: circleci/python:3.9.7
+    resource_class: small
 
     steps:
       - checkout
