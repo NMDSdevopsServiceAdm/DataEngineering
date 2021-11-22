@@ -32,3 +32,7 @@ variable "glue_db_crawler_name" {
 variable "glue_iam_role" {
   default = "arn:aws:iam::344210435447:role/SfCGlueRole"
 }
+
+variable "git_repo_url" {
+  default = "https://github.com/NMDSdevopsServiceAdm/DataEngineering.git"
+}

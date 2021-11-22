@@ -54,4 +54,4 @@ terraform.rc
 
 # ------ python ------ #
 .python-version
-
+*.pyc
