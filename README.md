@@ -6,10 +6,12 @@ This repository contains the following:
 - Terraform infrustructure as code for pipeline deployment on AWS
 - Spark jobs for feature extraction data transformations
 
+<br>
 
+[![<ORG_NAME>](https://circleci.com/gh/NMDSdevopsServiceAdm/DataEngineering.svg?style=shield)](<LINK>)
 
 <br>
-<br>
+
 
 # Building the project
 First install pipenv, the python environment manager.
