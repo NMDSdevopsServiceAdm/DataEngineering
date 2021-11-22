@@ -1,5 +1,8 @@
 version: 2
 
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+
 jobs:
   test:
     docker:
@@ -34,9 +37,31 @@ jobs:
           name: run unit tests
           command: |
             pipenv run python -m unittest discover tests
+    
+
+
+  deploy_scripts:
+    docker:
+      - image: circleci/python:3.9.7
+
+    steps:
+      - checkout
+
+      - aws-s3/copy:
+          from: scripts/
+          to: $SCRIPT_BUCKET_URI
+          aws-access-key-id: $AWS_ACCESS_KEY_ID
+          aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+
 
 workflows:
   version: 2
   test:
     jobs:
       - test
+
+  deploy:
+    requires:
+      - test
+    jobs:
+      - deploy
