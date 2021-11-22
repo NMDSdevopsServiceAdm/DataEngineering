@@ -56,12 +56,10 @@ jobs:
 
 workflows:
   version: 2
-  test:
+  build-test-and-deploy:
     jobs:
       - test
-
-  deploy:
-    requires:
-      - test
-    jobs:
-      - deploy
+      - deploy_scripts:
+          requires:
+            - test
+        
