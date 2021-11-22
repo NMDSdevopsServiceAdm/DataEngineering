@@ -48,6 +48,7 @@ jobs:
       - checkout
 
       - aws-s3/sync:
+          aws-region: AWS_REGION
           from: scripts
           to: 's3://sfc-data-engineering/scripts/'
 
