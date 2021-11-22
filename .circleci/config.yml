@@ -8,6 +8,10 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+        keys:
+          - v1-deps-{{ checksum "Pipfile.lock" }}
+
       - run:
           name: Install system packages
           command: |
@@ -19,7 +23,12 @@ jobs:
           command: |
             sudo pip install pipenv
             pipenv install --dev
-            
+
+      - save_cache:
+        key: v1-deps-{{ checksum "Pipfile.lock" }}
+        paths:
+          - ~/.local/share/virtualenvs
+
       - run:
           name: run unit tests
           command: |
