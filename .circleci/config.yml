@@ -19,9 +19,7 @@ jobs:
           command: |
             sudo pip install pipenv
             pipenv install --dev
-
-  test:
-    steps:
+            
       - run:
           name: run unit tests
           command: |
@@ -29,7 +27,6 @@ jobs:
 
 workflows:
   version: 2
-  build_and_test:
+  test:
     jobs:
-      - build
       - test
