@@ -12,12 +12,11 @@ jobs:
       #    key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
 
       - run:
-        name: Install system packages
-        command: |
-          # pyspark needs to run Java, so we install openjdk.
-          apt-get update
-          apt-get install -y default-jre-headless
-          
+          name: Install system packages
+          command: |
+            apt-get update
+            apt-get install -y default-jre-headless
+
       - run:
           name: install dependencies
           command: |
