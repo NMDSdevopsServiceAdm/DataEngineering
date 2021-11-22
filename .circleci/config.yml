@@ -49,7 +49,7 @@ jobs:
 
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: scripts
+          from: jobs
           to: 's3://sfc-data-engineering/scripts/'
 
 
