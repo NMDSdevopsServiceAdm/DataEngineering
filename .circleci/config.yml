@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
@@ -50,13 +50,12 @@ jobs:
       - aws-s3/copy:
           from: scripts/
           to: $SCRIPT_BUCKET_URI
-          aws-access-key-id: $AWS_ACCESS_KEY_ID
-          aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
 
 
 workflows:
-  version: 2
-  build-test-and-deploy:
+  "build-test-and-deploy":
     jobs:
       - test
       - deploy_scripts:
