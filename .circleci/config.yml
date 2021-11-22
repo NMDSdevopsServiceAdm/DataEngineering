@@ -1,12 +1,20 @@
-version: 2
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/python:3.9.7
     resource_class: small
 
     steps:
       - checkout
+
+      - restore_cache:
+          keys:
+            - v1.1-deps-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: Install system packages
@@ -20,7 +28,38 @@ jobs:
             sudo pip install pipenv
             pipenv install --dev
 
+      - save_cache:
+          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ~/.local/share/virtualenvs
+
       - run:
-          name: run tests
+          name: run unit tests
           command: |
             pipenv run python -m unittest discover tests
+    
+
+
+  deploy_scripts:
+    docker:
+      - image: circleci/python:3.9.7
+    resource_class: small
+
+    steps:
+      - checkout
+
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: jobs
+          to: 's3://sfc-data-engineering/scripts/'
+
+
+
+workflows:
+  build-test-and-deploy:
+    jobs:
+      - test
+      - deploy_scripts:
+          requires:
+            - test
+        
