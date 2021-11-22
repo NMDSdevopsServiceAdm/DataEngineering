@@ -47,15 +47,14 @@ jobs:
     steps:
       - checkout
 
-      - aws-s3/copy:
-          from: scripts/
-          to: $SCRIPT_BUCKET_URI
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+      - aws-s3/sync:
+          from: scripts
+          to: 's3://sfc-data-engineering/scripts/'
+
 
 
 workflows:
-  "build-test-and-deploy":
+  build-test-and-deploy:
     jobs:
       - test
       - deploy_scripts:
