@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.9.7
+    resource_class: medium
 
     steps:
       - checkout
@@ -14,6 +15,7 @@ jobs:
           name: install dependencies
           command: |
             sudo pip install pipenv
+            pipenv shell
             pipenv install --dev
 
       # - save_cache:
