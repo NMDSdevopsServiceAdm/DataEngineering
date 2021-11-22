@@ -29,7 +29,6 @@ jobs:
           key: v1-deps-{{ checksum "Pipfile.lock" }}
           paths:
             - ~/.local/share/virtualenvs
-            - /usr/lib/jvm
 
       - run:
           name: run unit tests
