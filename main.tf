@@ -78,11 +78,22 @@ resource "aws_glue_catalog_database" "aws_glue_catalog_database" {
 resource "aws_glue_crawler" "aws_glue_crawler" {
   database_name = var.glue_db_name
   name          = var.glue_db_crawler_name
-  role          = var.glue_iam_role
+  role          = aws_iam_role.glue_service_iam_role.arn
+
 
   s3_target {
-    path = "s3://${var.bucket_name}"
+    path = var.ascwds_data_location
   }
+
+  configuration = jsonencode(
+    {
+      "Version" : 1.0,
+      "Grouping" = {
+        "TableLevelConfiguration" = 3,
+        "TableGroupingPolicy" : "CombineCompatibleSchemas"
+      }
+    }
+  )
 }
 
 resource "aws_glue_dev_endpoint" "glue_dev_endpoint" {

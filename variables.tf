@@ -2,6 +2,10 @@ variable "bucket_name" {
   default = "sfc-data-engineering"
 }
 
+variable "ascwds_data_location" {
+  default = "s3://sfc-data-engineering/domain=ASCWDS/"
+}
+
 variable "acl_value" {
   default = "private"
 }
@@ -27,10 +31,6 @@ variable "glue_db_name" {
 
 variable "glue_db_crawler_name" {
   default = "data_engineering_glue_crawler"
-}
-
-variable "glue_iam_role" {
-  default = "arn:aws:iam::344210435447:role/SfCGlueRole"
 }
 
 variable "git_repo_url" {
