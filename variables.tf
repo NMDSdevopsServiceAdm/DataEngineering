@@ -40,3 +40,7 @@ variable "git_repo_url" {
 variable "scripts_location" {
   default = "s3://sfc-data-engineering/scripts/"
 }
+
+variable "glue_temp_dir" {
+  default = "s3://sfc-data-engineering/temp/"
+}
