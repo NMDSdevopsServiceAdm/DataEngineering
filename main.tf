@@ -104,7 +104,7 @@ resource "aws_glue_dev_endpoint" "glue_dev_endpoint" {
 resource "aws_glue_job" "csv_to_parquet_job" {
   name              = "csv_to_parquet_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
-  glue_version      = "3.0"
+  glue_version      = "2.0"
   worker_type       = "Standard"
   number_of_workers = 2
   execution_property {
@@ -126,7 +126,7 @@ resource "aws_glue_job" "csv_to_parquet_job" {
 resource "aws_glue_job" "format_fields_job" {
   name              = "format_fields_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
-  glue_version      = "3.0"
+  glue_version      = "2.0"
   worker_type       = "Standard"
   number_of_workers = 2
   execution_property {
