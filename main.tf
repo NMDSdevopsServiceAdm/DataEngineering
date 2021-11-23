@@ -53,5 +53,24 @@ resource "aws_glue_dev_endpoint" "glue_dev_endpoint" {
   role_arn = aws_iam_role.glue_service_iam_role.arn
 }
 
+resource "aws_glue_job" "csv_to_parquet_job" {
+  name     = "csv_to_parquet_job"
+  role_arn = aws_iam_role.glue_service_iam_role.arn
+
+  command {
+    script_location = "${var.scripts_location}/csv_to_parquet.py"
+  }
+}
+
+resource "aws_glue_job" "format_fields_job" {
+  name     = "format_fields_job"
+  role_arn = aws_iam_role.glue_service_iam_role.arn
+
+  command {
+    script_location = "${var.scripts_location}/format_fields.py"
+  }
+}
+
+
 
 

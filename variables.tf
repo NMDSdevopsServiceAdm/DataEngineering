@@ -36,3 +36,7 @@ variable "glue_iam_role" {
 variable "git_repo_url" {
   default = "https://github.com/NMDSdevopsServiceAdm/DataEngineering.git"
 }
+
+variable "scripts_location" {
+  default = "s3://sfc-data-engineering/scripts/"
+}
