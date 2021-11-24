@@ -51,6 +51,7 @@ resource "aws_iam_policy" "glue_service_data_engineering_policy" {
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering/*",
           "arn:aws:s3:::sfc-data-engineering-raw/*",
+
         ]
       }
     ]
@@ -185,7 +186,8 @@ resource "aws_iam_policy" "sagemaker_data_engineering_policy" {
         ],
         "Effect" : "Allow",
         "Resource" : [
-          "arn:aws:s3:::sfc-data-engineering*"
+          "arn:aws:s3:::sfc-data-engineering*",
+          "arn:aws:s3:::aws-glue*",
         ]
       },
       {
@@ -194,7 +196,8 @@ resource "aws_iam_policy" "sagemaker_data_engineering_policy" {
         ],
         "Effect" : "Allow",
         "Resource" : [
-          "arn:aws:s3:::sfc-data-engineering*"
+          "arn:aws:s3:::sfc-data-engineering*",
+          "arn:aws:s3:::aws-glue*",
         ]
       },
       {
