@@ -83,8 +83,7 @@ terraform apply
 2. Click *Notebooks* under *Dev endpoints* on the left navigation column.
 3. Select *Create notebook*
 4. Enter a *Notebook name*
-5. Attach to develepment endpoint: 
-"data-engineering-dev-endpoint"
+5. Attach to develepment endpoint: "data-engineering-dev-endpoint"
 6. Select pre-existing IAM role: "sm-notebook-iam-role-data-engineering"
 7. Select *Create notebook* - these take 5~ minutes to initialise
 8. Once the notebook Status = *Ready*, you can open the notebook and begin working.
