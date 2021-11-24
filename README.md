@@ -14,16 +14,20 @@ This repository contains the following:
 
 
 # Building the project
-First install pipenv, the python environment manager.
-```
-brew install pipenv
-```
 
-Clone the project
+### Prerequisite installs:
+Tool | Windows | IOS
+--- | --- | ---
+Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
+Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
+Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
+
+
+### Clone the project
 ```
 git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 ```
-Create virtual environment and install dependencies
+### Create virtual environment and install dependencies
 ```
 cd DataEngineering
 pipenv install --dev
