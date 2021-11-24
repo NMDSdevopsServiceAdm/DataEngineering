@@ -14,9 +14,10 @@ resource "aws_s3_bucket" "data_engineering_bucket" {
 # --- Glue --- #
 
 resource "aws_iam_role" "glue_service_iam_role" {
-  name               = "AWSGlueServiceRole-data-engineerng"
+  name               = "AWSGlueServiceRole-data-engineering"
   assume_role_policy = data.aws_iam_policy_document.glue_service_iam_policy.json
 }
+
 data "aws_iam_policy_document" "glue_service_iam_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -65,7 +66,6 @@ resource "aws_iam_role_policy_attachment" "AWSGlueDataBrewServiceRole_policy_att
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueDataBrewServiceRole"
   role       = aws_iam_role.glue_service_iam_role.name
 }
-
 
 resource "aws_iam_role_policy_attachment" "glue_service_data_engineering_policy_attachment" {
   policy_arn = aws_iam_policy.glue_service_data_engineering_policy.arn
@@ -145,5 +145,91 @@ resource "aws_glue_job" "format_fields_job" {
 }
 
 
+# --- Sagemaker --- #
+resource "aws_iam_role" "notebook_iam_role" {
+  name               = "sm-notebook-iam-role-data-engineering"
+  assume_role_policy = data.aws_iam_policy_document.sagemaker_iam_policy.json
+  path               = "/service-role/"
+}
 
+data "aws_iam_policy_document" "sagemaker_iam_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
 
+    principals {
+      type        = "Service"
+      identifiers = ["sagemaker.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_policy_attachment" "sm_notebook_policy_attachment" {
+  name       = "sm-notebook-policy-attachment"
+  roles      = [aws_iam_role.notebook_iam_role.name]
+  policy_arn = aws_iam_policy.sagemaker_data_engineering_policy.arn
+}
+
+resource "aws_iam_policy" "sagemaker_data_engineering_policy" {
+  name        = "sagemaker_data_engineering_policy"
+  path        = "/"
+  description = "The iam policy for sagemaker service - utilised by jupyter notebooks."
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "s3:ListBucket"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "arn:aws:s3:::sfc-data-engineering*"
+        ]
+      },
+      {
+        "Action" : [
+          "s3:GetObject"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "arn:aws:s3:::sfc-data-engineering*"
+        ]
+      },
+      {
+        "Action" : [
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "arn:aws:logs:eu-west-2:344210435447:log-group:/aws/sagemaker/*",
+          "arn:aws:logs:eu-west-2:344210435447:log-group:/aws/sagemaker/*:log-stream:aws-glue-*"
+        ]
+      },
+      {
+        "Action" : [
+          "glue:UpdateDevEndpoint",
+          "glue:GetDevEndpoint",
+          "glue:GetDevEndpoints"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "arn:aws:glue:eu-west-2:*"
+        ]
+      },
+      {
+        "Action" : [
+          "sagemaker:ListTags"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "arn:aws:sagemaker:eu-west-2:*"
+        ]
+      }
+    ]
+  })
+}
