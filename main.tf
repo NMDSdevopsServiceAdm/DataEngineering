@@ -145,6 +145,28 @@ resource "aws_glue_job" "format_fields_job" {
   }
 }
 
+resource "aws_glue_job" "join_datasets_job" {
+  name              = "join_datasets_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 5
+  }
+
+  command {
+    script_location = "${var.scripts_location}denormalise_ascwds_dataset.py"
+  }
+
+  default_arguments = {
+    "--TempDir"          = var.glue_temp_dir
+    "--worker_source"    = ""
+    "--workplace_source" = ""
+    "--destination"      = ""
+  }
+}
+
 
 # --- Sagemaker --- #
 resource "aws_iam_role" "notebook_iam_role" {
