@@ -9,7 +9,7 @@ python_full_version = "3.9.7"
 [packages]
 pyspark = "3.2.0"
 boto3 = "1.20.7"
-
+mock = "*"
 
 [dev-packages]
 pylint = "2.11.1"
