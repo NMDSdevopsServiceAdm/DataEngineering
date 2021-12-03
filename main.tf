@@ -210,6 +210,7 @@ resource "aws_iam_policy" "sagemaker_data_engineering_policy" {
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering*",
           "arn:aws:s3:::aws-glue*",
+          "arn:aws:s3:::aws-glue-jes-prod-eu-west-2-assets"
         ]
       },
       {
@@ -220,6 +221,7 @@ resource "aws_iam_policy" "sagemaker_data_engineering_policy" {
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering*",
           "arn:aws:s3:::aws-glue*",
+          "arn:aws:s3:::aws-glue-jes-prod-eu-west-2-assets*"
         ]
       },
       {
