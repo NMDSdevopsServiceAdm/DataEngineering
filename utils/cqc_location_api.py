@@ -85,11 +85,11 @@ def write_to_parquet(data):
         .getOrCreate()
 
     print("Creating dataframe")
-    df = spark.createDataFrame(data, schema=LOCATION_SCHEMA)
+    df = spark.createDataFrame(data, LOCATION_SCHEMA)
     print("Showing dataframe")
     df.show()
     print("Writing to Parquet")
-    df.write.parquet(cqc_locations.parquet)
+    df.write.parquet("cqc_locations.parquet")
 
 
 def main():

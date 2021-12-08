@@ -26,7 +26,6 @@ LOCATION_SCHEMA = StructType(fields=[
     StructField('mainPhoneNumber', StringType(), True),
     StructField('constituency', StringType(), True),
     StructField('localAuthority', StringType(), True),
-    StructField('lastInspection', StringType(), True),
     StructField('lastInspection', StructType([
         StructField('date', StringType(), True)
     ]), True),
