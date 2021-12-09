@@ -18,6 +18,7 @@ This repository contains the following:
 ### Prerequisite installs:
 Tool | Windows | IOS
 --- | --- | ---
+Python | https://www.python.org/downloads/ | https://www.python.org/downloads/
 Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
 Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
 Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
