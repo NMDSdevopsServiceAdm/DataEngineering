@@ -3,15 +3,15 @@ from pyspark.sql.types import *
 LOCATION_SCHEMA = StructType(fields=[
     StructField('locationId', StringType(), False),
     StructField('providerId', StringType(), False),
-    StructField('organisationType', StringType(), False),
-    StructField('type', StringType(), False),
-    StructField('name', StringType(), False),
-    StructField('onspdCcgCode', StringType(), False),
-    StructField('onspdCcgName', StringType(), False),
+    StructField('organisationType', StringType(), True),
+    StructField('type', StringType(), True),
+    StructField('name', StringType(), True),
+    StructField('onspdCcgCode', StringType(), True),
+    StructField('onspdCcgName', StringType(), True),
     StructField('odsCode', StringType(), True),
-    StructField('uprn', StringType(), False),
-    StructField('registrationStatus', StringType(), False),
-    StructField('registrationDate', StringType(), False),
+    StructField('uprn', StringType(), True),
+    StructField('registrationStatus', StringType(), True),
+    StructField('registrationDate', StringType(), True),
     StructField('dormancy', StringType(), True),
     StructField('numberOfBeds', IntegerType(), True),
     StructField('postalAddressLine1', StringType(), True),
@@ -36,27 +36,27 @@ LOCATION_SCHEMA = StructType(fields=[
     StructField(
         'relationships', ArrayType(
             StructType([
-                StructField('relatedLocationId', StringType(), False),
-                StructField('relatedLocationName', StringType(), False),
-                StructField('type', StringType(), False),
-                StructField('reason', StringType(), False),
+                StructField('relatedLocationId', StringType(), True),
+                StructField('relatedLocationName', StringType(), True),
+                StructField('type', StringType(), True),
+                StructField('reason', StringType(), True),
             ])
         ), True),
     # StructField('locationTypes', ArrayType(), False),
     StructField(
         'regulatedActivities', ArrayType(
             StructType([
-                StructField('name', StringType(), False),
-                StructField('code', StringType(), False),
+                StructField('name', StringType(), True),
+                StructField('code', StringType(), True),
                 StructField('contacts', ArrayType(
                     StructType([
                             StructField('personTitle',
-                                        StringType(), False),
+                                        StringType(), True),
                             StructField('personGivenName',
-                                        StringType(), False),
+                                        StringType(), True),
                             StructField('personFamilyName',
-                                        StringType(), False),
-                            StructField('personRoles', StringType(), False),
+                                        StringType(), True),
+                            StructField('personRoles', StringType(), True),
                             ])
                 ), True),
             ])
@@ -65,8 +65,8 @@ LOCATION_SCHEMA = StructType(fields=[
     StructField(
         'gacServiceTypes', ArrayType(
             StructType([
-                StructField('name', StringType(), False),
-                StructField('description', StringType(), False),
+                StructField('name', StringType(), True),
+                StructField('description', StringType(), True),
             ])
         )
     ),
@@ -81,7 +81,7 @@ LOCATION_SCHEMA = StructType(fields=[
     StructField(
         'specialisms', ArrayType(
             StructType([
-                StructField('name', StringType(), False),
+                StructField('name', StringType(), True),
             ])
         ), True),
     # StructField('inspectionAreas', ArrayType(), True),
@@ -93,10 +93,10 @@ LOCATION_SCHEMA = StructType(fields=[
                 StructField(
                     'keyQuestionRatings', ArrayType(
                         StructType([
-                            StructField('name', StringType(), False),
-                            StructField('rating', StringType(), False),
-                            StructField('reportDate', StringType(), False),
-                            StructField('reportLinkId', StringType(), False),
+                            StructField('name', StringType(), True),
+                            StructField('rating', StringType(), True),
+                            StructField('reportDate', StringType(), True),
+                            StructField('reportLinkId', StringType(), True),
                         ])
                     )
                 ),
