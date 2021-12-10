@@ -13,6 +13,8 @@ This repository contains the following:
 <br>
 
 
+# Mission Statement
+
 # Building the project
 
 ### Prerequisite installs:
