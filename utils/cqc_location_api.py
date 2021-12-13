@@ -14,7 +14,7 @@ import requests
 CQC_API_VERSION = "v1"
 RATE_LIMIT = 550
 ONE_MINUTE = 60
-PER_PAGE = 50
+DEFAULT_PAGE_SIZE = 50
 OUTPUT_DIR = "cqc_locations.parquet"
 S3_DIR_ROOT = "s3://sfc-data-engineering/domain=CQC/domain=locations-api/version=1.0.0/"
 
@@ -30,7 +30,7 @@ def call_api(url, query_params=None):
     return response.json()
 
 
-def get_all_locations(stream):
+def get_all_locations(stream, per_page=DEFAULT_PAGE_SIZE):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/locations"
 
     total_pages = call_api(url, {"perPage": PER_PAGE})["totalPages"]
@@ -53,10 +53,10 @@ def get_all_locations(stream):
         return all_locations
 
 
-def get_page_locations(url, page_number):
+def get_page_locations(url, page_number, per_page=DEFAULT_PAGE_SIZE):
 
     page_locations = []
-    response_body = call_api(url, {"page": page_number, "perPage": PER_PAGE})
+    response_body = call_api(url, {"page": page_number, "perPage": per_page})
 
     for cqc_location in response_body["locations"]:
         location = get_location(cqc_location["locationId"])
