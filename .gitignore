@@ -55,3 +55,4 @@ terraform.rc
 # ------ python ------ #
 .python-version
 *.pyc
+.DS_Store
