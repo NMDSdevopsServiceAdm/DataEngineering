@@ -50,9 +50,9 @@ jobs:
       - checkout
 
       - run:
-        name: compress utils
-        command: |
-          zip -r utils.zip utils
+          name: compress utils
+          command: |
+            zip -r utils.zip utils
 
       - aws-s3/sync:
           aws-region: AWS_REGION
