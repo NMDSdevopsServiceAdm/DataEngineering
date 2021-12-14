@@ -1,8 +1,8 @@
 from pyspark.sql.types import *
 
 LOCATION_SCHEMA = StructType(fields=[
-    StructField('locationId', StringType(), False),
-    StructField('providerId', StringType(), False),
+    StructField('locationId', StringType(), True),
+    StructField('providerId', StringType(), True),
     StructField('organisationType', StringType(), True),
     StructField('type', StringType(), True),
     StructField('name', StringType(), True),
