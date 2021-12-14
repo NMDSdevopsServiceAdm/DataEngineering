@@ -25,6 +25,7 @@ def call_api(url, query_params=None):
     response = requests.get(url, query_params)
 
     while response.status_code == 429:
+        print("Sleeping for ten seconds due to rate limiting")
         sleep(10)
         response = requests.get(url, query_params)
 
