@@ -44,7 +44,7 @@ def get_all_locations(stream, per_page=DEFAULT_PAGE_SIZE):
     print(f"Total pages: {total_pages}")
     print(f"Beginning CQC bulk download of locations...")
 
-    for page_number in range(51, total_pages):
+    for page_number in range(1, total_pages):
         print(
             f"Collecting locations from API page {page_number}/{total_pages}")
         page_locations = get_page_locations(url, page_number)
