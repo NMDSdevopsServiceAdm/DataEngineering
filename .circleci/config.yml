@@ -52,11 +52,11 @@ jobs:
       - run:
           name: compress utils
           command: |
-            zip -r utils.zip utils
+            mkdir dependencies && zip -r dependencies/utils.zip utils
 
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: utils.zip
+          from: dependencies
           to: 's3://sfc-data-engineering/scripts/dependencies'
 
       - aws-s3/sync:
