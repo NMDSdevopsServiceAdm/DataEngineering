@@ -24,6 +24,10 @@ S3_DIR_ROOT = "s3://sfc-data-engineering/domain=CQC/domain=locations-api/version
 def call_api(url, query_params=None):
     response = requests.get(url, query_params)
 
+    while response.status_code == 429:
+        sleep(10)
+        response = requests.get(url, query_params)
+
     if response.status_code != 200:
         raise Exception("API response: {}".format(response.status_code))
 
