@@ -50,9 +50,9 @@ jobs:
       - checkout
 
       - run:
-          name: compress utils
+          name: compress utils & schemas
           command: |
-            mkdir dependencies && zip -r dependencies/utils.zip utils
+            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas
 
       - aws-s3/sync:
           aws-region: AWS_REGION
