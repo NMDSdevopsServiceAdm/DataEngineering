@@ -76,12 +76,10 @@ resource "aws_glue_catalog_database" "aws_glue_catalog_database" {
   name = var.glue_db_name
 }
 
-resource "aws_glue_crawler" "aws_glue_crawler" {
+resource "aws_glue_crawler" "aws_glue_crawler_ascwds" {
   database_name = var.glue_db_name
-  name          = var.glue_db_crawler_name
+  name          = "${var.glue_db_crawler_prepend}ASCWDS"
   role          = aws_iam_role.glue_service_iam_role.arn
-
-
   s3_target {
     path = var.ascwds_data_location
   }
@@ -95,6 +93,15 @@ resource "aws_glue_crawler" "aws_glue_crawler" {
       }
     }
   )
+}
+
+resource "aws_glue_crawler" "aws_glue_crawler_cqc" {
+  database_name = var.glue_db_name
+  name          = "${var.glue_db_crawler_prepend}CQC"
+  role          = aws_iam_role.glue_service_iam_role.arn
+  s3_target {
+    path = var.cqc_data_location
+  }
 }
 
 resource "aws_glue_job" "csv_to_parquet_job" {

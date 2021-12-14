@@ -6,6 +6,10 @@ variable "ascwds_data_location" {
   default = "s3://sfc-data-engineering/domain=ASCWDS/"
 }
 
+variable "cqc_data_location" {
+  default = "s3://sfc-data-engineering/domain=CQC/"
+}
+
 variable "acl_value" {
   default = "private"
 }
@@ -29,8 +33,8 @@ variable "glue_db_name" {
   default = "data_engineering_glue_db"
 }
 
-variable "glue_db_crawler_name" {
-  default = "data_engineering_glue_crawler"
+variable "glue_db_crawler_prepend" {
+  default = "data_engineering_"
 }
 
 variable "git_repo_url" {
