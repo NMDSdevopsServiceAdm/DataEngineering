@@ -37,16 +37,27 @@ jobs:
           name: run unit tests
           command: |
             pipenv run python -m unittest discover tests
+
     
 
 
-  deploy_scripts:
+  deploy:
     docker:
       - image: circleci/python:3.9.7
     resource_class: small
 
     steps:
       - checkout
+
+      - run:
+        name: compress utils
+        command: |
+          zip -r utils.zip utils
+
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: utils.zip
+          to: 's3://sfc-data-engineering/scripts/dependencies'
 
       - aws-s3/sync:
           aws-region: AWS_REGION
@@ -59,7 +70,7 @@ workflows:
   build-test-and-deploy:
     jobs:
       - test
-      - deploy_scripts:
+      - deploy:
           requires:
             - test
         
