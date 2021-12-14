@@ -14,7 +14,7 @@ class SetupSpark(object):
 
     def setupSpark(self):
         spark = SparkSession.builder \
-            .appName("sfc_data_engineering_pull_cqc_locations") \
+            .appName("sfc_data_engineering") \
             .getOrCreate()
 
         return spark
@@ -27,9 +27,9 @@ def generate_s3_dir_date_path(date):
     pass
 
 
-def write_to_parquet(df, append):
+def write_to_parquet(df, output_dir, append):
 
     if append:
-        df.write.mode('append').parquet(OUTPUT_DIR)
+        df.write.mode('append').parquet(output_dir)
     else:
-        df.write.parquet(OUTPUT_DIR)
+        df.write.output_dir(output_dir)
