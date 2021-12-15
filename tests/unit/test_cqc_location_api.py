@@ -21,7 +21,6 @@ class TestCQCLocationAPI(unittest.TestCase):
         }
 
         result = cqc.get_location("test_id")
-        call_api
         self.assertEqual(result, location_body)
 
     @mock.patch('utils.cqc_location_api.call_api')
