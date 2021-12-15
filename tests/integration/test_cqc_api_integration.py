@@ -27,7 +27,6 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
 
     def test_get_page_locations_returns_all_locations_for_page(self):
 
-        page_size = 10
         page = 1
         url = f"https://api.cqc.org.uk/public/v1/locations"
 
