@@ -31,6 +31,7 @@ if __name__ == "__main__":
     destination = collect_arguments()
     if not destination:
         todays_date = date.today()
-        destination = utils.generate_s3_dir_date_path(todays_date)
+        destination = utils.generate_s3_dir_date_path(
+            domain="CQC", dataset="locations-api", date=todays_date)
 
     main(destination)
