@@ -17,7 +17,7 @@ class UtilsTests(unittest.TestCase):
         dir_path = utils.generate_s3_dir_date_path(
             "test_domain", "test_dateset", dec_first_21)
         self.assertEqual(
-            dir_path, "s3://sfc-data-engineering/domain=test_domain/dataset=test_dateset/year=2021/month=12/day=01/import_date=20211201")
+            dir_path, "s3://sfc-data-engineering/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201")
 
 
 if __name__ == '__main__':
