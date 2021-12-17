@@ -184,9 +184,9 @@ resource "aws_glue_job" "bulk_cqc_locations_download_job" {
   }
 
   default_arguments = {
-    "--TempDir"          = var.glue_temp_dir
-    "--extra-py-files": "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--additional-python-modules": "ratelimit==2.2.1,"
+    "--TempDir" = var.glue_temp_dir
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
 
