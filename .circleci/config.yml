@@ -36,7 +36,12 @@ jobs:
       - run:
           name: run unit tests
           command: |
-            pipenv run python -m unittest discover tests
+            pipenv run python -m unittest discover tests/unit
+
+      - run:
+          name: run integration tests
+          command: |
+            pipenv run python -m unittest discover tests/integration
 
     
 

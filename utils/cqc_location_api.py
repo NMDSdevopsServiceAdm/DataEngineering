@@ -12,7 +12,7 @@ from time import sleep
 import requests
 
 CQC_API_VERSION = "v1"
-RATE_LIMIT = 550
+RATE_LIMIT = 400  # Max ratelimit = 600 per minute.
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 OUTPUT_DIR = "cqc_locations.parquet"
@@ -44,7 +44,7 @@ def get_all_locations(stream, per_page=DEFAULT_PAGE_SIZE):
     print(f"Total pages: {total_pages}")
     print(f"Beginning CQC bulk download of locations...")
 
-    for page_number in range(1, total_pages):
+    for page_number in range(1, total_pages + 1):
         print(
             f"Collecting locations from API page {page_number}/{total_pages}")
         page_locations = get_page_locations(url, page_number)
@@ -68,13 +68,6 @@ def get_page_locations(url, page_number, per_page=DEFAULT_PAGE_SIZE):
         page_locations.append(location)
 
     return page_locations
-
-
-def get_location_change_list(min_date, max_date):
-    url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/changes/location?startTimestamp={min_date}&endTimestamp={max_date}"
-    change_list = call_api(url)["changes"]
-
-    return change_list
 
 
 def get_location(cqc_location_id):

@@ -21,7 +21,6 @@ class TestCQCLocationAPI(unittest.TestCase):
         }
 
         result = cqc.get_location("test_id")
-        call_api
         self.assertEqual(result, location_body)
 
     @mock.patch('utils.cqc_location_api.call_api')
@@ -39,7 +38,7 @@ class TestCQCLocationAPI(unittest.TestCase):
         result = cqc.get_page_locations("test_url", 1)
 
         mock_call_api.assert_called_once_with(
-            "test_url", {'page': 1, 'perPage': 50})
+            "test_url", {'page': 1, 'perPage': 500})
 
         mock_get_location.assert_has_calls(
             [mock.call("test_id"), mock.call("test_id_2"), mock.call("test_id_3")])

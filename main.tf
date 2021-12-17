@@ -169,6 +169,36 @@ resource "aws_glue_job" "join_datasets_job" {
   }
 }
 
+resource "aws_glue_job" "bulk_cqc_locations_download_job" {
+  name              = "bulk_cqc_locations_download_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 1
+  }
+
+  command {
+    script_location = "${var.scripts_location}bulk_download_cqc_locations.py"
+  }
+
+  default_arguments = {
+    "--TempDir" = var.glue_temp_dir
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
+resource "aws_glue_trigger" "monthly_bulk_download_trigger" {
+  name     = "monthly_bulk_download_trigger"
+  schedule = "cron(30 01 05 * ? *)"
+  type     = "SCHEDULED"
+
+  actions {
+    job_name = aws_glue_job.bulk_cqc_locations_download_job.name
+  }
+}
 
 # --- Sagemaker --- #
 resource "aws_iam_role" "notebook_iam_role" {
