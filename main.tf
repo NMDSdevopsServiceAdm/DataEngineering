@@ -99,8 +99,17 @@ resource "aws_glue_crawler" "aws_glue_crawler_cqc" {
   database_name = var.glue_db_name
   name          = "${var.glue_db_crawler_prepend}CQC"
   role          = aws_iam_role.glue_service_iam_role.arn
+  schedule      = "cron(00 00 * * ? *)"
   s3_target {
     path = var.cqc_data_location
+  }
+  recrawl_policy {
+    recrawl_behavior = "CRAWL_EVERYTHING"
+  }
+
+  schema_change_policy {
+    delete_behavior = "DEPRECATE_IN_DATABASE"
+    update_behavior = "UPDATE_IN_DATABASE"
   }
 }
 
@@ -144,28 +153,6 @@ resource "aws_glue_job" "format_fields_job" {
     "--TempDir"     = var.glue_temp_dir
     "--source"      = ""
     "--destination" = ""
-  }
-}
-
-resource "aws_glue_job" "join_datasets_job" {
-  name              = "join_datasets_job"
-  role_arn          = aws_iam_role.glue_service_iam_role.arn
-  glue_version      = "2.0"
-  worker_type       = "Standard"
-  number_of_workers = 2
-  execution_property {
-    max_concurrent_runs = 5
-  }
-
-  command {
-    script_location = "${var.scripts_location}denormalise_ascwds_dataset.py"
-  }
-
-  default_arguments = {
-    "--TempDir"          = var.glue_temp_dir
-    "--worker_source"    = ""
-    "--workplace_source" = ""
-    "--destination"      = ""
   }
 }
 
