@@ -124,10 +124,10 @@ resource "aws_glue_job" "csv_to_parquet_job" {
   }
   command {
     script_location = "${var.scripts_location}csv_to_parquet.py"
-
   }
 
   default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
     "--TempDir"     = var.glue_temp_dir
     "--source"      = ""
     "--destination" = ""
@@ -150,6 +150,7 @@ resource "aws_glue_job" "ingest_ascwds_dataset" {
   }
 
   default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
     "--TempDir"     = var.glue_temp_dir
     "--source"      = ""
     "--destination" = ""
