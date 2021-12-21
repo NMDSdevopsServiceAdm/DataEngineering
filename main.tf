@@ -135,8 +135,8 @@ resource "aws_glue_job" "csv_to_parquet_job" {
   }
 }
 
-resource "aws_glue_job" "format_fields_job" {
-  name              = "format_fields_job"
+resource "aws_glue_job" "ingest_ascwds_dataset" {
+  name              = "ingest_ascwds_dataset_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
   glue_version      = "2.0"
   worker_type       = "Standard"
@@ -146,13 +146,14 @@ resource "aws_glue_job" "format_fields_job" {
   }
 
   command {
-    script_location = "${var.scripts_location}format_fields.py"
+    script_location = "${var.scripts_location}ingest_ascwds_dataset.py"
   }
 
   default_arguments = {
     "--TempDir"     = var.glue_temp_dir
     "--source"      = ""
     "--destination" = ""
+    "--delimiter"   = "|"
   }
 }
 

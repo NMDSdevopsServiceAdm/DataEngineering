@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 
 
-class FormatFieldsTests(unittest.TestCase):
+class IngestASCWDSDatasetTests(unittest.TestCase):
 
     test_csv_path = 'tests/test_data/example_csv.csv'
     tmp_dir = "tmp-out"

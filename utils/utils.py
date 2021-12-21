@@ -34,9 +34,19 @@ def generate_s3_dir_date_path(domain, dataset, date):
     return output_dir
 
 
-def write_to_parquet(df, output_dir, append):
+def write_to_parquet(df, output_dir, append=False):
 
     if append:
         df.write.mode('append').parquet(output_dir)
     else:
-        df.write.output_dir(output_dir)
+        df.write.parquet(output_dir)
+
+
+def read_csv(source, delimiter=","):
+    spark = SparkSession.builder \
+        .appName("sfc_data_engineering_csv_to_parquet") \
+        .getOrCreate()
+
+    df = spark.read.option("delimiter", delimiter).csv(source, header=True)
+
+    return df
