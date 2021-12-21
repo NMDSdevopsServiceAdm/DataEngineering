@@ -17,7 +17,7 @@ def main(source, destination, delimiter):
     print(f"Formatting date fields")
     df = format_date_fields(df)
     print(f"Exporting as parquet to {destination}")
-    utils.write_parquet(df, destination, False)
+    utils.write_to_parquet(df, destination)
 
 
 def format_date_fields(df):
