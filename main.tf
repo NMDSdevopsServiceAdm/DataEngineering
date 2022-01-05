@@ -99,7 +99,7 @@ resource "aws_glue_crawler" "aws_glue_crawler_cqc" {
   database_name = var.glue_db_name
   name          = "${var.glue_db_crawler_prepend}CQC"
   role          = aws_iam_role.glue_service_iam_role.arn
-  schedule      = "cron(00 00 * * ? *)"
+  schedule      = "cron(00 07 * * ? *)"
   s3_target {
     path = var.cqc_data_location
   }
