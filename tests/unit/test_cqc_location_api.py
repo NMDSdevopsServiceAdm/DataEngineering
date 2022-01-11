@@ -20,19 +20,19 @@ class TestCQCLocationAPI(unittest.TestCase):
             "locationId": "test_id"
         }
 
-        result = cqc.get_location("test_id")
+        result = cqc.get_object("test_id", "locations")
         self.assertEqual(result, location_body)
 
     @mock.patch('utils.cqc_api.call_api')
-    @mock.patch('utils.cqc_api.get_location')
-    def test_get_page_locations(self, mock_get_location, mock_call_api):
+    @mock.patch('utils.cqc_api.get_object')
+    def test_get_page_locations(self, mock_get_object, mock_call_api):
         mock_call_api.return_value = {"locations": [
             {"locationId": "test_id"},
             {"locationId": "test_id_2"},
             {"locationId": "test_id_3"},
         ]}
 
-        mock_get_location.return_value(
+        mock_get_object.return_value(
             {"locationId": "get_location_return_id"})
 
         result = cqc.get_page_objects(
@@ -41,8 +41,8 @@ class TestCQCLocationAPI(unittest.TestCase):
         mock_call_api.assert_called_once_with(
             "test_url", {'page': 1, 'perPage': 500})
 
-        mock_get_location.assert_has_calls(
-            [mock.call("test_id"), mock.call("test_id_2"), mock.call("test_id_3")])
+        mock_get_object.assert_has_calls(
+            [mock.call("test_id", "locations"), mock.call("test_id_2", "locations"), mock.call("test_id_3", "locations")])
 
 
 if __name__ == '__main__':
