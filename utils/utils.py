@@ -20,7 +20,7 @@ class SetupSpark(object):
         return spark
 
 
-get_spark = SetupSpark()
+t_spark = SetupSpark()
 
 
 def generate_s3_dir_date_path(domain, dataset, date):
