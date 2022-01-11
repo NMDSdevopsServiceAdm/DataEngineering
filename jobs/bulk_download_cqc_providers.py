@@ -1,7 +1,7 @@
 import argparse
 from datetime import date
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api as cqc
 from utils import utils
 
@@ -10,9 +10,8 @@ def main(destination):
     print("Collecting all providers from API")
     spark = utils.get_spark()
     for paginated_providers in cqc.get_all_objects(stream=True, object_type="providers", object_identifier="providerId"):
-
         # May need schema as second parameter
-        df = spark.createDataFrame(paginated_providers)
+        df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         utils.write_to_parquet(df, destination, True)
 
     print(f"Finished! Files can be found in {destination}")
