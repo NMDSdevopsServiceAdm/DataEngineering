@@ -1,4 +1,4 @@
-from utils import cqc_location_api as cqc
+from utils import cqc_api as cqc
 from pyspark.sql import SparkSession
 import mock
 import unittest
@@ -30,7 +30,8 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
         page = 1
         url = f"https://api.cqc.org.uk/public/v1/locations"
 
-        locations = cqc.get_page_locations(url, page, 5)
+        locations = cqc.get_page_objects(
+            url, page, "locations", "locationId", 5)
         self.assertEqual(len(locations), 5)
 
         regex = re.compile(LOCATION_ID_REGEX)

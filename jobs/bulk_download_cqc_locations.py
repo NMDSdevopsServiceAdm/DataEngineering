@@ -8,7 +8,7 @@ import argparse
 def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
-    for paginated_locations in cqc.get_all_locations(stream=True):
+    for paginated_locations in cqc.get_all_objects(stream=True, object_type="locations", object_identifier="locationId"):
 
         df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         utils.write_to_parquet(df, destination, True)
