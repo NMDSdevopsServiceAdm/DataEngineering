@@ -179,6 +179,16 @@ resource "aws_glue_job" "bulk_cqc_providers_download_job" {
   }
 }
 
+resource "aws_glue_trigger" "monthly_bulk_download_providers_trigger" {
+  name     = "monthly_bulk_download_providers_trigger"
+  schedule = "cron(30 01 04 * ? *)"
+  type     = "SCHEDULED"
+
+  actions {
+    job_name = aws_glue_job.bulk_cqc_providers_download_job.name
+  }
+}
+
 resource "aws_glue_job" "bulk_cqc_locations_download_job" {
   name              = "bulk_cqc_locations_download_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
@@ -200,8 +210,8 @@ resource "aws_glue_job" "bulk_cqc_locations_download_job" {
   }
 }
 
-resource "aws_glue_trigger" "monthly_bulk_download_trigger" {
-  name     = "monthly_bulk_download_trigger"
+resource "aws_glue_trigger" "monthly_bulk_download_locations_trigger" {
+  name     = "monthly_bulk_download_locations_trigger"
   schedule = "cron(30 01 05 * ? *)"
   type     = "SCHEDULED"
 
