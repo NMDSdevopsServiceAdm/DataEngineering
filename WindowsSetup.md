@@ -154,6 +154,7 @@ If not, the code for both can be found below
 
 ```
 <br>
+    
 #### settings.json
 ```
 {
