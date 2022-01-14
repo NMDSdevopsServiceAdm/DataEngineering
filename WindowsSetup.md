@@ -46,7 +46,34 @@ C:\jre
 ```
 
 
+### Hadoop Install:
+1. Download the tar.gz file from the url provided above
 
+2. Unzip the file to c:\ using 7zip, this will create the below folder:
+```
+C:\hadoop-3.2.2.tar
+```
 
+3. Unzip the .tar within C:\hadoop-3.2.2.tar to c:\ using 7zip.
+
+4. Your file will error towards the end of unzipping as it will not be able to fully unzip all of the files within the ‘bin’ folder.
+
+5. Press 'close' on 7zip when step 4. occurs
+
+5. Navigate to the below url and press: code>download zip. This will download the missing application which 7zip could not unzip
+```
+https://github.com/cdarlint/winutils
+```
+
+6. Copy and paste all files from the below folder:
+```
+Downloads\winutils-master.zip\winutils-master\hadoop-3.2.2\bin
+```
+to
+```
+C:\hadoop-3.2.2\bin
+```
+
+7. Press 'replace' if any files have the same names. Hadoop is now installed.
 
 
