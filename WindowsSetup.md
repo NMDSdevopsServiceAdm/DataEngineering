@@ -15,7 +15,7 @@ Python Version 3.7.3 | https://www.python.org/downloads/
 Hadoop Version 3.2.2 | https://hadoop.apache.org/release/3.2.2.html
 Java Development Kit Version 8 | https://www.oracle.com/java/technologies/downloads/#java8-windows
 
-###Java Development Kit Install:
+### Java Development Kit Install:
 1. Delete any instances of Java (JRE) which are already installed, these can be found in the file paths:
 ```
 C:\
@@ -32,7 +32,14 @@ jdk-8u311-windows-x64.exe
 C:\Program Files\Java
 ```
 
-
+4. Copy the jdk1.8.0_311 folder from 
+```
+C:\Program Files\Java
+```
+and save it in C:\ as
+```
+C:\jdk
+```
 
 
 
