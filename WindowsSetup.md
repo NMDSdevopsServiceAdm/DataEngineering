@@ -83,14 +83,13 @@ C:\hadoop-3.2.2\bin
 2. Under 'user variables', select 'path' and then select 'edit'
 
 2. Add the below path variables:
-Path Variables 
---- 
+```
 C:\Users\awheatley\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\awheatley\AppData\Local\Programs\Git\cmd 
 C:\Users\awheatley\.pyenv\pyenv-win\bin 
 C:\Users\awheatley\AppData\Roaming\Python\Python37\site-packages 
 C:\Users\awheatley\AppData\Roaming\Python\Python37\Scripts 
-
+```
 
 
 
