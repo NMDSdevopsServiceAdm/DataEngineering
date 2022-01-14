@@ -54,7 +54,7 @@ C:\jre
 C:\hadoop-3.2.2.tar
 ```
 
-3. Unzip the .tar within C:\hadoop-3.2.2.tar to c:\ using 7zip.
+3. Unzip the .tar file within c:\hadoop-3.2.2.tar to c:\ using 7zip.
 
 4. Your file will error towards the end of unzipping as it will not be able to fully unzip all of the files within the ‘bin’ folder.
 
