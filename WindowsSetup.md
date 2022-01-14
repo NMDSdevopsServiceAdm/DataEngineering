@@ -60,12 +60,12 @@ C:\hadoop-3.2.2.tar
 
 5. Press 'close' on 7zip when step 4. occurs
 
-5. Navigate to the below url and press: code>download zip. This will download the missing application which 7zip could not unzip
+6. Navigate to the below url and press: code>download zip. This will download the missing application which 7zip could not unzip
 ```
 https://github.com/cdarlint/winutils
 ```
 
-6. Copy and paste all files from the below folder:
+7. Copy and paste all files from the below folder:
 ```
 Downloads\winutils-master.zip\winutils-master\hadoop-3.2.2\bin
 ```
@@ -74,7 +74,7 @@ to
 C:\hadoop-3.2.2\bin
 ```
 
-7. Press 'replace' if any files have the same names. Hadoop is now installed.
+8. Press 'replace' if any files have the same names. Hadoop is now installed.
 
 
 ### Adding user variables:
@@ -82,7 +82,7 @@ C:\hadoop-3.2.2\bin
 
 2. Under 'user variables', select 'path' and then select 'edit'
 
-2. Add the below path variables:
+3. Add the below path variables:
 ```
 C:\Users\awheatley\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\awheatley\AppData\Local\Programs\Git\cmd 
