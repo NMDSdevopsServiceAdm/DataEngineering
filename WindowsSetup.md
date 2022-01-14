@@ -92,6 +92,39 @@ C:\Users\awheatley\AppData\Roaming\Python\Python37\Scripts
 ```
 
 
+### Adding system variables - In Progress:
+1. In 'system variables', select 'new' and add the below:
+Variable name | Value
+--- | --- 
+HADOOP_HOME | C:\hadoop-3.2.2
+
+2. Select the 'Path' variables from 'system variables', press edit and add the below path variables:
+
+
+### Clone the project
+```
+git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
+```
+
+
+### Create virtual environment and install dependencies
+```
+cd DataEngineering
+pipenv install --dev
+```
+
+
+### Opening the data engineering folder in vscode
+From VS Code:
+File> Open Folder> Navigate to ‘Data Engineering’ and press ‘Select Folder’
+
+
+### installing python on VS code:
+From VS Code:
+Click ‘Extensions’ in the left-hand pane > type in ‘Python’> click ‘Install’ on ‘Python’
+You can now run python in VS code
+
+
 
 
 
