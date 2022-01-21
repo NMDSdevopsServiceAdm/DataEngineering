@@ -170,5 +170,4 @@ If not, the code for both can be found below
     "python.testing.unittestEnabled": true,
     "python.envFile": "${workspaceFolder}/.env"
      }
-}
 ```
