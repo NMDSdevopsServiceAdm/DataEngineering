@@ -1,7 +1,7 @@
 # Windows Setup
 
 # Prerequisite installs:
-Note, all files to be installed are the 64 bit windows versions.
+Note, all files to be installed using the correct architecture. By default this should be the 64 bit windows versions.
 
 Tool | Windows 
 --- | --- 
@@ -54,13 +54,13 @@ C:\jre
 C:\hadoop-3.2.2.tar
 ```
 
-3. Unzip the .tar file within c:\hadoop-3.2.2.tar to c:\ using 7zip.
+3. Unzip the .tar file within `c:\hadoop-3.2.2.tar` to `c:\` using 7zip.
 
 4. Your file will error towards the end of unzipping as it will not be able to fully unzip all of the files within the ‘bin’ folder.
 
 5. Press 'close' on 7zip when step 4. occurs
 
-6. Navigate to the below url and press: code>download zip. This will download the missing application which 7zip could not unzip
+6. Navigate to the winutils github repo below. Here you can download the missing binaries that will allow hadoop to work on Windows. Click code > download zip. This will download the missing binaries which 7zip could not unzip.
 ```
 https://github.com/cdarlint/winutils
 ```
@@ -82,7 +82,7 @@ C:\hadoop-3.2.2\bin
 
 2. Under 'user variables', select 'path' and then select 'edit'
 
-3. Add the below path variables:
+3. Add the below path variables replacing "awheatley" for your windows user name. 
 ```
 C:\Users\awheatley\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\awheatley\AppData\Local\Programs\Git\cmd 
@@ -98,7 +98,8 @@ Variable name | Value
 --- | --- 
 HADOOP_HOME | C:\hadoop-3.2.2
 
-2. Select the 'Path' variables from 'system variables', press edit and add the below path variables:
+
+2. Select the 'Path' from 'system variables', press edit and add the below path variables:
 
 
 ### Clone the project
@@ -114,7 +115,7 @@ pipenv install --dev
 ```
 
 
-### Opening the data engineering folder in vscode
+### Opening the data engineering project in vscode
 From VS Code: <br>
 File> Open Folder> Navigate to ‘Data Engineering’ and press ‘Select Folder’
 
@@ -167,16 +168,7 @@ If not, the code for both can be found below
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.envFile": "${workspaceFolder}/.env",
-    // "terminal.integrated.env.*": {
-    //     "PYTHONPATH": "${workspaceFolder}"
-    // }
-    
+    "python.envFile": "${workspaceFolder}/.env"
+     }
 }
 ```
-
-
-
-
-
-
