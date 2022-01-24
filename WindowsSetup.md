@@ -94,6 +94,7 @@ C:\Users\awheatley\AppData\Roaming\Python\Python37\Scripts
 
 ### Adding system variables - In Progress:
 1. In 'system variables', select 'new' and add the below:
+
 Variable name | Value
 --- | --- 
 HADOOP_HOME | C:\hadoop-3.2.2
