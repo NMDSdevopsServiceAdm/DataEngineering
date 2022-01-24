@@ -101,6 +101,7 @@ HADOOP_HOME | C:\hadoop-3.2.2
 
 
 2. Select the 'Path' from 'system variables', press edit and add the below path variables:
+In progress - to be added
 
 
 ### Clone the project
