@@ -45,7 +45,10 @@ class PrepareLocationsTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, columns)
 
         cleaned_df = prepare_locations.clean(df)
+        cleaned_df_list = cleaned_df.collect()
         self.assertEqual(cleaned_df.count(), 6)
+        self.assertEqual(cleaned_df_list[0]["totalstaff"], None)
+        self.assertEqual(cleaned_df_list[1]["totalstaff"], 500)
 
 
 if __name__ == '__main__':
