@@ -89,7 +89,6 @@ def calculate_jobcount(input_df):
     ).otherwise(col("jobcount")))
 
     # Estimate job count from beds
-
     input_df = input_df.withColumn("bed_estimate_jobcount", when(
         (
             col("jobcount").isNull() &
@@ -124,6 +123,34 @@ def calculate_jobcount(input_df):
                 )
             )
         ), (col("totalstaff") + col("wkrrecs")) / 2
+    ).otherwise(col("jobcount")))
+
+    # if totalstaff within 10% or < 5: return totalstaff
+    input_df = input_df.withColumn("jobcount", when(
+        (
+            col("jobcount").isNull() &
+            col("bed_estimate_jobcount").isNotNull() &
+            (
+
+                (col("totalstaff_diff") < 5) | (
+                    col("totalstaff_percentage_diff") < 0.1)
+
+            )
+        ), col("totalstaff")
+    ).otherwise(col("jobcount")))
+
+    # if wkrrecs within 10% or < 5: return wkrrecs
+    input_df = input_df.withColumn("jobcount", when(
+        (
+            col("jobcount").isNull() &
+            col("bed_estimate_jobcount").isNotNull() &
+            (
+
+                (col("wkrrecs_diff") < 5) | (
+                    col("wkrrecs_percentage_diff") < 0.1)
+
+            )
+        ), col("wkrrecs")
     ).otherwise(col("jobcount")))
 
     return input_df

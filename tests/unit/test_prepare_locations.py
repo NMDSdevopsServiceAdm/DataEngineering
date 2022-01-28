@@ -53,22 +53,49 @@ class PrepareLocationsTests(unittest.TestCase):
     def test_calculate_jobcount(self):
         columns = ["locationid", "wkrrecs", "totalstaff", "numberofbeds"]
         rows = [
-            ("1-000000001", None, 0, 0),
+            ("1-000000001", None, 0, 0),  # Both 0: Return 0
+            # Both 500: Return 500
             ("1-000000002", 500, 500, 490),
+            # Only know wkrrecs: Return wkrrecs (100)
             ("1-000000003", 100, None, 10),
+            # Only know totalstaff: Return totalstaf (10)
             ("1-000000004", None, 10, 12),
+            # None of the rules apply: Return None
             ("1-000000005", 25, 75, 40),
+            # None of the rules apply: Return None
             ("1-000000006", 30, 60, 40),
+            # None of the rules apply: Return None
             ("1-000000007", 600, 900, 150),
+            # Absolute difference is within 10%: Return Average
             ("1-000000008", 10, 12, None),
+            # Either totalstaff or wkrrecs < 3: return max
             ("1-000000009", 1, 23, None),
-            ("1-000000010", 90, 102, 85)
+            # Utilise bedcount estimate - Average
+            ("1-000000010", 90, 102, 85),
+            # Utilise bedcount estimate - Wkrrecs
+            ("1-000000011", 90, 102, 95),
+            # Utilise bedcount estimate - Totalstaff
+            ("1-000000012", 90, 102, 80),
+
         ]
         df = self.spark.createDataFrame(rows, columns)
 
         jobcount_df = prepare_locations.calculate_jobcount(df)
         jobcount_df_list = jobcount_df.collect()
         jobcount_df.show()
+
+        self.assertEqual(jobcount_df_list[0]["jobcount"], 0.0)
+        self.assertEqual(jobcount_df_list[1]["jobcount"], 500.0)
+        self.assertEqual(jobcount_df_list[2]["jobcount"], 100.0)
+        self.assertEqual(jobcount_df_list[3]["jobcount"], 10.0)
+        self.assertEqual(jobcount_df_list[4]["jobcount"], None)
+        self.assertEqual(jobcount_df_list[5]["jobcount"], None)
+        self.assertEqual(jobcount_df_list[6]["jobcount"], None)
+        self.assertEqual(jobcount_df_list[7]["jobcount"], 11.0)
+        self.assertEqual(jobcount_df_list[8]["jobcount"], 23.0)
+        self.assertEqual(jobcount_df_list[9]["jobcount"], 96.0)
+        self.assertEqual(jobcount_df_list[10]["jobcount"], 102.0)
+        self.assertEqual(jobcount_df_list[11]["jobcount"], 90.0)
 
 
 if __name__ == '__main__':
