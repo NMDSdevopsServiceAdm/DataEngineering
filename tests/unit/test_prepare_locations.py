@@ -81,7 +81,6 @@ class PrepareLocationsTests(unittest.TestCase):
 
         jobcount_df = prepare_locations.calculate_jobcount(df)
         jobcount_df_list = jobcount_df.collect()
-        jobcount_df.show()
 
         self.assertEqual(jobcount_df_list[0]["jobcount"], 0.0)
         self.assertEqual(jobcount_df_list[1]["jobcount"], 500.0)
