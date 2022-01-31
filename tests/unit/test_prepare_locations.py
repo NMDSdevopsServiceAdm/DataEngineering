@@ -13,6 +13,23 @@ class PrepareLocationsTests(unittest.TestCase):
             .appName("test_prepare_locations") \
             .getOrCreate()
 
+    def test_remove_duplicates(self):
+        columns = ["locationid", "import_date"]
+        rows = [
+            ("1-000000001", "01-12-2022"),
+            ("1-000000001", "01-12-2022"),
+            ("1-000000001", "01-12-2021"),
+            ("1-000000001", "01-12-2021"),
+            ("1-000000002", "01-12-2022"),
+            ("1-000000002", "01-12-2021")
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        filtered_df = prepare_locations.remove_duplicates(df)
+        self.assertEqual(filtered_df.count(), 4)
+        self.assertEqual(filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(), [
+                         "1-000000001", "1-000000001", "1-000000002", "1-000000002"])
+
     def test_filter_nulls(self):
         columns = ["locationid", "wkrrecs", "totalstaff"]
         rows = [

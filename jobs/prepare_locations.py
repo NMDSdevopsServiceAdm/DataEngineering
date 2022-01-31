@@ -47,6 +47,7 @@ def main(workplace_source, cqc_source, destination):
     workplaces_df = spark.read.parquet(
         workplace_source).select(required_workplace_fields)
 
+    workplaces_df = remove_duplicates(workplaces_df)
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
 
@@ -65,6 +66,10 @@ def main(workplace_source, cqc_source, destination):
     print(f"Exporting as csv to {destination}")
     output_df.coalesce(1).write.format(
         "com.databricks.spark.csv").save(destination, header="true")
+
+
+def remove_duplicates(input_df):
+    return input_df.drop_duplicates(subset=["locationid", "import_date"])
 
 
 def clean(input_df):
