@@ -29,7 +29,7 @@ required_cqc_fields = [
     "dormancy",
     "numberofbeds",
     "region",
-    "postalcode",
+    "postalcode"
     "carehome",
     "constituency",
     "localauthority"
