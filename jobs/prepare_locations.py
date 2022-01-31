@@ -54,8 +54,6 @@ def main(workplace_source, cqc_source, destination):
 
     output_df = calculate_jobcount(output_df)
 
-    output_df.show(20, False)
-
     # print(f"Exporting as parquet to {destination}")
     # utils.write_to_parquet(workplaces_df, destination)
 
