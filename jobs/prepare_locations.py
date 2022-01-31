@@ -6,13 +6,6 @@ from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col
 from pyspark.sql.types import IntegerType
 from utils import utils
 
-# Read in most recent cqc_locations_api bulk dataset
-# Read in provided ascwds locations dataset
-# Perform cleaning  DONE
-# Filter nulls      DONE
-# Join CQC to ASCWDS
-# Predict job counts
-
 required_workplace_fields = [
     "locationid",
     "providerid",
@@ -232,3 +225,23 @@ def calculate_jobcount(input_df):
     input_df = input_df.drop(*columns_to_drop)
 
     return input_df
+
+
+def collect_arguments():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--workplace_source", help="Source s3 directory for ASCWDS workplace dataset", required=True)
+    parser.add_argument(
+        "--cqc_source", help="Source s3 directory for CQC locations api dataset", required=True)
+    parser.add_argument(
+        "--destination", help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.", required=True)
+
+    args, unknown = parser.parse_known_args()
+
+    return args.workplace_source, args.cqc_source, args.destination
+
+
+if __name__ == "__main__":
+    workplace_source, cqc_source, destination, = collect_arguments()
+    main(workplace_source, cqc_source, destination)
