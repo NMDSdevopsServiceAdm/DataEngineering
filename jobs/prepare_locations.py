@@ -29,10 +29,10 @@ required_cqc_fields = [
     "dormancy",
     "numberofbeds",
     "region",
-    "postalcode"
+    "postalcode",
     "carehome",
     "constituency",
-    "localauthority"
+    "localauthority",
     "year",
     "month",
     "day",
@@ -51,6 +51,7 @@ def main(workplace_source, cqc_source, destination):
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
 
+    print(f"Reading CQC parquet from {workplace_source}")
     cqc_df = spark.read.parquet(
         cqc_source).select(required_cqc_fields)
 
@@ -69,10 +70,12 @@ def main(workplace_source, cqc_source, destination):
 
 
 def remove_duplicates(input_df):
+    print(f"Removing duplicates...")
     return input_df.drop_duplicates(subset=["locationid", "import_date"])
 
 
 def clean(input_df):
+    print(f"Cleaning...")
     # Standardise negative and 0 values as None.
     input_df = input_df.replace('0', None).replace('-1', None)
 
@@ -87,6 +90,7 @@ def clean(input_df):
 
 
 def filter_nulls(input_df):
+    print(f"Filtering nulls...")
     # Remove rows with null for wkrrecs and totalstaff
     input_df = input_df.filter("wkrrecs is not null or totalstaff is not null")
 
@@ -97,6 +101,7 @@ def filter_nulls(input_df):
 
 
 def calculate_jobcount(input_df):
+    print(f"Calculating jobcount...")
     # Add null/empty jobcount column
     input_df = input_df.withColumn("jobcount", lit(None).cast(IntegerType()))
 
