@@ -6,6 +6,73 @@ from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col
 from pyspark.sql.types import IntegerType
 from utils import utils
 
+# Read in most recent cqc_locations_api bulk dataset
+# Read in provided ascwds locations dataset
+# Perform cleaning  DONE
+# Filter nulls      DONE
+# Join CQC to ASCWDS
+# Predict job counts
+
+required_workplace_fields = [
+    "locationid",
+    "providerid",
+    "totalstaff",
+    "wkrrecs",
+    "year",
+    "month",
+    "day",
+    "import_date",
+    "version"
+]
+
+required_cqc_fields = [
+    "locationid",
+    "organisationtype",
+    "type",
+    "name",
+    "registrationstatus",
+    "registrationdate",
+    "deregistrationdate",
+    "dormancy",
+    "numberofbeds",
+    "region",
+    "postalcode",
+    "carehome",
+    "constituency",
+    "localauthority"
+    "year",
+    "month",
+    "day",
+    "import_date",
+    "version"
+]
+
+
+def main(workplace_source, cqc_source, destination):
+    spark = utils.get_spark()
+    print(f"Reading workplaces parquet from {workplace_source}")
+    workplaces_df = spark.read.parquet(
+        workplace_source).select(required_workplace_fields)
+
+    workplaces_df = clean(workplaces_df)
+    workplaces_df = filter_nulls(workplaces_df)
+
+    cqc_df = spark.read.parquet(
+        cqc_source).select(required_cqc_fields)
+
+    output_df = cqc_df.join(workplaces_df, "locationid", "left")
+
+    output_df = calculate_jobcount(output_df)
+
+    output_df.show(20, False)
+
+    # print(f"Exporting as parquet to {destination}")
+    # utils.write_to_parquet(workplaces_df, destination)
+
+    print(f"Exporting as csv to {destination}")
+    output_df.coalesce(1).write.format(
+        "com.databricks.spark.csv").save(destination, header="true")
+
 
 def clean(input_df):
     # Standardise negative and 0 values as None.
@@ -152,5 +219,16 @@ def calculate_jobcount(input_df):
             )
         ), col("wkrrecs")
     ).otherwise(col("jobcount")))
+
+    # Drop temporary columns
+    columns_to_drop = [
+        "bed_estimate_jobcount",
+        "totalstaff_diff",
+        "wkrrecs_diff",
+        "totalstaff_percentage_diff",
+        "wkrrecs_percentage_diff"
+    ]
+
+    input_df = input_df.drop(*columns_to_drop)
 
     return input_df
