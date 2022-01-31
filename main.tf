@@ -174,10 +174,11 @@ resource "aws_glue_job" "prepare_locations_job" {
 
   default_arguments = {
     "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--TempDir"          = var.glue_temp_dir
-    "--workplace_source" = ""
-    "--cqc_source"       = ""
-    "--destination"      = ""
+    "--TempDir"             = var.glue_temp_dir
+    "--workplace_source"    = ""
+    "--cqc_location_source" = ""
+    "--cqc_provider_source" = ""
+    "--destination"         = ""
   }
 }
 
