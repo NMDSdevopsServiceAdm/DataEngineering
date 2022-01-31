@@ -60,12 +60,8 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
 
     output_df = calculate_jobcount(output_df)
 
-    # print(f"Exporting as parquet to {destination}")
-    # utils.write_to_parquet(workplaces_df, destination)
-
-    print(f"Exporting as csv to {destination}")
-    output_df.coalesce(1).write.format(
-        "com.databricks.spark.csv").save(destination, header="true")
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(output_df, destination)
 
 
 def remove_duplicates(input_df):
