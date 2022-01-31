@@ -49,7 +49,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = spark.read.parquet(
-        cqc_source).select(required_cqc_fields)
+        cqc_location_source).select(required_cqc_fields)
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = spark.read.parquet(
