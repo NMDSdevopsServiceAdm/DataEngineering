@@ -32,12 +32,7 @@ required_cqc_fields = [
     "postalcode",
     "carehome",
     "constituency",
-    "localauthority",
-    "year",
-    "month",
-    "day",
-    "import_date",
-    "version"
+    "localauthority"
 ]
 
 
@@ -51,7 +46,7 @@ def main(workplace_source, cqc_source, destination):
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
 
-    print(f"Reading CQC parquet from {workplace_source}")
+    print(f"Reading CQC parquet from {cqc_source}")
     cqc_df = spark.read.parquet(
         cqc_source).select(required_cqc_fields)
 
