@@ -8,6 +8,7 @@ from utils import utils
 
 required_workplace_fields = [
     "locationid",
+    "establishmentid",
     "providerid",
     "totalstaff",
     "wkrrecs",
@@ -36,7 +37,7 @@ required_cqc_fields = [
 ]
 
 
-def main(workplace_source, cqc_source, destination):
+def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
     spark = utils.get_spark()
     print(f"Reading workplaces parquet from {workplace_source}")
     workplaces_df = spark.read.parquet(
@@ -46,11 +47,16 @@ def main(workplace_source, cqc_source, destination):
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
 
-    print(f"Reading CQC parquet from {cqc_source}")
+    print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = spark.read.parquet(
         cqc_source).select(required_cqc_fields)
 
+    print(f"Reading CQC providers parquet from {cqc_provider_source}")
+    cqc_provider_df = spark.read.parquet(
+        cqc_provider_source).select("providerid", col("name").alias("provider_name"))
+
     output_df = cqc_df.join(workplaces_df, "locationid", "left")
+    output_df = output_df.join(cqc_provider_df, "providerid", "left")
 
     output_df = calculate_jobcount(output_df)
 
@@ -237,15 +243,18 @@ def collect_arguments():
     parser.add_argument(
         "--workplace_source", help="Source s3 directory for ASCWDS workplace dataset", required=True)
     parser.add_argument(
-        "--cqc_source", help="Source s3 directory for CQC locations api dataset", required=True)
+        "--cqc_location_source", help="Source s3 directory for CQC locations api dataset", required=True)
+    parser.add_argument(
+        "--cqc_provider_source", help="Source s3 directory for CQC providers api dataset", required=True)
     parser.add_argument(
         "--destination", help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.", required=True)
 
     args, unknown = parser.parse_known_args()
 
-    return args.workplace_source, args.cqc_source, args.destination
+    return args.workplace_source, args.cqc_location_source, args.cqc_provider_source, args.destination
 
 
 if __name__ == "__main__":
-    workplace_source, cqc_source, destination, = collect_arguments()
-    main(workplace_source, cqc_source, destination)
+    workplace_source, cqc_location_source, cqc_provider_source, destination, = collect_arguments()
+    main(workplace_source, cqc_location_source,
+         cqc_provider_source, destination)
