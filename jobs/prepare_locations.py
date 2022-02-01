@@ -263,13 +263,25 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--workplace_source", help="Source s3 directory for ASCWDS workplace dataset", required=True)
+        "--workplace_source",
+        help="Source s3 directory for ASCWDS workplace dataset",
+        required=True
+    )
     parser.add_argument(
-        "--cqc_location_source", help="Source s3 directory for CQC locations api dataset", required=True)
+        "--cqc_location_source",
+        help="Source s3 directory for CQC locations api dataset",
+        required=True
+    )
     parser.add_argument(
-        "--cqc_provider_source", help="Source s3 directory for CQC providers api dataset", required=True)
+        "--cqc_provider_source",
+        help="Source s3 directory for CQC providers api dataset",
+        required=True
+    )
     parser.add_argument(
-        "--destination", help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.", required=True)
+        "--destination",
+        help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
+        required=True
+    )
 
     args, unknown = parser.parse_known_args()
 
