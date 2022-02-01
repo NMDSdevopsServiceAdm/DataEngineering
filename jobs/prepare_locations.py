@@ -36,6 +36,9 @@ required_cqc_fields = [
     "localauthority"
 ]
 
+MIN_ABSOLUTE_DIFFERENCE = 5
+MIN_PERCENTAGE_DIFFERENCE = 0.1
+
 
 def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
     spark = utils.get_spark()
@@ -137,8 +140,8 @@ def calculate_jobcount_abs_difference_within_range(input_df):
         (
             col("jobcount").isNull() &
             (
-                (col("abs_difference") < 5) | (
-                    col("abs_difference") / col("totalstaff") < 0.1)
+                (col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE) | (
+                    col("abs_difference") / col("totalstaff") < MIN_PERCENTAGE_DIFFERENCE)
             )
         ), (col("totalstaff") + col("wkrrecs")) / 2
     ).otherwise(col("jobcount")))
@@ -188,12 +191,12 @@ def calculate_jobcount_estimate_from_beds(input_df):
             col("bed_estimate_jobcount").isNotNull() &
             (
                 (
-                    (col("totalstaff_diff") < 5) | (
-                        col("totalstaff_percentage_diff") < 0.1)
+                    (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE) | (
+                        col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 ) &
                 (
-                    (col("wkrrecs_diff") < 5) | (
-                        col("wkrrecs_percentage_diff") < 0.1)
+                    (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE) | (
+                        col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             )
         ), (col("totalstaff") + col("wkrrecs")) / 2
@@ -206,8 +209,8 @@ def calculate_jobcount_estimate_from_beds(input_df):
             col("bed_estimate_jobcount").isNotNull() &
             (
 
-                (col("totalstaff_diff") < 5) | (
-                    col("totalstaff_percentage_diff") < 0.1)
+                (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE) | (
+                    col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
 
             )
         ), col("totalstaff")
@@ -220,8 +223,8 @@ def calculate_jobcount_estimate_from_beds(input_df):
             col("bed_estimate_jobcount").isNotNull() &
             (
 
-                (col("wkrrecs_diff") < 5) | (
-                    col("wkrrecs_percentage_diff") < 0.1)
+                (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE) | (
+                    col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
 
             )
         ), col("wkrrecs")
