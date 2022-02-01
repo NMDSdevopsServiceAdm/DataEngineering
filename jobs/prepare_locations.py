@@ -49,7 +49,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     workplaces_df = remove_duplicates(workplaces_df)
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
-    workplaces_df = calculate_jobcount(workplaces_df)
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = spark.read.parquet(
