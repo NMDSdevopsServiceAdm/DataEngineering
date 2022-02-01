@@ -46,6 +46,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     workplaces_df = remove_duplicates(workplaces_df)
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
+    workplaces_df = calculate_jobcount(workplaces_df)
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = spark.read.parquet(
@@ -96,13 +97,9 @@ def filter_nulls(input_df):
     return input_df
 
 
-def calculate_jobcount(input_df):
-    print("Calculating jobcount...")
-    # Add null/empty jobcount column
-    input_df = input_df.withColumn("jobcount", lit(None).cast(IntegerType()))
-
+def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
     # totalstaff = wkrrrecs: Take totalstaff
-    input_df = input_df.withColumn("jobcount", when(
+    return input_df.withColumn("jobcount", when(
         (
             col("jobcount").isNull() &
             (col("wkrrecs") == col("totalstaff")) &
@@ -111,8 +108,10 @@ def calculate_jobcount(input_df):
         ), col("totalstaff")
     ).otherwise(col("jobcount")))
 
+
+def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
     # Either wkrrecs or totalstaff is null: return first not null
-    input_df = input_df.withColumn("jobcount", when(
+    return input_df.withColumn("jobcount", when(
         (
             col("jobcount").isNull() &
             (
@@ -128,6 +127,8 @@ def calculate_jobcount(input_df):
         ), coalesce(input_df.totalstaff, input_df.wkrrecs)
     ).otherwise(coalesce(col("jobcount"))))
 
+
+def calculate_jobcount_abs_difference_within_range(input_df):
     # Abs difference between totalstaff & wkrrecs < 5 or < 10% take average:
     input_df = input_df.withColumn('abs_difference', abs(
         input_df.totalstaff - input_df.wkrrecs))
@@ -144,8 +145,12 @@ def calculate_jobcount(input_df):
 
     input_df = input_df.drop("abs_difference")
 
+    return input_df
+
+
+def calculate_jobcount_handle_tiny_values(input_df):
     # totalstaff or wkrrecs < 3: return max
-    input_df = input_df.withColumn("jobcount", when(
+    return input_df.withColumn("jobcount", when(
         (
             col("jobcount").isNull() &
             (
@@ -154,12 +159,15 @@ def calculate_jobcount(input_df):
         ), greatest(col("totalstaff"), col("wkrrecs"))
     ).otherwise(col("jobcount")))
 
-    # Estimate job count from beds
+
+def calculate_jobcount_estimate_from_beds(input_df):
+    beds_to_jobcount_intercept = 8.40975704621392
+    beds_to_jobcount_coefficient = 1.0010753137758377001
     input_df = input_df.withColumn("bed_estimate_jobcount", when(
         (
             col("jobcount").isNull() &
             (col("numberofbeds") > 0)
-        ), (8.40975704621392 + (col("numberofbeds") * 1.0010753137758377001))
+        ), (beds_to_jobcount_intercept + (col("numberofbeds") * beds_to_jobcount_coefficient))
     ).otherwise(None))
 
     # Determine differences
@@ -229,6 +237,21 @@ def calculate_jobcount(input_df):
     ]
 
     input_df = input_df.drop(*columns_to_drop)
+
+    return input_df
+
+
+def calculate_jobcount(input_df):
+    print("Calculating jobcount...")
+
+    # Add null/empty jobcount column
+    input_df = input_df.withColumn("jobcount", lit(None).cast(IntegerType()))
+
+    input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
+    input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
+    input_df = calculate_jobcount_abs_difference_within_range(input_df)
+    input_df = calculate_jobcount_handle_tiny_values(input_df)
+    input_df = calculate_jobcount_estimate_from_beds(input_df)
 
     return input_df
 
