@@ -100,3 +100,9 @@ We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are 
     - Navigate to *"Clusters"* from the left navigation column.
     - Select the running cluster
     - Click *"Terminate"*
+
+
+## Notebook costs
+An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
+The notebooks are free, but require a cluster to run on. 
+The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
