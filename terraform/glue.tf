@@ -167,37 +167,6 @@ resource "aws_glue_job" "prepare_locations_job" {
   }
 }
 
-resource "aws_glue_job" "bulk_cqc_locations_download_job" {
-  name              = "bulk_cqc_locations_download_job"
-  role_arn          = aws_iam_role.glue_service_iam_role.arn
-  glue_version      = "2.0"
-  worker_type       = "Standard"
-  number_of_workers = 2
-  execution_property {
-    max_concurrent_runs = 1
-  }
-
-  command {
-    script_location = "${var.scripts_location}bulk_download_cqc_locations.py"
-  }
-
-  default_arguments = {
-    "--TempDir" = var.glue_temp_dir
-    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
-  }
-}
-
-resource "aws_glue_trigger" "monthly_bulk_download_locations_trigger" {
-  name     = "monthly_bulk_download_locations_trigger"
-  schedule = "cron(30 01 05 * ? *)"
-  type     = "SCHEDULED"
-
-  actions {
-    job_name = aws_glue_job.bulk_cqc_locations_download_job.name
-  }
-}
-
 resource "aws_glue_job" "bulk_cqc_providers_download_job" {
   name              = "bulk_cqc_providers_download_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
@@ -226,5 +195,37 @@ resource "aws_glue_trigger" "monthly_bulk_download_providers_trigger" {
 
   actions {
     job_name = aws_glue_job.bulk_cqc_providers_download_job.name
+  }
+}
+
+
+resource "aws_glue_job" "bulk_cqc_locations_download_job" {
+  name              = "bulk_cqc_locations_download_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 1
+  }
+
+  command {
+    script_location = "${var.scripts_location}bulk_download_cqc_locations.py"
+  }
+
+  default_arguments = {
+    "--TempDir" = var.glue_temp_dir
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
+resource "aws_glue_trigger" "monthly_bulk_download_locations_trigger" {
+  name     = "monthly_bulk_download_locations_trigger"
+  schedule = "cron(30 01 05 * ? *)"
+  type     = "SCHEDULED"
+
+  actions {
+    job_name = aws_glue_job.bulk_cqc_locations_download_job.name
   }
 }
