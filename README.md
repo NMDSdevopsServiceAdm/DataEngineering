@@ -81,12 +81,22 @@ terraform apply
 ----
 
 ## Spinning up a notebook
+We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are the steps required to get this environment running.
 
-1. Head over to [AWS Glue](https://eu-west-2.console.aws.amazon.com/glue/home?region=eu-west-2)
-2. Click *Notebooks* under *Dev endpoints* on the left navigation column.
-3. Select *Create notebook*
-4. Enter a *Notebook name*
-5. Attach to develepment endpoint: "data-engineering-dev-endpoint"
-6. Select pre-existing IAM role: "sm-notebook-iam-role-data-engineering"
-7. Select *Create notebook* - these take 5~ minutes to initialise
-8. Once the notebook Status = *Ready*, you can open the notebook and begin working.
+1. Head over to AWS [EMR](https://eu-west-2.console.aws.amazon.com/elasticmapreduce/home?region=eu-west-2)
+2. Select *"Clusters"* from the left navigation column.
+3. If there isn't a cluster already running, clone a new one from the most recently terminated.
+    - Select the most recently terminated cluster.
+    - Select *"Clone"* from the top navigation
+    - Confirm *"yes"* to *"...including steps..."*
+    - Check the hardware configuration found in step 2 is appropriate. We usually utilise 1 m5.xlarge master node and 3 m5.xlarge core nodes. By default we utilise spot pricing for reduced operational costs.
+    - Complete the wizzard by clicking *"Create Cluster"*
+4. Wait for cluster to finishing building (2 - 10 minutes)
+5. Navigate to *"Notebooks"* from the left navigation column.
+6. Either create a new notebook, or start a pre-existing one.
+7. Wait for notebok to start (1-3 minutes)
+8. Select notebook and click *"Open in JupyterLab"* - This will start your interactive notebook session. 
+9. Once finished with the notebooks terminate the cluster.
+    - Navigate to *"Clusters"* from the left navigation column.
+    - Select the running cluster
+    - Click *"Terminate"*
