@@ -133,7 +133,12 @@ File> Open Folder> Navigate to ‘Data Engineering’ and press ‘Select Folder
 ### Installing python on VS code:
 From VS Code:<br>
 Click ‘Extensions’ in the left-hand pane > type in ‘Python’> click ‘Install’ on ‘Python’
-You can now run python in VS code
+
+### Pointing the python extension to the virtual environment:
+To select a specific environment, use the 'Python: Select Interpreter' command from the Command Palette (Ctrl+Shift+P).
+Select: ~\.virtualenvs\DataEngineering-YJu6GUcT\Scripts\python.exe
+
+You should now be able to see the Data Engineering project in VS code.
 
 
 ### Json settings in VS code
@@ -141,7 +146,7 @@ From VS Code: <br>
 Ensure you have the launch.json and settings.json files.
 <br>
 If not, the code for both can be found below
-<BR> <br>
+<br>
 #### launch.json
 ```
 {
