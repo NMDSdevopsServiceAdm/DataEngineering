@@ -100,24 +100,10 @@ Variable name | Value
 HADOOP_HOME | C:\hadoop-3.2.2
 
 
-2. Select the 'Path' from 'system variables', press edit and add the below path variables:
+2. Select the 'Path' from 'system variables', press edit and add the below path variables, replacing "awheatley" for your windows user name:
 ```
 C:\Program Files (x86)\Common Files\Oracle\Java\javapath
-C:\Users\awheatley\.pyenv\pyenv-win\bin
-C:\ProgramData\Anaconda3
-C:\ProgramData\Anaconda3\Library\mingw-w64\bin
-C:\ProgramData\Anaconda3\Library\usr\bin
-C:\ProgramData\Anaconda3\Library\bin
-C:\ProgramData\Anaconda3\Scripts
-C:\WINDOWS\system32
-C:\WINDOWS
-C:\WINDOWS\System32\Wbem
-C:\WINDOWS\System32\WindowsPowerShell\v1.0\
-C:\Program Files (x86)\Enterprise Vault\EVClient\
-C:\Program Files\IBM\SPSS\Statistics\25\JRE\bin
-C:\WINDOWS\System32\OpenSSH\
 C:\hadoop-3.2.2\bin
-C:\Users\awheatley\AppData\Local\Microsoft\WindowsApps
 C:\Users\awheatley\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\awheatley\AppData\Local\Programs\Git\cmd
 C:\Users\awheatley\.pyenv\pyenv-win\bin
