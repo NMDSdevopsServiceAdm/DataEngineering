@@ -1,18 +1,3 @@
-provider "aws" {
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
-  region     = var.region
-}
-
-# --- S3 --- #
-
-resource "aws_s3_bucket" "data_engineering_bucket" {
-  bucket = var.bucket_name
-  acl    = var.acl_value
-}
-
-# --- Glue --- #
-
 resource "aws_iam_role" "glue_service_iam_role" {
   name               = "AWSGlueServiceRole-data-engineering"
   assume_role_policy = data.aws_iam_policy_document.glue_service_iam_policy.json
@@ -182,37 +167,6 @@ resource "aws_glue_job" "prepare_locations_job" {
   }
 }
 
-resource "aws_glue_job" "bulk_cqc_providers_download_job" {
-  name              = "bulk_cqc_providers_download_job"
-  role_arn          = aws_iam_role.glue_service_iam_role.arn
-  glue_version      = "2.0"
-  worker_type       = "Standard"
-  number_of_workers = 2
-  execution_property {
-    max_concurrent_runs = 1
-  }
-
-  command {
-    script_location = "${var.scripts_location}bulk_download_cqc_providers.py"
-  }
-
-  default_arguments = {
-    "--TempDir" = var.glue_temp_dir
-    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
-  }
-}
-
-resource "aws_glue_trigger" "monthly_bulk_download_providers_trigger" {
-  name     = "monthly_bulk_download_providers_trigger"
-  schedule = "cron(30 01 04 * ? *)"
-  type     = "SCHEDULED"
-
-  actions {
-    job_name = aws_glue_job.bulk_cqc_providers_download_job.name
-  }
-}
-
 resource "aws_glue_job" "bulk_cqc_locations_download_job" {
   name              = "bulk_cqc_locations_download_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
@@ -241,5 +195,36 @@ resource "aws_glue_trigger" "monthly_bulk_download_locations_trigger" {
 
   actions {
     job_name = aws_glue_job.bulk_cqc_locations_download_job.name
+  }
+}
+
+resource "aws_glue_job" "bulk_cqc_providers_download_job" {
+  name              = "bulk_cqc_providers_download_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 1
+  }
+
+  command {
+    script_location = "${var.scripts_location}bulk_download_cqc_providers.py"
+  }
+
+  default_arguments = {
+    "--TempDir" = var.glue_temp_dir
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
+resource "aws_glue_trigger" "monthly_bulk_download_providers_trigger" {
+  name     = "monthly_bulk_download_providers_trigger"
+  schedule = "cron(30 01 04 * ? *)"
+  type     = "SCHEDULED"
+
+  actions {
+    job_name = aws_glue_job.bulk_cqc_providers_download_job.name
   }
 }
