@@ -12,11 +12,7 @@ required_workplace_fields = [
     "providerid",
     "totalstaff",
     "wkrrecs",
-    "year",
-    "month",
-    "day",
-    "import_date",
-    "version"
+    "import_date"
 ]
 
 required_cqc_fields = [
@@ -33,7 +29,8 @@ required_cqc_fields = [
     "postalcode",
     "carehome",
     "constituency",
-    "localauthority"
+    "localauthority",
+    "import_date"
 ]
 
 MIN_ABSOLUTE_DIFFERENCE = 5
@@ -46,6 +43,8 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     workplaces_df = spark.read.parquet(
         workplace_source).select(required_workplace_fields)
 
+    workplaces_df = workplaces_df.withColumnRenamed(
+        "import_date", "ascwds_workplace_import_date")
     workplaces_df = remove_duplicates(workplaces_df)
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
@@ -54,9 +53,16 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     cqc_df = spark.read.parquet(
         cqc_location_source).select(required_cqc_fields)
 
+    cqc_df = cqc_df.withColumnRenamed(
+        "import_date", "cqc_locations_import_date")
+
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = spark.read.parquet(
-        cqc_provider_source).select("providerid", col("name").alias("provider_name"))
+        cqc_provider_source).select(
+            "providerid",
+            col("name").alias("provider_name"),
+            col("import_date").alias("cqc_providers_import_date")
+    )
 
     output_df = cqc_df.join(workplaces_df, "locationid", "left")
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
