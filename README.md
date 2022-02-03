@@ -6,6 +6,8 @@ This repository contains the following:
 - Terraform infrustructure as code for pipeline deployment on AWS
 - Spark jobs for feature extraction data transformations
 
+Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngineering/wiki) for more info!
+
 <br>
 
 [![<ORG_NAME>](https://circleci.com/gh/NMDSdevopsServiceAdm/DataEngineering.svg?style=shield)](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering)
