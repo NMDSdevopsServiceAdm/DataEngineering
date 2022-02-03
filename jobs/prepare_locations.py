@@ -75,7 +75,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
 
 def remove_duplicates(input_df):
     print("Removing duplicates...")
-    return input_df.drop_duplicates(subset=["locationid", "import_date"])
+    return input_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
 
 
 def clean(input_df):
