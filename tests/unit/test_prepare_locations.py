@@ -28,7 +28,7 @@ class PrepareLocationsTests(unittest.TestCase):
             .getOrCreate()
 
     def test_remove_duplicates(self):
-        columns = ["locationid", "import_date"]
+        columns = ["locationid", "ascwds_workplace_import_date"]
         rows = [
             ("1-000000001", "01-12-2022"),
             ("1-000000001", "01-12-2022"),
