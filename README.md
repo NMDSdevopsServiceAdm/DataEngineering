@@ -17,6 +17,8 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 
 # Mission Statement
 
+*"INSERT MISSION STATEMENT*
+
 # Building the project
 
 ### Prerequisite installs:
@@ -37,6 +39,8 @@ git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 cd DataEngineering
 pipenv install --dev
 ```
+
+For detailed Windows setup see here: https://github.com/NMDSdevopsServiceAdm/DataEngineering/blob/main/WindowsSetup.md
 
 <br>
 <br>
