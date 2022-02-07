@@ -22,7 +22,7 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 # Building the project
 
 ### Prerequisite installs:
-Tool | Windows | IOS
+Tool | Windows | Mac/Linux
 --- | --- | ---
 Python | https://www.python.org/downloads/ | https://www.python.org/downloads/
 Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
