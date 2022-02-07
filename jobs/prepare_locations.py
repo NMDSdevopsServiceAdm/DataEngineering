@@ -35,12 +35,15 @@ required_cqc_fields = [
 
 MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
+ASCWDS_WORKPLACE_BASE_PATH = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace"
+CQC_LOCATIONS_BASE_PATH = "s3://sfc-data-engineering/domain=CQC/dataset=locations-api/"
+CQC_PROVIDERS_BASE_PATH = "s3://sfc-data-engineering/domain=CQC/dataset=providers-api/"
 
 
 def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
     spark = utils.get_spark()
     print(f"Reading workplaces parquet from {workplace_source}")
-    workplaces_df = spark.read.parquet(
+    workplaces_df = spark.read.option("basePath", ASCWDS_WORKPLACE_BASE_PATH).parquet(
         workplace_source).select(required_workplace_fields)
 
     workplaces_df = workplaces_df.withColumnRenamed(
@@ -50,14 +53,14 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     workplaces_df = filter_nulls(workplaces_df)
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
-    cqc_df = spark.read.parquet(
+    cqc_df = spark.read.option("basePath", CQC_LOCATIONS_BASE_PATH).parquet(
         cqc_location_source).select(required_cqc_fields)
 
     cqc_df = cqc_df.withColumnRenamed(
         "import_date", "cqc_locations_import_date")
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
-    cqc_provider_df = spark.read.parquet(
+    cqc_provider_df = spark.read.option("basePath", CQC_PROVIDERS_BASE_PATH).parquet(
         cqc_provider_source).select(
             "providerid",
             col("name").alias("provider_name"),
