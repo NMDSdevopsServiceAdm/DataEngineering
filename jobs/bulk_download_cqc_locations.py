@@ -1,4 +1,4 @@
-from utils import cqc_location_api as cqc
+from utils import cqc_api as cqc
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from datetime import date
