@@ -67,7 +67,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     )
 
     cqc_provider_df = format_date(
-        cqc_df, "import_date", "cqc_providers_import_date")
+        cqc_provider_df, "import_date", "cqc_providers_import_date")
 
     output_df = cqc_df.join(workplaces_df, "locationid", "left")
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
