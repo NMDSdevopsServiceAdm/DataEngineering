@@ -1,9 +1,12 @@
+import datetime
 import shutil
-from pathlib import Path
 import unittest
+from pathlib import Path
+
 from jobs import format_fields, prepare_locations
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StringType, IntegerType, StructType, StructField, DoubleType
+from pyspark.sql.types import (DoubleType, IntegerType, StringType,
+                               StructField, StructType)
 
 
 class PrepareLocationsTests(unittest.TestCase):
@@ -26,6 +29,21 @@ class PrepareLocationsTests(unittest.TestCase):
         self.spark = SparkSession.builder \
             .appName("test_prepare_locations") \
             .getOrCreate()
+
+    def test_format_date(self):
+        columns = ["locationid", "import_date"]
+        rows = [
+            ("1-000000001", 20221201),
+            ("1-000000002", 20220328)
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        formatted_df = prepare_locations.format_date(
+            df, "import_date", "new_formatted_date")
+
+        self.assertEqual(formatted_df.count(), 2)
+        self.assertEqual(formatted_df.select("new_formatted_date").rdd.flatMap(lambda x: x).collect(), [
+            datetime.date(2022, 12, 1), datetime.date(2022, 3, 28)])
 
     def test_remove_duplicates(self):
         columns = ["locationid", "ascwds_workplace_import_date"]
