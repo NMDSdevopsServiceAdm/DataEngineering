@@ -33,8 +33,8 @@ class PrepareLocationsTests(unittest.TestCase):
     def test_format_date(self):
         columns = ["locationid", "import_date"]
         rows = [
-            ("1-000000001", "20221201"),
-            ("1-000000002", "20220328")
+            ("1-000000001", 20221201),
+            ("1-000000002", 20220328)
         ]
         df = self.spark.createDataFrame(rows, columns)
 

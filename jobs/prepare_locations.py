@@ -83,7 +83,7 @@ def format_date(input_df, date_column, new_date_column):
         date_column, new_date_column)
 
     input_df = input_df.withColumn(new_date_column, to_date(
-        col(new_date_column), "yyyyMMdd"))
+        col(new_date_column).cast("string"), "yyyyMMdd"))
 
     return input_df
 
