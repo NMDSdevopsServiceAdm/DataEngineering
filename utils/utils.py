@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import to_timestamp
 
 
 class SetupSpark(object):
@@ -48,5 +49,16 @@ def read_csv(source, delimiter=","):
         .getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
+
+    return df
+
+
+def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
+    date_columns = [
+        column for column in df.columns if date_column_identifier in column]
+
+    for date_column in date_columns:
+        df = df.withColumn(date_column, to_timestamp(
+            date_column, raw_date_format))
 
     return df

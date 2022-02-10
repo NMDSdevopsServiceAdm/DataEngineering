@@ -3,25 +3,12 @@ from pyspark.sql.functions import to_timestamp
 import argparse
 import sys
 
-DATE_COLUMN_IDENTIFIER = "date"
-RAW_DATE_FORMAT = "dd/mm/yyyy"
 
 
 def main(source, destination):
     df = read_parquet(source)
     df = format_date_fields(df)
     write_parquet(df, destination)
-
-
-def format_date_fields(df):
-    date_columns = [
-        column for column in df.columns if DATE_COLUMN_IDENTIFIER in column]
-
-    for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(
-            date_column, RAW_DATE_FORMAT))
-
-    return df
 
 
 def read_parquet(source):
