@@ -7,28 +7,15 @@ import pyspark
 import argparse
 
 DEFAULT_DELIMITER = ","
-DATE_COLUMN_IDENTIFIER = "date"
-RAW_DATE_FORMAT = "dd/mm/yyyy"
 
 
 def main(source, destination, delimiter):
     print(f"Reading CSV from {source}")
     df = utils.read_csv(source, delimiter)
     print(f"Formatting date fields")
-    df = format_date_fields(df)
+    df = utils.format_date_fields(df)
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
-
-
-def format_date_fields(df):
-    date_columns = [
-        column for column in df.columns if DATE_COLUMN_IDENTIFIER in column]
-
-    for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(
-            date_column, RAW_DATE_FORMAT))
-
-    return df
 
 
 def collect_arguments():
