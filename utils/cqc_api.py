@@ -1,4 +1,3 @@
-
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from pyspark import SparkConf
 from pyspark.context import SparkContext
@@ -43,10 +42,10 @@ def get_all_objects(stream, object_type, object_identifier, per_page=DEFAULT_PAG
     print(f"Beginning CQC bulk download of {object_type}...")
 
     for page_number in range(1, total_pages + 1):
-        print(
-            f"Collecting {object_type} from API page {page_number}/{total_pages}")
+        print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
         page_locations = get_page_objects(
-            url, page_number, object_type, object_identifier)
+            url, page_number, object_type, object_identifier
+        )
 
         if stream:
             yield page_locations
@@ -57,7 +56,9 @@ def get_all_objects(stream, object_type, object_identifier, per_page=DEFAULT_PAG
         return all_objects
 
 
-def get_page_objects(url, page_number, object_type, object_identifier, per_page=DEFAULT_PAGE_SIZE):
+def get_page_objects(
+    url, page_number, object_type, object_identifier, per_page=DEFAULT_PAGE_SIZE
+):
 
     page_objects = []
     response_body = call_api(url, {"page": page_number, "perPage": per_page})

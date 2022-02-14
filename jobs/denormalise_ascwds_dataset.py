@@ -29,7 +29,7 @@ worker_fields_required = [
     "salary",
     "hrlyrate",
     "pay_changedate",
-    "pay_savedate"
+    "pay_savedate",
 ]
 workplace_fields_required = [
     "establishmentid",
@@ -40,7 +40,7 @@ workplace_fields_required = [
     "totalstaff",
     "totalstarters",
     "totalleavers",
-    "totalvacancies"
+    "totalvacancies",
 ]
 
 join_on_field = "establishmentid"
@@ -48,9 +48,9 @@ join_type = "inner"
 
 
 def main(worker_source, workplace_source, destination):
-    spark = SparkSession.builder \
-        .appName("sfc_data_engineering_csv_to_parquet") \
-        .getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     worker_df = read_parquet(spark, worker_source)
     workplace_df = read_parquet(spark, workplace_source)
@@ -61,7 +61,8 @@ def main(worker_source, workplace_source, destination):
 
 def denormalise(df1, df2):
     joined_df = df1.select(worker_fields_required).join(
-        df2.select(workplace_fields_required), join_on_field, join_type)
+        df2.select(workplace_fields_required), join_on_field, join_type
+    )
 
     return joined_df
 
@@ -80,18 +81,27 @@ def read_parquet(spark, source):
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--worker_source", help="A source parquet dir containing worker related rows", required=True)
+        "--worker_source",
+        help="A source parquet dir containing worker related rows",
+        required=True,
+    )
     parser.add_argument(
-        "--workplace_source", help="A source parquet dir containing workplace related rows", required=True)
+        "--workplace_source",
+        help="A source parquet dir containing workplace related rows",
+        required=True,
+    )
     parser.add_argument(
-        "--destination", help="A destination directory for outputting parquet files", required=True)
+        "--destination",
+        help="A destination directory for outputting parquet files",
+        required=True,
+    )
 
     args, unknown = parser.parse_known_args()
 
     return args.worker_source, args.workplace_source, args.destination
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Spark job 'format_fields' starting...")
     print(f"Job parameters: {sys.argv}")
     worker_source, workplace_source, destination = collect_arguments()
