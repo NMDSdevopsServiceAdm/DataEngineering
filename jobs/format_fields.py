@@ -4,7 +4,6 @@ import argparse
 import sys
 
 
-
 def main(source, destination):
     df = read_parquet(source)
     df = format_date_fields(df)
@@ -12,9 +11,9 @@ def main(source, destination):
 
 
 def read_parquet(source):
-    spark = SparkSession.builder \
-        .appName("sfc_data_engineering_csv_to_parquet") \
-        .getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     df = spark.read.parquet(source)
 
@@ -28,16 +27,20 @@ def write_parquet(df, destination):
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--source", help="A parquet file used as source input", required=True)
+        "--source", help="A parquet file used as source input", required=True
+    )
     parser.add_argument(
-        "--destination", help="A destination directory for outputting parquet files", required=True)
+        "--destination",
+        help="A destination directory for outputting parquet files",
+        required=True,
+    )
 
     args, unknown = parser.parse_known_args()
 
     return args.source, args.destination
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Spark job 'format_fields' starting...")
     print(f"Job parameters: {sys.argv}")
 

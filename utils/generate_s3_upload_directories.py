@@ -3,7 +3,7 @@ import boto3
 
 def generate_ASCWDS_directories():
     directories = []
-    for dataset in ['worker', 'workplace']:
+    for dataset in ["worker", "workplace"]:
         for year in range(2010, 2030):
             for month in range(1, 13):
                 for day in range(1, 32):
@@ -25,13 +25,13 @@ def generate_historical_CQC_directories():
 
 
 def main():
-    s3 = boto3.client('s3')
+    s3 = boto3.client("s3")
     bucket_name = "sfc-data-engineering-raw"
 
     directories = generate_historical_CQC_directories()
     for directory in directories:
-        s3.put_object(Bucket=bucket_name, Key=(directory+'/'))
+        s3.put_object(Bucket=bucket_name, Key=(directory + "/"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

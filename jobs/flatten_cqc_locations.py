@@ -20,11 +20,19 @@ def flatten_specialisms(df):
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--source", help="A CSV file used as source input", required=True)
+        "--source", help="A CSV file used as source input", required=True
+    )
     parser.add_argument(
-        "--destination", help="A destination directory for outputting parquet files", required=True)
+        "--destination",
+        help="A destination directory for outputting parquet files",
+        required=True,
+    )
     parser.add_argument(
-        "--delimiter", help="Specify a custom field delimiter", required=False, default=",")
+        "--delimiter",
+        help="Specify a custom field delimiter",
+        required=False,
+        default=",",
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -34,7 +42,7 @@ def collect_arguments():
     return args.source, args.destination, args.delimiter
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Spark job 'csv_to_parquet' starting...")
     print(f"Job parameters: {sys.argv}")
 

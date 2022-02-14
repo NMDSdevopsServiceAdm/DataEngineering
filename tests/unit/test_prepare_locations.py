@@ -3,47 +3,51 @@ import shutil
 import unittest
 from pathlib import Path
 
-from jobs import format_fields, prepare_locations
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (DoubleType, IntegerType, StringType,
-                               StructField, StructType)
+from pyspark.sql.types import (
+    DoubleType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
+
+from jobs import format_fields, prepare_locations
 
 
 class PrepareLocationsTests(unittest.TestCase):
 
     calculate_jobs_schema = StructType(
         [
-            StructField('locationid', StringType(), False),
-            StructField(
-                'totalstaff', IntegerType(), True),
-            StructField(
-                'wkrrecs', IntegerType(), True),
-            StructField(
-                'numberofbeds', IntegerType(), True),
-            StructField(
-                'jobcount', DoubleType(), True)
+            StructField("locationid", StringType(), False),
+            StructField("totalstaff", IntegerType(), True),
+            StructField("wkrrecs", IntegerType(), True),
+            StructField("numberofbeds", IntegerType(), True),
+            StructField("jobcount", DoubleType(), True),
         ]
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder \
-            .appName("test_prepare_locations") \
-            .getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_prepare_locations"
+        ).getOrCreate()
 
     def test_format_date(self):
         columns = ["locationid", "import_date"]
-        rows = [
-            ("1-000000001", 20221201),
-            ("1-000000002", 20220328)
-        ]
+        rows = [("1-000000001", 20221201), ("1-000000002", 20220328)]
         df = self.spark.createDataFrame(rows, columns)
 
         formatted_df = prepare_locations.format_date(
-            df, "import_date", "new_formatted_date")
+            df, "import_date", "new_formatted_date"
+        )
 
         self.assertEqual(formatted_df.count(), 2)
-        self.assertEqual(formatted_df.select("new_formatted_date").rdd.flatMap(lambda x: x).collect(), [
-            datetime.date(2022, 12, 1), datetime.date(2022, 3, 28)])
+        self.assertEqual(
+            formatted_df.select("new_formatted_date")
+            .rdd.flatMap(lambda x: x)
+            .collect(),
+            [datetime.date(2022, 12, 1), datetime.date(2022, 3, 28)],
+        )
 
     def test_remove_duplicates(self):
         columns = ["locationid", "ascwds_workplace_import_date"]
@@ -53,14 +57,16 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000001", "01-12-2021"),
             ("1-000000001", "01-12-2021"),
             ("1-000000002", "01-12-2022"),
-            ("1-000000002", "01-12-2021")
+            ("1-000000002", "01-12-2021"),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
         filtered_df = prepare_locations.remove_duplicates(df)
         self.assertEqual(filtered_df.count(), 4)
-        self.assertEqual(filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(), [
-                         "1-000000001", "1-000000001", "1-000000002", "1-000000002"])
+        self.assertEqual(
+            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
+            ["1-000000001", "1-000000001", "1-000000002", "1-000000002"],
+        )
 
     def test_filter_nulls(self):
         columns = ["locationid", "wkrrecs", "totalstaff"]
@@ -76,8 +82,10 @@ class PrepareLocationsTests(unittest.TestCase):
 
         filtered_df = prepare_locations.filter_nulls(df)
         self.assertEqual(filtered_df.count(), 4)
-        self.assertEqual(filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(), [
-                         "1-000000001", "1-000000002", "1-000000003", "1-000000005"])
+        self.assertEqual(
+            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
+            ["1-000000001", "1-000000002", "1-000000003", "1-000000005"],
+        )
 
     def test_clean(self):
 
@@ -99,13 +107,11 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[1]["totalstaff"], 500)
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
-        columns = ["locationid", "wkrrecs",
-                   "totalstaff", "numberofbeds", "jobcount"]
+        columns = ["locationid", "wkrrecs", "totalstaff", "numberofbeds", "jobcount"]
         rows = [
             ("1-000000001", 20, 20, 25, None),
         ]
-        df = self.spark.createDataFrame(
-            data=rows, schema=self.calculate_jobs_schema)
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = prepare_locations.calculate_jobcount_totalstaff_equal_wkrrecs(df)
         self.assertEqual(df.count(), 1)
@@ -117,11 +123,9 @@ class PrepareLocationsTests(unittest.TestCase):
         rows = [
             ("1-000000001", None, 50, 15, None),
         ]
-        df = self.spark.createDataFrame(
-            data=rows, schema=self.calculate_jobs_schema)
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = prepare_locations.calculate_jobcount_coalesce_totalstaff_wkrrecs(
-            df)
+        df = prepare_locations.calculate_jobcount_coalesce_totalstaff_wkrrecs(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -132,11 +136,9 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000008", 10, 12, 15, None),
             ("1-000000001", 100, 109, 80, None),
         ]
-        df = self.spark.createDataFrame(
-            data=rows, schema=self.calculate_jobs_schema)
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = prepare_locations.calculate_jobcount_abs_difference_within_range(
-            df)
+        df = prepare_locations.calculate_jobcount_abs_difference_within_range(df)
         self.assertEqual(df.count(), 2)
 
         df = df.collect()
@@ -147,11 +149,9 @@ class PrepareLocationsTests(unittest.TestCase):
         rows = [
             ("1-000000008", 2, 53, 26, None),
         ]
-        df = self.spark.createDataFrame(
-            data=rows, schema=self.calculate_jobs_schema)
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = prepare_locations.calculate_jobcount_handle_tiny_values(
-            df)
+        df = prepare_locations.calculate_jobcount_handle_tiny_values(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -182,7 +182,7 @@ class PrepareLocationsTests(unittest.TestCase):
             # Utilise bedcount estimate - Wkrrecs
             ("1-000000011", 90, 102, 95),
             # Utilise bedcount estimate - Totalstaff
-            ("1-000000012", 90, 102, 80)
+            ("1-000000012", 90, 102, 80),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
@@ -203,5 +203,5 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(jobcount_df_list[11]["jobcount"], 90.0)
 
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == "__main__":
+    unittest.main(warnings="ignore")
