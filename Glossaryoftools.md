@@ -52,6 +52,6 @@ S3 | Storing Data
 Glue | Job automation, ETL, API connection
 Athena | Initial dataset investigation using SQL
 Jupyter | Pre-production environment, useful for investigation
-VS Code | Production/development environment, turns code into automated jobs
+VS Code | Production/development environment, develop notebooks into automated, tested and documented jobs.
 Circleci | Devops/infrastructure
 
