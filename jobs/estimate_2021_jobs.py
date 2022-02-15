@@ -64,7 +64,25 @@ def main(prepared_locations_source, pir_source, cqc_locations_source, destinatio
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
+    locations_df = model_populate_known_2021_jobs(locations_df)
+    # Non-res models
+    locations_df = model_non_res_historical(locations_df)
+    locations_df = model_non_res_historical_pir(locations_df)
+    locations_df = model_non_res_default(locations_df)
+
+    # Nursing models
+    locations_df = model_care_home_with_nursing_historical(locations_df)
+    locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
+    locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
+
+    # Non-nursing models
+    locations_df = model_care_home_without_nursing_historical(locations_df)
+    locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
+    locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
+
     print("Completed estimated 2021 jobs")
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(locations_df, destination)
 
 
 def determine_ascwds_primary_service_type(input_df):
@@ -336,4 +354,5 @@ if __name__ == "__main__":
         cqc_locations_source,
         destination,
     ) = collect_arguments()
+
     main(prepared_locations_source, pir_source, cqc_locations_source, destination)
