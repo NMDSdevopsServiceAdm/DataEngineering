@@ -2,8 +2,8 @@
 Tool | Use Case
 --- | --- 
 S3 | Storing Data
-Glue | Job automation, ETL, API connection
-Athena | Initial dataset investigation using SQL
+Glue | Job automation, ETL, Scheduling, Metadata
+Athena | Adhoc querying and investigation using SQL
 Jupyter | Pre-production environment, useful for investigation
 VS Code | Production/development environment, develop notebooks into automated, tested and documented jobs.
 Circleci | Devops/infrastructure - automated testing and deployment
