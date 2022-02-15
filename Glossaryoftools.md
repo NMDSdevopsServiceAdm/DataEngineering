@@ -44,6 +44,7 @@ VSCode allows us to turn our proof of concept Jupyter notebooks into productioni
 VSCode allows you to write tests for your code to ensure it is working correctly alongside having a debug mode which will let you know if there is an issue with the code itself or if a test fails.
 
 # Circleci
+Circle CI is the CI/CD (continuous integration / continuous deployment) tool we utilise for our automated testing and deployment pipeline. It is responsible for ensuring our tests are passing before merging git branches and deploying our scripts to AWS S3.
 
 # Use Cases
 Tool | Use Case
