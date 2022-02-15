@@ -21,7 +21,7 @@ You are charged $5 per terabyte scanned by your queries so it is best practice t
 ## Jupyter Notebook via Amazon EMR
 ### Amazon EMR
 Amazon EMR (elastic map reduce) allows you to spin up a cluster of computers to process big data frameworks, such as Apache Spark, on AWS, to process and analyse vast amounts of data quickly.
-When you spin up a cluster, you can choose how many master and worker computers you would like to do the work.
+When you spin up a cluster, you can choose how many master and worker nodes (computers) you would like to do the work.
 Master computers look at the code you give it and divide it up between the workers, you typically want 1 master and 3 workers machines when spinning up a cluster.
 <br>
 ### Jupyter Notebooks
