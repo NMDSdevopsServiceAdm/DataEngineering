@@ -1,3 +1,16 @@
+# Use Cases
+Tool | Use Case
+--- | --- 
+S3 | Storing Data
+Glue | Job automation, ETL, API connection
+Athena | Initial dataset investigation using SQL
+Jupyter | Pre-production environment, useful for investigation
+VS Code | Production/development environment, develop notebooks into automated, tested and documented jobs.
+Circleci | Devops/infrastructure - automated testing and deployment
+
+
+# Glossary of Tools
+
 # Amazon Web Services
 ## S3
 Amazon Simple Storage Service (Amazon S3) allows cloud storage for data objects.
