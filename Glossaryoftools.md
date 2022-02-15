@@ -25,6 +25,7 @@ Using Glue, you can categorize your data, clean it, enrich it, and move it betwe
 AWS Glue consists of a central metadata repository known as the AWS Glue Data Catalog, an ETL engine that automatically generates Python or Scala code, and a scheduler that handles dependency resolution, job monitoring, and retries.
 Once an ETL jobs has run, glue also uses crawlers which discover your datasets, discover your file types, extract the schema and store all this information in a centralised metadata catalogue for querying and analysis.
 You can schedule glue jobs automatically for use cases such as (but not limited to) calling APIs, automating emails and ETL).
+[Source](https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html)
 
 ## Athena
 Athena is an interactive query service that makes it easy to analyse data in Amazon S3 using standard SQL. 
