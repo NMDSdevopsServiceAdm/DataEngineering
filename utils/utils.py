@@ -14,9 +14,7 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self):
-        spark = SparkSession.builder \
-            .appName("sfc_data_engineering") \
-            .getOrCreate()
+        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
 
         return spark
 
@@ -38,15 +36,15 @@ def generate_s3_dir_date_path(domain, dataset, date):
 def write_to_parquet(df, output_dir, append=False):
 
     if append:
-        df.write.mode('append').parquet(output_dir)
+        df.write.mode("append").parquet(output_dir)
     else:
         df.write.parquet(output_dir)
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder \
-        .appName("sfc_data_engineering_csv_to_parquet") \
-        .getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -54,11 +52,9 @@ def read_csv(source, delimiter=","):
 
 
 def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
-    date_columns = [
-        column for column in df.columns if date_column_identifier in column]
+    date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(
-            date_column, raw_date_format))
+        df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
 
     return df

@@ -6,7 +6,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: circleci/python:3.9.7
+      - image: circleci/python:3.9.6
     resource_class: small
 
     steps:
@@ -48,7 +48,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/python:3.9.7
+      - image: circleci/python:3.9.6
     resource_class: small
 
     steps:

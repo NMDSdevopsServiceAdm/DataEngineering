@@ -10,7 +10,6 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
 
 class TestCQCLocationAPIIntegration(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -30,15 +29,14 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
         page = 1
         url = f"https://api.cqc.org.uk/public/v1/locations"
 
-        locations = cqc.get_page_objects(
-            url, page, "locations", "locationId", 5)
+        locations = cqc.get_page_objects(url, page, "locations", "locationId", 5)
         self.assertEqual(len(locations), 5)
 
         regex = re.compile(LOCATION_ID_REGEX)
         for location in locations:
-            self.assertTrue(regex.match(location['locationId']))
+            self.assertTrue(regex.match(location["locationId"]))
             self.assertIsNotNone(location["providerId"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
