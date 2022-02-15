@@ -40,7 +40,7 @@ Jupyter is best utilised for researching and developing new ETL jobs and statist
 
 # VS Code
 VSCode is an IDE (integrated development environment).
-We use VSCode as the production/development environment, turning a jupyter notebook into an automated job.
+VSCode allows us to turn our proof of concept Jupyter notebooks into productionised, tested and documented PySpark Jobs. We can then execute these jobs via Glue.
 VSCode allows you to write tests for your code to ensure it is working correctly alongside having a debug mode which will let you know if there is an issue with the code itself or if a test fails.
 
 # Circleci
