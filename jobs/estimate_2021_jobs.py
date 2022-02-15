@@ -187,7 +187,7 @@ def model_care_home_with_nursing_historical(df):
     return df
 
 
-def model_care_home_with_nursing_pir(df):
+def model_care_home_with_nursing_pir_and_cqc_beds(df):
     """
     Care home with nursing : Not Historical : PIR :  2021 jobs = (0.773*beds)+(0.551*PIR)+0.304
     """
