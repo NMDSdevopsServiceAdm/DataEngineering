@@ -8,7 +8,9 @@ import argparse
 def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
-    for paginated_locations in cqc.get_all_objects(stream=True, object_type="locations", object_identifier="locationId"):
+    for paginated_locations in cqc.get_all_objects(
+        stream=True, object_type="locations", object_identifier="locationId"
+    ):
 
         df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         utils.write_to_parquet(df, destination, True)
@@ -20,7 +22,10 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--destination", help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.", required=False)
+        "--destination",
+        help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
+        required=False,
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -32,6 +37,7 @@ if __name__ == "__main__":
     if not destination:
         todays_date = date.today()
         destination = utils.generate_s3_dir_date_path(
-            domain="CQC", dataset="locations-api", date=todays_date)
+            domain="CQC", dataset="locations-api", date=todays_date
+        )
 
     main(destination)
