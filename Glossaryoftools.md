@@ -3,7 +3,7 @@
 Amazon Simple Storage Service (Amazon S3) allows cloud storage for data objects.
 Data objects are held within buckets (these are similar to folders within microsoft file explorer).
 You can store as much data as you want within S3 and Amazon automatically backs up the data – 
-it stores every version of every object in an S3 bucket so you can automatically recover something if it is accidentally deleted.
+we have enabled [Bucket Versioning](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html) on our S3 buckets so you can automatically recover something if it is accidentally deleted.
 Administrators can controls who can access the data via using access management tools.
 
 ## Glue
