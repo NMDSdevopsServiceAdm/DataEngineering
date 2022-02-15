@@ -25,7 +25,8 @@ def main(prepared_locations_source, pir_source, cqc_locations_source, destinatio
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(col(LOCATION_ID).distinct())
+        .select(col(LOCATION_ID))
+        .distinct()
         .filter("registrationstatus = 'Registered' and type = 'Social Care Org'")
     )
 
