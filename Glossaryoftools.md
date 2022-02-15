@@ -36,7 +36,7 @@ Master computers look at the code you give it and divide it up between the worke
 
 To use jupyter, you must first connect to a cluster which was created in EMR as these computers will be used to process the data.
 Jupyter notebooks over 40 programming languages, including Python, PySpark, R, Julia, and Scala.
-Jupyter is not used for programming applications as this is more of a research/development environment however, it can be good to use jupyer if you want to analys1e some data without turning it into a glue job.
+Jupyter is best utilised for researching and developing new ETL jobs and statistical or machine learning models. ```
 
 # VS Code
 VSCode is an IDE (integrated development environment).
