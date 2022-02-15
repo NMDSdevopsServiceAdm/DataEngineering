@@ -15,7 +15,7 @@ You can schedule glue jobs automatically for use cases such as (but not limited 
 
 ## Athena
 Athena is an interactive query service that makes it easy to analyse data in Amazon S3 using standard SQL. 
-Athena is useful when initially investigating a dataset. 
+Athena is useful when initially investigating a dataset or performing ad hoc data analysis.
 You are charged $5 per terabyte scanned by your queries so it is best practice to limit your query to the top 20 rows of data.
 
 ## Jupyter Notebook via Amazon EMR
