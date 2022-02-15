@@ -177,7 +177,7 @@ def model_care_home_with_nursing_historical(df):
         when(
             (
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
+                & (col(PRIMARY_SERVICE_TYPE) == NURSING_HOME_IDENTIFIER)
                 & col(LAST_KNOWN_JOB_COUNT).isNotNull()
             ),
             col(LAST_KNOWN_JOB_COUNT) * 1.004,
