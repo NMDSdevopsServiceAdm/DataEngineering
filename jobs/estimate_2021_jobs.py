@@ -96,13 +96,15 @@ def determine_ascwds_primary_service_type(input_df):
 
 
 def collect_ascwds_historical_job_figures(spark, data_source, input_df):
+    spark.read.parquet(data_source).createOrReplaceTempView("temp_locations_prepared")
     for year in ["2021", "2020", "2019"]:
+
         jobs_previous = spark.sql(
             f"""select
                 locationid,
                 max(jobcount) as jobcount_{year}
                 from
-                    {data_source}
+                    temp_locations_prepared
                 where
                     year(ascwds_workplace_import_date) = {year}
                 group by year(ascwds_workplace_import_date), locationid
