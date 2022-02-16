@@ -167,6 +167,31 @@ resource "aws_glue_job" "prepare_locations_job" {
   }
 }
 
+
+resource "aws_glue_job" "estimate_2021_jobs_job" {
+  name              = "estimate_2021_jobs_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 5
+  }
+
+  command {
+    script_location = "${var.scripts_location}estimate_2021_jobs.py"
+  }
+
+  default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--TempDir"                      = var.glue_temp_dir
+    "--prepared_locations_source"    = ""
+    "--pir_source"                   = ""
+    "--cqc_locations_source"         = ""
+    "--destination"                  = ""
+  }
+}
+
 resource "aws_glue_job" "bulk_cqc_providers_download_job" {
   name              = "bulk_cqc_providers_download_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
