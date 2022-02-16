@@ -28,24 +28,18 @@ class PrepareLocationsTests(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_prepare_locations"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
 
     def test_format_date(self):
         columns = ["locationid", "import_date"]
         rows = [("1-000000001", 20221201), ("1-000000002", 20220328)]
         df = self.spark.createDataFrame(rows, columns)
 
-        formatted_df = prepare_locations.format_date(
-            df, "import_date", "new_formatted_date"
-        )
+        formatted_df = prepare_locations.format_date(df, "import_date", "new_formatted_date")
 
         self.assertEqual(formatted_df.count(), 2)
         self.assertEqual(
-            formatted_df.select("new_formatted_date")
-            .rdd.flatMap(lambda x: x)
-            .collect(),
+            formatted_df.select("new_formatted_date").rdd.flatMap(lambda x: x).collect(),
             [datetime.date(2022, 12, 1), datetime.date(2022, 3, 28)],
         )
 
@@ -63,9 +57,11 @@ class PrepareLocationsTests(unittest.TestCase):
 
         filtered_df = prepare_locations.remove_duplicates(df)
         self.assertEqual(filtered_df.count(), 4)
-        self.assertEqual(
-            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
-            ["1-000000001", "1-000000001", "1-000000002", "1-000000002"],
+
+        list_filtered_df = filtered_df.collect()
+
+        self.assertCountEqual(
+            list_filtered_df["locationid"], ["1-000000001", "1-000000001", "1-000000002", "1-000000002"]
         )
 
     def test_filter_nulls(self):
@@ -82,9 +78,11 @@ class PrepareLocationsTests(unittest.TestCase):
 
         filtered_df = prepare_locations.filter_nulls(df)
         self.assertEqual(filtered_df.count(), 4)
-        self.assertEqual(
-            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
-            ["1-000000001", "1-000000002", "1-000000003", "1-000000005"],
+
+        list_filtered_df = filtered_df.collect()
+
+        self.assertCountEqual(
+            list_filtered_df["locationid"], ["1-000000001", "1-000000002", "1-000000003", "1-000000005"]
         )
 
     def test_clean(self):
