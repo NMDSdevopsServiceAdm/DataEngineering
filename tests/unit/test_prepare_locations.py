@@ -58,10 +58,9 @@ class PrepareLocationsTests(unittest.TestCase):
         filtered_df = prepare_locations.remove_duplicates(df)
         self.assertEqual(filtered_df.count(), 4)
 
-        list_filtered_df = filtered_df.collect()
-
         self.assertCountEqual(
-            list_filtered_df["locationid"], ["1-000000001", "1-000000001", "1-000000002", "1-000000002"]
+            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
+            ["1-000000001", "1-000000001", "1-000000002", "1-000000002"],
         )
 
     def test_filter_nulls(self):
@@ -82,7 +81,8 @@ class PrepareLocationsTests(unittest.TestCase):
         list_filtered_df = filtered_df.collect()
 
         self.assertCountEqual(
-            list_filtered_df["locationid"], ["1-000000001", "1-000000002", "1-000000003", "1-000000005"]
+            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
+            ["1-000000001", "1-000000002", "1-000000003", "1-000000005"],
         )
 
     def test_clean(self):
