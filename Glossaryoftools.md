@@ -44,7 +44,7 @@ Node type | Instance type | Instance count | Spot price (per DPU hour)
 --- | --- | --- | ---
 Master | m5.xlarge | 1 | $0.078 
 Core | m5.xlarge | 3 | $0.078 
-<br>
+
 ### Jupyter Notebooks
 
 >The notebook extends the console-based approach to interactive computing in a qualitatively new direction, providing a web-based application suitable for capturing the whole computation process: developing, documenting, and executing code, as well as communicating the results. The Jupyter notebook combines two components:
