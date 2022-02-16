@@ -39,6 +39,11 @@ You are charged $5 per terabyte scanned by your queries so it is best practice t
 Amazon EMR (elastic map reduce) allows you to spin up a cluster of computers to process big data frameworks, such as Apache Spark, on AWS, to process and analyse vast amounts of data quickly.
 When you spin up a cluster, you can choose how many master and worker nodes (computers) you would like to do the work.
 Master nodes interpret code provided and divide it up between the workers. For this project you typically want 1 master and 3 workers machines when spinning up a cluster.
+We use the below master and worker instance types, including pricing per DPU (data processing unit) hour:
+Node type | Instance type | Instance count | Spot price (per DPU hour)
+--- | --- | --- | ---
+Master | m5.xlarge | 1 | $0.078 
+Core | m5.xlarge | 3 | $0.078 
 <br>
 ### Jupyter Notebooks
 
