@@ -63,5 +63,11 @@ VSCode is an IDE (integrated development environment).
 VSCode allows us to turn our proof of concept Jupyter notebooks into productionised, tested and documented PySpark Jobs. We can then execute these jobs via Glue.
 VSCode allows you to write tests for your code to ensure it is working correctly alongside having a debug mode which will let you know if there is an issue with the code itself or if a test fails.
 
+# Git
+Git is a version control system which records changes to our code; this is held in a repository.
+Git makes it easy to see who has changed code and why - allowing several people to work on the same project and showing the changes each person has made.
+It is easy to revert changes to code on github to a previous version.
+Using git, you can download a copy of a project onto your computer, work on it locally and push the changes up to the main branch.
+
 # Circleci
 Circle CI is the CI/CD (continuous integration / continuous deployment) tool we utilise for our automated testing and deployment pipeline. It is responsible for ensuring our tests are passing before merging git branches and deploying our scripts to AWS S3.
