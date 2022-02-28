@@ -65,14 +65,3 @@ VSCode allows you to write tests for your code to ensure it is working correctly
 
 # Circleci
 Circle CI is the CI/CD (continuous integration / continuous deployment) tool we utilise for our automated testing and deployment pipeline. It is responsible for ensuring our tests are passing before merging git branches and deploying our scripts to AWS S3.
-
-# Use Cases
-Tool | Use Case
---- | --- 
-S3 | Storing Data
-Glue | Job automation, ETL, API connection
-Athena | Initial dataset investigation using SQL
-Jupyter | Pre-production environment, useful for investigation
-VS Code | Production/development environment, develop notebooks into automated, tested and documented jobs.
-Circleci | Devops/infrastructure - automated testing and deployment
-
