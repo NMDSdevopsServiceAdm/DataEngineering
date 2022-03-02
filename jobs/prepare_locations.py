@@ -24,7 +24,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
             col("import_date").alias("ascwds_workplace_import_date"),
-            col("ascwds_workplace_import_date"),
         )
     )
 
