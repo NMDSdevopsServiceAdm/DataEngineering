@@ -31,6 +31,7 @@ required_cqc_fields = [
     "carehome",
     "constituency",
     "localauthority",
+    "gacservicetypes",
     "import_date",
 ]
 
