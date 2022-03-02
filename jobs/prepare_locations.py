@@ -7,34 +7,6 @@ from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
 
-required_workplace_fields = [
-    "locationid",
-    "establishmentid",
-    "providerid",
-    "totalstaff",
-    "wkrrecs",
-    "import_date",
-]
-
-required_cqc_fields = [
-    "locationid",
-    "organisationtype",
-    "type",
-    "name",
-    "registrationstatus",
-    "registrationdate",
-    "deregistrationdate",
-    "dormancy",
-    "numberofbeds",
-    "region",
-    "postalcode",
-    "carehome",
-    "constituency",
-    "localauthority",
-    "gacservicetypes",
-    "import_date",
-]
-
 MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
 
@@ -45,10 +17,22 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     workplaces_df = (
         spark.read.option("basePath", constants.ASCWDS_WORKPLACE_BASE_PATH)
         .parquet(workplace_source)
-        .select(required_workplace_fields)
+        .select(
+            col("locationid"),
+            col("establishmentid"),
+            col("providerid"),
+            col("totalstaff").alias("total_staff"),
+            col("wkrrecs").alias("worker_record_count"),
+            col("import_date").alias("ascwds_workplace_import_date"),
+            col("ascwds_workplace_import_date"),
+        )
     )
 
-    workplaces_df = format_date(workplaces_df, "import_date", "ascwds_workplace_import_date")
+    # Format date
+    workplaces_df = workplaces_df.withColumn(
+        "ascwds_workplace_import_date", to_date(col("ascwds_workplace_import_date").cast("string"), "yyyyMMdd")
+    )
+
     workplaces_df = remove_duplicates(workplaces_df)
     workplaces_df = clean(workplaces_df)
     workplaces_df = filter_nulls(workplaces_df)
@@ -57,20 +41,44 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     cqc_df = (
         spark.read.option("basePath", constants.CQC_LOCATIONS_BASE_PATH)
         .parquet(cqc_location_source)
-        .select(required_cqc_fields)
+        .select(
+            col("locationid"),
+            col("organisationtype").alias("organisation_type"),
+            col("type").alias("location_type"),
+            col("name").alias("location_name"),
+            col("registrationstatus").alias("registration_status"),
+            col("registrationdate").alias("registration_date"),
+            col("deregistrationdate").alias("deregistration_date"),
+            col("dormancy"),
+            col("numberofbeds").alias("number_of_beds"),
+            col("region"),
+            col("postalcode").alias("postal_code"),
+            col("carehome"),
+            col("constituency"),
+            col("localauthority").alias("local_authority"),
+            col("gacservicetypes.description").alias("services_offered"),
+            col("import_date").alias("cqc_locations_import_date"),
+        )
     )
 
-    cqc_df = format_date(cqc_df, "import_date", "cqc_locations_import_date")
+    # Format date
+    cqc_df = cqc_df.withColumn(
+        "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
+    )
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
         spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
         .parquet(cqc_provider_source)
-        .select("providerid", col("name").alias("provider_name"), col("import_date"))
+        .select(
+            col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
+        )
     )
 
-    cqc_provider_df = format_date(cqc_provider_df, "import_date", "cqc_providers_import_date")
-
+    # Format date
+    cqc_provider_df = cqc_provider_df.withColumn(
+        "cqc_providers_import_date", to_date(col("cqc_providers_import_date").cast("string"), "yyyyMMdd")
+    )
     output_df = cqc_df.join(workplaces_df, "locationid", "left")
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
 
@@ -78,14 +86,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(output_df, destination)
-
-
-def format_date(input_df, date_column, new_date_column):
-    input_df = input_df.withColumnRenamed(date_column, new_date_column)
-
-    input_df = input_df.withColumn(new_date_column, to_date(col(new_date_column).cast("string"), "yyyyMMdd"))
-
-    return input_df
 
 
 def remove_duplicates(input_df):
