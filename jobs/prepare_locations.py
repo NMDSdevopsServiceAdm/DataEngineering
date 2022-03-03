@@ -101,15 +101,15 @@ def clean(input_df):
     # Cast integers to string
     input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
-    input_df = input_df.withColumn("wkrrecs", input_df["wkrrecs"].cast(IntegerType()))
+    input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
 
     return input_df
 
 
 def filter_nulls(input_df):
     print("Filtering nulls...")
-    # Remove rows with null for wkrrecs and total_staff
-    input_df = input_df.filter("wkrrecs is not null or total_staff is not null")
+    # Remove rows with null for worker_record_count and total_staff
+    input_df = input_df.filter("worker_record_count is not null or total_staff is not null")
 
     # Remove rows with null locationId
     input_df = input_df.na.drop(subset=["locationid"])
@@ -120,52 +120,52 @@ def filter_nulls(input_df):
 def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
     # total_staff = wkrrrecs: Take total_staff
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
-                & (col("wkrrecs") == col("total_staff"))
+                col("job_count").isNull()
+                & (col("worker_record_count") == col("total_staff"))
                 & col("total_staff").isNotNull()
-                & col("wkrrecs").isNotNull()
+                & col("worker_record_count").isNotNull()
             ),
             col("total_staff"),
-        ).otherwise(col("jobcount")),
+        ).otherwise(col("job_count")),
     )
 
 
 def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
-    # Either wkrrecs or total_staff is null: return first not null
+    # Either worker_record_count or total_staff is null: return first not null
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & (
-                    (col("total_staff").isNull() & col("wkrrecs").isNotNull())
-                    | (col("total_staff").isNotNull() & col("wkrrecs").isNull())
+                    (col("total_staff").isNull() & col("worker_record_count").isNotNull())
+                    | (col("total_staff").isNotNull() & col("worker_record_count").isNull())
                 )
             ),
-            coalesce(input_df.total_staff, input_df.wkrrecs),
-        ).otherwise(coalesce(col("jobcount"))),
+            coalesce(input_df.total_staff, input_df.worker_record_count),
+        ).otherwise(coalesce(col("job_count"))),
     )
 
 
 def calculate_jobcount_abs_difference_within_range(input_df):
-    # Abs difference between total_staff & wkrrecs < 5 or < 10% take average:
-    input_df = input_df.withColumn("abs_difference", abs(input_df.total_staff - input_df.wkrrecs))
+    # Abs difference between total_staff & worker_record_count < 5 or < 10% take average:
+    input_df = input_df.withColumn("abs_difference", abs(input_df.total_staff - input_df.worker_record_count))
 
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & (
                     (col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
                     | (col("abs_difference") / col("total_staff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            (col("total_staff") + col("wkrrecs")) / 2,
-        ).otherwise(col("jobcount")),
+            (col("total_staff") + col("worker_record_count")) / 2,
+        ).otherwise(col("job_count")),
     )
 
     input_df = input_df.drop("abs_difference")
@@ -174,13 +174,13 @@ def calculate_jobcount_abs_difference_within_range(input_df):
 
 
 def calculate_jobcount_handle_tiny_values(input_df):
-    # total_staff or wkrrecs < 3: return max
+    # total_staff or worker_record_count < 3: return max
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
-            (col("jobcount").isNull() & ((col("total_staff") < 3) | (col("wkrrecs") < 3))),
-            greatest(col("total_staff"), col("wkrrecs")),
-        ).otherwise(col("jobcount")),
+            (col("job_count").isNull() & ((col("total_staff") < 3) | (col("worker_record_count") < 3))),
+            greatest(col("total_staff"), col("worker_record_count")),
+        ).otherwise(col("job_count")),
     )
 
 
@@ -190,30 +190,30 @@ def calculate_jobcount_estimate_from_beds(input_df):
     input_df = input_df.withColumn(
         "bed_estimate_jobcount",
         when(
-            (col("jobcount").isNull() & (col("numberofbeds") > 0)),
-            (beds_to_jobcount_intercept + (col("numberofbeds") * beds_to_jobcount_coefficient)),
+            (col("job_count").isNull() & (col("number_of_beds") > 0)),
+            (beds_to_jobcount_intercept + (col("number_of_beds") * beds_to_jobcount_coefficient)),
         ).otherwise(None),
     )
 
     # Determine differences
     input_df = input_df.withColumn("totalstaff_diff", abs(input_df.total_staff - input_df.bed_estimate_jobcount))
-    input_df = input_df.withColumn("wkrrecs_diff", abs(input_df.wkrrecs - input_df.bed_estimate_jobcount))
+    input_df = input_df.withColumn("wkrrecs_diff", abs(input_df.worker_record_count - input_df.bed_estimate_jobcount))
     input_df = input_df.withColumn(
         "totalstaff_percentage_diff",
         abs(input_df.totalstaff_diff / input_df.bed_estimate_jobcount),
     )
     input_df = input_df.withColumn(
         "wkrrecs_percentage_diff",
-        abs(input_df.wkrrecs / input_df.bed_estimate_jobcount),
+        abs(input_df.worker_record_count / input_df.bed_estimate_jobcount),
     )
 
     # Bounding predictions to certain locations with differences in range
-    # if total_staff and wkrrecs within 10% or < 5: return avg(total_staff + wkrrds)
+    # if total_staff and worker_record_count within 10% or < 5: return avg(total_staff + wkrrds)
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (
@@ -226,16 +226,16 @@ def calculate_jobcount_estimate_from_beds(input_df):
                     )
                 )
             ),
-            (col("total_staff") + col("wkrrecs")) / 2,
-        ).otherwise(col("jobcount")),
+            (col("total_staff") + col("worker_record_count")) / 2,
+        ).otherwise(col("job_count")),
     )
 
     # if total_staff within 10% or < 5: return total_staff
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
@@ -243,23 +243,23 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 )
             ),
             col("total_staff"),
-        ).otherwise(col("jobcount")),
+        ).otherwise(col("job_count")),
     )
 
-    # if wkrrecs within 10% or < 5: return wkrrecs
+    # if worker_record_count within 10% or < 5: return worker_record_count
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
                     | (col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            col("wkrrecs"),
-        ).otherwise(col("jobcount")),
+            col("worker_record_count"),
+        ).otherwise(col("job_count")),
     )
 
     # Drop temporary columns
@@ -277,10 +277,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
 
 
 def calculate_jobcount(input_df):
-    print("Calculating jobcount...")
+    print("Calculating job_count...")
 
-    # Add null/empty jobcount column
-    input_df = input_df.withColumn("jobcount", lit(None).cast(IntegerType()))
+    # Add null/empty job_count column
+    input_df = input_df.withColumn("job_count", lit(None).cast(IntegerType()))
 
     input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
     input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
