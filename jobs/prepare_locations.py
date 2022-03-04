@@ -12,7 +12,7 @@ MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
 def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
-    print(f"Building locations prepared dataset")
+    print("Building locations prepared dataset")
 
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
 
@@ -52,7 +52,7 @@ def get_ascwds_workplace_df(workplace_source):
         "ascwds_workplace_import_date", to_date(col("ascwds_workplace_import_date").cast("string"), "yyyyMMdd")
     )
 
-    workplace_df = remove_duplicates(workplace_df)
+    workplace_df = workplace_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
@@ -95,7 +95,7 @@ def get_cqc_location_df(cqc_location_source):
 
 
 def get_cqc_provider_df(cqc_provider_source):
-        print(f"Reading CQC providers parquet from {cqc_provider_source}")
+    print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
         spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
         .parquet(cqc_provider_source)
@@ -110,6 +110,7 @@ def get_cqc_provider_df(cqc_provider_source):
     )
 
     return cqc_provider_df
+
 
 def get_pir_dataframe(pir_source):
     # Join PIR service users
@@ -129,11 +130,6 @@ def get_pir_dataframe(pir_source):
     pir_df = pir_df.dropDuplicates(["locationid"])
 
     return pir_df
-
-
-def remove_duplicates(input_df):
-    print("Removing duplicates...")
-    return input_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
 
 
 def clean(input_df):
