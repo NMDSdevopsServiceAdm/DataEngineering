@@ -217,7 +217,7 @@ resource "aws_glue_job" "bulk_cqc_providers_download_job" {
 
 resource "aws_glue_trigger" "monthly_bulk_download_providers_trigger" {
   name     = "monthly_bulk_download_providers_trigger"
-  schedule = "cron(30 01 04 * ? *)"
+  schedule = "cron(30 01 01 * ? *)"
   type     = "SCHEDULED"
 
   actions {
@@ -249,7 +249,7 @@ resource "aws_glue_job" "bulk_cqc_locations_download_job" {
 
 resource "aws_glue_trigger" "monthly_bulk_download_locations_trigger" {
   name     = "monthly_bulk_download_locations_trigger"
-  schedule = "cron(30 01 05 * ? *)"
+  schedule = "cron(30 01 01 * ? *)"
   type     = "SCHEDULED"
 
   actions {
