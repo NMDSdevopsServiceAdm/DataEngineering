@@ -36,6 +36,7 @@ resource "aws_iam_policy" "glue_service_data_engineering_policy" {
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering/*",
           "arn:aws:s3:::sfc-data-engineering-raw/*",
+          "arn:aws:s3:::skillsforcare/*",
 
         ]
       }
@@ -163,6 +164,7 @@ resource "aws_glue_job" "prepare_locations_job" {
     "--workplace_source"    = ""
     "--cqc_location_source" = ""
     "--cqc_provider_source" = ""
+    "--pir_source"          = ""
     "--destination"         = ""
   }
 }
