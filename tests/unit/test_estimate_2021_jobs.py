@@ -158,7 +158,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             "locationid",
             "primary_service_type",
             "pir_service_users",
-            "cqc_number_of_beds",
+            "number_of_beds",
             "estimate_jobcount_2021",
         ]
         rows = [
@@ -182,7 +182,7 @@ class Estimate2021JobsTests(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "cqc_number_of_beds",
+            "number_of_beds",
             "estimate_jobcount_2021",
         ]
         rows = [
@@ -231,7 +231,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             "locationid",
             "primary_service_type",
             "pir_service_users",
-            "cqc_number_of_beds",
+            "number_of_beds",
             "estimate_jobcount_2021",
         ]
         rows = [
@@ -255,7 +255,7 @@ class Estimate2021JobsTests(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "cqc_number_of_beds",
+            "number_of_beds",
             "estimate_jobcount_2021",
         ]
         rows = [
