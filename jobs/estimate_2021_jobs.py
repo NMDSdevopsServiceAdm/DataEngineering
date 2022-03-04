@@ -18,7 +18,7 @@ LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT_2021 = "estimate_jobcount_2021"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PIR_SERVICE_USERS = "pir_service_users"
-CQC_NUMBER_OF_BEDS = "cqc_number_of_beds"
+CQC_NUMBER_OF_BEDS = "number_of_beds"
 
 
 def main(prepared_locations_source, pir_source, cqc_locations_source, destination):
@@ -34,22 +34,6 @@ def main(prepared_locations_source, pir_source, cqc_locations_source, destinatio
     locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
 
     locations_df = collect_ascwds_historical_job_figures(spark, prepared_locations_source, locations_df)
-
-    # Join PIR service users
-    pir_df = (
-        spark.read.option("basePath", constants.PIR_BASE_PATH)
-        .parquet(pir_source)
-        .select(
-            col("location_id").alias(LOCATION_ID),
-            col(
-                "21_How_many_people_are_currently_receiving_support"
-                "_with_regulated_activities_as_defined_by_the_Health"
-                "_and_Social_Care_Act_from_your_service"
-            ).alias(PIR_SERVICE_USERS),
-        )
-    )
-    pir_df = pir_df.dropDuplicates([LOCATION_ID])
-    locations_df = locations_df.join(pir_df, LOCATION_ID, "left")
 
     # Join CQC for number of beds
     cqc_df = (

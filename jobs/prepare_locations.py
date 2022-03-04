@@ -11,10 +11,30 @@ MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
-def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
+def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
+    print(f"Building locations prepared dataset")
+
+    ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
+
+    cqc_location_df = get_cqc_location_df(cqc_location_source)
+    output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
+
+    cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
+    output_df = output_df.join(cqc_provider_df, "providerid", "left")
+
+    pir_df = get_pir_dataframe(pir_source)
+    output_df = output_df.join(pir_df, "locationid", "left")
+
+    output_df = calculate_jobcount(output_df)
+
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(output_df, destination)
+
+
+def get_ascwds_workplace_df(workplace_source):
     spark = utils.get_spark()
     print(f"Reading workplaces parquet from {workplace_source}")
-    workplaces_df = (
+    workplace_df = (
         spark.read.option("basePath", constants.ASCWDS_WORKPLACE_BASE_PATH)
         .parquet(workplace_source)
         .select(
@@ -28,13 +48,19 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     )
 
     # Format date
-    workplaces_df = workplaces_df.withColumn(
+    workplace_df = workplace_df.withColumn(
         "ascwds_workplace_import_date", to_date(col("ascwds_workplace_import_date").cast("string"), "yyyyMMdd")
     )
 
-    workplaces_df = remove_duplicates(workplaces_df)
-    workplaces_df = clean(workplaces_df)
-    workplaces_df = filter_nulls(workplaces_df)
+    workplace_df = remove_duplicates(workplace_df)
+    workplace_df = clean(workplace_df)
+    workplace_df = filter_nulls(workplace_df)
+
+    return workplace_df
+
+
+def get_cqc_location_df(cqc_location_source):
+    spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = (
@@ -65,7 +91,11 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
         "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
     )
 
-    print(f"Reading CQC providers parquet from {cqc_provider_source}")
+    return cqc_df
+
+
+def get_cqc_provider_df(cqc_provider_source):
+        print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
         spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
         .parquet(cqc_provider_source)
@@ -78,13 +108,27 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     cqc_provider_df = cqc_provider_df.withColumn(
         "cqc_providers_import_date", to_date(col("cqc_providers_import_date").cast("string"), "yyyyMMdd")
     )
-    output_df = cqc_df.join(workplaces_df, "locationid", "left")
-    output_df = output_df.join(cqc_provider_df, "providerid", "left")
 
-    output_df = calculate_jobcount(output_df)
+    return cqc_provider_df
 
-    print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(output_df, destination)
+def get_pir_dataframe(pir_source):
+    # Join PIR service users
+    print(f"Reading PIR parquet from {cqc_provider_source}")
+    pir_df = (
+        spark.read.option("basePath", constants.PIR_BASE_PATH)
+        .parquet(pir_source)
+        .select(
+            col("location_id").alias("locationid"),
+            col(
+                "21_How_many_people_are_currently_receiving_support"
+                "_with_regulated_activities_as_defined_by_the_Health"
+                "_and_Social_Care_Act_from_your_service"
+            ).alias("pir_service_users"),
+        )
+    )
+    pir_df = pir_df.dropDuplicates(["locationid"])
+
+    return pir_df
 
 
 def remove_duplicates(input_df):
@@ -310,6 +354,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--pir_source",
+        help="Source s3 directory for pir dataset",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
@@ -330,6 +379,7 @@ if __name__ == "__main__":
         workplace_source,
         cqc_location_source,
         cqc_provider_source,
+        pir_source,
         destination,
     ) = collect_arguments()
-    main(workplace_source, cqc_location_source, cqc_provider_source, destination)
+    main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination)
