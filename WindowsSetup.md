@@ -172,6 +172,7 @@ If not, the code for both can be found below
 <br>
     
 #### settings.json
+Replace "C:\\Users\\awheatley\\.virtualenvs\\DataEngineering-YJu6GUcT\\Scripts\\black.exe" with the path where the 'black' extension is saved within your local data engineering project:
 ```
 {
     "python.testing.unittestArgs": [
@@ -183,6 +184,18 @@ If not, the code for both can be found below
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.envFile": "${workspaceFolder}/.env"
-     }
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "C:\\Users\\awheatley\\.virtualenvs\\DataEngineering-YJu6GUcT\\Scripts\\black.exe",
+    "editor.formatOnSave": true,
+    "python.linting.pylintEnabled": false,
+    "python.formatting.blackArgs": ["--line-length=120"],
+    "python.linting.flake8Args": [
+        "--max-line-length=120",
+        "--ignore=E402,F841,F401,E302,E305,W503",
+    ],
+    "editor.defaultFormatter": "ms-python.python",
+      }
 ```
