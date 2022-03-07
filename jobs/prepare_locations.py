@@ -95,6 +95,8 @@ def get_cqc_location_df(cqc_location_source):
 
 
 def get_cqc_provider_df(cqc_provider_source):
+    spark = utils.get_spark()
+
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
         spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
@@ -113,6 +115,8 @@ def get_cqc_provider_df(cqc_provider_source):
 
 
 def get_pir_dataframe(pir_source):
+    spark = utils.get_spark()
+
     # Join PIR service users
     print(f"Reading PIR parquet from {cqc_provider_source}")
     pir_df = (
