@@ -91,6 +91,11 @@ C:\Users\awheatley\AppData\Roaming\Python\Python37\site-packages
 C:\Users\awheatley\AppData\Roaming\Python\Python37\Scripts 
 ```
 
+4. Add the below new variable:
+Variable name | Value
+--- | --- 
+PYSPARK_PYTHON | python
+
 
 ### Adding system variables - In Progress:
 1. In 'system variables', select 'new' and add the below:
