@@ -366,6 +366,7 @@ def collect_arguments():
         args.workplace_source,
         args.cqc_location_source,
         args.cqc_provider_source,
+        args.pir_source,
         args.destination,
     )
 
