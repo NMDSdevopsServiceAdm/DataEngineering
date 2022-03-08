@@ -207,8 +207,6 @@ resource "aws_glue_job" "estimate_2021_jobs_job" {
     "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
     "--TempDir"                   = var.glue_temp_dir
     "--prepared_locations_source" = ""
-    "--pir_source"                = ""
-    "--cqc_locations_source"      = ""
     "--destination"               = ""
   }
 }
