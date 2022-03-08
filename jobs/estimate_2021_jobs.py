@@ -27,7 +27,7 @@ JOB_COUNT = "job_count"
 ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 
 
-def main(prepared_locations_source, destination, ascwds_import_date=datetime.date(2021, 11, 30)):
+def main(prepared_locations_source, destination, ascwds_import_date="2021-11-30"):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
