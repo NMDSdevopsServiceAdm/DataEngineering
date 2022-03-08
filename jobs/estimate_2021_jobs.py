@@ -19,6 +19,9 @@ ESTIMATE_JOB_COUNT_2021 = "estimate_jobcount_2021"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PIR_SERVICE_USERS = "pir_service_users"
 CQC_NUMBER_OF_BEDS = "number_of_beds"
+REGISTRATION_STATUS = "registration_status"
+LOCATION_TYPE = "location_type"
+SERVICES_OFFERED = "services_offered"
 
 
 def main(prepared_locations_source, destination):
@@ -28,7 +31,7 @@ def main(prepared_locations_source, destination):
         spark.read.parquet(prepared_locations_source)
         .select(col(LOCATION_ID))
         .distinct()
-        .filter("registrationstatus = 'Registered' and type = 'Social Care Org'")
+        .filter(f"{REGISTRATION_STATUS} = 'Registered' and {LOCATION_TYPE} = 'Social Care Org'")
     )
 
     locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
@@ -59,8 +62,11 @@ def main(prepared_locations_source, destination):
 def determine_ascwds_primary_service_type(input_df):
     return input_df.withColumn(
         PRIMARY_SERVICE_TYPE,
-        when(array_contains(input_df.services, "Care home service with nursing"), NURSING_HOME_IDENTIFIER)
-        .when(array_contains(input_df.services, "Care home service without nursing"), NONE_NURSING_HOME_IDENTIFIER)
+        when(array_contains(input_df[SERVICES_OFFERED], "Care home service with nursing"), NURSING_HOME_IDENTIFIER)
+        .when(
+            array_contains(input_df[SERVICES_OFFERED], "Care home service without nursing"),
+            NONE_NURSING_HOME_IDENTIFIER,
+        )
         .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
     )
 
