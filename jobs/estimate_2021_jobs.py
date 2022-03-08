@@ -32,7 +32,7 @@ def main(prepared_locations_source, destination, ascwds_import_date="'2021-11-30
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(LOCATION_ID, SERVICES_OFFERED)
+        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS)
         .distinct()
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
