@@ -39,7 +39,7 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df[3]["primary_service_type"], "non-residential")
 
     def test_model_populate_known_2021_jobs(self):
-        columns = ["locationid", "jobcount_2021", "estimate_jobcount_2021"]
+        columns = ["locationid", "job_count_2021", "estimate_job_count_2021"]
         rows = [
             ("1-000000001", 1, None),
             ("1-000000002", None, None),
@@ -52,17 +52,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 1)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 4)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 1)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 4)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_non_res_historical(self):
         columns = [
             "locationid",
             "primary_service_type",
             "last_known_job_count",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "non-residential", 10, None),
@@ -76,10 +76,10 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 10.3)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 20.6)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 10.3)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 20.6)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_non_res_historical_pir(self):
         columns = [
@@ -87,7 +87,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             "primary_service_type",
             "last_known_job_count",
             "pir_service_users",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "non-residential", 10, 5, None),
@@ -101,16 +101,16 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 27.391)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 29.735999999999997)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 27.391)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 29.735999999999997)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_non_res_default(self):
         columns = [
             "locationid",
             "primary_service_type",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "non-residential", None),
@@ -124,17 +124,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 54.09)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 54.09)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 54.09)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 54.09)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_with_nursing_historical(self):
         columns = [
             "locationid",
             "primary_service_type",
             "last_known_job_count",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home with nursing", 10, None),
@@ -148,10 +148,10 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 10.04)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 20.08)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 10.04)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 20.08)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
         columns = [
@@ -159,7 +159,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             "primary_service_type",
             "pir_service_users",
             "number_of_beds",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home with nursing", 10, 10, None),
@@ -173,17 +173,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 13.544000000000002)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 13.544000000000002)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], None)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_with_nursing_cqc_beds(self):
         columns = [
             "locationid",
             "primary_service_type",
             "number_of_beds",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home with nursing", 10, None),
@@ -197,17 +197,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 14.420000000000002)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 8.405000000000001)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 14.420000000000002)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 8.405000000000001)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_without_nursing_historical(self):
         columns = [
             "locationid",
             "primary_service_type",
             "last_known_job_count",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home without nursing", 10, None),
@@ -221,10 +221,10 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 10.1)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 20.2)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 10.1)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 20.2)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_without_nursing_cqc_beds_and_pir(self):
         columns = [
@@ -232,7 +232,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             "primary_service_type",
             "pir_service_users",
             "number_of_beds",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home without nursing", 10, 5, None),
@@ -246,17 +246,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 16.467)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 16.467)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], None)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_without_nursing_cqc_beds(self):
         columns = [
             "locationid",
             "primary_service_type",
             "number_of_beds",
-            "estimate_jobcount_2021",
+            "estimate_job_count_2021",
         ]
         rows = [
             ("1-000000001", "Care home without nursing", 10, None),
@@ -270,10 +270,10 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
-        self.assertEqual(df[0]["estimate_jobcount_2021"], 19.417)
-        self.assertEqual(df[1]["estimate_jobcount_2021"], None)
-        self.assertEqual(df[2]["estimate_jobcount_2021"], 27.543)
-        self.assertEqual(df[3]["estimate_jobcount_2021"], 10)
+        self.assertEqual(df[0]["estimate_job_count_2021"], 19.417)
+        self.assertEqual(df[1]["estimate_job_count_2021"], None)
+        self.assertEqual(df[2]["estimate_job_count_2021"], 27.543)
+        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
 
 if __name__ == "__main__":

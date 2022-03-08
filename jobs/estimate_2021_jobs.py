@@ -15,13 +15,14 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 # Column names
 LOCATION_ID = "locationid"
 LAST_KNOWN_JOB_COUNT = "last_known_job_count"
-ESTIMATE_JOB_COUNT_2021 = "estimate_jobcount_2021"
+ESTIMATE_JOB_COUNT_2021 = "estimate_job_count_2021"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PIR_SERVICE_USERS = "pir_service_users"
 CQC_NUMBER_OF_BEDS = "number_of_beds"
 REGISTRATION_STATUS = "registration_status"
 LOCATION_TYPE = "location_type"
 SERVICES_OFFERED = "services_offered"
+JOB_COUNT = "job_count"
 
 
 def main(prepared_locations_source, destination):
@@ -78,7 +79,7 @@ def collect_ascwds_historical_job_figures(spark, data_source, input_df):
         jobs_previous = spark.sql(
             f"""select
                 locationid,
-                max(jobcount) as jobcount_{year}
+                max(job_count) as job_count_{year}
                 from
                     temp_locations_prepared
                 where
@@ -90,7 +91,7 @@ def collect_ascwds_historical_job_figures(spark, data_source, input_df):
         input_df = input_df.join(jobs_previous, LOCATION_ID, "left")
 
     # Calculate last known jobs previous to 2021
-    input_df = input_df.withColumn(LAST_KNOWN_JOB_COUNT, coalesce("jobcount_2020", "jobcount_2019"))
+    input_df = input_df.withColumn(LAST_KNOWN_JOB_COUNT, coalesce("job_count_2020", "job_count_2019"))
 
     return input_df
 
@@ -99,7 +100,7 @@ def model_populate_known_2021_jobs(df):
     df = df.withColumn(
         ESTIMATE_JOB_COUNT_2021,
         when(
-            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col("jobcount_2021").isNotNull())), col("jobcount_2021")
+            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col("job_count_2021").isNotNull())), col("job_count_2021")
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
