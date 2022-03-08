@@ -6,6 +6,9 @@ variable "ascwds_data_location" {
   default = "s3://sfc-data-engineering/domain=ASCWDS/"
 }
 
+variable "data_engineering_data_location" {
+  default = "s3://sfc-data-engineering/domain=data_engineering/"
+}
 variable "cqc_data_location" {
   default = "s3://sfc-data-engineering/domain=CQC/"
 }
