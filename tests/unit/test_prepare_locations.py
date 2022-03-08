@@ -30,6 +30,19 @@ class PrepareLocationsTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
 
+    def test_get_pir_dataframe(self):
+        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
+        pir_df = prepare_locations.get_pir_dataframe(path, "tests/test_data/")
+        self.assertEqual(pir_df.count(), 10)
+        self.assertEqual(pir_df.columns[0], "locationid")
+        self.assertEqual(pir_df.columns[1], "pir_service_users")
+
+        pir_df = pir_df.orderBy("locationid").collect()
+        self.assertEqual(pir_df[0]["locationid"], "1-0000000001")
+        self.assertEqual(pir_df[0]["pir_service_users"], "95")
+        self.assertEqual(pir_df[9]["locationid"], "1-0000000010")
+        self.assertEqual(pir_df[9]["pir_service_users"], "104")
+
     def test_filter_nulls(self):
         columns = ["locationid", "worker_record_count", "total_staff"]
         rows = [

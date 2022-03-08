@@ -31,11 +31,11 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     utils.write_to_parquet(output_df, destination)
 
 
-def get_ascwds_workplace_df(workplace_source):
+def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
     spark = utils.get_spark()
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
-        spark.read.option("basePath", constants.ASCWDS_WORKPLACE_BASE_PATH)
+        spark.read.option("basePath", base_path)
         .parquet(workplace_source)
         .select(
             col("locationid"),
@@ -59,12 +59,12 @@ def get_ascwds_workplace_df(workplace_source):
     return workplace_df
 
 
-def get_cqc_location_df(cqc_location_source):
+def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_BASE_PATH):
     spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = (
-        spark.read.option("basePath", constants.CQC_LOCATIONS_BASE_PATH)
+        spark.read.option("basePath", base_path)
         .parquet(cqc_location_source)
         .select(
             col("locationid"),
@@ -94,10 +94,12 @@ def get_cqc_location_df(cqc_location_source):
     return cqc_df
 
 
-def get_cqc_provider_df(cqc_provider_source):
+def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_BASE_PATH):
+    spark = utils.get_spark()
+
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
-        spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
+        spark.read.option("basePath", base_path)
         .parquet(cqc_provider_source)
         .select(
             col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
@@ -112,11 +114,13 @@ def get_cqc_provider_df(cqc_provider_source):
     return cqc_provider_df
 
 
-def get_pir_dataframe(pir_source):
+def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
+    spark = utils.get_spark()
+
     # Join PIR service users
-    print(f"Reading PIR parquet from {cqc_provider_source}")
+    print(f"Reading PIR parquet from {pir_source}")
     pir_df = (
-        spark.read.option("basePath", constants.PIR_BASE_PATH)
+        spark.read.option("basePath", base_path)
         .parquet(pir_source)
         .select(
             col("location_id").alias("locationid"),
@@ -366,6 +370,7 @@ def collect_arguments():
         args.workplace_source,
         args.cqc_location_source,
         args.cqc_provider_source,
+        args.pir_source,
         args.destination,
     )
 
