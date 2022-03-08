@@ -21,7 +21,7 @@ PIR_SERVICE_USERS = "pir_service_users"
 CQC_NUMBER_OF_BEDS = "number_of_beds"
 
 
-def main(prepared_locations_source, pir_source, cqc_locations_source, destination):
+def main(prepared_locations_source, destination):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
@@ -32,23 +32,7 @@ def main(prepared_locations_source, pir_source, cqc_locations_source, destinatio
     )
 
     locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
-
     locations_df = collect_ascwds_historical_job_figures(spark, prepared_locations_source, locations_df)
-
-    # Join CQC for number of beds
-    cqc_df = (
-        spark.read.option("basePath", constants.CQC_LOCATIONS_BASE_PATH)
-        .parquet(cqc_locations_source)
-        .select(
-            col(LOCATION_ID),
-            col("gacservicetypes.description").alias("services"),
-            col("numberofbeds").alias(CQC_NUMBER_OF_BEDS),
-        )
-    )
-
-    cqc_df = cqc_df.dropDuplicates([LOCATION_ID])
-    locations_df = locations_df.join(cqc_df, LOCATION_ID, "left")
-
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
     locations_df = model_populate_known_2021_jobs(locations_df)
@@ -316,16 +300,6 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--pir_source",
-        help="Source s3 directory for pir dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--cqc_locations_source",
-        help="Source s3 directory cqc locations dataset",
-        required=True,
-    )
-    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
@@ -333,15 +307,13 @@ def collect_arguments():
 
     args, unknown = parser.parse_known_args()
 
-    return args.prepared_locations_source, args.pir_source, args.cqc_locations_source, args.destination
+    return args.prepared_locations_source, args.destination
 
 
 if __name__ == "__main__":
     (
         prepared_locations_source,
-        pir_source,
-        cqc_locations_source,
         destination,
     ) = collect_arguments()
 
-    main(prepared_locations_source, pir_source, cqc_locations_source, destination)
+    main(prepared_locations_source, destination)
