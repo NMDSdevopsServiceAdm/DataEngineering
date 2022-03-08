@@ -1,4 +1,5 @@
 import argparse
+import datetime
 
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
@@ -23,16 +24,21 @@ REGISTRATION_STATUS = "registration_status"
 LOCATION_TYPE = "location_type"
 SERVICES_OFFERED = "services_offered"
 JOB_COUNT = "job_count"
+ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 
 
-def main(prepared_locations_source, destination):
+def main(prepared_locations_source, destination, ascwds_import_date=datetime.date(30, 11, 2021)):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(col(LOCATION_ID))
+        .select(LOCATION_ID, SERVICES_OFFERED)
         .distinct()
-        .filter(f"{REGISTRATION_STATUS} = 'Registered' and {LOCATION_TYPE} = 'Social Care Org'")
+        .filter(
+            f"{REGISTRATION_STATUS} = 'Registered' \
+            and {LOCATION_TYPE} = 'Social Care Org' \
+            and {ASCWDS_IMPORT_DATE} = {ascwds_import_date}"
+        )
     )
 
     locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
