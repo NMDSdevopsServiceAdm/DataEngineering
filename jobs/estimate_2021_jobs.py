@@ -19,7 +19,7 @@ LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT_2021 = "estimate_job_count_2021"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PIR_SERVICE_USERS = "pir_service_users"
-CQC_NUMBER_OF_BEDS = "number_of_beds"
+NUMBER_OF_BEDS = "number_of_beds"
 REGISTRATION_STATUS = "registration_status"
 LOCATION_TYPE = "location_type"
 SERVICES_OFFERED = "services_offered"
@@ -32,7 +32,7 @@ def main(prepared_locations_source, destination, ascwds_import_date="'2021-11-30
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS)
+        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
         .distinct()
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
@@ -206,9 +206,9 @@ def model_care_home_with_nursing_pir_and_cqc_beds(df):
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
                 & col(PIR_SERVICE_USERS).isNotNull()
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            ((0.773 * col(CQC_NUMBER_OF_BEDS)) + (0.551 * col(PIR_SERVICE_USERS)) + 0.304),
+            ((0.773 * col(NUMBER_OF_BEDS)) + (0.551 * col(PIR_SERVICE_USERS)) + 0.304),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -228,9 +228,9 @@ def model_care_home_with_nursing_cqc_beds(df):
             (
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (1.203 * col(CQC_NUMBER_OF_BEDS) + 2.39),
+            (1.203 * col(NUMBER_OF_BEDS) + 2.39),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -273,9 +273,9 @@ def model_care_home_without_nursing_cqc_beds_and_pir(df):
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
                 & col(PIR_SERVICE_USERS).isNotNull()
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (10.652 + (0.571 * col(CQC_NUMBER_OF_BEDS)) + (0.296 * col(PIR_SERVICE_USERS))),
+            (10.652 + (0.571 * col(NUMBER_OF_BEDS)) + (0.296 * col(PIR_SERVICE_USERS))),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -295,9 +295,9 @@ def model_care_home_without_nursing_cqc_beds(df):
             (
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (11.291 + (0.8126 * col(CQC_NUMBER_OF_BEDS))),
+            (11.291 + (0.8126 * col(NUMBER_OF_BEDS))),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
