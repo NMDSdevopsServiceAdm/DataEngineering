@@ -7,71 +7,23 @@ from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
 
-required_workplace_fields = [
-    "locationid",
-    "establishmentid",
-    "providerid",
-    "totalstaff",
-    "wkrrecs",
-    "import_date",
-]
-
-required_cqc_fields = [
-    "locationid",
-    "organisationtype",
-    "type",
-    "name",
-    "registrationstatus",
-    "registrationdate",
-    "deregistrationdate",
-    "dormancy",
-    "numberofbeds",
-    "region",
-    "postalcode",
-    "carehome",
-    "constituency",
-    "localauthority",
-    "import_date",
-]
-
 MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
-def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
-    spark = utils.get_spark()
-    print(f"Reading workplaces parquet from {workplace_source}")
-    workplaces_df = (
-        spark.read.option("basePath", constants.ASCWDS_WORKPLACE_BASE_PATH)
-        .parquet(workplace_source)
-        .select(required_workplace_fields)
-    )
+def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
+    print("Building locations prepared dataset")
 
-    workplaces_df = format_date(workplaces_df, "import_date", "ascwds_workplace_import_date")
-    workplaces_df = remove_duplicates(workplaces_df)
-    workplaces_df = clean(workplaces_df)
-    workplaces_df = filter_nulls(workplaces_df)
+    ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
 
-    print(f"Reading CQC locations parquet from {cqc_location_source}")
-    cqc_df = (
-        spark.read.option("basePath", constants.CQC_LOCATIONS_BASE_PATH)
-        .parquet(cqc_location_source)
-        .select(required_cqc_fields)
-    )
+    cqc_location_df = get_cqc_location_df(cqc_location_source)
+    output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
 
-    cqc_df = format_date(cqc_df, "import_date", "cqc_locations_import_date")
-
-    print(f"Reading CQC providers parquet from {cqc_provider_source}")
-    cqc_provider_df = (
-        spark.read.option("basePath", constants.CQC_PROVIDERS_BASE_PATH)
-        .parquet(cqc_provider_source)
-        .select("providerid", col("name").alias("provider_name"), col("import_date"))
-    )
-
-    cqc_provider_df = format_date(cqc_provider_df, "import_date", "cqc_providers_import_date")
-
-    output_df = cqc_df.join(workplaces_df, "locationid", "left")
+    cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
+
+    pir_df = get_pir_dataframe(pir_source)
+    output_df = output_df.join(pir_df, "locationid", "left")
 
     output_df = calculate_jobcount(output_df)
 
@@ -79,17 +31,109 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     utils.write_to_parquet(output_df, destination)
 
 
-def format_date(input_df, date_column, new_date_column):
-    input_df = input_df.withColumnRenamed(date_column, new_date_column)
+def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
+    spark = utils.get_spark()
+    print(f"Reading workplaces parquet from {workplace_source}")
+    workplace_df = (
+        spark.read.option("basePath", base_path)
+        .parquet(workplace_source)
+        .select(
+            col("locationid"),
+            col("establishmentid"),
+            col("providerid"),
+            col("totalstaff").alias("total_staff"),
+            col("wkrrecs").alias("worker_record_count"),
+            col("import_date").alias("ascwds_workplace_import_date"),
+        )
+    )
 
-    input_df = input_df.withColumn(new_date_column, to_date(col(new_date_column).cast("string"), "yyyyMMdd"))
+    # Format date
+    workplace_df = workplace_df.withColumn(
+        "ascwds_workplace_import_date", to_date(col("ascwds_workplace_import_date").cast("string"), "yyyyMMdd")
+    )
 
-    return input_df
+    workplace_df = workplace_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
+    workplace_df = clean(workplace_df)
+    workplace_df = filter_nulls(workplace_df)
+
+    return workplace_df
 
 
-def remove_duplicates(input_df):
-    print("Removing duplicates...")
-    return input_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
+def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_BASE_PATH):
+    spark = utils.get_spark()
+
+    print(f"Reading CQC locations parquet from {cqc_location_source}")
+    cqc_df = (
+        spark.read.option("basePath", base_path)
+        .parquet(cqc_location_source)
+        .select(
+            col("locationid"),
+            col("organisationtype").alias("organisation_type"),
+            col("type").alias("location_type"),
+            col("name").alias("location_name"),
+            col("registrationstatus").alias("registration_status"),
+            col("registrationdate").alias("registration_date"),
+            col("deregistrationdate").alias("deregistration_date"),
+            col("dormancy"),
+            col("numberofbeds").alias("number_of_beds"),
+            col("region"),
+            col("postalcode").alias("postal_code"),
+            col("carehome"),
+            col("constituency"),
+            col("localauthority").alias("local_authority"),
+            col("gacservicetypes.description").alias("services_offered"),
+            col("import_date").alias("cqc_locations_import_date"),
+        )
+    )
+
+    # Format date
+    cqc_df = cqc_df.withColumn(
+        "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
+    )
+
+    return cqc_df
+
+
+def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_BASE_PATH):
+    spark = utils.get_spark()
+
+    print(f"Reading CQC providers parquet from {cqc_provider_source}")
+    cqc_provider_df = (
+        spark.read.option("basePath", base_path)
+        .parquet(cqc_provider_source)
+        .select(
+            col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
+        )
+    )
+
+    # Format date
+    cqc_provider_df = cqc_provider_df.withColumn(
+        "cqc_providers_import_date", to_date(col("cqc_providers_import_date").cast("string"), "yyyyMMdd")
+    )
+
+    return cqc_provider_df
+
+
+def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
+    spark = utils.get_spark()
+
+    # Join PIR service users
+    print(f"Reading PIR parquet from {pir_source}")
+    pir_df = (
+        spark.read.option("basePath", base_path)
+        .parquet(pir_source)
+        .select(
+            col("location_id").alias("locationid"),
+            col(
+                "21_How_many_people_are_currently_receiving_support"
+                "_with_regulated_activities_as_defined_by_the_Health"
+                "_and_Social_Care_Act_from_your_service"
+            ).alias("pir_service_users"),
+        )
+    )
+    pir_df = pir_df.dropDuplicates(["locationid"])
+
+    return pir_df
 
 
 def clean(input_df):
@@ -99,17 +143,17 @@ def clean(input_df):
     input_df = input_df.replace("0", None).replace("-1", None)
 
     # Cast integers to string
-    input_df = input_df.withColumn("totalstaff", input_df["totalstaff"].cast(IntegerType()))
+    input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
-    input_df = input_df.withColumn("wkrrecs", input_df["wkrrecs"].cast(IntegerType()))
+    input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
 
     return input_df
 
 
 def filter_nulls(input_df):
     print("Filtering nulls...")
-    # Remove rows with null for wkrrecs and totalstaff
-    input_df = input_df.filter("wkrrecs is not null or totalstaff is not null")
+    # Remove rows with null for worker_record_count and total_staff
+    input_df = input_df.filter("worker_record_count is not null or total_staff is not null")
 
     # Remove rows with null locationId
     input_df = input_df.na.drop(subset=["locationid"])
@@ -118,54 +162,54 @@ def filter_nulls(input_df):
 
 
 def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
-    # totalstaff = wkrrrecs: Take totalstaff
+    # total_staff = wkrrrecs: Take total_staff
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
-                & (col("wkrrecs") == col("totalstaff"))
-                & col("totalstaff").isNotNull()
-                & col("wkrrecs").isNotNull()
+                col("job_count").isNull()
+                & (col("worker_record_count") == col("total_staff"))
+                & col("total_staff").isNotNull()
+                & col("worker_record_count").isNotNull()
             ),
-            col("totalstaff"),
-        ).otherwise(col("jobcount")),
+            col("total_staff"),
+        ).otherwise(col("job_count")),
     )
 
 
 def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
-    # Either wkrrecs or totalstaff is null: return first not null
+    # Either worker_record_count or total_staff is null: return first not null
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & (
-                    (col("totalstaff").isNull() & col("wkrrecs").isNotNull())
-                    | (col("totalstaff").isNotNull() & col("wkrrecs").isNull())
+                    (col("total_staff").isNull() & col("worker_record_count").isNotNull())
+                    | (col("total_staff").isNotNull() & col("worker_record_count").isNull())
                 )
             ),
-            coalesce(input_df.totalstaff, input_df.wkrrecs),
-        ).otherwise(coalesce(col("jobcount"))),
+            coalesce(input_df.total_staff, input_df.worker_record_count),
+        ).otherwise(coalesce(col("job_count"))),
     )
 
 
 def calculate_jobcount_abs_difference_within_range(input_df):
-    # Abs difference between totalstaff & wkrrecs < 5 or < 10% take average:
-    input_df = input_df.withColumn("abs_difference", abs(input_df.totalstaff - input_df.wkrrecs))
+    # Abs difference between total_staff & worker_record_count < 5 or < 10% take average:
+    input_df = input_df.withColumn("abs_difference", abs(input_df.total_staff - input_df.worker_record_count))
 
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & (
                     (col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (col("abs_difference") / col("totalstaff") < MIN_PERCENTAGE_DIFFERENCE)
+                    | (col("abs_difference") / col("total_staff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            (col("totalstaff") + col("wkrrecs")) / 2,
-        ).otherwise(col("jobcount")),
+            (col("total_staff") + col("worker_record_count")) / 2,
+        ).otherwise(col("job_count")),
     )
 
     input_df = input_df.drop("abs_difference")
@@ -174,13 +218,13 @@ def calculate_jobcount_abs_difference_within_range(input_df):
 
 
 def calculate_jobcount_handle_tiny_values(input_df):
-    # totalstaff or wkrrecs < 3: return max
+    # total_staff or worker_record_count < 3: return max
     return input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
-            (col("jobcount").isNull() & ((col("totalstaff") < 3) | (col("wkrrecs") < 3))),
-            greatest(col("totalstaff"), col("wkrrecs")),
-        ).otherwise(col("jobcount")),
+            (col("job_count").isNull() & ((col("total_staff") < 3) | (col("worker_record_count") < 3))),
+            greatest(col("total_staff"), col("worker_record_count")),
+        ).otherwise(col("job_count")),
     )
 
 
@@ -190,30 +234,30 @@ def calculate_jobcount_estimate_from_beds(input_df):
     input_df = input_df.withColumn(
         "bed_estimate_jobcount",
         when(
-            (col("jobcount").isNull() & (col("numberofbeds") > 0)),
-            (beds_to_jobcount_intercept + (col("numberofbeds") * beds_to_jobcount_coefficient)),
+            (col("job_count").isNull() & (col("number_of_beds") > 0)),
+            (beds_to_jobcount_intercept + (col("number_of_beds") * beds_to_jobcount_coefficient)),
         ).otherwise(None),
     )
 
     # Determine differences
-    input_df = input_df.withColumn("totalstaff_diff", abs(input_df.totalstaff - input_df.bed_estimate_jobcount))
-    input_df = input_df.withColumn("wkrrecs_diff", abs(input_df.wkrrecs - input_df.bed_estimate_jobcount))
+    input_df = input_df.withColumn("totalstaff_diff", abs(input_df.total_staff - input_df.bed_estimate_jobcount))
+    input_df = input_df.withColumn("wkrrecs_diff", abs(input_df.worker_record_count - input_df.bed_estimate_jobcount))
     input_df = input_df.withColumn(
         "totalstaff_percentage_diff",
         abs(input_df.totalstaff_diff / input_df.bed_estimate_jobcount),
     )
     input_df = input_df.withColumn(
         "wkrrecs_percentage_diff",
-        abs(input_df.wkrrecs / input_df.bed_estimate_jobcount),
+        abs(input_df.worker_record_count / input_df.bed_estimate_jobcount),
     )
 
     # Bounding predictions to certain locations with differences in range
-    # if totalstaff and wkrrecs within 10% or < 5: return avg(totalstaff + wkrrds)
+    # if total_staff and worker_record_count within 10% or < 5: return avg(total_staff + wkrrds)
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (
@@ -226,40 +270,40 @@ def calculate_jobcount_estimate_from_beds(input_df):
                     )
                 )
             ),
-            (col("totalstaff") + col("wkrrecs")) / 2,
-        ).otherwise(col("jobcount")),
+            (col("total_staff") + col("worker_record_count")) / 2,
+        ).otherwise(col("job_count")),
     )
 
-    # if totalstaff within 10% or < 5: return totalstaff
+    # if total_staff within 10% or < 5: return total_staff
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
                     | (col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            col("totalstaff"),
-        ).otherwise(col("jobcount")),
+            col("total_staff"),
+        ).otherwise(col("job_count")),
     )
 
-    # if wkrrecs within 10% or < 5: return wkrrecs
+    # if worker_record_count within 10% or < 5: return worker_record_count
     input_df = input_df.withColumn(
-        "jobcount",
+        "job_count",
         when(
             (
-                col("jobcount").isNull()
+                col("job_count").isNull()
                 & col("bed_estimate_jobcount").isNotNull()
                 & (
                     (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
                     | (col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            col("wkrrecs"),
-        ).otherwise(col("jobcount")),
+            col("worker_record_count"),
+        ).otherwise(col("job_count")),
     )
 
     # Drop temporary columns
@@ -277,10 +321,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
 
 
 def calculate_jobcount(input_df):
-    print("Calculating jobcount...")
+    print("Calculating job_count...")
 
-    # Add null/empty jobcount column
-    input_df = input_df.withColumn("jobcount", lit(None).cast(IntegerType()))
+    # Add null/empty job_count column
+    input_df = input_df.withColumn("job_count", lit(None).cast(IntegerType()))
 
     input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
     input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
@@ -310,6 +354,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--pir_source",
+        help="Source s3 directory for pir dataset",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
@@ -321,6 +370,7 @@ def collect_arguments():
         args.workplace_source,
         args.cqc_location_source,
         args.cqc_provider_source,
+        args.pir_source,
         args.destination,
     )
 
@@ -330,6 +380,7 @@ if __name__ == "__main__":
         workplace_source,
         cqc_location_source,
         cqc_provider_source,
+        pir_source,
         destination,
     ) = collect_arguments()
-    main(workplace_source, cqc_location_source, cqc_provider_source, destination)
+    main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination)

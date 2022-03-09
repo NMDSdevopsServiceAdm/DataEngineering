@@ -1,4 +1,5 @@
 import argparse
+import datetime
 
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
@@ -15,56 +16,32 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 # Column names
 LOCATION_ID = "locationid"
 LAST_KNOWN_JOB_COUNT = "last_known_job_count"
-ESTIMATE_JOB_COUNT_2021 = "estimate_jobcount_2021"
+ESTIMATE_JOB_COUNT_2021 = "estimate_job_count_2021"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PIR_SERVICE_USERS = "pir_service_users"
-CQC_NUMBER_OF_BEDS = "cqc_number_of_beds"
+NUMBER_OF_BEDS = "number_of_beds"
+REGISTRATION_STATUS = "registration_status"
+LOCATION_TYPE = "location_type"
+SERVICES_OFFERED = "services_offered"
+JOB_COUNT = "job_count"
+ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 
 
-def main(prepared_locations_source, pir_source, cqc_locations_source, destination):
+def main(prepared_locations_source, destination, ascwds_import_date="'2021-03-31'"):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(col(LOCATION_ID))
-        .distinct()
-        .filter("registrationstatus = 'Registered' and type = 'Social Care Org'")
+        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
+        .filter(
+            f"{REGISTRATION_STATUS} = 'Registered' \
+            and {LOCATION_TYPE} = 'Social Care Org' \
+            and {ASCWDS_IMPORT_DATE} = {ascwds_import_date}"
+        )
     )
 
     locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
-
     locations_df = collect_ascwds_historical_job_figures(spark, prepared_locations_source, locations_df)
-
-    # Join PIR service users
-    pir_df = (
-        spark.read.option("basePath", constants.PIR_BASE_PATH)
-        .parquet(pir_source)
-        .select(
-            col("location_id").alias(LOCATION_ID),
-            col(
-                "21_How_many_people_are_currently_receiving_support"
-                "_with_regulated_activities_as_defined_by_the_Health"
-                "_and_Social_Care_Act_from_your_service"
-            ).alias(PIR_SERVICE_USERS),
-        )
-    )
-    pir_df = pir_df.dropDuplicates([LOCATION_ID])
-    locations_df = locations_df.join(pir_df, LOCATION_ID, "left")
-
-    # Join CQC for number of beds
-    cqc_df = (
-        spark.read.option("basePath", constants.CQC_LOCATIONS_BASE_PATH)
-        .parquet(cqc_locations_source)
-        .select(
-            col(LOCATION_ID),
-            col("gacservicetypes.description").alias("services"),
-            col("numberofbeds").alias(CQC_NUMBER_OF_BEDS),
-        )
-    )
-
-    cqc_df = cqc_df.dropDuplicates([LOCATION_ID])
-    locations_df = locations_df.join(cqc_df, LOCATION_ID, "left")
-
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
     locations_df = model_populate_known_2021_jobs(locations_df)
@@ -91,8 +68,11 @@ def main(prepared_locations_source, pir_source, cqc_locations_source, destinatio
 def determine_ascwds_primary_service_type(input_df):
     return input_df.withColumn(
         PRIMARY_SERVICE_TYPE,
-        when(array_contains(input_df.services, "Care home service with nursing"), NURSING_HOME_IDENTIFIER)
-        .when(array_contains(input_df.services, "Care home service without nursing"), NONE_NURSING_HOME_IDENTIFIER)
+        when(array_contains(input_df[SERVICES_OFFERED], "Care home service with nursing"), NURSING_HOME_IDENTIFIER)
+        .when(
+            array_contains(input_df[SERVICES_OFFERED], "Care home service without nursing"),
+            NONE_NURSING_HOME_IDENTIFIER,
+        )
         .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
     )
 
@@ -104,7 +84,7 @@ def collect_ascwds_historical_job_figures(spark, data_source, input_df):
         jobs_previous = spark.sql(
             f"""select
                 locationid,
-                max(jobcount) as jobcount_{year}
+                max(job_count) as job_count_{year}
                 from
                     temp_locations_prepared
                 where
@@ -116,7 +96,7 @@ def collect_ascwds_historical_job_figures(spark, data_source, input_df):
         input_df = input_df.join(jobs_previous, LOCATION_ID, "left")
 
     # Calculate last known jobs previous to 2021
-    input_df = input_df.withColumn(LAST_KNOWN_JOB_COUNT, coalesce("jobcount_2020", "jobcount_2019"))
+    input_df = input_df.withColumn(LAST_KNOWN_JOB_COUNT, coalesce("job_count_2020", "job_count_2019"))
 
     return input_df
 
@@ -125,7 +105,7 @@ def model_populate_known_2021_jobs(df):
     df = df.withColumn(
         ESTIMATE_JOB_COUNT_2021,
         when(
-            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col("jobcount_2021").isNotNull())), col("jobcount_2021")
+            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col("job_count_2021").isNotNull())), col("job_count_2021")
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -225,9 +205,9 @@ def model_care_home_with_nursing_pir_and_cqc_beds(df):
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
                 & col(PIR_SERVICE_USERS).isNotNull()
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            ((0.773 * col(CQC_NUMBER_OF_BEDS)) + (0.551 * col(PIR_SERVICE_USERS)) + 0.304),
+            ((0.773 * col(NUMBER_OF_BEDS)) + (0.551 * col(PIR_SERVICE_USERS)) + 0.304),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -247,9 +227,9 @@ def model_care_home_with_nursing_cqc_beds(df):
             (
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (1.203 * col(CQC_NUMBER_OF_BEDS) + 2.39),
+            (1.203 * col(NUMBER_OF_BEDS) + 2.39),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -292,9 +272,9 @@ def model_care_home_without_nursing_cqc_beds_and_pir(df):
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
                 & col(PIR_SERVICE_USERS).isNotNull()
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (10.652 + (0.571 * col(CQC_NUMBER_OF_BEDS)) + (0.296 * col(PIR_SERVICE_USERS))),
+            (10.652 + (0.571 * col(NUMBER_OF_BEDS)) + (0.296 * col(PIR_SERVICE_USERS))),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -314,9 +294,9 @@ def model_care_home_without_nursing_cqc_beds(df):
             (
                 col(ESTIMATE_JOB_COUNT_2021).isNull()
                 & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(CQC_NUMBER_OF_BEDS).isNotNull()
+                & col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (11.291 + (0.8126 * col(CQC_NUMBER_OF_BEDS))),
+            (11.291 + (0.8126 * col(NUMBER_OF_BEDS))),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -332,16 +312,6 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--pir_source",
-        help="Source s3 directory for pir dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--cqc_locations_source",
-        help="Source s3 directory cqc locations dataset",
-        required=True,
-    )
-    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
@@ -349,15 +319,13 @@ def collect_arguments():
 
     args, unknown = parser.parse_known_args()
 
-    return args.prepared_locations_source, args.pir_source, args.cqc_locations_source, args.destination
+    return args.prepared_locations_source, args.destination
 
 
 if __name__ == "__main__":
     (
         prepared_locations_source,
-        pir_source,
-        cqc_locations_source,
         destination,
     ) = collect_arguments()
 
-    main(prepared_locations_source, pir_source, cqc_locations_source, destination)
+    main(prepared_locations_source, destination)

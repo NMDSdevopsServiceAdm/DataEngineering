@@ -36,6 +36,7 @@ resource "aws_iam_policy" "glue_service_data_engineering_policy" {
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering/*",
           "arn:aws:s3:::sfc-data-engineering-raw/*",
+          "arn:aws:s3:::skillsforcare/*",
 
         ]
       }
@@ -67,6 +68,25 @@ resource "aws_glue_crawler" "aws_glue_crawler_ascwds" {
   role          = aws_iam_role.glue_service_iam_role.arn
   s3_target {
     path = var.ascwds_data_location
+  }
+
+  configuration = jsonencode(
+    {
+      "Version" : 1.0,
+      "Grouping" = {
+        "TableLevelConfiguration" = 3,
+        "TableGroupingPolicy" : "CombineCompatibleSchemas"
+      }
+    }
+  )
+}
+
+resource "aws_glue_crawler" "aws_glue_crawler_data_engineering" {
+  database_name = var.glue_db_name
+  name          = "${var.glue_db_crawler_prepend}DATA_ENGINEERING"
+  role          = aws_iam_role.glue_service_iam_role.arn
+  s3_target {
+    path = var.data_engineering_data_location
   }
 
   configuration = jsonencode(
@@ -163,6 +183,7 @@ resource "aws_glue_job" "prepare_locations_job" {
     "--workplace_source"    = ""
     "--cqc_location_source" = ""
     "--cqc_provider_source" = ""
+    "--pir_source"          = ""
     "--destination"         = ""
   }
 }
@@ -184,11 +205,9 @@ resource "aws_glue_job" "estimate_2021_jobs_job" {
 
   default_arguments = {
     "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--TempDir"                      = var.glue_temp_dir
-    "--prepared_locations_source"    = ""
-    "--pir_source"                   = ""
-    "--cqc_locations_source"         = ""
-    "--destination"                  = ""
+    "--TempDir"                   = var.glue_temp_dir
+    "--prepared_locations_source" = ""
+    "--destination"               = ""
   }
 }
 

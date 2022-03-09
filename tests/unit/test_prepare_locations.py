@@ -20,51 +20,31 @@ class PrepareLocationsTests(unittest.TestCase):
     calculate_jobs_schema = StructType(
         [
             StructField("locationid", StringType(), False),
-            StructField("totalstaff", IntegerType(), True),
-            StructField("wkrrecs", IntegerType(), True),
-            StructField("numberofbeds", IntegerType(), True),
-            StructField("jobcount", DoubleType(), True),
+            StructField("total_staff", IntegerType(), True),
+            StructField("worker_record_count", IntegerType(), True),
+            StructField("number_of_beds", IntegerType(), True),
+            StructField("job_count", DoubleType(), True),
         ]
     )
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
 
-    def test_format_date(self):
-        columns = ["locationid", "import_date"]
-        rows = [("1-000000001", 20221201), ("1-000000002", 20220328)]
-        df = self.spark.createDataFrame(rows, columns)
+    def test_get_pir_dataframe(self):
+        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
+        pir_df = prepare_locations.get_pir_dataframe(path, "tests/test_data/")
+        self.assertEqual(pir_df.count(), 10)
+        self.assertEqual(pir_df.columns[0], "locationid")
+        self.assertEqual(pir_df.columns[1], "pir_service_users")
 
-        formatted_df = prepare_locations.format_date(df, "import_date", "new_formatted_date")
-
-        self.assertEqual(formatted_df.count(), 2)
-        self.assertEqual(
-            formatted_df.select("new_formatted_date").rdd.flatMap(lambda x: x).collect(),
-            [datetime.date(2022, 12, 1), datetime.date(2022, 3, 28)],
-        )
-
-    def test_remove_duplicates(self):
-        columns = ["locationid", "ascwds_workplace_import_date"]
-        rows = [
-            ("1-000000001", "01-12-2022"),
-            ("1-000000001", "01-12-2022"),
-            ("1-000000001", "01-12-2021"),
-            ("1-000000001", "01-12-2021"),
-            ("1-000000002", "01-12-2022"),
-            ("1-000000002", "01-12-2021"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        filtered_df = prepare_locations.remove_duplicates(df)
-        self.assertEqual(filtered_df.count(), 4)
-
-        self.assertCountEqual(
-            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
-            ["1-000000001", "1-000000001", "1-000000002", "1-000000002"],
-        )
+        pir_df = pir_df.orderBy("locationid").collect()
+        self.assertEqual(pir_df[0]["locationid"], "1-0000000001")
+        self.assertEqual(pir_df[0]["pir_service_users"], "95")
+        self.assertEqual(pir_df[9]["locationid"], "1-0000000010")
+        self.assertEqual(pir_df[9]["pir_service_users"], "104")
 
     def test_filter_nulls(self):
-        columns = ["locationid", "wkrrecs", "totalstaff"]
+        columns = ["locationid", "worker_record_count", "total_staff"]
         rows = [
             ("1-000000001", None, 20),
             ("1-000000002", 500, 500),
@@ -87,7 +67,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_clean(self):
 
-        columns = ["locationid", "wkrrecs", "totalstaff"]
+        columns = ["locationid", "worker_record_count", "total_staff"]
         rows = [
             ("1-000000001", None, "0"),
             ("1-000000002", "500", "500"),
@@ -101,11 +81,11 @@ class PrepareLocationsTests(unittest.TestCase):
         cleaned_df = prepare_locations.clean(df)
         cleaned_df_list = cleaned_df.collect()
         self.assertEqual(cleaned_df.count(), 6)
-        self.assertEqual(cleaned_df_list[0]["totalstaff"], None)
-        self.assertEqual(cleaned_df_list[1]["totalstaff"], 500)
+        self.assertEqual(cleaned_df_list[0]["total_staff"], None)
+        self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
-        columns = ["locationid", "wkrrecs", "totalstaff", "numberofbeds", "jobcount"]
+        columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
         rows = [
             ("1-000000001", 20, 20, 25, None),
         ]
@@ -115,7 +95,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["jobcount"], 20)
+        self.assertEqual(df[0]["job_count"], 20)
 
     def test_calculate_jobcount_coalesce_totalstaff_wkrrecs(self):
         rows = [
@@ -127,7 +107,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["jobcount"], 50)
+        self.assertEqual(df[0]["job_count"], 50)
 
     def test_calculate_jobcount_abs_difference_within_range(self):
         rows = [
@@ -140,8 +120,8 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df.count(), 2)
 
         df = df.collect()
-        self.assertEqual(df[0]["jobcount"], 11)
-        self.assertEqual(df[1]["jobcount"], 104.5)
+        self.assertEqual(df[0]["job_count"], 11)
+        self.assertEqual(df[1]["job_count"], 104.5)
 
     def test_calculate_jobcount_handle_tiny_values(self):
         rows = [
@@ -153,17 +133,17 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["jobcount"], 53)
+        self.assertEqual(df[0]["job_count"], 53)
 
     def test_calculate_jobcount(self):
-        columns = ["locationid", "wkrrecs", "totalstaff", "numberofbeds"]
+        columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds"]
         rows = [
             ("1-000000001", None, 0, 0),  # Both 0: Return 0
             # Both 500: Return 500
             ("1-000000002", 500, 500, 490),
-            # Only know wkrrecs: Return wkrrecs (100)
+            # Only know worker_record_count: Return worker_record_count (100)
             ("1-000000003", 100, None, 10),
-            # Only know totalstaff: Return totalstaf (10)
+            # Only know total_staff: Return totalstaf (10)
             ("1-000000004", None, 10, 12),
             # None of the rules apply: Return None
             ("1-000000005", 25, 75, 40),
@@ -173,7 +153,7 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000007", 600, 900, 150),
             # Absolute difference is within 10%: Return Average
             ("1-000000008", 10, 12, None),
-            # Either totalstaff or wkrrecs < 3: return max
+            # Either total_staff or worker_record_count < 3: return max
             ("1-000000009", 1, 23, None),
             # Utilise bedcount estimate - Average
             ("1-000000010", 90, 102, 85),
@@ -187,18 +167,18 @@ class PrepareLocationsTests(unittest.TestCase):
         jobcount_df = prepare_locations.calculate_jobcount(df)
         jobcount_df_list = jobcount_df.collect()
 
-        self.assertEqual(jobcount_df_list[0]["jobcount"], 0.0)
-        self.assertEqual(jobcount_df_list[1]["jobcount"], 500.0)
-        self.assertEqual(jobcount_df_list[2]["jobcount"], 100.0)
-        self.assertEqual(jobcount_df_list[3]["jobcount"], 10.0)
-        self.assertEqual(jobcount_df_list[4]["jobcount"], None)
-        self.assertEqual(jobcount_df_list[5]["jobcount"], None)
-        self.assertEqual(jobcount_df_list[6]["jobcount"], None)
-        self.assertEqual(jobcount_df_list[7]["jobcount"], 11.0)
-        self.assertEqual(jobcount_df_list[8]["jobcount"], 23.0)
-        self.assertEqual(jobcount_df_list[9]["jobcount"], 96.0)
-        self.assertEqual(jobcount_df_list[10]["jobcount"], 102.0)
-        self.assertEqual(jobcount_df_list[11]["jobcount"], 90.0)
+        self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
+        self.assertEqual(jobcount_df_list[1]["job_count"], 500.0)
+        self.assertEqual(jobcount_df_list[2]["job_count"], 100.0)
+        self.assertEqual(jobcount_df_list[3]["job_count"], 10.0)
+        self.assertEqual(jobcount_df_list[4]["job_count"], None)
+        self.assertEqual(jobcount_df_list[5]["job_count"], None)
+        self.assertEqual(jobcount_df_list[6]["job_count"], None)
+        self.assertEqual(jobcount_df_list[7]["job_count"], 11.0)
+        self.assertEqual(jobcount_df_list[8]["job_count"], 23.0)
+        self.assertEqual(jobcount_df_list[9]["job_count"], 96.0)
+        self.assertEqual(jobcount_df_list[10]["job_count"], 102.0)
+        self.assertEqual(jobcount_df_list[11]["job_count"], 90.0)
 
 
 if __name__ == "__main__":
