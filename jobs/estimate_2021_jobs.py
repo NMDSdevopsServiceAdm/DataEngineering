@@ -33,7 +33,6 @@ def main(prepared_locations_source, destination, ascwds_import_date="'2021-03-31
     locations_df = (
         spark.read.parquet(prepared_locations_source)
         .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
-        .distinct()
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
             and {LOCATION_TYPE} = 'Social Care Org' \
