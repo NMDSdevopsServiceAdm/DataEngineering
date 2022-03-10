@@ -30,6 +30,18 @@ class PrepareLocationsTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
 
+    def test_get_ascwds_workplace_df(self):
+        path = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
+        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "tests/test_data/")
+        self.assertEqual(workplace_df.count(), 10)
+
+        self.assertEqual(workplace_df.columns[0], "locationid")
+        self.assertEqual(workplace_df.columns[1], "establishmentid")
+        self.assertEqual(workplace_df.columns[2], "providerid")
+        self.assertEqual(workplace_df.columns[3], "total_staff")
+        self.assertEqual(workplace_df.columns[4], "worker_record_count")
+        self.assertEqual(workplace_df.columns[5], "ascwds_workplace_import_date")
+
     def test_get_pir_dataframe(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
         pir_df = prepare_locations.get_pir_dataframe(path, "tests/test_data/")

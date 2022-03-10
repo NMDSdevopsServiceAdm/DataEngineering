@@ -142,7 +142,7 @@ def clean(input_df):
     # Standardise negative and 0 values as None.
     input_df = input_df.replace("0", None).replace("-1", None)
 
-    # Cast integers to string
+    # Cast strings to integers
     input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
     input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))

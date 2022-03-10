@@ -42,9 +42,7 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
