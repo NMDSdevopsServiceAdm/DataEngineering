@@ -91,6 +91,8 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
         "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
     )
 
+    cqc_df = cqc_df.filter("location_type=='Social Care Org'")
+
     return cqc_df
 
 
