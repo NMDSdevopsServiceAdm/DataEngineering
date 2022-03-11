@@ -91,6 +91,8 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
         "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
     )
 
+    cqc_df = cqc_df.filter("location_type=='Social Care Org'")
+
     return cqc_df
 
 
@@ -142,7 +144,7 @@ def clean(input_df):
     # Standardise negative and 0 values as None.
     input_df = input_df.replace("0", None).replace("-1", None)
 
-    # Cast integers to string
+    # Cast strings to integers
     input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
     input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))

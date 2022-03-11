@@ -1,4 +1,4 @@
-from pyspark.sql.types import *
+from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType
 
 PROVIDER_SCHEMA = StructType(
     fields=[

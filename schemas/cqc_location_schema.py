@@ -1,4 +1,4 @@
-from pyspark.sql.types import *
+from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType, IntegerType
 
 LOCATION_SCHEMA = StructType(
     fields=[
@@ -67,12 +67,8 @@ LOCATION_SCHEMA = StructType(
                                 StructType(
                                     [
                                         StructField("personTitle", StringType(), True),
-                                        StructField(
-                                            "personGivenName", StringType(), True
-                                        ),
-                                        StructField(
-                                            "personFamilyName", StringType(), True
-                                        ),
+                                        StructField("personGivenName", StringType(), True),
+                                        StructField("personFamilyName", StringType(), True),
                                         StructField("personRoles", StringType(), True),
                                     ]
                                 )
@@ -136,15 +132,9 @@ LOCATION_SCHEMA = StructType(
                                         StructType(
                                             [
                                                 StructField("name", StringType(), True),
-                                                StructField(
-                                                    "rating", StringType(), True
-                                                ),
-                                                StructField(
-                                                    "reportDate", StringType(), True
-                                                ),
-                                                StructField(
-                                                    "reportLinkId", StringType(), True
-                                                ),
+                                                StructField("rating", StringType(), True),
+                                                StructField("reportDate", StringType(), True),
+                                                StructField("reportLinkId", StringType(), True),
                                             ]
                                         )
                                     ),
@@ -176,12 +166,8 @@ LOCATION_SCHEMA = StructType(
                                         ArrayType(
                                             StructType(
                                                 [
-                                                    StructField(
-                                                        "name", StringType(), True
-                                                    ),
-                                                    StructField(
-                                                        "rating", StringType(), True
-                                                    ),
+                                                    StructField("name", StringType(), True),
+                                                    StructField("rating", StringType(), True),
                                                 ]
                                             ),
                                             True,
