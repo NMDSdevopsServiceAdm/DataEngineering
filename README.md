@@ -28,19 +28,55 @@ Python | https://www.python.org/downloads/ | https://www.python.org/downloads/
 Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
 Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
 Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
+java jdk8 | https://www.java.com/en/download/ | https://www.java.com/en/download/
+
+## Install Java (MacOS)
+This project is using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
+```
+brew update
+brew install adoptopenjdk8
+```
 
 
-### Clone the project
+## Clone the project
 ```
 git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 ```
-### Create virtual environment and install dependencies
+## Create virtual environment and install dependencies
 ```
 cd DataEngineering
 pipenv install --dev
 ```
 
 For detailed Windows setup see here: https://github.com/NMDSdevopsServiceAdm/DataEngineering/blob/main/WindowsSetup.md
+
+
+### Start virtual env
+```
+pipenv shell
+```
+### Stop virtual env
+```
+exit
+```
+#### IMPORTANT
+Do not use `deactivate` or `source deactivate` - this will leave pipenv in a confused state because you will still be in that spawned shell instance but not in an activated virtualenv. 
+
+## Testing
+### Run test
+*Make sure you have the virtual environment running (see above).*
+
+Run specific test:
+```
+python -m unittest tests/unit/<test_name.py>
+```
+Run all tests
+```
+python -m unittest discover tests/unit "test_*.py"
+```
+
+For verbose output add `-v` to the end of the command.
+
 
 <br>
 <br>
