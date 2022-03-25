@@ -5,4 +5,4 @@
 # Developer checklist
 - [ ] Unit test
 - [ ] Linked to Trello ticket
-- [ ] Readme up to date
+- [ ] Documentation up to date
