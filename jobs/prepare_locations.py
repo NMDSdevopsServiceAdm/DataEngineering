@@ -15,6 +15,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     print("Building locations prepared dataset")
 
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
+    ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
     cqc_location_df = get_cqc_location_df(cqc_location_source)
     output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
@@ -153,9 +154,13 @@ def clean(input_df):
 
 
 def purge_workplaces(input_df):
+    print("Purging ASCWDS accounts...")
+
+    # Convert import_date to date field and remove 2 years
     input_df = input_df.withColumn("import_date", to_date("import_date", "yyyyMMdd"))
     input_df = input_df.withColumn("purge_date", add_months(col("import_date"), -24))
 
+    # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
         input_df.select("locationid", "orgid", "mupddate").groupBy("orgid").agg(max("mupddate").alias("mupddate_org"))
     )
@@ -164,6 +169,7 @@ def purge_workplaces(input_df):
         "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
     )
 
+    # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
     return input_df
