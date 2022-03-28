@@ -96,6 +96,26 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[0]["total_staff"], None)
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
 
+    def test_purge_workplaces(self):
+        columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]
+        rows = [
+            ("1", "20230319", "1", "1", datetime.date(2018, 9, 5)),
+            ("2", "20230319", "1", "0", datetime.date(2019, 7, 10)),
+            ("3", "20230319", "1", "1", datetime.date(2020, 5, 15)),
+            ("4", "20230319", "1", "0", datetime.date(2021, 3, 20)),
+            ("5", "20230319", "1", "1", datetime.date(2022, 1, 25)),
+            ("6", "20230319", "2", "1", datetime.date(2021, 3, 18)),
+            ("7", "20230319", "3", "1", datetime.date(2021, 3, 19)),
+            ("8", "20230319", "4", "1", datetime.date(2021, 3, 20)),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+        df = prepare_locations.purge_workplaces(df)
+
+        self.assertEqual(df.count(), 5)
+
+        # asserts equivalent items are present in both sequences
+        self.assertCountEqual(df.select("locationid").rdd.flatMap(lambda x: x).collect(), ["1", "3", "4", "5", "8"])
+
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
         columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
         rows = [

@@ -2,7 +2,7 @@ import argparse
 from datetime import date
 
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date
+from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months
 from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
@@ -148,6 +148,23 @@ def clean(input_df):
     input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
     input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
+
+    return input_df
+
+
+def purge_workplaces(input_df):
+    input_df = input_df.withColumn("import_date", to_date("import_date", "yyyyMMdd"))
+    input_df = input_df.withColumn("purge_date", add_months(col("import_date"), -24))
+
+    org_purge_df = (
+        input_df.select("locationid", "orgid", "mupddate").groupBy("orgid").agg(max("mupddate").alias("mupddate_org"))
+    )
+    input_df = input_df.join(org_purge_df, "orgid", "left")
+    input_df = input_df.withColumn(
+        "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
+    )
+
+    input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
     return input_df
 
