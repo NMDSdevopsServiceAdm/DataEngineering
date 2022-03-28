@@ -117,6 +117,20 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[3]["cqc_sector"], "Independent")
         self.assertEqual(df[4]["cqc_sector"], "Independent")
 
+    def test_filter_out_cqc_la_data(self):
+        columns = ["providerid", "cqc_sector"]
+        rows = [
+            ("1-000000001", "Local authority"),
+            ("1-000000002", "Independent"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = prepare_locations.filter_out_cqc_la_data(df)
+        self.assertEqual(df.count(), 1)
+
+        df = df.collect()
+        self.assertEqual(df[0]["cqc_sector"], "Independent")
+
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
         columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
         rows = [

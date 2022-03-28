@@ -22,6 +22,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
     cqc_provider_df = add_cqc_sector(cqc_provider_df)
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
+    output_df = filter_out_cqc_la_data(output_df)
 
     pir_df = get_pir_dataframe(pir_source)
     output_df = output_df.join(pir_df, "locationid", "left")
@@ -179,6 +180,15 @@ def add_cqc_sector(input_df):
     input_df = input_df.withColumn(
         "cqc_sector", when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority")
     )
+
+    return input_df
+
+
+def filter_out_cqc_la_data(input_df):
+    print("Filter out LA sector data...")
+
+    # remove any records where sector is 'local authority'
+    input_df = input_df.filter("cqc_sector=='Independent'")
 
     return input_df
 
