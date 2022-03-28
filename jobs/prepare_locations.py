@@ -2,7 +2,7 @@ import argparse
 from datetime import date
 
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date
+from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, lower
 from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
@@ -17,6 +17,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
 
     cqc_location_df = get_cqc_location_df(cqc_location_source)
+    output_df = add_cqc_sector(cqc_location_df)
     output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
 
     cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
@@ -159,6 +160,25 @@ def filter_nulls(input_df):
 
     # Remove rows with null locationId
     input_df = input_df.na.drop(subset=["locationid"])
+
+    return input_df
+
+
+def add_cqc_sector(input_df):
+    print("Adding CQC sector column...")
+
+    # allocate service based on provider name
+    input_df = input_df.withColumn(
+        "cqc_sector",
+        lower(input_df.provider_name).rlike(
+            "department of community services|social & community services|scc adult social care|cheshire west and chester reablement service|council|social services|mbc|mdc|london borough|royal borough|borough of"
+        )
+        & ~lower(input_df.provider_name).rlike("the council of st monica trust"),
+    )
+
+    input_df = input_df.withColumn(
+        "cqc_sector", when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority")
+    )
 
     return input_df
 
