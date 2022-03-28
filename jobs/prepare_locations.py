@@ -20,7 +20,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
 
     cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
-    output_df = add_cqc_sector(cqc_provider_df)
+    cqc_provider_df = add_cqc_sector(cqc_provider_df)
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
 
     pir_df = get_pir_dataframe(pir_source)
