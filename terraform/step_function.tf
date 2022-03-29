@@ -16,7 +16,7 @@ resource "aws_sfn_state_machine" "master_state_machine" {
         "JobName": "ingest_ascwds_dataset_job",
         "Arguments": {
           "--destination.$": "$.jobs.ingest_ascwds_dataset.destination",
-          "--source": "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=03/day=18/import_date=20220318/"
+          "--source.$": "$.jobs.ingest_ascwds_dataset.source"
         }
       },
       "Catch": [
@@ -55,11 +55,11 @@ resource "aws_sfn_state_machine" "master_state_machine" {
               "Parameters": {
                 "JobName": "prepare_locations_job",
                 "Arguments": {
-                  "--destination": "s3://skillsforcare/step-function-testing/prepare_locations_test",
-                  "--pir_source": "s3://sfc-data-engineering/domain=CQC/dataset=pir/version=0.0.3/ year=2020/month=03/day=31/import_date=20200331/",
-                  "--workplace_source": "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=0.0.1/",
-                  "--cqc_provider_source": "s3://sfc-data-engineering/domain=CQC/dataset=providers-api/version=1.0.0/year=2022/month=03/day=01/import_date=20220301/",
-                  "--cqc_location_source": "s3://sfc-data-engineering/domain=CQC/dataset=locations-api/version=1.0.0/year=2022/month=03/day=01/import_date=20220301/"
+                  "--destination.$": "$.jobs.prepare_locations_job.destination",
+                  "--pir_source.$": "$.jobs.prepare_locations_job.pir_source",
+                  "--workplace_source.$": "$.jobs.prepare_locations_job.workplace_source",
+                  "--cqc_provider_source.$": "$.jobs.prepare_locations_job.cqc_provider_source",
+                  "--cqc_location_source.$": "$.jobs.prepare_locations_job.cqc_location_source"
                 }
               },
               "End": true
@@ -74,8 +74,8 @@ resource "aws_sfn_state_machine" "master_state_machine" {
       "Parameters": {
         "JobName": "estimate_2021_jobs_job",
         "Arguments": {
-          "--destination": "s3://skillsforcare/step-function-testing/estimate_2021_jobs_test",
-          "--prepared_locations_source": "s3://skillsforcare/step-function-testing/prepare_locations_test"
+          "--destination.$": "$.jobs.estimate_2021_jobs_job.destination",
+          "--prepared_locations_source.$": "$.jobs.estimate_2021_jobs_job.prepared_locations_source"
         }
       },
       "Next": "Run Data Engineering Crawler"
