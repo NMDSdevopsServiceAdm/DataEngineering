@@ -27,11 +27,13 @@ resource "aws_sfn_state_machine" "master_state_machine" {
           "Next": "Fail"
         }
       ],
-      "Next": "Parallel"
+      "Next": "Parallel",
+      "ResultPath": null
     },
     "Parallel": {
       "Type": "Parallel",
       "Next": "Estimate 2021 Jobs",
+      "ResultPath": null,
       "Branches": [
         {
           "StartAt": "Run ASCWDS Crawler",
@@ -78,7 +80,8 @@ resource "aws_sfn_state_machine" "master_state_machine" {
           "--prepared_locations_source.$": "$.jobs.estimate_2021_jobs_job.prepared_locations_source"
         }
       },
-      "Next": "Run Data Engineering Crawler"
+      "Next": "Run Data Engineering Crawler",
+      "ResultPath": null
     },
     "Run Data Engineering Crawler": {
       "Type": "Task",
