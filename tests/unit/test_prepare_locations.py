@@ -116,6 +116,41 @@ class PrepareLocationsTests(unittest.TestCase):
         # asserts equivalent items are present in both sequences
         self.assertCountEqual(df.select("locationid").rdd.flatMap(lambda x: x).collect(), ["1", "3", "4", "5", "8"])
 
+    def test_add_cqc_sector(self):
+        columns = ["providerid", "provider_name"]
+        rows = [
+            ("1-000000001", "This is an MDC"),
+            ("1-000000002", "Local authority council alert"),
+            ("1-000000003", "The Royal Borough of Skills for Care"),
+            ("1-000000004", "Not actually a borough"),
+            ("1-000000005", "The Council of St Monica Trust"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = prepare_locations.add_cqc_sector(df)
+        self.assertEqual(df.count(), 5)
+
+        df = df.collect()
+        self.assertEqual(df[0]["cqc_sector"], "Local authority")
+        self.assertEqual(df[1]["cqc_sector"], "Local authority")
+        self.assertEqual(df[2]["cqc_sector"], "Local authority")
+        self.assertEqual(df[3]["cqc_sector"], "Independent")
+        self.assertEqual(df[4]["cqc_sector"], "Independent")
+
+    def test_filter_out_cqc_la_data(self):
+        columns = ["providerid", "cqc_sector"]
+        rows = [
+            ("1-000000001", "Local authority"),
+            ("1-000000002", "Independent"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = prepare_locations.filter_out_cqc_la_data(df)
+        self.assertEqual(df.count(), 1)
+
+        df = df.collect()
+        self.assertEqual(df[0]["cqc_sector"], "Independent")
+
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
         columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
         rows = [
