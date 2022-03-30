@@ -131,15 +131,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "glue:StartJobRun"
-        ],
-        "Resource" : [
-          "*"
-        ]
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : [
           "xray:PutTraceSegments",
           "xray:PutTelemetryRecords",
           "xray:GetSamplingRules",
@@ -150,7 +141,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ]
       },
       {
-        "Sid" : "VisualEditor0",
         "Effect" : "Allow",
         "Action" : [
           "glue:StartCrawler",
