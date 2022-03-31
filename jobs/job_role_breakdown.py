@@ -10,7 +10,7 @@ from pyspark.sql import Window
 from utils import utils
 
 
-def main(worker_source, job_estimates_source, destinaton):
+def main(job_estimates_source, worker_source, destinaton):
     print("Determining job role breakdown for cqc locations")
     output_df = None
 
@@ -70,7 +70,7 @@ def main(worker_source, job_estimates_source, destinaton):
         "ascwds_num_of_jobs") + col("estimated_num_of_jobs")).drop("location_worker_records")
 
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(output_df, destination)
+    utils.write_to_parquet(master_df, destination)
 
 
 def determine_job_role_breakdown_by_service(df):
@@ -152,8 +152,8 @@ def collect_arguments():
 
 if __name__ == "__main__":
     (
-        worker_source,
         job_estimates_source,
+        worker_source,
         destination,
     ) = collect_arguments()
-    main(worker_source, job_estimates_source, destination)
+    main(job_estimates_source, worker_source, destination)
