@@ -47,6 +47,7 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
             col("import_date").alias("ascwds_workplace_import_date"),
+            col("orgid"),
             col("mupddate"),
             col("isparent"),
         )
