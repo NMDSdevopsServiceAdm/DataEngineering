@@ -31,9 +31,9 @@ def main(job_estimates_source, worker_source, destinaton):
     # Prepare location fields
 
     master_df = master_df.withColumn("location_jobs_ratio", least(
-        lit(1), col("estimate_job_count_2021")/col("location_worker_records")))
+        lit(1), col("estimate_job_count_2021")/col("location_worker_record_count")))
     master_df = master_df.withColumn("location_jobs_to_model", greatest(
-        lit(0), col("estimate_job_count_2021")-col("location_worker_records")))
+        lit(0), col("estimate_job_count_2021")-col("location_worker_record_count")))
 
     # Remove worker id, aggregate count by jobrole and location
     worker_df = worker_df.groupby('locationid', 'mainjrid').count(
@@ -66,7 +66,7 @@ def main(job_estimates_source, worker_source, destinaton):
         "adjusted_job_role_percentage")).drop("location_jobs_to_model", "adjusted_job_role_percentage")
 
     master_df = master_df.withColumn("estimate_job_role_count_2021", col(
-        "ascwds_num_of_jobs") + col("estimated_num_of_jobs")).drop("location_worker_records")
+        "ascwds_num_of_jobs") + col("estimated_num_of_jobs")).drop("location_worker_record_count")
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(master_df, destination)
