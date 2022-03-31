@@ -17,7 +17,7 @@ def main(job_estimates_source, worker_source, destinaton):
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
 
     worker_record_count = worker_df.select("locationid").groupBy(
-        "locationid").agg(count("workerid").alias("location_worker_record_count"))
+        "locationid").agg(count("locationid").alias("location_worker_record_count"))
 
     master_df = job_estimate_df.join(
         worker_record_count, "locationid")
