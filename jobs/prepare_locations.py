@@ -180,8 +180,6 @@ def purge_workplaces(input_df):
 
     input_df.drop("isparent", "mupddate")
 
-    input_df.show()
-
     return input_df
 
 
