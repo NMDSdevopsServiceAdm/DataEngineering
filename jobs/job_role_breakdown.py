@@ -40,7 +40,7 @@ def main(job_estimates_source, worker_source, destinaton):
     ).withColumnRenamed("count", "ascwds_num_of_jobs")
 
     master_df = master_df.join(worker_df, (worker_df.locationid == master_df.locationid) & (
-        worker_df.mainjrid == master_df.main_job_role), 'left').drop('locationid', 'mainjrid')
+        worker_df.mainjrid == master_df.main_job_role_id), 'left').drop('locationid', 'mainjrid')
 
     master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
 
@@ -73,7 +73,7 @@ def main(job_estimates_source, worker_source, destinaton):
 
 
 def determine_job_role_breakdown_by_service(df):
-    job_role_breakdown_by_service = df.selectExpr("primary_service_type AS service_type", "main_job_role AS job_role", "ascwds_num_of_jobs").groupBy(
+    job_role_breakdown_by_service = df.selectExpr("primary_service_type AS service_type", "main_job_role_id AS job_role", "ascwds_num_of_jobs").groupBy(
         "service_type", "job_role").agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
 
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
@@ -83,13 +83,12 @@ def determine_job_role_breakdown_by_service(df):
         "ascwds_num_of_jobs_in_service")/col("all_ascwds_jobs_in_service")).drop("ascwds_num_of_jobs_in_service", "all_ascwds_jobs_in_service")
 
     output_df = df.join(job_role_breakdown_by_service, (job_role_breakdown_by_service.service_type == df.primary_service_type) & (
-        job_role_breakdown_by_service.job_role == df.main_job_role), 'left').drop('service_type', 'job_role')
+        job_role_breakdown_by_service.job_role == df.main_job_role_id), 'left').drop('service_type', 'job_role')
 
     return output_df
 
 
 def get_worker_dataset(worker_source):
-    spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
     worker_df = (
         spark.read
