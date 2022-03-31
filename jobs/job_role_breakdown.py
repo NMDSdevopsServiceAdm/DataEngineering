@@ -5,13 +5,7 @@ Columns: Locationid, jobroleid, jobrole name, count of workers
 """
 
 import argparse
-from datetime import date
-
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, lower
-from pyspark.sql.types import IntegerType
-import datetime
-from pyspark.sql.functions import col, least, greatest, lit, sum, countDistinct, expr, count, round
+from pyspark.sql.functions import col, count, lit, least, greatest
 from pyspark.sql import Window
 from utils import utils
 
@@ -19,15 +13,87 @@ from utils import utils
 def main(worker_source, job_estimates_source, destinaton):
     print("Determining job role breakdown for cqc locations")
     output_df = None
+
+    worker_df = get_worker_dataset(worker_source)
+    job_estimate_df = get_job_estimates_dataset(job_estimates_source)
+
+    worker_record_count = worker_df.select("locationid").groupBy(
+        "locationid").agg(count("workerid").alias("location_worker_record_count"))
+
+    master_df = job_estimate_df.join(
+        worker_record_count, "locationid")
+
+    unique_jobrole_df = worker_df.selectExpr(
+        "mainjrid AS main_job_role_id").distinct()
+
+    # Create a mapping of every job role to every location.
+    master_df = master_df.crossJoin(unique_jobrole_df)
+
+    # Prepare location fields
+
+    master_df = master_df.withColumn("location_jobs_ratio", least(
+        lit(1), col("estimate_job_count_2021")/col("location_worker_records")))
+    master_df = master_df.withColumn("location_jobs_to_model", greatest(
+        lit(0), col("estimate_job_count_2021")-col("location_worker_records")))
+
+    # Remove worker id, aggregate count by jobrole and location
+    worker_df = worker_df.groupby('locationid', 'mainjrid').count(
+    ).withColumnRenamed("count", "ascwds_num_of_jobs")
+
+    master_df = master_df.join(worker_df, (worker_df.locationid == master_df.master_locationid) & (
+        worker_df.mainjrid == master_df.main_job_role), 'left').drop('locationid', 'mainjrid')
+
+    master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
+
+    # ---- -----
+
+    # estimated jobs in each role for estimated jobs
+    master_df = master_df.withColumn("estimated_jobs_in_role", col(
+        "estimate_job_count_2021") * col("estimated_job_role_percentage")).drop("estimated_job_role_percentage")
+
+    master_df = determine_job_role_breakdown_by_service(master_df)
+
+    # compare estimated jobs to ascwds
+    master_df = master_df.withColumn("estimated_minus_ascwds", greatest(lit(0), col(
+        "estimated_jobs_in_role")-col("ascwds_num_of_jobs"))).drop("estimated_jobs_in_role")
+
+    master_df = master_df.withColumn("sum_of_estimated_minus_ascwds", sum(
+        "estimated_minus_ascwds").over(Window.partitionBy("master_locationid")))
+
+    master_df = master_df.withColumn("adjusted_job_role_percentage", col("estimated_minus_ascwds")/col(
+        "sum_of_estimated_minus_ascwds")).drop("estimated_minus_ascwds", "sum_of_estimated_minus_ascwds")
+
+    master_df = master_df.withColumn("estimated_num_of_jobs", col("location_jobs_to_model") * col(
+        "adjusted_job_role_percentage")).drop("location_jobs_to_model", "adjusted_job_role_percentage")
+
+    master_df = master_df.withColumn("estimate_job_role_count_2021", col(
+        "ascwds_num_of_jobs") + col("estimated_num_of_jobs")).drop("location_worker_records")
+
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(output_df, destination)
 
 
-def get_worker_dataset(worker_source, base_path):
+def determine_job_role_breakdown_by_service(df):
+    job_role_breakdown_by_service = df.selectExpr("primary_service_type AS service_type", "main_job_role AS job_role", "ascwds_num_of_jobs").groupBy(
+        "service_type", "job_role").agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
+
+    job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
+        "all_ascwds_jobs_in_service", sum("ascwds_num_of_jobs_in_service").over(Window.partitionBy("service_type")))
+
+    job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn("estimated_job_role_percentage", col(
+        "ascwds_num_of_jobs_in_service")/col("all_ascwds_jobs_in_service")).drop("ascwds_num_of_jobs_in_service", "all_ascwds_jobs_in_service")
+
+    output_df = df.join(job_role_breakdown_by_service, (job_role_breakdown_by_service.service_type == df.primary_service_type) & (
+        job_role_breakdown_by_service.job_role == df.main_job_role), 'left').drop('service_type', 'job_role')
+
+    return output_df
+
+
+def get_worker_dataset(worker_source):
     spark = utils.get_spark()
-    print(f"Reading worksources parquet from {worker_source}")
+    print(f"Reading worker source parquet from {worker_source}")
     worker_df = (
-        spark.read.option("basePath", base_path)
+        spark.read
         .parquet(worker_source)
         .select(
             col("establishmentid"),
