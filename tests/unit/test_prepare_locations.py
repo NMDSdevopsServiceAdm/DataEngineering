@@ -99,22 +99,28 @@ class PrepareLocationsTests(unittest.TestCase):
     def test_purge_workplaces(self):
         columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
         rows = [
-            ("1", "20230319", "1", "1", datetime.date(2018, 9, 5)),
-            ("2", "20230319", "1", "0", datetime.date(2019, 7, 10)),
-            ("3", "20230319", "1", "1", datetime.date(2020, 5, 15)),
-            ("4", "20230319", "1", "0", datetime.date(2021, 3, 20)),
-            ("5", "20230319", "1", "1", datetime.date(2022, 1, 25)),
-            ("6", "20230319", "2", "1", datetime.date(2021, 3, 18)),
-            ("7", "20230319", "3", "1", datetime.date(2021, 3, 19)),
-            ("8", "20230319", "4", "1", datetime.date(2021, 3, 20)),
+            ("1", datetime.date(2023, 3, 19), "1", "1", datetime.date(2018, 9, 5)),
+            ("2", datetime.date(2023, 3, 19), "1", "0", datetime.date(2019, 7, 10)),
+            ("3", datetime.date(2023, 3, 19), "1", "1", datetime.date(2020, 5, 15)),
+            ("4", datetime.date(2023, 3, 19), "1", "0", datetime.date(2021, 3, 20)),
+            ("5", datetime.date(2023, 3, 19), "1", "1", datetime.date(2022, 1, 25)),
+            ("6", datetime.date(2023, 3, 19), "2", "1", datetime.date(2021, 3, 18)),
+            ("7", datetime.date(2023, 3, 19), "3", "1", datetime.date(2021, 3, 19)),
+            ("8", datetime.date(2023, 3, 19), "4", "1", datetime.date(2021, 3, 20)),
+            ("9", datetime.date(2010, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2011, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2012, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2013, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
         ]
         df = self.spark.createDataFrame(rows, columns)
         df = prepare_locations.purge_workplaces(df)
 
-        self.assertEqual(df.count(), 5)
+        self.assertEqual(df.count(), 7)
 
         # asserts equivalent items are present in both sequences
-        self.assertCountEqual(df.select("locationid").rdd.flatMap(lambda x: x).collect(), ["1", "3", "4", "5", "8"])
+        self.assertCountEqual(
+            df.select("locationid").rdd.flatMap(lambda x: x).collect(), ["1", "3", "4", "5", "8", "9", "9"]
+        )
 
     def test_add_cqc_sector(self):
         columns = ["providerid", "provider_name"]

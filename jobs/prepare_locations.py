@@ -162,14 +162,15 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("ascwds_workplace_import_date", to_date("ascwds_workplace_import_date", "yyyyMMdd"))
     input_df = input_df.withColumn("purge_date", add_months(col("ascwds_workplace_import_date"), -24))
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
-        input_df.select("locationid", "orgid", "mupddate").groupBy("orgid").agg(max("mupddate").alias("mupddate_org"))
+        input_df.select("locationid", "orgid", "mupddate", "ascwds_workplace_import_date")
+        .groupBy("orgid", "ascwds_workplace_import_date")
+        .agg(max("mupddate").alias("mupddate_org"))
     )
-    input_df = input_df.join(org_purge_df, "orgid", "left")
+    input_df = input_df.join(org_purge_df, ["orgid", "ascwds_workplace_import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
     )
@@ -178,6 +179,8 @@ def purge_workplaces(input_df):
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
     input_df.drop("isparent", "mupddate")
+
+    input_df.show()
 
     return input_df
 
