@@ -97,7 +97,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
 
     def test_purge_workplaces(self):
-        columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]
+        columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
         rows = [
             ("1", "20230319", "1", "1", datetime.date(2018, 9, 5)),
             ("2", "20230319", "1", "0", datetime.date(2019, 7, 10)),

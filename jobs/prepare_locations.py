@@ -47,6 +47,8 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
             col("import_date").alias("ascwds_workplace_import_date"),
+            col("mupddate"),
+            col("isparent"),
         )
     )
 
@@ -159,8 +161,8 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("import_date", to_date("import_date", "yyyyMMdd"))
-    input_df = input_df.withColumn("purge_date", add_months(col("import_date"), -24))
+    input_df = input_df.withColumn("ascwds_workplace_import_date", to_date("ascwds_workplace_import_date", "yyyyMMdd"))
+    input_df = input_df.withColumn("purge_date", add_months(col("ascwds_workplace_import_date"), -24))
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
@@ -173,6 +175,8 @@ def purge_workplaces(input_df):
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
+
+    input_df.drop("isparent", "mupddate")
 
     return input_df
 
