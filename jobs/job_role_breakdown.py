@@ -12,7 +12,6 @@ from utils import utils
 
 def main(job_estimates_source, worker_source, destinaton):
     print("Determining job role breakdown for cqc locations")
-    output_df = None
 
     worker_df = get_worker_dataset(worker_source)
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
