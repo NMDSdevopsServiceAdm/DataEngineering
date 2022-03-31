@@ -89,6 +89,7 @@ def determine_job_role_breakdown_by_service(df):
 
 
 def get_worker_dataset(worker_source):
+    spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
     worker_df = (
         spark.read
