@@ -46,11 +46,11 @@ def main(job_estimates_source, worker_source, destinaton):
 
     # ---- -----
 
+    master_df = determine_job_role_breakdown_by_service(master_df)
+
     # estimated jobs in each role for estimated jobs
     master_df = master_df.withColumn("estimated_jobs_in_role", col(
         "estimate_job_count_2021") * col("estimated_job_role_percentage")).drop("estimated_job_role_percentage")
-
-    master_df = determine_job_role_breakdown_by_service(master_df)
 
     # compare estimated jobs to ascwds
     master_df = master_df.withColumn("estimated_minus_ascwds", greatest(lit(0), col(
