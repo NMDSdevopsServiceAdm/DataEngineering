@@ -29,7 +29,6 @@ def main(job_estimates_source, worker_source, destinaton):
     master_df = master_df.crossJoin(unique_jobrole_df)
 
     # Prepare location fields
-
     master_df = master_df.withColumn("location_jobs_ratio", least(
         lit(1), col("estimate_job_count_2021")/col("location_worker_record_count")))
     master_df = master_df.withColumn("location_jobs_to_model", greatest(
@@ -40,7 +39,7 @@ def main(job_estimates_source, worker_source, destinaton):
     ).withColumnRenamed("count", "ascwds_num_of_jobs")
 
     master_df = master_df.join(worker_df, (worker_df.locationid == master_df.locationid) & (
-        worker_df.mainjrid == master_df.main_job_role_id), 'left').drop('locationid', 'mainjrid')
+        worker_df.mainjrid == master_df.main_job_role_id), 'left').drop('mainjrid')
 
     master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
 
