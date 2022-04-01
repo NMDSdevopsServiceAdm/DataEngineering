@@ -20,7 +20,7 @@ def main(job_estimates_source, worker_source, destinaton):
         "locationid").agg(count("locationid").alias("location_worker_record_count"))
 
     master_df = job_estimate_df.join(
-        worker_record_count, "locationid")
+        worker_record_count, job_estimate_df.master_locationid == worker_record_count.locationid)
 
     unique_jobrole_df = worker_df.selectExpr(
         "mainjrid AS main_job_role_id").distinct()
@@ -38,7 +38,7 @@ def main(job_estimates_source, worker_source, destinaton):
     worker_df = worker_df.groupby('locationid', 'mainjrid').count(
     ).withColumnRenamed("count", "ascwds_num_of_jobs")
 
-    master_df = master_df.join(worker_df, (worker_df.locationid == master_df.locationid) & (
+    master_df = master_df.join(worker_df, (worker_df.locationid == master_df.master_locationid) & (
         worker_df.mainjrid == master_df.main_job_role_id), 'left').drop('mainjrid')
 
     master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
@@ -56,7 +56,7 @@ def main(job_estimates_source, worker_source, destinaton):
         "estimated_jobs_in_role")-col("ascwds_num_of_jobs"))).drop("estimated_jobs_in_role")
 
     master_df = master_df.withColumn("sum_of_estimated_minus_ascwds", sum(
-        "estimated_minus_ascwds").over(Window.partitionBy("locationid")))
+        "estimated_minus_ascwds").over(Window.partitionBy("master_locationid")))
 
     master_df = master_df.withColumn("adjusted_job_role_percentage", col("estimated_minus_ascwds")/col(
         "sum_of_estimated_minus_ascwds")).drop("estimated_minus_ascwds", "sum_of_estimated_minus_ascwds")
@@ -111,7 +111,7 @@ def get_job_estimates_dataset(job_estimates_source):
         spark.read
         .parquet(job_estimates_source)
         .select(
-            col("locationid"),
+            col("locationid").alias("master_locationid"),
             col("primary_service_type"),
             col("estimate_job_count_2021"),
         )
