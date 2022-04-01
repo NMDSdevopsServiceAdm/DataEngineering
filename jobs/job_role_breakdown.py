@@ -5,7 +5,7 @@ Columns: Locationid, jobroleid, jobrole name, count of workers
 """
 
 import argparse
-from pyspark.sql.functions import col, count, lit, least, greatest
+from pyspark.sql.functions import col, count, lit, least, greatest, sum, count_distinct, round
 from pyspark.sql import Window
 from utils import utils
 
