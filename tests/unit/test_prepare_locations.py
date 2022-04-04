@@ -37,10 +37,9 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
-        self.assertEqual(workplace_df.columns[2], "providerid")
-        self.assertEqual(workplace_df.columns[3], "total_staff")
-        self.assertEqual(workplace_df.columns[4], "worker_record_count")
-        self.assertEqual(workplace_df.columns[5], "ascwds_workplace_import_date")
+        self.assertEqual(workplace_df.columns[2], "total_staff")
+        self.assertEqual(workplace_df.columns[3], "worker_record_count")
+        self.assertEqual(workplace_df.columns[4], "ascwds_workplace_import_date")
 
     def test_get_pir_dataframe(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
