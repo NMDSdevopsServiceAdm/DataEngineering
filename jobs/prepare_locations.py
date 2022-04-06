@@ -43,7 +43,6 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
         .select(
             col("locationid"),
             col("establishmentid"),
-            col("providerid"),
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
             col("import_date").alias("ascwds_workplace_import_date"),
@@ -74,6 +73,7 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
         .parquet(cqc_location_source)
         .select(
             col("locationid"),
+            col("providerid"),
             col("organisationtype").alias("organisation_type"),
             col("type").alias("location_type"),
             col("name").alias("location_name"),
