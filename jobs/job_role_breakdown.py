@@ -28,7 +28,6 @@ def get_worker_dataset(worker_source):
         spark.read
         .parquet(worker_source)
         .select(
-            col("establishmentid"),
             col("locationid"),
             col("workerid"),
             col("mainjrid")
