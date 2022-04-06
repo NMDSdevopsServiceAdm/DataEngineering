@@ -6,51 +6,88 @@ from jobs import job_role_breakdown
 
 class JobRoleBreakdownTests(unittest.TestCase):
 
+    TEST_JOB_ESTIMATES_FILE = "tests/test_data/domain=data_engineering/dataset=job_estimates_2021/format=parquet/job_estimates_2021.parquet"
+    TEST_WORKER_FILE = "tests/test_data/domain=CQC/dataset=worker/format=parquet/worker_file.parquet"
+
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_job_role_breakdown").getOrCreate()
 
-    # def test_determine_job_role_breakdown_by_service(self):
-    #      columns = [
-    #         "locationid",
-    #         "primary_service_type",
-    #         "pir_service_users",
-    #         "number_of_beds",
-    #         "estimate_job_count_2021",
-    #     ]
-    #     rows = [
-    #         ("1-000000001", "Care home without nursing", 10, 5, None),
-    #         ("1-000000002", "Care home with nursing", 10, 3, None),
-    #         ("1-000000003", "Care home without nursing", 20, None, None),
-    #         ("1-000000004", "non-residential", 10, None, 10),
-    #     ]
-    #     df = self.spark.createDataFrame(rows, columns)
-
-    #     df = job.model_care_home_without_nursing_cqc_beds_and_pir(df)
-    #     self.assertEqual(df.count(), 4)
-
-    #     df = df.collect()
-    #     self.assertEqual(df[0]["estimate_job_count_2021"], 16.467)
-    #     self.assertEqual(df[1]["estimate_job_count_2021"], None)
-    #     self.assertEqual(df[2]["estimate_job_count_2021"], None)
-    #     self.assertEqual(df[3]["estimate_job_count_2021"], 10)
-
     def test_get_job_estimates_dataset(self):
-        test_job_estimates_file = "tests/test_data/domain=data_engineering/dataset=job_estimates_2021/format=parquet/job_estimates_2021.parquet"
+
         breakdown_df = job_role_breakdown.get_job_estimates_dataset(
-            test_job_estimates_file)
+            self.TEST_JOB_ESTIMATES_FILE)
 
         self.assertEqual(breakdown_df.count(), 4)
         self.assertEqual(breakdown_df.columns, [
                          "master_locationid", "primary_service_type", "estimate_job_count_2021"])
 
     def test_get_worker_dataset(self):
-        test_worker_file = "tests/test_data/domain=CQC/dataset=worker/format=parquet/worker_file.parquet"
-        worker_df = job_role_breakdown.get_worker_dataset(test_worker_file)
+        worker_df = job_role_breakdown.get_worker_dataset(
+            self.TEST_WORKER_FILE)
 
         self.assertEqual(worker_df.count(), 12)
         self.assertEqual(worker_df.columns, [
                          "locationid", "workerid", "mainjrid"])
+
+    def test_count_grouped_by_field_with_alias(self):
+        columns = [
+            "locationid",
+            "some_other_field"
+        ]
+        rows = [
+            ("1-000000001", "random value 1"),
+            ("1-000000001", "random value 2"),
+            ("1-000000002", "random value 3"),
+            ("1-000000002", "random value 4"),
+            ("1-000000003", "random value 5")
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        output_df = job_role_breakdown.count_grouped_by_field(
+            df, grouping_field="locationid", alias="my_count")
+
+        self.assertEqual(output_df.count(), 3)
+        self.assertEqual(output_df.columns, [
+                         "locationid", "my_count"])
+
+        output_df_list = output_df.collect()
+        self.assertEqual(output_df_list[0]["my_count"], 2)
+        self.assertEqual(output_df_list[1]["my_count"], 2)
+        self.assertEqual(output_df_list[2]["my_count"], 1)
+
+    def test_count_grouped_by_field_without_alias(self):
+        columns = [
+            "locationid",
+            "some_other_field"
+        ]
+        rows = [
+            ("1-000000001", "random value 1"),
+            ("1-000000001", "random value 2"),
+            ("1-000000002", "random value 3"),
+            ("1-000000002", "random value 4"),
+            ("1-000000003", "random value 5")
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        output_df = job_role_breakdown.count_grouped_by_field(
+            df, grouping_field="locationid")
+
+        self.assertEqual(output_df.count(), 3)
+        self.assertEqual(output_df.columns, [
+                         "locationid", "count"])
+
+        output_df_list = output_df.collect()
+        self.assertEqual(output_df_list[0]["count"], 2)
+        self.assertEqual(output_df_list[1]["count"], 2)
+        self.assertEqual(output_df_list[2]["count"], 1)
+
+    def test_main(self):
+        result_df = job_role_breakdown.main(
+            self.TEST_JOB_ESTIMATES_FILE, self.TEST_WORKER_FILE)
+
+        self.assertEqual(result_df.columns, [
+            "master_locationid", "primary_service_type", "estimate_job_count_2021", "location_worker_records"])
 
 
 if __name__ == "__main__":

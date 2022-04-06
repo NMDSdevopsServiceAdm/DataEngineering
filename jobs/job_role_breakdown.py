@@ -10,15 +10,34 @@ from pyspark.sql import Window
 from utils import utils
 
 
-def main(job_estimates_source, worker_source, destinaton):
+def main(job_estimates_source, worker_source, output_destination=None):
     print("Determining job role breakdown for cqc locations")
 
-    worker_df = get_worker_dataset(worker_source)
+    worker_df = get_worker_dataset(worker_source)  # MASTER DF IN JUPYTER
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
-    master_df = None
+    worker_record_count_df = count_grouped_by_field(
+        worker_df, grouping_field="locationid", alias="location_worker_records")
 
-    print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(master_df, destination)
+    master_df = job_estimate_df.join(worker_record_count_df, job_estimate_df.master_locationid ==
+                                     worker_record_count_df.locationid).drop("locationid")
+
+    # Currently at step 9 - (# Collect unique job roles)
+
+    print(f"Exporting as parquet to {output_destination}")
+    if output_destination:
+        utils.write_to_parquet(master_df, output_destination)
+    else:
+        return master_df
+
+
+def count_grouped_by_field(input_df, grouping_field="locationid", alias=None):
+
+    output_df = input_df.select(grouping_field).groupBy(grouping_field).count()
+
+    if alias:
+        output_df = output_df.withColumnRenamed("count", alias)
+
+    return output_df
 
 
 def get_worker_dataset(worker_source):
