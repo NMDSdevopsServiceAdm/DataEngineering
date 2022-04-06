@@ -15,76 +15,10 @@ def main(job_estimates_source, worker_source, destinaton):
 
     worker_df = get_worker_dataset(worker_source)
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
-
-    worker_record_count = worker_df.select("locationid").groupBy(
-        "locationid").agg(count("locationid").alias("location_worker_record_count"))
-
-    master_df = job_estimate_df.join(
-        worker_record_count, job_estimate_df.master_locationid == worker_record_count.locationid)
-
-    unique_jobrole_df = worker_df.selectExpr(
-        "mainjrid AS main_job_role_id").distinct()
-
-    # Create a mapping of every job role to every location.
-    master_df = master_df.crossJoin(unique_jobrole_df)
-
-    # Prepare location fields
-    master_df = master_df.withColumn("location_jobs_ratio", least(
-        lit(1), col("estimate_job_count_2021")/col("location_worker_record_count")))
-    master_df = master_df.withColumn("location_jobs_to_model", greatest(
-        lit(0), col("estimate_job_count_2021")-col("location_worker_record_count")))
-
-    # Remove worker id, aggregate count by jobrole and location
-    worker_df = worker_df.groupby('locationid', 'mainjrid').count(
-    ).withColumnRenamed("count", "ascwds_num_of_jobs")
-
-    master_df = master_df.join(worker_df, (worker_df.locationid == master_df.master_locationid) & (
-        worker_df.mainjrid == master_df.main_job_role_id), 'left').drop('mainjrid')
-
-    master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
-
-    # ---- -----
-
-    master_df = determine_job_role_breakdown_by_service(master_df)
-
-    # estimated jobs in each role for estimated jobs
-    master_df = master_df.withColumn("estimated_jobs_in_role", col(
-        "estimate_job_count_2021") * col("estimated_job_role_percentage")).drop("estimated_job_role_percentage")
-
-    # compare estimated jobs to ascwds
-    master_df = master_df.withColumn("estimated_minus_ascwds", greatest(lit(0), col(
-        "estimated_jobs_in_role")-col("ascwds_num_of_jobs"))).drop("estimated_jobs_in_role")
-
-    master_df = master_df.withColumn("sum_of_estimated_minus_ascwds", sum(
-        "estimated_minus_ascwds").over(Window.partitionBy("master_locationid")))
-
-    master_df = master_df.withColumn("adjusted_job_role_percentage", col("estimated_minus_ascwds")/col(
-        "sum_of_estimated_minus_ascwds")).drop("estimated_minus_ascwds", "sum_of_estimated_minus_ascwds")
-
-    master_df = master_df.withColumn("estimated_num_of_jobs", col("location_jobs_to_model") * col(
-        "adjusted_job_role_percentage")).drop("location_jobs_to_model", "adjusted_job_role_percentage")
-
-    master_df = master_df.withColumn("estimate_job_role_count_2021", col(
-        "ascwds_num_of_jobs") + col("estimated_num_of_jobs")).drop("location_worker_record_count")
+    master_df = None
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(master_df, destination)
-
-
-def determine_job_role_breakdown_by_service(df):
-    job_role_breakdown_by_service = df.selectExpr("primary_service_type AS service_type", "main_job_role_id AS job_role", "ascwds_num_of_jobs").groupBy(
-        "service_type", "job_role").agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
-
-    job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
-        "all_ascwds_jobs_in_service", sum("ascwds_num_of_jobs_in_service").over(Window.partitionBy("service_type")))
-
-    job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn("estimated_job_role_percentage", col(
-        "ascwds_num_of_jobs_in_service")/col("all_ascwds_jobs_in_service")).drop("ascwds_num_of_jobs_in_service", "all_ascwds_jobs_in_service")
-
-    output_df = df.join(job_role_breakdown_by_service, (job_role_breakdown_by_service.service_type == df.primary_service_type) & (
-        job_role_breakdown_by_service.job_role == df.main_job_role_id), 'left').drop('service_type', 'job_role')
-
-    return output_df
 
 
 def get_worker_dataset(worker_source):
