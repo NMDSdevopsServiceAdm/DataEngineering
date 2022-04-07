@@ -240,6 +240,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
                 "main_job_role",
                 "location_jobs_ratio",
                 "location_jobs_to_model",
+                "ascwds_num_of_jobs",
             ],
         )
 

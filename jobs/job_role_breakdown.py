@@ -20,12 +20,25 @@ def main(job_estimates_source, worker_source, output_destination=None):
     )
 
     master_df = job_estimate_df.join(
-        worker_record_count_df, job_estimate_df.master_locationid == worker_record_count_df.locationid
+        worker_record_count_df,
+        job_estimate_df.master_locationid == worker_record_count_df.locationid,
     ).drop("locationid")
 
     master_df = get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df)
 
     master_df = determine_worker_record_to_jobs_ratio(master_df)
+
+    worker_record_per_location_count_df = count_grouped_by_field(
+        worker_df, grouping_field=["locationid", "mainjrid"], alias="ascwds_num_of_jobs"
+    )
+
+    master_df = master_df.join(
+        worker_record_per_location_count_df,
+        (worker_record_per_location_count_df.locationid == master_df.master_locationid)
+        & (worker_record_per_location_count_df.mainjrid == master_df.main_job_role),
+        "left",
+    ).drop("locationid", "mainjrid")
+    master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
 
     print(f"Exporting as parquet to {output_destination}")
     if output_destination:
@@ -75,6 +88,8 @@ def get_worker_dataset(worker_source):
     spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
     worker_df = spark.read.parquet(worker_source).select(col("locationid"), col("workerid"), col("mainjrid"))
+
+    # GARY - THINK WE NEED TO FILTER THIS TO ONE IMPORT_DATE (20210331 in jupyter)
 
     return worker_df
 
