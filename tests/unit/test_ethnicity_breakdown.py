@@ -10,7 +10,7 @@ class EthnicityBreakdownTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_ethnicity_breakdown").getOrCreate()
 
-    def get_ascwds_ethnicity_df(self):
+    def test_get_ascwds_ethnicity_df(self):
         path = "tests/test_data/domain=ASCWDS/dataset=worker/version=0.0.1/format=parquet"
         import_date = "20220301"
         df = ethnicity_breakdown.get_ascwds_ethnicity_df(path, import_date, "tests/test_data/")
