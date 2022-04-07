@@ -70,6 +70,54 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(output_df_list[1]["count"], 2)
         self.assertEqual(output_df_list[2]["count"], 1)
 
+    def test_count_grouped_by_multiple_fields_with_alias(self):
+        columns = ["locationid", "mainjrid", "some_other_field"]
+        rows = [
+            ("1-000000001", "1", "other data 1"),
+            ("1-000000001", "2", "other data 1"),
+            ("1-000000002", "1", "other data 2"),
+            ("1-000000002", "3", "other data 2"),
+            ("1-000000002", "3", "other data 3"),
+            ("1-000000002", "3", "other data 3"),
+            ("1-000000003", "2", "other data 1"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        output_df = job_role_breakdown.count_grouped_by_field(
+            df, grouping_field=["locationid", "mainjrid"], alias="my_count"
+        )
+
+        self.assertEqual(output_df.count(), 5)
+        self.assertEqual(output_df.columns, ["locationid", "mainjrid", "my_count"])
+
+        output_df_list = output_df.collect()
+        self.assertEqual(output_df_list[0]["my_count"], 1)
+        self.assertEqual(output_df_list[2]["my_count"], 1)
+        self.assertEqual(output_df_list[3]["my_count"], 3)
+
+    def test_count_grouped_by_multiple_fields_without_alias(self):
+        columns = ["locationid", "mainjrid", "some_other_field"]
+        rows = [
+            ("1-000000001", "1", "other data 1"),
+            ("1-000000001", "2", "other data 1"),
+            ("1-000000002", "1", "other data 2"),
+            ("1-000000002", "3", "other data 2"),
+            ("1-000000002", "3", "other data 3"),
+            ("1-000000002", "3", "other data 3"),
+            ("1-000000003", "2", "other data 1"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        output_df = job_role_breakdown.count_grouped_by_field(df, grouping_field=["locationid", "mainjrid"])
+
+        self.assertEqual(output_df.count(), 5)
+        self.assertEqual(output_df.columns, ["locationid", "mainjrid", "count"])
+
+        output_df_list = output_df.collect()
+        self.assertEqual(output_df_list[0]["count"], 1)
+        self.assertEqual(output_df_list[2]["count"], 1)
+        self.assertEqual(output_df_list[3]["count"], 3)
+
     def test_get_distinct_list_with_alias(self):
         columns = ["mainjrid", "some_other_field"]
         rows = [
