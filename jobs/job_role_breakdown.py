@@ -22,6 +22,7 @@ def main(job_estimates_source, worker_source, output_destination=None):
     master_df = job_estimate_df.join(
         worker_record_count_df,
         job_estimate_df.master_locationid == worker_record_count_df.locationid,
+        "left",
     ).drop("locationid")
 
     master_df = get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df)

@@ -244,7 +244,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
             ],
         )
 
-        self.assertEqual(result_df.count(), 9)
+        self.assertEqual(result_df.count(), 12)
 
 
 if __name__ == "__main__":
