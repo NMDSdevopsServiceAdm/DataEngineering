@@ -23,16 +23,26 @@ def main(job_estimates_source, worker_source, output_destination=None):
         worker_record_count_df, job_estimate_df.master_locationid == worker_record_count_df.locationid
     ).drop("locationid")
 
-    unique_jobrole_df = worker_df.selectExpr("mainjrid AS main_job_role").distinct()
+    unique_jobrole_df = get_distinct_list(worker_df, "mainjrid", alias="main_job_role")
     master_df = master_df.crossJoin(unique_jobrole_df)
 
-    # Currently at step 9 - (# Collect unique job roles)
+    # Currently at step 11 - (# Collect unique job roles)
 
     print(f"Exporting as parquet to {output_destination}")
     if output_destination:
         utils.write_to_parquet(master_df, output_destination)
     else:
         return master_df
+
+
+def get_distinct_list(input_df, column_name, alias=None):
+
+    output_df = input_df.select(column_name).distinct()
+
+    if alias:
+        output_df = output_df.withColumnRenamed(column_name, alias)
+
+    return output_df
 
 
 def count_grouped_by_field(input_df, grouping_field="locationid", alias=None):
