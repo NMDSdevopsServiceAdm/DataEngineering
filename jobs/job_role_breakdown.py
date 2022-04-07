@@ -15,10 +15,6 @@ def main(job_estimates_source, worker_source, output_destination=None):
 
     worker_df = get_worker_dataset(worker_source)  # MASTER DF IN JUPYTER
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
-    print("WORKER DF")
-    worker_df.show()
-    print("JOB ESTIMATE DF")
-    job_estimate_df.show()
     worker_record_count_df = count_grouped_by_field(
         worker_df, grouping_field="locationid", alias="location_worker_records"
     )
@@ -27,31 +23,30 @@ def main(job_estimates_source, worker_source, output_destination=None):
         worker_record_count_df, job_estimate_df.master_locationid == worker_record_count_df.locationid
     ).drop("locationid")
 
-    master_df = get_comprehensive_list_of_job_roles_to_locations(
-        worker_df, master_df)
+    master_df = get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df)
 
-    master_df = determine_worker_record_to_jobs_ratio
+    master_df = determine_worker_record_to_jobs_ratio(master_df)
 
     print(f"Exporting as parquet to {output_destination}")
     if output_destination:
         utils.write_to_parquet(master_df, output_destination)
     else:
-        master_df.show()
         return master_df
 
 
 def determine_worker_record_to_jobs_ratio(master_df):
-    master_df = master_df.withColumn("location_jobs_ratio", least(
-        lit(1), col("estimate_job_count_2021")/col("location_worker_records")))
-    master_df = master_df.withColumn("location_jobs_to_model", greatest(
-        lit(0), col("estimate_job_count_2021")-col("location_worker_records")))
+    master_df = master_df.withColumn(
+        "location_jobs_ratio", least(lit(1), col("estimate_job_count_2021") / col("location_worker_records"))
+    )
+    master_df = master_df.withColumn(
+        "location_jobs_to_model", greatest(lit(0), col("estimate_job_count_2021") - col("location_worker_records"))
+    )
 
     return master_df
 
 
 def get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df):
-    unique_jobrole_df = get_distinct_list(
-        worker_df, "mainjrid", alias="main_job_role")
+    unique_jobrole_df = get_distinct_list(worker_df, "mainjrid", alias="main_job_role")
     master_df = master_df.crossJoin(unique_jobrole_df)
     return master_df
 
@@ -79,8 +74,7 @@ def count_grouped_by_field(input_df, grouping_field="locationid", alias=None):
 def get_worker_dataset(worker_source):
     spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
-    worker_df = spark.read.parquet(worker_source).select(
-        col("locationid"), col("workerid"), col("mainjrid"))
+    worker_df = spark.read.parquet(worker_source).select(col("locationid"), col("workerid"), col("mainjrid"))
 
     return worker_df
 
