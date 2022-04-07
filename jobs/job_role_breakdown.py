@@ -16,10 +16,15 @@ def main(job_estimates_source, worker_source, output_destination=None):
     worker_df = get_worker_dataset(worker_source)  # MASTER DF IN JUPYTER
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
     worker_record_count_df = count_grouped_by_field(
-        worker_df, grouping_field="locationid", alias="location_worker_records")
+        worker_df, grouping_field="locationid", alias="location_worker_records"
+    )
 
-    master_df = job_estimate_df.join(worker_record_count_df, job_estimate_df.master_locationid ==
-                                     worker_record_count_df.locationid).drop("locationid")
+    master_df = job_estimate_df.join(
+        worker_record_count_df, job_estimate_df.master_locationid == worker_record_count_df.locationid
+    ).drop("locationid")
+
+    unique_jobrole_df = worker_df.selectExpr("mainjrid AS main_job_role").distinct()
+    master_df = master_df.crossJoin(unique_jobrole_df)
 
     # Currently at step 9 - (# Collect unique job roles)
 
@@ -43,15 +48,7 @@ def count_grouped_by_field(input_df, grouping_field="locationid", alias=None):
 def get_worker_dataset(worker_source):
     spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
-    worker_df = (
-        spark.read
-        .parquet(worker_source)
-        .select(
-            col("locationid"),
-            col("workerid"),
-            col("mainjrid")
-        )
-    )
+    worker_df = spark.read.parquet(worker_source).select(col("locationid"), col("workerid"), col("mainjrid"))
 
     return worker_df
 
@@ -59,14 +56,10 @@ def get_worker_dataset(worker_source):
 def get_job_estimates_dataset(job_estimates_source):
     spark = utils.get_spark()
     print(f"Reading job_estimates_2021 parquet from {job_estimates_source}")
-    job_estimates_df = (
-        spark.read
-        .parquet(job_estimates_source)
-        .select(
-            col("locationid").alias("master_locationid"),
-            col("primary_service_type"),
-            col("estimate_job_count_2021"),
-        )
+    job_estimates_df = spark.read.parquet(job_estimates_source).select(
+        col("locationid").alias("master_locationid"),
+        col("primary_service_type"),
+        col("estimate_job_count_2021"),
     )
 
     return job_estimates_df
