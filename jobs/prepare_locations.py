@@ -14,6 +14,17 @@ MIN_PERCENTAGE_DIFFERENCE = 0.1
 def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
     print("Building locations prepared dataset")
 
+    """ 
+    Start an empty dataframe called ?master_df?
+    Generate date matrix
+    Convert matrix to list of lists using "collect"
+    loop through each row
+        for each row: Run all the code below here (in main) filtering on the dates from the date_matrix.
+        Then union the output_df to the master_df
+    
+    write_to_parquet(master_df)
+    """
+    
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
     ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
@@ -35,6 +46,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
 
 def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
+    # TODO: Add a new filter for import_date, pass in as parameter.
     spark = utils.get_spark()
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
@@ -65,6 +77,8 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
 
 
 def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_BASE_PATH):
+    # TODO: Add a new filter for import_date, pass in as parameter.
+
     spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
@@ -103,6 +117,8 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
 
 
 def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_BASE_PATH):
+    # TODO: Add a new filter for import_date, pass in as parameter.
+
     spark = utils.get_spark()
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
@@ -123,6 +139,8 @@ def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_B
 
 
 def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
+    # TODO: Add a new filter for import_date, pass in as parameter.
+
     spark = utils.get_spark()
 
     # Join PIR service users
@@ -143,6 +161,57 @@ def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
 
     return pir_df
 
+def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
+    # TODO: Definitely
+    unique_asc_dates = get_unique_import_dates(dataset_workplace)
+    unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
+    unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
+    unique_pir_dates = get_unique_import_dates(dataset_pir)
+    
+    closest_cqc_location_dates = []
+    for date in unique_asc_dates:
+        closest_cqc_location_dates.append(get_date_closest_to_search_date(date, unique_cqc_location_dates))
+        
+    closest_cqc_provider_dates= []
+    for date in unique_asc_dates:
+        closest_cqc_provider_dates.append(get_date_closest_to_search_date(date, unique_cqc_provider_dates))
+
+    closest_pir_dates = []
+    for date in unique_asc_dates:
+        pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
+    
+    transpose = []
+    for i in range(len(unique_asc_dates)):
+        transpose.append((unique_asc_dates[i], unique_asc_dates[i], closest_cqc_location_dates[i], closest_cqc_provider_dates[i], closest_pir_dates[i]))
+
+    schema = StructType([
+        StructField("snapshot_date",DateType(), True), 
+        StructField("asc_workplace_date",DateType(), True), 
+        StructField("cqc_location_date",DateType(), True), 
+        StructField("cqc_prov_date",DateType(), True), 
+        StructField("pir_date", DateType(), True),  
+    ])
+
+
+    date_matrix_df = spark.createDataFrame(data=transpose, schema=schema)
+    return date_matrix_df
+    
+def get_unique_import_dates_for_dataset(input_df, import_date="import_date"):
+    pass
+
+def get_date_closest_to_search_date(search_date, date_list):
+    # TODO: NEED TO UNIT TEST THIS
+    if asc_date in date_list:
+        return asc_date    
+    else:   
+        closest_date = builtins.min(date_list, key=lambda x:builtins.abs(x-asc_date))
+        index_of_c_date = date_list.index(closest_date)
+
+    if index_of_c_date < 1:
+        return None
+    else:
+        return date_list[index_of_c_date - 1]
+    
 
 def clean(input_df):
     print("Cleaning...")
