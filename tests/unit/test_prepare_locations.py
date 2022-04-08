@@ -37,10 +37,9 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
-        self.assertEqual(workplace_df.columns[2], "providerid")
-        self.assertEqual(workplace_df.columns[3], "total_staff")
-        self.assertEqual(workplace_df.columns[4], "worker_record_count")
-        self.assertEqual(workplace_df.columns[5], "ascwds_workplace_import_date")
+        self.assertEqual(workplace_df.columns[2], "total_staff")
+        self.assertEqual(workplace_df.columns[3], "worker_record_count")
+        self.assertEqual(workplace_df.columns[4], "ascwds_workplace_import_date")
 
     def test_get_pir_dataframe(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
@@ -95,6 +94,32 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df.count(), 6)
         self.assertEqual(cleaned_df_list[0]["total_staff"], None)
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
+
+    def test_purge_workplaces(self):
+        columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
+        rows = [
+            ("1", datetime.date(2023, 3, 19), "1", "1", datetime.date(2018, 9, 5)),
+            ("2", datetime.date(2023, 3, 19), "1", "0", datetime.date(2019, 7, 10)),
+            ("3", datetime.date(2023, 3, 19), "1", "1", datetime.date(2020, 5, 15)),
+            ("4", datetime.date(2023, 3, 19), "1", "0", datetime.date(2021, 3, 20)),
+            ("5", datetime.date(2023, 3, 19), "1", "1", datetime.date(2022, 1, 25)),
+            ("6", datetime.date(2023, 3, 19), "2", "1", datetime.date(2021, 3, 18)),
+            ("7", datetime.date(2023, 3, 19), "3", "1", datetime.date(2021, 3, 19)),
+            ("8", datetime.date(2023, 3, 19), "4", "1", datetime.date(2021, 3, 20)),
+            ("9", datetime.date(2010, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2011, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2012, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("9", datetime.date(2013, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+        df = prepare_locations.purge_workplaces(df)
+
+        self.assertEqual(df.count(), 7)
+
+        # asserts equivalent items are present in both sequences
+        self.assertCountEqual(
+            df.select("locationid").rdd.flatMap(lambda x: x).collect(), ["1", "3", "4", "5", "8", "9", "9"]
+        )
 
     def test_add_cqc_sector(self):
         columns = ["providerid", "provider_name"]

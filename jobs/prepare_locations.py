@@ -2,7 +2,7 @@ import argparse
 from datetime import date
 
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, lower
+from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower
 from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
@@ -15,6 +15,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     print("Building locations prepared dataset")
 
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
+    ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
     cqc_location_df = get_cqc_location_df(cqc_location_source)
     output_df = cqc_location_df.join(ascwds_workplace_df, "locationid", "left")
@@ -42,10 +43,12 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
         .select(
             col("locationid"),
             col("establishmentid"),
-            col("providerid"),
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
             col("import_date").alias("ascwds_workplace_import_date"),
+            col("orgid"),
+            col("mupddate"),
+            col("isparent"),
         )
     )
 
@@ -70,6 +73,7 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
         .parquet(cqc_location_source)
         .select(
             col("locationid"),
+            col("providerid"),
             col("organisationtype").alias("organisation_type"),
             col("type").alias("location_type"),
             col("name").alias("location_name"),
@@ -150,6 +154,31 @@ def clean(input_df):
     input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
     input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
+
+    return input_df
+
+
+def purge_workplaces(input_df):
+    print("Purging ASCWDS accounts...")
+
+    # Convert import_date to date field and remove 2 years
+    input_df = input_df.withColumn("purge_date", add_months(col("ascwds_workplace_import_date"), -24))
+
+    # if the org is a parent, use the max mupddate for all locations at the org
+    org_purge_df = (
+        input_df.select("locationid", "orgid", "mupddate", "ascwds_workplace_import_date")
+        .groupBy("orgid", "ascwds_workplace_import_date")
+        .agg(max("mupddate").alias("mupddate_org"))
+    )
+    input_df = input_df.join(org_purge_df, ["orgid", "ascwds_workplace_import_date"], "left")
+    input_df = input_df.withColumn(
+        "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
+    )
+
+    # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
+    input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
+
+    input_df.drop("isparent", "mupddate")
 
     return input_df
 
