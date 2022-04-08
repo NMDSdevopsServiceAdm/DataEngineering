@@ -253,6 +253,7 @@ def purge_workplaces(input_df):
 
 
 def filter_nulls(input_df):
+    # TODO: Determine if we should be filtering these nulls - probably just need to remove the first filter :thinking: Have a play and find out. 
     print("Filtering nulls...")
     # Remove rows with null for worker_record_count and total_staff
     input_df = input_df.filter("worker_record_count is not null or total_staff is not null")
