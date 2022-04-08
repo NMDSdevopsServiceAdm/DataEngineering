@@ -22,7 +22,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         try:
             shutil.rmtree(self.TEST_JOB_ESTIMATES_FILE)
             shutil.rmtree(self.TEST_WORKER_FILE)
-        except OSError as e:
+        except OSError():
             pass  # Ignore dir does not exist
 
     def test_get_job_estimates_dataset(self):
