@@ -10,6 +10,7 @@ from tests.test_file_generator import generate_ethnicity_parquet
 class EthnicityBreakdownTests(unittest.TestCase):
 
     TEST_ETHNICITY_FILE = "tests/test_data/tmp/ethnicity_file.parquet"
+    ASCWDS_IMPORT_DATE = "20200301"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_ethnicity_breakdown").getOrCreate()
@@ -22,23 +23,13 @@ class EthnicityBreakdownTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_ascwds_ethnicity_df(self):
-        path = "tests/test_data/domain=ASCWDS/dataset=worker/version=0.0.1/format=parquet"
-        import_date = "20220301"
-        df = ethnicity_breakdown.get_ascwds_ethnicity_df(path, import_date, "tests/test_data/")
+        ethnicity_df = ethnicity_breakdown.get_ascwds_ethnicity_df(self.TEST_ETHNICITY_FILE, self.ASCWDS_IMPORT_DATE)
 
-        self.assertEqual(df.count(), 10)
-
-        self.assertEqual(df.columns[0], "locationid")
-        self.assertEqual(df.columns[1], "mainjrid")
-        self.assertEqual(df.columns[2], "ethnicity")
-
-        df = df.collect()
-        self.assertEqual(df[0]["mainjrid"], 1)
+        self.assertEqual(ethnicity_df.count(), 14)
+        self.assertEqual(ethnicity_df.columns, ["locationid", "mainjrid", "ethnicity"])
 
     def test_main(self):
-        result_df = ethnicity_breakdown.main(self.TEST_ETHNICITY_FILE, "20200101")
-
-        # worker_source, ascwds_import_date
+        result_df = ethnicity_breakdown.main(self.TEST_ETHNICITY_FILE, self.ASCWDS_IMPORT_DATE)
 
         # self.assertEqual(
         #     result_df.columns,
@@ -54,7 +45,7 @@ class EthnicityBreakdownTests(unittest.TestCase):
         #     ],
         # )
 
-        self.assertEqual(result_df.count(), 14)
+        self.assertEqual(result_df.count(), 12)
 
 
 if __name__ == "__main__":
