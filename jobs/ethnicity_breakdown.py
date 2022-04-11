@@ -34,13 +34,14 @@ MAINJRID_DICT = {
 
 def main(worker_source, ascwds_import_date, destination=None):
     spark = utils.get_spark()
-    print("Estimating ethnicity")
 
+    print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
 
-    ethniUDF = get_udf(ETHNICITY_DICT)
-    ascwds_ethnicity_df = ascwds_ethnicity_df.withColumn("ethnicity", ethniUDF(col("ethnicity")))
+    print("Renaming ethnicity variables...")
+    ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
 
+    print("Group and pivot ethnicity column...")
     ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
     ascwds_ethnicity_df = ascwds_ethnicity_df.fillna(0)
 
@@ -56,6 +57,7 @@ def main(worker_source, ascwds_import_date, destination=None):
             ]
         ),
     )
+    ascwds_ethnicity_df.show()
 
     # all_job_roles_df = spark.read.parquet(
     #     "s3a://skillsforcare/job_roles_per_location/job_roles_per_location.parquet"
@@ -93,7 +95,9 @@ def main(worker_source, ascwds_import_date, destination=None):
     #     "left",
     # ).drop("locationid", "mainjrid")
     # all_job_roles_df = all_job_roles_df.fillna(0)
-    # all_job_roles_df = all_job_roles_df.withColumn("main_job_role", jobRoleUDF(col("main_job_role")))
+
+    # DONE print("Renaming job role variables...")
+    # DONE all_job_roles_df = rename_column_values(all_job_roles_df, "main_job_role", MAINJRID_DICT)
 
     # all_job_roles_df = all_job_roles_df.groupBy(
     #     "master_locationid",
@@ -337,10 +341,12 @@ def get_keys_from_value(dic, val):
     return [k for k, v in dic.items() if val in v][0]
 
 
-def get_udf(dic):
+def rename_column_values(df, var_name, dic):
     var_udf = udf(lambda x: get_keys_from_value(dic, x), StringType())
 
-    return var_udf
+    df = df.withColumn(var_name, var_udf(col(var_name)))
+
+    return df
 
 
 def collect_arguments():
