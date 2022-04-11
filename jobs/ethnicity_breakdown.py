@@ -5,7 +5,6 @@ from pyspark.sql.types import StringType
 
 
 from utils import utils
-from environment import constants
 
 ETHNICITY_DICT = {
     "white": ["31", "32", "33", "34"],
@@ -32,19 +31,26 @@ MAINJRID_DICT = {
 }
 
 
-def main(worker_source, ascwds_import_date, job_roles_per_location_source, destination=None):
-    spark = utils.get_spark()
+def main(
+    job_roles_per_location_source, cqc_locations_prepared_source, worker_source, ascwds_import_date, destination=None
+):
+
+    print("Importing job role breakdown by CQC location data...")
+    all_job_roles_df = get_all_job_roles_per_location_df(job_roles_per_location_source)
+
+    print("Importing CQC locations data...")
+    cqc_locations_df = get_cqc_locations_df(cqc_locations_prepared_source)
+
+    all_job_roles_df = all_job_roles_df.join(
+        cqc_locations_df, all_job_roles_df.master_locationid == cqc_locations_df.locationid, "left"
+    ).drop("locationid")
+    all_job_roles_df.show()
 
     print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
-
-    print("Renaming ethnicity variables...")
     ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
-
-    print("Group and pivot ethnicity column...")
     ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
     ascwds_ethnicity_df = ascwds_ethnicity_df.fillna(0)
-
     ascwds_ethnicity_df = ascwds_ethnicity_df.withColumn(
         "ethnicity_base",
         sum(
@@ -57,24 +63,7 @@ def main(worker_source, ascwds_import_date, job_roles_per_location_source, desti
             ]
         ),
     )
-
-    print("Importing job role breakdown by CQC location data...")
-    all_job_roles_df = get_all_job_roles_per_location_df(job_roles_per_location_source)
-
-    all_job_roles_df.show()
-
-    # print("Importing CQC locations data...")
-    # cqc_locations_df = (
-    #     spark.table("dataset_locations_prepared")
-    #     .filter(col("version") == "1.0.3")
-    #     .select("locationid", "providerid", "postal_code")
-    #     .distinct()
-    # )
-    # cqc_locations_df.show()
-
-    # all_job_roles_df = all_job_roles_df.join(
-    #     cqc_locations_df, all_job_roles_df.master_locationid == cqc_locations_df.locationid, "left"
-    # ).drop("locationid")
+    ascwds_ethnicity_df.show()
 
     # ons_df = spark.table("domain_ons")
     # ons_df = ons_df.filter(ons_df.ctry == "E92000001").selectExpr(
@@ -315,11 +304,40 @@ def main(worker_source, ascwds_import_date, job_roles_per_location_source, desti
     print(f"Exporting as parquet to {destination}")
     if destination:
         # utils.write_to_parquet(ethnicity_white_model_df, destination)
-        utils.write_to_parquet(ascwds_ethnicity_df, destination)
+        utils.write_to_parquet(all_job_roles_df, destination)
 
     else:
         # return ethnicity_white_model_df
-        return ascwds_ethnicity_df
+        return all_job_roles_df
+
+
+def get_all_job_roles_per_location_df(job_roles_per_location_source):
+    spark = utils.get_spark()
+    # filepath = "s3a://skillsforcare/job_roles_per_location/job_roles_per_location_v2.parquet"
+
+    print(f"Reading job role jobs per location parquet from {job_roles_per_location_source}")
+    job_roles_per_location_df = spark.read.parquet(job_roles_per_location_source).select(
+        col("master_locationid"), col("primary_service_type"), col("main_job_role"), col("estimate_job_role_count_2021")
+    )
+
+    job_roles_per_location_df = job_roles_per_location_df.withColumnRenamed(
+        "estimate_job_role_count_2021", "estimated_jobs"
+    )
+
+    return job_roles_per_location_df
+
+
+def get_cqc_locations_df(cqc_locations_prepared_source):
+    spark = utils.get_spark()
+    print(f"Reading CQC locations parquet from {cqc_locations_prepared_source}")
+    cqc_locations_df = (
+        spark.read.parquet(cqc_locations_prepared_source)
+        .filter(col("version") == "1.0.3")
+        .select(col("locationid"), col("providerid"), col("postal_code"))
+        .distinct()
+    )
+
+    return cqc_locations_df
 
 
 def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
@@ -334,22 +352,6 @@ def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
     )
 
     return ethnicity_df
-
-
-def get_all_job_roles_per_location_df(job_roles_per_location_source):
-    spark = utils.get_spark()
-    # filepath = "s3a://skillsforcare/job_roles_per_location/job_roles_per_location_v2.parquet"
-
-    print(f"Reading workers parquet from {job_roles_per_location_source}")
-    job_roles_per_location_df = spark.read.parquet(job_roles_per_location_source).select(
-        col("master_locationid"), col("primary_service_type"), col("main_job_role"), col("estimate_job_role_count_2021")
-    )
-
-    job_roles_per_location_df = job_roles_per_location_df.withColumnRenamed(
-        "estimate_job_role_count_2021", "estimated_jobs"
-    )
-
-    return job_roles_per_location_df
 
 
 def get_keys_from_value(dic, val):
@@ -369,18 +371,23 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "--job_roles_per_location_source",
+        help="Source s3 directory for output of job_role_breakdown",
+        required=True,
+    )
+    parser.add_argument(
+        "--cqc_locations_prepared_source",
+        help="Source s3 directory for CQC locations prepared dataset",
+        required=True,
+    )
+    parser.add_argument(
         "--worker_source",
         help="Source s3 directory for ASCWDS worker dataset",
         required=True,
     )
     parser.add_argument(
         "--ascwds_import_date",
-        help="The import date of ASCWDS data in the format yyyymmdd.",
-        required=True,
-    )
-    parser.add_argument(
-        "--job_roles_per_location_source",
-        help="Source s3 directory for output of job_role_breakdown",
+        help="The import date of ASCWDS data in the format yyyymmdd",
         required=True,
     )
     parser.add_argument(
@@ -392,18 +399,20 @@ def collect_arguments():
     args, unknown = parser.parse_known_args()
 
     return (
+        args.job_roles_per_location_source,
+        args.cqc_locations_prepared_source,
         args.worker_source,
         args.ascwds_import_date,
-        args.job_roles_per_location_source,
         args.destination,
     )
 
 
 if __name__ == "__main__":
     (
+        job_roles_per_location_source,
+        cqc_locations_prepared_source,
         worker_source,
         ascwds_import_date,
-        job_roles_per_location_source,
         destination,
     ) = collect_arguments()
-    main(worker_source, ascwds_import_date, job_roles_per_location_source, destination)
+    main(job_roles_per_location_source, cqc_locations_prepared_source, worker_source, ascwds_import_date, destination)
