@@ -32,7 +32,7 @@ MAINJRID_DICT = {
 }
 
 
-def main(worker_source, ascwds_import_date, destination=None):
+def main(worker_source, ascwds_import_date, job_roles_per_location_source, destination=None):
     spark = utils.get_spark()
 
     print("Importing ASCWDS data...")
@@ -57,20 +57,20 @@ def main(worker_source, ascwds_import_date, destination=None):
             ]
         ),
     )
-    ascwds_ethnicity_df.show()
 
-    # all_job_roles_df = spark.read.parquet(
-    #     "s3a://skillsforcare/job_roles_per_location/job_roles_per_location.parquet"
-    # ).selectExpr(
-    #     "master_locationid", "primary_service_type", "main_job_role", "estimate_job_role_count_2021 as estimated_jobs"
-    # )
+    print("Importing job role breakdown by CQC location data...")
+    all_job_roles_df = get_all_job_roles_per_location_df(job_roles_per_location_source)
 
+    all_job_roles_df.show()
+
+    # print("Importing CQC locations data...")
     # cqc_locations_df = (
     #     spark.table("dataset_locations_prepared")
     #     .filter(col("version") == "1.0.3")
     #     .select("locationid", "providerid", "postal_code")
     #     .distinct()
     # )
+    # cqc_locations_df.show()
 
     # all_job_roles_df = all_job_roles_df.join(
     #     cqc_locations_df, all_job_roles_df.master_locationid == cqc_locations_df.locationid, "left"
@@ -336,6 +336,22 @@ def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
     return ethnicity_df
 
 
+def get_all_job_roles_per_location_df(job_roles_per_location_source):
+    spark = utils.get_spark()
+    # filepath = "s3a://skillsforcare/job_roles_per_location/job_roles_per_location_v2.parquet"
+
+    print(f"Reading workers parquet from {job_roles_per_location_source}")
+    job_roles_per_location_df = spark.read.parquet(job_roles_per_location_source).select(
+        col("master_locationid"), col("primary_service_type"), col("main_job_role"), col("estimate_job_role_count_2021")
+    )
+
+    job_roles_per_location_df = job_roles_per_location_df.withColumnRenamed(
+        "estimate_job_role_count_2021", "estimated_jobs"
+    )
+
+    return job_roles_per_location_df
+
+
 def get_keys_from_value(dic, val):
     # Use a dictionary item to return the associated key
     return [k for k, v in dic.items() if val in v][0]
@@ -363,6 +379,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--job_roles_per_location_source",
+        help="Source s3 directory for output of job_role_breakdown",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting ethnicity data, if not provided shall default to S3 todays date.",
         required=True,
@@ -373,6 +394,7 @@ def collect_arguments():
     return (
         args.worker_source,
         args.ascwds_import_date,
+        args.job_roles_per_location_source,
         args.destination,
     )
 
@@ -381,6 +403,7 @@ if __name__ == "__main__":
     (
         worker_source,
         ascwds_import_date,
+        job_roles_per_location_source,
         destination,
     ) = collect_arguments()
-    main(worker_source, ascwds_import_date, destination)
+    main(worker_source, ascwds_import_date, job_roles_per_location_source, destination)

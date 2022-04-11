@@ -32,3 +32,29 @@ def generate_ethnicity_parquet(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+def generate_all_job_roles_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = ["master_locationid", "primary_service_type", "main_job_role", "estimate_job_role_count_2021"]
+
+    rows = [
+        ("1-000000001", "Care home without nursing", "1", "0.5"),
+        ("1-000000001", "Care home without nursing", "2", "0.5"),
+        ("1-000000001", "Care home without nursing", "3", "1"),
+        ("1-000000002", "Care home without nursing", "1", "15"),
+        ("1-000000002", "Care home without nursing", "2", "25"),
+        ("1-000000002", "Care home without nursing", "3", "20"),
+        ("1-000000003", "Care home with nursing", "1", "20"),
+        ("1-000000003", "Care home with nursing", "2", "10"),
+        ("1-000000003", "Care home with nursing", "3", "20"),
+        ("1-000000004", "Care home with nursing", "1", "10"),
+        ("1-000000004", "Care home with nursing", "2", "0"),
+        ("1-000000004", "Care home with nursing", "3", "10"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
