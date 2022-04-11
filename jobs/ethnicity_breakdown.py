@@ -37,6 +37,7 @@ def main(
     ons_source,
     worker_source,
     ascwds_import_date,
+    census_source,
     destination=None,
 ):
 
@@ -56,7 +57,6 @@ def main(
     all_job_roles_df = all_job_roles_df.join(ons_df, all_job_roles_df.postal_code == ons_df.ons_postcode, "left").drop(
         "ons_postcode"
     )
-    all_job_roles_df.show()
 
     print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
@@ -75,7 +75,6 @@ def main(
             ]
         ),
     )
-    ascwds_ethnicity_df.show()
 
     all_job_roles_df = all_job_roles_df.join(
         ascwds_ethnicity_df,
@@ -84,95 +83,61 @@ def main(
         "left",
     ).drop("locationid", "mainjrid")
     all_job_roles_df = all_job_roles_df.fillna(0)
-    all_job_roles_df.show()
 
     all_job_roles_df = rename_column_values(all_job_roles_df, "main_job_role", MAINJRID_DICT)
 
-    # all_job_roles_df = all_job_roles_df.groupBy(
-    #     "master_locationid",
-    #     "providerid",
-    #     "postal_code",
-    #     "ons_lsoa11",
-    #     "ons_msoa11",
-    #     "ons_region",
-    #     "primary_service_type",
-    #     "main_job_role",
-    # ).sum()
+    all_job_roles_df = all_job_roles_df.groupBy(
+        "master_locationid",
+        "providerid",
+        "postal_code",
+        "ons_lsoa11",
+        "ons_msoa11",
+        "ons_region",
+        "primary_service_type",
+        "main_job_role",
+    ).sum()
 
-    # all_job_roles_df = (
-    #     all_job_roles_df.withColumnRenamed("sum(estimated_jobs)", "estimated_jobs")
-    #     .withColumnRenamed("sum(asian)", "ascwds_asian")
-    #     .withColumnRenamed("sum(black)", "ascwds_black")
-    #     .withColumnRenamed("sum(mixed)", "ascwds_mixed")
-    #     .withColumnRenamed("sum(other)", "ascwds_other")
-    #     .withColumnRenamed("sum(white)", "ascwds_white")
-    #     .withColumnRenamed("sum(ethnicity_base)", "ascwds_base")
-    # )
+    all_job_roles_df = (
+        all_job_roles_df.withColumnRenamed("sum(estimated_jobs)", "estimated_jobs")
+        .withColumnRenamed("sum(asian)", "ascwds_asian")
+        .withColumnRenamed("sum(black)", "ascwds_black")
+        .withColumnRenamed("sum(mixed)", "ascwds_mixed")
+        .withColumnRenamed("sum(other)", "ascwds_other")
+        .withColumnRenamed("sum(white)", "ascwds_white")
+        .withColumnRenamed("sum(ethnicity_base)", "ascwds_base")
+    )
 
-    # ascwds_by_msoa_df = (
-    #     all_job_roles_df.select(
-    #         "ons_msoa11",
-    #         "main_job_role",
-    #         "ascwds_asian",
-    #         "ascwds_black",
-    #         "ascwds_mixed",
-    #         "ascwds_other",
-    #         "ascwds_white",
-    #         "ascwds_base",
-    #     )
-    #     .groupBy("ons_msoa11", "main_job_role")
-    #     .sum()
-    # )
+    ascwds_by_msoa_df = (
+        all_job_roles_df.select(
+            "ons_msoa11",
+            "main_job_role",
+            "ascwds_asian",
+            "ascwds_black",
+            "ascwds_mixed",
+            "ascwds_other",
+            "ascwds_white",
+            "ascwds_base",
+        )
+        .groupBy("ons_msoa11", "main_job_role")
+        .sum()
+    )
 
-    # ascwds_by_msoa_df = (
-    #     ascwds_by_msoa_df.withColumnRenamed("sum(ascwds_asian)", "ascwds_asian_msoa")
-    #     .withColumnRenamed("sum(ascwds_black)", "ascwds_black_msoa")
-    #     .withColumnRenamed("sum(ascwds_mixed)", "ascwds_mixed_msoa")
-    #     .withColumnRenamed("sum(ascwds_other)", "ascwds_other_msoa")
-    #     .withColumnRenamed("sum(ascwds_white)", "ascwds_white_msoa")
-    #     .withColumnRenamed("sum(ascwds_base)", "ascwds_base_msoa")
-    # )
+    ascwds_by_msoa_df = (
+        ascwds_by_msoa_df.withColumnRenamed("sum(ascwds_asian)", "ascwds_asian_msoa")
+        .withColumnRenamed("sum(ascwds_black)", "ascwds_black_msoa")
+        .withColumnRenamed("sum(ascwds_mixed)", "ascwds_mixed_msoa")
+        .withColumnRenamed("sum(ascwds_other)", "ascwds_other_msoa")
+        .withColumnRenamed("sum(ascwds_white)", "ascwds_white_msoa")
+        .withColumnRenamed("sum(ascwds_base)", "ascwds_base_msoa")
+    )
 
-    # all_job_roles_df = all_job_roles_df.join(ascwds_by_msoa_df, ["ons_msoa11", "main_job_role"], "left")
-
-    # census_ethnicity_lsoa_df = spark.read.csv("s3://skillsforcare/ethnicity_by_super_output_area.csv", header=True)
-
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "lsoa", trim(col("2011 super output area - lower layer").substr(0, 10))
-    # )
-
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.drop(col("2011 super output area - lower layer"))
-
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.selectExpr(
-    #     "lsoa",
-    #     "`Asian/Asian British` as census_asian_lsoa",
-    #     "`Black/African/Caribbean/Black British` as census_black_lsoa",
-    #     "`Mixed/multiple ethnic group` as census_mixed_lsoa",
-    #     "`Other ethnic group` as census_other_lsoa",
-    #     "`White: Total` as census_white_lsoa",
-    #     "`All categories: Ethnic group of HRP` as census_base_lsoa",
-    # )
-
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_asian_lsoa", census_ethnicity_lsoa_df.census_asian_lsoa.cast("int")
-    # )
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_black_lsoa", census_ethnicity_lsoa_df.census_black_lsoa.cast("int")
-    # )
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_mixed_lsoa", census_ethnicity_lsoa_df.census_mixed_lsoa.cast("int")
-    # )
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_other_lsoa", census_ethnicity_lsoa_df.census_other_lsoa.cast("int")
-    # )
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_white_lsoa", census_ethnicity_lsoa_df.census_white_lsoa.cast("int")
-    # )
-    # census_ethnicity_lsoa_df = census_ethnicity_lsoa_df.withColumn(
-    #     "census_base_lsoa", census_ethnicity_lsoa_df.census_base_lsoa.cast("int")
-    # )
+    all_job_roles_df = all_job_roles_df.join(ascwds_by_msoa_df, ["ons_msoa11", "main_job_role"], "left")
 
     lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
+
+    census_ethnicity_lsoa_df = get_census_ethnicity_lsoa_df(census_source)
+    print("main")
+    print(type(census_ethnicity_lsoa_df))
 
     # census_ethnicity_msoa_df = (
     #     lsoa_to_msoa_df.join(
@@ -193,7 +158,7 @@ def main(
     #     .withColumnRenamed("sum(census_base_lsoa)", "census_base_msoa")
     # )
 
-    lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
+    # lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
 
     # census_ethnicity_region_df = (
     #     lsoa_to_region_df.join(
@@ -221,6 +186,7 @@ def main(
     # all_job_roles_df = all_job_roles_df.join(census_ethnicity_msoa_df, ["ons_msoa11"], "left")
 
     # all_job_roles_df = all_job_roles_df.join(census_ethnicity_region_df, ["ons_region"], "left")
+    # all_job_roles_df.show()
 
     # # not fully convinced on this one but remove rows where we estimate zero jobs
     # all_job_roles_df = all_job_roles_df.filter(all_job_roles_df.estimated_jobs > 0)
@@ -376,6 +342,38 @@ def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
     return ethnicity_df
 
 
+def get_census_ethnicity_lsoa_df(census_source):
+    spark = utils.get_spark()
+    print(f"Reading census csv from {census_source}")
+
+    census_df = spark.read.csv(census_source, header=True)
+    # "s3://skillsforcare/ethnicity_by_super_output_area.csv"
+
+    census_df = census_df.withColumn("lsoa", trim(col("2011 super output area - lower layer").substr(0, 10)))
+    census_df = census_df.drop(col("2011 super output area - lower layer"))
+
+    census_df = census_df.selectExpr(
+        "lsoa",
+        "`Asian/Asian British` as census_asian_lsoa",
+        "`Black/African/Caribbean/Black British` as census_black_lsoa",
+        "`Mixed/multiple ethnic group` as census_mixed_lsoa",
+        "`Other ethnic group` as census_other_lsoa",
+        "`White: Total` as census_white_lsoa",
+        "`All categories: Ethnic group of HRP` as census_base_lsoa",
+    )
+
+    census_df = census_df.withColumn("census_asian_lsoa", census_df.census_asian_lsoa.cast("int"))
+    census_df = census_df.withColumn("census_black_lsoa", census_df.census_black_lsoa.cast("int"))
+    census_df = census_df.withColumn("census_mixed_lsoa", census_df.census_mixed_lsoa.cast("int"))
+    census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
+    census_df = census_df.withColumn("census_white_lsoa", census_df.census_white_lsoa.cast("int"))
+    census_df = census_df.withColumn("census_base_lsoa", census_df.census_base_lsoa.cast("int"))
+    
+    print("def")
+    print(type(census_df))
+    census_df.show()
+
+
 def get_keys_from_value(dic, val):
     # Use a dictionary item to return the associated key
     return [k for k, v in dic.items() if val in v][0]
@@ -418,6 +416,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--census_source",
+        help="Source s3 directory for census ethnicity data by super output area",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting ethnicity data, if not provided shall default to S3 todays date.",
         required=True,
@@ -431,6 +434,7 @@ def collect_arguments():
         args.ons_source,
         args.worker_source,
         args.ascwds_import_date,
+        args.census_source,
         args.destination,
     )
 
@@ -442,6 +446,7 @@ if __name__ == "__main__":
         ons_source,
         worker_source,
         ascwds_import_date,
+        census_source,
         destination,
     ) = collect_arguments()
     main(
@@ -450,5 +455,6 @@ if __name__ == "__main__":
         ons_source,
         worker_source,
         ascwds_import_date,
+        census_source,
         destination,
     )
