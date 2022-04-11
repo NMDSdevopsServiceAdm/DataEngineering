@@ -4,11 +4,22 @@ import unittest
 from pyspark.sql import SparkSession
 
 from jobs import ethnicity_breakdown
+from tests import test_file_generator
 
 
 class EthnicityBreakdownTests(unittest.TestCase):
+
+    TEST_ETHNICITY_FILE = "tests/test_data/tmp/ethnicity_file.parquet"
+
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_ethnicity_breakdown").getOrCreate()
+        generate_ethnicity_parquet(self.TEST_ETHNICITY_FILE)
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.TEST_ETHNICITY_FILE)
+        except OSError():
+            pass  # Ignore dir does not exist
 
     def test_get_ascwds_ethnicity_df(self):
         path = "tests/test_data/domain=ASCWDS/dataset=worker/version=0.0.1/format=parquet"
