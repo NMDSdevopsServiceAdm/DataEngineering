@@ -1,8 +1,8 @@
 import argparse
 from datetime import date
-
+import builtins
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower
+from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower, min
 from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
@@ -24,7 +24,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     
     write_to_parquet(master_df)
     """
-    
+
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
     ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
@@ -161,57 +161,72 @@ def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
 
     return pir_df
 
-def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
-    # TODO: Definitely unit test this! Lot's of room for bugs here. Shall consider refactoring post demo
-    unique_asc_dates = get_unique_import_dates(dataset_workplace)
-    unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
-    unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
-    unique_pir_dates = get_unique_import_dates(dataset_pir)
-    
-    closest_cqc_location_dates = []
-    for date in unique_asc_dates:
-        closest_cqc_location_dates.append(get_date_closest_to_search_date(date, unique_cqc_location_dates))
-        
-    closest_cqc_provider_dates= []
-    for date in unique_asc_dates:
-        closest_cqc_provider_dates.append(get_date_closest_to_search_date(date, unique_cqc_provider_dates))
 
-    closest_pir_dates = []
-    for date in unique_asc_dates:
-        pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
-    
-    transpose = []
-    for i in range(len(unique_asc_dates)):
-        transpose.append((unique_asc_dates[i], unique_asc_dates[i], closest_cqc_location_dates[i], closest_cqc_provider_dates[i], closest_pir_dates[i]))
+def get_unique_import_dates(input_df, import_date="import_date"):
+    df = spark.sql(f"SELECT import_date FROM {dataset}")
+    df = df.withColumn("import_date", to_date(col("import_date"), "yyyyMMdd")).distinct().orderBy("import_date")
+    odl = df.select("import_date").rdd.flatMap(lambda x: x).collect()
+    return odl
 
-    schema = StructType([
-        StructField("snapshot_date",DateType(), True), 
-        StructField("asc_workplace_date",DateType(), True), 
-        StructField("cqc_location_date",DateType(), True), 
-        StructField("cqc_prov_date",DateType(), True), 
-        StructField("pir_date", DateType(), True),  
-    ])
-
-
-    date_matrix_df = spark.createDataFrame(data=transpose, schema=schema)
-    return date_matrix_df
-    
-def get_unique_import_dates_for_dataset(input_df, import_date="import_date"):
-    pass
 
 def get_date_closest_to_search_date(search_date, date_list):
     # TODO: NEED TO UNIT TEST THIS
     if asc_date in date_list:
-        return asc_date    
-    else:   
-        closest_date = builtins.min(date_list, key=lambda x:builtins.abs(x-asc_date))
+        return asc_date
+    else:
+        closest_date = builtins.min(date_list, key=lambda x: builtins.abs(x - asc_date))
         index_of_c_date = date_list.index(closest_date)
 
     if index_of_c_date < 1:
         return None
     else:
         return date_list[index_of_c_date - 1]
-    
+
+
+def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
+    # TODO: Definitely unit test this! Lot's of room for bugs here. Shall consider refactoring post demo
+    unique_asc_dates = get_unique_import_dates(dataset_workplace)
+    unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
+    unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
+    unique_pir_dates = get_unique_import_dates(dataset_pir)
+
+    closest_cqc_location_dates = []
+    for date in unique_asc_dates:
+        closest_cqc_location_dates.append(get_date_closest_to_search_date(date, unique_cqc_location_dates))
+
+    closest_cqc_provider_dates = []
+    for date in unique_asc_dates:
+        closest_cqc_provider_dates.append(get_date_closest_to_search_date(date, unique_cqc_provider_dates))
+
+    closest_pir_dates = []
+    for date in unique_asc_dates:
+        closest_pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
+
+    transpose = []
+    for i in range(len(unique_asc_dates)):
+        transpose.append(
+            (
+                unique_asc_dates[i],
+                unique_asc_dates[i],
+                closest_cqc_location_dates[i],
+                closest_cqc_provider_dates[i],
+                closest_pir_dates[i],
+            )
+        )
+
+    schema = StructType(
+        [
+            StructField("snapshot_date", DateType(), True),
+            StructField("asc_workplace_date", DateType(), True),
+            StructField("cqc_location_date", DateType(), True),
+            StructField("cqc_prov_date", DateType(), True),
+            StructField("pir_date", DateType(), True),
+        ]
+    )
+
+    date_matrix_df = spark.createDataFrame(data=transpose, schema=schema)
+    return date_matrix_df
+
 
 def clean(input_df):
     print("Cleaning...")
@@ -253,7 +268,7 @@ def purge_workplaces(input_df):
 
 
 def filter_nulls(input_df):
-    # TODO: Determine if we should be filtering these nulls - probably just need to remove the first filter :thinking: Have a play and find out. 
+    # TODO: Determine if we should be filtering these nulls - probably just need to remove the first filter :thinking: Have a play and find out.
     print("Filtering nulls...")
     # Remove rows with null for worker_record_count and total_staff
     input_df = input_df.filter("worker_record_count is not null or total_staff is not null")
