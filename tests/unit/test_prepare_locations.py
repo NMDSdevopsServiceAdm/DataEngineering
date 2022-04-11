@@ -32,14 +32,39 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_ascwds_workplace_df(self):
         path = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "tests/test_data/")
-        self.assertEqual(workplace_df.count(), 10)
-
+        
+        # check df with filter date 2021-11-30
+        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2021-11-30", "tests/test_data/")
+        # check cols are correct 
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
         self.assertEqual(workplace_df.columns[2], "total_staff")
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
         self.assertEqual(workplace_df.columns[4], "ascwds_workplace_import_date")
+        # Check filter returns all rows with correct date
+        self.assertEqual(workplace_df.count(), 10)
+
+        # check df with filter date 2020-11-30
+        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2020-11-30", "tests/test_data/")
+        self.assertEqual(workplace_df.count(), 0)
+
+    # TODO: CQC test and add test data
+
+
+    def test_get_pir_df(self):
+        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
+        # check df with filter date 2021-11-30
+        pir_df = prepare_locations.get_pir_df(path, "tests/test_data/")
+
+        self.assertEqual((pir_df.count(), len(pir_df.columns)), (10, 2))
+
+        # check cols are correct 
+        self.assertEqual(pir_df.columns[0], "locationid")
+        self.assertEqual(pir_df.columns[1], "pir_service_users")
+
+        self.assertEqual(pir_df.count(), 10)
+
+    
 
     def test_get_pir_dataframe(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
@@ -53,6 +78,8 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(pir_df[0]["pir_service_users"], "95")
         self.assertEqual(pir_df[9]["locationid"], "1-0000000010")
         self.assertEqual(pir_df[9]["pir_service_users"], "104")
+
+
 
     def test_filter_nulls(self):
         columns = ["locationid", "worker_record_count", "total_staff"]

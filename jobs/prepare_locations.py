@@ -1,5 +1,5 @@
 import argparse
-from datetime import date
+from datetime import datetime
 import builtins
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower, min
@@ -12,6 +12,7 @@ MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
 def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
+    
     print("Building locations prepared dataset")
 
     """ 
@@ -36,7 +37,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     output_df = output_df.join(cqc_provider_df, "providerid", "left")
     output_df = filter_out_cqc_la_data(output_df)
 
-    pir_df = get_pir_dataframe(pir_source)
+    pir_df = get_pir_df(pir_source)
     output_df = output_df.join(pir_df, "locationid", "left")
 
     output_df = calculate_jobcount(output_df)
@@ -45,9 +46,9 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     utils.write_to_parquet(output_df, destination)
 
 
-def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
-    # TODO: Add a new filter for import_date, pass in as parameter.
+def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
     spark = utils.get_spark()
+    
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
         spark.read.option("basePath", base_path)
@@ -73,12 +74,13 @@ def get_ascwds_workplace_df(workplace_source, base_path=constants.ASCWDS_WORKPLA
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
+    target_date=datetime.strptime(target_date, "%Y-%m-%d").date()
+    workplace_df = workplace_df.filter(col("ascwds_workplace_import_date") == target_date)
+
     return workplace_df
 
 
-def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_BASE_PATH):
-    # TODO: Add a new filter for import_date, pass in as parameter.
-
+def get_cqc_location_df(cqc_location_source, target_date, base_path=constants.CQC_LOCATIONS_BASE_PATH):
     spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
@@ -113,12 +115,13 @@ def get_cqc_location_df(cqc_location_source, base_path=constants.CQC_LOCATIONS_B
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
+    target_date=datetime.strptime(target_date, "%Y-%m-%d").date()
+    cqc_df = cqc_df.filter(col("cqc_locations_import_date") == target_date)
+
     return cqc_df
 
 
-def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_BASE_PATH):
-    # TODO: Add a new filter for import_date, pass in as parameter.
-
+def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQC_PROVIDERS_BASE_PATH):
     spark = utils.get_spark()
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
@@ -126,7 +129,9 @@ def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_B
         spark.read.option("basePath", base_path)
         .parquet(cqc_provider_source)
         .select(
-            col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
+            col("providerid"), 
+            col("name").alias("provider_name"),
+             col("import_date").alias("cqc_providers_import_date")
         )
     )
 
@@ -135,12 +140,13 @@ def get_cqc_provider_df(cqc_provider_source, base_path=constants.CQC_PROVIDERS_B
         "cqc_providers_import_date", to_date(col("cqc_providers_import_date").cast("string"), "yyyyMMdd")
     )
 
+    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    cqc_provider_df = cqc_provider_df.filter(col("cqc_locations_import_date") == target_date)
+
     return cqc_provider_df
 
 
-def get_pir_dataframe(pir_source, base_path=constants.PIR_BASE_PATH):
-    # TODO: Add a new filter for import_date, pass in as parameter.
-
+def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
     spark = utils.get_spark()
 
     # Join PIR service users
