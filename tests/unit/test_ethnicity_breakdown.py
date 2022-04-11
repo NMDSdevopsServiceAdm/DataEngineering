@@ -24,6 +24,27 @@ class EthnicityBreakdownTests(unittest.TestCase):
         df = df.collect()
         self.assertEqual(df[0]["mainjrid"], 1)
 
+    def test_main(self):
+        result_df = ethnicity_breakdown.main(self.TEST_ETHNICITY_FILE, "20200101")
+
+        # worker_source, ascwds_import_date
+
+        self.assertEqual(
+            result_df.columns,
+            [
+                "master_locationid",
+                "primary_service_type",
+                "estimate_job_count_2021",
+                "main_job_role",
+                "location_jobs_ratio",
+                "ascwds_num_of_jobs",
+                "estimated_num_of_jobs",
+                "estimate_job_role_count_2021",
+            ],
+        )
+
+        self.assertEqual(result_df.count(), 15)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
