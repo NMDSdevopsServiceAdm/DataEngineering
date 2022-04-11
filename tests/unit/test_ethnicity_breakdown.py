@@ -85,6 +85,12 @@ class EthnicityBreakdownTests(unittest.TestCase):
                 "ons_lsoa11",
                 "ons_msoa11",
                 "ons_region",
+                "asian",
+                "black",
+                "mixed",
+                "other",
+                "white",
+                "ethnicity_base",
             ],
         )
 

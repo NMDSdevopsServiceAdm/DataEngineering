@@ -58,9 +58,6 @@ def main(
     )
     all_job_roles_df.show()
 
-    # lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
-    # lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
-
     print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
     ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
@@ -80,16 +77,16 @@ def main(
     )
     ascwds_ethnicity_df.show()
 
-    # all_job_roles_df = all_job_roles_df.join(
-    #     ascwds_ethnicity_df,
-    #     (all_job_roles_df.master_locationid == ascwds_ethnicity_df.locationid)
-    #     & (all_job_roles_df.main_job_role == ascwds_ethnicity_df.mainjrid),
-    #     "left",
-    # ).drop("locationid", "mainjrid")
-    # all_job_roles_df = all_job_roles_df.fillna(0)
+    all_job_roles_df = all_job_roles_df.join(
+        ascwds_ethnicity_df,
+        (all_job_roles_df.master_locationid == ascwds_ethnicity_df.locationid)
+        & (all_job_roles_df.main_job_role == ascwds_ethnicity_df.mainjrid),
+        "left",
+    ).drop("locationid", "mainjrid")
+    all_job_roles_df = all_job_roles_df.fillna(0)
+    all_job_roles_df.show()
 
-    # DONE print("Renaming job role variables...")
-    # DONE all_job_roles_df = rename_column_values(all_job_roles_df, "main_job_role", MAINJRID_DICT)
+    all_job_roles_df = rename_column_values(all_job_roles_df, "main_job_role", MAINJRID_DICT)
 
     # all_job_roles_df = all_job_roles_df.groupBy(
     #     "master_locationid",
@@ -175,6 +172,8 @@ def main(
     #     "census_base_lsoa", census_ethnicity_lsoa_df.census_base_lsoa.cast("int")
     # )
 
+    lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
+
     # census_ethnicity_msoa_df = (
     #     lsoa_to_msoa_df.join(
     #         census_ethnicity_lsoa_df, lsoa_to_msoa_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
@@ -193,6 +192,8 @@ def main(
     #     .withColumnRenamed("sum(census_white_lsoa)", "census_white_msoa")
     #     .withColumnRenamed("sum(census_base_lsoa)", "census_base_msoa")
     # )
+
+    lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
 
     # census_ethnicity_region_df = (
     #     lsoa_to_region_df.join(
