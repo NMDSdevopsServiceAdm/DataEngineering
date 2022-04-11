@@ -74,6 +74,15 @@ Run all tests
 ```
 python -m unittest discover tests/unit "test_*.py"
 ```
+Run specific test within test file
+```
+python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test>
+```
+example:
+```
+python -m unittest tests.unit.test_prepare_locations.PrepareLocationsTests.test_get_pir_df
+```
+
 
 For verbose output add `-v` to the end of the command.
 
