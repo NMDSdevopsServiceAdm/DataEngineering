@@ -83,3 +83,22 @@ def generate_cqc_locations_prepared_parquet(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_ons_geography_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = ["pcds", "lsoa11", "msoa11", "rgn", "ctry", "other_cols"]
+
+    rows = [
+        ("AB1 2CD", "E01000001", "E02000003", "E12000001", "E92000001", "other geography stuff"),
+        ("WX9 0YZ", "E01000003", "E02000002", "E12000001", "E92000001", "other geography stuff"),
+        ("GH5 6IJ", "E01000002", "E02000001", "E12000002", "E92000001", "other geography stuff"),
+        ("ZZ2 2ZZ", "S01000002", "S02000001", "S12000002", "S92000001", "other geography stuff"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df

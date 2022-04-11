@@ -32,7 +32,12 @@ MAINJRID_DICT = {
 
 
 def main(
-    job_roles_per_location_source, cqc_locations_prepared_source, worker_source, ascwds_import_date, destination=None
+    job_roles_per_location_source,
+    cqc_locations_prepared_source,
+    ons_source,
+    worker_source,
+    ascwds_import_date,
+    destination=None,
 ):
 
     print("Importing job role breakdown by CQC location data...")
@@ -44,7 +49,17 @@ def main(
     all_job_roles_df = all_job_roles_df.join(
         cqc_locations_df, all_job_roles_df.master_locationid == cqc_locations_df.locationid, "left"
     ).drop("locationid")
+
+    print("Importing ONS geography data...")
+    ons_df = get_ons_geography_df(ons_source)
+
+    all_job_roles_df = all_job_roles_df.join(ons_df, all_job_roles_df.postal_code == ons_df.ons_postcode, "left").drop(
+        "ons_postcode"
+    )
     all_job_roles_df.show()
+
+    # lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
+    # lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
 
     print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
@@ -64,18 +79,6 @@ def main(
         ),
     )
     ascwds_ethnicity_df.show()
-
-    # ons_df = spark.table("domain_ons")
-    # ons_df = ons_df.filter(ons_df.ctry == "E92000001").selectExpr(
-    #     "pcds as ons_postcode", "lsoa11 as ons_lsoa11", "msoa11 as ons_msoa11", "rgn as ons_region"
-    # )
-
-    # lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
-    # lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
-
-    # all_job_roles_df = all_job_roles_df.join(ons_df, all_job_roles_df.postal_code == ons_df.ons_postcode, "left").drop(
-    #     "ons_postcode"
-    # )
 
     # all_job_roles_df = all_job_roles_df.join(
     #     ascwds_ethnicity_df,
@@ -340,6 +343,24 @@ def get_cqc_locations_df(cqc_locations_prepared_source):
     return cqc_locations_df
 
 
+def get_ons_geography_df(ons_source):
+    spark = utils.get_spark()
+    print(f"Reading ONS geography parquet from {ons_source}")
+    ons_df = (
+        spark.read.parquet(ons_source)
+        .filter(col("ctry") == "E92000001")
+        .select(col("pcds"), col("lsoa11"), col("msoa11"), col("rgn"))
+        .distinct()
+    )
+
+    ons_df = ons_df.withColumnRenamed("pcds", "ons_postcode")
+    ons_df = ons_df.withColumnRenamed("lsoa11", "ons_lsoa11")
+    ons_df = ons_df.withColumnRenamed("msoa11", "ons_msoa11")
+    ons_df = ons_df.withColumnRenamed("rgn", "ons_region")
+
+    return ons_df
+
+
 def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
     spark = utils.get_spark()
     print(f"Reading workers parquet from {worker_source}")
@@ -381,6 +402,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--ons_source",
+        help="Source s3 directory for ONS postcode dataset",
+        required=True,
+    )
+    parser.add_argument(
         "--worker_source",
         help="Source s3 directory for ASCWDS worker dataset",
         required=True,
@@ -401,6 +427,7 @@ def collect_arguments():
     return (
         args.job_roles_per_location_source,
         args.cqc_locations_prepared_source,
+        args.ons_source,
         args.worker_source,
         args.ascwds_import_date,
         args.destination,
@@ -411,8 +438,16 @@ if __name__ == "__main__":
     (
         job_roles_per_location_source,
         cqc_locations_prepared_source,
+        ons_source,
         worker_source,
         ascwds_import_date,
         destination,
     ) = collect_arguments()
-    main(job_roles_per_location_source, cqc_locations_prepared_source, worker_source, ascwds_import_date, destination)
+    main(
+        job_roles_per_location_source,
+        cqc_locations_prepared_source,
+        ons_source,
+        worker_source,
+        ascwds_import_date,
+        destination,
+    )
