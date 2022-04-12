@@ -136,57 +136,54 @@ def main(
     lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
 
     census_ethnicity_lsoa_df = get_census_ethnicity_lsoa_df(census_source)
-    print("main")
-    print(type(census_ethnicity_lsoa_df))
 
-    # census_ethnicity_msoa_df = (
-    #     lsoa_to_msoa_df.join(
-    #         census_ethnicity_lsoa_df, lsoa_to_msoa_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
-    #     )
-    #     .drop("lsoa", "ons_lsoa11")
-    #     .dropna()
-    # )
+    census_ethnicity_msoa_df = (
+        lsoa_to_msoa_df.join(
+            census_ethnicity_lsoa_df, lsoa_to_msoa_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
+        )
+        .drop("lsoa", "ons_lsoa11")
+        .dropna()
+    )
 
-    # census_ethnicity_msoa_df = census_ethnicity_msoa_df.groupBy("ons_msoa11").sum()
+    census_ethnicity_msoa_df = census_ethnicity_msoa_df.groupBy("ons_msoa11").sum()
 
-    # census_ethnicity_msoa_df = (
-    #     census_ethnicity_msoa_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_msoa")
-    #     .withColumnRenamed("sum(census_black_lsoa)", "census_black_msoa")
-    #     .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_msoa")
-    #     .withColumnRenamed("sum(census_other_lsoa)", "census_other_msoa")
-    #     .withColumnRenamed("sum(census_white_lsoa)", "census_white_msoa")
-    #     .withColumnRenamed("sum(census_base_lsoa)", "census_base_msoa")
-    # )
+    census_ethnicity_msoa_df = (
+        census_ethnicity_msoa_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_msoa")
+        .withColumnRenamed("sum(census_black_lsoa)", "census_black_msoa")
+        .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_msoa")
+        .withColumnRenamed("sum(census_other_lsoa)", "census_other_msoa")
+        .withColumnRenamed("sum(census_white_lsoa)", "census_white_msoa")
+        .withColumnRenamed("sum(census_base_lsoa)", "census_base_msoa")
+    )
 
-    # lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
+    lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
 
-    # census_ethnicity_region_df = (
-    #     lsoa_to_region_df.join(
-    #         census_ethnicity_lsoa_df, lsoa_to_region_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
-    #     )
-    #     .drop("lsoa", "ons_lsoa11")
-    #     .dropna()
-    # )
+    census_ethnicity_region_df = (
+        lsoa_to_region_df.join(
+            census_ethnicity_lsoa_df, lsoa_to_region_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
+        )
+        .drop("lsoa", "ons_lsoa11")
+        .dropna()
+    )
 
-    # census_ethnicity_region_df = census_ethnicity_region_df.groupBy("ons_region").sum()
+    census_ethnicity_region_df = census_ethnicity_region_df.groupBy("ons_region").sum()
 
-    # census_ethnicity_region_df = (
-    #     census_ethnicity_region_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_region")
-    #     .withColumnRenamed("sum(census_black_lsoa)", "census_black_region")
-    #     .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_region")
-    #     .withColumnRenamed("sum(census_other_lsoa)", "census_other_region")
-    #     .withColumnRenamed("sum(census_white_lsoa)", "census_white_region")
-    #     .withColumnRenamed("sum(census_base_lsoa)", "census_base_region")
-    # )
+    census_ethnicity_region_df = (
+        census_ethnicity_region_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_region")
+        .withColumnRenamed("sum(census_black_lsoa)", "census_black_region")
+        .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_region")
+        .withColumnRenamed("sum(census_other_lsoa)", "census_other_region")
+        .withColumnRenamed("sum(census_white_lsoa)", "census_white_region")
+        .withColumnRenamed("sum(census_base_lsoa)", "census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.join(
-    #     census_ethnicity_lsoa_df, all_job_roles_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
-    # ).drop("lsoa")
+    all_job_roles_df = all_job_roles_df.join(
+        census_ethnicity_lsoa_df, all_job_roles_df.ons_lsoa11 == census_ethnicity_lsoa_df.lsoa, "left"
+    ).drop("lsoa")
 
-    # all_job_roles_df = all_job_roles_df.join(census_ethnicity_msoa_df, ["ons_msoa11"], "left")
+    all_job_roles_df = all_job_roles_df.join(census_ethnicity_msoa_df, ["ons_msoa11"], "left")
 
-    # all_job_roles_df = all_job_roles_df.join(census_ethnicity_region_df, ["ons_region"], "left")
-    # all_job_roles_df.show()
+    all_job_roles_df = all_job_roles_df.join(census_ethnicity_region_df, ["ons_region"], "left")
 
     # # not fully convinced on this one but remove rows where we estimate zero jobs
     # all_job_roles_df = all_job_roles_df.filter(all_job_roles_df.estimated_jobs > 0)
@@ -368,10 +365,8 @@ def get_census_ethnicity_lsoa_df(census_source):
     census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
     census_df = census_df.withColumn("census_white_lsoa", census_df.census_white_lsoa.cast("int"))
     census_df = census_df.withColumn("census_base_lsoa", census_df.census_base_lsoa.cast("int"))
-    
-    print("def")
-    print(type(census_df))
-    census_df.show()
+
+    return census_df
 
 
 def get_keys_from_value(dic, val):
