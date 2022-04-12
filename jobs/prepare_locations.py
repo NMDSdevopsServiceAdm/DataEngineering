@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 import builtins
+from select import select
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower, min
 from pyspark.sql.types import IntegerType
@@ -60,7 +61,7 @@ def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.A
             col("establishmentid"),
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
-            col("import_date").alias("ascwds_workplace_import_date"),
+            col("import_date").alias("import_date"),
             col("orgid"),
             col("mupddate"),
             col("isparent"),
@@ -69,15 +70,15 @@ def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.A
 
     # Format date
     workplace_df = workplace_df.withColumn(
-        "ascwds_workplace_import_date", to_date(col("ascwds_workplace_import_date").cast("string"), "yyyyMMdd")
+        "import_date", to_date(col("import_date").cast("string"), "yyyyMMdd")
     )
 
-    workplace_df = workplace_df.drop_duplicates(subset=["locationid", "ascwds_workplace_import_date"])
+    workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
     target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
-    workplace_df = workplace_df.filter(col("ascwds_workplace_import_date") == target_date)
+    workplace_df = workplace_df.filter(col("import_date") == target_date)
 
     return workplace_df
 
@@ -106,19 +107,14 @@ def get_cqc_location_df(cqc_location_source, target_date, base_path=constants.CQ
             col("constituency"),
             col("localauthority").alias("local_authority"),
             col("gacservicetypes.description").alias("services_offered"),
-            col("import_date").alias("cqc_locations_import_date"),
+            col("import_date"),
         )
-    )
-
-    # Format date
-    cqc_df = cqc_df.withColumn(
-        "cqc_locations_import_date", to_date(col("cqc_locations_import_date").cast("string"), "yyyyMMdd")
     )
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
     target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
-    cqc_df = cqc_df.filter(col("cqc_locations_import_date") == target_date)
+    cqc_df = cqc_df.filter(col("import_date") == target_date)
 
     return cqc_df
 
@@ -131,17 +127,14 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
         spark.read.option("basePath", base_path)
         .parquet(cqc_provider_source)
         .select(
-            col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
+            col("providerid"), 
+            col("name").alias("provider_name"), 
+            col("import_date")
         )
     )
 
-    # Format date
-    cqc_provider_df = cqc_provider_df.withColumn(
-        "cqc_providers_import_date", to_date(col("cqc_providers_import_date").cast("string"), "yyyyMMdd")
-    )
-
     target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
-    cqc_provider_df = cqc_provider_df.filter(col("cqc_locations_import_date") == target_date)
+    cqc_provider_df = cqc_provider_df.filter(col("import_date") == target_date)
 
     return cqc_provider_df
 
@@ -161,6 +154,7 @@ def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
                 "_with_regulated_activities_as_defined_by_the_Health"
                 "_and_Social_Care_Act_from_your_service"
             ).alias("pir_service_users"),
+            col("import_date")
         )
     )
     pir_df = pir_df.dropDuplicates(["locationid"])
@@ -168,17 +162,14 @@ def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
     return pir_df
 
 
-def get_unique_import_dates(input_df):
-    spark = utils.get_spark()
-
-    df = spark.sql(f"SELECT import_date FROM {input_df}")
+def get_unique_import_dates(df):
+    df = df.select("import_date")
     df = df.withColumn("import_date", to_date(col("import_date"), "yyyyMMdd")).distinct().orderBy("import_date")
     odl = df.select("import_date").rdd.flatMap(lambda x: x).collect()
     return odl
 
 
 def get_date_closest_to_search_date(search_date, date_list):
-    # TODO: NEED TO UNIT TEST THIS
     if search_date in date_list:
         return search_date
     else:
@@ -188,7 +179,10 @@ def get_date_closest_to_search_date(search_date, date_list):
     if index_of_c_date < 1:
         return None
     else:
-        return date_list[index_of_c_date - 1]
+        if closest_date > search_date:
+            return date_list[index_of_c_date - 1]
+        else:
+            return date_list[index_of_c_date]
 
 
 def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
@@ -197,6 +191,7 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
 
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
+    print(unique_cqc_location_dates)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
     unique_pir_dates = get_unique_import_dates(dataset_pir)
 
@@ -233,8 +228,8 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
             StructField("pir_date", DateType(), True),
         ]
     )
-
     date_matrix_df = spark.createDataFrame(data=transpose, schema=schema)
+
     return date_matrix_df
 
 
