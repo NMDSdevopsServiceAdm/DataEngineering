@@ -47,6 +47,28 @@ class PrepareLocationsTests(unittest.TestCase):
         workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2020-11-30", "tests/test_data/")
         self.assertEqual(workplace_df.count(), 0)
 
+    def test_get_cqc_location_df(self):
+        path = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
+        # check df with filter date 2022-04-01
+        cqc_location_df = prepare_locations.get_cqc_location_df(path, "2022-04-01", "tests/test_data/")
+        # check cols are correct
+        self.assertEqual(cqc_location_df.columns[0], "locationid")
+        self.assertEqual(cqc_location_df.columns[1], "providerid")
+        self.assertEqual(cqc_location_df.columns[16], "cqc_locations_import_date")
+        # Check filter returns all rows with correct date
+        self.assertEqual(cqc_location_df.count(), 0)
+
+    def test_get_cqc_provider_df(self):
+        path = "tests/test_data/domain=CQC/dataset=CQC_providers/version=0.0.1/format=parquet/"
+        # check df with filter date 2022-04-01
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(path, "2022-04-01", "tests/test_data/")
+        # check cols are correct
+        self.assertEqual(cqc_provider_df.columns[0], "providerid")
+        self.assertEqual(cqc_provider_df.columns[1], "provider_name")
+        self.assertEqual(cqc_provider_df.columns[2], "cqc_providers_import_date")
+        # Check filter returns all rows with correct date
+        self.assertEqual(cqc_provider_df.count(), 0)
+
     # TODO: CQC test and add test data
 
     def test_get_pir_df(self):
