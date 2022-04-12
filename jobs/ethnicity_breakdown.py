@@ -1,6 +1,6 @@
 import argparse
 
-from pyspark.sql.functions import udf, col, trim
+from pyspark.sql.functions import udf, col, trim, least, lit, greatest
 from pyspark.sql.types import StringType
 
 
@@ -304,6 +304,36 @@ def main(
     ethnicity_white_model_df = rename_column_values(
         ethnicity_white_model_df, "main_job_role", MAGIC_JOBROLE_WHITE_DICT, "magic_jobrole"
     )
+
+    # magic fromula from Will
+    # 0.23 + service_model_num + jobrole_model_num + region_model_num + (0.67 * census_white_msoa_%)))
+    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
+        "magic_white_prediction",
+        least(
+            lit(1),
+            greatest(
+                lit(0),
+                0.23
+                + col("magic_service")
+                + col("magic_region")
+                + col("magic_jobrole")
+                + (0.67 * col("census_white_msoa_%")),
+            ),
+        ),
+    )
+
+    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
+        "estimated_jobs_white", col("estimated_jobs") * col("magic_white_prediction")
+    )
+    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
+        "estimated_jobs_bame", col("estimated_jobs") * (1 - col("magic_white_prediction"))
+    )
+
+    ethnicity_white_model_df = ethnicity_white_model_df.drop(
+        "census_white_msoa_%", "magic_service", "magic_region", "magic_jobrole", "magic_white_prediction"
+    )
+
+    ethnicity_white_model_df.show()
 
     print(f"Exporting as parquet to {destination}")
     if destination:

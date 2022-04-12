@@ -106,7 +106,8 @@ class EthnicityBreakdownTests(unittest.TestCase):
                 "ons_region",
                 "main_job_role",
                 "estimated_jobs",
-                "census_white_msoa_%",
+                "estimated_jobs_white",
+                "estimated_jobs_bame",
             ],
         )
 
