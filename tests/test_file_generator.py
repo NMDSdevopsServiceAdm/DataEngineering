@@ -39,15 +39,15 @@ def generate_all_job_roles_parquet(output_destination):
     columns = ["master_locationid", "primary_service_type", "main_job_role", "estimate_job_role_count_2021"]
 
     rows = [
-        ("1-000000001", "Care home without nursing", "1", 3.5),
-        ("1-000000001", "Care home without nursing", "7", 0.5),
-        ("1-000000001", "Care home without nursing", "8", 1.0),
-        ("1-000000002", "Care home without nursing", "1", 15.0),
-        ("1-000000002", "Care home without nursing", "7", 25.0),
+        ("1-000000001", "Care home without nursing", "1", 0.5),
+        ("1-000000001", "Care home without nursing", "7", 3.5),
+        ("1-000000001", "Care home without nursing", "8", 10.0),
+        ("1-000000002", "Care home without nursing", "1", 2.0),
+        ("1-000000002", "Care home without nursing", "7", 8.0),
         ("1-000000002", "Care home without nursing", "8", 20.0),
-        ("1-000000003", "Care home with nursing", "1", 20.0),
-        ("1-000000003", "Care home with nursing", "7", 10.0),
-        ("1-000000003", "Care home with nursing", "8", 20.0),
+        ("1-000000003", "Care home with nursing", "1", 0.0),
+        ("1-000000003", "Care home with nursing", "7", 1.0),
+        ("1-000000003", "Care home with nursing", "8", 5.0),
         ("1-000000004", "Care home with nursing", "1", 10.0),
         ("1-000000004", "Care home with nursing", "7", 0.0),
         ("1-000000004", "Care home with nursing", "8", 10.0),

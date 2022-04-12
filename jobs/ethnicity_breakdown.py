@@ -254,7 +254,12 @@ def main(
     all_job_roles_df = all_job_roles_df.fillna(0)
 
     ethnicity_white_model_df = all_job_roles_df.select(
-        "master_locationid", "primary_service_type", "main_job_role", "ons_region", "census_white_msoa_%"
+        "master_locationid",
+        "primary_service_type",
+        "ons_region",
+        "main_job_role",
+        "estimated_jobs",
+        "census_white_msoa_%",
     )
     ethnicity_white_model_df.show()
 

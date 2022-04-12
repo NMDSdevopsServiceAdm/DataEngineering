@@ -103,8 +103,9 @@ class EthnicityBreakdownTests(unittest.TestCase):
             [
                 "master_locationid",
                 "primary_service_type",
-                "main_job_role",
                 "ons_region",
+                "main_job_role",
+                "estimated_jobs",
                 "census_white_msoa_%",
             ],
         )
