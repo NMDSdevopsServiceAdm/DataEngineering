@@ -31,37 +31,36 @@ MAINJRID_DICT = {
 }
 
 MAGIC_SERVICE_WHITE_DICT = {
-    "Care home with nursing": -0.046,
-    "Care home without nursing": -0.012,
-    "non-residential": 0.0,
+    -0.046: "Care home with nursing",
+    -0.012: "Care home without nursing",
+    0.0: "non-residential",
 }
 
 MAGIC_JOBROLE_WHITE_DICT = {
-    "Senior management": "0.109",
-    "Registered manager": "0.022",
-    "Social worker": "0.08",
-    "Occupational therapist": "0.098",
-    "Registered nurse": "-0.051",
-    "Allied health professional": "0.088",
-    "Senior care worker": "-0.114",
-    "Care worker": "0.066",
-    "Support and outreach": "0.081",
-    "Other managers": "0.045",
-    "Other professional": "0.013",
-    "Other direct care": "0.175",
-    "All other": "0.0",
+    0.109: "Senior management",
+    0.022: "Registered manager",
+    0.08: "Social worker",
+    0.098: "Occupational therapist",
+    -0.051: "Registered nurse",
+    0.088: "Allied health professional",
+    -0.114: "Senior care worker",
+    0.066: "Care worker",
+    0.081: "Support and outreach",
+    0.045: "Other managers",
+    0.013: "Other professional",
+    0.175: "Other direct care",
+    0.0: "All other",
 }
 
 MAGIC_REGION_WHITE_DICT = {
-    "E12000001": "0.045",
-    "E12000002": "0.021",
-    "E12000003": "0.021",
-    "E12000004": "-0.008",
-    "E12000005": "-0.031",
-    "E12000006": "-0.063",
-    "E12000007": "-0.339",
-    "E12000008": "-0.071",
-    "E12000009": "0.0",
+    0.045: "E12000001",
+    0.021: ["E12000002", "E12000003"],
+    -0.008: "E12000004",
+    -0.031: "E12000005",
+    -0.063: "E12000006",
+    -0.339: "E12000007",
+    -0.071: "E12000008",
+    0.0: "E12000009",
 }
 
 
@@ -295,7 +294,16 @@ def main(
         "estimated_jobs",
         "census_white_msoa_%",
     )
-    ethnicity_white_model_df.show()
+
+    ethnicity_white_model_df = rename_column_values(
+        ethnicity_white_model_df, "primary_service_type", MAGIC_SERVICE_WHITE_DICT, "magic_service"
+    )
+    ethnicity_white_model_df = rename_column_values(
+        ethnicity_white_model_df, "ons_region", MAGIC_REGION_WHITE_DICT, "magic_region"
+    )
+    ethnicity_white_model_df = rename_column_values(
+        ethnicity_white_model_df, "main_job_role", MAGIC_JOBROLE_WHITE_DICT, "magic_jobrole"
+    )
 
     print(f"Exporting as parquet to {destination}")
     if destination:
@@ -401,10 +409,13 @@ def get_keys_from_value(dic, val):
     return [k for k, v in dic.items() if val in v][0]
 
 
-def rename_column_values(df, var_name, dic):
+def rename_column_values(df, var_name, dic, alias=None):
     var_udf = udf(lambda x: get_keys_from_value(dic, x), StringType())
 
-    df = df.withColumn(var_name, var_udf(col(var_name)))
+    if alias:
+        df = df.withColumn(alias, var_udf(col(var_name)))
+    else:
+        df = df.withColumn(var_name, var_udf(col(var_name)))
 
     return df
 
