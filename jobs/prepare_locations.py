@@ -6,13 +6,15 @@ from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, 
 from pyspark.sql.types import IntegerType
 from utils import utils
 from environment import constants
+from pyspark.sql.types import DateType, StructType, StructField
+
 
 MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
 def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination):
-    
+
     print("Building locations prepared dataset")
 
     """ 
@@ -48,7 +50,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
 def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
     spark = utils.get_spark()
-    
+
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
         spark.read.option("basePath", base_path)
@@ -74,7 +76,7 @@ def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.A
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
-    target_date=datetime.strptime(target_date, "%Y-%m-%d").date()
+    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     workplace_df = workplace_df.filter(col("ascwds_workplace_import_date") == target_date)
 
     return workplace_df
@@ -115,7 +117,7 @@ def get_cqc_location_df(cqc_location_source, target_date, base_path=constants.CQ
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
-    target_date=datetime.strptime(target_date, "%Y-%m-%d").date()
+    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     cqc_df = cqc_df.filter(col("cqc_locations_import_date") == target_date)
 
     return cqc_df
@@ -129,9 +131,7 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
         spark.read.option("basePath", base_path)
         .parquet(cqc_provider_source)
         .select(
-            col("providerid"), 
-            col("name").alias("provider_name"),
-             col("import_date").alias("cqc_providers_import_date")
+            col("providerid"), col("name").alias("provider_name"), col("import_date").alias("cqc_providers_import_date")
         )
     )
 
@@ -168,8 +168,10 @@ def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
     return pir_df
 
 
-def get_unique_import_dates(input_df, import_date="import_date"):
-    df = spark.sql(f"SELECT import_date FROM {dataset}")
+def get_unique_import_dates(input_df):
+    spark = utils.get_spark()
+
+    df = spark.sql(f"SELECT import_date FROM {input_df}")
     df = df.withColumn("import_date", to_date(col("import_date"), "yyyyMMdd")).distinct().orderBy("import_date")
     odl = df.select("import_date").rdd.flatMap(lambda x: x).collect()
     return odl
@@ -177,10 +179,10 @@ def get_unique_import_dates(input_df, import_date="import_date"):
 
 def get_date_closest_to_search_date(search_date, date_list):
     # TODO: NEED TO UNIT TEST THIS
-    if asc_date in date_list:
-        return asc_date
+    if search_date in date_list:
+        return search_date
     else:
-        closest_date = builtins.min(date_list, key=lambda x: builtins.abs(x - asc_date))
+        closest_date = builtins.min(date_list, key=lambda x: builtins.abs(x - search_date))
         index_of_c_date = date_list.index(closest_date)
 
     if index_of_c_date < 1:
@@ -191,6 +193,8 @@ def get_date_closest_to_search_date(search_date, date_list):
 
 def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
     # TODO: Definitely unit test this! Lot's of room for bugs here. Shall consider refactoring post demo
+    spark = utils.get_spark()
+
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)

@@ -32,10 +32,9 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_ascwds_workplace_df(self):
         path = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-        
         # check df with filter date 2021-11-30
         workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2021-11-30", "tests/test_data/")
-        # check cols are correct 
+        # check cols are correct
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
         self.assertEqual(workplace_df.columns[2], "total_staff")
@@ -50,7 +49,6 @@ class PrepareLocationsTests(unittest.TestCase):
 
     # TODO: CQC test and add test data
 
-
     def test_get_pir_df(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
         # check df with filter date 2021-11-30
@@ -58,28 +56,23 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual((pir_df.count(), len(pir_df.columns)), (10, 2))
 
-        # check cols are correct 
+        # check cols are correct
         self.assertEqual(pir_df.columns[0], "locationid")
         self.assertEqual(pir_df.columns[1], "pir_service_users")
 
         self.assertEqual(pir_df.count(), 10)
 
-    
+    # TODO: get_date_closest_to_search_date test
 
-    def test_get_pir_dataframe(self):
-        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
-        pir_df = prepare_locations.get_pir_dataframe(path, "tests/test_data/")
-        self.assertEqual(pir_df.count(), 10)
-        self.assertEqual(pir_df.columns[0], "locationid")
-        self.assertEqual(pir_df.columns[1], "pir_service_users")
+    # def test_generate_closest_date_matrix_df(self):
+    #    path = " "
+    #    date_matrix_df = prepare_locations.generate_closest_date_matrix(path, "tests/test_data/")
 
-        pir_df = pir_df.orderBy("locationid").collect()
-        self.assertEqual(pir_df[0]["locationid"], "1-0000000001")
-        self.assertEqual(pir_df[0]["pir_service_users"], "95")
-        self.assertEqual(pir_df[9]["locationid"], "1-0000000010")
-        self.assertEqual(pir_df[9]["pir_service_users"], "104")
-
-
+    #    self.assertEqual(date_matrix_df.columns[0], "snapshot_date")
+    #    self.assertEqual(date_matrix_df.columns[1], "asc_workplace_date")
+    #    self.assertEqual(date_matrix_df.columns[2], "cqc_location_date")
+    #    self.assertEqual(date_matrix_df.columns[3], "cqc_prov_date")
+    #    self.assertEqual(date_matrix_df.columns[4], "pir_date")
 
     def test_filter_nulls(self):
         columns = ["locationid", "worker_record_count", "total_staff"]
