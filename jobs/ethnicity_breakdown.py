@@ -30,6 +30,40 @@ MAINJRID_DICT = {
     "All other": ["25", "26", "27", "34", "36", "39", "40", "41", "42"],
 }
 
+MAGIC_SERVICE_WHITE_DICT = {
+    "Care home with nursing": -0.046,
+    "Care home without nursing": -0.012,
+    "non-residential": 0.0,
+}
+
+MAGIC_JOBROLE_WHITE_DICT = {
+    "Senior management": "0.109",
+    "Registered manager": "0.022",
+    "Social worker": "0.08",
+    "Occupational therapist": "0.098",
+    "Registered nurse": "-0.051",
+    "Allied health professional": "0.088",
+    "Senior care worker": "-0.114",
+    "Care worker": "0.066",
+    "Support and outreach": "0.081",
+    "Other managers": "0.045",
+    "Other professional": "0.013",
+    "Other direct care": "0.175",
+    "All other": "0.0",
+}
+
+MAGIC_REGION_WHITE_DICT = {
+    "E12000001": "0.045",
+    "E12000002": "0.021",
+    "E12000003": "0.021",
+    "E12000004": "-0.008",
+    "E12000005": "-0.031",
+    "E12000006": "-0.063",
+    "E12000007": "-0.339",
+    "E12000008": "-0.071",
+    "E12000009": "0.0",
+}
+
 
 def main(
     job_roles_per_location_source,
