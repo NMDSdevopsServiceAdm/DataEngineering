@@ -98,26 +98,16 @@ class EthnicityBreakdownTests(unittest.TestCase):
 
         self.assertEqual(result_df.count(), 15)
 
-        # self.assertEqual(
-        #     result_df.columns,
-        #     [
-        #         "master_locationid",
-        #         "primary_service_type",
-        #         "main_job_role",
-        #         "estimated_jobs",
-        #         "providerid",
-        #         "postal_code",
-        #         "ons_lsoa11",
-        #         "ons_msoa11",
-        #         "ons_region",
-        #         "asian",
-        #         "black",
-        #         "mixed",
-        #         "other",
-        #         "white",
-        #         "ethnicity_base",
-        #     ],
-        # )
+        self.assertEqual(
+            result_df.columns,
+            [
+                "master_locationid",
+                "primary_service_type",
+                "main_job_role",
+                "ons_region",
+                "census_white_msoa_%",
+            ],
+        )
 
 
 if __name__ == "__main__":

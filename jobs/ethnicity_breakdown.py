@@ -181,11 +181,6 @@ def main(
 
     all_job_roles_df = all_job_roles_df.join(census_ethnicity_region_df, ["ons_region"], "left")
 
-    # # not fully convinced on this one but remove rows where we estimate zero jobs
-    # all_job_roles_df = all_job_roles_df.filter(all_job_roles_df.estimated_jobs > 0)
-
-    all_job_roles_df = all_job_roles_df.sort("master_locationid", "main_job_role")
-
     all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
     all_job_roles_df = all_job_roles_df.withColumn(
         "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
@@ -258,18 +253,17 @@ def main(
 
     all_job_roles_df = all_job_roles_df.fillna(0)
 
-    # ethnicity_white_model_df = all_job_roles_df.select(
-    #     "master_locationid", "primary_service_type", "main_job_role", "ons_region", "census_white_msoa_%"
-    # )
+    ethnicity_white_model_df = all_job_roles_df.select(
+        "master_locationid", "primary_service_type", "main_job_role", "ons_region", "census_white_msoa_%"
+    )
+    ethnicity_white_model_df.show()
 
     print(f"Exporting as parquet to {destination}")
     if destination:
-        # utils.write_to_parquet(ethnicity_white_model_df, destination)
-        utils.write_to_parquet(all_job_roles_df, destination)
+        utils.write_to_parquet(ethnicity_white_model_df, destination)
 
     else:
-        # return ethnicity_white_model_df
-        return all_job_roles_df
+        return ethnicity_white_model_df
 
 
 def get_all_job_roles_per_location_df(job_roles_per_location_source):
