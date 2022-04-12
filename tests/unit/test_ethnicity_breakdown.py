@@ -96,18 +96,16 @@ class EthnicityBreakdownTests(unittest.TestCase):
             self.TEST_CENSUS_FILE,
         )
 
-        self.assertEqual(result_df.count(), 15)
+        self.assertEqual(result_df.count(), 30)
 
         self.assertEqual(
             result_df.columns,
             [
-                "master_locationid",
                 "primary_service_type",
                 "ons_region",
                 "main_job_role",
+                "ethnicity",
                 "estimated_jobs",
-                "estimated_jobs_white",
-                "estimated_jobs_bame",
             ],
         )
 

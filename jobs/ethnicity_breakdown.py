@@ -30,6 +30,18 @@ MAINJRID_DICT = {
     "All other": ["25", "26", "27", "34", "36", "39", "40", "41", "42"],
 }
 
+REGION_DICT = {
+    "North East": "E12000001",
+    "North West": "E12000002",
+    "Yorkshire and The Humber": "E12000003",
+    "East Midlands": "E12000004",
+    "West Midlands": "E12000005",
+    "East of England": "E12000006",
+    "London": "E12000007",
+    "South East": "E12000008",
+    "South West": "E12000009",
+}
+
 MAGIC_SERVICE_WHITE_DICT = {
     -0.046: "Care home with nursing",
     -0.012: "Care home without nursing",
@@ -37,30 +49,30 @@ MAGIC_SERVICE_WHITE_DICT = {
 }
 
 MAGIC_JOBROLE_WHITE_DICT = {
-    0.109: "Senior management",
-    0.022: "Registered manager",
-    0.08: "Social worker",
-    0.098: "Occupational therapist",
-    -0.051: "Registered nurse",
-    0.088: "Allied health professional",
-    -0.114: "Senior care worker",
-    0.066: "Care worker",
-    0.081: "Support and outreach",
-    0.045: "Other managers",
-    0.013: "Other professional",
-    0.175: "Other direct care",
-    0.0: "All other",
+    0.109: "All other",
+    0.022: "Care worker",
+    0.08: "Other direct care",
+    0.098: "Other managers",
+    -0.051: "Other professional",
+    0.088: "Registered manager",
+    -0.114: "Registered nurse",
+    0.066: "Senior care worker",
+    0.081: "Senior management",
+    0.045: "Support and outreach",
+    0.013: "Social worker",
+    0.175: "Occupational therapist",
+    0.0: "Allied health professional",
 }
 
 MAGIC_REGION_WHITE_DICT = {
-    0.045: "E12000001",
-    0.021: ["E12000002", "E12000003"],
-    -0.008: "E12000004",
-    -0.031: "E12000005",
-    -0.063: "E12000006",
-    -0.339: "E12000007",
-    -0.071: "E12000008",
-    0.0: "E12000009",
+    0.045: "North East",
+    0.021: ["North West", "Yorkshire and The Humber"],
+    -0.008: "East Midlands",
+    -0.031: "West Midlands",
+    -0.063: "East of England",
+    -0.339: "London",
+    -0.071: "South East",
+    0.0: "South West",
 }
 
 
@@ -214,6 +226,8 @@ def main(
 
     all_job_roles_df = all_job_roles_df.join(census_ethnicity_region_df, ["ons_region"], "left")
 
+    all_job_roles_df = rename_column_values(all_job_roles_df, "ons_region", REGION_DICT)
+
     all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
     all_job_roles_df = all_job_roles_df.withColumn(
         "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
@@ -330,17 +344,28 @@ def main(
     )
 
     ethnicity_white_model_df = ethnicity_white_model_df.drop(
-        "census_white_msoa_%", "magic_service", "magic_region", "magic_jobrole", "magic_white_prediction"
+        "estimated_jobs",
+        "census_white_msoa_%",
+        "magic_service",
+        "magic_region",
+        "magic_jobrole",
+        "magic_white_prediction",
     )
 
-    ethnicity_white_model_df.show()
+    ethnicity_for_tableau_df = ethnicity_white_model_df.selectExpr(
+        "primary_service_type",
+        "ons_region",
+        "main_job_role",
+        "stack(2, 'White', estimated_jobs_white, 'BAME', estimated_jobs_bame) as (ethnicity, estimated_jobs)",
+    )
+    ethnicity_for_tableau_df.show()
 
     print(f"Exporting as parquet to {destination}")
     if destination:
-        utils.write_to_parquet(ethnicity_white_model_df, destination)
+        utils.write_to_parquet(ethnicity_for_tableau_df, destination)
 
     else:
-        return ethnicity_white_model_df
+        return ethnicity_for_tableau_df
 
 
 def get_all_job_roles_per_location_df(job_roles_per_location_source):
