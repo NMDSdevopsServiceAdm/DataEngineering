@@ -41,24 +41,20 @@ def main(
     destination=None,
 ):
 
-    print("Importing job role breakdown by CQC location data...")
     all_job_roles_df = get_all_job_roles_per_location_df(job_roles_per_location_source)
 
-    print("Importing CQC locations data...")
     cqc_locations_df = get_cqc_locations_df(cqc_locations_prepared_source)
 
     all_job_roles_df = all_job_roles_df.join(
         cqc_locations_df, all_job_roles_df.master_locationid == cqc_locations_df.locationid, "left"
     ).drop("locationid")
 
-    print("Importing ONS geography data...")
     ons_df = get_ons_geography_df(ons_source)
 
     all_job_roles_df = all_job_roles_df.join(ons_df, all_job_roles_df.postal_code == ons_df.ons_postcode, "left").drop(
         "ons_postcode"
     )
 
-    print("Importing ASCWDS data...")
     ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
     ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
     ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
@@ -188,81 +184,79 @@ def main(
     # # not fully convinced on this one but remove rows where we estimate zero jobs
     # all_job_roles_df = all_job_roles_df.filter(all_job_roles_df.estimated_jobs > 0)
 
-    # all_job_roles_df = all_job_roles_df.sort("master_locationid", "main_job_role")
+    all_job_roles_df = all_job_roles_df.sort("master_locationid", "main_job_role")
 
-    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_white_lsoa_%", col("census_white_lsoa") / col("census_base_lsoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_white_msoa_%", col("census_white_msoa") / col("census_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_white_region_%", col("census_white_region") / col("census_base_region")
-    # )
+    all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_white_lsoa_%", col("census_white_lsoa") / col("census_base_lsoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_white_msoa_%", col("census_white_msoa") / col("census_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_white_region_%", col("census_white_region") / col("census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_mixed_%", col("ascwds_mixed") / col("ascwds_base"))
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "ascwds_mixed_msoa_%", col("ascwds_mixed_msoa") / col("ascwds_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_mixed_lsoa_%", col("census_mixed_lsoa") / col("census_base_lsoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_mixed_msoa_%", col("census_mixed_msoa") / col("census_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_mixed_region_%", col("census_mixed_region") / col("census_base_region")
-    # )
+    all_job_roles_df = all_job_roles_df.withColumn("ascwds_mixed_%", col("ascwds_mixed") / col("ascwds_base"))
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "ascwds_mixed_msoa_%", col("ascwds_mixed_msoa") / col("ascwds_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_mixed_lsoa_%", col("census_mixed_lsoa") / col("census_base_lsoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_mixed_msoa_%", col("census_mixed_msoa") / col("census_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_mixed_region_%", col("census_mixed_region") / col("census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_asian_%", col("ascwds_asian") / col("ascwds_base"))
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "ascwds_asian_msoa_%", col("ascwds_asian_msoa") / col("ascwds_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_asian_lsoa_%", col("census_asian_lsoa") / col("census_base_lsoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_asian_msoa_%", col("census_asian_msoa") / col("census_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_asian_region_%", col("census_asian_region") / col("census_base_region")
-    # )
+    all_job_roles_df = all_job_roles_df.withColumn("ascwds_asian_%", col("ascwds_asian") / col("ascwds_base"))
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "ascwds_asian_msoa_%", col("ascwds_asian_msoa") / col("ascwds_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_asian_lsoa_%", col("census_asian_lsoa") / col("census_base_lsoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_asian_msoa_%", col("census_asian_msoa") / col("census_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_asian_region_%", col("census_asian_region") / col("census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_black_%", col("ascwds_black") / col("ascwds_base"))
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "ascwds_black_msoa_%", col("ascwds_black_msoa") / col("ascwds_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_black_lsoa_%", col("census_black_lsoa") / col("census_base_lsoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_black_msoa_%", col("census_black_msoa") / col("census_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_black_region_%", col("census_black_region") / col("census_base_region")
-    # )
+    all_job_roles_df = all_job_roles_df.withColumn("ascwds_black_%", col("ascwds_black") / col("ascwds_base"))
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "ascwds_black_msoa_%", col("ascwds_black_msoa") / col("ascwds_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_black_lsoa_%", col("census_black_lsoa") / col("census_base_lsoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_black_msoa_%", col("census_black_msoa") / col("census_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_black_region_%", col("census_black_region") / col("census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_other_%", col("ascwds_other") / col("ascwds_base"))
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "ascwds_other_msoa_%", col("ascwds_other_msoa") / col("ascwds_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_other_lsoa_%", col("census_other_lsoa") / col("census_base_lsoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_other_msoa_%", col("census_other_msoa") / col("census_base_msoa")
-    # )
-    # all_job_roles_df = all_job_roles_df.withColumn(
-    #     "census_other_region_%", col("census_other_region") / col("census_base_region")
-    # )
+    all_job_roles_df = all_job_roles_df.withColumn("ascwds_other_%", col("ascwds_other") / col("ascwds_base"))
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "ascwds_other_msoa_%", col("ascwds_other_msoa") / col("ascwds_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_other_lsoa_%", col("census_other_lsoa") / col("census_base_lsoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_other_msoa_%", col("census_other_msoa") / col("census_base_msoa")
+    )
+    all_job_roles_df = all_job_roles_df.withColumn(
+        "census_other_region_%", col("census_other_region") / col("census_base_region")
+    )
 
-    # all_job_roles_df = all_job_roles_df.fillna(0)
-
-    # all_job_roles_df = all_job_roles_df.withColumn("main_job_role", jobRoleUDF(col("main_job_role")))
+    all_job_roles_df = all_job_roles_df.fillna(0)
 
     # ethnicity_white_model_df = all_job_roles_df.select(
     #     "master_locationid", "primary_service_type", "main_job_role", "ons_region", "census_white_msoa_%"

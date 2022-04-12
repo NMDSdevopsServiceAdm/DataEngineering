@@ -83,6 +83,9 @@ class EthnicityBreakdownTests(unittest.TestCase):
             ],
         )
 
+        census_df = census_df.collect()
+        self.assertEqual(census_df[0]["lsoa"], "E01000001")
+
     def test_main(self):
         result_df = ethnicity_breakdown.main(
             self.TEST_ALL_JOB_ROLES_FILE,
