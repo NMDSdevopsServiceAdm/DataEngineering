@@ -13,8 +13,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
     TEST_WORKER_FILE = "tests/test_data/tmp/worker_file.parquet"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_job_role_breakdown").getOrCreate()
+        self.spark = SparkSession.builder.appName("test_job_role_breakdown").getOrCreate()
         generate_estimate_jobs_2021_parquet(self.TEST_JOB_ESTIMATES_FILE)
         generate_worker_parquet(self.TEST_WORKER_FILE)
 
@@ -27,106 +26,16 @@ class JobRoleBreakdownTests(unittest.TestCase):
 
     def test_get_job_estimates_dataset(self):
 
-        breakdown_df = job_role_breakdown.get_job_estimates_dataset(
-            self.TEST_JOB_ESTIMATES_FILE)
+        breakdown_df = job_role_breakdown.get_job_estimates_dataset(self.TEST_JOB_ESTIMATES_FILE)
 
         self.assertEqual(breakdown_df.count(), 5)
-        self.assertEqual(breakdown_df.columns, [
-                         "master_locationid", "primary_service_type", "estimate_job_count_2021"])
+        self.assertEqual(breakdown_df.columns, ["master_locationid", "primary_service_type", "estimate_job_count_2021"])
 
     def test_get_worker_dataset(self):
-        worker_df = job_role_breakdown.get_worker_dataset(
-            self.TEST_WORKER_FILE)
+        worker_df = job_role_breakdown.get_worker_dataset(self.TEST_WORKER_FILE)
 
         self.assertEqual(worker_df.count(), 15)
-        self.assertEqual(worker_df.columns, [
-                         "locationid", "workerid", "mainjrid"])
-
-    # --- COMMENTED THESE TESTS --- #
-    """
-    Local dev envs use jdk8
-    Circle CI uses jdk11
-    Circle CI runs on Debian 11
-    Debian 11 does not have a supported package for jdk8
-    I believe the difference in java versions is causing discrepencies in the group by pyspark calls.
-    This results in circle ci giving different assertions for "my_count" values in the below tests and failing.
-    """
-    # TODO: Fix these tests in circle ci.
-    
-    
-    
-    
-    # def test_count_grouped_by_field_with_alias(self):
-    #     columns = ["locationid", "some_other_field"]
-    #     rows = [
-    #         ("1-000000001", "random value 1"),
-    #         ("1-000000001", "random value 2"),
-    #         ("1-000000002", "random value 3"),
-    #         ("1-000000002", "random value 4"),
-    #         ("1-000000003", "random value 5"),
-    #     ]
-    #     df = self.spark.createDataFrame(rows, columns)
-
-    #     output_df = job_role_breakdown.count_grouped_by_field(
-    #         df, grouping_field="locationid", alias="my_count")
-
-    #     self.assertEqual(output_df.count(), 3)
-    #     self.assertEqual(output_df.columns, ["locationid", "my_count"])
-
-    #     output_df_list = output_df.collect()
-    #     self.assertEqual(output_df_list[0]["my_count"], 2)
-    #     self.assertEqual(output_df_list[1]["my_count"], 2)
-    #     self.assertEqual(output_df_list[2]["my_count"], 1)
-
-    # def test_count_grouped_by_field_without_alias(self):
-    #     columns = ["locationid", "some_other_field"]
-    #     rows = [
-    #         ("1-000000001", "random value 1"),
-    #         ("1-000000001", "random value 2"),
-    #         ("1-000000002", "random value 3"),
-    #         ("1-000000002", "random value 4"),
-    #         ("1-000000003", "random value 5"),
-    #     ]
-    #     df = self.spark.createDataFrame(rows, columns)
-
-    #     output_df = job_role_breakdown.count_grouped_by_field(
-    #         df, grouping_field="locationid")
-
-    #     self.assertEqual(output_df.count(), 3)
-    #     self.assertEqual(output_df.columns, ["locationid", "count"])
-
-    #     output_df_list = output_df.collect()
-    #     self.assertEqual(output_df_list[0]["count"], 2)
-    #     self.assertEqual(output_df_list[1]["count"], 2)
-    #     self.assertEqual(output_df_list[2]["count"], 1)
-
-    # def test_count_grouped_by_multiple_fields_with_alias(self):
-    #     columns = ["locationid", "mainjrid", "some_other_field"]
-    #     rows = [
-    #         ("1-000000001", "1", "other data 1"),
-    #         ("1-000000001", "2", "other data 1"),
-    #         ("1-000000002", "1", "other data 2"),
-    #         ("1-000000002", "3", "other data 2"),
-    #         ("1-000000002", "3", "other data 3"),
-    #         ("1-000000002", "3", "other data 3"),
-    #         ("1-000000003", "2", "other data 1"),
-    #     ]
-    #     df = self.spark.createDataFrame(rows, columns)
-
-    #     output_df = job_role_breakdown.count_grouped_by_field(
-    #         df, grouping_field=["locationid", "mainjrid"], alias="my_count"
-    #     )
-
-    #     self.assertEqual(output_df.count(), 5)
-    #     self.assertEqual(output_df.columns, [
-    #                      "locationid", "mainjrid", "my_count"])
-
-    #     output_df_list = output_df.collect()
-    #     self.assertEqual(output_df_list[0]["my_count"], 1)
-    #     self.assertEqual(output_df_list[1]["my_count"], 1)
-    #     self.assertEqual(output_df_list[2]["my_count"], 1)
-    #     self.assertEqual(output_df_list[3]["my_count"], 3)
-    #     self.assertEqual(output_df_list[4]["my_count"], 1)
+        self.assertEqual(worker_df.columns, ["locationid", "workerid", "mainjrid"])
 
     def test_get_distinct_list_with_alias(self):
         columns = ["mainjrid", "some_other_field"]
@@ -145,8 +54,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        output_df = job_role_breakdown.get_distinct_list(
-            df, column_name="mainjrid", alias="mylist")
+        output_df = job_role_breakdown.get_distinct_list(df, column_name="mainjrid", alias="mylist")
 
         self.assertEqual(output_df.count(), 5)
         self.assertEqual(output_df.columns, ["mylist"])
@@ -173,8 +81,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        output_df = job_role_breakdown.get_distinct_list(
-            df, column_name="mainjrid")
+        output_df = job_role_breakdown.get_distinct_list(df, column_name="mainjrid")
 
         self.assertEqual(output_df.count(), 5)
         self.assertEqual(output_df.columns, ["mainjrid"])
@@ -200,11 +107,9 @@ class JobRoleBreakdownTests(unittest.TestCase):
 
         master_df = self.spark.createDataFrame(master_rows, master_columns)
 
-        worker_df = job_role_breakdown.get_worker_dataset(
-            self.TEST_WORKER_FILE)
+        worker_df = job_role_breakdown.get_worker_dataset(self.TEST_WORKER_FILE)
 
-        ouput_df = job_role_breakdown.get_comprehensive_list_of_job_roles_to_locations(
-            worker_df, master_df)
+        ouput_df = job_role_breakdown.get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df)
 
         self.assertEqual(ouput_df.count(), 9)
         self.assertEqual(
@@ -229,8 +134,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(df.count(), 4)
         self.assertEqual(
             df.columns,
-            ["estimate_job_count_2021", "location_worker_records",
-                "location_jobs_ratio", "location_jobs_to_model"],
+            ["estimate_job_count_2021", "location_worker_records", "location_jobs_ratio", "location_jobs_to_model"],
         )
         df_list = df.collect()
         self.assertEqual(df_list[0]["location_jobs_ratio"], 1)
@@ -243,8 +147,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(df_list[3]["location_jobs_to_model"], 0)
 
     def test_main(self):
-        result_df = job_role_breakdown.main(
-            self.TEST_JOB_ESTIMATES_FILE, self.TEST_WORKER_FILE)
+        result_df = job_role_breakdown.main(self.TEST_JOB_ESTIMATES_FILE, self.TEST_WORKER_FILE)
 
         self.assertEqual(
             result_df.columns,
@@ -256,7 +159,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
                 "location_jobs_ratio",
                 "ascwds_num_of_jobs",
                 "estimated_num_of_jobs",
-                "estimate_job_role_count_2021"
+                "estimate_job_role_count_2021",
             ],
         )
 
