@@ -389,7 +389,6 @@ def get_cqc_locations_df(cqc_locations_prepared_source):
     print(f"Reading CQC locations parquet from {cqc_locations_prepared_source}")
     cqc_locations_df = (
         spark.read.parquet(cqc_locations_prepared_source)
-        .filter(col("version") == "1.0.3")
         .select(col("locationid"), col("providerid"), col("postal_code"))
         .distinct()
     )
