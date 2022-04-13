@@ -461,6 +461,10 @@ def get_keys_from_value(dic, val):
 
 
 def rename_column_values(df, var_name, dic, alias=None):
+    df_var_null_count = df.filter(f"{var_name} is Null").count()
+    print(f"NULL COUNT HERE: {var_name} has {df_var_null_count} nulls")
+    df = df.filter(f"{var_name} is not Null")
+
     var_udf = udf(lambda x: get_keys_from_value(dic, x), StringType())
 
     if alias:
