@@ -51,7 +51,7 @@ class EthnicityBreakdownTests(unittest.TestCase):
     def test_get_cqc_locations_df(self):
         ons_df = ethnicity_breakdown.get_cqc_locations_df(self.TEST_CQC_LOCATIONS_PREPARED_FILE)
 
-        self.assertEqual(ons_df.count(), 5)
+        self.assertEqual(ons_df.count(), 6)
         self.assertEqual(ons_df.columns, ["locationid", "providerid", "postal_code"])
 
     def test_get_ons_geography_df(self):

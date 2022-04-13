@@ -358,7 +358,6 @@ def main(
         "main_job_role",
         "stack(2, 'White', estimated_jobs_white, 'BAME', estimated_jobs_bame) as (ethnicity, estimated_jobs)",
     )
-    ethnicity_for_tableau_df.show()
 
     print(f"Exporting as parquet to {destination}")
     if destination:
