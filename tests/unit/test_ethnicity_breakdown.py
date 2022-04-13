@@ -19,7 +19,6 @@ class EthnicityBreakdownTests(unittest.TestCase):
     TEST_CQC_LOCATIONS_PREPARED_FILE = "tests/test_data/tmp/cqc_locations_prepared_file.parquet"
     TEST_ONS_FILE = "tests/test_data/tmp/ons_geography_file.parquet"
     TEST_ETHNICITY_FILE = "tests/test_data/tmp/ethnicity_file.parquet"
-    ASCWDS_IMPORT_DATE = "20200301"
     TEST_CENSUS_FILE = "tests/test_data/tmp/ethnicity_by_super_output_area.csv"
 
     def setUp(self):
@@ -61,7 +60,7 @@ class EthnicityBreakdownTests(unittest.TestCase):
         self.assertEqual(ons_df.columns, ["ons_postcode", "ons_lsoa11", "ons_msoa11", "ons_region"])
 
     def test_get_ascwds_ethnicity_df(self):
-        ethnicity_df = ethnicity_breakdown.get_ascwds_ethnicity_df(self.TEST_ETHNICITY_FILE, self.ASCWDS_IMPORT_DATE)
+        ethnicity_df = ethnicity_breakdown.get_ascwds_ethnicity_df(self.TEST_ETHNICITY_FILE)
 
         self.assertEqual(ethnicity_df.count(), 14)
         self.assertEqual(ethnicity_df.columns, ["locationid", "mainjrid", "ethnicity"])

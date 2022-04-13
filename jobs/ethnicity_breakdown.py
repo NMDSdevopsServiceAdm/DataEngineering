@@ -81,7 +81,6 @@ def main(
     cqc_locations_prepared_source,
     ons_source,
     worker_source,
-    ascwds_import_date,
     census_source,
     destination=None,
 ):
@@ -100,7 +99,7 @@ def main(
         "ons_postcode"
     )
 
-    ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
+    ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source)
     ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
     ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
     ascwds_ethnicity_df = ascwds_ethnicity_df.fillna(0)
@@ -413,12 +412,11 @@ def get_ons_geography_df(ons_source):
     return ons_df
 
 
-def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
+def get_ascwds_ethnicity_df(worker_source):
     spark = utils.get_spark()
     print(f"Reading workers parquet from {worker_source}")
     ethnicity_df = (
         spark.read.parquet(worker_source)
-        .filter(col("import_date") == ascwds_import_date)
         .filter(col("ethnicity") > -1)
         .filter(col("ethnicity") < 99)
         .select(col("locationid"), col("mainjrid"), col("ethnicity"))
@@ -497,11 +495,6 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--ascwds_import_date",
-        help="The import date of ASCWDS data in the format yyyymmdd",
-        required=True,
-    )
-    parser.add_argument(
         "--census_source",
         help="Source s3 directory for census ethnicity data by super output area",
         required=True,
@@ -519,7 +512,6 @@ def collect_arguments():
         args.cqc_locations_prepared_source,
         args.ons_source,
         args.worker_source,
-        args.ascwds_import_date,
         args.census_source,
         args.destination,
     )
@@ -531,7 +523,6 @@ if __name__ == "__main__":
         cqc_locations_prepared_source,
         ons_source,
         worker_source,
-        ascwds_import_date,
         census_source,
         destination,
     ) = collect_arguments()
@@ -540,7 +531,6 @@ if __name__ == "__main__":
         cqc_locations_prepared_source,
         ons_source,
         worker_source,
-        ascwds_import_date,
         census_source,
         destination,
     )
