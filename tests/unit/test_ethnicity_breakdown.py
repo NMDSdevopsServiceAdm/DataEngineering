@@ -62,7 +62,7 @@ class EthnicityBreakdownTests(unittest.TestCase):
     def test_get_ascwds_ethnicity_df(self):
         ethnicity_df = ethnicity_breakdown.get_ascwds_ethnicity_df(self.TEST_ETHNICITY_FILE)
 
-        self.assertEqual(ethnicity_df.count(), 14)
+        self.assertEqual(ethnicity_df.count(), 16)
         self.assertEqual(ethnicity_df.columns, ["locationid", "mainjrid", "ethnicity"])
 
     def test_get_census_ethnicity_df(self):
@@ -91,7 +91,6 @@ class EthnicityBreakdownTests(unittest.TestCase):
             self.TEST_CQC_LOCATIONS_PREPARED_FILE,
             self.TEST_ONS_FILE,
             self.TEST_ETHNICITY_FILE,
-            self.ASCWDS_IMPORT_DATE,
             self.TEST_CENSUS_FILE,
         )
 
