@@ -442,18 +442,18 @@ def get_census_ethnicity_lsoa_df(census_source):
 
     census_df = census_df.selectExpr(
         "lsoa",
-        "`Asian/Asian British` as census_asian_lsoa",
-        "`Black/African/Caribbean/Black British` as census_black_lsoa",
-        "`Mixed/multiple ethnic group` as census_mixed_lsoa",
-        "`Other ethnic group` as census_other_lsoa",
+        # "`Asian/Asian British` as census_asian_lsoa",
+        # "`Black/African/Caribbean/Black British` as census_black_lsoa",
+        # "`Mixed/multiple ethnic group` as census_mixed_lsoa",
+        # "`Other ethnic group` as census_other_lsoa",
         "`White: Total` as census_white_lsoa",
         "`All categories: Ethnic group of HRP` as census_base_lsoa",
     )
 
-    census_df = census_df.withColumn("census_asian_lsoa", census_df.census_asian_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_black_lsoa", census_df.census_black_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_mixed_lsoa", census_df.census_mixed_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_asian_lsoa", census_df.census_asian_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_black_lsoa", census_df.census_black_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_mixed_lsoa", census_df.census_mixed_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
     census_df = census_df.withColumn("census_white_lsoa", census_df.census_white_lsoa.cast("int"))
     census_df = census_df.withColumn("census_base_lsoa", census_df.census_base_lsoa.cast("int"))
 
