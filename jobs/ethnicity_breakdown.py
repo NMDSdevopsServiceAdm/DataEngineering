@@ -81,7 +81,6 @@ def main(
     cqc_locations_prepared_source,
     ons_source,
     worker_source,
-    ascwds_import_date,
     census_source,
     destination=None,
 ):
@@ -100,79 +99,80 @@ def main(
         "ons_postcode"
     )
 
-    ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source, ascwds_import_date)
-    ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
-    ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
-    ascwds_ethnicity_df = ascwds_ethnicity_df.fillna(0)
-    ascwds_ethnicity_df = ascwds_ethnicity_df.withColumn(
-        "ethnicity_base",
-        sum(
-            [
-                ascwds_ethnicity_df.asian,
-                ascwds_ethnicity_df.black,
-                ascwds_ethnicity_df.mixed,
-                ascwds_ethnicity_df.other,
-                ascwds_ethnicity_df.white,
-            ]
-        ),
-    )
+    # ascwds_ethnicity_df = get_ascwds_ethnicity_df(worker_source)
+    # ascwds_ethnicity_df = rename_column_values(ascwds_ethnicity_df, "ethnicity", ETHNICITY_DICT)
+    # ascwds_ethnicity_df = ascwds_ethnicity_df.groupBy("locationid", "mainjrid").pivot("ethnicity").count()
+    # ascwds_ethnicity_df = ascwds_ethnicity_df.fillna(0)
+    # ascwds_ethnicity_df = ascwds_ethnicity_df.withColumn(
+    #     "ethnicity_base",
+    #     sum(
+    #         [
+    #             ascwds_ethnicity_df.asian,
+    #             ascwds_ethnicity_df.black,
+    #             ascwds_ethnicity_df.mixed,
+    #             ascwds_ethnicity_df.other,
+    #             ascwds_ethnicity_df.white,
+    #         ]
+    #     ),
+    # )
 
-    all_job_roles_df = all_job_roles_df.join(
-        ascwds_ethnicity_df,
-        (all_job_roles_df.master_locationid == ascwds_ethnicity_df.locationid)
-        & (all_job_roles_df.main_job_role == ascwds_ethnicity_df.mainjrid),
-        "left",
-    ).drop("locationid", "mainjrid")
+    # all_job_roles_df = all_job_roles_df.join(
+    #     ascwds_ethnicity_df,
+    #     (all_job_roles_df.master_locationid == ascwds_ethnicity_df.locationid)
+    #     & (all_job_roles_df.main_job_role == ascwds_ethnicity_df.mainjrid),
+    #     "left",
+    # ).drop("locationid", "mainjrid")
     all_job_roles_df = all_job_roles_df.fillna(0)
 
     all_job_roles_df = rename_column_values(all_job_roles_df, "main_job_role", MAINJRID_DICT)
 
-    all_job_roles_df = all_job_roles_df.groupBy(
-        "master_locationid",
-        "providerid",
-        "postal_code",
-        "ons_lsoa11",
-        "ons_msoa11",
-        "ons_region",
-        "primary_service_type",
-        "main_job_role",
-    ).sum()
+    # all_job_roles_df = all_job_roles_df.groupBy(
+    #     "master_locationid",
+    #     "providerid",
+    #     "postal_code",
+    #     "ons_lsoa11",
+    #     "ons_msoa11",
+    #     "ons_region",
+    #     "primary_service_type",
+    #     "main_job_role",
+    # ).sum()
 
-    all_job_roles_df = (
-        all_job_roles_df.withColumnRenamed("sum(estimated_jobs)", "estimated_jobs")
-        .withColumnRenamed("sum(asian)", "ascwds_asian")
-        .withColumnRenamed("sum(black)", "ascwds_black")
-        .withColumnRenamed("sum(mixed)", "ascwds_mixed")
-        .withColumnRenamed("sum(other)", "ascwds_other")
-        .withColumnRenamed("sum(white)", "ascwds_white")
-        .withColumnRenamed("sum(ethnicity_base)", "ascwds_base")
-    )
+    # all_job_roles_df = (
+    #     all_job_roles_df.withColumnRenamed("sum(estimated_jobs)", "estimated_jobs")
+    #     .withColumnRenamed("sum(asian)", "ascwds_asian")
+    #     .withColumnRenamed("sum(black)", "ascwds_black")
+    #     .withColumnRenamed("sum(mixed)", "ascwds_mixed")
+    #     .withColumnRenamed("sum(other)", "ascwds_other")
+    #     .withColumnRenamed("sum(white)", "ascwds_white")
+    #     .withColumnRenamed("sum(ethnicity_base)", "ascwds_base")
+    # )
 
-    ascwds_by_msoa_df = (
-        all_job_roles_df.select(
-            "ons_msoa11",
-            "main_job_role",
-            "ascwds_asian",
-            "ascwds_black",
-            "ascwds_mixed",
-            "ascwds_other",
-            "ascwds_white",
-            "ascwds_base",
-        )
-        .groupBy("ons_msoa11", "main_job_role")
-        .sum()
-    )
+    # ascwds_by_msoa_df = (
+    #     all_job_roles_df.select(
+    #         "ons_msoa11",
+    #         "main_job_role",
+    #         "ascwds_asian",
+    #         "ascwds_black",
+    #         "ascwds_mixed",
+    #         "ascwds_other",
+    #         "ascwds_white",
+    #         "ascwds_base",
+    #     )
+    #     .groupBy("ons_msoa11", "main_job_role")
+    #     .sum()
+    # )
 
-    ascwds_by_msoa_df = (
-        ascwds_by_msoa_df.withColumnRenamed("sum(ascwds_asian)", "ascwds_asian_msoa")
-        .withColumnRenamed("sum(ascwds_black)", "ascwds_black_msoa")
-        .withColumnRenamed("sum(ascwds_mixed)", "ascwds_mixed_msoa")
-        .withColumnRenamed("sum(ascwds_other)", "ascwds_other_msoa")
-        .withColumnRenamed("sum(ascwds_white)", "ascwds_white_msoa")
-        .withColumnRenamed("sum(ascwds_base)", "ascwds_base_msoa")
-    )
+    # ascwds_by_msoa_df = (
+    #     ascwds_by_msoa_df
+    #     .withColumnRenamed("sum(ascwds_asian)", "ascwds_asian_msoa")
+    #     .withColumnRenamed("sum(ascwds_black)", "ascwds_black_msoa")
+    #     .withColumnRenamed("sum(ascwds_mixed)", "ascwds_mixed_msoa")
+    #     .withColumnRenamed("sum(ascwds_other)", "ascwds_other_msoa")
+    #     .withColumnRenamed("sum(ascwds_white)", "ascwds_white_msoa")
+    #     .withColumnRenamed("sum(ascwds_base)", "ascwds_base_msoa")
+    # )
 
-    all_job_roles_df = all_job_roles_df.join(ascwds_by_msoa_df, ["ons_msoa11", "main_job_role"], "left")
+    # all_job_roles_df = all_job_roles_df.join(ascwds_by_msoa_df, ["ons_msoa11", "main_job_role"], "left")
 
     lsoa_to_msoa_df = ons_df.select("ons_lsoa11", "ons_msoa11").distinct()
 
@@ -189,12 +189,14 @@ def main(
     census_ethnicity_msoa_df = census_ethnicity_msoa_df.groupBy("ons_msoa11").sum()
 
     census_ethnicity_msoa_df = (
-        census_ethnicity_msoa_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_msoa")
-        .withColumnRenamed("sum(census_black_lsoa)", "census_black_msoa")
-        .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_msoa")
-        .withColumnRenamed("sum(census_other_lsoa)", "census_other_msoa")
-        .withColumnRenamed("sum(census_white_lsoa)", "census_white_msoa")
-        .withColumnRenamed("sum(census_base_lsoa)", "census_base_msoa")
+        census_ethnicity_msoa_df
+        # .withColumnRenamed("sum(census_asian_lsoa)", "census_asian_msoa")
+        # .withColumnRenamed("sum(census_black_lsoa)", "census_black_msoa")
+        # .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_msoa")
+        # .withColumnRenamed("sum(census_other_lsoa)", "census_other_msoa")
+        .withColumnRenamed("sum(census_white_lsoa)", "census_white_msoa").withColumnRenamed(
+            "sum(census_base_lsoa)", "census_base_msoa"
+        )
     )
 
     lsoa_to_region_df = ons_df.select("ons_lsoa11", "ons_region").distinct()
@@ -210,12 +212,14 @@ def main(
     census_ethnicity_region_df = census_ethnicity_region_df.groupBy("ons_region").sum()
 
     census_ethnicity_region_df = (
-        census_ethnicity_region_df.withColumnRenamed("sum(census_asian_lsoa)", "census_asian_region")
-        .withColumnRenamed("sum(census_black_lsoa)", "census_black_region")
-        .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_region")
-        .withColumnRenamed("sum(census_other_lsoa)", "census_other_region")
-        .withColumnRenamed("sum(census_white_lsoa)", "census_white_region")
-        .withColumnRenamed("sum(census_base_lsoa)", "census_base_region")
+        census_ethnicity_region_df
+        # .withColumnRenamed("sum(census_asian_lsoa)", "census_asian_region")
+        # .withColumnRenamed("sum(census_black_lsoa)", "census_black_region")
+        # .withColumnRenamed("sum(census_mixed_lsoa)", "census_mixed_region")
+        # .withColumnRenamed("sum(census_other_lsoa)", "census_other_region")
+        .withColumnRenamed("sum(census_white_lsoa)", "census_white_region").withColumnRenamed(
+            "sum(census_base_lsoa)", "census_base_region"
+        )
     )
 
     all_job_roles_df = all_job_roles_df.join(
@@ -228,13 +232,13 @@ def main(
 
     all_job_roles_df = rename_column_values(all_job_roles_df, "ons_region", REGION_DICT)
 
-    all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_white_lsoa_%", col("census_white_lsoa") / col("census_base_lsoa")
-    )
+    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_white_%", col("ascwds_white") / col("ascwds_base"))
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "ascwds_white_msoa_%", col("ascwds_white_msoa") / col("ascwds_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_white_lsoa_%", col("census_white_lsoa") / col("census_base_lsoa")
+    # )
     all_job_roles_df = all_job_roles_df.withColumn(
         "census_white_msoa_%", col("census_white_msoa") / col("census_base_msoa")
     )
@@ -242,61 +246,61 @@ def main(
         "census_white_region_%", col("census_white_region") / col("census_base_region")
     )
 
-    all_job_roles_df = all_job_roles_df.withColumn("ascwds_mixed_%", col("ascwds_mixed") / col("ascwds_base"))
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "ascwds_mixed_msoa_%", col("ascwds_mixed_msoa") / col("ascwds_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_mixed_lsoa_%", col("census_mixed_lsoa") / col("census_base_lsoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_mixed_msoa_%", col("census_mixed_msoa") / col("census_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_mixed_region_%", col("census_mixed_region") / col("census_base_region")
-    )
+    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_mixed_%", col("ascwds_mixed") / col("ascwds_base"))
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "ascwds_mixed_msoa_%", col("ascwds_mixed_msoa") / col("ascwds_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_mixed_lsoa_%", col("census_mixed_lsoa") / col("census_base_lsoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_mixed_msoa_%", col("census_mixed_msoa") / col("census_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_mixed_region_%", col("census_mixed_region") / col("census_base_region")
+    # )
 
-    all_job_roles_df = all_job_roles_df.withColumn("ascwds_asian_%", col("ascwds_asian") / col("ascwds_base"))
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "ascwds_asian_msoa_%", col("ascwds_asian_msoa") / col("ascwds_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_asian_lsoa_%", col("census_asian_lsoa") / col("census_base_lsoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_asian_msoa_%", col("census_asian_msoa") / col("census_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_asian_region_%", col("census_asian_region") / col("census_base_region")
-    )
+    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_asian_%", col("ascwds_asian") / col("ascwds_base"))
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "ascwds_asian_msoa_%", col("ascwds_asian_msoa") / col("ascwds_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_asian_lsoa_%", col("census_asian_lsoa") / col("census_base_lsoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_asian_msoa_%", col("census_asian_msoa") / col("census_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_asian_region_%", col("census_asian_region") / col("census_base_region")
+    # )
 
-    all_job_roles_df = all_job_roles_df.withColumn("ascwds_black_%", col("ascwds_black") / col("ascwds_base"))
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "ascwds_black_msoa_%", col("ascwds_black_msoa") / col("ascwds_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_black_lsoa_%", col("census_black_lsoa") / col("census_base_lsoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_black_msoa_%", col("census_black_msoa") / col("census_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_black_region_%", col("census_black_region") / col("census_base_region")
-    )
+    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_black_%", col("ascwds_black") / col("ascwds_base"))
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "ascwds_black_msoa_%", col("ascwds_black_msoa") / col("ascwds_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_black_lsoa_%", col("census_black_lsoa") / col("census_base_lsoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_black_msoa_%", col("census_black_msoa") / col("census_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_black_region_%", col("census_black_region") / col("census_base_region")
+    # )
 
-    all_job_roles_df = all_job_roles_df.withColumn("ascwds_other_%", col("ascwds_other") / col("ascwds_base"))
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "ascwds_other_msoa_%", col("ascwds_other_msoa") / col("ascwds_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_other_lsoa_%", col("census_other_lsoa") / col("census_base_lsoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_other_msoa_%", col("census_other_msoa") / col("census_base_msoa")
-    )
-    all_job_roles_df = all_job_roles_df.withColumn(
-        "census_other_region_%", col("census_other_region") / col("census_base_region")
-    )
+    # all_job_roles_df = all_job_roles_df.withColumn("ascwds_other_%", col("ascwds_other") / col("ascwds_base"))
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "ascwds_other_msoa_%", col("ascwds_other_msoa") / col("ascwds_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_other_lsoa_%", col("census_other_lsoa") / col("census_base_lsoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_other_msoa_%", col("census_other_msoa") / col("census_base_msoa")
+    # )
+    # all_job_roles_df = all_job_roles_df.withColumn(
+    #     "census_other_region_%", col("census_other_region") / col("census_base_region")
+    # )
 
     all_job_roles_df = all_job_roles_df.fillna(0)
 
@@ -343,14 +347,14 @@ def main(
         "estimated_jobs_bame", col("estimated_jobs") * (1 - col("magic_white_prediction"))
     )
 
-    ethnicity_white_model_df = ethnicity_white_model_df.drop(
-        "estimated_jobs",
-        "census_white_msoa_%",
-        "magic_service",
-        "magic_region",
-        "magic_jobrole",
-        "magic_white_prediction",
-    )
+    # ethnicity_white_model_df = ethnicity_white_model_df.drop(
+    #     "estimated_jobs",
+    #     "census_white_msoa_%",
+    #     "magic_service",
+    #     "magic_region",
+    #     "magic_jobrole",
+    #     "magic_white_prediction",
+    # )
 
     ethnicity_for_tableau_df = ethnicity_white_model_df.selectExpr(
         "primary_service_type",
@@ -358,7 +362,6 @@ def main(
         "main_job_role",
         "stack(2, 'White', estimated_jobs_white, 'BAME', estimated_jobs_bame) as (ethnicity, estimated_jobs)",
     )
-    ethnicity_for_tableau_df.show()
 
     print(f"Exporting as parquet to {destination}")
     if destination:
@@ -389,7 +392,6 @@ def get_cqc_locations_df(cqc_locations_prepared_source):
     print(f"Reading CQC locations parquet from {cqc_locations_prepared_source}")
     cqc_locations_df = (
         spark.read.parquet(cqc_locations_prepared_source)
-        .filter(col("version") == "1.0.3")
         .select(col("locationid"), col("providerid"), col("postal_code"))
         .distinct()
     )
@@ -415,12 +417,11 @@ def get_ons_geography_df(ons_source):
     return ons_df
 
 
-def get_ascwds_ethnicity_df(worker_source, ascwds_import_date):
+def get_ascwds_ethnicity_df(worker_source):
     spark = utils.get_spark()
     print(f"Reading workers parquet from {worker_source}")
     ethnicity_df = (
         spark.read.parquet(worker_source)
-        .filter(col("import_date") == ascwds_import_date)
         .filter(col("ethnicity") > -1)
         .filter(col("ethnicity") < 99)
         .select(col("locationid"), col("mainjrid"), col("ethnicity"))
@@ -441,18 +442,18 @@ def get_census_ethnicity_lsoa_df(census_source):
 
     census_df = census_df.selectExpr(
         "lsoa",
-        "`Asian/Asian British` as census_asian_lsoa",
-        "`Black/African/Caribbean/Black British` as census_black_lsoa",
-        "`Mixed/multiple ethnic group` as census_mixed_lsoa",
-        "`Other ethnic group` as census_other_lsoa",
+        # "`Asian/Asian British` as census_asian_lsoa",
+        # "`Black/African/Caribbean/Black British` as census_black_lsoa",
+        # "`Mixed/multiple ethnic group` as census_mixed_lsoa",
+        # "`Other ethnic group` as census_other_lsoa",
         "`White: Total` as census_white_lsoa",
         "`All categories: Ethnic group of HRP` as census_base_lsoa",
     )
 
-    census_df = census_df.withColumn("census_asian_lsoa", census_df.census_asian_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_black_lsoa", census_df.census_black_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_mixed_lsoa", census_df.census_mixed_lsoa.cast("int"))
-    census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_asian_lsoa", census_df.census_asian_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_black_lsoa", census_df.census_black_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_mixed_lsoa", census_df.census_mixed_lsoa.cast("int"))
+    # census_df = census_df.withColumn("census_other_lsoa", census_df.census_other_lsoa.cast("int"))
     census_df = census_df.withColumn("census_white_lsoa", census_df.census_white_lsoa.cast("int"))
     census_df = census_df.withColumn("census_base_lsoa", census_df.census_base_lsoa.cast("int"))
 
@@ -465,6 +466,10 @@ def get_keys_from_value(dic, val):
 
 
 def rename_column_values(df, var_name, dic, alias=None):
+    # df_var_null_count = df.filter(f"{var_name} is Null").count()
+    # print(f"NULL COUNT HERE: {var_name} has {df_var_null_count} nulls")
+    df = df.filter(f"{var_name} is not Null")
+
     var_udf = udf(lambda x: get_keys_from_value(dic, x), StringType())
 
     if alias:
@@ -499,11 +504,6 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--ascwds_import_date",
-        help="The import date of ASCWDS data in the format yyyymmdd",
-        required=True,
-    )
-    parser.add_argument(
         "--census_source",
         help="Source s3 directory for census ethnicity data by super output area",
         required=True,
@@ -521,7 +521,6 @@ def collect_arguments():
         args.cqc_locations_prepared_source,
         args.ons_source,
         args.worker_source,
-        args.ascwds_import_date,
         args.census_source,
         args.destination,
     )
@@ -533,7 +532,6 @@ if __name__ == "__main__":
         cqc_locations_prepared_source,
         ons_source,
         worker_source,
-        ascwds_import_date,
         census_source,
         destination,
     ) = collect_arguments()
@@ -542,7 +540,6 @@ if __name__ == "__main__":
         cqc_locations_prepared_source,
         ons_source,
         worker_source,
-        ascwds_import_date,
         census_source,
         destination,
     )

@@ -231,7 +231,6 @@ resource "aws_glue_job" "ethnicity_breakdown_job" {
     "--cqc_locations_prepared_source" = ""
     "--ons_source"                    = ""
     "--worker_source"                 = ""
-    "--ascwds_import_date"            = ""
     "--census_source"                 = ""
     "--destination"                   = ""
   }
