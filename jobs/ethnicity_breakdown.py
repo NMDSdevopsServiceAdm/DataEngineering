@@ -185,12 +185,7 @@ def main(
         ethnicity_white_model_df, "magic_bame_prediction", "estimated_jobs_bame"
     )
 
-    ethnicity_for_tableau_df = ethnicity_white_model_df.selectExpr(
-        "primary_service_type",
-        "ons_region",
-        "main_job_role",
-        "stack(2, 'White', estimated_jobs_white, 'BAME', estimated_jobs_bame) as (ethnicity, estimated_jobs)",
-    )
+    ethnicity_for_tableau_df = unpivot_data_for_tableau(ethnicity_white_model_df)
 
     print(f"Exporting as parquet to {destination}")
     if destination:
@@ -333,6 +328,18 @@ def estimated_jobs_per_ethnicity(df, predictor_col, new_var_col_name):
     df = df.withColumn(new_var_col_name, col("estimated_jobs") * col(predictor_col))
 
     return df
+
+
+def unpivot_data_for_tableau(df):
+
+    tableau_df = df.selectExpr(
+        "primary_service_type",
+        "ons_region",
+        "main_job_role",
+        "stack(2, 'White', estimated_jobs_white, 'BAME', estimated_jobs_bame) as (ethnicity, estimated_jobs)",
+    )
+
+    return tableau_df
 
 
 def collect_arguments():
