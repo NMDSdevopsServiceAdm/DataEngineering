@@ -1,5 +1,5 @@
 from cmath import pi
-from datetime import datetime
+from datetime import datetime, date
 import shutil
 import unittest
 from pathlib import Path
@@ -86,14 +86,13 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual(pir_df.count(), 10)
 
-
     def test_get_date_closest_to_search_date(self):
         d_list = [
-            datetime.strptime("2022-1-01", "%Y-%m-%d").date(), 
-            datetime.strptime("2022-2-11", "%Y-%m-%d").date(), 
-            datetime.strptime("2022-3-21", "%Y-%m-%d").date(), 
-            datetime.strptime("2022-3-28", "%Y-%m-%d").date(), 
-            datetime.strptime("2022-4-03", "%Y-%m-%d").date()
+            datetime.strptime("2022-1-01", "%Y-%m-%d").date(),
+            datetime.strptime("2022-2-11", "%Y-%m-%d").date(),
+            datetime.strptime("2022-3-21", "%Y-%m-%d").date(),
+            datetime.strptime("2022-3-28", "%Y-%m-%d").date(),
+            datetime.strptime("2022-4-03", "%Y-%m-%d").date(),
         ]
         t_date_1 = datetime.strptime("2022-1-03", "%Y-%m-%d").date()
         t_date_2 = datetime.strptime("2022-2-11", "%Y-%m-%d").date()
@@ -105,13 +104,10 @@ class PrepareLocationsTests(unittest.TestCase):
         result_3 = prepare_locations.get_date_closest_to_search_date(t_date_3, d_list)
         result_4 = prepare_locations.get_date_closest_to_search_date(t_date_4, d_list)
 
-
         self.assertEqual(result_1, None)
         self.assertEqual(result_2, datetime.strptime("2022-2-11", "%Y-%m-%d").date())
         self.assertEqual(result_3, datetime.strptime("2022-2-11", "%Y-%m-%d").date())
         self.assertEqual(result_4, datetime.strptime("2022-3-21", "%Y-%m-%d").date())
-
-
 
     def test_get_unique_import_dates(self):
         path_cqc_loc = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
@@ -120,7 +116,6 @@ class PrepareLocationsTests(unittest.TestCase):
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
-    
 
     def test_generate_closest_date_matrix(self):
         path_wp = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
@@ -133,23 +128,9 @@ class PrepareLocationsTests(unittest.TestCase):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(path_cqc_prov, "2022-04-01", "tests/test_data/")
         pir_df = prepare_locations.get_pir_df(path_pir, "tests/test_data/")
 
-
-        result = prepare_locations.generate_closest_date_matrix(
-            workplace_df, cqc_location_df, cqc_provider_df, pir_df
-        )
+        result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 
         self.assertIsNotNone(result)
-
-
-
-
-
-
-
-
-
-
-
 
     def test_filter_nulls(self):
         columns = ["locationid", "worker_record_count", "total_staff"]
@@ -195,18 +176,18 @@ class PrepareLocationsTests(unittest.TestCase):
     def test_purge_workplaces(self):
         columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
         rows = [
-            ("1", datetime.date(2023, 3, 19), "1", "1", datetime.date(2018, 9, 5)),
-            ("2", datetime.date(2023, 3, 19), "1", "0", datetime.date(2019, 7, 10)),
-            ("3", datetime.date(2023, 3, 19), "1", "1", datetime.date(2020, 5, 15)),
-            ("4", datetime.date(2023, 3, 19), "1", "0", datetime.date(2021, 3, 20)),
-            ("5", datetime.date(2023, 3, 19), "1", "1", datetime.date(2022, 1, 25)),
-            ("6", datetime.date(2023, 3, 19), "2", "1", datetime.date(2021, 3, 18)),
-            ("7", datetime.date(2023, 3, 19), "3", "1", datetime.date(2021, 3, 19)),
-            ("8", datetime.date(2023, 3, 19), "4", "1", datetime.date(2021, 3, 20)),
-            ("9", datetime.date(2010, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2011, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2012, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2013, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("1", date(2023, 3, 19), "1", "1", date(2018, 9, 5)),
+            ("2", date(2023, 3, 19), "1", "0", date(2019, 7, 10)),
+            ("3", date(2023, 3, 19), "1", "1", date(2020, 5, 15)),
+            ("4", date(2023, 3, 19), "1", "0", date(2021, 3, 20)),
+            ("5", date(2023, 3, 19), "1", "1", date(2022, 1, 25)),
+            ("6", date(2023, 3, 19), "2", "1", date(2021, 3, 18)),
+            ("7", date(2023, 3, 19), "3", "1", date(2021, 3, 19)),
+            ("8", date(2023, 3, 19), "4", "1", date(2021, 3, 20)),
+            ("9", date(2010, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2011, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2012, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2013, 1, 1), "5", "0", date(2010, 1, 1)),
         ]
         df = self.spark.createDataFrame(rows, columns)
         df = prepare_locations.purge_workplaces(df)

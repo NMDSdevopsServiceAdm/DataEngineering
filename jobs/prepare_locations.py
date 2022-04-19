@@ -22,6 +22,28 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     Start an empty dataframe called ?master_df?
     Generate date matrix
     Convert matrix to list of lists using "collect"
+    [
+        0: [snapshot_date, cqc_lcation, providers, etc]
+        1: []
+        2: []
+        3: []
+    ]
+
+    unique_asc_dates[i],
+                unique_asc_dates[i],
+                closest_cqc_location_dates[i],
+                closest_cqc_provider_dates[i],
+                closest_pir_dates[i],
+
+    for snapshot_date_row in date_matrix:
+        ascwds_workplace_df = get_ascwds_workplace_df(workplace_source, snapshot_date_row[ascwds_workplace_date])
+        - DO THIS FOR ALL DATASETS THAT WE HAVE DATES FOR -
+
+
+        - once we've got all of these rows union to the master dataframe created earlier -
+        master_df.union(output_df)
+
+
     loop through each row
         for each row: Run all the code below here (in main) filtering on the dates from the date_matrix.
         Then union the output_df to the master_df
@@ -69,9 +91,7 @@ def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.A
     )
 
     # Format date
-    workplace_df = workplace_df.withColumn(
-        "import_date", to_date(col("import_date").cast("string"), "yyyyMMdd")
-    )
+    workplace_df = workplace_df.withColumn("import_date", to_date(col("import_date").cast("string"), "yyyyMMdd"))
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
@@ -126,11 +146,7 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
     cqc_provider_df = (
         spark.read.option("basePath", base_path)
         .parquet(cqc_provider_source)
-        .select(
-            col("providerid"), 
-            col("name").alias("provider_name"), 
-            col("import_date")
-        )
+        .select(col("providerid"), col("name").alias("provider_name"), col("import_date"))
     )
 
     target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -140,6 +156,7 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
 
 
 def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
+    # TODO: Add date filter and test
     spark = utils.get_spark()
 
     # Join PIR service users
@@ -154,7 +171,7 @@ def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
                 "_with_regulated_activities_as_defined_by_the_Health"
                 "_and_Social_Care_Act_from_your_service"
             ).alias("pir_service_users"),
-            col("import_date")
+            col("import_date"),
         )
     )
     pir_df = pir_df.dropDuplicates(["locationid"])
