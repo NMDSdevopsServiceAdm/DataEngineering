@@ -63,6 +63,24 @@ class EthnicityBreakdownTests(unittest.TestCase):
         census_df = census_df.collect()
         self.assertEqual(census_df[0]["lsoa"], "E01000001")
 
+    def test_model_ethnicity_white(self):
+        columns = ["magic_service", "magic_region", "magic_jobrole", "census_white_msoa_%"]
+
+        rows = [
+            (-1.000, -1.000, -1.000, 0.0),
+            (0.1, 0.2, -0.7, 1.0),
+            (1.000, 1.000, 1.000, 0.5),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = ethnicity_breakdown.model_ethnicity_white(df)
+        self.assertEqual(df.count(), 3)
+
+        df = df.collect()
+        self.assertEqual(round(df[0]["magic_white_prediction"], 0.1), 0.0)
+        self.assertEqual(round(df[1]["magic_white_prediction"], 0.1), 0.5)
+        self.assertEqual(round(df[2]["magic_white_prediction"], 0.1), 1.0)
+
     def test_main(self):
         result_df = ethnicity_breakdown.main(
             self.TEST_ALL_JOB_ROLES_FILE,

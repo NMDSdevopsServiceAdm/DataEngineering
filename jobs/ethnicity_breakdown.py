@@ -174,28 +174,15 @@ def main(
         ethnicity_white_model_df, "main_job_role", MAGIC_JOBROLE_WHITE_DICT, "magic_jobrole"
     )
 
-    # magic fromula from Will
-    # 0.23 + service_model_num + jobrole_model_num + region_model_num + (0.67 * census_white_msoa_%)))
-    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
-        "magic_white_prediction",
-        least(
-            lit(1),
-            greatest(
-                lit(0),
-                0.23
-                + col("magic_service")
-                + col("magic_region")
-                + col("magic_jobrole")
-                + (0.67 * col("census_white_msoa_%")),
-            ),
-        ),
+    ethnicity_white_model_df = model_ethnicity_white(ethnicity_white_model_df)
+    ethnicity_white_model_df = model_ethnicity_bame(ethnicity_white_model_df)
+
+    ethnicity_white_model_df = estimated_jobs_per_ethnicity(
+        ethnicity_white_model_df, "magic_white_prediction", "estimated_jobs_white"
     )
 
-    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
-        "estimated_jobs_white", col("estimated_jobs") * col("magic_white_prediction")
-    )
-    ethnicity_white_model_df = ethnicity_white_model_df.withColumn(
-        "estimated_jobs_bame", col("estimated_jobs") * (1 - col("magic_white_prediction"))
+    ethnicity_white_model_df = estimated_jobs_per_ethnicity(
+        ethnicity_white_model_df, "magic_bame_prediction", "estimated_jobs_bame"
     )
 
     ethnicity_for_tableau_df = ethnicity_white_model_df.selectExpr(
@@ -310,6 +297,40 @@ def rename_column_values(df, var_name, dic, alias=None):
         df = df.withColumn(alias, var_udf(col(var_name)))
     else:
         df = df.withColumn(var_name, var_udf(col(var_name)))
+
+    return df
+
+
+def model_ethnicity_white(df):
+    # magic fromula from Will
+    # 0.23 + service_model_num + jobrole_model_num + region_model_num + (0.67 * census_white_msoa_%)))
+    df = df.withColumn(
+        "magic_white_prediction",
+        least(
+            lit(1.0),
+            greatest(
+                lit(0.0),
+                0.23
+                + col("magic_service")
+                + col("magic_region")
+                + col("magic_jobrole")
+                + (0.67 * col("census_white_msoa_%")),
+            ),
+        ),
+    )
+
+    return df
+
+
+def model_ethnicity_bame(df):
+    # TODO separate out into Black, Asian, Mixed and Other
+    df = df.withColumn("magic_bame_prediction", 1.0 - col("magic_white_prediction"))
+    return df
+
+
+def estimated_jobs_per_ethnicity(df, predictor_col, new_var_col_name):
+
+    df = df.withColumn(new_var_col_name, col("estimated_jobs") * col(predictor_col))
 
     return df
 
