@@ -5,8 +5,6 @@ import unittest
 from pathlib import Path
 
 
-from pyspark.sql.types import *
-from pyspark.sql.functions import *
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     DoubleType,
@@ -20,6 +18,13 @@ from jobs import format_fields, prepare_locations
 
 
 class PrepareLocationsTests(unittest.TestCase):
+
+    path_ascwds_workplace = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
+    path_cqc_locations = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
+    path_cqc_providers = "tests/test_data/domain=CQC/dataset=CQC_providers/version=0.0.1/format=parquet/"
+    path_pir = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
+
+    test_data_basepath = "tests/test_data"
 
     calculate_jobs_schema = StructType(
         [
@@ -35,98 +40,79 @@ class PrepareLocationsTests(unittest.TestCase):
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
 
     def test_get_ascwds_workplace_df(self):
-        path = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-        # check df with filter date 2021-11-30
-        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2021-11-30", "tests/test_data/")
-        # check cols are correct
+        workplace_df = prepare_locations.get_ascwds_workplace_df(
+            self.path_ascwds_workplace, date(2021, 11, 30), self.test_data_basepath
+        )
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
         self.assertEqual(workplace_df.columns[2], "total_staff")
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
         self.assertEqual(workplace_df.columns[4], "import_date")
-        # Check filter returns all rows with correct date
         self.assertEqual(workplace_df.count(), 10)
 
-        # check df with filter date 2020-11-30
-        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "2020-11-30", "tests/test_data/")
-        self.assertEqual(workplace_df.count(), 0)
-
     def test_get_cqc_location_df(self):
-        path = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
-        # check df with filter date 2022-04-01
-        cqc_location_df = prepare_locations.get_cqc_location_df(path, "2022-01-05", "tests/test_data/")
-        # check cols are correct
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+        )
+
         self.assertEqual(cqc_location_df.columns[0], "locationid")
         self.assertEqual(cqc_location_df.columns[1], "providerid")
         self.assertEqual(cqc_location_df.columns[16], "import_date")
-        # Check filter returns all rows with correct date
         self.assertEqual(cqc_location_df.count(), 49)
 
     def test_get_cqc_provider_df(self):
-        path = "tests/test_data/domain=CQC/dataset=CQC_providers/version=0.0.1/format=parquet/"
-        # check df with filter date 2022-04-01
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(path, "2022-04-01", "tests/test_data/")
-        # check cols are correct
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+            self.path_cqc_providers, date(2022, 4, 1), self.test_data_basepath
+        )
+
         self.assertEqual(cqc_provider_df.columns[0], "providerid")
         self.assertEqual(cqc_provider_df.columns[1], "provider_name")
         self.assertEqual(cqc_provider_df.columns[2], "import_date")
-        # Check filter returns all rows with correct date
         self.assertEqual(cqc_provider_df.count(), 9)
 
     def test_get_pir_df(self):
-        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
-        # check df with filter date 2020-03-31
-        pir_df = prepare_locations.get_pir_df(path, "2020-03-31", "tests/test_data/")
-        self.assertEqual((pir_df.count(), len(pir_df.columns)), (10, 3))
+        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2020, 3, 31), self.test_data_basepath)
 
-        # check cols are correct
+        self.assertEqual(pir_df.count(), 10)
+        self.assertEqual(len(pir_df.columns), 3)
+
         self.assertEqual(pir_df.columns[0], "locationid")
         self.assertEqual(pir_df.columns[1], "pir_service_users")
         self.assertEqual(pir_df.columns[2], "import_date")
 
-        self.assertEqual(pir_df.count(), 10)
-
     def test_get_date_closest_to_search_date(self):
-        d_list = [
-            datetime.strptime("2022-1-01", "%Y-%m-%d").date(),
-            datetime.strptime("2022-2-11", "%Y-%m-%d").date(),
-            datetime.strptime("2022-3-21", "%Y-%m-%d").date(),
-            datetime.strptime("2022-3-28", "%Y-%m-%d").date(),
-            datetime.strptime("2022-4-03", "%Y-%m-%d").date(),
+        date_search_list = [date(2022, 1, 1), date(2022, 2, 11), date(2022, 3, 21), date(2022, 3, 28), date(2022, 4, 3)]
+        test_data_list = [
+            (date(2022, 1, 3), None),
+            (date(2022, 2, 11), date(2022, 2, 11)),
+            (date(2022, 2, 14), date(2022, 2, 11)),
+            (date(2022, 3, 27), date(2022, 3, 21)),
         ]
-        t_date_1 = datetime.strptime("2022-1-03", "%Y-%m-%d").date()
-        t_date_2 = datetime.strptime("2022-2-11", "%Y-%m-%d").date()
-        t_date_3 = datetime.strptime("2022-2-14", "%Y-%m-%d").date()
-        t_date_4 = datetime.strptime("2022-3-27", "%Y-%m-%d").date()
 
-        result_1 = prepare_locations.get_date_closest_to_search_date(t_date_1, d_list)
-        result_2 = prepare_locations.get_date_closest_to_search_date(t_date_2, d_list)
-        result_3 = prepare_locations.get_date_closest_to_search_date(t_date_3, d_list)
-        result_4 = prepare_locations.get_date_closest_to_search_date(t_date_4, d_list)
-
-        self.assertEqual(result_1, None)
-        self.assertEqual(result_2, datetime.strptime("2022-2-11", "%Y-%m-%d").date())
-        self.assertEqual(result_3, datetime.strptime("2022-2-11", "%Y-%m-%d").date())
-        self.assertEqual(result_4, datetime.strptime("2022-3-21", "%Y-%m-%d").date())
+        for test_data in test_data_list:
+            result = prepare_locations.get_date_closest_to_search_date(test_data[0], date_search_list)
+            self.assertEqual(result, test_data[1])
 
     def test_get_unique_import_dates(self):
-        path_cqc_loc = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
-        cqc_location_df = prepare_locations.get_cqc_location_df(path_cqc_loc, "2022-01-05", "tests/test_data/")
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+        )
 
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
 
     def test_generate_closest_date_matrix(self):
-        path_wp = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-        path_cqc_loc = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
-        path_cqc_prov = "tests/test_data/domain=CQC/dataset=CQC_providers/version=0.0.1/format=parquet/"
-        path_pir = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
-
-        workplace_df = prepare_locations.get_ascwds_workplace_df(path_wp, "2021-11-30", "tests/test_data/")
-        cqc_location_df = prepare_locations.get_cqc_location_df(path_cqc_loc, "2022-01-05", "tests/test_data/")
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(path_cqc_prov, "2022-04-01", "tests/test_data/")
-        pir_df = prepare_locations.get_pir_df(path_pir, "2022-04-01", "tests/test_data/")
+        workplace_df = prepare_locations.get_ascwds_workplace_df(
+            self.path_ascwds_workplace, date(2021, 11, 30), self.test_data_basepath
+        )
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+        )
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+            self.path_cqc_providers, date(2022, 4, 1), self.test_data_basepath
+        )
+        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2022, 4, 1), self.test_data_basepath)
 
         result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 

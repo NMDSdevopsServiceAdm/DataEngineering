@@ -97,7 +97,6 @@ def get_ascwds_workplace_df(workplace_source, target_date, base_path=constants.A
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
-    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     workplace_df = workplace_df.filter(col("import_date") == target_date)
 
     return workplace_df
@@ -133,7 +132,6 @@ def get_cqc_location_df(cqc_location_source, target_date, base_path=constants.CQ
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
-    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     cqc_df = cqc_df.filter(col("import_date") == target_date)
 
     return cqc_df
@@ -149,7 +147,6 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
         .select(col("providerid"), col("name").alias("provider_name"), col("import_date"))
     )
 
-    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     cqc_provider_df = cqc_provider_df.filter(col("import_date") == target_date)
 
     return cqc_provider_df
@@ -178,7 +175,6 @@ def get_pir_df(pir_source, target_date, base_path=constants.PIR_BASE_PATH):
 
     pir_df = pir_df.dropDuplicates(["locationid"])
 
-    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
     pir_df = pir_df.filter(col("import_date") == target_date)
 
     return pir_df
@@ -187,8 +183,8 @@ def get_pir_df(pir_source, target_date, base_path=constants.PIR_BASE_PATH):
 def get_unique_import_dates(df):
     df = df.select("import_date")
     df = df.withColumn("import_date", to_date(col("import_date"), "yyyyMMdd")).distinct().orderBy("import_date")
-    odl = df.select("import_date").rdd.flatMap(lambda x: x).collect()
-    return odl
+    ordered_distinct_import_date_list = df.select("import_date").rdd.flatMap(lambda x: x).collect()
+    return ordered_distinct_import_date_list
 
 
 def get_date_closest_to_search_date(search_date, date_list):
@@ -213,7 +209,6 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
 
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
-    print(unique_cqc_location_dates)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
     unique_pir_dates = get_unique_import_dates(dataset_pir)
 
