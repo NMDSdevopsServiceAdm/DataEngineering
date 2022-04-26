@@ -12,3 +12,26 @@ variable "aws_secret_key" {
 variable "region" {
   default = "eu-west-2"
 }
+
+variable "glue_database_name" {
+  description = "The name of the AWS glue database"
+  type        = string
+  default = ""
+}
+
+variable "ascwds_root_data_location" {
+  type = string
+  default = "s3://sfc-data-engineering/domain=ASCWDS/"
+  description = "Root directory for all data sourced from the ASCWDS domain"
+}
+
+variable "data_engineering_root_data_location" {
+  type = string
+  default = "s3://sfc-data-engineering/domain=data_engineering/"
+  description = "Root directory for all data generated in the Data Engineering domain"
+}
+variable "cqc_root_data_location" {
+  type = string
+  default = "s3://sfc-data-engineering/domain=CQC/"
+  description = "Root directory for all data sourced from the CQC domain"
+}
