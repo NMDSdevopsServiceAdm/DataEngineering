@@ -156,7 +156,6 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
 
 
 def get_pir_df(pir_source, target_date, base_path=constants.PIR_BASE_PATH):
-    # TODO: Add date filter and test
     spark = utils.get_spark()
 
     # Join PIR service users
