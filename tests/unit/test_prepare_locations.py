@@ -75,8 +75,8 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_pir_df(self):
         path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
-        # check df with filter date 2021-11-30
-        pir_df = prepare_locations.get_pir_df(path, "tests/test_data/")
+        # check df with filter date 2020-03-31
+        pir_df = prepare_locations.get_pir_df(path, "2020-03-31", "tests/test_data/")
         self.assertEqual((pir_df.count(), len(pir_df.columns)), (10, 3))
 
         # check cols are correct
