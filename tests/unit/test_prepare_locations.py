@@ -126,7 +126,7 @@ class PrepareLocationsTests(unittest.TestCase):
         workplace_df = prepare_locations.get_ascwds_workplace_df(path_wp, "2021-11-30", "tests/test_data/")
         cqc_location_df = prepare_locations.get_cqc_location_df(path_cqc_loc, "2022-01-05", "tests/test_data/")
         cqc_provider_df = prepare_locations.get_cqc_provider_df(path_cqc_prov, "2022-04-01", "tests/test_data/")
-        pir_df = prepare_locations.get_pir_df(path_pir, "tests/test_data/")
+        pir_df = prepare_locations.get_pir_df(path_pir, "2022-04-01", "tests/test_data/")
 
         result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 
