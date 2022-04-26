@@ -13,12 +13,6 @@ variable "region" {
   default = "eu-west-2"
 }
 
-variable "glue_database_name" {
-  description = "The name of the AWS glue database"
-  type        = string
-  default = ""
-}
-
 variable "ascwds_root_data_location" {
   type = string
   default = "s3://sfc-data-engineering/domain=ASCWDS/"
@@ -34,4 +28,10 @@ variable "cqc_root_data_location" {
   type = string
   default = "s3://sfc-data-engineering/domain=CQC/"
   description = "Root directory for all data sourced from the CQC domain"
+}
+
+variable "glue_database_name" {
+  type = string
+  description = "The name of the glue database"
+  default = "data-engineering-database"
 }

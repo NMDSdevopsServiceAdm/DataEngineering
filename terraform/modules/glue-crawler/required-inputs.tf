@@ -15,3 +15,10 @@ variable "data_path" {
   type        = string
   default     = null
 }
+
+variable "workspace_glue_database_name" {
+  description = "The name of the current workspace glue database"
+  type        = string
+  default     = null
+}
+

@@ -1,5 +1,5 @@
 resource "aws_glue_crawler" "crawler" {
-  database_name = "${terraform.workspace}-data_engineering_db"
+  database_name = var.workspace_glue_database_name
   name          = "${terraform.workspace}-data_engineering_${var.datset_for_crawler}"
   role          = var.glue_crawler_iam_role
   schedule      = var.schedule
