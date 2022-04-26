@@ -34,6 +34,9 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
             col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
+
+        ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
+
         cqc_locations_df = complete_cqc_location_df.filter(col("import_date") == snapshot_date_row["cqc_location_date"])
         cqc_providers_df = complete_cqc_provider_df.filter(col("import_date") == snapshot_date_row["cqc_provider_date"])
         pir_df = complete_pir_df.filter(col("import_date") == snapshot_date_row["pir_date"])
@@ -56,8 +59,11 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         return output_df
 
 
-def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=constants.ASCWDS_WORKPLACE_BASE_PATH):
+def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=None):
     spark = utils.get_spark()
+
+    if base_path is None:
+        base_path = constants.ASCWDS_WORKPLACE_BASE_PATH
 
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
@@ -68,7 +74,7 @@ def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=consta
             col("establishmentid"),
             col("totalstaff").alias("total_staff"),
             col("wkrrecs").alias("worker_record_count"),
-            col("import_date").alias("import_date"),
+            col("import_date"),
             col("orgid"),
             col("mupddate"),
             col("isparent"),
@@ -81,7 +87,6 @@ def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=consta
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
-    workplace_df = purge_workplaces(workplace_df)
 
     if target_date is not None:
         workplace_df = workplace_df.filter(col("import_date") == target_date)
@@ -260,15 +265,15 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("purge_date", add_months(col("ascwds_workplace_import_date"), -24))
+    input_df = input_df.withColumn("purge_date", add_months(col("import_date"), -24))
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
-        input_df.select("locationid", "orgid", "mupddate", "ascwds_workplace_import_date")
-        .groupBy("orgid", "ascwds_workplace_import_date")
+        input_df.select("locationid", "orgid", "mupddate", "import_date")
+        .groupBy("orgid", "import_date")
         .agg(max("mupddate").alias("mupddate_org"))
     )
-    input_df = input_df.join(org_purge_df, ["orgid", "ascwds_workplace_import_date"], "left")
+    input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
     )
