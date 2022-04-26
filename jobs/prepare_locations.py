@@ -155,7 +155,7 @@ def get_cqc_provider_df(cqc_provider_source, target_date, base_path=constants.CQ
     return cqc_provider_df
 
 
-def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
+def get_pir_df(pir_source, target_date, base_path=constants.PIR_BASE_PATH):
     # TODO: Add date filter and test
     spark = utils.get_spark()
 
@@ -174,7 +174,13 @@ def get_pir_df(pir_source, base_path=constants.PIR_BASE_PATH):
             col("import_date"),
         )
     )
+
+    pir_df = pir_df.withColumn("import_date", to_date(col("import_date").cast("string"), "yyyyMMdd"))
+
     pir_df = pir_df.dropDuplicates(["locationid"])
+
+    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+    pir_df = pir_df.filter(col("import_date") == target_date)
 
     return pir_df
 
