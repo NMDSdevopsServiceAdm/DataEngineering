@@ -119,7 +119,7 @@ class PrepareLocationsTests(unittest.TestCase):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(
             self.path_cqc_providers, date(2022, 4, 1), self.test_data_basepath
         )
-        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2022, 4, 1), self.test_data_basepath)
+        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2020, 3, 31), self.test_data_basepath)
 
         result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 
@@ -167,7 +167,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
 
     def test_purge_workplaces(self):
-        columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
+        columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]
         rows = [
             ("1", date(2023, 3, 19), "1", "1", date(2018, 9, 5)),
             ("2", date(2023, 3, 19), "1", "0", date(2019, 7, 10)),
