@@ -59,7 +59,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         return output_df
 
 
-def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=None):
+def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
     spark = utils.get_spark()
 
     if base_path is None:
@@ -82,19 +82,19 @@ def get_ascwds_workplace_df(workplace_source, target_date=None, base_path=None):
     )
 
     # Format date
-    workplace_df = workplace_df.withColumn("import_date", to_date(col("import_date").cast("string"), "yyyyMMdd"))
+    workplace_df = format_import_date(workplace_df)
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
     workplace_df = filter_nulls(workplace_df)
 
-    if target_date is not None:
-        workplace_df = workplace_df.filter(col("import_date") == target_date)
+    if import_date is not None:
+        workplace_df = workplace_df.filter(col("import_date") == import_date)
 
     return workplace_df
 
 
-def get_cqc_location_df(cqc_location_source, target_date=None, base_path=constants.CQC_LOCATIONS_BASE_PATH):
+def get_cqc_location_df(cqc_location_source, import_date=None, base_path=constants.CQC_LOCATIONS_BASE_PATH):
     spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
@@ -122,15 +122,17 @@ def get_cqc_location_df(cqc_location_source, target_date=None, base_path=constan
         )
     )
 
+    cqc_df = format_import_date(cqc_df)
+
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
-    if target_date is not None:
-        cqc_df = cqc_df.filter(col("import_date") == target_date)
+    if import_date is not None:
+        cqc_df = cqc_df.filter(col("import_date") == import_date)
 
     return cqc_df
 
 
-def get_cqc_provider_df(cqc_provider_source, target_date=None, base_path=constants.CQC_PROVIDERS_BASE_PATH):
+def get_cqc_provider_df(cqc_provider_source, import_date=None, base_path=constants.CQC_PROVIDERS_BASE_PATH):
     spark = utils.get_spark()
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
@@ -142,13 +144,15 @@ def get_cqc_provider_df(cqc_provider_source, target_date=None, base_path=constan
 
     cqc_provider_df = add_cqc_sector(cqc_provider_df)
 
-    if target_date is not None:
-        cqc_provider_df = cqc_provider_df.filter(col("import_date") == target_date)
+    cqc_provider_df = format_import_date(cqc_provider_df)
+
+    if import_date is not None:
+        cqc_provider_df = cqc_provider_df.filter(col("import_date") == import_date)
 
     return cqc_provider_df
 
 
-def get_pir_df(pir_source, target_date=None, base_path=constants.PIR_BASE_PATH):
+def get_pir_df(pir_source, import_date=None, base_path=constants.PIR_BASE_PATH):
     spark = utils.get_spark()
 
     # Join PIR service users
@@ -167,12 +171,12 @@ def get_pir_df(pir_source, target_date=None, base_path=constants.PIR_BASE_PATH):
         )
     )
 
-    pir_df = pir_df.withColumn("import_date", to_date(col("import_date").cast("string"), "yyyyMMdd"))
+    pir_df = format_import_date(pir_df)
 
     pir_df = pir_df.dropDuplicates(["locationid"])
 
-    if target_date is not None:
-        pir_df = pir_df.filter(col("import_date") == target_date)
+    if import_date is not None:
+        pir_df = pir_df.filter(col("import_date") == import_date)
 
     return pir_df
 
@@ -197,6 +201,10 @@ def get_date_closest_to_search_date(search_date, date_list):
             return date_list[index_of_c_date - 1]
         else:
             return date_list[index_of_c_date]
+
+
+def format_import_date(df, fieldname="import_date"):
+    return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
 
 
 def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):

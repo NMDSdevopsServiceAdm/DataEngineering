@@ -4,7 +4,12 @@ import shutil
 import unittest
 import mock
 from pathlib import Path
-
+from tests.test_file_generator import (
+    generate_ascwds_workplace_file,
+    generate_cqc_locations_file,
+    generate_cqc_providers_file,
+    generate_pir_file,
+)
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -20,10 +25,10 @@ from jobs import format_fields, prepare_locations
 
 class PrepareLocationsTests(unittest.TestCase):
 
-    path_ascwds_workplace = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-    path_cqc_locations = "tests/test_data/domain=CQC/dataset=CQC_locations/version=0.0.1/format=parquet/"
-    path_cqc_providers = "tests/test_data/domain=CQC/dataset=CQC_providers/version=0.0.1/format=parquet/"
-    path_pir = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
+    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
+    TEST_CQC_LOCATION_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
+    TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
+    TEST_PIR_FILE = "tests/test_data/tmp/pir_file.parquet"
 
     test_data_basepath = "tests/test_data"
 
@@ -39,48 +44,61 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
+        generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
+        generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
+        generate_pir_file(self.TEST_PIR_FILE)
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
+            shutil.rmtree(self.TEST_CQC_LOCATION_FILE)
+            shutil.rmtree(self.TEST_CQC_PROVIDERS_FILE)
+            shutil.rmtree(self.TEST_PIR_FILE)
+        except OSError():
+            pass  # Ignore dir does not exist
 
     # @mock.patch("environment.constants.ASCWDS_WORKPLACE_BASE_PATH", "tests/test_data")
     # def test_main_successfully_runs(self):
     #     output_df = prepare_locations.main(
-    #         self.path_ascwds_workplace, self.path_cqc_locations, self.path_cqc_providers, self.path_pir
+    #         self.TEST_ASCWDS_WORKPLACE_FILE, self.TEST_CQC_LOCATION_FILE, self.TEST_CQC_PROVIDERS_FILE, self.TEST_PIR_FILE
     #     )
     #     self.assertIsNotNone(output_df)
 
     @mock.patch("environment.constants.ASCWDS_WORKPLACE_BASE_PATH", "tests/test_data")
     def test_get_ascwds_workplace_df(self):
-        workplace_df = prepare_locations.get_ascwds_workplace_df(self.path_ascwds_workplace, date(2021, 11, 30))
+        workplace_df = prepare_locations.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 1, 1))
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
         self.assertEqual(workplace_df.columns[2], "total_staff")
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
         self.assertEqual(workplace_df.columns[4], "import_date")
-        self.assertEqual(workplace_df.count(), 10)
+        self.assertEqual(workplace_df.count(), 7)
 
     def test_get_cqc_location_df(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5), self.test_data_basepath
         )
 
         self.assertEqual(cqc_location_df.columns[0], "locationid")
         self.assertEqual(cqc_location_df.columns[1], "providerid")
         self.assertEqual(cqc_location_df.columns[16], "import_date")
-        self.assertEqual(cqc_location_df.count(), 49)
+        self.assertEqual(cqc_location_df.count(), 14)
 
     def test_get_cqc_provider_df(self):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(
-            self.path_cqc_providers, date(2022, 4, 1), self.test_data_basepath
+            self.TEST_CQC_PROVIDERS_FILE, date(2022, 1, 5), self.test_data_basepath
         )
 
         self.assertEqual(cqc_provider_df.columns[0], "providerid")
         self.assertEqual(cqc_provider_df.columns[1], "provider_name")
         self.assertEqual(cqc_provider_df.columns[2], "import_date")
-        self.assertEqual(cqc_provider_df.count(), 9)
+        self.assertEqual(cqc_provider_df.count(), 3)
 
     def test_get_pir_df(self):
-        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2020, 3, 31), self.test_data_basepath)
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2022, 1, 5), self.test_data_basepath)
 
-        self.assertEqual(pir_df.count(), 10)
+        self.assertEqual(pir_df.count(), 8)
         self.assertEqual(len(pir_df.columns), 3)
 
         self.assertEqual(pir_df.columns[0], "locationid")
@@ -102,7 +120,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5), self.test_data_basepath
         )
 
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
@@ -135,15 +153,15 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_generate_closest_date_matrix(self):
         workplace_df = prepare_locations.get_ascwds_workplace_df(
-            self.path_ascwds_workplace, date(2021, 11, 30), self.test_data_basepath
+            self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 11, 30), self.test_data_basepath
         )
         cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5), self.test_data_basepath
         )
         cqc_provider_df = prepare_locations.get_cqc_provider_df(
-            self.path_cqc_providers, date(2022, 4, 1), self.test_data_basepath
+            self.TEST_CQC_PROVIDERS_FILE, date(2022, 4, 1), self.test_data_basepath
         )
-        pir_df = prepare_locations.get_pir_df(self.path_pir, date(2020, 3, 31), self.test_data_basepath)
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2020, 3, 31), self.test_data_basepath)
 
         result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 
