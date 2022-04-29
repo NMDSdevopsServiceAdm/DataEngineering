@@ -178,10 +178,9 @@ def get_pir_df(pir_source, target_date=None, base_path=constants.PIR_BASE_PATH):
 
 
 def get_unique_import_dates(df):
-    df = df.select("import_date")
-    df = df.withColumn("import_date", to_date(col("import_date"), "yyyyMMdd")).distinct().orderBy("import_date")
-    ordered_distinct_import_date_list = df.select("import_date").rdd.flatMap(lambda x: x).collect()
-    return ordered_distinct_import_date_list
+    distinct_ordered_import_date_df = df.select("import_date").distinct().orderBy("import_date")
+    distinct_ordered_import_date_list = distinct_ordered_import_date_df.rdd.flatMap(lambda x: x).collect()
+    return distinct_ordered_import_date_list
 
 
 def get_date_closest_to_search_date(search_date, date_list):

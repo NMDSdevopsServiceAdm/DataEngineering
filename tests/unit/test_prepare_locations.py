@@ -100,7 +100,7 @@ class PrepareLocationsTests(unittest.TestCase):
             result = prepare_locations.get_date_closest_to_search_date(test_data[0], date_search_list)
             self.assertEqual(result, test_data[1])
 
-    def test_get_unique_import_dates(self):
+    def test_get_unique_import_dates_from_cqc_location_dataset(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
             self.path_cqc_locations, date(2022, 1, 5), self.test_data_basepath
         )
@@ -108,6 +108,30 @@ class PrepareLocationsTests(unittest.TestCase):
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
+        self.assertEqual(result, [date(2022, 1, 5)])
+
+    def test_get_unique_import_dates(self):
+        columns = ["import_date", "other_column"]
+        rows = [
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "2"),
+            (date(2023, 3, 19), "3"),
+            (date(2023, 3, 19), "4"),
+            (date(2010, 1, 1), "5"),
+            (date(2011, 1, 1), "5"),
+            (date(2012, 1, 1), "5"),
+            (date(2013, 1, 1), "5"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result = prepare_locations.get_unique_import_dates(df)
+        self.assertEqual(
+            result, [date(2010, 1, 1), date(2011, 1, 1), date(2012, 1, 1), date(2013, 1, 1), date(2023, 3, 19)]
+        )
 
     def test_generate_closest_date_matrix(self):
         workplace_df = prepare_locations.get_ascwds_workplace_df(
