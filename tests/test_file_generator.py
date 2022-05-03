@@ -58,7 +58,6 @@ def generate_cqc_locations_parquet(output_destination):
         "providerid",
         "name",
         "postalcode",
-        "import_date",
         "type",
         "registrationstatus",
         "localauthority",
@@ -289,7 +288,6 @@ def generate_ascwds_workplace_parquet(output_destination):
     spark = utils.get_spark()
     columns = [
         "locationid",
-        "locationid AS locationid_ASCWDS",
         "establishmentid",
         "orgid",
         "isparent",
@@ -298,7 +296,16 @@ def generate_ascwds_workplace_parquet(output_destination):
         "lapermission",
     ]
 
-    rows = []
+    rows = [
+        ("1-000000002", "1", "1", "1", "20200202", "20200202", -1),
+        ("1-000000004", "2", "1", "0", "20200202", "20200202", 0),
+        ("1-000000006", "3", "1", "0", "20200202", "20200202", 1),
+        ("1-000000008", "4", "1", "0", "20200202", "20200202", -1),
+        ("1-000000010", "5", "2", "1", "20200202", "20200202", 0),
+        ("1-000000012", "6", "2", "0", "20200202", "20200202", 1),
+        ("1-000000014", "7", "2", "0", "20200202", "20200202", 1),
+        ("1-000000016", "8", "2", "0", "20200202", "20200202", 0),
+    ]
 
     df = spark.createDataFrame(rows, columns)
 
