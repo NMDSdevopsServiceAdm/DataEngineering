@@ -38,7 +38,7 @@ output_fields = [
     "provider_name",
     "region",
     "localauthority",
-    "locationid_ASCWDS",
+    "location_in_ASCWDS",
     "lapermission",
 ]
 
@@ -50,16 +50,16 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     output_df = cqc_location_df.join(cqc_provider_df, "providerid", "left")
 
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
-
     ascwds_workplace_df = prepare_locations.purge_workplaces(ascwds_workplace_df)
 
     output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
-
+    output_df = location_in_ascwds(output_df)
     output_df = output_df.select(output_fields).sort("localauthority", "provider_name", "name")
 
     print(f"Exporting as csv to {destination}")
     if destination:
-        output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(destination)
+        return output_df
+        # output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(destination)
 
     else:
         return output_df
@@ -102,6 +102,14 @@ def get_ascwds_workplace_df(dataset_workplace_source):
     )
 
     return ascwds_workplace_df
+
+
+def location_in_ascwds(input_df):
+    input_df = input_df.withColumn(
+        "location_in_ASCWDS", f.when(input_df.locationid_ASCWDS.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS")
+    )
+
+    return input_df
 
 
 def collect_arguments():
