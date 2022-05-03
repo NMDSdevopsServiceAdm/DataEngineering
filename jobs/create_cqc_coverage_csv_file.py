@@ -88,16 +88,18 @@ def get_cqc_locations_df(dataset_locations_api_source):
 
 def get_cqc_providers_df(dataset_providers_api_source):
     spark = utils.get_spark()
-    print(f"Reading CQC locations parquet from {dataset_providers_api_source}")
-    cqc_providers_df = spark.read.parquet(dataset_providers_api_source).select(required_cqc_provider_fields).distinct()
+    print(f"Reading CQC providers parquet from {dataset_providers_api_source}")
+    cqc_providers_df = (
+        spark.read.parquet(dataset_providers_api_source).selectExpr(required_cqc_provider_fields).distinct()
+    )
 
     return cqc_providers_df
 
 
 def get_ascwds_workplace_df(dataset_workplace_source):
     spark = utils.get_spark()
-    print(f"Reading CQC locations parquet from {dataset_workplace_source}")
-    ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).select(required_ascwds_fields).distinct()
+    print(f"Reading ASCWDS workplace parquet from {dataset_workplace_source}")
+    ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).selectExpr(required_ascwds_fields).distinct()
 
     return ascwds_workplace_df
 
