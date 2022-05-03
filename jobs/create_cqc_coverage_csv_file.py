@@ -9,7 +9,6 @@ required_cqc_location_fields = [
     "providerid",
     "name",
     "postalcode",
-    "import_date",
     "type",
     "registrationstatus",
     "localauthority",
@@ -19,7 +18,6 @@ required_cqc_location_fields = [
 required_cqc_provider_fields = [
     "providerid",
     "name as providername",
-    "import_date",
 ]
 
 required_ascwds_fields = [
@@ -80,6 +78,10 @@ def get_cqc_locations_df(dataset_locations_api_source):
     spark = utils.get_spark()
     print(f"Reading CQC locations parquet from {dataset_locations_api_source}")
     cqc_locations_df = spark.read.parquet(dataset_locations_api_source).select(required_cqc_location_fields).distinct()
+
+    cqc_locations_df = cqc_locations_df.filter(
+        (cqc_locations_df.registrationstatus == "Registered") & (cqc_locations_df.type == "Social Care Org")
+    )
 
     return cqc_locations_df
 
