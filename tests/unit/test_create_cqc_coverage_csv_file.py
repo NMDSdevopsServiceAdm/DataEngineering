@@ -72,18 +72,16 @@ class Estimate2021JobsTests(unittest.TestCase):
             df.columns,
             [
                 "locationid",
-                "locationid_ASCWDS",
                 "establishmentid",
                 "orgid",
                 "isparent",
                 "import_date",
                 "mupddate",
                 "lapermission",
+                "locationid_ASCWDS",
+                "ascwds_workplace_import_date",
             ],
         )
-
-    def test_relabel_permission_col(self):
-        df = job.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE)
 
         df = df.collect()
         self.assertEqual(df[0]["lapermission"], "Not recorded")
@@ -110,7 +108,7 @@ class Estimate2021JobsTests(unittest.TestCase):
                 "provider_name",
                 "region",
                 "localauthority",
-                "location_in_ASCWDS",
+                "locationid_ASCWDS",
                 "lapermission",
             ],
         )
