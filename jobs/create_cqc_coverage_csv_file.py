@@ -17,12 +17,11 @@ required_cqc_location_fields = [
 
 required_cqc_provider_fields = [
     "providerid",
-    "name as providername",
+    "name",
 ]
 
 required_ascwds_fields = [
     "locationid",
-    "locationid AS locationid_ASCWDS",
     "establishmentid",
     "orgid",
     "isparent",
@@ -89,9 +88,8 @@ def get_cqc_locations_df(dataset_locations_api_source):
 def get_cqc_providers_df(dataset_providers_api_source):
     spark = utils.get_spark()
     print(f"Reading CQC providers parquet from {dataset_providers_api_source}")
-    cqc_providers_df = (
-        spark.read.parquet(dataset_providers_api_source).selectExpr(required_cqc_provider_fields).distinct()
-    )
+    cqc_providers_df = spark.read.parquet(dataset_providers_api_source).select(required_cqc_provider_fields).distinct()
+    cqc_providers_df = cqc_providers_df.withColumnRenamed("name", "provider_name")
 
     return cqc_providers_df
 
@@ -99,7 +97,9 @@ def get_cqc_providers_df(dataset_providers_api_source):
 def get_ascwds_workplace_df(dataset_workplace_source):
     spark = utils.get_spark()
     print(f"Reading ASCWDS workplace parquet from {dataset_workplace_source}")
-    ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).selectExpr(required_ascwds_fields).distinct()
+    ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).select(required_ascwds_fields).distinct()
+
+    ascwds_workplace_df = ascwds_workplace_df.withColumn("locationid_ASCWDS", ascwds_workplace_df.locationid)
 
     return ascwds_workplace_df
 
@@ -111,7 +111,7 @@ def relabel_permission_col(input_df):
         .when(input_df.lapermission == 0, "No")
         .when(input_df.lapermission == 1, "Yes"),
     )
-
+    input_df.show()
     return input_df
 
 
