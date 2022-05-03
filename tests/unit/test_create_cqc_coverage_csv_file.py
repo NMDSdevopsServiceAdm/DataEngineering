@@ -17,7 +17,6 @@ class CreateCQCCoverageTests(unittest.TestCase):
     TEST_CQC_LOCATIONS_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
-    TEST_OUTPUT_FILE = "tests/test_data/tmp/output.csv"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_create_cqc_coverage_csv_file").getOrCreate()
@@ -92,7 +91,6 @@ class CreateCQCCoverageTests(unittest.TestCase):
             self.TEST_ASCWDS_WORKPLACE_FILE,
             self.TEST_CQC_LOCATIONS_FILE,
             self.TEST_CQC_PROVIDERS_FILE,
-            self.TEST_OUTPUT_FILE,
         )
 
         self.assertEqual(result_df.count(), 15)

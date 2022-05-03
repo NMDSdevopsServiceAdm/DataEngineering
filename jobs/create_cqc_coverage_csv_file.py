@@ -43,7 +43,7 @@ output_fields = [
 ]
 
 
-def main(workplace_source, cqc_location_source, cqc_provider_source, destination):
+def main(workplace_source, cqc_location_source, cqc_provider_source, destination=None):
     cqc_location_df = get_cqc_locations_df(cqc_location_source)
     cqc_provider_df = get_cqc_providers_df(cqc_provider_source)
 
@@ -58,9 +58,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
 
     print(f"Exporting as csv to {destination}")
     if destination:
-        return output_df
-        # output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(destination)
-
+        output_df.coalesce(1).write.mode("overwrite").option("header", "true").csv(destination)
     else:
         return output_df
 
