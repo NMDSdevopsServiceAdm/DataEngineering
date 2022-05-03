@@ -14,9 +14,10 @@ from tests.test_file_generator import (
 
 class Estimate2021JobsTests(unittest.TestCase):
 
-    TEST_CQC_LOCATIONS_FILE = "tests/test_data/tmp/cqc_locations_prepared_file.parquet"
-    TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/ons_geography_file.parquet"
-    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ethnicity_by_super_output_area.csv"
+    TEST_CQC_LOCATIONS_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
+    TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
+    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
+    TEST_OUTPUT_FILE = "tests/test_data/tmp/coverage_output_file.parquet"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_create_cqc_coverage_csv_file").getOrCreate()
@@ -29,6 +30,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             shutil.rmtree(self.TEST_CQC_LOCATIONS_FILE)
             shutil.rmtree(self.TEST_CQC_PROVIDERS_FILE)
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
+            shutil.rmtree(self.TEST_OUTPUT_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -65,7 +67,7 @@ class Estimate2021JobsTests(unittest.TestCase):
     def test_get_ascwds_workplace_df(self):
         df = job.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE)
 
-        self.assertEqual(df.count(), 15)
+        self.assertEqual(df.count(), 8)
         self.assertEqual(
             df.columns,
             [
@@ -81,43 +83,35 @@ class Estimate2021JobsTests(unittest.TestCase):
         )
 
     def test_relabel_permission_col(self):
-        pass
+        df = job.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE)
+
+        df = df.collect()
+        self.assertEqual(df[0]["lapermission"], "Not recorded")
+        self.assertEqual(df[1]["lapermission"], "No")
+        self.assertEqual(df[2]["lapermission"], "Yes")
 
     def test_main(self):
-        pass
-
-
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")
-
-
-class EthnicityBreakdownTests(unittest.TestCase):
-    def test_get_all_job_roles_per_location_df(self):
-        all_job_roles_df = ethnicity_breakdown.get_all_job_roles_per_location_df(self.TEST_ALL_JOB_ROLES_FILE)
-
-        self.assertEqual(all_job_roles_df.count(), 15)
-        self.assertEqual(
-            all_job_roles_df.columns, ["master_locationid", "primary_service_type", "main_job_role", "estimated_jobs"]
+        result_df = job.main(
+            self.TEST_ASCWDS_WORKPLACE_FILE,
+            self.TEST_CQC_LOCATIONS_FILE,
+            self.TEST_CQC_PROVIDERS_FILE,
+            self.TEST_OUTPUT_FILE,
         )
 
-    def test_main(self):
-        result_df = ethnicity_breakdown.main(
-            self.TEST_ALL_JOB_ROLES_FILE,
-            self.TEST_CQC_LOCATIONS_PREPARED_FILE,
-            self.TEST_ONS_FILE,
-            self.TEST_CENSUS_FILE,
-        )
-
-        self.assertEqual(result_df.count(), 30)
+        self.assertEqual(result_df.count(), 15)
 
         self.assertEqual(
             result_df.columns,
             [
-                "primary_service_type",
-                "ons_region",
-                "main_job_role",
-                "ethnicity",
-                "estimated_jobs",
+                "locationid",
+                "name",
+                "postalcode",
+                "providerid",
+                "providername",
+                "region",
+                "localauthority",
+                "location_in_ASCWDS",
+                "lapermission",
             ],
         )
 
