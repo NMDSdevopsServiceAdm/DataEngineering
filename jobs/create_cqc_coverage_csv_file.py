@@ -38,7 +38,7 @@ output_fields = [
     "provider_name",
     "region",
     "localauthority",
-    "location_in_ASCWDS",
+    "locationid_ASCWDS",
     "lapermission",
 ]
 
@@ -56,15 +56,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
 
     output_df = output_df.select(output_fields).sort("localauthority", "provider_name", "name")
-
-    output_df = relabel_permission_col(output_df)
-
-    # print regional coverage
-    output_df.groupBy("region").agg(
-        f.countDistinct("locationid").alias("CQC_Locations"),
-        f.countDistinct("locationid_ASCWDS").alias("ASCWDS_Locations"),
-        round(f.countDistinct("locationid_ASCWDS") / f.countDistinct("locationid"), 2).alias("CQC_Coverage"),
-    ).show()
 
     print(f"Exporting as csv to {destination}")
     if destination:
@@ -99,27 +90,18 @@ def get_ascwds_workplace_df(dataset_workplace_source):
     spark = utils.get_spark()
     print(f"Reading ASCWDS workplace parquet from {dataset_workplace_source}")
     ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).select(required_ascwds_fields).distinct()
-
     ascwds_workplace_df = ascwds_workplace_df.withColumn("locationid_ASCWDS", ascwds_workplace_df.locationid)
     ascwds_workplace_df = ascwds_workplace_df.withColumn(
         "ascwds_workplace_import_date", to_date(col("import_date").cast("string"), "yyyyMMdd")
     )
+    ascwds_workplace_df = ascwds_workplace_df.withColumn(
+        "lapermission",
+        f.when(ascwds_workplace_df.lapermission == -1, "Not recorded")
+        .when(ascwds_workplace_df.lapermission == 0, "No")
+        .when(ascwds_workplace_df.lapermission == 1, "Yes"),
+    )
 
     return ascwds_workplace_df
-
-
-def relabel_permission_col(input_df):
-    print("before")
-    input_df.show()
-    input_df = input_df.withColumn(
-        "lapermission",
-        f.when(input_df.lapermission == -1, "Not recorded")
-        .when(input_df.lapermission == 0, "No")
-        .when(input_df.lapermission == 1, "Yes"),
-    )
-    print("after")
-    input_df.show()
-    return input_df
 
 
 def collect_arguments():
