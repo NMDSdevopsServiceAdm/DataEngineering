@@ -17,7 +17,7 @@ class Estimate2021JobsTests(unittest.TestCase):
     TEST_CQC_LOCATIONS_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
-    TEST_OUTPUT_FILE = "tests/test_data/tmp/coverage_output_file.parquet"
+    TEST_OUTPUT_FILE = "tests/test_data/tmp/"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_create_cqc_coverage_csv_file").getOrCreate()
@@ -60,7 +60,7 @@ class Estimate2021JobsTests(unittest.TestCase):
             df.columns,
             [
                 "providerid",
-                "providername",
+                "provider_name",
             ],
         )
 
@@ -107,7 +107,7 @@ class Estimate2021JobsTests(unittest.TestCase):
                 "name",
                 "postalcode",
                 "providerid",
-                "providername",
+                "provider_name",
                 "region",
                 "localauthority",
                 "location_in_ASCWDS",
