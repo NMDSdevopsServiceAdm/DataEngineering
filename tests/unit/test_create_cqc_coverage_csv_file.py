@@ -12,12 +12,12 @@ from tests.test_file_generator import (
 )
 
 
-class Estimate2021JobsTests(unittest.TestCase):
+class CreateCQCCoverageTests(unittest.TestCase):
 
     TEST_CQC_LOCATIONS_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
-    TEST_OUTPUT_FILE = "tests/test_data/tmp/"
+    TEST_OUTPUT_FILE = "tests/test_data/tmp/output.csv"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_create_cqc_coverage_csv_file").getOrCreate()
@@ -30,7 +30,6 @@ class Estimate2021JobsTests(unittest.TestCase):
             shutil.rmtree(self.TEST_CQC_LOCATIONS_FILE)
             shutil.rmtree(self.TEST_CQC_PROVIDERS_FILE)
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-            shutil.rmtree(self.TEST_OUTPUT_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -84,9 +83,9 @@ class Estimate2021JobsTests(unittest.TestCase):
         )
 
         df = df.collect()
-        self.assertEqual(df[0]["lapermission"], "Not recorded")
+        self.assertEqual(df[0]["lapermission"], "Yes")
         self.assertEqual(df[1]["lapermission"], "No")
-        self.assertEqual(df[2]["lapermission"], "Yes")
+        self.assertEqual(df[5]["lapermission"], "Not recorded")
 
     def test_main(self):
         result_df = job.main(
@@ -108,7 +107,7 @@ class Estimate2021JobsTests(unittest.TestCase):
                 "provider_name",
                 "region",
                 "localauthority",
-                "locationid_ASCWDS",
+                "location_in_ASCWDS",
                 "lapermission",
             ],
         )
