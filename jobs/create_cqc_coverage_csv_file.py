@@ -1,7 +1,7 @@
 import argparse
 from utils import utils
 from jobs import prepare_locations
-from pyspark.sql.functions import to_date
+from pyspark.sql.functions import col, to_date
 from pyspark.sql import functions as f
 
 required_cqc_location_fields = [
@@ -35,7 +35,7 @@ output_fields = [
     "name",
     "postalcode",
     "providerid",
-    "providername",
+    "provider_name",
     "region",
     "localauthority",
     "location_in_ASCWDS",
@@ -50,11 +50,12 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, destination
     output_df = cqc_location_df.join(cqc_provider_df, "providerid", "left")
 
     ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
+
     ascwds_workplace_df = prepare_locations.purge_workplaces(ascwds_workplace_df)
 
     output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
 
-    output_df = output_df.select(output_fields).sort("localauthority", "providername", "name")
+    output_df = output_df.select(output_fields).sort("localauthority", "provider_name", "name")
 
     output_df = relabel_permission_col(output_df)
 
@@ -100,17 +101,23 @@ def get_ascwds_workplace_df(dataset_workplace_source):
     ascwds_workplace_df = spark.read.parquet(dataset_workplace_source).select(required_ascwds_fields).distinct()
 
     ascwds_workplace_df = ascwds_workplace_df.withColumn("locationid_ASCWDS", ascwds_workplace_df.locationid)
+    ascwds_workplace_df = ascwds_workplace_df.withColumn(
+        "ascwds_workplace_import_date", to_date(col("import_date").cast("string"), "yyyyMMdd")
+    )
 
     return ascwds_workplace_df
 
 
 def relabel_permission_col(input_df):
+    print("before")
+    input_df.show()
     input_df = input_df.withColumn(
         "lapermission",
         f.when(input_df.lapermission == -1, "Not recorded")
         .when(input_df.lapermission == 0, "No")
         .when(input_df.lapermission == 1, "Yes"),
     )
+    print("after")
     input_df.show()
     return input_df
 
