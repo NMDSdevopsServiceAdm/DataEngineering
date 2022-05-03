@@ -41,6 +41,12 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         cqc_providers_df = complete_cqc_provider_df.filter(col("import_date") == snapshot_date_row["cqc_provider_date"])
         pir_df = complete_pir_df.filter(col("import_date") == snapshot_date_row["pir_date"])
 
+        # Rename import_date columns to ensure uniqueness
+        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
+        cqc_locations_df = cqc_locations_df.withColumnRenamed("import_date", "cqc_locations_import_date")
+        cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
+        pir_df = pir_df.withColumnRenamed("import_date", "pir_df_import_date")
+
         output_df = cqc_locations_df.join(ascwds_workplace_df, "locationid", "left")
         output_df = output_df.join(cqc_providers_df, "providerid", "left")
         output_df = filter_out_cqc_la_data(output_df)
@@ -51,6 +57,9 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
             master_df = output_df
 
         master_df = master_df.union(output_df)
+
+    # Del me
+    master_df.show(50)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -269,6 +278,7 @@ def clean(input_df):
 
 
 def purge_workplaces(input_df):
+    # Remove all locations that haven't been update for two years
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
