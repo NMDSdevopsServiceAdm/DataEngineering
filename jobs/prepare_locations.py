@@ -60,8 +60,8 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
         if master_df is None:
             master_df = output_df
-
-        master_df = master_df.union(output_df)
+        else:
+            master_df = master_df.union(output_df)
 
     # Del me
     master_df.show(50)
@@ -100,7 +100,7 @@ def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
-    workplace_df = filter_nulls(workplace_df)
+        workplace_df = filter_nulls(workplace_df)
 
     if import_date is not None:
         workplace_df = workplace_df.filter(col("import_date") == import_date)
