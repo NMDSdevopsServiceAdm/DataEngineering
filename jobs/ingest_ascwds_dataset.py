@@ -11,14 +11,14 @@ import boto3
 DEFAULT_DELIMITER = ","
 
 def main(source, destination, delimiter):
-    if source.endswith(".csv"):
+    if is_csv(source):
         run_job(source, destination, delimiter)
     else:
         objects_list = get_objects_list(source)
         bucket_source = get_bucket_name(source)
         bucket_destination = get_bucket_name(destination)
         for file in objects_list:
-            if file.endswith(".csv"):
+            if is_csv(file):
                 new_source = os.path.join(bucket_source, file)
                 new_destination = os.path.join(bucket_destination, file)
                 run_job(new_source, new_destination, delimiter)
@@ -26,6 +26,9 @@ def main(source, destination, delimiter):
 def get_bucket_name(uri):
     bucket = uri.replace("s3://", "").split("/", 1)[0]
     return bucket
+
+def is_csv(source):
+    return source.endswith(".csv")
 
 def run_job(source, destination, delimiter):
     print("Reading CSV from {source}")
