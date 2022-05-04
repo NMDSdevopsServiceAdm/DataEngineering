@@ -30,6 +30,9 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
     date_matrix = date_matrix.collect()
 
+    for row in date_matrix:
+        print(row)
+
     for snapshot_date_row in date_matrix:
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
             col("import_date") == snapshot_date_row["asc_workplace_date"]
@@ -47,11 +50,13 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
         pir_df = pir_df.withColumnRenamed("import_date", "pir_df_import_date")
 
-        output_df = cqc_locations_df.join(ascwds_workplace_df, "locationid", "left")
-        output_df = output_df.join(cqc_providers_df, "providerid", "left")
+        output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
+        output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
         output_df = filter_out_cqc_la_data(output_df)
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = calculate_jobcount(output_df)
+
+        output_df.withColumn("snapshot_date", snapshot_date_row["snapshot_date"])
 
         if master_df is None:
             master_df = output_df
@@ -238,7 +243,7 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
         closest_pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
 
     transpose = []
-    for i in range(len(unique_asc_dates)):
+    for i in range(len(c)):
         transpose.append(
             (
                 unique_asc_dates[i],
