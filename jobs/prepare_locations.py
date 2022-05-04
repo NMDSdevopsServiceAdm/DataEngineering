@@ -243,7 +243,7 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
         closest_pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
 
     transpose = []
-    for i in range(len(c)):
+    for i in range(len(unique_asc_dates)):
         transpose.append(
             (
                 unique_asc_dates[i],
