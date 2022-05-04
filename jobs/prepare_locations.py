@@ -100,7 +100,7 @@ def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
-        workplace_df = filter_nulls(workplace_df)
+    workplace_df = filter_nulls(workplace_df)
 
     if import_date is not None:
         workplace_df = workplace_df.filter(col("import_date") == import_date)
