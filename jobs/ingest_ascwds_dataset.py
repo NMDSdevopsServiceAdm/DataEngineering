@@ -14,9 +14,10 @@ def main(source, destination, delimiter):
         run_job(source, destination, delimiter)
     else:
         objects_list = get_objects_list(source)
+        
         for file in objects_list:
             if file.endswith(".csv"):
-                run_job(source, destination, delimiter)
+                run_job(source, destination, delimiter) # not good
     
 def run_job(source, destination, delimiter):
     print("Reading CSV from {source}")
@@ -59,10 +60,11 @@ def collect_arguments():
     return args.source, args.destination, args.delimiter
 
 def get_objects_list(source):
-    s3 = boto3.client("s3")
-    bucket_name = "sfc-data-engineering-raw"
-    response_objects = s3.list_objects(Bucket=bucket_name, Delimiter="/", Prefix=source)
-    object_keys = response_objects['Contents']['Key']
+    s3 = boto3.resource("s3")
+    bucket_name = s3.Bucket("sfc-data-engineering-raw")
+    object_keys = []
+    for obj in bucket_name.objects.filter(Prefix=source):
+        object_keys.append(obj.key)
     return object_keys
 
 if __name__ == "__main__":
