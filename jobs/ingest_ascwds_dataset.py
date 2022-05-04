@@ -5,11 +5,20 @@ from utils import utils
 import sys
 import pyspark
 import argparse
+import boto3
 
 DEFAULT_DELIMITER = ","
 
-
 def main(source, destination, delimiter):
+    if source.endswith(".csv"):
+        run_job(source, destination, delimiter)
+    else:
+        objects_list = get_objects_list(source)
+        for file in objects_list:
+            if file.endswith(".csv"):
+                run_job(source, destination, delimiter)
+    
+def run_job(source, destination, delimiter):
     print("Reading CSV from {source}")
     df = utils.read_csv(source, delimiter)
     print("Removing ASCWDS test accounts")
@@ -49,6 +58,12 @@ def collect_arguments():
 
     return args.source, args.destination, args.delimiter
 
+def get_objects_list(source):
+    s3 = boto3.client("s3")
+    bucket_name = "sfc-data-engineering-raw"
+    response_objects = s3.list_objects(Bucket=bucket_name, Delimiter="/", Prefix=source)
+    object_keys = response_objects['Contents']['Key']
+    return object_keys
 
 if __name__ == "__main__":
     print("Spark job 'ingest_ascwds_dataset' starting...")
