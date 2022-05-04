@@ -56,7 +56,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = calculate_jobcount(output_df)
 
-        output_df.withColumn("snapshot_date", snapshot_date_row["snapshot_date"])
+        output_df.withColumn("snapshot_date", lit(snapshot_date_row["snapshot_date"]))
 
         if master_df is None:
             master_df = output_df
