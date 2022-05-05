@@ -3,10 +3,10 @@ from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.functions import to_timestamp
 from utils import utils
+from botocore.stub import Stubber
 import sys
 import pyspark
 import argparse
-import boto3
 
 DEFAULT_DELIMITER = ","
 
@@ -15,7 +15,7 @@ def main(source, destination, delimiter):
         run_job(source, destination, delimiter)
     else:
         bucket_source, prefix = utils.split_s3_uri(source)
-        objects_list = get_objects_list(bucket_source, prefix)
+        objects_list = utils.get_s3_objects_list(bucket_source, prefix)
         bucket_destination = utils.split_s3_uri(destination)[0]
         for file in objects_list:
             if utils.is_csv(file):
@@ -23,13 +23,6 @@ def main(source, destination, delimiter):
                 new_destination = utils.construct_s3_uri(bucket_destination, file)
                 run_job(new_source, new_destination, delimiter)
 
-def get_objects_list(bucket_source, prefix):
-    s3 = boto3.resource("s3")
-    bucket_name = s3.Bucket(bucket_source)
-    object_keys = []
-    for obj in bucket_name.objects.filter(Prefix=prefix):
-        object_keys.append(obj.key)
-    return object_keys
 
 def run_job(source, destination, delimiter):
     print("Reading CSV from {source}")

@@ -2,6 +2,7 @@ from hashlib import sha3_384
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 import os
+import boto3
 
 
 class SetupSpark(object):
@@ -22,6 +23,17 @@ class SetupSpark(object):
 
 
 get_spark = SetupSpark()
+
+
+def get_s3_objects_list(bucket_source, prefix, s3_client=None):
+    if s3_client is None:
+        s3_client = boto3.resource("s3")
+
+    bucket_name = s3_client.Bucket(bucket_source)
+    object_keys = []
+    for obj in bucket_name.objects.filter(Prefix=prefix):
+        object_keys.append(obj.key)
+    return object_keys
 
 
 def generate_s3_dir_date_path(domain, dataset, date):

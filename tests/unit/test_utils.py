@@ -4,7 +4,9 @@ from utils import utils
 import shutil
 import unittest
 from pyspark.sql import SparkSession
-
+import botocore.session
+from botocore.stub import Stubber
+import boto3
 
 class UtilsTests(unittest.TestCase):
 
@@ -23,6 +25,34 @@ class UtilsTests(unittest.TestCase):
             shutil.rmtree(self.tmp_dir)
         except OSError as e:
             pass  # Ignore dir does not exist
+
+    def test_get_s3_objects_list_returns_all_objects(self):
+        pass
+
+    def test_get_s3_objects_list_returns_filtered_objects(self):
+        s3 = boto3.resource("s3")
+        stubber = Stubber(s3.meta.client)
+
+        partial_response = {
+            "Contents": [{
+                "Key": "version=1.0.0/import_date=20210101/some-data-file.csv"
+            }]
+        }
+
+        expected_params = {"Bucket": "test-bucket",
+                           "Prefix": "version=1.0.0/import_date=20210101/"}
+
+        stubber.add_response("list_objects", partial_response, expected_params)
+        stubber.activate()
+
+        object_list = utils.get_s3_objects_list(
+            "test-bucket", "version=1.0.0/import_date=20210101/", s3)
+
+        print(f"Object list {object_list}")
+        self.assertEqual(
+            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
+        self.assertEqual(len(object_list), 1)
+
 
     def test_generate_s3_dir_date_path(self):
 
@@ -74,4 +104,4 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(uri, "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(warnings="ignore")
