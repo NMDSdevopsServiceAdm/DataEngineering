@@ -63,5 +63,11 @@ class UtilsTests(unittest.TestCase):
     def test_is_csv(self):
         self.assertTrue("s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
 
+    def test_split_s3_uri(self):
+        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
+        bucket_name, prefix = utils.split_s3_uri(s3_uri)
+        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
+        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
+
 if __name__ == "__main__":
     unittest.main()

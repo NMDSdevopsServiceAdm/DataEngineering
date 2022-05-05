@@ -59,3 +59,7 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM
 
 def is_csv(filename):
     return filename.endswith(".csv")
+
+def split_s3_uri(uri):
+    bucket, prefix = uri.replace("s3://", "").split("/", 1)
+    return bucket, prefix
