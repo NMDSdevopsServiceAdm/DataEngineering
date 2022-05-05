@@ -69,5 +69,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(bucket_name, "sfc-data-engineering-raw")
         self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
 
+    def test_construct_s3_uri(self):
+        uri = utils.construct_s3_uri("sfc-data-engineering-raw", "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+        self.assertEqual(uri, "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+
 if __name__ == "__main__":
     unittest.main()

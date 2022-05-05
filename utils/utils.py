@@ -1,5 +1,7 @@
+from hashlib import sha3_384
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
+import os
 
 
 class SetupSpark(object):
@@ -63,3 +65,8 @@ def is_csv(filename):
 def split_s3_uri(uri):
     bucket, prefix = uri.replace("s3://", "").split("/", 1)
     return bucket, prefix
+
+def construct_s3_uri(bucket_name, key):
+    s3 = "s3://"
+    s3_uri = os.path.join(s3, bucket_name, key)
+    return s3_uri
