@@ -63,14 +63,11 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         else:
             master_df = master_df.union(output_df)
 
-    # Del me
-    master_df.show(50)
-
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(output_df, destination)
+        utils.write_to_parquet(master_df, destination)
     else:
-        return output_df
+        return master_df
 
 
 def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
