@@ -15,7 +15,7 @@ def main(source, destination, delimiter):
         run_job(source, destination, delimiter)
     else:
         bucket_source, prefix = utils.split_s3_uri(source)
-        objects_list = get_objects_list(prefix)
+        objects_list = get_objects_list(bucket_source, prefix)
         bucket_destination = utils.split_s3_uri(destination)[0]
         for file in objects_list:
             if utils.is_csv(file):
@@ -23,9 +23,9 @@ def main(source, destination, delimiter):
                 new_destination = utils.construct_s3_uri(bucket_destination, file)
                 run_job(new_source, new_destination, delimiter)
 
-def get_objects_list(prefix):
+def get_objects_list(bucket_source, prefix):
     s3 = boto3.resource("s3")
-    bucket_name = s3.Bucket("sfc-data-engineering-raw")
+    bucket_name = s3.Bucket(bucket_source)
     object_keys = []
     for obj in bucket_name.objects.filter(Prefix=prefix):
         object_keys.append(obj.key)
