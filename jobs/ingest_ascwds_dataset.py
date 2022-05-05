@@ -1,9 +1,9 @@
+from ctypes import util
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.functions import to_timestamp
 from utils import utils
 import sys
-import os
 import pyspark
 import argparse
 import boto3
@@ -11,24 +11,25 @@ import boto3
 DEFAULT_DELIMITER = ","
 
 def main(source, destination, delimiter):
-    if is_csv(source):
+    if utils.is_csv(source):
         run_job(source, destination, delimiter)
     else:
-        objects_list = get_objects_list(source)
-        bucket_source = get_bucket_name(source)
-        bucket_destination = get_bucket_name(destination)
+        bucket_source, prefix = utils.split_s3_uri(source)
+        objects_list = get_objects_list(prefix)
+        bucket_destination = utils.split_s3_uri(destination)[0]
         for file in objects_list:
-            if is_csv(file):
-                new_source = os.path.join(bucket_source, file)
-                new_destination = os.path.join(bucket_destination, file)
+            if utils.is_csv(file):
+                new_source = utils.construct_s3_uri(bucket_source, file)
+                new_destination = utils.construct_s3_uri(bucket_destination, file)
                 run_job(new_source, new_destination, delimiter)
-    
-def get_bucket_name(uri):
-    bucket = uri.replace("s3://", "").split("/", 1)[0]
-    return bucket
 
-def is_csv(source):
-    return source.endswith(".csv")
+def get_objects_list(prefix):
+    s3 = boto3.resource("s3")
+    bucket_name = s3.Bucket("sfc-data-engineering-raw")
+    object_keys = []
+    for obj in bucket_name.objects.filter(Prefix=prefix):
+        object_keys.append(obj.key)
+    return object_keys
 
 def run_job(source, destination, delimiter):
     print("Reading CSV from {source}")
@@ -69,14 +70,6 @@ def collect_arguments():
         print(f"Utilising custom delimiter '{args.delimiter}'")
 
     return args.source, args.destination, args.delimiter
-
-def get_objects_list(source):
-    s3 = boto3.resource("s3")
-    bucket_name = s3.Bucket("sfc-data-engineering-raw")
-    object_keys = []
-    for obj in bucket_name.objects.filter(Prefix=source):
-        object_keys.append(obj.key)
-    return object_keys
 
 if __name__ == "__main__":
     print("Spark job 'ingest_ascwds_dataset' starting...")
