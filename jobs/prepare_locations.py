@@ -48,7 +48,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
         cqc_locations_df = cqc_locations_df.withColumnRenamed("import_date", "cqc_locations_import_date")
         cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
-        pir_df = pir_df.withColumnRenamed("import_date", "pir_df_import_date")
+        pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
@@ -62,6 +62,36 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
             master_df = output_df
         else:
             master_df = master_df.union(output_df)
+
+    master_df = master_df.select(
+        "snapshot_date",
+        "ascwds_workplace_import_date",
+        "cqc_locations_import_date",
+        "cqc_providers_import_date",
+        "cqc_pir_import_date",
+        "locationid",
+        "location_type",
+        "location_name",
+        "organisation_type",
+        "providerid",
+        "provider_name",
+        "orgid",
+        "establishmentid",
+        "registration_status",
+        "registration_date",
+        "deregistration_date",
+        "carehome",
+        "dormancy",
+        "number_of_beds",
+        "services_offered",
+        "pir_service_users",
+        "job_count",
+        "region",
+        "postal_code",
+        "constituency",
+        "local_authority",
+        "cqc_sector",
+    )
 
     if destination:
         print(f"Exporting as parquet to {destination}")
