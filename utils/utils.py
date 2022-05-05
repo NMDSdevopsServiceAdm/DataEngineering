@@ -56,3 +56,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM
         df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
 
     return df
+
+def is_csv(filename):
+    return filename.endswith(".csv")

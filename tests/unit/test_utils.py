@@ -60,6 +60,8 @@ class UtilsTests(unittest.TestCase):
             str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00"
         )
 
+    def test_is_csv(self):
+        self.assertTrue("s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
 
 if __name__ == "__main__":
     unittest.main()
