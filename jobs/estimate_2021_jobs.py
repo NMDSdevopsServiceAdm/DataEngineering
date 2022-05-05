@@ -4,7 +4,6 @@ import datetime
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
 
-from environment import constants
 from utils import utils
 
 
