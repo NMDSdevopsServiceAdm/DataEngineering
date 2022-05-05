@@ -6,7 +6,7 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower, min
 from pyspark.sql.types import IntegerType
 from utils import utils
-from environment import constants
+from environment import environment
 from pyspark.sql.types import DateType, StructType, StructField
 
 
@@ -77,7 +77,7 @@ def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
     spark = utils.get_spark()
 
     if base_path is None:
-        base_path = constants.ASCWDS_WORKPLACE_BASE_PATH
+        base_path = environment.get_ascwds_base_path()
 
     print(f"Reading workplaces parquet from {workplace_source}")
     workplace_df = (
@@ -108,8 +108,11 @@ def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
     return workplace_df
 
 
-def get_cqc_location_df(cqc_location_source, import_date=None, base_path=constants.CQC_LOCATIONS_BASE_PATH):
+def get_cqc_location_df(cqc_location_source, import_date=None, base_path=None):
     spark = utils.get_spark()
+
+    if base_path is None:
+        base_path = environment.get_cqc_locations_base_path()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
     cqc_df = (
@@ -146,8 +149,11 @@ def get_cqc_location_df(cqc_location_source, import_date=None, base_path=constan
     return cqc_df
 
 
-def get_cqc_provider_df(cqc_provider_source, import_date=None, base_path=constants.CQC_PROVIDERS_BASE_PATH):
+def get_cqc_provider_df(cqc_provider_source, import_date=None, base_path=None):
     spark = utils.get_spark()
+
+    if base_path is None:
+        base_path = environment.get_cqc_providers_base_path()
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
     cqc_provider_df = (
@@ -166,8 +172,11 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None, base_path=constan
     return cqc_provider_df
 
 
-def get_pir_df(pir_source, import_date=None, base_path=constants.PIR_BASE_PATH):
+def get_pir_df(pir_source, import_date=None, base_path=None):
     spark = utils.get_spark()
+
+    if base_path is None:
+        base_path = environment.get_pir_base_path()
 
     # Join PIR service users
     print(f"Reading PIR parquet from {pir_source}")
