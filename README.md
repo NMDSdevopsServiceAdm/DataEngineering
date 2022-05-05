@@ -90,9 +90,17 @@ For verbose output add `-v` to the end of the command.
 <br>
 <br>
 
-# Deploying the Pipeline
+# Infrastructure
 
-Terraform docs can be found here:  https://www.terraform.io/docs/cli/run/index.html
+So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code). 
+## Installing Terraform
+The Terraform docs are an excellant resource for this: https://learn.hashicorp.com/
+tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
+1. Download binary: https://www.terraform.io/downloads
+2. Unzip
+3. Make available on path
+
+## Deploying the Pipeline
 
 1. Ensure you set the following environment variables
 
@@ -101,11 +109,11 @@ export TF_VAR_aws_secret_key= [ aws secret key ]
 export TF_VAR_aws_access_key= [ aws access key ]
 ```
 
-2. From terminal/command line ensure you're in the root directory of the project
+2. From terminal/command line ensure you're in the Terraform directory
 
 ```
 adamprobert@Adams-MBP DataEngineering % pwd
-/Users/adamprobert/Projects/skillsforcare/DataEngineering
+/Users/adamprobert/Projects/skillsforcare/DataEngineering/old-terraform
 ```
 
 3. Run `terraform plan` to evaluate the planned changes
@@ -113,8 +121,8 @@ adamprobert@Adams-MBP DataEngineering % pwd
 terraform plan
 ```
 
-4. Check the planned changes to make sure they are correct
-5. Apply the terraform plan and confirm with `yes` when prompted
+4. Check the planned changes to make sure they are correct!
+5. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 ```
 terraform apply
 ```
