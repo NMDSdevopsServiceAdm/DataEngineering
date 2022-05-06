@@ -18,9 +18,15 @@ def main(source, provider_destination, location_destination, delimiter):
 
     print("Create CQC provider parquet file")
     provider_df = unique_providers_with_locations(df)
+    distinct_provider_info_df = get_distinct_provider_info(df)
+    provider_df = provider_df.join(distinct_provider_info_df, "providerid")
+    provider_df = provider_df.withColumn("organisationType", "Provider")
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
-    utils.write_to_parquet(provider_df, provider_destination)
+    if provider_destination:
+        utils.write_to_parquet(provider_df, provider_destination)
+    else:
+        return provider_df
 
     # print("Create CQC provider parquet file")
     # location_df = ...(df)
@@ -38,6 +44,25 @@ def unique_providers_with_locations(df):
     )
 
     return locations_at_prov_df
+
+
+def get_distinct_provider_info(df):
+    prov_info_df = df.selectExpr(
+        "providerid",
+        "provider_brandid as brandid",
+        "provider_brandname as brandname",
+        "provider_name as name",
+        "provider_mainphonenumber as mainPhoneNumber",
+        "provider_website as website",
+        "provider_postaladdressline1 as postalAddressLine1",
+        "provider_postaladdressline2 as postaladdressline2",
+        "provider_postaladdresstowncity as postalAddressTownCity",
+        "provider_postaladdresscounty as postalAddressCounty",
+        "provider_postalcode as postalCode",
+        "provider_nominated_individual_name",
+    ).distinct()
+
+    return prov_info_df
 
 
 def collect_arguments():
@@ -69,10 +94,10 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
-    print("Spark job 'ingest_cqc_csv_dataset' starting...")
+    print("Spark job 'ingest_cqc_care_directory' starting...")
     print(f"Job parameters: {sys.argv}")
 
     source, provider_destination, location_destination, delimiter = collect_arguments()
     main(source, provider_destination, location_destination, delimiter)
 
-    print("Spark job 'ingest_cqc_csv_dataset' complete")
+    print("Spark job 'ingest_cqc_care_directory' complete")

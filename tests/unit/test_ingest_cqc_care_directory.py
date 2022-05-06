@@ -41,6 +41,58 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             sorted(locations_at_prov_df[3]["locationids"]), ["1-000000007", "1-000000008", "1-000000009", "1-000000010"]
         )
 
+    def test_get_distinct_provider_info(self):
+        columns = [
+            "providerid",
+            "provider_brandid",
+            "provider_brandname",
+            "provider_name",
+            "provider_mainphonenumber",
+            "provider_website",
+            "provider_postaladdressline1",
+            "provider_postaladdressline2",
+            "provider_postaladdresstowncity",
+            "provider_postaladdresscounty",
+            "provider_postalcode",
+            "provider_nominated_individual_name",
+        ]
+
+        rows = [
+            ("1-000000001", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"),
+            ("1-000000002", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"),
+            ("1-000000002", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"),
+            ("1-000000003", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3"),
+            ("1-000000003", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3"),
+            ("1-000000003", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3", "3"),
+            ("1-000000004", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4"),
+            ("1-000000004", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4"),
+            ("1-000000004", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4"),
+            ("1-000000004", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4"),
+        ]
+
+        df = self.spark.createDataFrame(rows, columns)
+
+        distinct_prov_df = ingest_cqc_care_directory.get_distinct_provider_info(df)
+
+        self.assertEqual(distinct_prov_df.count(), 4)
+        self.assertEqual(
+            distinct_prov_df.columns,
+            [
+                "providerid",
+                "brandid",
+                "brandname",
+                "name",
+                "mainPhoneNumber",
+                "website",
+                "postalAddressLine1",
+                "postaladdressline2",
+                "postalAddressTownCity",
+                "postalAddressCounty",
+                "postalCode",
+                "provider_nominated_individual_name",
+            ],
+        )
+
     def test_main(self):
         pass
 
