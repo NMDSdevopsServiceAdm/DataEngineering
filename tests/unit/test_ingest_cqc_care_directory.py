@@ -3,7 +3,7 @@ import unittest
 
 from pyspark.sql import SparkSession
 
-from jobs import ingest_cqc_csv_dataset
+from jobs import ingest_cqc_care_directory
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
@@ -28,7 +28,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        locations_at_prov_df = ingest_cqc_csv_dataset.unique_providers_with_locations(df)
+        locations_at_prov_df = ingest_cqc_care_directory.unique_providers_with_locations(df)
 
         self.assertEqual(locations_at_prov_df.count(), 4)
         self.assertEqual(locations_at_prov_df.columns, ["providerid", "locationids"])
@@ -44,7 +44,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def test_main(self):
         pass
 
-        # result_df = ingest_cqc_csv_dataset.main(
+        # result_df = ingest_cqc_care_directory.main(
         #     self.TEST_CQC_PROV_LOC_FILE,
         # )
 
