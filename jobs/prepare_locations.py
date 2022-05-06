@@ -53,7 +53,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
-        output_df = filter_out_cqc_la_data(output_df)
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = calculate_jobcount(output_df)
 
@@ -372,15 +371,6 @@ def add_cqc_sector(input_df):
     input_df = input_df.withColumn(
         "cqc_sector", when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority")
     )
-
-    return input_df
-
-
-def filter_out_cqc_la_data(input_df):
-    print("Filter out LA sector data...")
-
-    # remove any records where sector is 'local authority'
-    input_df = input_df.filter("cqc_sector=='Independent'")
 
     return input_df
 
