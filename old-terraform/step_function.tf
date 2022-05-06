@@ -49,9 +49,9 @@ resource "aws_sfn_state_machine" "master_state_machine" {
           }
         },
         {
-          "StartAt": "Prepare Locations",
+          "StartAt": "Prepare CQC Locations",
           "States": {
-            "Prepare Locations": {
+            "Prepare CQC Locations": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -78,6 +78,37 @@ resource "aws_sfn_state_machine" "master_state_machine" {
         "Arguments": {
           "--destination.$": "$.jobs.estimate_2021_jobs_job.destination",
           "--prepared_locations_source.$": "$.jobs.estimate_2021_jobs_job.prepared_locations_source"
+        }
+      },
+      "Next": "Determine Job Role Breakdown",
+      "ResultPath": null
+    },
+    "Determine Job Role Breakdown": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "job_role_breakdown_job",
+        "Arguments": {
+          "--worker_source.$": "$.jobs.job_role_breakdown_job.worker_source",
+          "--job_estimates_source.$": "$.jobs.job_role_breakdown_job.job_estimates_source",
+          "--destination.$": "$.jobs.job_role_breakdown_job.destination"
+        }
+      },
+      "Next": "Determine Ethnicity Breakdown",
+      "ResultPath": null
+    },
+    "Determine Ethnicity Breakdown": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "ethnicity_breakdown_job",
+        "Arguments": {
+          "--job_roles_per_location_source.$": "$.jobs.ethnicity_breakdown_job.job_roles_per_location_source",
+          "--cqc_locations_prepared_source.$": "$.jobs.ethnicity_breakdown_job.cqc_locations_prepared_source",
+          "--ons_source.$": "$.jobs.ethnicity_breakdown_job.ons_source",
+          "--worker_source.$": "$.jobs.ethnicity_breakdown_job.worker_source",
+          "--census_source.$": "$.jobs.ethnicity_breakdown_job.census_source",
+          "--destination.$": "$.jobs.ethnicity_breakdown_job.destination"
         }
       },
       "Next": "Run Data Engineering Crawler",

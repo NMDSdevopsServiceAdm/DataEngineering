@@ -140,6 +140,7 @@ resource "aws_glue_job" "csv_to_parquet_job" {
   }
 }
 
+
 resource "aws_glue_job" "ingest_ascwds_dataset" {
   name              = "ingest_ascwds_dataset_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
@@ -210,6 +211,30 @@ resource "aws_glue_job" "job_role_breakdown_job" {
   }
 }
 
+resource "aws_glue_job" "ethnicity_breakdown_job" {
+  name              = "ethnicity_breakdown_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 5
+  }
+  command {
+    script_location = "${var.scripts_location}ethnicity_breakdown.py"
+  }
+
+  default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--TempDir"                       = var.glue_temp_dir
+    "--job_roles_per_location_source" = ""
+    "--cqc_locations_prepared_source" = ""
+    "--ons_source"                    = ""
+    "--worker_source"                 = ""
+    "--census_source"                 = ""
+    "--destination"                   = ""
+  }
+}
 
 resource "aws_glue_job" "estimate_2021_jobs_job" {
   name              = "estimate_2021_jobs_job"
