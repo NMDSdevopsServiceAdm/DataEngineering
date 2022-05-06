@@ -17,7 +17,8 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self):
-        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark = SparkSession.builder.appName(
+            "sfc_data_engineering").getOrCreate()
 
         return spark
 
@@ -57,7 +58,8 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -65,30 +67,26 @@ def read_csv(source, delimiter=","):
 
 
 def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
-    date_columns = [column for column in df.columns if date_column_identifier in column]
+    date_columns = [
+        column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
+        df = df.withColumn(date_column, to_timestamp(
+            date_column, raw_date_format))
 
     return df
 
+
 def is_csv(filename):
     return filename.endswith(".csv")
+
 
 def split_s3_uri(uri):
     bucket, prefix = uri.replace("s3://", "").split("/", 1)
     return bucket, prefix
 
+
 def construct_s3_uri(bucket_name, key):
     s3 = "s3://"
     s3_uri = os.path.join(s3, bucket_name, key)
     return s3_uri
-
-
-if __name__ == "__main__":
-    print("THE GOOD STUFF IS RUNNING")
-    objects = get_s3_objects_list(
-        "sfc-data-engineering-raw", "domain=ASCWDS/dataset=workplace/")
-    for o in objects:
-        print(o)
-    print("THE GOOD STUFF IS DONE RUNNING")

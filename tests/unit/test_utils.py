@@ -27,6 +27,11 @@ class UtilsTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_s3_objects_list_returns_all_objects(self):
+        # TODO DO THIS TEST
+        pass
+
+    def test_get_s3_objects_doesnt_return_directories(self):
+        # TODO DO THIS TEST
         pass
 
     def test_get_s3_objects_list_returns_filtered_objects(self):
@@ -35,7 +40,8 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             "Contents": [{
-                "Key": "version=1.0.0/import_date=20210101/some-data-file.csv"
+                "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
+                'Size': 123
             }]
         }
 
