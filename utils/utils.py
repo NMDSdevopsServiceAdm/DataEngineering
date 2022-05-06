@@ -32,7 +32,8 @@ def get_s3_objects_list(bucket_source, prefix, s3_client=None):
     bucket_name = s3_client.Bucket(bucket_source)
     object_keys = []
     for obj in bucket_name.objects.filter(Prefix=prefix):
-        object_keys.append(obj.key)
+        if obj.size > 0:  # Ignore s3 directories
+            object_keys.append(obj.key)
     return object_keys
 
 
@@ -82,3 +83,12 @@ def construct_s3_uri(bucket_name, key):
     s3 = "s3://"
     s3_uri = os.path.join(s3, bucket_name, key)
     return s3_uri
+
+
+if __name__ == "__main__":
+    print("THE GOOD STUFF IS RUNNING")
+    objects = get_s3_objects_list(
+        "sfc-data-engineering-raw", "domain=ASCWDS/dataset=workplace/")
+    for o in objects:
+        print(o)
+    print("THE GOOD STUFF IS DONE RUNNING")
