@@ -33,6 +33,22 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
         self.assertEqual(df[0]["location_feature"], "Something else")
         self.assertEqual(df[0]["locationid"], "1-000000004")
 
+    def test_filter_test_accounts_without_orgid_doesnt_filter_rows(self):
+        columns = [
+            "locationid",
+            "location_feature",
+        ]
+        rows = [
+            ("1-000000001", "Definitely a feature"),
+            ("1-000000002", "Not important"),
+            ("1-000000003", "Test input"),
+            ("1-000000004", "Something else"),
+        ]
+
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = ingest_ascwds_dataset.filter_test_accounts(df)
+        self.assertEqual(df.count(), 4)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

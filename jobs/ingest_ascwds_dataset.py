@@ -36,9 +36,14 @@ def run_job(source, destination, delimiter):
 
 
 def filter_test_accounts(df):
-    test_accounts = ["305", "307", "308", "309", "310", "2452", "28470", "26792", "31657"]
-    df = df.filter(~df.orgid.isin(test_accounts))
+    test_accounts = ["305", "307", "308", "309",
+                     "310", "2452", "28470", "26792", "31657"]
+
+    if "orgid" in df.columns:
+        df = df.filter(~df.orgid.isin(test_accounts))
+
     return df
+
 
 
 def collect_arguments():
