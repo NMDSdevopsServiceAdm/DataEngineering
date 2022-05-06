@@ -223,7 +223,7 @@ def get_pir_df(pir_source, import_date=None, base_path=None):
 
     pir_df = format_import_date(pir_df)
 
-    pir_df = pir_df.dropDuplicates(["locationid"])
+    pir_df = pir_df.dropDuplicates(["locationid", "import_date"])
 
     if import_date is not None:
         pir_df = pir_df.filter(col("import_date") == import_date)
