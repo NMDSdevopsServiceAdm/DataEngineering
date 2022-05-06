@@ -32,8 +32,13 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", help="A CSV file used as source input", required=True)
     parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting parquet files",
+        "--provider_destination",
+        help="A destination directory for outputting CQC Provider parquet file",
+        required=True,
+    )
+    parser.add_argument(
+        "--location_destination",
+        help="A destination directory for outputting CQC Location parquet file",
         required=True,
     )
     parser.add_argument(
@@ -48,14 +53,14 @@ def collect_arguments():
     if args.delimiter:
         print(f"Utilising custom delimiter '{args.delimiter}'")
 
-    return args.source, args.destination, args.delimiter
+    return args.source, args.provider_destination, args.location_destination, args.delimiter
 
 
 if __name__ == "__main__":
-    print("Spark job 'ingest_ascwds_dataset' starting...")
+    print("Spark job 'ingest_cqc_csv_dataset' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    source, destination, delimiter = collect_arguments()
-    main(source, destination, delimiter)
+    source, provider_destination, location_destination, delimiter = collect_arguments()
+    main(source, provider_destination, location_destination, delimiter)
 
-    print("Spark job 'ingest_ascwds_dataset' complete")
+    print("Spark job 'ingest_cqc_csv_dataset' complete")
