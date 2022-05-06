@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import to_timestamp
+from pyspark.sql.functions import col, collect_set
 from utils import utils
 import sys
 import pyspark
@@ -12,20 +12,32 @@ DEFAULT_DELIMITER = ","
 def main(source, provider_destination, location_destination, delimiter):
     print("Reading CSV from {source}")
     df = utils.read_csv(source, delimiter)
+
     print("Formatting date fields")
     df = utils.format_date_fields(df)
 
     print("Create CQC provider parquet file")
-    provider_df = ...(df)
+    provider_df = unique_providers_with_locations(df)
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     utils.write_to_parquet(provider_df, provider_destination)
 
-    print("Create CQC provider parquet file")
-    location_df = ...(df)
+    # print("Create CQC provider parquet file")
+    # location_df = ...(df)
 
-    print(f"Exporting Provider information as parquet to {location_destination}")
-    utils.write_to_parquet(location_df, location_destination)
+    # print(f"Exporting Provider information as parquet to {location_destination}")
+    # utils.write_to_parquet(location_df, location_destination)
+
+
+def unique_providers_with_locations(df):
+    locations_at_prov_df = df.select("providerid", "locationid")
+    locations_at_prov_df = (
+        locations_at_prov_df.groupby("providerid")
+        .agg(collect_set("locationid"))
+        .withColumnRenamed("collect_set(locationid)", "locationids")
+    )
+
+    return locations_at_prov_df
 
 
 def collect_arguments():
