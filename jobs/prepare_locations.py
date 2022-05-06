@@ -240,17 +240,14 @@ def get_unique_import_dates(df):
 def get_date_closest_to_search_date(search_date, date_list):
     if search_date in date_list:
         return search_date
-    else:
-        closest_date = builtins.min(date_list, key=lambda x: builtins.abs(x - search_date))
-        index_of_c_date = date_list.index(closest_date)
 
-    if index_of_c_date < 1:
+    try:
+        closest_date = builtins.max(d for d in date_list if d < search_date)
+    except ValueError as e:
+        # No dates in search_list provided less than search date
         return None
-    else:
-        if closest_date > search_date:
-            return date_list[index_of_c_date - 1]
-        else:
-            return date_list[index_of_c_date]
+
+    return closest_date
 
 
 def format_import_date(df, fieldname="import_date"):
@@ -258,7 +255,6 @@ def format_import_date(df, fieldname="import_date"):
 
 
 def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
-    # TODO: Definitely unit test this! Lot's of room for bugs here. Shall consider refactoring post demo
     spark = utils.get_spark()
 
     unique_asc_dates = get_unique_import_dates(dataset_workplace)

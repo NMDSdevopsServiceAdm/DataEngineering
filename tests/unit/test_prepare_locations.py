@@ -71,6 +71,7 @@ class PrepareLocationsTests(unittest.TestCase):
             self.TEST_CQC_PROVIDERS_FILE,
             self.TEST_PIR_FILE,
         )
+        output_df.select("snapshot_date", "cqc_pir_import_date").show()
         self.assertIsNotNone(output_df)
         self.assertEqual(output_df.count(), 28)
         self.assertEqual(
@@ -145,18 +146,26 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(pir_df.columns[1], "pir_service_users")
         self.assertEqual(pir_df.columns[2], "import_date")
 
-    def test_get_date_closest_to_search_date(self):
+    def test_get_date_closest_to_search_date_returns_correct_date(self):
         date_search_list = [date(2022, 1, 1), date(2022, 2, 11), date(2022, 3, 21), date(2022, 3, 28), date(2022, 4, 3)]
-        test_data_list = [
-            (date(2022, 1, 3), None),
-            (date(2022, 2, 11), date(2022, 2, 11)),
-            (date(2022, 2, 14), date(2022, 2, 11)),
-            (date(2022, 3, 27), date(2022, 3, 21)),
-        ]
+        test_date = date(2022, 3, 12)
 
-        for test_data in test_data_list:
-            result = prepare_locations.get_date_closest_to_search_date(test_data[0], date_search_list)
-            self.assertEqual(result, test_data[1])
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, date(2022, 2, 11))
+
+    def test_get_date_closest_to_search_date_returns_None_if_no_historical_dates_available(self):
+        date_search_list = [date(2022, 1, 1), date(2022, 2, 11), date(2022, 3, 21), date(2022, 3, 28), date(2022, 4, 3)]
+        test_date = date(2019, 1, 1)
+
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, None)
+
+    def test_get_date_closest_to_search_date_with_single_valid_date_returns_date(self):
+        date_search_list = [date(2020, 3, 31)]
+        test_date = date(2022, 5, 1)
+
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, date(2020, 3, 31))
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
