@@ -182,28 +182,3 @@ def generate_worker_parquet(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
-
-
-def generate_prov_loc_csv(output_destination):
-    spark = utils.get_spark()
-    columns = ["providerid", "locationid", "other_cols"]
-
-    rows = [
-        ("1-000000001", "1-000000001", "other_data"),
-        ("1-000000002", "1-000000002", "other_data"),
-        ("1-000000002", "1-000000003", "other_data"),
-        ("1-000000003", "1-000000004", "other_data"),
-        ("1-000000003", "1-000000005", "other_data"),
-        ("1-000000003", "1-000000006", "other_data"),
-        ("1-000000004", "1-000000007", "other_data"),
-        ("1-000000004", "1-000000008", "other_data"),
-        ("1-000000004", "1-000000009", "other_data"),
-        ("1-000000004", "1-000000010", "other_data"),
-    ]
-
-    df = spark.createDataFrame(rows, columns)
-
-    if output_destination:
-        df.coalesce(1).write.mode("overwrite").csv(output_destination)
-
-    return df
