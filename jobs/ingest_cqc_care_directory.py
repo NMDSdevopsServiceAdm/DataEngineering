@@ -29,8 +29,16 @@ def main(source, provider_destination=None, location_destination=None):
     else:
         return_datasets.append(provider_df)
 
-    print("Create CQC provider parquet file")
-    location_df = df
+    print("Create CQC location parquet file")
+    location_df = get_general_location_info(df)
+
+    regulatedactivities_df = get_regulatedactivities(df)
+    gacservicetypes_df = get_gacservicetypes(df)
+    specialisms_df = get_specialisms(df)
+
+    location_df = location_df.join(regulatedactivities_df, "locationid")
+    location_df = location_df.join(gacservicetypes_df, "locationid")
+    location_df = location_df.join(specialisms_df, "locationid")
 
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
@@ -72,6 +80,115 @@ def get_distinct_provider_info(df):
     prov_info_df = prov_info_df.withColumn("registrationstatus", lit("Registered"))
 
     return prov_info_df
+
+
+def get_general_location_info(df):
+    loc_info_df = df.selectExpr(
+        "locationid",
+        "providerid",
+        "type",
+        "name",
+        "registrationdate",
+        "numberofbeds",
+        "website",
+        "postaladdressline1",
+        "postaladdresstowncity",
+        "postaladdresscounty",
+        "region",
+        "postalcode",
+        "carehome",
+        "mainphonenumber",
+        "localauthority",
+    ).distinct()
+
+    loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
+    loc_info_df = loc_info_df.withColumn("registrationstatus", lit("Registered"))
+
+    return loc_info_df
+
+
+def get_regulatedactivities(df):
+    regulatedactivities_df = df.select(
+        "locationid",
+        "registered_manager_name",
+        "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
+        "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
+        "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
+        "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
+        "Regulated_activity_Diagnostic_and_screening_procedures",
+        "Regulated_activity_Family_planning",
+        "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
+        "Regulated_activity_Maternity_and_midwifery_services",
+        "Regulated_activity_Nursing_care",
+        "Regulated_activity_Personal_care",
+        "Regulated_activity_Services_in_slimming_clinics",
+        "Regulated_activity_Surgical_procedures",
+        "Regulated_activity_Termination_of_pregnancies",
+        "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
+        "Regulated_activity_Treatment_of_disease_disorder_or_injury",
+    )
+
+    return regulatedactivities_df
+
+
+def get_gacservicetypes(df):
+    gacservicetypes_df = df.select(
+        "locationid",
+        "Service_type_Acute_services_with_overnight_beds",
+        "Service_type_Acute_services_without_overnight_beds__listed_acute_services_with_or_without_overnight_beds",
+        "Service_type_Ambulance_service",
+        "Service_type_Blood_and_Transplant_service",
+        "Service_type_Care_home_service_with_nursing",
+        "Service_type_Care_home_service_without_nursing",
+        "Service_type_Community_based_services_for_people_who_misuse_substances",
+        "Service_type_Community_based_services_for_people_with_a_learning_disability",
+        "Service_type_Community_based_services_for_people_with_mental_health_needs",
+        "Service_type_Community_health_care_services_Nurses_Agency_only",
+        "Service_type_Community_healthcare_service",
+        "Service_type_Dental_service",
+        "Service_type_Diagnostic_andor_screening_service",
+        "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers",
+        "Service_type_Doctors_consultation_service",
+        "Service_type_Doctors_treatment_service",
+        "Service_type_Domiciliary_care_service",
+        "Service_type_Extra_Care_housing_services",
+        "Service_type_Hospice_services",
+        "Service_type_Hospice_services_at_home",
+        "Service_type_Hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_problems_with_substance_misuse",
+        "Service_type_Hyperbaric_Chamber",
+        "Service_type_Long_term_conditions_services",
+        "Service_type_Mobile_doctors_service",
+        "Service_type_Prison_Healthcare_Services",
+        "Service_type_Rehabilitation_services",
+        "Service_type_Remote_clinical_advice_service",
+        "Service_type_Residential_substance_misuse_treatment_andor_rehabilitation_service",
+        "Service_type_Shared_Lives",
+        "Service_type_Specialist_college_service",
+        "Service_type_Supported_living_service",
+        "Service_type_Urgent_care_services",
+    )
+
+    return gacservicetypes_df
+
+
+def get_specialisms(df):
+    specialisms_df = df.selectExpr(
+        "locationid",
+        "Service_user_band_Children_0-18_years",
+        "Service_user_band_Dementia",
+        "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
+        "Service_user_band_Mental_Health",
+        "Service_user_band_Older_People",
+        "Service_user_band_People_detained_under_the_Mental_Health_Act",
+        "Service_user_band_People_who_misuse_drugs_and_alcohol",
+        "Service_user_band_People_with_an_eating_disorder",
+        "Service_user_band_Physical_Disability",
+        "Service_user_band_Sensory_Impairment",
+        "Service_user_band_Whole_Population",
+        "Service_user_band_Younger_Adults",
+    )
+
+    return specialisms_df
 
 
 def collect_arguments():
