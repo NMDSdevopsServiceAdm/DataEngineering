@@ -93,6 +93,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 "postalAddressCounty",
                 "postalCode",
                 "nominated_individual_name",
+                "organisationType",
+                "registrationstatus",
             ],
         )
 

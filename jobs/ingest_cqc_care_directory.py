@@ -22,8 +22,6 @@ def main(source, provider_destination=None, location_destination=None):
     provider_df = unique_providers_with_locations(df)
     distinct_provider_info_df = get_distinct_provider_info(df)
     provider_df = provider_df.join(distinct_provider_info_df, "providerid")
-    provider_df = provider_df.withColumn("organisationType", lit("Provider"))
-    provider_df = provider_df.withColumn("registrationstatus", lit("Registered"))
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
@@ -69,6 +67,9 @@ def get_distinct_provider_info(df):
         "provider_postalcode as postalCode",
         "provider_nominated_individual_name as nominated_individual_name",
     ).distinct()
+
+    prov_info_df = prov_info_df.withColumn("organisationType", lit("Provider"))
+    prov_info_df = prov_info_df.withColumn("registrationstatus", lit("Registered"))
 
     return prov_info_df
 
