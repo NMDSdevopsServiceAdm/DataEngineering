@@ -7,6 +7,9 @@ from jobs import ingest_cqc_care_directory
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
+
+    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/example_cqc_care_directory.csv"
+
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
 
@@ -89,16 +92,37 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 "postalAddressTownCity",
                 "postalAddressCounty",
                 "postalCode",
-                "provider_nominated_individual_name",
+                "nominated_individual_name",
             ],
         )
 
     def test_main(self):
-        pass
+        datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
 
-        # result_df = ingest_cqc_care_directory.main(
-        #     self.TEST_CQC_PROV_LOC_FILE,
-        # )
+        provider_df = datasets[0]
+        location_df = datasets[1]
+
+        self.assertEqual(provider_df.count(), 4)
+        self.assertEqual(
+            provider_df.columns,
+            [
+                "providerid",
+                "locationids",
+                "brandid",
+                "brandname",
+                "name",
+                "mainPhoneNumber",
+                "website",
+                "postalAddressLine1",
+                "postaladdressline2",
+                "postalAddressTownCity",
+                "postalAddressCounty",
+                "postalCode",
+                "nominated_individual_name",
+                "organisationType",
+                "registrationstatus",
+            ],
+        )
 
 
 if __name__ == "__main__":
