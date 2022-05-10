@@ -216,28 +216,6 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertIsNotNone(result)
 
-    def test_filter_nulls(self):
-        columns = ["locationid", "worker_record_count", "total_staff"]
-        rows = [
-            ("1-000000001", None, 20),
-            ("1-000000002", 500, 500),
-            ("1-000000003", 100, None),
-            ("1-000000004", None, None),
-            ("1-000000005", 25, 75),
-            (None, 1, 0),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        filtered_df = prepare_locations.filter_nulls(df)
-        self.assertEqual(filtered_df.count(), 4)
-
-        list_filtered_df = filtered_df.collect()
-
-        self.assertCountEqual(
-            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
-            ["1-000000001", "1-000000002", "1-000000003", "1-000000005"],
-        )
-
     def test_clean(self):
 
         columns = ["locationid", "worker_record_count", "total_staff"]

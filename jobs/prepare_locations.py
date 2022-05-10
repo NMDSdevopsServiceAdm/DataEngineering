@@ -127,7 +127,6 @@ def get_ascwds_workplace_df(workplace_source, import_date=None, base_path=None):
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
-    workplace_df = filter_nulls(workplace_df)
 
     if import_date is not None:
         workplace_df = workplace_df.filter(col("import_date") == import_date)
@@ -336,18 +335,6 @@ def purge_workplaces(input_df):
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
     input_df.drop("isparent", "mupddate")
-
-    return input_df
-
-
-def filter_nulls(input_df):
-    # TODO: Determine if we should be filtering these nulls - probably just need to remove the first filter :thinking: Have a play and find out.
-    print("Filtering nulls...")
-    # Remove rows with null for worker_record_count and total_staff
-    input_df = input_df.filter("worker_record_count is not null or total_staff is not null")
-
-    # Remove rows with null locationId
-    input_df = input_df.na.drop(subset=["locationid"])
 
     return input_df
 
