@@ -24,9 +24,10 @@ LOCATION_TYPE = "location_type"
 SERVICES_OFFERED = "services_offered"
 JOB_COUNT = "job_count"
 ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
+SNAPSHOT_DATE = "snapshot_date"
 
 
-def main(prepared_locations_source, destination, ascwds_import_date="'2021-03-31'"):
+def main(prepared_locations_source, destination, snapshot_date="'2021-03-31'"):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
@@ -34,8 +35,7 @@ def main(prepared_locations_source, destination, ascwds_import_date="'2021-03-31
         .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
-            and {LOCATION_TYPE} = 'Social Care Org' \
-            and {ASCWDS_IMPORT_DATE} = {ascwds_import_date}"
+            and {SNAPSHOT_DATE} = {snapshot_date}"
         )
     )
 
