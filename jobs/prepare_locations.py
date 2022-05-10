@@ -31,9 +31,6 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
     date_matrix = date_matrix.collect()
 
-    for row in date_matrix:
-        print(row)
-
     for snapshot_date_row in date_matrix:
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
             col("import_date") == snapshot_date_row["asc_workplace_date"]
