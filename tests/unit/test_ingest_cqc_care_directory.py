@@ -98,6 +98,67 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
+    def test_get_specialisms(self):
+        columns = [
+            "locationid",
+            "Service_user_band_Children_0-18_years",
+            "Service_user_band_Dementia",
+            "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
+            "Service_user_band_Mental_Health",
+            "Service_user_band_Older_People",
+            "Service_user_band_People_detained_under_the_Mental_Health_Act",
+            "Service_user_band_People_who_misuse_drugs_and_alcohol",
+            "Service_user_band_People_with_an_eating_disorder",
+            "Service_user_band_Physical_Disability",
+            "Service_user_band_Sensory_Impairment",
+            "Service_user_band_Whole_Population",
+            "Service_user_band_Younger_Adults",
+        ]
+
+        rows = [
+            ("1-000000001", "Y", "Y", "Y", "", "", "", "", "", "", "", "", ""),
+            ("1-000000002", "", "Y", "", "Y", "", "", "", "", "", "", "", ""),
+            ("1-000000003", "", "", "", "", "", "", "", "", "", "", "Y", ""),
+            ("1-000000004", "Y", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y", ""),
+            ("1-000000005", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y"),
+        ]
+
+        df = self.spark.createDataFrame(rows, columns)
+
+        services_df = ingest_cqc_care_directory.get_specialisms(df)
+
+        self.assertEqual(services_df.count(), 5)
+        self.assertEqual(services_df.columns, ["locationid", "specialisms"])
+
+        services_df = services_df.collect()
+        self.assertEqual(
+            sorted(services_df[0]["specialisms"]), ["Caring for children", "Dementia", "Learning disabilities"]
+        )
+        self.assertEqual(sorted(services_df[1]["specialisms"]), ["Dementia", "Mental health conditions"])
+        self.assertEqual(sorted(services_df[2]["specialisms"]), ["Services for everyone"])
+        self.assertEqual(
+            sorted(services_df[3]["specialisms"]),
+            [
+                "Caring for adults over 65 yrs",
+                "Caring for children",
+                "Learning disabilities",
+                "Physical disabilities",
+                "Services for everyone",
+                "Substance misuse problems",
+            ],
+        )
+        self.assertEqual(
+            sorted(services_df[4]["specialisms"]),
+            [
+                "Caring for adults under 65 yrs",
+                "Caring for people whose rights are restricted under the Mental Health Act",
+                "Dementia",
+                "Eating disorders",
+                "Mental health conditions",
+                "Sensory impairment",
+            ],
+        )
+
     def test_main(self):
         datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
 
