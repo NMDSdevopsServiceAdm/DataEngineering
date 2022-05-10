@@ -168,6 +168,41 @@ def get_gacservicetypes(df):
         "Service_type_Urgent_care_services",
     )
 
+    # BELOW SHOWS HOW THEY APPEAR IN THE API
+
+    # [Hospital, Acute services with overnight beds]
+    # [Clinic, Acute services without overnight beds / listed acute services with or without overnight beds]
+    # [Ambulances, Ambulance service]
+    # [Blood and transplant service, Blood and Transplant service]
+    # [Nursing homes, Care home service with nursing]
+    # [Residential homes, Care home service without nursing]
+    # [Community services - Substance abuse, Community based services for people who misuse substances]
+    # [Community services - Learning disabilities, Community based services for people with a learning disability]
+    # [Community services - Mental Health, Community based services for people with mental health needs]
+    # [Community services - Nursing, Community health care services - Nurses Agency only]
+    # [Community services - Healthcare, Community healthcare service]
+    # [Dentist, Dental service]
+    # [Diagnosis/screening, Diagnostic and/or screening service]
+    # [Diagnosis/screening, Diagnostic and/or screening service - single handed sessional providers]
+    # [Doctors/Gps, Doctors consultation service]
+    # [Doctors/Gps, Doctors treatment service]
+    # [Homecare agencies, Domiciliary care service]
+    # [Supported housing, Extra Care housing services]
+    # [Hospice, Hospice services]
+    # [Home hospice care, Hospice services at home]
+    # [Hospitals - Mental health/capacity, Hospital services for people with mental health needs, learning disabilities and problems with substance misuse]
+    # [Hyperbaric chamber services, Hyperbaric Chamber]
+    # [Long-term conditions, Long term conditions services]
+    # [Mobile doctors, Mobile doctors service]
+    # [Prison healthcare, Prison Healthcare Services]
+    # [Rehabilitation (illness/injury), Rehabilitation services]
+    # [Phone/online advice, Remote clinical advice service]
+    # [Rehabilitation (substance abuse), Residential substance misuse treatment and/or rehabilitation service]
+    # [Shared lives, Shared Lives]
+    # [Specialist college service, Specialist college service]
+    # [Supported living, Supported living service]
+    # [Urgent care centres, Urgent care services]
+
     return gacservicetypes_df
 
 
@@ -187,6 +222,21 @@ def get_specialisms(df):
         "Service_user_band_Whole_Population",
         "Service_user_band_Younger_Adults",
     )
+
+    # BELOW SHOWS HOW THEY APPEAR IN THE API
+
+    # [Caring for children]
+    # [Dementia]
+    # [Learning disabilities]
+    # [Mental health conditions]
+    # [Caring for adults over 65 yrs]
+    # [Caring for people whose rights are restricted under the Mental Health Act]
+    # [Substance misuse problems]
+    # [Eating disorders]
+    # [Physical disabilities]
+    # [Sensory impairment]
+    # [Services for everyone]
+    # [Caring for adults under 65 yrs]
 
     return specialisms_df
 
