@@ -10,6 +10,19 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/example_cqc_care_directory.csv"
 
+    REFORMAT_DICT = {
+        "new name A": "Column A",
+        "new name B": "Column B",
+        "new name C": "Column C",
+        "new name D": "Column D",
+        "new name E": "Column E",
+        "new name F": "Column F",
+        "new name G": "Column G",
+        "new name H": "Column H",
+        "new name I": "Column I",
+        "['new name J', 'code J']": "Column-J",
+    }
+
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
 
@@ -98,65 +111,46 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_get_specialisms(self):
+    def test_reformat_cols(self):
         columns = [
             "locationid",
-            "Service_user_band_Children_0-18_years",
-            "Service_user_band_Dementia",
-            "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
-            "Service_user_band_Mental_Health",
-            "Service_user_band_Older_People",
-            "Service_user_band_People_detained_under_the_Mental_Health_Act",
-            "Service_user_band_People_who_misuse_drugs_and_alcohol",
-            "Service_user_band_People_with_an_eating_disorder",
-            "Service_user_band_Physical_Disability",
-            "Service_user_band_Sensory_Impairment",
-            "Service_user_band_Whole_Population",
-            "Service_user_band_Younger_Adults",
+            "Column A",
+            "Column B",
+            "Column C",
+            "Column D",
+            "Column E",
+            "Column F",
+            "Column G",
+            "Column H",
+            "Column I",
+            "Column-J",
         ]
 
         rows = [
-            ("1-000000001", "Y", "Y", "Y", "", "", "", "", "", "", "", "", ""),
-            ("1-000000002", "", "Y", "", "Y", "", "", "", "", "", "", "", ""),
-            ("1-000000003", "", "", "", "", "", "", "", "", "", "", "Y", ""),
-            ("1-000000004", "Y", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y", ""),
-            ("1-000000005", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y"),
+            ("1-000000001", "Y", "Y", "Y", "", "", "", "", "", "", ""),
+            ("1-000000002", "", "Y", "", "Y", "", "", "", "", "", ""),
+            ("1-000000003", "", "", "", "", "", "", "", "", "", "Y"),
+            ("1-000000004", "Y", "", "Y", "", "Y", "", "Y", "", "Y", ""),
+            ("1-000000005", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y"),
         ]
 
         df = self.spark.createDataFrame(rows, columns)
 
-        services_df = ingest_cqc_care_directory.get_specialisms(df)
+        services_df = ingest_cqc_care_directory.reformat_cols(df, self.REFORMAT_DICT, "new_alias")
 
         self.assertEqual(services_df.count(), 5)
-        self.assertEqual(services_df.columns, ["locationid", "specialisms"])
+        self.assertEqual(services_df.columns, ["locationid", "new_alias"])
 
         services_df = services_df.collect()
+        self.assertEqual(sorted(services_df[0]["new_alias"]), ["new name A", "new name B", "new name C"])
+        self.assertEqual(sorted(services_df[1]["new_alias"]), ["new name B", "new name D"])
+        self.assertEqual(sorted(services_df[2]["new_alias"]), ["['new name J', 'code J']"])
         self.assertEqual(
-            sorted(services_df[0]["specialisms"]), ["Caring for children", "Dementia", "Learning disabilities"]
-        )
-        self.assertEqual(sorted(services_df[1]["specialisms"]), ["Dementia", "Mental health conditions"])
-        self.assertEqual(sorted(services_df[2]["specialisms"]), ["Services for everyone"])
-        self.assertEqual(
-            sorted(services_df[3]["specialisms"]),
-            [
-                "Caring for adults over 65 yrs",
-                "Caring for children",
-                "Learning disabilities",
-                "Physical disabilities",
-                "Services for everyone",
-                "Substance misuse problems",
-            ],
+            sorted(services_df[3]["new_alias"]), ["new name A", "new name C", "new name E", "new name G", "new name I"]
         )
         self.assertEqual(
-            sorted(services_df[4]["specialisms"]),
-            [
-                "Caring for adults under 65 yrs",
-                "Caring for people whose rights are restricted under the Mental Health Act",
-                "Dementia",
-                "Eating disorders",
-                "Mental health conditions",
-                "Sensory impairment",
-            ],
+            sorted(services_df[4]["new_alias"]),
+            ["['new name J', 'code J']", "new name B", "new name D", "new name F", "new name H"],
         )
 
     def test_main(self):
@@ -186,6 +180,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 "registrationstatus",
             ],
         )
+
+        self.assertEqual(location_df.count(), 10)
 
 
 if __name__ == "__main__":
