@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import lit, collect_set
+from pyspark.sql.functions import lit, collect_set, array, col, regexp_replace, expr
 from utils import utils
 import sys
 import pyspark
@@ -207,7 +207,7 @@ def get_gacservicetypes(df):
 
 
 def get_specialisms(df):
-    specialisms_df = df.selectExpr(
+    df = df.selectExpr(
         "locationid",
         "Service_user_band_Children_0-18_years",
         "Service_user_band_Dementia",
@@ -223,22 +223,79 @@ def get_specialisms(df):
         "Service_user_band_Younger_Adults",
     )
 
-    # BELOW SHOWS HOW THEY APPEAR IN THE API
+    df = df.withColumn(
+        "Service_user_band_Children_0-18_years",
+        regexp_replace("Service_user_band_Children_0-18_years", "Y", "Caring for children"),
+    )
+    df = df.withColumn("Service_user_band_Dementia", regexp_replace("Service_user_band_Dementia", "Y", "Dementia"))
+    df = df.withColumn(
+        "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
+        regexp_replace(
+            "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder", "Y", "Learning disabilities"
+        ),
+    )
+    df = df.withColumn(
+        "Service_user_band_Mental_Health",
+        regexp_replace("Service_user_band_Mental_Health", "Y", "Mental health conditions"),
+    )
+    df = df.withColumn(
+        "Service_user_band_Older_People",
+        regexp_replace("Service_user_band_Older_People", "Y", "Caring for adults over 65 yrs"),
+    )
+    df = df.withColumn(
+        "Service_user_band_People_detained_under_the_Mental_Health_Act",
+        regexp_replace(
+            "Service_user_band_People_detained_under_the_Mental_Health_Act",
+            "Y",
+            "Caring for people whose rights are restricted under the Mental Health Act",
+        ),
+    )
+    df = df.withColumn(
+        "Service_user_band_People_who_misuse_drugs_and_alcohol",
+        regexp_replace("Service_user_band_People_who_misuse_drugs_and_alcohol", "Y", "Substance misuse problems"),
+    )
+    df = df.withColumn(
+        "Service_user_band_People_with_an_eating_disorder",
+        regexp_replace("Service_user_band_People_with_an_eating_disorder", "Y", "Eating disorders"),
+    )
+    df = df.withColumn(
+        "Service_user_band_Physical_Disability",
+        regexp_replace("Service_user_band_Physical_Disability", "Y", "Physical disabilities"),
+    )
+    df = df.withColumn(
+        "Service_user_band_Sensory_Impairment",
+        regexp_replace("Service_user_band_Sensory_Impairment", "Y", "Sensory impairment"),
+    )
+    df = df.withColumn(
+        "Service_user_band_Whole_Population",
+        regexp_replace("Service_user_band_Whole_Population", "Y", "Services for everyone"),
+    )
+    df = df.withColumn(
+        "Service_user_band_Younger_Adults",
+        regexp_replace("Service_user_band_Younger_Adults", "Y", "Caring for adults under 65 yrs"),
+    )
 
-    # [Caring for children]
-    # [Dementia]
-    # [Learning disabilities]
-    # [Mental health conditions]
-    # [Caring for adults over 65 yrs]
-    # [Caring for people whose rights are restricted under the Mental Health Act]
-    # [Substance misuse problems]
-    # [Eating disorders]
-    # [Physical disabilities]
-    # [Sensory impairment]
-    # [Services for everyone]
-    # [Caring for adults under 65 yrs]
+    df = df.select(
+        col("locationid"),
+        array(
+            col("Service_user_band_Children_0-18_years"),
+            col("Service_user_band_Dementia"),
+            col("Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder"),
+            col("Service_user_band_Mental_Health"),
+            col("Service_user_band_Older_People"),
+            col("Service_user_band_People_detained_under_the_Mental_Health_Act"),
+            col("Service_user_band_People_who_misuse_drugs_and_alcohol"),
+            col("Service_user_band_People_with_an_eating_disorder"),
+            col("Service_user_band_Physical_Disability"),
+            col("Service_user_band_Sensory_Impairment"),
+            col("Service_user_band_Whole_Population"),
+            col("Service_user_band_Younger_Adults"),
+        ).alias("specialisms"),
+    )
 
-    return specialisms_df
+    df = df.withColumn("specialisms", expr("filter(specialisms, elem -> elem != '')"))
+
+    return df
 
 
 def collect_arguments():
