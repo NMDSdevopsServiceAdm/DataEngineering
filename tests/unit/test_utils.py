@@ -60,6 +60,37 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(len(object_list), 1)
 
 
+    def test_read_partial_csv_content(self):
+        s3 = boto3.resource("s3")
+        stubber = Stubber(s3.meta.client)
+
+        partial_response = {
+            'Body': "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species",
+            'ContentLength': 123
+        }
+
+        expected_params = {"Bucket": "test-bucket"}
+
+        stubber.add_response("get_object", partial_response, expected_params)
+        stubber.activate()
+
+        obj_partial_content = utils.read_partial_csv_content("test-bucket", s3)
+
+        print(f"Object partial content: {obj_partial_content}")
+        self.assertEqual(
+            obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
+
+    def test_identify_csv_delimiter_can_identify_comma(self):
+        sample = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
+        delimiter = utils.identify_csv_delimiter(sample)
+        self.assertEqual(delimiter, ",")
+
+    def test_identify_csv_delimiter_can_identify_pipe(self):
+        sample = "Id|SepalLengthCm|SepalWidthCm|PetalLengthCm|PetalWidthCm|Species"
+        delimiter = utils.identify_csv_delimiter(sample)
+        self.assertEqual(delimiter, "|")
+
+
     def test_generate_s3_dir_date_path(self):
 
         dec_first_21 = datetime(2021, 12, 1)

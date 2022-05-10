@@ -1,8 +1,10 @@
 from hashlib import sha3_384
+import re
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 import os
 import boto3
+import csv
 
 
 class SetupSpark(object):
@@ -36,6 +38,20 @@ def get_s3_objects_list(bucket_source, prefix, s3_client=None):
         if obj.size > 0:  # Ignore s3 directories
             object_keys.append(obj.key)
     return object_keys
+
+
+def read_partial_csv_content(bucket, s3_client=None):
+    if s3_client is None:
+        s3_client = boto3.resource("s3")
+    obj = s3_client.Object(bucket)
+    response = obj.get_object()
+    num_bytes = response['ContentLength'] * 0.1
+    return response['Body'].read(num_bytes).decode('utf-8') 
+
+
+def identify_csv_delimiter(sample_csv):
+    dialect = csv.Sniffer().sniff(sample_csv, [',','|'])
+    return dialect.delimiter
 
 
 def generate_s3_dir_date_path(domain, dataset, date):
