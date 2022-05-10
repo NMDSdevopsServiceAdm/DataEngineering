@@ -6,7 +6,10 @@ import unittest
 from pyspark.sql import SparkSession
 import botocore.session
 from botocore.stub import Stubber
+from botocore.response import StreamingBody
+from io import BytesIO
 import boto3
+import json
 
 class UtilsTests(unittest.TestCase):
 
@@ -61,20 +64,31 @@ class UtilsTests(unittest.TestCase):
 
 
     def test_read_partial_csv_content(self):
-        s3 = boto3.resource("s3")
-        stubber = Stubber(s3.meta.client)
+        s3 = boto3.client("s3")
+        stubber = Stubber(s3)
+
+        body_data = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
+
+        body_encoded = body_data.encode("utf-8")
+        byte_string_length = len(body_encoded)
+
+        body = StreamingBody(
+            BytesIO(body_encoded),
+            byte_string_length
+        )
 
         partial_response = {
-            'Body': "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species",
-            'ContentLength': 123
+            'Body': body,
+            'ContentLength': byte_string_length * 100
         }
 
-        expected_params = {"Bucket": "test-bucket"}
+        expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
         stubber.add_response("get_object", partial_response, expected_params)
         stubber.activate()
 
-        obj_partial_content = utils.read_partial_csv_content("test-bucket", s3)
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", s3)
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(

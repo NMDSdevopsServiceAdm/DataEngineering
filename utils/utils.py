@@ -40,12 +40,11 @@ def get_s3_objects_list(bucket_source, prefix, s3_client=None):
     return object_keys
 
 
-def read_partial_csv_content(bucket, s3_client=None):
+def read_partial_csv_content(bucket, key, s3_client=None):
     if s3_client is None:
-        s3_client = boto3.resource("s3")
-    obj = s3_client.Object(bucket)
-    response = obj.get_object()
-    num_bytes = response['ContentLength'] * 0.1
+        s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket, Key=key)
+    num_bytes = int(response['ContentLength'] * 0.01)
     return response['Body'].read(num_bytes).decode('utf-8') 
 
 
