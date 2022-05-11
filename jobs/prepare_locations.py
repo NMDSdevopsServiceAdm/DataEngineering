@@ -1,15 +1,12 @@
-import os
 import argparse
-from datetime import datetime
 import builtins
-from select import select
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import abs, coalesce, greatest, lit, max, when, col, to_date, add_months, lower, min
-from pyspark.sql.types import IntegerType
-from utils import utils
-from environment import environment
-from pyspark.sql.types import DateType, StructType, StructField
+import os
 
+from pyspark.sql.functions import abs, add_months, coalesce, col, greatest, lit, lower, max, to_date, when
+from pyspark.sql.types import DateType, IntegerType, StructField, StructType
+
+from environment import environment
+from utils import utils
 
 MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1

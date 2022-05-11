@@ -1,28 +1,19 @@
-from cmath import pi
-from datetime import datetime, date
+import os
 import shutil
 import unittest
-import mock
-import os
-from pathlib import Path
+from datetime import date
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, StructType
+
+from environment import environment
+from jobs import format_fields, prepare_locations
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
     generate_cqc_providers_file,
     generate_pir_file,
 )
-
-from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    DoubleType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
-
-from jobs import format_fields, prepare_locations
-from environment import environment
 
 
 class PrepareLocationsTests(unittest.TestCase):
