@@ -78,6 +78,6 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     source, destination, delimiter = collect_arguments()
-    main(source, destination, delimiter)
+    main(source, destination)
 
     print("Spark job 'ingest_ascwds_dataset' complete")
