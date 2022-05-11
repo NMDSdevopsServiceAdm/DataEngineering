@@ -103,7 +103,7 @@ def split_s3_uri(uri):
 
 def construct_s3_uri(bucket_name, key):
     s3 = "s3://"
-    trimmed_bucket_name = bucket_name.trim()
+    trimmed_bucket_name = bucket_name.strip()
     s3_uri = os.path.join(s3, trimmed_bucket_name, key)
     return s3_uri
 
