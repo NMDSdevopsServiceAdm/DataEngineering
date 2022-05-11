@@ -27,7 +27,7 @@ def main(source, destination):
                     bucket_destination, dir_path)
                 sample = utils.read_partial_csv_content(bucket_source, key)
                 delimiter = utils.identify_csv_delimiter(sample)
-
+                print(f"delimiter {delimiter}")
                 ingest_dataset(new_source, new_destination, delimiter)
 
 
