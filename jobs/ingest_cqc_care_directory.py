@@ -56,6 +56,25 @@ GACSERVICETYPES_DICT = {
     '["Urgent care centres", "Urgent care services"]': "Service_type_Urgent_care_services",
 }
 
+REGULATEDACTIVITIES_DICT = {
+    "registered_manager_name": "registered_manager_name",
+    '["Accommodation and nursing or personal care in the further education sector","RA0"]': "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
+    '["Accommodation for persons who require nursing or personal care", "RA2"]': "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
+    '["Accommodation for persons who require treatment for substance misuse","RA3"]': "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
+    '["Assessment or medical treatment for persons detained under the Mental Health Act 1983","RA6"]': "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
+    '["Diagnostic and screening procedures", "RA8"]': "Regulated_activity_Diagnostic_and_screening_procedures",
+    '["Family planning", "RA15"]': "Regulated_activity_Family_planning",
+    '["Management of supply of blood and blood derived products","RA9"]': "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
+    '["Maternity and midwifery services", "RA11"]': "Regulated_activity_Maternity_and_midwifery_services",
+    '["Nursing care","RA14"]': "Regulated_activity_Nursing_care",
+    '["Personal care", "RA1"]': "Regulated_activity_Personal_care",
+    '["Services in slimming clinics","RA13"]': "Regulated_activity_Services_in_slimming_clinics",
+    '["Surgical procedures", "RA7"]': "Regulated_activity_Surgical_procedures",
+    '["Termination of pregnancies","RA12"]': "Regulated_activity_Termination_of_pregnancies",
+    '["Transport services, triage and medical advice provided remotely", "RA10"]': "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
+    '["Treatment of disease, disorder or injury", "RA5"]': "Regulated_activity_Treatment_of_disease_disorder_or_injury",
+}
+
 
 def main(source, provider_destination=None, location_destination=None):
     return_datasets = []
@@ -82,13 +101,13 @@ def main(source, provider_destination=None, location_destination=None):
     print("Create CQC location parquet file")
     location_df = get_general_location_info(df)
 
-    # regulatedactivities_df = get_regulatedactivities(df)
+    regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
     specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
 
     # location_df = location_df.join(regulatedactivities_df, "locationid")
-    location_df = location_df.join(gacservicetypes_df, "locationid")
-    location_df = location_df.join(specialisms_df, "locationid")
+    # location_df = location_df.join(gacservicetypes_df, "locationid")
+    # location_df = location_df.join(specialisms_df, "locationid")
 
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
@@ -155,30 +174,6 @@ def get_general_location_info(df):
     loc_info_df = loc_info_df.withColumn("registrationstatus", lit("Registered"))
 
     return loc_info_df
-
-
-# def get_regulatedactivities(df):
-#     regulatedactivities_df = df.select(
-#         "locationid",
-#         "registered_manager_name",
-#         "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
-#         "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
-#         "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
-#         "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
-#         "Regulated_activity_Diagnostic_and_screening_procedures",
-#         "Regulated_activity_Family_planning",
-#         "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
-#         "Regulated_activity_Maternity_and_midwifery_services",
-#         "Regulated_activity_Nursing_care",
-#         "Regulated_activity_Personal_care",
-#         "Regulated_activity_Services_in_slimming_clinics",
-#         "Regulated_activity_Surgical_procedures",
-#         "Regulated_activity_Termination_of_pregnancies",
-#         "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
-#         "Regulated_activity_Treatment_of_disease_disorder_or_injury",
-#     )
-
-#     return regulatedactivities_df
 
 
 def replace_value(df, key, value):
