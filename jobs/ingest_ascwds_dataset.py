@@ -13,26 +13,25 @@ def main(source, destination):
     if utils.is_csv(source):
         bucket_source, key = utils.split_s3_uri(source)
         sample = utils.read_partial_csv_content(bucket_source, key)
-        print(f"THIS IS THE SAMPLE IT RECEIVED: {sample}")
         delimiter = utils.identify_csv_delimiter(sample)
-        print(f"THIS IS THE DELIMITER FOUND! {delimiter}")
-        run_job(source, destination, delimiter)
+        ingest_dataset(source, destination, delimiter)
     else:
         bucket_source, prefix = utils.split_s3_uri(source)
         objects_list = utils.get_s3_objects_list(bucket_source, prefix)
         bucket_destination = utils.split_s3_uri(destination)[0]
-        for file in objects_list:
-            if utils.is_csv(file):
-                new_source = utils.construct_s3_uri(bucket_source, file)
-                new_destination = utils.construct_s3_uri(bucket_destination, file)
-                sample = utils.read_partial_csv_content(bucket_source, file)
-                print(f"THIS IS THE SAMPLE IT RECEIVED: {sample}")
+        for key in objects_list:
+            if utils.is_csv(key):
+                new_source = utils.construct_s3_uri(bucket_source, key)
+                dir_path = utils.get_file_directory(key)
+                new_destination = utils.construct_s3_uri(
+                    bucket_destination, dir_path)
+                sample = utils.read_partial_csv_content(bucket_source, key)
                 delimiter = utils.identify_csv_delimiter(sample)
-                print(f"THIS IS THE DELIMITER FOUND! {delimiter}")
-                run_job(new_source, new_destination, delimiter)
+
+                ingest_dataset(new_source, new_destination, delimiter)
 
 
-def run_job(source, destination, delimiter):
+def ingest_dataset(source, destination, delimiter):
     print(f"Reading CSV from {source}")
     df = utils.read_csv(source, delimiter)
     print("Removing ASCWDS test accounts")

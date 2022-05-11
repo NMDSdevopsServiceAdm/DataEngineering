@@ -152,7 +152,11 @@ class UtilsTests(unittest.TestCase):
 
     def test_construct_s3_uri(self):
         uri = utils.construct_s3_uri("sfc-data-engineering-raw", "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
-        self.assertEqual(uri, "s3://sfc-data-engineering-raw/testing-ingest-ascwds-job/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+        self.assertEqual(uri, "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+
+    def test_get_file_directory(self):
+        path = utils.get_file_directory("domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+        self.assertEqual(path, "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331")
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

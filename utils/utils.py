@@ -45,9 +45,7 @@ def read_partial_csv_content(bucket, key, s3_client=None):
         s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket, Key=key)
     num_bytes = int(response['ContentLength'] * 0.01)
-    sample = response['Body'].read(num_bytes).decode('utf-8') 
-    print(f"PARTIAL CSV CONTENT: {sample}")
-    return sample
+    return response['Body'].read(num_bytes).decode('utf-8')
 
 
 def identify_csv_delimiter(sample_csv):
@@ -105,6 +103,11 @@ def split_s3_uri(uri):
 
 def construct_s3_uri(bucket_name, key):
     s3 = "s3://"
-    temporary_path = "testing-ingest-ascwds-job/"
-    s3_uri = os.path.join(s3, bucket_name, temporary_path, key)
+    s3_uri = os.path.join(s3, bucket_name, key)
     return s3_uri
+
+
+def get_file_directory(filepath):
+    path_delimiter = "/"
+    list_dir = filepath.split(path_delimiter)[:-1]
+    return path_delimiter.join(list_dir)
