@@ -79,7 +79,7 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             'Body': body,
-            'ContentLength': byte_string_length * 100
+            'ContentLength': byte_string_length * 1000
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
