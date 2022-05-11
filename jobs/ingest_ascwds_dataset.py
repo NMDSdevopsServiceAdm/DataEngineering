@@ -9,8 +9,11 @@ import argparse
 
 DEFAULT_DELIMITER = ","
 
-def main(source, destination, delimiter):
+def main(source, destination):
     if utils.is_csv(source):
+        bucket_source, key = utils.split_s3_uri(source)
+        sample = utils.read_partial_csv_content(bucket_source, key)
+        delimiter = utils.identify_csv_delimiter(sample)
         run_job(source, destination, delimiter)
     else:
         bucket_source, prefix = utils.split_s3_uri(source)
@@ -20,6 +23,8 @@ def main(source, destination, delimiter):
             if utils.is_csv(file):
                 new_source = utils.construct_s3_uri(bucket_source, file)
                 new_destination = utils.construct_s3_uri(bucket_destination, file)
+                sample = utils.read_partial_csv_content(bucket_source, file)
+                delimiter = utils.identify_csv_delimiter(sample)
                 run_job(new_source, new_destination, delimiter)
 
 
