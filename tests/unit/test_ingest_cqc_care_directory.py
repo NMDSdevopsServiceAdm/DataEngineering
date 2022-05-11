@@ -11,16 +11,16 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/example_cqc_care_directory.csv"
 
     REFORMAT_DICT = {
-        "new name A": "Column A",
-        "new name B": "Column B",
-        "new name C": "Column C",
-        "new name D": "Column D",
-        "new name E": "Column E",
-        "new name F": "Column F",
-        "new name G": "Column G",
-        "new name H": "Column H",
-        "new name I": "Column I",
-        "['new name J', 'code J']": "Column-J",
+        "Column A": "new name A",
+        "Column B": "new name B",
+        "Column C": "new name C",
+        "Column D": "new name D",
+        "Column E": "new name E",
+        "Column F": "new name F",
+        "Column G": "new name G",
+        "Column H": "new name H",
+        "Column I": "new name I",
+        "Column-J": "['new name J', 'code J']",
     }
 
     def setUp(self):
