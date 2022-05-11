@@ -105,5 +105,6 @@ def split_s3_uri(uri):
 
 def construct_s3_uri(bucket_name, key):
     s3 = "s3://"
-    s3_uri = os.path.join(s3, bucket_name, key)
+    temporary_path = "testing-ingest-ascwds-job/"
+    s3_uri = os.path.join(s3, bucket_name, temporary_path, key)
     return s3_uri
