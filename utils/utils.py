@@ -45,6 +45,7 @@ def read_partial_csv_content(bucket, key, s3_client=None):
         s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket, Key=key)
     num_bytes = int(response['ContentLength'] * 0.01)
+    print(f"PARTIAL CSV CONTENT: {response['Body'].read(num_bytes).decode('utf-8')}")
     return response['Body'].read(num_bytes).decode('utf-8') 
 
 

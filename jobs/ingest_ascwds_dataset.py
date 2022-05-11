@@ -13,7 +13,9 @@ def main(source, destination):
     if utils.is_csv(source):
         bucket_source, key = utils.split_s3_uri(source)
         sample = utils.read_partial_csv_content(bucket_source, key)
+        print(f"THIS IS THE SAMPLE IT RECEIVED: {sample}")
         delimiter = utils.identify_csv_delimiter(sample)
+        print(f"THIS IS THE DELIMITER FOUND! {delimiter}")
         run_job(source, destination, delimiter)
     else:
         bucket_source, prefix = utils.split_s3_uri(source)
@@ -24,12 +26,14 @@ def main(source, destination):
                 new_source = utils.construct_s3_uri(bucket_source, file)
                 new_destination = utils.construct_s3_uri(bucket_destination, file)
                 sample = utils.read_partial_csv_content(bucket_source, file)
+                print(f"THIS IS THE SAMPLE IT RECEIVED: {sample}")
                 delimiter = utils.identify_csv_delimiter(sample)
+                print(f"THIS IS THE DELIMITER FOUND! {delimiter}")
                 run_job(new_source, new_destination, delimiter)
 
 
 def run_job(source, destination, delimiter):
-    print("Reading CSV from {source}")
+    print(f"Reading CSV from {source}")
     df = utils.read_csv(source, delimiter)
     print("Removing ASCWDS test accounts")
     df = filter_test_accounts(df)
