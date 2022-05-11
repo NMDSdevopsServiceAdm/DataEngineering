@@ -20,7 +20,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         "Column G": "new name G",
         "Column H": "new name H",
         "Column I": "new name I",
-        "Column-J": "['new name J', 'code J']",
+        "Column-J": ["new name J", "code J"],
     }
 
     def setUp(self):
@@ -135,13 +135,13 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         services_df = services_df.collect()
         self.assertEqual(sorted(services_df[0]["new_alias"]), ["new name A", "new name B", "new name C"])
         self.assertEqual(sorted(services_df[1]["new_alias"]), ["new name B", "new name D"])
-        self.assertEqual(sorted(services_df[2]["new_alias"]), ["['new name J', 'code J']"])
+        self.assertEqual(sorted(services_df[2]["new_alias"]), ["new name J"])
         self.assertEqual(
             sorted(services_df[3]["new_alias"]), ["new name A", "new name C", "new name E", "new name G", "new name I"]
         )
         self.assertEqual(
             sorted(services_df[4]["new_alias"]),
-            ["['new name J', 'code J']", "new name B", "new name D", "new name F", "new name H"],
+            ["new name B", "new name D", "new name F", "new name H", "new name J"],
         )
 
     def test_main(self):
