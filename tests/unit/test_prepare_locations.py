@@ -7,7 +7,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, StructType
 
 from environment import environment
-from jobs import format_fields, prepare_locations
+from jobs import prepare_locations
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
@@ -62,7 +62,7 @@ class PrepareLocationsTests(unittest.TestCase):
             self.TEST_CQC_PROVIDERS_FILE,
             self.TEST_PIR_FILE,
         )
-        output_df.select("snapshot_date", "cqc_pir_import_date").show()
+
         self.assertIsNotNone(output_df)
         self.assertEqual(output_df.count(), 28)
         self.assertEqual(
