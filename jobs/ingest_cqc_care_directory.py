@@ -103,7 +103,7 @@ def main(source, provider_destination=None, location_destination=None):
 
     regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
-    # gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
+    gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
 
     specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
     specialisms_df = specialisms_to_struct(specialisms_df)
@@ -204,12 +204,12 @@ def specialisms_to_struct(df):
     return df
 
 
-# def gacservicetypes_to_struct(df):
-#     df = df.withColumn(
-#         "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
-#     )
+def gacservicetypes_to_struct(df):
+    df = df.withColumn(
+        "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
+    )
 
-#     return df
+    return df
 
 
 def collect_arguments():
