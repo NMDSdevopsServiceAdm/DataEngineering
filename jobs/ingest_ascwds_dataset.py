@@ -12,11 +12,8 @@ def main(source, destination):
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
         bucket_source, key = utils.split_s3_uri(source)
-        print(f"here's the bucket {bucket_source}, here's the key: {key}")
         sample = utils.read_partial_csv_content(bucket_source, key)
-        print(f"here's a part of the file: {sample}")
         delimiter = utils.identify_csv_delimiter(sample)
-        print(f"here's the delimiter: {delimiter}")
         ingest_dataset(source, destination, delimiter)
     else:
         print("Multiple files provided to job. Handling each file...")
