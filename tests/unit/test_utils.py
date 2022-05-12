@@ -151,8 +151,42 @@ class UtilsTests(unittest.TestCase):
             obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
 
     def test_read_partial_csv_less_content(self):
-        #TODO test if it gets less content than available
-        pass
+        s3 = boto3.client("s3")
+        stubber = Stubber(s3)
+
+        body_data = """period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|
+        createddate|updateddate|savedate|cqcpermission|lapermission|regtype|providerid|locationid|esttype|regionid|
+        cssr|lauthid|parliamentaryconstituency|mainstid|emplstat|emplstat_changedate|emplstat_savedate|mainjrid|
+        mainjrid_changedate|mainjrid_savedate|strtdate|strtdate_changedate|strtdate_savedate|age|age_changedate|
+        age_savedate|gender|gender_changedate|gender_savedate|disabled|disabled_changedate|disabled_savedate|
+        ethnicity|ethnicity_changedate|ethnicity_savedate|isbritish|nationality|isbritish_changedate|
+        isbritish_savedate|britishcitizen|britishcitizen_changedate|britishcitizen_savedate|borninuk|countryofbirth|
+        """
+
+        body_encoded = body_data.encode("utf-8")
+        byte_string_length = len(body_encoded)
+
+        body = StreamingBody(
+            BytesIO(body_encoded),
+            byte_string_length
+        )
+
+        partial_response = {
+            'Body': body,
+            'ContentLength': byte_string_length * 118
+        }
+
+        expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
+
+        stubber.add_response("get_object", partial_response, expected_params)
+        stubber.activate()
+
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", s3)
+
+        print(f"Object partial content: {obj_partial_content}")
+        self.assertEqual(
+            obj_partial_content, "period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat")
 
     def test_read_partial_csv_more_content(self):
         #TODO test if it gets more content
