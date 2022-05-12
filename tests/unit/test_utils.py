@@ -30,12 +30,69 @@ class UtilsTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_s3_objects_list_returns_all_objects(self):
-        # TODO DO THIS TEST
-        pass
+        s3 = boto3.resource("s3")
+        stubber = Stubber(s3.meta.client)
+
+        partial_response = {
+            "Contents": [{
+                "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
+                'Size': 123
+            },{
+                "Key": "version=1.0.0/import_date=20210101/some-other-data-file.csv",
+                'Size': 100
+            },{
+                "Key": "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
+                'Size': 150
+            }]
+        }
+
+        expected_params = {"Bucket": "test-bucket",
+                           "Prefix": "version=1.0.0/import_date=20210101/"}
+
+        stubber.add_response("list_objects", partial_response, expected_params)
+        stubber.activate()
+
+        object_list = utils.get_s3_objects_list(
+            "test-bucket", "version=1.0.0/import_date=20210101/", s3)
+
+        print(f"Object list {object_list}")
+        self.assertEqual(
+            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv",
+            "version=1.0.0/import_date=20210101/some-other-data-file.csv",
+            "version=1.0.0/import_date=20210101/some-other-other-data-file.csv"])
+        self.assertEqual(len(object_list), 3)
 
     def test_get_s3_objects_doesnt_return_directories(self):
-        # TODO DO THIS TEST
-        pass
+        s3 = boto3.resource("s3")
+        stubber = Stubber(s3.meta.client)
+
+        partial_response = {
+            "Contents": [{
+                "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
+                'Size': 123
+            },{
+                "Key": "version=1.0.0/import_date=20210101/",
+                'Size': 0
+            },{
+                "Key": "version=1.0.0/import_date=20210101/some-other-other-data-file.csv",
+                'Size': 100
+            }]
+        }
+
+        expected_params = {"Bucket": "test-bucket",
+                           "Prefix": "version=1.0.0/import_date=20210101/"}
+
+        stubber.add_response("list_objects", partial_response, expected_params)
+        stubber.activate()
+
+        object_list = utils.get_s3_objects_list(
+            "test-bucket", "version=1.0.0/import_date=20210101/", s3)
+
+        print(f"Object list {object_list}")
+        self.assertEqual(
+            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv",
+            "version=1.0.0/import_date=20210101/some-other-other-data-file.csv"])
+        self.assertEqual(len(object_list), 2)
 
     def test_get_s3_objects_list_returns_filtered_objects(self):
         s3 = boto3.resource("s3")
