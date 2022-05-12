@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import lit, collect_set, array, col, split, expr
+from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length
 from utils import utils
 import sys
 import pyspark
@@ -57,7 +57,6 @@ GACSERVICETYPES_DICT = {
 }
 
 REGULATEDACTIVITIES_DICT = {
-    "registered_manager_name": "registered_manager_name",
     "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector": "Accommodation and nursing or personal care in the further education sector,RA0",
     "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care": "Accommodation for persons who require nursing or personal care,RA2",
     "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse": "Accommodation for persons who require treatment for substance misuse,RA3",
@@ -101,14 +100,18 @@ def main(source, provider_destination=None, location_destination=None):
     print("Create CQC location parquet file")
     location_df = get_general_location_info(df)
 
+    reg_man_df = reg_man_to_struct(df)
+
     regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
+    # regulatedactivities_df = regulatedactivities_to_struct(regulatedactivities_df)
+
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
     gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
 
     specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
     specialisms_df = specialisms_to_struct(specialisms_df)
 
-    # location_df = location_df.join(regulatedactivities_df, "locationid")
+    location_df = location_df.join(regulatedactivities_df, "locationid")
     location_df = location_df.join(gacservicetypes_df, "locationid")
     location_df = location_df.join(specialisms_df, "locationid")
 
@@ -208,6 +211,23 @@ def gacservicetypes_to_struct(df):
     df = df.withColumn(
         "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
     )
+
+    return df
+
+
+def reg_man_to_struct(df):
+    df = df.select("locationid", "registered_manager_name")
+
+    df = df.withColumn("personTitle", lit(None))
+    df = df.withColumn("personGivenName", split(col("registered_manager_name"), ", ").getItem(1))
+    df = df.withColumn("personFamilyName", split(col("registered_manager_name"), ",").getItem(0))
+    df = df.withColumn(
+        "personRoles", when(length(col("registered_manager_name")) > 1, "Registered Manager").otherwise(lit(None))
+    )
+
+    df = df.drop("registered_manager_name")
+
+    df.show()
 
     return df
 
