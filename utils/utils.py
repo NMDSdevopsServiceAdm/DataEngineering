@@ -28,11 +28,11 @@ class SetupSpark(object):
 get_spark = SetupSpark()
 
 
-def get_s3_objects_list(bucket_source, prefix, s3_client=None):
-    if s3_client is None:
-        s3_client = boto3.resource("s3")
+def get_s3_objects_list(bucket_source, prefix, s3_resource=None):
+    if s3_resource is None:
+        s3_resource = boto3.resource("s3")
 
-    bucket_name = s3_client.Bucket(bucket_source)
+    bucket_name = s3_resource.Bucket(bucket_source)
     object_keys = []
     for obj in bucket_name.objects.filter(Prefix=prefix):
         if obj.size > 0:  # Ignore s3 directories

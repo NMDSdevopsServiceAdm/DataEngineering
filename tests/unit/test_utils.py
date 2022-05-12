@@ -93,11 +93,11 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(
             obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
 
-    def test_read_partial_csv_less_content():
+    def test_read_partial_csv_less_content(self):
         #TODO test if it gets less content than available
         pass
 
-    def test_read_partial_csv_more_content():
+    def test_read_partial_csv_more_content(self):
         #TODO test if it gets more content
         pass
 
