@@ -62,7 +62,6 @@ class UtilsTests(unittest.TestCase):
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
         self.assertEqual(len(object_list), 1)
 
-
     def test_read_partial_csv_content(self):
         s3 = boto3.client("s3")
         stubber = Stubber(s3)
@@ -93,6 +92,14 @@ class UtilsTests(unittest.TestCase):
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
             obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
+
+    def test_read_partial_csv_less_content():
+        #TODO test if it gets less content than available
+        pass
+
+    def test_read_partial_csv_more_content():
+        #TODO test if it gets more content
+        pass
 
     def test_identify_csv_delimiter_can_identify_comma(self):
         sample = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
