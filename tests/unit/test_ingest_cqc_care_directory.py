@@ -12,10 +12,10 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     REFORMAT_DICT = {
         "Column A": "name A",
-        "Column B": ["name B", "description B"],
+        "Column B": "name B,description B",
         "Column C": "name C",
-        "Column D": ["name D", "description D"],
-        "Column-E": ["name E", "description E"],
+        "Column D": "name D,description D",
+        "Column-E": "name E,description E",
     }
 
     def setUp(self):
@@ -108,9 +108,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         ]
 
         rows = [
-            ("1-000000001", "Y", "Y", "Y", "", ""),
-            ("1-000000002", "", "Y", "", "Y", ""),
-            ("1-000000003", "", "", "", "", "Y"),
+            ("1-000000001", "Y", "Y", "Y", None, None),
+            ("1-000000002", None, "Y", None, "Y", None),
+            ("1-000000003", None, None, None, None, "Y"),
         ]
 
         df = self.spark.createDataFrame(rows, columns)
@@ -121,9 +121,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(services_df.columns, ["locationid", "new_alias"])
 
         services_df = services_df.collect()
-        self.assertEqual(sorted(services_df[0]["new_alias"]), ["name A", "name B", "name C"])
-        self.assertEqual(sorted(services_df[1]["new_alias"]), ["name B", "name D"])
-        self.assertEqual(sorted(services_df[2]["new_alias"]), ["name E"])
+        self.assertEqual(sorted(services_df[0]["new_alias"]), [["name A"], ["name B", "description B"], ["name C"]])
+        self.assertEqual(
+            sorted(services_df[1]["new_alias"]), [["name B", "description B"], ["name D", "description D"]]
+        )
+        self.assertEqual(sorted(services_df[2]["new_alias"]), [["name E", "description E"]])
 
     def test_main(self):
         datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
