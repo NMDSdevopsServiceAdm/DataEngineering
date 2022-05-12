@@ -9,31 +9,30 @@ import argparse
 
 
 def main(source, destination):
+    bucket, key = utils.split_s3_uri(source)
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket_source, key = utils.split_s3_uri(source)
-        sample = utils.read_partial_csv_content(bucket_source, key)
-        delimiter = utils.identify_csv_delimiter(sample)
-        ingest_dataset(source, destination, delimiter)
-    else:
-        print("Multiple files provided to job. Handling each file...")
-        bucket_source, prefix = utils.split_s3_uri(source)
-        objects_list = utils.get_s3_objects_list(bucket_source, prefix)
-        bucket_destination = utils.split_s3_uri(destination)[0]
+        handle_job(source, bucket, key, destination)
+        return
+    
+    print("Multiple files provided to job. Handling each file...")
+    objects_list = utils.get_s3_objects_list(bucket, key) # here key is actually prefix
+    bucket_destination = utils.split_s3_uri(destination)[0]
 
-        print("Objects list:")
-        print(objects_list)
+    print("Objects list:")
+    print(objects_list)
 
-        for key in objects_list:
-            if utils.is_csv(key):
-                new_source = utils.construct_s3_uri(bucket_source, key)
-                dir_path = utils.get_file_directory(key)
-                new_destination = utils.construct_s3_uri(
-                    bucket_destination, dir_path)
-                sample = utils.read_partial_csv_content(bucket_source, key)
-                delimiter = utils.identify_csv_delimiter(sample)
+    for key in objects_list:
+        new_source = utils.construct_s3_uri(bucket, key)
+        dir_path = utils.get_file_directory(key)
+        new_destination = utils.construct_s3_uri(bucket_destination, dir_path)
+        handle_job(new_source, bucket, key, new_destination)
 
-                ingest_dataset(new_source, new_destination, delimiter)
+
+def handle_job(source, source_bucket, source_key, destination):
+    sample = utils.read_partial_csv_content(source_bucket, source_key)
+    delimiter = utils.identify_csv_delimiter(sample)
+    ingest_dataset(source, destination, delimiter)
 
 
 def ingest_dataset(source, destination, delimiter):
