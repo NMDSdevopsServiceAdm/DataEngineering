@@ -110,7 +110,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         rows = [
             ("1-000000001", "Y", "Y", "Y", "", ""),
             ("1-000000002", "", "Y", "", "Y", ""),
-            ("1-000000003", "", "", "", "", "E"),
+            ("1-000000003", "", "", "", "", "Y"),
         ]
 
         df = self.spark.createDataFrame(rows, columns)

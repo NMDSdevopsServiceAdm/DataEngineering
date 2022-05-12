@@ -146,12 +146,13 @@ def main(source, provider_destination=None, location_destination=None):
 
     regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
+    gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
 
     specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
     specialisms_df = specialisms_to_struct(specialisms_df)
 
     # location_df = location_df.join(regulatedactivities_df, "locationid")
-    # location_df = location_df.join(gacservicetypes_df, "locationid")
+    location_df = location_df.join(gacservicetypes_df, "locationid")
     location_df = location_df.join(specialisms_df, "locationid")
 
     location_df.printSchema()
@@ -223,11 +224,6 @@ def get_general_location_info(df):
     return loc_info_df
 
 
-def replace_value(df, key, value):
-    df = df.replace("Y", value, key)
-    return df
-
-
 def reformat_cols(df, dict, alias):
     column_names = ["locationid"]
     column_names.extend(list(dict.keys()))
@@ -235,7 +231,7 @@ def reformat_cols(df, dict, alias):
     df = df.select(*column_names)
 
     for new_name, column_name in dict.items():
-        df = replace_value(df, new_name, column_name)
+        df = df.replace("Y", column_name, new_name)
 
     df = df.select(col("locationid"), array(df.columns[1:]).alias(alias))
 
