@@ -11,16 +11,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/example_cqc_care_directory.csv"
 
     REFORMAT_DICT = {
-        "Column A": "new name A",
-        "Column B": "new name B",
-        "Column C": "new name C",
-        "Column D": "new name D",
-        "Column E": "new name E",
-        "Column F": "new name F",
-        "Column G": "new name G",
-        "Column H": "new name H",
-        "Column I": "new name I",
-        "Column-J": ["new name J", "code J"],
+        "Column A": "name A",
+        "Column B": ["name B", "description B"],
+        "Column C": "name C",
+        "Column D": ["name D", "description D"],
+        "Column-E": ["name E", "description E"],
     }
 
     def setUp(self):
@@ -109,40 +104,26 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             "Column B",
             "Column C",
             "Column D",
-            "Column E",
-            "Column F",
-            "Column G",
-            "Column H",
-            "Column I",
-            "Column-J",
+            "Column-E",
         ]
 
         rows = [
-            ("1-000000001", "Y", "Y", "Y", "", "", "", "", "", "", ""),
-            ("1-000000002", "", "Y", "", "Y", "", "", "", "", "", ""),
-            ("1-000000003", "", "", "", "", "", "", "", "", "", "Y"),
-            ("1-000000004", "Y", "", "Y", "", "Y", "", "Y", "", "Y", ""),
-            ("1-000000005", "", "Y", "", "Y", "", "Y", "", "Y", "", "Y"),
+            ("1-000000001", "Y", "Y", "Y", "", ""),
+            ("1-000000002", "", "Y", "", "Y", ""),
+            ("1-000000003", "", "", "", "", "E"),
         ]
 
         df = self.spark.createDataFrame(rows, columns)
 
         services_df = ingest_cqc_care_directory.reformat_cols(df, self.REFORMAT_DICT, "new_alias")
 
-        self.assertEqual(services_df.count(), 5)
+        self.assertEqual(services_df.count(), 3)
         self.assertEqual(services_df.columns, ["locationid", "new_alias"])
 
         services_df = services_df.collect()
-        self.assertEqual(sorted(services_df[0]["new_alias"]), ["new name A", "new name B", "new name C"])
-        self.assertEqual(sorted(services_df[1]["new_alias"]), ["new name B", "new name D"])
-        self.assertEqual(sorted(services_df[2]["new_alias"]), ["new name J"])
-        self.assertEqual(
-            sorted(services_df[3]["new_alias"]), ["new name A", "new name C", "new name E", "new name G", "new name I"]
-        )
-        self.assertEqual(
-            sorted(services_df[4]["new_alias"]),
-            ["new name B", "new name D", "new name F", "new name H", "new name J"],
-        )
+        self.assertEqual(sorted(services_df[0]["new_alias"]), ["name A", "name B", "name C"])
+        self.assertEqual(sorted(services_df[1]["new_alias"]), ["name B", "name D"])
+        self.assertEqual(sorted(services_df[2]["new_alias"]), ["name E"])
 
     def test_main(self):
         datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
