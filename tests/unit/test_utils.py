@@ -16,10 +16,6 @@ class MyStubberClass():
     __s3 = None
     __stubber = None
 
-    def __init__(self):
-        self.build_resource()
-        self.build_stubber_client()
-
     def get_s3_client(self):
         return self.__s3
 
@@ -29,8 +25,14 @@ class MyStubberClass():
     def build_resource(self):
         self.__s3 = boto3.resource("s3")
 
-    def build_stubber_client(self):
+    def build_client(self):
+        self.__s3 = boto3.client("s3")
+
+    def build_stubber_resource(self):
         self.__stubber = Stubber(self.__s3.meta.client)
+
+    def build_stubber_client(self):
+        self.__stubber = Stubber(self.__s3)
 
     def add_response(self, stubbed_method, data, params):
         self.__stubber.add_response(stubbed_method, data, params)
@@ -73,6 +75,8 @@ class UtilsTests(unittest.TestCase):
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
         stubber = MyStubberClass()
+        stubber.build_resource()
+        stubber.build_stubber_resource()
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -103,6 +107,8 @@ class UtilsTests(unittest.TestCase):
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
         stubber = MyStubberClass()
+        stubber.build_resource()
+        stubber.build_stubber_resource()
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -126,6 +132,8 @@ class UtilsTests(unittest.TestCase):
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
         stubber = MyStubberClass()
+        stubber.build_resource()
+        stubber.build_stubber_resource()
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -137,9 +145,6 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(len(object_list), 1)
 
     def test_read_partial_csv_content(self):
-        s3 = boto3.client("s3")
-        stubber = Stubber(s3)
-
         body_data = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
 
         body_encoded = body_data.encode("utf-8")
@@ -157,20 +162,19 @@ class UtilsTests(unittest.TestCase):
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
+        stubber = MyStubberClass()
+        stubber.build_client()
+        stubber.build_stubber_client()
         stubber.add_response("get_object", partial_response, expected_params)
-        stubber.activate()
 
         obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", s3)
+            "test-bucket", "my-test/key/", stubber.get_s3_client())
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
             obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
 
     def test_read_partial_csv_less_content(self):
-        s3 = boto3.client("s3")
-        stubber = Stubber(s3)
-
         body_data = """period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|
         createddate|updateddate|savedate|cqcpermission|lapermission|regtype|providerid|locationid|esttype|regionid|
         cssr|lauthid|parliamentaryconstituency|mainstid|emplstat|emplstat_changedate|emplstat_savedate|mainjrid|
@@ -195,11 +199,13 @@ class UtilsTests(unittest.TestCase):
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
+        stubber = MyStubberClass()
+        stubber.build_client()
+        stubber.build_stubber_client()
         stubber.add_response("get_object", partial_response, expected_params)
-        stubber.activate()
 
         obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", s3)
+            "test-bucket", "my-test/key/", stubber.get_s3_client())
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -208,11 +214,13 @@ class UtilsTests(unittest.TestCase):
     def test_identify_csv_delimiter_can_identify_comma(self):
         sample = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
         delimiter = utils.identify_csv_delimiter(sample)
+
         self.assertEqual(delimiter, ",")
 
     def test_identify_csv_delimiter_can_identify_pipe(self):
         sample = "period|establishmentid|tribalid|parentid|orgid|nmdsid|wkplacestat|estabcreateddate|logincount_month|"
         delimiter = utils.identify_csv_delimiter(sample)
+
         self.assertEqual(delimiter, "|")
 
     def test_generate_s3_dir_date_path(self):
@@ -258,17 +266,20 @@ class UtilsTests(unittest.TestCase):
     def test_split_s3_uri(self):
         s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
         bucket_name, prefix = utils.split_s3_uri(s3_uri)
+
         self.assertEqual(bucket_name, "sfc-data-engineering-raw")
         self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
 
     def test_construct_s3_uri(self):
         uri = utils.construct_s3_uri(
             "sfc-data-engineering-raw", "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+
         self.assertEqual(uri, "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
 
     def test_get_file_directory(self):
         path = utils.get_file_directory(
             "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+        
         self.assertEqual(
             path, "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331")
 
