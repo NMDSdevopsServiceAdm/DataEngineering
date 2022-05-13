@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, size
+from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
 from utils import utils
 import sys
 import pyspark
@@ -103,7 +103,8 @@ def main(source, provider_destination=None, location_destination=None):
     reg_man_df = reg_man_to_struct(df)
 
     regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
-    # regulatedactivities_df = regulatedactivities_to_struct(regulatedactivities_df)
+    regulatedactivities_df = regulatedactivities_df.join(reg_man_df, "locationid")
+    regulatedactivities_df = regulatedactivities_to_struct(regulatedactivities_df)
 
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
     gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
@@ -202,7 +203,7 @@ def reformat_cols(df, value_mapping_dict, alias):
 
 
 def specialisms_to_struct(df):
-    df = df.withColumn("specialisms", expr("transform(specialisms, x-> named_struct('name',x))"))
+    df = df.withColumn("specialisms", expr("transform(specialisms, x-> named_struct('name',x[0]))"))
 
     return df
 
@@ -230,6 +231,21 @@ def reg_man_to_struct(df):
     df = df.select(
         "locationid", struct("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
     )
+
+    df = df.select("locationid", array("contacts").alias("contacts"))
+
+    return df
+
+
+def regulatedactivities_to_struct(df):
+    df = df.select("locationid", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
+
+    df = df.withColumn("name", col("regulatedactivities").getItem(0))
+    df = df.withColumn("code", col("regulatedactivities").getItem(1))
+
+    df = df.select("locationid", struct("name", "code", "contacts").alias("regulatedactivities"))
+
+    df = df.groupBy("locationid").agg(collect_set("regulatedactivities").alias("regulatedactivities"))
 
     return df
 
