@@ -15,7 +15,7 @@ def main(source, destination):
         bucket_destination = utils.split_s3_uri(destination)[0]
         dir_path = utils.get_file_directory(key)
         new_destination = utils.construct_s3_uri(bucket_destination, dir_path)
-        handle_job(source, bucket, key, destination)
+        handle_job(source, bucket, key, new_destination)
         return
     
     print("Multiple files provided to job. Handling each file...")
