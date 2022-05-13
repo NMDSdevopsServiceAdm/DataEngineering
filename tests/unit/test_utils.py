@@ -29,10 +29,14 @@ class UtilsTests(unittest.TestCase):
         except OSError as e:
             pass  # Ignore dir does not exist
 
-    def test_get_s3_objects_list_returns_all_objects(self):
+    def __get_s3_client_stub(self, data, params):
         s3 = boto3.resource("s3")
         stubber = Stubber(s3.meta.client)
+        stubber.add_response("list_objects", data, params)
+        stubber.activate()
+        return s3
 
+    def test_get_s3_objects_list_returns_all_objects(self):
         partial_response = {
             "Contents": [{
                 "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
@@ -49,8 +53,7 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber.add_response("list_objects", partial_response, expected_params)
-        stubber.activate()
+        s3 = self.__get_s3_client_stub(partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", s3)
@@ -63,9 +66,6 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(len(object_list), 3)
 
     def test_get_s3_objects_doesnt_return_directories(self):
-        s3 = boto3.resource("s3")
-        stubber = Stubber(s3.meta.client)
-
         partial_response = {
             "Contents": [{
                 "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
@@ -82,8 +82,7 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber.add_response("list_objects", partial_response, expected_params)
-        stubber.activate()
+        s3 = self.__get_s3_client_stub(partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", s3)
@@ -95,9 +94,6 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(len(object_list), 2)
 
     def test_get_s3_objects_list_returns_filtered_objects(self):
-        s3 = boto3.resource("s3")
-        stubber = Stubber(s3.meta.client)
-
         partial_response = {
             "Contents": [{
                 "Key": "version=1.0.0/import_date=20210101/some-data-file.csv",
@@ -108,8 +104,7 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber.add_response("list_objects", partial_response, expected_params)
-        stubber.activate()
+        s3 = self.__get_s3_client_stub(partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", s3)
