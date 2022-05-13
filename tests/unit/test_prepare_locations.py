@@ -64,7 +64,7 @@ class PrepareLocationsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(output_df)
-        self.assertEqual(output_df.count(), 28)
+        self.assertEqual(output_df.count(), 30)
         self.assertEqual(
             output_df.columns,
             [

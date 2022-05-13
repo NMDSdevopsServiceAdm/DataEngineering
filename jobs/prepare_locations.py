@@ -46,7 +46,7 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
-        output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
+        output_df = output_df.join(ascwds_workplace_df, "locationid", "full")
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = calculate_jobcount(output_df)
 
