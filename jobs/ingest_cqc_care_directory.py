@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length
+from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct
 from utils import utils
 import sys
 import pyspark
@@ -217,17 +217,32 @@ def gacservicetypes_to_struct(df):
 
 def reg_man_to_struct(df):
     df = df.select("locationid", "registered_manager_name")
+    df = df.replace("*", None)
 
-    df = df.withColumn("personTitle", lit(None))
+    df = df.withColumn("personTitle", when(length(col("registered_manager_name")) > 1, "M").otherwise(lit(None)))
     df = df.withColumn("personGivenName", split(col("registered_manager_name"), ", ").getItem(1))
     df = df.withColumn("personFamilyName", split(col("registered_manager_name"), ",").getItem(0))
     df = df.withColumn(
         "personRoles", when(length(col("registered_manager_name")) > 1, "Registered Manager").otherwise(lit(None))
     )
+    df = df.select(
+        col("locationid"), array("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
+    )
 
-    df = df.drop("registered_manager_name")
+    df = df.withColumn("contacts", expr("filter(contacts, elem -> elem is not null)"))
 
-    df.show()
+    df.printSchema()
+    df.show(truncate=False)
+
+    df = df.withColumn(
+        "contacts",
+        expr(
+            "transform(contacts, x-> named_struct('personTitle',x[0],'personGivenName',x[1],'personTitle',x[2],'personGivenName',x[3]))"
+        ),
+    )
+
+    df.printSchema()
+    df.show(truncate=False)
 
     return df
 
