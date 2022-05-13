@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
-from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct
+from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, size
 from utils import utils
 import sys
 import pyspark
@@ -184,13 +184,13 @@ def get_general_location_info(df):
     return loc_info_df
 
 
-def reformat_cols(df, dict, alias):
+def reformat_cols(df, value_mapping_dict, alias):
     column_names = ["locationid"]
-    column_names.extend(list(dict.keys()))
+    column_names.extend(list(value_mapping_dict.keys()))
 
     df = df.select(*column_names)
 
-    for new_name, column_name in dict.items():
+    for new_name, column_name in value_mapping_dict.items():
         df = df.replace("Y", column_name, new_name)
         df = df.withColumn(new_name, split(col(new_name), ",").alias(new_name))
 
@@ -208,6 +208,7 @@ def specialisms_to_struct(df):
 
 
 def gacservicetypes_to_struct(df):
+
     df = df.withColumn(
         "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
     )
@@ -225,24 +226,10 @@ def reg_man_to_struct(df):
     df = df.withColumn(
         "personRoles", when(length(col("registered_manager_name")) > 1, "Registered Manager").otherwise(lit(None))
     )
+
     df = df.select(
-        col("locationid"), array("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
+        "locationid", struct("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
     )
-
-    df = df.withColumn("contacts", expr("filter(contacts, elem -> elem is not null)"))
-
-    df.printSchema()
-    df.show(truncate=False)
-
-    df = df.withColumn(
-        "contacts",
-        expr(
-            "transform(contacts, x-> named_struct('personTitle',x[0],'personGivenName',x[1],'personTitle',x[2],'personGivenName',x[3]))"
-        ),
-    )
-
-    df.printSchema()
-    df.show(truncate=False)
 
     return df
 

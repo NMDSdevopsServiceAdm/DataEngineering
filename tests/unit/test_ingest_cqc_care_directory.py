@@ -2,7 +2,7 @@ import shutil
 import unittest
 
 from pyspark.sql import SparkSession, Row
-
+from pyspark.sql.types import StructField, ArrayType, StringType, StructType
 from jobs import ingest_cqc_care_directory
 
 
@@ -126,6 +126,99 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             sorted(services_df[1]["new_alias"]), [["name B", "description B"], ["name D", "description D"]]
         )
         self.assertEqual(sorted(services_df[2]["new_alias"]), [["name E", "description E"]])
+
+    def test_reg_man_to_struct(self):
+        register_manager_schema = StructType(
+            fields=[
+                StructField("locationid", StringType(), True),
+                StructField("registered_manager_name", StringType(), True),
+            ]
+        )
+
+        rows = [
+            ("1-000000001", "Surname, Firstname"),
+            ("1-000000002", "Surname, First Name"),
+            ("1-000000003", None),
+        ]
+
+        df = self.spark.createDataFrame(data=rows, schema=register_manager_schema)
+
+        df = ingest_cqc_care_directory.reg_man_to_struct(df)
+
+        self.assertEqual(df.count(), 3)
+        self.assertEqual(df.columns, ["locationid", "contacts"])
+
+        df.show()
+        collected_df = df.collect()
+        self.assertEqual(
+            collected_df[0]["contacts"],
+            Row(
+                personTitle="M",
+                personGivenName="Firstname",
+                personFamilyName="Surname",
+                personRoles="Registered Manager",
+            ),
+        )
+        self.assertEqual(
+            collected_df[1]["contacts"],
+            Row(
+                personTitle="M",
+                personGivenName="First Name",
+                personFamilyName="Surname",
+                personRoles="Registered Manager",
+            ),
+        )
+        self.assertEqual(
+            collected_df[2]["contacts"],
+            Row(
+                personTitle=None,
+                personGivenName=None,
+                personFamilyName=None,
+                personRoles=None,
+            ),
+        )
+
+    def test_gacservicetypes_to_struct(self):
+        columns = [
+            "locationid",
+            "gacservicetypes",
+        ]
+
+        rows = [
+            ("1-000000001", [["The name", "description"], ["The name 2", "description 2"]]),
+            ("1-000000002", [["Another name", "Some other description"]]),
+            ("1-000000003", []),
+        ]
+
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = ingest_cqc_care_directory.gacservicetypes_to_struct(df)
+
+        self.assertEqual(df.count(), 3)
+        self.assertEqual(df.columns, ["locationid", "gacservicetypes"])
+
+        collected_df = df.collect()
+        self.assertEqual(
+            collected_df[0]["gacservicetypes"],
+            Row(
+                name=["The name", "The name 2"],
+                description=["description", "description 2"],
+            ),
+        )
+        self.assertEqual(
+            collected_df[1]["gacservicetypes"],
+            Row(
+                name="Another name",
+                description="Some other description",
+            ),
+        )
+        self.assertEqual(
+            collected_df[2]["gacservicetypes"],
+            Row(
+                name=None,
+                description=None,
+            ),
+        )
 
     def test_main(self):
         datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
