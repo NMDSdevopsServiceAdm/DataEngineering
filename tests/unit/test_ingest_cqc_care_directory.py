@@ -148,34 +148,39 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationid", "contacts"])
 
-        df.show()
         collected_df = df.collect()
         self.assertEqual(
             collected_df[0]["contacts"],
-            Row(
-                personTitle="M",
-                personGivenName="Firstname",
-                personFamilyName="Surname",
-                personRoles="Registered Manager",
-            ),
+            [
+                Row(
+                    personTitle="M",
+                    personGivenName="Firstname",
+                    personFamilyName="Surname",
+                    personRoles="Registered Manager",
+                )
+            ],
         )
         self.assertEqual(
             collected_df[1]["contacts"],
-            Row(
-                personTitle="M",
-                personGivenName="First Name",
-                personFamilyName="Surname",
-                personRoles="Registered Manager",
-            ),
+            [
+                Row(
+                    personTitle="M",
+                    personGivenName="First Name",
+                    personFamilyName="Surname",
+                    personRoles="Registered Manager",
+                )
+            ],
         )
         self.assertEqual(
             collected_df[2]["contacts"],
-            Row(
-                personTitle=None,
-                personGivenName=None,
-                personFamilyName=None,
-                personRoles=None,
-            ),
+            [
+                Row(
+                    personTitle=None,
+                    personGivenName=None,
+                    personFamilyName=None,
+                    personRoles=None,
+                )
+            ],
         )
 
     def test_gacservicetypes_to_struct(self):
@@ -200,24 +205,26 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         collected_df = df.collect()
         self.assertEqual(
             collected_df[0]["gacservicetypes"],
-            Row(
-                name=["The name", "The name 2"],
-                description=["description", "description 2"],
-            ),
+            [
+                Row(name="The name", description="description"),
+                Row(
+                    name="The name 2",
+                    description="description 2",
+                ),
+            ],
         )
         self.assertEqual(
             collected_df[1]["gacservicetypes"],
-            Row(
-                name="Another name",
-                description="Some other description",
-            ),
+            [
+                Row(
+                    name="Another name",
+                    description="Some other description",
+                )
+            ],
         )
         self.assertEqual(
             collected_df[2]["gacservicetypes"],
-            Row(
-                name=None,
-                description=None,
-            ),
+            [],
         )
 
     def test_main(self):
