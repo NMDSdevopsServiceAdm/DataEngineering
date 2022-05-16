@@ -51,7 +51,7 @@ jobs:
           command: |
             terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform plan -out tfapply -chdir terraform/pipeline
+            terraform -chdir terraform/pipeline plan -out tfapply 
       - persist_to_workspace:
           root: .
           paths:
@@ -65,7 +65,8 @@ jobs:
       - run:
           name: terraform
           command: |
-            terraform apply -auto-approve tfapply -workspace ${CIRCLE_BRANCH}
+            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform -chdir terraform/pipeline apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
           paths:
