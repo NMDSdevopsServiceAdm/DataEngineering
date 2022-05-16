@@ -116,6 +116,16 @@ resource "aws_glue_crawler" "aws_glue_crawler_cqc" {
     delete_behavior = "DEPRECATE_IN_DATABASE"
     update_behavior = "UPDATE_IN_DATABASE"
   }
+
+  configuration = jsonencode(
+    {
+      "Version" : 1.0,
+      "Grouping" = {
+        "TableLevelConfiguration" = 3,
+        "TableGroupingPolicy" : "CombineCompatibleSchemas"
+      }
+    }
+  )
 }
 
 resource "aws_glue_job" "csv_to_parquet_job" {
