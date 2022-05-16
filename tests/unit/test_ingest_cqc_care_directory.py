@@ -227,11 +227,46 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             [],
         )
 
+    def test_specialisms_to_struct(self):
+        columns = [
+            "locationid",
+            "specialisms",
+        ]
+
+        rows = [
+            ("1-000000001", [["The name"], ["The name 2"]]),
+            ("1-000000002", [["Another name"]]),
+            ("1-000000003", []),
+        ]
+
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = ingest_cqc_care_directory.specialisms_to_struct(df)
+
+        self.assertEqual(df.count(), 3)
+        self.assertEqual(df.columns, ["locationid", "specialisms"])
+
+        collected_df = df.collect()
+        self.assertEqual(
+            collected_df[0]["specialisms"],
+            [
+                Row(name="The name"),
+                Row(name="The name 2"),
+            ],
+        )
+        self.assertEqual(
+            collected_df[1]["specialisms"],
+            [Row(name="Another name")],
+        )
+        self.assertEqual(
+            collected_df[2]["specialisms"],
+            [],
+        )
+
     def test_main(self):
         datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
 
         provider_df = datasets[0]
-        location_df = datasets[1]
 
         self.assertEqual(provider_df.count(), 4)
         self.assertEqual(
@@ -255,7 +290,34 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
+        location_df = datasets[1]
+
         self.assertEqual(location_df.count(), 10)
+        self.assertEqual(
+            location_df.columns,
+            [
+                "locationid",
+                "providerid",
+                "type",
+                "name",
+                "registrationdate",
+                "numberofbeds",
+                "website",
+                "postaladdressline1",
+                "postaladdresstowncity",
+                "postaladdresscounty",
+                "region",
+                "postalcode",
+                "carehome",
+                "mainphonenumber",
+                "localauthority",
+                "organisationType",
+                "registrationstatus",
+                "regulatedactivities",
+                "gacservicetypes",
+                "specialisms",
+            ],
+        )
 
 
 if __name__ == "__main__":
