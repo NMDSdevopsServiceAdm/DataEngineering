@@ -50,7 +50,7 @@ jobs:
           name: terraform init & plan
           command: |
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform init -input=false
+            terraform -chdir=terraform/pipeline init -input=false
             terraform -chdir=terraform/pipeline plan -out tfapply 
       - persist_to_workspace:
           root: .
