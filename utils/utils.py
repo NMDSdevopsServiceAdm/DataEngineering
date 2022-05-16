@@ -117,3 +117,8 @@ def get_file_directory(filepath):
     path_delimiter = "/"
     list_dir = filepath.split(path_delimiter)[:-1]
     return path_delimiter.join(list_dir)
+
+def construct_destination_path(destination, key):
+    destination_bucket = split_s3_uri(destination)[0]
+    dir_path = get_file_directory(key)
+    return construct_s3_uri(destination_bucket, dir_path)

@@ -283,6 +283,13 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(
             path, "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331")
 
+    def test_construct_new_destination_path(self):
+        destination = "s3://sfc-data-engineering/"
+        key = "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv"
+        destination_path = utils.construct_destination_path(destination, key)
+
+        self.assertEqual(destination_path, "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331")
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
