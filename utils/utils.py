@@ -6,6 +6,7 @@ import os
 import boto3
 import csv
 
+TWO_MB = 200000000
 
 class SetupSpark(object):
     def __init__(self):
@@ -44,7 +45,11 @@ def read_partial_csv_content(bucket, key, s3_client=None):
     if s3_client is None:
         s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket, Key=key)
-    num_bytes = int(response['ContentLength'] * 0.001)
+    num_bytes = int(response['ContentLength'] * 0.01)
+
+    if num_bytes > TWO_MB:
+        num_bytes = TWO_MB
+        
     return response['Body'].read(num_bytes).decode('utf-8')
 
 
