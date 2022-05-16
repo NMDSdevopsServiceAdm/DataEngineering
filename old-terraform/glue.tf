@@ -163,6 +163,29 @@ resource "aws_glue_job" "ingest_ascwds_dataset" {
   }
 }
 
+resource "aws_glue_job" "ingest_cqc_care_directory" {
+  name              = "ingest_cqc_care_directory"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 5
+  }
+
+  command {
+    script_location = "${var.scripts_location}ingest_cqc_care_directory.py"
+  }
+
+  default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--TempDir"              = var.glue_temp_dir
+    "--source"               = ""
+    "--provider_destination" = ""
+    "--location_destination" = ""
+  }
+}
+
 resource "aws_glue_job" "prepare_locations_job" {
   name              = "prepare_locations_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
