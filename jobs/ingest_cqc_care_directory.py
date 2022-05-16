@@ -264,9 +264,6 @@ def collect_arguments():
 
     args, unknown = parser.parse_known_args()
 
-    if args.delimiter:
-        print(f"Utilising custom delimiter '{args.delimiter}'")
-
     return args.source, args.provider_destination, args.location_destination
 
 
