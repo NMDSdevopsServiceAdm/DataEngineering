@@ -1,21 +1,29 @@
-import datetime
+import os
 import shutil
 import unittest
-from pathlib import Path
+from datetime import date
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    DoubleType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, StructType
 
-from jobs import format_fields, prepare_locations
+from environment import environment
+from jobs import prepare_locations
+from tests.test_file_generator import (
+    generate_ascwds_workplace_file,
+    generate_cqc_locations_file,
+    generate_cqc_providers_file,
+    generate_pir_file,
+)
 
 
 class PrepareLocationsTests(unittest.TestCase):
+
+    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
+    TEST_CQC_LOCATION_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
+    TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
+    TEST_PIR_FILE = "tests/test_data/tmp/pir_file.parquet"
+
+    test_data_basepath = "tests/test_data"
 
     calculate_jobs_schema = StructType(
         [
@@ -27,54 +35,177 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
     )
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
+        os.environ[environment.OS_ENVIRONEMNT_VARIABLE] = environment.DEVELOPMENT
+
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
+        generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
+        generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
+        generate_pir_file(self.TEST_PIR_FILE)
+
+    @classmethod
+    def tearDownClass(self):
+        try:
+            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
+            shutil.rmtree(self.TEST_CQC_LOCATION_FILE)
+            shutil.rmtree(self.TEST_CQC_PROVIDERS_FILE)
+            shutil.rmtree(self.TEST_PIR_FILE)
+        except OSError():
+            pass  # Ignore dir does not exist
+
+    def test_main_successfully_runs(self):
+        output_df = prepare_locations.main(
+            self.TEST_ASCWDS_WORKPLACE_FILE,
+            self.TEST_CQC_LOCATION_FILE,
+            self.TEST_CQC_PROVIDERS_FILE,
+            self.TEST_PIR_FILE,
+        )
+
+        self.assertIsNotNone(output_df)
+        self.assertEqual(output_df.count(), 30)
+        self.assertEqual(
+            output_df.columns,
+            [
+                "snapshot_date",
+                "ascwds_workplace_import_date",
+                "cqc_locations_import_date",
+                "cqc_providers_import_date",
+                "cqc_pir_import_date",
+                "locationid",
+                "location_type",
+                "location_name",
+                "organisation_type",
+                "providerid",
+                "provider_name",
+                "orgid",
+                "establishmentid",
+                "registration_status",
+                "registration_date",
+                "deregistration_date",
+                "carehome",
+                "dormancy",
+                "number_of_beds",
+                "services_offered",
+                "pir_service_users",
+                "job_count",
+                "region",
+                "postal_code",
+                "constituency",
+                "local_authority",
+                "cqc_sector",
+            ],
+        )
 
     def test_get_ascwds_workplace_df(self):
-        path = "tests/test_data/domain=ASCWDS/dataset=workplace/version=0.0.1/format=parquet"
-        workplace_df = prepare_locations.get_ascwds_workplace_df(path, "tests/test_data/")
-        self.assertEqual(workplace_df.count(), 10)
-
+        workplace_df = prepare_locations.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 1, 1))
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
         self.assertEqual(workplace_df.columns[2], "total_staff")
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
-        self.assertEqual(workplace_df.columns[4], "ascwds_workplace_import_date")
+        self.assertEqual(workplace_df.columns[4], "import_date")
+        self.assertEqual(workplace_df.count(), 10)
 
-    def test_get_pir_dataframe(self):
-        path = "tests/test_data/domain=CQC/dataset=pir/version=0.0.1/format=parquet"
-        pir_df = prepare_locations.get_pir_dataframe(path, "tests/test_data/")
-        self.assertEqual(pir_df.count(), 10)
+    def test_get_cqc_location_df(self):
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1), self.test_data_basepath
+        )
+
+        self.assertEqual(cqc_location_df.columns[0], "locationid")
+        self.assertEqual(cqc_location_df.columns[1], "providerid")
+        self.assertEqual(cqc_location_df.columns[16], "import_date")
+        self.assertEqual(cqc_location_df.count(), 14)
+
+    def test_get_cqc_provider_df(self):
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+            self.TEST_CQC_PROVIDERS_FILE, date(2022, 1, 5), self.test_data_basepath
+        )
+
+        self.assertEqual(cqc_provider_df.columns[0], "providerid")
+        self.assertEqual(cqc_provider_df.columns[1], "provider_name")
+        self.assertEqual(cqc_provider_df.columns[2], "import_date")
+        self.assertEqual(cqc_provider_df.count(), 3)
+
+    def test_get_pir_df(self):
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2022, 1, 5), self.test_data_basepath)
+
+        self.assertEqual(pir_df.count(), 8)
+        self.assertEqual(len(pir_df.columns), 3)
+
         self.assertEqual(pir_df.columns[0], "locationid")
         self.assertEqual(pir_df.columns[1], "pir_service_users")
+        self.assertEqual(pir_df.columns[2], "import_date")
 
-        pir_df = pir_df.orderBy("locationid").collect()
-        self.assertEqual(pir_df[0]["locationid"], "1-0000000001")
-        self.assertEqual(pir_df[0]["pir_service_users"], "95")
-        self.assertEqual(pir_df[9]["locationid"], "1-0000000010")
-        self.assertEqual(pir_df[9]["pir_service_users"], "104")
+    def test_get_date_closest_to_search_date_returns_correct_date(self):
+        date_search_list = [date(2022, 1, 1), date(2022, 2, 11), date(2022, 3, 21), date(2022, 3, 28), date(2022, 4, 3)]
+        test_date = date(2022, 3, 12)
 
-    def test_filter_nulls(self):
-        columns = ["locationid", "worker_record_count", "total_staff"]
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, date(2022, 2, 11))
+
+    def test_get_date_closest_to_search_date_returns_None_if_no_historical_dates_available(self):
+        date_search_list = [date(2022, 1, 1), date(2022, 2, 11), date(2022, 3, 21), date(2022, 3, 28), date(2022, 4, 3)]
+        test_date = date(2019, 1, 1)
+
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, None)
+
+    def test_get_date_closest_to_search_date_with_single_valid_date_returns_date(self):
+        date_search_list = [date(2020, 3, 31)]
+        test_date = date(2022, 5, 1)
+
+        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        self.assertEqual(result, date(2020, 3, 31))
+
+    def test_get_unique_import_dates_from_cqc_location_dataset(self):
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1), self.test_data_basepath
+        )
+
+        result = prepare_locations.get_unique_import_dates(cqc_location_df)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result, [date(2022, 1, 1)])
+
+    def test_get_unique_import_dates(self):
+        columns = ["import_date", "other_column"]
         rows = [
-            ("1-000000001", None, 20),
-            ("1-000000002", 500, 500),
-            ("1-000000003", 100, None),
-            ("1-000000004", None, None),
-            ("1-000000005", 25, 75),
-            (None, 1, 0),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "1"),
+            (date(2023, 3, 19), "2"),
+            (date(2023, 3, 19), "3"),
+            (date(2023, 3, 19), "4"),
+            (date(2010, 1, 1), "5"),
+            (date(2011, 1, 1), "5"),
+            (date(2012, 1, 1), "5"),
+            (date(2013, 1, 1), "5"),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        filtered_df = prepare_locations.filter_nulls(df)
-        self.assertEqual(filtered_df.count(), 4)
-
-        list_filtered_df = filtered_df.collect()
-
-        self.assertCountEqual(
-            filtered_df.select("locationid").rdd.flatMap(lambda x: x).collect(),
-            ["1-000000001", "1-000000002", "1-000000003", "1-000000005"],
+        result = prepare_locations.get_unique_import_dates(df)
+        self.assertEqual(
+            result, [date(2010, 1, 1), date(2011, 1, 1), date(2012, 1, 1), date(2013, 1, 1), date(2023, 3, 19)]
         )
+
+    def test_generate_closest_date_matrix(self):
+        workplace_df = prepare_locations.get_ascwds_workplace_df(
+            self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 11, 30), self.test_data_basepath
+        )
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5), self.test_data_basepath
+        )
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+            self.TEST_CQC_PROVIDERS_FILE, date(2022, 4, 1), self.test_data_basepath
+        )
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2020, 3, 31), self.test_data_basepath)
+
+        result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
+
+        self.assertIsNotNone(result)
 
     def test_clean(self):
 
@@ -96,20 +227,20 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
 
     def test_purge_workplaces(self):
-        columns = ["locationid", "ascwds_workplace_import_date", "orgid", "isparent", "mupddate"]
+        columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]
         rows = [
-            ("1", datetime.date(2023, 3, 19), "1", "1", datetime.date(2018, 9, 5)),
-            ("2", datetime.date(2023, 3, 19), "1", "0", datetime.date(2019, 7, 10)),
-            ("3", datetime.date(2023, 3, 19), "1", "1", datetime.date(2020, 5, 15)),
-            ("4", datetime.date(2023, 3, 19), "1", "0", datetime.date(2021, 3, 20)),
-            ("5", datetime.date(2023, 3, 19), "1", "1", datetime.date(2022, 1, 25)),
-            ("6", datetime.date(2023, 3, 19), "2", "1", datetime.date(2021, 3, 18)),
-            ("7", datetime.date(2023, 3, 19), "3", "1", datetime.date(2021, 3, 19)),
-            ("8", datetime.date(2023, 3, 19), "4", "1", datetime.date(2021, 3, 20)),
-            ("9", datetime.date(2010, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2011, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2012, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
-            ("9", datetime.date(2013, 1, 1), "5", "0", datetime.date(2010, 1, 1)),
+            ("1", date(2023, 3, 19), "1", "1", date(2018, 9, 5)),
+            ("2", date(2023, 3, 19), "1", "0", date(2019, 7, 10)),
+            ("3", date(2023, 3, 19), "1", "1", date(2020, 5, 15)),
+            ("4", date(2023, 3, 19), "1", "0", date(2021, 3, 20)),
+            ("5", date(2023, 3, 19), "1", "1", date(2022, 1, 25)),
+            ("6", date(2023, 3, 19), "2", "1", date(2021, 3, 18)),
+            ("7", date(2023, 3, 19), "3", "1", date(2021, 3, 19)),
+            ("8", date(2023, 3, 19), "4", "1", date(2021, 3, 20)),
+            ("9", date(2010, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2011, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2012, 1, 1), "5", "0", date(2010, 1, 1)),
+            ("9", date(2013, 1, 1), "5", "0", date(2010, 1, 1)),
         ]
         df = self.spark.createDataFrame(rows, columns)
         df = prepare_locations.purge_workplaces(df)
@@ -141,20 +272,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[2]["cqc_sector"], "Local authority")
         self.assertEqual(df[3]["cqc_sector"], "Independent")
         self.assertEqual(df[4]["cqc_sector"], "Independent")
-
-    def test_filter_out_cqc_la_data(self):
-        columns = ["providerid", "cqc_sector"]
-        rows = [
-            ("1-000000001", "Local authority"),
-            ("1-000000002", "Independent"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = prepare_locations.filter_out_cqc_la_data(df)
-        self.assertEqual(df.count(), 1)
-
-        df = df.collect()
-        self.assertEqual(df[0]["cqc_sector"], "Independent")
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
         columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
