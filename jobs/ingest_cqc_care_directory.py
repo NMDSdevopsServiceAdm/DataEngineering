@@ -116,8 +116,6 @@ def main(source, provider_destination=None, location_destination=None):
     location_df = location_df.join(gacservicetypes_df, "locationid")
     location_df = location_df.join(specialisms_df, "locationid")
 
-    location_df.printSchema()
-
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
         utils.write_to_parquet(location_df, location_destination)
