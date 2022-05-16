@@ -179,10 +179,11 @@ resource "aws_glue_job" "prepare_locations_job" {
   default_arguments = {
     "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
     "--TempDir"             = var.glue_temp_dir
-    "--workplace_source"    = ""
-    "--cqc_location_source" = ""
-    "--cqc_provider_source" = ""
-    "--pir_source"          = ""
+    "--environment"         = "prod"
+    "--workplace_source"    = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/"
+    "--cqc_location_source" = "s3://sfc-data-engineering/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_source" = "s3://sfc-data-engineering/domain=CQC/dataset=providers-api/"
+    "--pir_source"          = "s3://sfc-data-engineering/domain=CQC/dataset=pir/"
     "--destination"         = ""
   }
 }
