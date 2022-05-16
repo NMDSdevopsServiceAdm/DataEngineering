@@ -1,10 +1,6 @@
 version: 2
 
-
-// LOOK HERE
-// Need to run this for workspaces = git branches
 jobs:
-
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -54,8 +50,7 @@ jobs:
           name: terraform init & plan
           command: |
             terraform init -input=false
-            terraform workspace set test
-            terraform plan -out tfapply -var-file variables.tfvars
+            terraform plan -out tfapply -var-file variables.tfvars -workspace ${CIRCLE_BRANCH}
       - persist_to_workspace:
           root: .
           paths:
@@ -69,7 +64,7 @@ jobs:
       - run:
           name: terraform
           command: |
-            terraform apply -auto-approve tfapply
+            terraform apply -auto-approve tfapply -workspace ${CIRCLE_BRANCH}
       - persist_to_workspace:
           root: .
           paths:
@@ -80,10 +75,10 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - test
+      # - test
       - plan-apply
-          requires:
-            - test
+          # requires:
+          #   - test
       - apply:
           requires:
             - plan-apply
