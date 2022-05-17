@@ -31,7 +31,7 @@ def main(source, destination):
 
 def handle_job(source, source_bucket, source_key, destination):
     file_sample = utils.read_partial_csv_content(source_bucket, source_key)
-    delimiter = utils.identify_csv_delimiter(sample)
+    delimiter = utils.identify_csv_delimiter(file_sample)
     ingest_dataset(source, destination, delimiter)
 
 
