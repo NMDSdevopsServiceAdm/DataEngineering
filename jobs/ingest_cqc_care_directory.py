@@ -1,10 +1,11 @@
 from pyspark.sql import SparkSession
-from pyspark.context import SparkContext
 from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
 from utils import utils
 import sys
-import pyspark
+
+# from schemas import cqc_location_schema, cqc_provider_schema
 import argparse
+
 
 SPECIALISMS_DICT = {
     "Service_user_band_Children_0-18_years": "Caring for children",
@@ -76,7 +77,11 @@ REGULATEDACTIVITIES_DICT = {
 
 
 def main(source, provider_destination=None, location_destination=None):
+    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+
     return_datasets = []
+
+    # output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
 
     print("Reading CSV from {source}")
     df = utils.read_csv(source)
@@ -90,6 +95,11 @@ def main(source, provider_destination=None, location_destination=None):
     provider_df = unique_providers_with_locations(df)
     distinct_provider_info_df = get_distinct_provider_info(df)
     provider_df = provider_df.join(distinct_provider_info_df, "providerid")
+
+    # sql_prov_df = spark.sql("SELECT * FROM provider_df")
+    # output_provider_df = spark.createDataFrame(data=sql_prov_df.rdd, schema=cqc_provider_schema.PROVIDER_SCHEMA)
+    # output_provider_df.show()
+    # output_provider_df.printSchema()
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
