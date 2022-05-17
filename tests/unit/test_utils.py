@@ -261,7 +261,14 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00")
 
     def test_is_csv(self):
-        self.assertTrue("s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv")
+        csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
+        csv_test = utils.is_csv(csv_name)
+        self.assertTrue(csv_test)
+
+    def test_is_csv_for_non_csv(self):
+        csv_name_without_extention = "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
+        csv_test = utils.is_csv(csv_name_without_extention)
+        self.assertFalse(csv_test)
 
     def test_split_s3_uri(self):
         s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
