@@ -2,8 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
 from utils import utils
 import sys
-
-# from schemas import cqc_location_schema, cqc_provider_schema
+from schemas import cqc_location_schema, cqc_provider_schema
 import argparse
 
 
@@ -81,8 +80,6 @@ def main(source, provider_destination=None, location_destination=None):
 
     return_datasets = []
 
-    # output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
-
     print("Reading CSV from {source}")
     df = utils.read_csv(source)
 
@@ -90,16 +87,12 @@ def main(source, provider_destination=None, location_destination=None):
     df = utils.format_date_fields(df)
 
     df = df.filter("type=='Social Care Org'")
+    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
 
     print("Create CQC provider parquet file")
     provider_df = unique_providers_with_locations(df)
     distinct_provider_info_df = get_distinct_provider_info(df)
-    provider_df = provider_df.join(distinct_provider_info_df, "providerid")
-
-    # sql_prov_df = spark.sql("SELECT * FROM provider_df")
-    # output_provider_df = spark.createDataFrame(data=sql_prov_df.rdd, schema=cqc_provider_schema.PROVIDER_SCHEMA)
-    # output_provider_df.show()
-    # output_provider_df.printSchema()
+    provider_df = provider_df.join(distinct_provider_info_df, "providerId")
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
@@ -113,7 +106,7 @@ def main(source, provider_destination=None, location_destination=None):
     reg_man_df = reg_man_to_struct(df)
 
     regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
-    regulatedactivities_df = regulatedactivities_df.join(reg_man_df, "locationid")
+    regulatedactivities_df = regulatedactivities_df.join(reg_man_df, "locationId")
     regulatedactivities_df = regulatedactivities_to_struct(regulatedactivities_df)
 
     gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
@@ -122,9 +115,9 @@ def main(source, provider_destination=None, location_destination=None):
     specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
     specialisms_df = specialisms_to_struct(specialisms_df)
 
-    location_df = location_df.join(regulatedactivities_df, "locationid")
-    location_df = location_df.join(gacservicetypes_df, "locationid")
-    location_df = location_df.join(specialisms_df, "locationid")
+    location_df = location_df.join(regulatedactivities_df, "locationId")
+    location_df = location_df.join(gacservicetypes_df, "locationId")
+    location_df = location_df.join(specialisms_df, "locationId")
 
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
@@ -136,11 +129,11 @@ def main(source, provider_destination=None, location_destination=None):
 
 
 def unique_providers_with_locations(df):
-    locations_at_prov_df = df.select("providerid", "locationid")
+    locations_at_prov_df = df.select("providerId", "locationId")
     locations_at_prov_df = (
-        locations_at_prov_df.groupby("providerid")
-        .agg(collect_set("locationid"))
-        .withColumnRenamed("collect_set(locationid)", "locationids")
+        locations_at_prov_df.groupby("providerId")
+        .agg(collect_set("locationId"))
+        .withColumnRenamed("collect_set(locationId)", "locationIds")
     )
 
     return locations_at_prov_df
@@ -148,7 +141,7 @@ def unique_providers_with_locations(df):
 
 def get_distinct_provider_info(df):
     prov_info_df = df.selectExpr(
-        "providerid",
+        "providerId",
         "provider_brandid as brandid",
         "provider_brandname as brandname",
         "provider_name as name",
@@ -170,8 +163,8 @@ def get_distinct_provider_info(df):
 
 def get_general_location_info(df):
     loc_info_df = df.selectExpr(
-        "locationid",
-        "providerid",
+        "locationId",
+        "providerId",
         "type",
         "name",
         "registrationdate",
@@ -194,7 +187,7 @@ def get_general_location_info(df):
 
 
 def reformat_cols(df, value_mapping_dict, alias):
-    column_names = ["locationid"]
+    column_names = ["locationId"]
     column_names.extend(list(value_mapping_dict.keys()))
 
     df = df.select(*column_names)
@@ -203,7 +196,7 @@ def reformat_cols(df, value_mapping_dict, alias):
         df = df.replace("Y", column_name, new_name)
         df = df.withColumn(new_name, split(col(new_name), ",").alias(new_name))
 
-    df = df.select(col("locationid"), array(df.columns[1:]).alias(alias))
+    df = df.select(col("locationId"), array(df.columns[1:]).alias(alias))
 
     df = df.withColumn(alias, expr("filter(" + alias + ", elem -> elem is not null)"))
 
@@ -226,7 +219,7 @@ def gacservicetypes_to_struct(df):
 
 
 def reg_man_to_struct(df):
-    df = df.select("locationid", "registered_manager_name")
+    df = df.select("locationId", "registered_manager_name")
     df = df.replace("*", None)
 
     df = df.withColumn("personTitle", when(length(col("registered_manager_name")) > 1, "M").otherwise(lit(None)))
@@ -237,23 +230,23 @@ def reg_man_to_struct(df):
     )
 
     df = df.select(
-        "locationid", struct("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
+        "locationId", struct("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
     )
 
-    df = df.select("locationid", array("contacts").alias("contacts"))
+    df = df.select("locationId", array("contacts").alias("contacts"))
 
     return df
 
 
 def regulatedactivities_to_struct(df):
-    df = df.select("locationid", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
+    df = df.select("locationId", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
 
     df = df.withColumn("name", col("regulatedactivities").getItem(0))
     df = df.withColumn("code", col("regulatedactivities").getItem(1))
 
-    df = df.select("locationid", struct("name", "code", "contacts").alias("regulatedactivities"))
+    df = df.select("locationId", struct("name", "code", "contacts").alias("regulatedactivities"))
 
-    df = df.groupBy("locationid").agg(collect_set("regulatedactivities").alias("regulatedactivities"))
+    df = df.groupBy("locationId").agg(collect_set("regulatedactivities").alias("regulatedactivities"))
 
     return df
 
