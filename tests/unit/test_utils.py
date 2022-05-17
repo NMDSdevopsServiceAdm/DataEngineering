@@ -4,12 +4,10 @@ from utils import utils
 import shutil
 import unittest
 from pyspark.sql import SparkSession
-import botocore.session
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from io import BytesIO
 import boto3
-import json
 
 
 class StubberClass():

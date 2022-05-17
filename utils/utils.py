@@ -1,5 +1,3 @@
-from hashlib import sha3_384
-import re
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 import os
