@@ -9,16 +9,16 @@ import argparse
 
 
 def main(source, destination):
-    bucket, key = utils.split_s3_uri(source)
-
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
+        bucket, key = utils.split_s3_uri(source)
         new_destination = utils.construct_destination_path(destination, key)
         handle_job(source, bucket, key, new_destination)
         return
     
     print("Multiple files provided to job. Handling each file...")
-    objects_list = utils.get_s3_objects_list(bucket, key) # here key is actually prefix
+    bucket, prefix = utils.split_s3_uri(source)
+    objects_list = utils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")
     print(objects_list)
