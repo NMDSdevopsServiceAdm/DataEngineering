@@ -12,31 +12,55 @@ import boto3
 import json
 
 
-class MyStubberClass():
-    __s3 = None
+class StubberClass():
+    __s3_client = None
+    __s3_resource = None
     __stubber = None
+    __type = ""
+
+    def __init__(self, type):
+        self.__type = type
+        self.decide_type()
+        self.print_all()
+
+    def decide_type(self):
+        if self.__type == "client":
+            self.build_client()
+            self.build_stubber_client()
+        else:
+            self.build_resource()
+            self.build_stubber_resource()
 
     def get_s3_client(self):
-        return self.__s3
+        return self.__s3_client
+
+    def get_s3_resource(self):
+        return self.__s3_resource
 
     def get_stubber(self):
         return self.__stubber
 
-    def build_resource(self):
-        self.__s3 = boto3.resource("s3")
-
     def build_client(self):
-        self.__s3 = boto3.client("s3")
+        self.__s3_client = boto3.client("s3")
 
-    def build_stubber_resource(self):
-        self.__stubber = Stubber(self.__s3.meta.client)
+    def build_resource(self):
+        self.__s3_resource = boto3.resource("s3")
 
     def build_stubber_client(self):
-        self.__stubber = Stubber(self.__s3)
+        self.__stubber = Stubber(self.__s3_client)
+
+    def build_stubber_resource(self):
+        self.__stubber = Stubber(self.__s3_resource.meta.client)
 
     def add_response(self, stubbed_method, data, params):
         self.__stubber.add_response(stubbed_method, data, params)
         self.__stubber.activate()
+
+    def print_all(self):
+        print(self.__s3_client)
+        print(self.__s3_resource)
+        print(self.__stubber)
+        print(self.__type)
 
 
 class UtilsTests(unittest.TestCase):
@@ -72,13 +96,11 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber = MyStubberClass()
-        stubber.build_resource()
-        stubber.build_stubber_resource()
+        stubber = StubberClass("resource")
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
-            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_client())
+            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
         print(f"Object list {object_list}")
         self.assertEqual(
@@ -104,13 +126,11 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber = MyStubberClass()
-        stubber.build_resource()
-        stubber.build_stubber_resource()
+        stubber = StubberClass("resource")
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
-            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_client())
+            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
         print(f"Object list {object_list}")
         self.assertEqual(
@@ -129,13 +149,11 @@ class UtilsTests(unittest.TestCase):
         expected_params = {"Bucket": "test-bucket",
                            "Prefix": "version=1.0.0/import_date=20210101/"}
 
-        stubber = MyStubberClass()
-        stubber.build_resource()
-        stubber.build_stubber_resource()
+        stubber = StubberClass("resource")
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
-            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_client())
+            "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
         print(f"Object list {object_list}")
         self.assertEqual(
@@ -160,9 +178,7 @@ class UtilsTests(unittest.TestCase):
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
-        stubber = MyStubberClass()
-        stubber.build_client()
-        stubber.build_stubber_client()
+        stubber = StubberClass("client")
         stubber.add_response("get_object", partial_response, expected_params)
 
         obj_partial_content = utils.read_partial_csv_content(
@@ -197,9 +213,7 @@ class UtilsTests(unittest.TestCase):
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
-        stubber = MyStubberClass()
-        stubber.build_client()
-        stubber.build_stubber_client()
+        stubber = StubberClass("client")
         stubber.add_response("get_object", partial_response, expected_params)
 
         obj_partial_content = utils.read_partial_csv_content(
