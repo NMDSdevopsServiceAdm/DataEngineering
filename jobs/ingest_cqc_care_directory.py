@@ -123,11 +123,14 @@ def main(source, provider_destination=None, location_destination=None):
     location_df = location_df.join(gacservicetypes_df, "locationId")
     location_df = location_df.join(specialisms_df, "locationId")
 
+    output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
+    output_location_df = output_location_df.union(location_df)
+
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
-        utils.write_to_parquet(location_df, location_destination)
+        utils.write_to_parquet(output_location_df, location_destination)
     else:
-        return_datasets.append(location_df)
+        return_datasets.append(output_location_df)
 
     return return_datasets
 
@@ -178,21 +181,38 @@ def get_general_location_info(df):
         "providerId",
         "type",
         "name",
-        "registrationdate",
-        "numberofbeds",
+        "registrationdate as registrationDate",
+        "numberofbeds as numberOfBeds",
         "website",
         "postaladdressline1",
         "postaladdresstowncity",
         "postaladdresscounty",
         "region",
         "postalcode",
-        "carehome",
-        "mainphonenumber",
-        "localauthority",
+        "carehome as careHome",
+        "mainphonenumber as mainPhoneNumber",
+        "localauthority as localAuthority",
     ).distinct()
 
     loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
-    loc_info_df = loc_info_df.withColumn("registrationstatus", lit("Registered"))
+    loc_info_df = loc_info_df.withColumn("registrationStatus", lit("Registered"))
+    loc_info_df = loc_info_df.withColumn("onspdCcgCode", lit(None))
+    loc_info_df = loc_info_df.withColumn("onspdCcgName", lit(None))
+    loc_info_df = loc_info_df.withColumn("odsCode", lit(None))
+    loc_info_df = loc_info_df.withColumn("uprn", lit(None))
+    loc_info_df = loc_info_df.withColumn("deregistrationDate", lit(None))
+    loc_info_df = loc_info_df.withColumn("dormancy", lit(None))
+    loc_info_df = loc_info_df.withColumn("onspdLatitude", lit(None).cast(FloatType()))
+    loc_info_df = loc_info_df.withColumn("onspdLongitude", lit(None).cast(FloatType()))
+    loc_info_df = loc_info_df.withColumn("inspectionDirectorate", lit(None))
+    loc_info_df = loc_info_df.withColumn("constituency", lit(None))
+    loc_info_df = loc_info_df.withColumn("lastInspection", lit(None))
+    loc_info_df = loc_info_df.withColumn("lastReport", lit(None))
+    loc_info_df = loc_info_df.withColumn("relationships", lit(None))
+    loc_info_df = loc_info_df.withColumn("inspectionCategories", lit(None))
+    loc_info_df = loc_info_df.withColumn("currentRatings", lit(None))
+    loc_info_df = loc_info_df.withColumn("historicRatings", lit(None))
+    loc_info_df = loc_info_df.withColumn("reports", lit(None))
 
     return loc_info_df
 
