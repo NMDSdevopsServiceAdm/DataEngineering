@@ -21,7 +21,6 @@ class StubberClass():
     def __init__(self, type):
         self.__type = type
         self.decide_type()
-        self.print_all()
 
     def decide_type(self):
         if self.__type == "client":
@@ -55,12 +54,6 @@ class StubberClass():
     def add_response(self, stubbed_method, data, params):
         self.__stubber.add_response(stubbed_method, data, params)
         self.__stubber.activate()
-
-    def print_all(self):
-        print(self.__s3_client)
-        print(self.__s3_resource)
-        print(self.__stubber)
-        print(self.__type)
 
 
 class UtilsTests(unittest.TestCase):
@@ -132,7 +125,7 @@ class UtilsTests(unittest.TestCase):
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
-        print(f"Object list {object_list}")
+        print(f"S3 object list {object_list}")
         self.assertEqual(
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv",
                           "version=1.0.0/import_date=20210101/some-other-other-data-file.csv"])
@@ -155,7 +148,7 @@ class UtilsTests(unittest.TestCase):
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
-        print(f"Object list {object_list}")
+        print(f"S3 object list {object_list}")
         self.assertEqual(
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
         self.assertEqual(len(object_list), 1)
