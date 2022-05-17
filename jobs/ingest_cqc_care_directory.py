@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
+from pyspark.sql.types import StringType, FloatType
 from utils import utils
 import sys
 from schemas import cqc_location_schema, cqc_provider_schema
@@ -94,11 +95,14 @@ def main(source, provider_destination=None, location_destination=None):
     distinct_provider_info_df = get_distinct_provider_info(df)
     provider_df = provider_df.join(distinct_provider_info_df, "providerId")
 
+    output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
+    output_provider_df = output_provider_df.union(provider_df)
+
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
-        utils.write_to_parquet(provider_df, provider_destination)
+        utils.write_to_parquet(output_provider_df, provider_destination)
     else:
-        return_datasets.append(provider_df)
+        return_datasets.append(output_provider_df)
 
     print("Create CQC location parquet file")
     location_df = get_general_location_info(df)
@@ -142,21 +146,28 @@ def unique_providers_with_locations(df):
 def get_distinct_provider_info(df):
     prov_info_df = df.selectExpr(
         "providerId",
-        "provider_brandid as brandid",
-        "provider_brandname as brandname",
         "provider_name as name",
         "provider_mainphonenumber as mainPhoneNumber",
-        "provider_website as website",
         "provider_postaladdressline1 as postalAddressLine1",
-        "provider_postaladdressline2 as postaladdressline2",
         "provider_postaladdresstowncity as postalAddressTownCity",
         "provider_postaladdresscounty as postalAddressCounty",
         "provider_postalcode as postalCode",
-        "provider_nominated_individual_name as nominated_individual_name",
     ).distinct()
 
-    prov_info_df = prov_info_df.withColumn("organisationType", lit("Provider"))
-    prov_info_df = prov_info_df.withColumn("registrationstatus", lit("Registered"))
+    prov_info_df = prov_info_df.withColumn("organisationType", lit("Provider").cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("registrationStatus", lit("Registered").cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("ownershipType", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("type", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("uprn", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("registrationDate", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("deregistrationDate", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("region", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("onspdLatitude", lit(None).cast(FloatType()))
+    prov_info_df = prov_info_df.withColumn("onspdLongitude", lit(None).cast(FloatType()))
+    prov_info_df = prov_info_df.withColumn("companiesHouseNumber", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("inspectionDirectorate", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("constituency", lit(None).cast(StringType()))
+    prov_info_df = prov_info_df.withColumn("localAuthority", lit(None).cast(StringType()))
 
     return prov_info_df
 
