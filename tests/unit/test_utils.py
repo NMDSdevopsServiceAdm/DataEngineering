@@ -102,7 +102,7 @@ class UtilsTests(unittest.TestCase):
         object_list = utils.get_s3_objects_list(
             "test-bucket", "version=1.0.0/import_date=20210101/", stubber.get_s3_resource())
 
-        print(f"Object list {object_list}")
+        print(f"S3 object list {object_list}")
         self.assertEqual(
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv",
                           "version=1.0.0/import_date=20210101/some-other-data-file.csv",
