@@ -11,12 +11,14 @@ from jobs import stayer_vs_leaver_dataset
 from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_workplace_start_file,
     generate_ascwds_stayer_leaver_workplace_end_file,
+    generate_ascwds_stayer_leaver_worker_start_file,
 )
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
     START_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_start.parquet"
+    START_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_start.parquet"
     END_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_end.parquet"
 
     @classmethod
@@ -25,12 +27,14 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         self.spark = SparkSession.builder.appName("test_stayer_vs_leaver_dataset").getOrCreate()
         generate_ascwds_stayer_leaver_workplace_start_file(self.START_PERIOD_WORKPLACE_FILE)
+        generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
         generate_ascwds_stayer_leaver_workplace_end_file(self.END_PERIOD_WORKPLACE_FILE)
 
     @classmethod
     def tearDownClass(self):
         try:
             shutil.rmtree(self.START_PERIOD_WORKPLACE_FILE)
+            shutil.rmtree(self.START_PERIOD_WORKER_FILE)
             shutil.rmtree(self.END_PERIOD_WORKPLACE_FILE)
         except OSError():
             pass  # Ignore dir does not exist
@@ -66,9 +70,16 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(collected_df[0]["establishmentid"], "2")
         self.assertEqual(collected_df[1]["establishmentid"], "4")
 
+    def test_get_ascwds_workplace_df(self):
+        df = stayer_vs_leaver_dataset.get_ascwds_workplace_df(self.START_PERIOD_WORKER_FILE)
+
+        self.assertEqual(df.count(), 21)
+        self.assertEqual(df.columns, ["establishmentid", "mainjrid", "loads", "of", "other", "columns"])
+
     def test_main(self):
         output_df = stayer_vs_leaver_dataset.main(
             self.START_PERIOD_WORKPLACE_FILE,
+            self.START_PERIOD_WORKER_FILE,
             self.END_PERIOD_WORKPLACE_FILE,
         )
 

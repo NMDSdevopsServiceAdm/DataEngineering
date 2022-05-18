@@ -391,8 +391,8 @@ def generate_ascwds_stayer_leaver_workplace_start_file(output_destination):
         ("108", "20210101", 5, date(2020, 8, 1), "0"),
         ("109", "20210101", 10, date(2020, 9, 1), "0"),
         ("110", "20210101", 0, date(2020, 10, 1), "0"),
-        ("111", "20210101", 15, date(2020, 11, 1), "0"),
-        ("112", "20210101", 20, date(2020, 12, 1), "1"),
+        ("111", "20210101", 5, date(2020, 11, 1), "0"),
+        ("112", "20210101", 10, date(2020, 12, 1), "1"),
         ("113", "20210101", None, date(2020, 12, 1), "1"),
     ]
 
@@ -418,6 +418,42 @@ def generate_ascwds_stayer_leaver_workplace_end_file(output_destination):
         ("112", "20220101", 10, date(2021, 5, 1), "1"),
         ("113", "20220101", 10, date(2021, 12, 1), "0"),
         ("114", "20220101", 10, date(2021, 12, 1), "0"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_ascwds_stayer_leaver_worker_start_file(output_destination):
+    spark = utils.get_spark()
+    columns = ["establishmentid", "mainjrid", "loads", "of", "other", "columns"]
+
+    rows = [
+        ("108", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("108", "4", "random text", 1, date(2020, 2, 1), "1"),
+        ("108", "7", "random text", 1, date(2020, 3, 1), "0"),
+        ("108", "8", "random text", 1, date(2020, 4, 1), "0"),
+        ("108", "8", "random text", 1, date(2020, 5, 1), "0"),
+        ("109", "1", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "2", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "4", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "5", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "7", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "25", "random text", 5, date(2020, 6, 1), "1"),
+        ("110", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("111", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("111", "4", "random text", 1, date(2020, 2, 1), "1"),
+        ("111", "7", "random text", 1, date(2020, 3, 1), "0"),
+        ("111", "8", "random text", 1, date(2020, 4, 1), "0"),
+        ("111", "8", "random text", 1, date(2020, 5, 1), "0"),
     ]
 
     df = spark.createDataFrame(rows, columns)

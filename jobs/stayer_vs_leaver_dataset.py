@@ -2,7 +2,7 @@
 #
 # DONE - import 2 provider files 12 months apart
 # DONE - filter both to those updating within 6 months
-# TODO - inner join (maybe?) to identify estids in both files
+# DONE - inner join (maybe?) to identify estids in both files
 # TODO - import majority of worker data from 'early' file
 # TODO - import selected data from later file
 
@@ -21,6 +21,7 @@ END_PERIOD_WORKER_FILE = "s3://sfc-data-engineering/domain=ASCWDS/dataset=worker
 
 def main(
     source_start_workplace_file=START_PERIOD_WORKPLACE_FILE,
+    source_start_worker_file=START_PERIOD_WORKER_FILE,
     source_end_workplace_file=END_PERIOD_WORKPLACE_FILE,
     destination=None,
 ):
@@ -31,6 +32,8 @@ def main(
     end_workplace_df = updated_within_time_period(source_end_workplace_file)
 
     starters_vs_leavers_df = workplaces_in_both_dfs(start_workplace_df, end_workplace_df)
+
+    start_worker_df = get_ascwds_workplace_df(source_start_worker_file)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -59,12 +62,25 @@ def workplaces_in_both_dfs(start_workplace_df, end_workplace_df):
     return df
 
 
+def get_ascwds_workplace_df(df):
+    spark = utils.get_spark()
+
+    df = spark.read.parquet(df)
+
+    return df
+
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "--source_start_workplace_file",
         help="Source s3 directory for ASCWDS workplace dataset - start of 12 month period.",
+        required=True,
+    )
+    parser.add_argument(
+        "--source_start_worker_file",
+        help="Source s3 directory for ASCWDS worker dataset - start of 12 month period.",
         required=True,
     )
     parser.add_argument(
@@ -80,10 +96,20 @@ def collect_arguments():
 
     args, unknown = parser.parse_known_args()
 
-    return args.source_start_workplace_file, args.source_end_workplace_file, args.destination
+    return (
+        args.source_start_workplace_file,
+        args.source_start_worker_file,
+        args.source_end_workplace_file,
+        args.destination,
+    )
 
 
 if __name__ == "__main__":
-    (source_start_workplace_file, source_end_workplace_file, destination) = collect_arguments()
+    (
+        source_start_workplace_file,
+        source_start_worker_file,
+        source_end_workplace_file,
+        destination,
+    ) = collect_arguments()
 
-    main(source_start_workplace_file, source_end_workplace_file, destination)
+    main(source_start_workplace_file, source_start_worker_file, source_end_workplace_file, destination)
