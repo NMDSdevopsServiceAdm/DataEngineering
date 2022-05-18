@@ -180,15 +180,7 @@ class UtilsTests(unittest.TestCase):
             obj_partial_content, "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species")
 
     def test_read_partial_csv_less_content(self):
-        body_data = """period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|createddate
-        |updateddate|savedate|cqcpermission|lapermission|regtype|providerid|locationid|esttype|regionid|
-        cssr|lauthid|parliamentaryconstituency|mainstid|emplstat|emplstat_changedate|emplstat_savedate|mainjrid|
-        mainjrid_changedate|mainjrid_savedate|strtdate|strtdate_changedate|strtdate_savedate|age|age_changedate|
-        age_savedate|gender|gender_changedate|gender_savedate|disabled|disabled_changedate|disabled_savedate|
-        ethnicity|ethnicity_changedate|ethnicity_savedate|isbritish|nationality|isbritish_changedate|
-        isbritish_savedate|britishcitizen|britishcitizen_changedate|britishcitizen_savedate|borninuk|countryofbirth|
-        """
-
+        body_data = "period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|createddate|updateddate|savedate|cqcpermission|lapermission|regtype|"
         body_encoded = body_data.encode("utf-8")
         byte_string_length = len(body_encoded)
 
@@ -199,7 +191,7 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             'Body': body,
-            'ContentLength': byte_string_length * 12
+            'ContentLength': byte_string_length * 35
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
@@ -212,7 +204,7 @@ class UtilsTests(unittest.TestCase):
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
-            obj_partial_content, "period|establishmentid|tribalid|tribalid_worker|parentid|orgid|nmdsid|workerid|wkplacestat|c")
+            obj_partial_content, "period|establishmentid|tribalid|tribalid_worker|parenti")
 
     def test_identify_csv_delimiter_can_identify_comma(self):
         sample = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
