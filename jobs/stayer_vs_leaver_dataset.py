@@ -43,10 +43,10 @@ def updated_within_time_period(df):
     spark = utils.get_spark()
 
     df = spark.read.parquet(df)
-    df = df.select("establishmentid", "mupddate", "import_date")
+    df = df.select("establishmentid", "mupddate", "import_date", "wkrrecs")
     df = prepare_locations.format_import_date(df)
     df = df.withColumn("mupddate_cutoff", add_months(df.import_date, -6))
-    df = df.filter(df.mupddate > df.mupddate_cutoff)
+    df = df.filter((df.mupddate > df.mupddate_cutoff) & (df.wkrrecs >= 1))
     df = df.select("establishmentid")
 
     return df

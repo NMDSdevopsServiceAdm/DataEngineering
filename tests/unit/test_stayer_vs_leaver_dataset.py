@@ -39,7 +39,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         filtered_df = stayer_vs_leaver_dataset.updated_within_time_period(self.START_PERIOD_WORKPLACE_FILE)
 
-        self.assertEqual(filtered_df.count(), 5)
+        self.assertEqual(filtered_df.count(), 4)
         self.assertEqual(filtered_df.columns, ["establishmentid"])
 
         # asserts equivalent items are present in both sequences
@@ -48,7 +48,6 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             [
                 "108",
                 "109",
-                "110",
                 "111",
                 "112",
             ],
@@ -74,7 +73,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
         self.assertIsNotNone(output_df)
-        self.assertEqual(output_df.count(), 4)
+        self.assertEqual(output_df.count(), 3)
         self.assertEqual(
             output_df.columns,
             [
