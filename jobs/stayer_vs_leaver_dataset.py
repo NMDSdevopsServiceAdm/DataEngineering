@@ -73,7 +73,7 @@ def get_ascwds_worker_df(estab_list_df, worker_df):
 
 def determine_stayer_or_leaver(start_worker_df, end_worker_df):
     end_worker_df = end_worker_df.select("establishmentid_workerid")
-    end_worker_df = end_worker_df.withColumn("stayer_or_leaver", lit("stayer"))
+    end_worker_df = end_worker_df.withColumn("stayer_or_leaver", lit("still employed"))
 
     start_worker_df = start_worker_df.filter((start_worker_df.emplstat == 190) | (start_worker_df.emplstat == 191))
     start_worker_df = start_worker_df.join(end_worker_df, ["establishmentid_workerid"], "left")

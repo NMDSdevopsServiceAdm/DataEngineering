@@ -115,7 +115,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(start_df.count(), 2)
 
         collected_start_df = start_df.collect()
-        self.assertEqual(collected_start_df[0]["stayer_or_leaver"], "stayer")
+        self.assertEqual(collected_start_df[0]["stayer_or_leaver"], "still employed")
         self.assertEqual(collected_start_df[1]["stayer_or_leaver"], "leaver")
 
     def test_main(self):
