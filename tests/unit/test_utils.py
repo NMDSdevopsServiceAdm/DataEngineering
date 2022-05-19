@@ -1,3 +1,4 @@
+from ctypes.wintypes import SMALL_RECT
 from datetime import datetime
 from pathlib import Path
 from utils import utils
@@ -24,7 +25,8 @@ class StubberClass():
         if self.__type == "client":
             self.build_client()
             self.build_stubber_client()
-        else:
+        
+        if self.__type == "resource":
             self.build_resource()
             self.build_stubber_resource()
 
@@ -59,6 +61,8 @@ class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
+    hundred_percent_string_boost = 100
+    smaller_string_boost = 35
 
     def setUp(self):
         spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
@@ -164,7 +168,7 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             'Body': body,
-            'ContentLength': byte_string_length * 1000
+            'ContentLength': byte_string_length * self.hundred_percent_string_boost
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
@@ -191,7 +195,7 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             'Body': body,
-            'ContentLength': byte_string_length * 35
+            'ContentLength': byte_string_length * self.smaller_string_boost
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
