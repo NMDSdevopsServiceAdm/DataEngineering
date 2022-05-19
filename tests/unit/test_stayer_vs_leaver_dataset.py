@@ -74,29 +74,39 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(collected_df[0]["establishmentid"], "2")
         self.assertEqual(collected_df[1]["establishmentid"], "4")
 
-    def test_get_ascwds_workplace_df(self):
+    def test_get_ascwds_worker_df(self):
         estab_list_df = self.spark.createDataFrame([("108",), ("110",), ("111",)], ["establishmentid"])
 
-        df = stayer_vs_leaver_dataset.get_ascwds_workplace_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
+        df = stayer_vs_leaver_dataset.get_ascwds_worker_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
 
-        self.assertEqual(df.count(), 11)
+        self.assertEqual(df.count(), 12)
         self.assertEqual(
             df.columns,
-            ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns", "establishmentid_workerid"],
+            [
+                "establishmentid",
+                "workerid",
+                "emplstat",
+                "loads",
+                "of",
+                "other",
+                "columns",
+                "establishmentid_workerid",
+            ],
         )
 
     def test_determine_stayer_or_leaver(self):
         spark = utils.get_spark()
-        columns = ["establishmentid_workerid", "other", "columns"]
+        columns = ["establishmentid_workerid", "emplstat", "other", "columns"]
         start_rows = [
-            ("10_1", "other", "data"),
-            ("10_2", "other", "data"),
+            ("10_1", "190", "other", "data"),
+            ("10_2", "191", "other", "data"),
+            ("10_3", "192", "other", "data"),
         ]
         start_df = spark.createDataFrame(start_rows, columns)
 
         end_rows = [
-            ("10_1", "other", "data"),
-            ("10_3", "other", "data"),
+            ("10_1", "190", "other", "data"),
+            ("10_3", "190", "other", "data"),
         ]
         end_df = spark.createDataFrame(end_rows, columns)
 
@@ -124,7 +134,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 "establishmentid_workerid",
                 "establishmentid",
                 "workerid",
-                "mainjrid",
+                "emplstat",
                 "loads",
                 "of",
                 "other",

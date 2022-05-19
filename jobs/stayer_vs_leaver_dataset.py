@@ -26,8 +26,8 @@ def main(
 
     starters_vs_leavers_df = workplaces_in_both_dfs(start_workplace_df, end_workplace_df)
 
-    start_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_start_worker_file)
-    end_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_end_worker_file)
+    start_worker_df = get_ascwds_worker_df(starters_vs_leavers_df, source_start_worker_file)
+    end_worker_df = get_ascwds_worker_df(starters_vs_leavers_df, source_end_worker_file)
 
     start_worker_df = determine_stayer_or_leaver(start_worker_df, end_worker_df)
 
@@ -58,7 +58,7 @@ def workplaces_in_both_dfs(start_workplace_df, end_workplace_df):
     return df
 
 
-def get_ascwds_workplace_df(estab_list_df, worker_df):
+def get_ascwds_worker_df(estab_list_df, worker_df):
     spark = utils.get_spark()
 
     worker_df = spark.read.parquet(worker_df)
@@ -75,6 +75,7 @@ def determine_stayer_or_leaver(start_worker_df, end_worker_df):
     end_worker_df = end_worker_df.select("establishmentid_workerid")
     end_worker_df = end_worker_df.withColumn("stayer_or_leaver", lit("stayer"))
 
+    start_worker_df = start_worker_df.filter((start_worker_df.emplstat == 190) | (start_worker_df.emplstat == 191))
     start_worker_df = start_worker_df.join(end_worker_df, ["establishmentid_workerid"], "left")
     start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
 
