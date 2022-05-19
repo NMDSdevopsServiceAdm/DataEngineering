@@ -63,7 +63,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: terraform
+          name: terraform apply
           command: |
             terraform workspace select ${CIRCLE_BRANCH}
             terraform -chdir=terraform/pipeline apply -auto-approve tfapply

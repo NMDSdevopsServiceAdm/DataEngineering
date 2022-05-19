@@ -1,5 +1,5 @@
-resource "aws_iam_role" "glue_service_iam_role" {
-  name               = "glue_service_iam_role"
+resource "aws_iam_role" "sfc_glue_service_iam_role" {
+  name               = "sfc_glue_service_iam_role"
   assume_role_policy = data.aws_iam_policy_document.glue_service_assume_role_policy.json
 }
 
