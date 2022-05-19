@@ -4,7 +4,6 @@ import unittest
 
 from utils import utils
 from pyspark.sql import SparkSession
-from datetime import date
 
 from environment import environment
 from jobs import stayer_vs_leaver_dataset

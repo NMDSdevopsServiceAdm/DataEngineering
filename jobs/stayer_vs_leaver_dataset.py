@@ -1,11 +1,3 @@
-# STEPS
-#
-# DONE - import 2 provider files 12 months apart
-# DONE - filter both to those updating within 6 months
-# DONE - inner join (maybe?) to identify estids in both files
-# DONE - import all worker data from 'early' file
-# DONE - import if 'stayer' from later file
-
 import argparse
 from pyspark.sql.functions import col, add_months, concat, lit
 from jobs import prepare_locations
