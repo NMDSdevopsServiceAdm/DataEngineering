@@ -159,7 +159,6 @@ resource "aws_glue_job" "ingest_ascwds_dataset" {
     "--TempDir"     = var.glue_temp_dir
     "--source"      = ""
     "--destination" = ""
-    "--delimiter"   = "|"
   }
 }
 
