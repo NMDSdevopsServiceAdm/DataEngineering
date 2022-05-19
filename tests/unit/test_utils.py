@@ -9,7 +9,13 @@ from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from io import BytesIO
 import boto3
+from enum import Enum
 
+# stubber_type = Enum("client", "resource")
+
+class StubberType(Enum):
+    client = "client"
+    resource = "resource"
 
 class StubberClass:
     __s3_client = None
@@ -22,11 +28,11 @@ class StubberClass:
         self.decide_type()
 
     def decide_type(self):
-        if self.__type == "client":
+        if self.__type == StubberType.client:
             self.build_client()
             self.build_stubber_client()
 
-        if self.__type == "resource":
+        if self.__type == StubberType.resource:
             self.build_resource()
             self.build_stubber_resource()
 
@@ -61,7 +67,9 @@ class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
-    hundred_percent_string_boost = 100
+    
+    # increase length of string to simulate realistic file size
+    hundred_percent_string_boost = 100 
     smaller_string_boost = 35
 
     def setUp(self):
@@ -99,7 +107,7 @@ class UtilsTests(unittest.TestCase):
             "Prefix": "version=1.0.0/import_date=20210101/",
         }
 
-        stubber = StubberClass("resource")
+        stubber = StubberClass(StubberType.resource)
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -139,7 +147,7 @@ class UtilsTests(unittest.TestCase):
             "Prefix": "version=1.0.0/import_date=20210101/",
         }
 
-        stubber = StubberClass("resource")
+        stubber = StubberClass(StubberType.resource)
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -173,7 +181,7 @@ class UtilsTests(unittest.TestCase):
             "Prefix": "version=1.0.0/import_date=20210101/",
         }
 
-        stubber = StubberClass("resource")
+        stubber = StubberClass(StubberType.resource)
         stubber.add_response("list_objects", partial_response, expected_params)
 
         object_list = utils.get_s3_objects_list(
@@ -198,12 +206,12 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             "Body": body,
-            "ContentLength": byte_string_length * self.hundred_percent_string_boost,
+            "ContentLength": byte_string_length * self.hundred_percent_string_boost
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
-        stubber = StubberClass("client")
+        stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
         obj_partial_content = utils.read_partial_csv_content(
@@ -230,7 +238,7 @@ class UtilsTests(unittest.TestCase):
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
-        stubber = StubberClass("client")
+        stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
         obj_partial_content = utils.read_partial_csv_content(
