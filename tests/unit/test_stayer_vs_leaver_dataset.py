@@ -12,6 +12,7 @@ from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_workplace_start_file,
     generate_ascwds_stayer_leaver_workplace_end_file,
     generate_ascwds_stayer_leaver_worker_start_file,
+    generate_ascwds_stayer_leaver_worker_end_file,
 )
 
 
@@ -20,6 +21,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     START_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_start.parquet"
     START_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_start.parquet"
     END_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_end.parquet"
+    END_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_end.parquet"
 
     @classmethod
     def setUpClass(self):
@@ -29,6 +31,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         generate_ascwds_stayer_leaver_workplace_start_file(self.START_PERIOD_WORKPLACE_FILE)
         generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
         generate_ascwds_stayer_leaver_workplace_end_file(self.END_PERIOD_WORKPLACE_FILE)
+        generate_ascwds_stayer_leaver_worker_end_file(self.END_PERIOD_WORKER_FILE)
 
     @classmethod
     def tearDownClass(self):
@@ -36,6 +39,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             shutil.rmtree(self.START_PERIOD_WORKPLACE_FILE)
             shutil.rmtree(self.START_PERIOD_WORKER_FILE)
             shutil.rmtree(self.END_PERIOD_WORKPLACE_FILE)
+            shutil.rmtree(self.END_PERIOD_WORKER_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -76,20 +80,24 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = stayer_vs_leaver_dataset.get_ascwds_workplace_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
 
         self.assertEqual(df.count(), 11)
-        self.assertEqual(df.columns, ["establishmentid", "mainjrid", "loads", "of", "other", "columns"])
+        self.assertEqual(
+            df.columns,
+            ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns", "establishmentid_workerid"],
+        )
 
     def test_main(self):
         output_df = stayer_vs_leaver_dataset.main(
             self.START_PERIOD_WORKPLACE_FILE,
             self.START_PERIOD_WORKER_FILE,
             self.END_PERIOD_WORKPLACE_FILE,
+            self.END_PERIOD_WORKER_FILE,
         )
 
         self.assertIsNotNone(output_df)
         self.assertEqual(output_df.count(), 20)
         self.assertEqual(
             output_df.columns,
-            ["establishmentid", "mainjrid", "loads", "of", "other", "columns"],
+            ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns", "establishmentid_workerid"],
         )
 
 

@@ -430,30 +430,58 @@ def generate_ascwds_stayer_leaver_workplace_end_file(output_destination):
 
 def generate_ascwds_stayer_leaver_worker_start_file(output_destination):
     spark = utils.get_spark()
-    columns = ["establishmentid", "mainjrid", "loads", "of", "other", "columns"]
+    columns = ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns"]
 
     rows = [
-        ("108", "1", "random text", 1, date(2020, 1, 1), "0"),
-        ("108", "4", "random text", 1, date(2020, 2, 1), "1"),
-        ("108", "7", "random text", 1, date(2020, 3, 1), "0"),
-        ("108", "8", "random text", 1, date(2020, 4, 1), "0"),
-        ("108", "8", "random text", 1, date(2020, 5, 1), "0"),
-        ("109", "1", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "2", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "4", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "5", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "7", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "8", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "25", "random text", 5, date(2020, 6, 1), "1"),
-        ("110", "1", "random text", 1, date(2020, 1, 1), "0"),
-        ("111", "1", "random text", 1, date(2020, 1, 1), "0"),
-        ("111", "4", "random text", 1, date(2020, 2, 1), "1"),
-        ("111", "7", "random text", 1, date(2020, 3, 1), "0"),
-        ("111", "8", "random text", 1, date(2020, 4, 1), "0"),
-        ("111", "8", "random text", 1, date(2020, 5, 1), "0"),
+        ("108", "1", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("108", "2", "4", "random text", 1, date(2020, 2, 1), "1"),
+        ("108", "3", "7", "random text", 1, date(2020, 3, 1), "0"),
+        ("108", "4", "8", "random text", 1, date(2020, 4, 1), "0"),
+        ("108", "5", "8", "random text", 1, date(2020, 5, 1), "0"),
+        ("109", "6", "1", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "7", "2", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "8", "4", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "9", "5", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "10", "7", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "11", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "12", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "13", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "14", "8", "random text", 5, date(2020, 6, 1), "1"),
+        ("109", "15", "25", "random text", 5, date(2020, 6, 1), "1"),
+        ("110", "16", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("111", "17", "1", "random text", 1, date(2020, 1, 1), "0"),
+        ("111", "18", "4", "random text", 1, date(2020, 2, 1), "1"),
+        ("111", "19", "7", "random text", 1, date(2020, 3, 1), "0"),
+        ("111", "20", "8", "random text", 1, date(2020, 4, 1), "0"),
+        ("111", "21", "8", "random text", 1, date(2020, 5, 1), "0"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_ascwds_stayer_leaver_worker_end_file(output_destination):
+    spark = utils.get_spark()
+    columns = ["establishmentid", "workerid", "other_columns"]
+
+    rows = [
+        ("108", "1", "other data"),
+        ("108", "3", "other data"),
+        ("108", "5", "other data"),
+        ("109", "7", "other data"),
+        ("109", "9", "other data"),
+        ("109", "11", "other data"),
+        ("109", "13", "other data"),
+        ("109", "15", "other data"),
+        ("111", "17", "other data"),
+        ("111", "19", "other data"),
+        ("111", "21", "other data"),
+        ("111", "22", "other data"),
+        ("112", "23", "other data"),
     ]
 
     df = spark.createDataFrame(rows, columns)

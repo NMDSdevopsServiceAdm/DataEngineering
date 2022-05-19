@@ -4,10 +4,10 @@
 # DONE - filter both to those updating within 6 months
 # DONE - inner join (maybe?) to identify estids in both files
 # DONE - import all worker data from 'early' file
-# TODO - import selected data from later file
+# TODO - import if 'stayer' from later file
 
 import argparse
-from pyspark.sql.functions import col, add_months
+from pyspark.sql.functions import col, add_months, concat, lit
 from jobs import prepare_locations
 
 from utils import utils
@@ -23,6 +23,7 @@ def main(
     source_start_workplace_file=START_PERIOD_WORKPLACE_FILE,
     source_start_worker_file=START_PERIOD_WORKER_FILE,
     source_end_workplace_file=END_PERIOD_WORKPLACE_FILE,
+    source_end_worker_file=END_PERIOD_WORKER_FILE,
     destination=None,
 ):
 
@@ -34,6 +35,7 @@ def main(
     starters_vs_leavers_df = workplaces_in_both_dfs(start_workplace_df, end_workplace_df)
 
     start_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_start_worker_file)
+    end_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_end_worker_file)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -68,6 +70,10 @@ def get_ascwds_workplace_df(estab_list_df, worker_df):
     worker_df = spark.read.parquet(worker_df)
 
     worker_df = worker_df.join(estab_list_df, on="establishmentid", how="inner")
+    worker_df = worker_df.withColumn(
+        "establishmentid_workerid", concat(col("establishmentid"), lit("_"), col("workerid"))
+    )
+    worker_df.show()
 
     return worker_df
 
@@ -91,6 +97,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--source_start_worker_file",
+        help="Source s3 directory for ASCWDS worker dataset - end of 12 month period.",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=False,
@@ -102,6 +113,7 @@ def collect_arguments():
         args.source_start_workplace_file,
         args.source_start_worker_file,
         args.source_end_workplace_file,
+        args.source_end_worker_file,
         args.destination,
     )
 
@@ -111,7 +123,14 @@ if __name__ == "__main__":
         source_start_workplace_file,
         source_start_worker_file,
         source_end_workplace_file,
+        source_end_worker_file,
         destination,
     ) = collect_arguments()
 
-    main(source_start_workplace_file, source_start_worker_file, source_end_workplace_file, destination)
+    main(
+        source_start_workplace_file,
+        source_start_worker_file,
+        source_end_workplace_file,
+        source_end_worker_file,
+        destination,
+    )
