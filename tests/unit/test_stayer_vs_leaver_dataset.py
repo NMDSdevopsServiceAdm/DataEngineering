@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 
+from utils import utils
 from pyspark.sql import SparkSession
 from datetime import date
 
@@ -85,6 +86,29 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns", "establishmentid_workerid"],
         )
 
+    def test_determine_stayer_or_leaver(self):
+        spark = utils.get_spark()
+        columns = ["establishmentid_workerid", "other", "columns"]
+        start_rows = [
+            ("10_1", "other", "data"),
+            ("10_2", "other", "data"),
+        ]
+        start_df = spark.createDataFrame(start_rows, columns)
+
+        end_rows = [
+            ("10_1", "other", "data"),
+            ("10_3", "other", "data"),
+        ]
+        end_df = spark.createDataFrame(end_rows, columns)
+
+        start_df = stayer_vs_leaver_dataset.determine_stayer_or_leaver(start_df, end_df)
+
+        self.assertEqual(start_df.count(), 2)
+
+        collected_start_df = start_df.collect()
+        self.assertEqual(collected_start_df[0]["stayer_or_leaver"], "stayer")
+        self.assertEqual(collected_start_df[1]["stayer_or_leaver"], "leaver")
+
     def test_main(self):
         output_df = stayer_vs_leaver_dataset.main(
             self.START_PERIOD_WORKPLACE_FILE,
@@ -97,7 +121,17 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(output_df.count(), 20)
         self.assertEqual(
             output_df.columns,
-            ["establishmentid", "workerid", "mainjrid", "loads", "of", "other", "columns", "establishmentid_workerid"],
+            [
+                "establishmentid_workerid",
+                "establishmentid",
+                "workerid",
+                "mainjrid",
+                "loads",
+                "of",
+                "other",
+                "columns",
+                "stayer_or_leaver",
+            ],
         )
 
 

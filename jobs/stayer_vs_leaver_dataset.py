@@ -4,7 +4,7 @@
 # DONE - filter both to those updating within 6 months
 # DONE - inner join (maybe?) to identify estids in both files
 # DONE - import all worker data from 'early' file
-# TODO - import if 'stayer' from later file
+# DONE - import if 'stayer' from later file
 
 import argparse
 from pyspark.sql.functions import col, add_months, concat, lit
@@ -36,6 +36,8 @@ def main(
 
     start_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_start_worker_file)
     end_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_end_worker_file)
+
+    start_worker_df = determine_stayer_or_leaver(start_worker_df, end_worker_df)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -73,9 +75,18 @@ def get_ascwds_workplace_df(estab_list_df, worker_df):
     worker_df = worker_df.withColumn(
         "establishmentid_workerid", concat(col("establishmentid"), lit("_"), col("workerid"))
     )
-    worker_df.show()
 
     return worker_df
+
+
+def determine_stayer_or_leaver(start_worker_df, end_worker_df):
+    end_worker_df = end_worker_df.select("establishmentid_workerid")
+    end_worker_df = end_worker_df.withColumn("stayer_or_leaver", lit("stayer"))
+
+    start_worker_df = start_worker_df.join(end_worker_df, ["establishmentid_workerid"], "left")
+    start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
+
+    return start_worker_df
 
 
 def collect_arguments():
