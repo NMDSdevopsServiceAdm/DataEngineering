@@ -80,6 +80,6 @@ workflows:
       - plan-apply
           # requires:
           #   - test
-      # - apply:
-      #     requires:
-      #       - plan-apply
+      - apply:
+          requires:
+            - plan-apply
