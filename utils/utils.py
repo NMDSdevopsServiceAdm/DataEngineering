@@ -6,6 +6,7 @@ import csv
 
 TWO_MB = 2000000
 
+
 class SetupSpark(object):
     def __init__(self):
         self.spark = None
@@ -18,8 +19,7 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self):
-        spark = SparkSession.builder.appName(
-            "sfc_data_engineering").getOrCreate()
+        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
 
         return spark
 
@@ -43,16 +43,16 @@ def read_partial_csv_content(bucket, key, s3_client=None):
     if s3_client is None:
         s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket, Key=key)
-    num_bytes = int(response['ContentLength'] * 0.01)
+    num_bytes = int(response["ContentLength"] * 0.01)
 
     if num_bytes > TWO_MB:
         num_bytes = TWO_MB
-        
-    return response['Body'].read(num_bytes).decode('utf-8')
+
+    return response["Body"].read(num_bytes).decode("utf-8")
 
 
 def identify_csv_delimiter(sample_csv):
-    dialect = csv.Sniffer().sniff(sample_csv, [',','|'])
+    dialect = csv.Sniffer().sniff(sample_csv, [",", "|"])
     return dialect.delimiter
 
 
@@ -77,7 +77,8 @@ def write_to_parquet(df, output_dir, append=False):
 
 def read_csv(source, delimiter=","):
     spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet").getOrCreate()
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -85,12 +86,10 @@ def read_csv(source, delimiter=","):
 
 
 def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
-    date_columns = [
-        column for column in df.columns if date_column_identifier in column]
+    date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(
-            date_column, raw_date_format))
+        df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
 
     return df
 
@@ -115,6 +114,7 @@ def get_file_directory(filepath):
     path_delimiter = "/"
     list_dir = filepath.split(path_delimiter)[:-1]
     return path_delimiter.join(list_dir)
+
 
 def construct_destination_path(destination, key):
     destination_bucket = split_s3_uri(destination)[0]

@@ -10,7 +10,7 @@ def main(source, destination):
         new_destination = utils.construct_destination_path(destination, key)
         handle_job(source, bucket, key, new_destination)
         return
-    
+
     print("Multiple files provided to job. Handling each file...")
     bucket, prefix = utils.split_s3_uri(source)
     objects_list = utils.get_s3_objects_list(bucket, prefix)
@@ -32,7 +32,8 @@ def handle_job(source, source_bucket, source_key, destination):
 
 def ingest_dataset(source, destination, delimiter):
     print(
-        f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}")
+        f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
+    )
     df = utils.read_csv(source, delimiter)
     df = filter_test_accounts(df)
     df = utils.format_date_fields(df)
@@ -42,8 +43,17 @@ def ingest_dataset(source, destination, delimiter):
 
 
 def filter_test_accounts(df):
-    test_accounts = ["305", "307", "308", "309",
-                     "310", "2452", "28470", "26792", "31657"]
+    test_accounts = [
+        "305",
+        "307",
+        "308",
+        "309",
+        "310",
+        "2452",
+        "28470",
+        "26792",
+        "31657",
+    ]
 
     if "orgid" in df.columns:
         df = df.filter(~df.orgid.isin(test_accounts))
@@ -54,7 +64,10 @@ def filter_test_accounts(df):
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--source", help="A CSV file or directory of files used as job input", required=True)
+        "--source",
+        help="A CSV file or directory of files used as job input",
+        required=True,
+    )
     parser.add_argument(
         "--destination",
         help="A destination directory for outputting parquet files",
