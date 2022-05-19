@@ -65,6 +65,7 @@ jobs:
       - run:
           name: terraform
           command: |
+            terraform workspace select ${CIRCLE_BRANCH}
             terraform -chdir=terraform/pipeline apply -auto-approve tfapply
       - persist_to_workspace:
           root: .
