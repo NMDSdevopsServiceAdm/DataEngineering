@@ -71,9 +71,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(collected_df[1]["establishmentid"], "4")
 
     def test_get_ascwds_workplace_df(self):
-        df = stayer_vs_leaver_dataset.get_ascwds_workplace_df(self.START_PERIOD_WORKER_FILE)
+        estab_list_df = self.spark.createDataFrame([("108",), ("110",), ("111",)], ["establishmentid"])
 
-        self.assertEqual(df.count(), 21)
+        df = stayer_vs_leaver_dataset.get_ascwds_workplace_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
+
+        self.assertEqual(df.count(), 11)
         self.assertEqual(df.columns, ["establishmentid", "mainjrid", "loads", "of", "other", "columns"])
 
     def test_main(self):
@@ -84,12 +86,10 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
         self.assertIsNotNone(output_df)
-        self.assertEqual(output_df.count(), 3)
+        self.assertEqual(output_df.count(), 20)
         self.assertEqual(
             output_df.columns,
-            [
-                "establishmentid",
-            ],
+            ["establishmentid", "mainjrid", "loads", "of", "other", "columns"],
         )
 
 

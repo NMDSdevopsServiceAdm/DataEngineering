@@ -3,7 +3,7 @@
 # DONE - import 2 provider files 12 months apart
 # DONE - filter both to those updating within 6 months
 # DONE - inner join (maybe?) to identify estids in both files
-# TODO - import majority of worker data from 'early' file
+# DONE - import all worker data from 'early' file
 # TODO - import selected data from later file
 
 import argparse
@@ -33,13 +33,13 @@ def main(
 
     starters_vs_leavers_df = workplaces_in_both_dfs(start_workplace_df, end_workplace_df)
 
-    start_worker_df = get_ascwds_workplace_df(source_start_worker_file)
+    start_worker_df = get_ascwds_workplace_df(starters_vs_leavers_df, source_start_worker_file)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(starters_vs_leavers_df, destination)
+        utils.write_to_parquet(start_worker_df, destination)
     else:
-        return starters_vs_leavers_df
+        return start_worker_df
 
 
 def updated_within_time_period(df):
@@ -62,12 +62,14 @@ def workplaces_in_both_dfs(start_workplace_df, end_workplace_df):
     return df
 
 
-def get_ascwds_workplace_df(df):
+def get_ascwds_workplace_df(estab_list_df, worker_df):
     spark = utils.get_spark()
 
-    df = spark.read.parquet(df)
+    worker_df = spark.read.parquet(worker_df)
 
-    return df
+    worker_df = worker_df.join(estab_list_df, on="establishmentid", how="inner")
+
+    return worker_df
 
 
 def collect_arguments():
