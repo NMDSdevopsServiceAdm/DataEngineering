@@ -48,20 +48,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: terraform init
-          command: |
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform -chdir=terraform/pipeline init -input=false
-
-      - run:
-          name: terraform plan
-          command: |
-            terraform -chdir=terraform/pipeline plan -out tfapply 
-
-      - run:
           name: terraform apply
           command: |
-            terraform -chdir=terraform/pipeline apply -auto-approve tfapply
+            terraform -chdir=terraform/pipeline init -input=false
+            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform -chdir=terraform/pipeline apply -auto-approve
 
           
 workflows:
