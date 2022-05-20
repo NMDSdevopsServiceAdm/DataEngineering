@@ -69,6 +69,7 @@ jobs:
           name: terraform apply
           command: |
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform workspace list
             terraform -chdir=terraform/pipeline apply -auto-approve tfapply
 
 workflows:
