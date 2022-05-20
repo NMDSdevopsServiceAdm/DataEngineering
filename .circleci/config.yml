@@ -53,7 +53,7 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform apply
+            terraform apply -auto-approve
           
 workflows:
   version: 2
