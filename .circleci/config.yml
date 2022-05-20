@@ -50,10 +50,10 @@ jobs:
       - run:
           name: terraform apply
           command: |
-            terraform -chdir=terraform/pipeline init -input=false
+            cd terraform/pipeline
+            terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform -chdir=terraform/pipeline apply -auto-approve
-
+            terraform apply
           
 workflows:
   version: 2
