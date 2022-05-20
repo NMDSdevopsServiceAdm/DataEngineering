@@ -155,13 +155,12 @@ resource "aws_glue_job" "worker_tracking_job" {
 
   default_arguments = {
     "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
-    "--TempDir"                   = var.glue_temp_dir
-    "source_start_workplace_file" = ""
-    "source_start_worker_file"    = ""
-    "source_end_workplace_file"   = ""
-    "source_end_worker_file"      = ""
-    "destination"                 = ""
-    "--destination"               = ""
+    "--TempDir"                     = var.glue_temp_dir
+    "--source_start_workplace_file" = ""
+    "--source_start_worker_file"    = ""
+    "--source_end_workplace_file"   = ""
+    "--source_end_worker_file"      = ""
+    "--destination"                 = ""
   }
 }
 resource "aws_glue_job" "ingest_ascwds_dataset" {
