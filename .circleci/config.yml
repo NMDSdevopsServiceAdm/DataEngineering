@@ -39,47 +39,36 @@ jobs:
           command: |
             pipenv run python -m unittest discover tests/integration
 
-  plan-apply:
+  deploy-terraform:
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    resource_class: small
+
     steps:
       - checkout
       - run:
-          name: terraform init & plan
+          name: terraform init
           command: |
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform -chdir=terraform/pipeline init -input=false
+
+      - run:
+          name: terraform plan
+          command: |
             terraform -chdir=terraform/pipeline plan -out tfapply 
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-  apply:
-    working_directory: /tmp/project
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
-    steps:
-      - attach_workspace:
-          at: .
-      - run: # print the name of the branch we're on
-          name: "What branch am I on?"
-          command: echo ${CIRCLE_BRANCH}
+
       - run:
           name: terraform apply
           command: |
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform workspace list
             terraform -chdir=terraform/pipeline apply -auto-approve tfapply
 
+          
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
       - test
-      - plan-apply:
+      - deploy-terraform:
           requires:
             - test
-      - apply:
-          requires:
-            - plan-apply
