@@ -1,9 +1,9 @@
 resource "aws_glue_catalog_database" "glue_catalog_database" {
   name = "${terraform.workspace}-${var.glue_database_name}"
 }
-module "test_job" {
+module "csv_to_parquet_job" {
   source              = "../modules/glue-job"
-  script_name         = "test_script.py"
+  script_name         = "csv_to_parquet.py"
   glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
   resource_bucket_uri = module.pipeline_resources.bucket_uri
 
@@ -12,6 +12,82 @@ module "test_job" {
     "--destination" = ""
     "--delimiter"   = ","
 
+  }
+}
+
+module "ingest_ascwds_dataset_job" {
+  source              = "../modules/glue-job"
+  script_name         = "ingest_ascwds_dataset.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = ""
+  }
+}
+
+module "prepare_locations_job" {
+  source              = "../modules/glue-job"
+  script_name         = "prepare_locations.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--environment"         = "prod"
+    "--workplace_source"    = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/"
+    "--cqc_location_source" = "s3://sfc-data-engineering/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_source" = "s3://sfc-data-engineering/domain=CQC/dataset=providers-api/"
+    "--pir_source"          = "s3://sfc-data-engineering/domain=CQC/dataset=pir/"
+    "--destination"         = ""
+  }
+}
+
+module "job_role_breakdown_job" {
+  source              = "../modules/glue-job"
+  script_name         = "job_role_breakdown.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--job_estimates_source" = ""
+    "--worker_source"        = ""
+    "--destination"          = ""
+  }
+}
+
+module "estimate_2021_jobs_job" {
+  source              = "../modules/glue-job"
+  script_name         = "estimate_2021_jobs.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--job_estimates_source"      = ""
+    "--prepared_locations_source" = ""
+    "--destination"               = ""
+  }
+}
+
+module "bulk_cqc_providers_download_job" {
+  source              = "../modules/glue-job"
+  script_name         = "bulk_download_cqc_providers.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
+module "bulk_cqc_locations_download_job" {
+  source              = "../modules/glue-job"
+  script_name         = "bulk_download_cqc_locations.py"
+  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket_uri = module.pipeline_resources.bucket_uri
+
+  job_parameters = {
+    "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
 
