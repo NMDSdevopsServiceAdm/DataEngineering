@@ -6,7 +6,7 @@ from jobs import prepare_workers
 class PrepareWorkersTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName(
-            "sfc_data_engineering_test_ingest_ascwds_dataset"
+            "sfc_data_engineering_test_prepare_workers"
         ).getOrCreate()
 
     def test_main(self):
