@@ -56,17 +56,20 @@ jobs:
           paths:
             - .
   apply:
+    working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
     steps:
       - attach_workspace:
           at: .
+      - run: # print the name of the branch we're on
+          name: "What branch am I on?"
+          command: echo ${CIRCLE_BRANCH}
       - run:
           name: terraform apply
           command: |
             terraform workspace select ${CIRCLE_BRANCH}
             terraform -chdir=terraform/pipeline apply -auto-approve tfapply
-
 
 workflows:
   version: 2
