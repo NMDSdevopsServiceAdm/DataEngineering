@@ -2,10 +2,10 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   name = "${terraform.workspace}-${var.glue_database_name}"
 }
 module "csv_to_parquet_job" {
-  source              = "../modules/glue-job"
-  script_name         = "csv_to_parquet.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "csv_to_parquet.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--source"      = ""
@@ -16,10 +16,10 @@ module "csv_to_parquet_job" {
 }
 
 module "ingest_ascwds_dataset_job" {
-  source              = "../modules/glue-job"
-  script_name         = "ingest_ascwds_dataset.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "ingest_ascwds_dataset.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--source"      = ""
@@ -28,10 +28,10 @@ module "ingest_ascwds_dataset_job" {
 }
 
 module "prepare_locations_job" {
-  source              = "../modules/glue-job"
-  script_name         = "prepare_locations.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "prepare_locations.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--environment"         = "prod"
@@ -44,10 +44,10 @@ module "prepare_locations_job" {
 }
 
 module "job_role_breakdown_job" {
-  source              = "../modules/glue-job"
-  script_name         = "job_role_breakdown.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "job_role_breakdown.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--job_estimates_source" = ""
@@ -57,10 +57,10 @@ module "job_role_breakdown_job" {
 }
 
 module "estimate_2021_jobs_job" {
-  source              = "../modules/glue-job"
-  script_name         = "estimate_2021_jobs.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "estimate_2021_jobs.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--job_estimates_source"      = ""
@@ -70,10 +70,10 @@ module "estimate_2021_jobs_job" {
 }
 
 module "bulk_cqc_providers_download_job" {
-  source              = "../modules/glue-job"
-  script_name         = "bulk_download_cqc_providers.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_providers.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"
@@ -81,10 +81,10 @@ module "bulk_cqc_providers_download_job" {
 }
 
 module "bulk_cqc_locations_download_job" {
-  source              = "../modules/glue-job"
-  script_name         = "bulk_download_cqc_locations.py"
-  glue_role_arn       = aws_iam_role.sfc_glue_service_iam_role.arn
-  resource_bucket_uri = module.pipeline_resources.bucket_uri
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_locations.py"
+  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  resource_bucket = module.pipeline_resources
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"

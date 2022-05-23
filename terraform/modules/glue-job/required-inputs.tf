@@ -9,8 +9,10 @@ variable "glue_role_arn" {
   default     = null
 }
 
-variable "resource_bucket_uri" {
-  description = "The base uri of the bucket used for the glue jobs temporary directory & scripts"
-  type        = string
-  default     = null
+variable "resource_bucket" {
+  description = "The bucket used for the glue jobs temporary directory & scripts"
+  type = object({
+    bucket_name = string
+    bucket_uri  = string
+  })
 }

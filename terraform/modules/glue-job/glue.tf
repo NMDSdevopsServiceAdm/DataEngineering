@@ -10,14 +10,14 @@ resource "aws_glue_job" "glue_job" {
     max_concurrent_runs = 5
   }
   command {
-    script_location = "${var.resource_bucket_uri}/scripts/${var.script_name}"
+    script_location = "${var.resource_bucket.bucket_uri}/scripts/${var.script_name}"
 
   }
 
   default_arguments = merge(var.job_parameters,
     {
-      "--extra-py-files" : "${var.resource_bucket_uri}/dependencies/dependencies.zip"
-      "--TempDir"                          = "${var.resource_bucket_uri}/temp/"
+      "--extra-py-files" : "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip"
+      "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
       "--enable-continuous-cloudwatch-log" = "true"
   })
 }
