@@ -517,11 +517,6 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--environment",
-        help="Environment the job is running. Currently supports 'prod' and 'dev'",
-        required=True,
-    )
-    parser.add_argument(
         "--workplace_source",
         help="Source s3 directory for ASCWDS workplace dataset",
         required=True,
@@ -550,7 +545,6 @@ def collect_arguments():
     args, unknown = parser.parse_known_args()
 
     return (
-        args.environment,
         args.workplace_source,
         args.cqc_location_source,
         args.cqc_provider_source,
@@ -561,7 +555,6 @@ def collect_arguments():
 
 if __name__ == "__main__":
     (
-        env,
         workplace_source,
         cqc_location_source,
         cqc_provider_source,

@@ -35,7 +35,6 @@ module "prepare_locations_job" {
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
-    "--environment"         = "prod"
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
     "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
