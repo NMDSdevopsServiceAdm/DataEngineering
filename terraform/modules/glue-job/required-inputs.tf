@@ -3,12 +3,13 @@ variable "script_name" {
   type        = string
 }
 
-variable "glue_role_arn" {
-  description = "Glue Role ARN that the job will use to execute."
-  type        = string
-  default     = null
+variable "glue_role" {
+  description = "Glue Role that the job will use to execute."
+  type = object({
+    name = string
+    arn  = string
+  })
 }
-
 variable "resource_bucket" {
   description = "The bucket used for the glue jobs temporary directory & scripts"
   type = object({

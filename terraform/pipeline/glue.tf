@@ -4,7 +4,7 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
   script_name     = "csv_to_parquet.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -18,7 +18,7 @@ module "csv_to_parquet_job" {
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ascwds_dataset.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -30,7 +30,7 @@ module "ingest_ascwds_dataset_job" {
 module "prepare_locations_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_locations.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -46,7 +46,7 @@ module "prepare_locations_job" {
 module "job_role_breakdown_job" {
   source          = "../modules/glue-job"
   script_name     = "job_role_breakdown.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -59,7 +59,7 @@ module "job_role_breakdown_job" {
 module "estimate_2021_jobs_job" {
   source          = "../modules/glue-job"
   script_name     = "estimate_2021_jobs.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -72,7 +72,7 @@ module "estimate_2021_jobs_job" {
 module "bulk_cqc_providers_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_providers.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {
@@ -83,7 +83,7 @@ module "bulk_cqc_providers_download_job" {
 module "bulk_cqc_locations_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_locations.py"
-  glue_role_arn   = aws_iam_role.sfc_glue_service_iam_role.arn
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
 
   job_parameters = {

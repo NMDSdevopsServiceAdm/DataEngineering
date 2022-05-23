@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
-  name        = "${terraform.workspace}-glue_service_data_engineering_policy"
+  name        = "${terraform.workspace}-${var.script_name}-bucket_access_policy"
   path        = "/"
   description = "Iam policy for the ${var.script_name} job on workspace: ${terraform.workspace}"
 
@@ -16,7 +16,7 @@ resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
           "s3:DeleteObject"
         ],
         "Resource" : [
-          "arn:aws:s3:::",
+          "arn:aws:s3:::${var.resource_bucket.bucket_name}",
         ]
       }
     ]
@@ -25,5 +25,5 @@ resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
 
 resource "aws_iam_role_policy_attachment" "glue_job_s3_policy_attachment" {
   policy_arn = aws_iam_policy.glue_job_s3_data_engineering_policy.arn
-  role       = var.glue_role_arn
+  role       = var.glue_role.name
 }
