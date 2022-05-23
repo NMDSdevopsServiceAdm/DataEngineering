@@ -1,0 +1,24 @@
+id,user_type
+1,Older people with dementia
+2,Older people with mental disorders or infirmities
+22,Older people detained under the Mental Health Act
+23,Older people with learning disabilities and/or autism
+25,Older people with physical disabilities
+26,Older people with sensory impairment(s)
+27,Older people who misuse alcohol/drugs
+46,Older people with an eating disorder
+3,Older people others not in above categories
+28,Adults with dementia
+6,Adults with mental disorders or infirmities
+29,Adults detained under the Mental Health Act
+5,Adults with learning disabilities and/or autism
+4,Adults with physical disabilities
+7,Adults with sensory impairments
+8,Adults who misuse alcohol or drugs
+31,Adults with an eating disorder
+9,Adults others not in above categories
+45,Any children and young people
+18,Carers of older people
+19,Carers of adults
+20,Carers of children and young people
+21,Other others not in above categories
