@@ -1,5 +1,6 @@
 resource "aws_glue_catalog_database" "glue_catalog_database" {
-  name = "${terraform.workspace}-${var.glue_database_name}"
+  name        = "${terraform.workspace}-${var.glue_database_name}"
+  description = "Database for all datasets belonging to the ${terraform.workspace} environment."
 }
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
