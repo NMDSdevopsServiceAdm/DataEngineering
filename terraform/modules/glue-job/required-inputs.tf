@@ -17,3 +17,11 @@ variable "resource_bucket" {
     bucket_uri  = string
   })
 }
+
+variable "datasets_bucket" {
+  description = "The bucket used for the glue jobs input and output datasets"
+  type = object({
+    bucket_name = string
+    bucket_uri  = string
+  })
+}

@@ -7,6 +7,7 @@ module "csv_to_parquet_job" {
   script_name     = "csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--source"      = ""
@@ -21,6 +22,7 @@ module "ingest_ascwds_dataset_job" {
   script_name     = "ingest_ascwds_dataset.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--source"      = ""
@@ -33,6 +35,7 @@ module "prepare_locations_job" {
   script_name     = "prepare_locations.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
@@ -48,6 +51,7 @@ module "job_role_breakdown_job" {
   script_name     = "job_role_breakdown.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--job_estimates_source" = ""
@@ -61,6 +65,7 @@ module "estimate_2021_jobs_job" {
   script_name     = "estimate_2021_jobs.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--job_estimates_source"      = ""
@@ -74,6 +79,7 @@ module "bulk_cqc_providers_download_job" {
   script_name     = "bulk_download_cqc_providers.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"
@@ -85,6 +91,7 @@ module "bulk_cqc_locations_download_job" {
   script_name     = "bulk_download_cqc_locations.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"

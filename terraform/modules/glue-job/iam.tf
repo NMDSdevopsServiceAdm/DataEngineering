@@ -17,6 +17,7 @@ resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
         ],
         "Resource" : [
           "arn:aws:s3:::${var.resource_bucket.bucket_name}",
+          "arn:aws:s3:::${var.datasets_bucket.bucket_name}",
         ]
       }
     ]
