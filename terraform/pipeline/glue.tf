@@ -36,10 +36,10 @@ module "prepare_locations_job" {
 
   job_parameters = {
     "--environment"         = "prod"
-    "--workplace_source"    = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "s3://sfc-data-engineering/domain=CQC/dataset=locations-api/"
-    "--cqc_provider_source" = "s3://sfc-data-engineering/domain=CQC/dataset=providers-api/"
-    "--pir_source"          = "s3://sfc-data-engineering/domain=CQC/dataset=pir/"
+    "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
+    "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
     "--destination"         = ""
   }
 }
