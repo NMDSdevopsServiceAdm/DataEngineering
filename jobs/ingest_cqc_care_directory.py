@@ -96,7 +96,7 @@ def main(source, provider_destination=None, location_destination=None):
     provider_df = provider_df.join(distinct_provider_info_df, "providerId")
 
     output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
-    output_provider_df = output_provider_df.unionByName(provider_df)
+    output_provider_df = output_provider_df.unionByName(provider_df, allowMissingColumns=True)
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
@@ -122,10 +122,9 @@ def main(source, provider_destination=None, location_destination=None):
     location_df = location_df.join(regulatedactivities_df, "locationId")
     location_df = location_df.join(gacservicetypes_df, "locationId")
     location_df = location_df.join(specialisms_df, "locationId")
-    location_df.printSchema()
 
     output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
-    output_location_df = output_location_df.union(location_df)
+    output_location_df = output_location_df.unionByName(location_df, allowMissingColumns=True)
 
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
@@ -160,18 +159,6 @@ def get_distinct_provider_info(df):
 
     prov_info_df = prov_info_df.withColumn("organisationType", lit("Provider").cast(StringType()))
     prov_info_df = prov_info_df.withColumn("registrationStatus", lit("Registered").cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("ownershipType", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("type", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("uprn", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("registrationDate", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("deregistrationDate", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("region", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("onspdLatitude", lit(None).cast(FloatType()))
-    prov_info_df = prov_info_df.withColumn("onspdLongitude", lit(None).cast(FloatType()))
-    prov_info_df = prov_info_df.withColumn("companiesHouseNumber", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("inspectionDirectorate", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("constituency", lit(None).cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("localAuthority", lit(None).cast(StringType()))
 
     return prov_info_df
 
@@ -180,8 +167,8 @@ def get_general_location_info(df):
     loc_info_df = df.selectExpr(
         "locationId",
         "providerId",
-        "type as temp_type",
-        "name as temp_name",
+        "type",
+        "name",
         "registrationdate as registrationDate",
         "numberofbeds as numberOfBeds",
         "website",
@@ -197,58 +184,6 @@ def get_general_location_info(df):
 
     loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
     loc_info_df = loc_info_df.withColumn("registrationStatus", lit("Registered"))
-
-    loc_info_df = loc_info_df.withColumn("onspdCcgCode", lit(None))
-    loc_info_df = loc_info_df.withColumn("onspdCcgName", lit(None))
-    loc_info_df = loc_info_df.withColumn("odsCode", lit(None))
-    loc_info_df = loc_info_df.withColumn("uprn", lit(None))
-    loc_info_df = loc_info_df.withColumn("deregistrationDate", lit(None))
-    loc_info_df = loc_info_df.withColumn("dormancy", lit(None))
-    loc_info_df = loc_info_df.withColumn("onspdLatitude", lit(None).cast(FloatType()))
-    loc_info_df = loc_info_df.withColumn("onspdLongitude", lit(None).cast(FloatType()))
-    loc_info_df = loc_info_df.withColumn("inspectionDirectorate", lit(None))
-    loc_info_df = loc_info_df.withColumn("constituency", lit(None))
-
-    loc_info_df = loc_info_df.withColumn("date", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("lastInspection", struct("date")).drop("date")
-
-    loc_info_df = loc_info_df.withColumn("publicationDate", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("lastReport", struct("publicationDate")).drop("publicationDate")
-
-    loc_info_df = loc_info_df.withColumn("relatedLocationId", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("relatedLocationName", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("type", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("reason", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn(
-        "relationships", struct("relatedLocationId", "relatedLocationName", "type", "reason")
-    ).drop("relatedLocationId", "relatedLocationName", "type", "reason")
-    loc_info_df = loc_info_df.withColumn("relationships", array("relationships"))
-
-    loc_info_df = loc_info_df.withColumn("code", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("primary", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("name", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("inspectionCategories", struct("code", "primary", "name")).drop(
-        "code", "primary", "name"
-    )
-    loc_info_df = loc_info_df.withColumn("inspectionCategories", array("inspectionCategories"))
-
-    loc_info_df = loc_info_df.withColumn("currentRatings", lit(None).cast(StructType()))
-    loc_info_df = loc_info_df.withColumn("historicRatings", lit(None).cast(ArrayType(StructType())))
-
-    loc_info_df = loc_info_df.withColumn("linkId", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("reportDate", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("reportUri", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("firstVisitDate", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn("reportType", lit(None).cast(StringType()))
-    loc_info_df = loc_info_df.withColumn(
-        "reports", struct("linkId", "reportDate", "reportUri", "firstVisitDate", "reportType")
-    ).drop("linkId", "reportDate", "reportUri", "firstVisitDate", "reportType")
-    loc_info_df = loc_info_df.withColumn("reports", array("reports"))
-
-    loc_info_df = loc_info_df.withColumn("reports", lit(None).cast(ArrayType(StructType())))
-
-    loc_info_df = loc_info_df.withColumnRenamed("temp_type", "type")
-    loc_info_df = loc_info_df.withColumnRenamed("temp_name", "name")
 
     return loc_info_df
 
