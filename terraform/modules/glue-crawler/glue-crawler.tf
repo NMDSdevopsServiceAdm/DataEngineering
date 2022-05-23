@@ -1,7 +1,7 @@
 resource "aws_glue_crawler" "crawler" {
   database_name = var.workspace_glue_database_name
   name          = "${terraform.workspace}-data_engineering_${var.datset_for_crawler}"
-  role          = var.glue_crawler_iam_role
+  role          = var.glue_role.arn
   schedule      = var.schedule
 
   recrawl_policy {

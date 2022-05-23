@@ -4,10 +4,12 @@ variable "datset_for_crawler" {
   default     = null
 }
 
-variable "glue_crawler_iam_role" {
-  description = "Role Arn for the glue crawler to assume during execution"
-  type        = string
-  default     = null
+variable "glue_role" {
+  description = "Glue Role that the crawler will use to execute."
+  type = object({
+    name = string
+    arn  = string
+  })
 }
 
 variable "data_path" {
