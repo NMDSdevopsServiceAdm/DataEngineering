@@ -54,6 +54,25 @@ jobs:
             terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform apply -auto-approve
+  
+  deploy-dependencies:
+    docker:
+      - image: circleci/python:3.9.6
+    resource_class: small
+
+    steps:
+      - checkout
+
+      - run:
+          name: package utils, schemas and environment
+          command: |
+            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas environment
+
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: dependencies
+          to: 's3://sfc-data-engineering/scripts/dependencies'
+
           
 workflows:
   version: 2
@@ -63,3 +82,6 @@ workflows:
       - deploy-terraform:
           requires:
             - test
+      - deploy-dependencies:
+          requires:
+            - deploy-terraform
