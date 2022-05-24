@@ -43,7 +43,7 @@ jobs:
           command: |
             pipenv run python -m unittest discover tests/integration
 
-  deploy-terraform:
+  terraform-plan:
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
@@ -57,7 +57,28 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform apply -auto-approve
+            terraform plan -out tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  terraform-apply:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: terraform
+          command: |
+            cd terraform/pipeline
+            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform apply -auto-approve tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   
   deploy-dependencies:
     docker:
@@ -83,9 +104,16 @@ workflows:
   build-test-and-deploy:
     jobs:
       - test
-      - deploy-terraform:
+      - terraform-plan:
           requires:
             - test
+      - plan-approval:
+          type: approval
+          requires:
+            - terraform-plan
+      - terraform-apply:
+          requires:
+            - plan-approval
       - deploy-dependencies:
           requires:
-            - deploy-terraform
+            - terraform-apply
