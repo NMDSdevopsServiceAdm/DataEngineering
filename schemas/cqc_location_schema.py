@@ -139,7 +139,6 @@ LOCATION_SCHEMA = StructType(
                                         )
                                     ),
                                 ),
-                                StructField("reportDate", StringType(), True),
                             ]
                         ),
                         True,
