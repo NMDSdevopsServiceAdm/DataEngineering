@@ -64,6 +64,7 @@ jobs:
           root: .
           paths:
             - terraform/pipeline/tfapply
+            - terraform/pipeline/.*
 
   terraform-apply:
     docker:
@@ -75,8 +76,6 @@ jobs:
           name: terraform apply
           command: |
             cd terraform/pipeline
-            terraform init -input=false
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform apply -auto-approve tfapply
   
   deploy-dependencies:
