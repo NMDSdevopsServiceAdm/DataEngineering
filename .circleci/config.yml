@@ -121,7 +121,7 @@ workflows:
   
   test-plan-and-deploy-to-dev:    
     jobs:
-      - test
+      - test:
           filters:
             branches:
               ignore: main
