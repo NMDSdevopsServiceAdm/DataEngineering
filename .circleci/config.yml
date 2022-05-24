@@ -52,12 +52,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: terraform apply
+          name: terraform plan
           command: |
             cd terraform/pipeline
             terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform plan -out tfapply
+            terraform plan -out /tmp/tfapply
+      - store_artifacts:
+          path: /tmp/tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -70,11 +72,11 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: terraform
+          name: terraform apply
           command: |
             cd terraform/pipeline
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform apply -auto-approve tfapply
+            terraform apply -auto-approve /tmp/tfapply
       - persist_to_workspace:
           root: .
           paths:
