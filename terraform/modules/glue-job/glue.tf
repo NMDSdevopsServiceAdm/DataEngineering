@@ -1,5 +1,5 @@
 resource "aws_glue_job" "glue_job" {
-  name              = "${terraform.workspace}-${replace(var.script_name, ".py", "")}_job"
+  name              = local.job_name
   role_arn          = var.glue_role.arn
   glue_version      = "2.0"
   worker_type       = "Standard"
