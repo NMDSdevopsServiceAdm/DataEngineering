@@ -99,9 +99,12 @@ jobs:
           
 workflows:
   version: 2
-  build-test-and-deploy:
+  test-plan-approve-and-deploy-to-main:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              only: main
       - terraform-plan:
           requires:
             - test
@@ -109,13 +112,25 @@ workflows:
           type: approval
           requires:
             - terraform-plan
-          filters:
-            branches:
-              only:
-                - main
       - terraform-apply:
           requires:
             - plan-approval
+      - deploy-dependencies:
+          requires:
+            - terraform-apply
+  
+  test-plan-and-deploy-to-dev:    
+    jobs:
+      - test
+          filters:
+            branches:
+              ignore: main
+      - terraform-plan:
+          requires:
+            - test
+      - terraform-apply:
+          requires:
+            - terraform-plan
       - deploy-dependencies:
           requires:
             - terraform-apply
