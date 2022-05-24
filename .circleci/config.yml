@@ -109,6 +109,10 @@ workflows:
           type: approval
           requires:
             - terraform-plan
+          filters:
+            branches:
+              only:
+                - main
       - terraform-apply:
           requires:
             - plan-approval
