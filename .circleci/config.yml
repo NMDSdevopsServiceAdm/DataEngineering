@@ -59,7 +59,7 @@ jobs:
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform plan -out tfapply
       - store_artifacts:
-          path: /tmp/tfapply
+          path: terraform/pipeline/tfapply
       - persist_to_workspace:
           root: .
           paths:
@@ -75,6 +75,7 @@ jobs:
           name: terraform apply
           command: |
             cd terraform/pipeline
+            terraform init -input=false
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform apply -auto-approve tfapply
   
