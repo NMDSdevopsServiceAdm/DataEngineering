@@ -53,7 +53,6 @@ LOCATION_SCHEMA = StructType(
             ),
             True,
         ),
-        # StructField('locationTypes', ArrayType(), False),
         StructField(
             "regulatedActivities",
             ArrayType(
@@ -114,7 +113,6 @@ LOCATION_SCHEMA = StructType(
             ),
             True,
         ),
-        # StructField('inspectionAreas', ArrayType(), True),
         StructField(
             "currentRatings",
             StructType(
