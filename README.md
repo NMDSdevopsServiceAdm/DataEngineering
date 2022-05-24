@@ -93,14 +93,29 @@ For verbose output add `-v` to the end of the command.
 # Infrastructure
 
 So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code). 
-## Installing Terraform
+
+## Our Continuous Depoyment Pipeline 
+***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
+
+We utilise [CircleCI](https://circleci.com/docs/?utm_source=google&utm_medium=sem&utm_campaign=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand&utm_term=g_p-circleci_c__linux_20220513&utm_content=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand_keyword-text_eta-circleCI_phrase-&gclid=Cj0KCQjwhLKUBhDiARIsAMaTLnGUFcuTVX-Ux2Asd9rfD9z0kiZiIr69Aj-cSPmQAi7xtr6jkYzFVtwaAkj-EALw_wcB) to automate terraform deployments. <br>
+When creating a new git branch and pushing to the remote repository a CircleCi workflow will automatically trigger. <br>
+One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
+Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.
+
+> ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
+
+
+## The manual approach
+### Installing Terraform
 The Terraform docs are an excellant resource for this: https://learn.hashicorp.com/
 tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 1. Download binary: https://www.terraform.io/downloads
 2. Unzip
 3. Make available on path
 
-## Deploying the Pipeline
+
+
+### Deploying Terraform
 
 1. Ensure you set the following environment variables
 
@@ -113,7 +128,7 @@ export TF_VAR_aws_access_key= [ aws access key ]
 
 ```
 adamprobert@Adams-MBP DataEngineering % pwd
-/Users/adamprobert/Projects/skillsforcare/DataEngineering/old-terraform
+/Users/adamprobert/Projects/skillsforcare/DataEngineering/terraform/pipeline
 ```
 
 3. Run `terraform plan` to evaluate the planned changes
