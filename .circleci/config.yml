@@ -63,7 +63,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - /tmp/tfapply
 
   terraform-apply:
     docker:
@@ -77,10 +77,6 @@ jobs:
             cd terraform/pipeline
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform apply -auto-approve /tmp/tfapply
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
   
   deploy-dependencies:
     docker:
