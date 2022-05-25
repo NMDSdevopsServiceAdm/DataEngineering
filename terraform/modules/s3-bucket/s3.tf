@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket = "sfc-${terraform.workspace}-${var.bucket_name}"
+  bucket        = "sfc-${terraform.workspace}-${var.bucket_name}"
+  force_destroy = var.empty_bucket_on_destroy
 }
 
 resource "aws_s3_bucket_acl" "s3_bucket_acl" {
