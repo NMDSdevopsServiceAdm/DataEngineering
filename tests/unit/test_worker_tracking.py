@@ -6,7 +6,7 @@ from utils import utils
 from pyspark.sql import SparkSession
 
 from environment import environment
-from jobs import stayer_vs_leaver_dataset
+from jobs import worker_tracking
 
 from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_workplace_start_file,
@@ -27,7 +27,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def setUpClass(self):
         os.environ[environment.OS_ENVIRONEMNT_VARIABLE] = environment.DEVELOPMENT
 
-        self.spark = SparkSession.builder.appName("test_stayer_vs_leaver_dataset").getOrCreate()
+        self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
         generate_ascwds_stayer_leaver_workplace_start_file(self.START_PERIOD_WORKPLACE_FILE)
         generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
         generate_ascwds_stayer_leaver_workplace_end_file(self.END_PERIOD_WORKPLACE_FILE)
@@ -45,7 +45,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     def test_updated_within_time_period(self):
 
-        filtered_df = stayer_vs_leaver_dataset.updated_within_time_period(self.START_PERIOD_WORKPLACE_FILE)
+        filtered_df = worker_tracking.updated_within_time_period(self.START_PERIOD_WORKPLACE_FILE)
 
         self.assertEqual(filtered_df.count(), 4)
         self.assertEqual(filtered_df.columns, ["establishmentid"])
@@ -65,7 +65,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df_start = self.spark.createDataFrame([("1",), ("2",), ("3",), ("4",), ("5",)], ["establishmentid"])
         df_end = self.spark.createDataFrame([("2",), ("4",), ("6",)], ["establishmentid"])
 
-        df = stayer_vs_leaver_dataset.workplaces_in_both_dfs(df_start, df_end)
+        df = worker_tracking.workplaces_in_both_dfs(df_start, df_end)
 
         self.assertEqual(df.count(), 2)
         self.assertEqual(df.columns, ["establishmentid"])
@@ -77,7 +77,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def test_get_ascwds_worker_df(self):
         estab_list_df = self.spark.createDataFrame([("108",), ("110",), ("111",)], ["establishmentid"])
 
-        df = stayer_vs_leaver_dataset.get_ascwds_worker_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
+        df = worker_tracking.get_ascwds_worker_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
 
         self.assertEqual(df.count(), 12)
         self.assertEqual(
@@ -110,7 +110,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         ]
         end_df = spark.createDataFrame(end_rows, columns)
 
-        start_df = stayer_vs_leaver_dataset.determine_stayer_or_leaver(start_df, end_df)
+        start_df = worker_tracking.determine_stayer_or_leaver(start_df, end_df)
 
         self.assertEqual(start_df.count(), 2)
 
@@ -119,7 +119,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(collected_start_df[1]["stayer_or_leaver"], "leaver")
 
     def test_main(self):
-        output_df = stayer_vs_leaver_dataset.main(
+        output_df = worker_tracking.main(
             self.START_PERIOD_WORKPLACE_FILE,
             self.START_PERIOD_WORKER_FILE,
             self.END_PERIOD_WORKPLACE_FILE,
