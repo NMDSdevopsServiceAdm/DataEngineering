@@ -69,6 +69,7 @@ jobs:
   terraform-apply:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+    resource_class: small
     steps:
       - attach_workspace:
           at: .
@@ -105,6 +106,9 @@ workflows:
           filters:
             branches:
               only: main
+      - deploy-dependencies:
+          requires:
+            - test
       - terraform-plan:
           requires:
             - test
@@ -115,9 +119,7 @@ workflows:
       - terraform-apply:
           requires:
             - plan-approval
-      - deploy-dependencies:
-          requires:
-            - terraform-apply
+
   
   test-plan-and-deploy-to-dev:    
     jobs:
