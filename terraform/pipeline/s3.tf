@@ -10,5 +10,5 @@ module "datasets_bucket" {
 
 module "adams_test_bucket" {
   source      = "../modules/s3-bucket"
-  bucket_name = "adams_test_bucket"
+  bucket_name = "adams-test-bucket"
 }
