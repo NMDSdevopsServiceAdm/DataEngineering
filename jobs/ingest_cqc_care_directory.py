@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
-from pyspark.sql.types import StringType, FloatType, StructType, ArrayType
+from pyspark.sql.types import StringType, IntegerType
 from utils import utils
 import sys
 from schemas import cqc_location_schema, cqc_provider_schema
@@ -182,6 +182,7 @@ def get_general_location_info(df):
         "localauthority as localAuthority",
     ).distinct()
 
+    loc_info_df = loc_info_df.withColumn("numberOfBeds", col("numberOfBeds").cast(IntegerType()))
     loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
     loc_info_df = loc_info_df.withColumn("registrationStatus", lit("Registered"))
 
