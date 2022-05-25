@@ -2,6 +2,20 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   name        = "${terraform.workspace}-${var.glue_database_name}"
   description = "Database for all datasets belonging to the ${terraform.workspace} environment."
 }
+
+module "gary_job" {
+  source          = "../modules/glue-job"
+  script_name     = "garys_newscirpt.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = ""
+  }
+}
+
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
   script_name     = "csv_to_parquet.py"
