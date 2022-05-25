@@ -1,0 +1,154 @@
+id,location
+102,Cumbria
+104,Northumberland
+106,Gateshead
+107,Newcastle upon Tyne
+108,North Tyneside
+109,South Tyneside
+110,Sunderland
+111,Hartlepool
+112,Middlesbrough
+113,Redcar & Cleveland
+114,Stockton on Tees
+116,Durham
+117,Darlington
+204,Barnsley
+205,Doncaster
+206,Rotherham
+207,Sheffield
+209,Bradford
+210,Calderdale
+211,Kirklees
+212,Leeds
+213,Wakefield
+214,East Riding of Yorkshire
+215,Kingston upon Hull
+216,North East Lincolnshire
+217,North Lincolnshire
+218,North Yorkshire
+219,York
+304,Bolton
+305,Bury
+306,Manchester
+307,Oldham
+308,Rochdale
+309,Salford
+310,Stockport
+311,Tameside
+312,Trafford
+313,Wigan
+315,Knowsley
+316,Liverpool
+317,Sefton
+318,St Helens
+319,Wirral
+320,Cheshire
+321,Halton
+322,Warrington
+323,Lancashire
+324,Blackburn with Darwen
+325,Blackpool
+404,Warwickshire
+406,Birmingham
+407,Coventry
+408,Dudley
+409,Sandwell
+410,Solihull
+411,Walsall
+412,Wolverhampton
+413,Staffordshire
+414,Stoke on Trent
+415,Herefordshire
+416,Worcestershire
+417,Shropshire
+418,Telford & Wrekin
+503,Lincolnshire
+504,Northamptonshire
+506,Derbyshire
+507,Derby
+508,Leicestershire
+509,Leicester
+510,Rutland
+511,Nottinghamshire
+512,Nottingham
+606,Hertfordshire
+607,Norfolk
+608,Oxfordshire
+609,Suffolk
+610,Bedfordshire
+611,Luton
+612,Buckinghamshire
+613,Milton Keynes
+614,Bracknell Forest
+615,West Berkshire
+616,Reading
+617,Slough
+618,Windsor & Maidenhead
+619,Wokingham
+620,Essex
+621,Southend on Sea
+622,Thurrock
+623,Cambridgeshire
+624,Peterborough
+702,Camden
+703,Greenwich
+704,Hackney
+705,Hammersmith & Fulham
+706,Islington
+707,Kensington & Chelsea
+708,Lambeth
+709,Lewisham
+710,Southwark
+711,Tower Hamlets
+712,Wandsworth
+713,Westminster
+714,City of London
+716,Barking & Dagenham
+717,Barnet
+718,Bexley
+719,Brent
+720,Bromley
+721,Croydon
+722,Ealing
+723,Enfield
+724,Haringey
+725,Harrow
+726,Havering
+727,Hillingdon
+728,Hounslow
+729,Kingston upon Thames
+730,Merton
+731,Newham
+732,Redbridge
+733,Richmond upon Thames
+734,Sutton
+735,Waltham Forest
+803,Isle of Wight
+805,Surrey
+807,West Sussex
+809,Dorset
+822,"Bournemouth, Christchurch and Poole"
+812,Hampshire
+813,Portsmouth
+814,Southampton
+815,East Sussex
+816,Brighton & Hove
+817,Wiltshire
+819,Swindon
+820,Kent
+821,Medway
+902,Cornwall
+904,Gloucestershire
+905,Somerset
+906,Isles of Scilly
+908,Bath and North East Somerset
+909,Bristol
+910,North Somerset
+911,South Gloucestershire
+912,Devon
+913,Plymouth
+914,Torbay
+996,Bedford
+997,Central Bedfordshire
+998,Cheshire East
+999,Cheshire West & Chester
