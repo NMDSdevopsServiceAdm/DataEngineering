@@ -140,6 +140,29 @@ resource "aws_glue_job" "csv_to_parquet_job" {
   }
 }
 
+resource "aws_glue_job" "worker_tracking_job" {
+  name              = "worker_tracking_job"
+  role_arn          = aws_iam_role.glue_service_iam_role.arn
+  glue_version      = "2.0"
+  worker_type       = "Standard"
+  number_of_workers = 2
+  execution_property {
+    max_concurrent_runs = 5
+  }
+  command {
+    script_location = "${var.scripts_location}worker_tracking.py"
+  }
+
+  default_arguments = {
+    "--extra-py-files" : "s3://sfc-data-engineering/scripts/dependencies/dependencies.zip"
+    "--TempDir"                     = var.glue_temp_dir
+    "--source_start_workplace_file" = ""
+    "--source_start_worker_file"    = ""
+    "--source_end_workplace_file"   = ""
+    "--source_end_worker_file"      = ""
+    "--destination"                 = ""
+  }
+}
 resource "aws_glue_job" "ingest_ascwds_dataset" {
   name              = "ingest_ascwds_dataset_job"
   role_arn          = aws_iam_role.glue_service_iam_role.arn
