@@ -69,7 +69,6 @@ module "estimate_2021_jobs_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--job_estimates_source"      = ""
     "--prepared_locations_source" = ""
     "--destination"               = ""
   }
