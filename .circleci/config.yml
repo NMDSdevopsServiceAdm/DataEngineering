@@ -111,7 +111,7 @@ jobs:
       - run:
           name: load bucket name as environment variable
           command: |
-            export BUCKET_NAME=$(cat terraform/pipeline/bucketname)
+            export BUCKET_NAME=$(cat terraform/pipeline/bucketname) >> $BASH_ENV
             echo $BUCKET_NAME
 
       - aws-s3/sync:
