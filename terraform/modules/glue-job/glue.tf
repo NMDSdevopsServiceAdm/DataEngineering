@@ -16,7 +16,7 @@ resource "aws_glue_job" "glue_job" {
 
   default_arguments = merge(var.job_parameters,
     {
-      "--extra-py-files" : "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip"
+      "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip"
       "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
       "--enable-continuous-cloudwatch-log" = "true"
   })

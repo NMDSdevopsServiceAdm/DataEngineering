@@ -3,7 +3,6 @@ variable "job_parameters" {
   type        = map(any)
 }
 
-
 variable "trigger" {
   description = "Should a trigger be added to this job?"
   type        = bool
@@ -15,4 +14,3 @@ variable "trigger_schedule" {
   type        = string
   default     = ""
 }
-
