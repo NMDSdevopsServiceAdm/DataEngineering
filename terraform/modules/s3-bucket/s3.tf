@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket        = "sfc-${terraform.workspace}-${var.bucket_name}"
+  bucket        = lower(replace("sfc-${terraform.workspace}-${var.bucket_name}", "/[^A-Za-z0-9 ]/", "-"))
   force_destroy = var.empty_bucket_on_destroy
 }
 
