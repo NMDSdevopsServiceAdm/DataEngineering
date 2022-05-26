@@ -14,3 +14,7 @@ terraform {
 
   }
 }
+
+output "s3_resources_bucket_name" {
+  value = module.pipeline_resources.bucket_name
+}
