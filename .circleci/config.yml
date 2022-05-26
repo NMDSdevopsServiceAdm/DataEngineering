@@ -33,15 +33,15 @@ jobs:
           paths:
             - ~/.local/share/virtualenvs
 
-      # - run:
-      #     name: run unit tests
-      #     command: |
-      #       pipenv run python -m unittest discover tests/unit
+      - run:
+          name: run unit tests
+          command: |
+            pipenv run python -m unittest discover tests/unit
 
-      # - run:
-      #     name: run integration tests
-      #     command: |
-      #       pipenv run python -m unittest discover tests/integration
+      - run:
+          name: run integration tests
+          command: |
+            pipenv run python -m unittest discover tests/integration
 
   terraform-plan:
     working_directory: /tmp/project
