@@ -112,6 +112,7 @@ jobs:
           name: load bucket name as environment variable
           command: |
             export BUCKET_NAME=$(cat terraform/pipeline/bucketname)
+            echo $BUCKET_NAME
 
       - aws-s3/sync:
           aws-region: AWS_REGION
