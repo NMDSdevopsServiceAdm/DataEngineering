@@ -46,7 +46,7 @@ jobs:
   terraform-plan:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
       - checkout
@@ -68,7 +68,7 @@ jobs:
 
   terraform-apply:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
       - attach_workspace:
