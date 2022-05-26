@@ -84,7 +84,7 @@ jobs:
           name: persist resource bucket name
           command: |
             cd terraform/pipeline
-            echo 's3://${terraform output -raw s3_resources_bucket_name}' > bucketname
+            echo "s3://$(terraform output -raw s3_resources_bucket_name)" > bucketname
       
       - persist_to_workspace:
           root: .
