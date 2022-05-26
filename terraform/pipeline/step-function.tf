@@ -7,7 +7,7 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
 
 
 resource "aws_iam_role" "step_function_iam_role" {
-  name               = "${terraform.workspace}-AWSStepFunction-data-engineering-role"
+  name               = "${terraform.workspace}-AWSStepFunction-role"
   assume_role_policy = data.aws_iam_policy_document.step_function_iam_policy.json
 }
 
