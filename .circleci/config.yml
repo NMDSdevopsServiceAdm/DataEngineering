@@ -117,7 +117,7 @@ jobs:
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
-          to: 's3://${BUCKET_NAME}'
+          to: s3://${BUCKET_NAME}
 
           
 workflows:
