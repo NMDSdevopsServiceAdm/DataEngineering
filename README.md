@@ -155,7 +155,7 @@ Nobody wants a bunch of infrastructure left lying around, unused, it adds cognit
 To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
 
 ```
-cd terraform/pipeleine
+cd terraform/pipeline
 terraform workspace list
 ```
 
