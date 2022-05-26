@@ -1,4 +1,4 @@
-variable "datset_for_crawler" {
+variable "dataset_for_crawler" {
   description = "The name of the datasets domain for use as the crawler name"
   type        = string
   default     = null
