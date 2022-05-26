@@ -1,11 +1,9 @@
-import os
 import shutil
 import unittest
 
 from utils import utils
 from pyspark.sql import SparkSession
 
-from environment import environment
 from jobs import worker_tracking
 
 from tests.test_file_generator import (
@@ -25,8 +23,6 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.environ[environment.OS_ENVIRONEMNT_VARIABLE] = environment.DEVELOPMENT
-
         self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
         generate_ascwds_stayer_leaver_workplace_start_file(self.START_PERIOD_WORKPLACE_FILE)
         generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
