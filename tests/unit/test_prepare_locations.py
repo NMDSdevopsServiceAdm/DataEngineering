@@ -6,7 +6,6 @@ from datetime import date
 from pyspark.sql import SparkSession
 from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, StructType
 
-from environment import environment
 from jobs import prepare_locations
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
@@ -18,12 +17,10 @@ from tests.test_file_generator import (
 
 class PrepareLocationsTests(unittest.TestCase):
 
-    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file.parquet"
-    TEST_CQC_LOCATION_FILE = "tests/test_data/tmp/cqc_locations_file.parquet"
-    TEST_CQC_PROVIDERS_FILE = "tests/test_data/tmp/cqc_providers_file.parquet"
-    TEST_PIR_FILE = "tests/test_data/tmp/pir_file.parquet"
-
-    test_data_basepath = "tests/test_data"
+    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/domain=ascwds/dataset=workplace"
+    TEST_CQC_LOCATION_FILE = "tests/test_data/domain=cqc/dataset=location"
+    TEST_CQC_PROVIDERS_FILE = "tests/test_data/domain=cqc/dataset=providers"
+    TEST_PIR_FILE = "tests/test_data/domain=cqc/dataset=pir"
 
     calculate_jobs_schema = StructType(
         [
@@ -37,8 +34,6 @@ class PrepareLocationsTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.environ[environment.OS_ENVIRONEMNT_VARIABLE] = environment.DEVELOPMENT
-
         self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
@@ -108,9 +103,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(workplace_df.count(), 10)
 
     def test_get_cqc_location_df(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1), self.test_data_basepath
-        )
+        cqc_location_df = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1))
 
         self.assertEqual(cqc_location_df.columns[0], "locationid")
         self.assertEqual(cqc_location_df.columns[1], "providerid")
@@ -118,9 +111,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_location_df.count(), 14)
 
     def test_get_cqc_provider_df(self):
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(
-            self.TEST_CQC_PROVIDERS_FILE, date(2022, 1, 5), self.test_data_basepath
-        )
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(self.TEST_CQC_PROVIDERS_FILE, date(2022, 1, 5))
 
         self.assertEqual(cqc_provider_df.columns[0], "providerid")
         self.assertEqual(cqc_provider_df.columns[1], "provider_name")
@@ -128,7 +119,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_provider_df.count(), 3)
 
     def test_get_pir_df(self):
-        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2022, 1, 5), self.test_data_basepath)
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2022, 1, 5))
 
         self.assertEqual(pir_df.count(), 8)
         self.assertEqual(len(pir_df.columns), 3)
@@ -159,9 +150,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(result, date(2020, 3, 31))
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1), self.test_data_basepath
-        )
+        cqc_location_df = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE, date(2022, 1, 1))
 
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
@@ -192,16 +181,10 @@ class PrepareLocationsTests(unittest.TestCase):
         )
 
     def test_generate_closest_date_matrix(self):
-        workplace_df = prepare_locations.get_ascwds_workplace_df(
-            self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 11, 30), self.test_data_basepath
-        )
-        cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5), self.test_data_basepath
-        )
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(
-            self.TEST_CQC_PROVIDERS_FILE, date(2022, 4, 1), self.test_data_basepath
-        )
-        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2020, 3, 31), self.test_data_basepath)
+        workplace_df = prepare_locations.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE, date(2021, 11, 30))
+        cqc_location_df = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE, date(2022, 1, 5))
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(self.TEST_CQC_PROVIDERS_FILE, date(2022, 4, 1))
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2020, 3, 31))
 
         result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
 
