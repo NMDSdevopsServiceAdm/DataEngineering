@@ -26,7 +26,8 @@ def main(
 
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(start_worker_df, destination)
+        # utils.write_to_parquet(start_worker_df, destination)
+        start_worker_df.write.coalesce(1).write.mode("overwrite").option("header", "true").csv(destination)
     else:
         return start_worker_df
 
