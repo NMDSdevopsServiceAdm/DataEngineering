@@ -13,6 +13,8 @@ class PrepareWorkersTests(unittest.TestCase):
         result = prepare_workers.main("source", "destination")
         self.assertTrue(result)
 
+    def test_get_dataset_worker(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

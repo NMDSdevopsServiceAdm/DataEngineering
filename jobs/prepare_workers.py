@@ -5,6 +5,9 @@ import sys
 def main(source, destination):
     return True
 
+def get_dataset_worker(worker_source):
+    pass
+
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
