@@ -156,6 +156,7 @@ To remove Terraform generated infrastructure first ensure you are in the correct
 
 ```
 cd terraform/pipeline
+terraform init
 terraform workspace list
 ```
 
