@@ -9,7 +9,7 @@ resource "aws_glue_crawler" "crawler" {
   }
 
   s3_target {
-    path = var.data_path
+    path = "s3://sfc-${terraform.workspace}-datasets/domain=${var.dataset_for_crawler}/"
   }
 
   schema_change_policy {
