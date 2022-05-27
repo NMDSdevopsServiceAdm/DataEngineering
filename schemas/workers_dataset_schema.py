@@ -38,7 +38,6 @@ WORKER_SCHEMA = StructType(
         StructField("homeregionid", IntegerType(), True),
         StructField("homecssrid", IntegerType(), True),
         StructField("homelauthid", IntegerType(), True),
-        # StructField("homeparliamentaryconstituency", StringType()?, True), there are all NA
         StructField("distwrkk", FloatType(), True),
         StructField("scerec", IntegerType(), True),
         StructField("startsec", IntegerType(), True),
@@ -60,7 +59,6 @@ WORKER_SCHEMA = StructType(
         StructField("listhiqualev", IntegerType(), True),
         StructField("jd16registered", IntegerType(), True),
         StructField("amhp", IntegerType(), True),
-        # StructField("parliamentaryconstituency", StringType()?, True), # only NAs
         StructField("flujab2020", IntegerType(), True),
         StructField("derivedfrom_hasbulkuploaded", IntegerType(), True),
         StructField("previous_pay", FloatType(), True),
@@ -69,6 +67,6 @@ WORKER_SCHEMA = StructType(
         StructField("year", IntegerType(), True),
         StructField("month", IntegerType(), True),
         StructField("day", IntegerType(), True),
-        StructField("import_date", IntegerType(), True),  # this is stored as an integer
+        StructField("import_date", TimestampType(), True)
     ]
 )
