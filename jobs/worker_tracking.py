@@ -95,7 +95,7 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--source_start_worker_file",
+        "--source_end_worker_file",
         help="Source s3 directory for ASCWDS worker dataset - end of 12 month period.",
         required=True,
     )
