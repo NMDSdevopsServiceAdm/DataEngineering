@@ -1,12 +1,29 @@
 import argparse
 import sys
 
+from utils import utils
+
+from pyspark.sql.functions import col
 
 def main(source, destination):
     return True
 
 def get_dataset_worker(worker_source):
-    pass
+    spark = utils.get_spark()
+
+    print(f"Reading workplaces parquet from {worker_source}")
+    # worker_df = (
+    #     spark.read.option("basePath", worker_source)
+    #     .parquet(worker_source)
+    #     .select(
+    #         col("col_a"),
+    #         col("col_b"),
+    #         col("col_c"),
+    #         col("date_col")
+    #     )
+    # )
+    worker_df = utils.read_csv(worker_source, ",")
+    return worker_df
 
 
 def collect_arguments():
