@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp
+from pyspark.sql.functions import to_timestamp, to_date, col
 import os
 import boto3
 import csv
@@ -76,9 +76,7 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -92,6 +90,10 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM
         df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
 
     return df
+
+
+def format_import_date(df, fieldname="import_date"):
+    return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
 
 
 def is_csv(filename):

@@ -1,6 +1,5 @@
 import argparse
 from pyspark.sql.functions import col, add_months, concat, lit
-from jobs import prepare_locations
 
 from utils import utils
 
@@ -37,7 +36,7 @@ def updated_within_time_period(df):
 
     df = spark.read.parquet(df)
     df = df.select("establishmentid", "mupddate", "import_date", "wkrrecs")
-    df = prepare_locations.format_import_date(df)
+    df = utils.format_import_date(df)
     df = df.withColumn("mupddate_cutoff", add_months(df.import_date, -6))
     df = df.filter((df.mupddate > df.mupddate_cutoff) & (df.wkrrecs >= 1))
     df = df.select("establishmentid")
