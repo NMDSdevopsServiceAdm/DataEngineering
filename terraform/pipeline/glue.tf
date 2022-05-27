@@ -55,8 +55,8 @@ module "worker_tracking_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--source_start_workplace_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=03/day=31/import_date=20210331/"
-    "--source_start_worker_file" = "s3://sfc-main-datasets /domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=03/day=31/import_date=20210331/"
+    "--source_start_workplace_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
+    "--source_start_worker_file" = "s3://sfc-main-datasets /domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
     "--source_end_workplace_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
     "--source_end_worker_file" = "s3://sfc-main-datasets /domain=ASCWDS/dataset=worker/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
     "--destination" = "s3://skillsforcare/test_worker_tracking_2021_to_2022/"
