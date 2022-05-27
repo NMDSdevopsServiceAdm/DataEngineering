@@ -128,9 +128,6 @@ workflows:
           filters:
             branches:
               only: main
-      - deploy-dependencies:
-          requires:
-            - test
       - terraform-plan:
           requires:
             - test
@@ -141,6 +138,9 @@ workflows:
       - terraform-apply:
           requires:
             - plan-approval
+      - deploy-dependencies:
+          requires:
+            - terraform-apply
 
   
   test-plan-and-deploy-to-dev:    

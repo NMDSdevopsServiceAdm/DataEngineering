@@ -47,6 +47,22 @@ module "prepare_locations_job" {
   }
 }
 
+module "worker_tracking_job" {
+  source          = "../modules/glue-job"
+  script_name     = "worker_tracking.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--source_start_workplace_file" = ""
+    "--source_start_worker_file" = ""
+    "--source_end_workplace_file" = ""
+    "--source_end_worker_file" = ""
+    "--destination" = ""
+  }
+}
+
 module "job_role_breakdown_job" {
   source          = "../modules/glue-job"
   script_name     = "job_role_breakdown.py"

@@ -4,18 +4,12 @@ from jobs import prepare_locations
 
 from utils import utils
 
-START_PERIOD_WORKPLACE_FILE = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=03/day=31/import_date=20210331/"
-START_PERIOD_WORKER_FILE = "s3://sfc-data-engineering/domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=03/day=31/import_date=20210331/"
-
-END_PERIOD_WORKPLACE_FILE = "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
-END_PERIOD_WORKER_FILE = "s3://sfc-data-engineering/domain=ASCWDS/dataset=worker/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
-
 
 def main(
-    source_start_workplace_file=START_PERIOD_WORKPLACE_FILE,
-    source_start_worker_file=START_PERIOD_WORKER_FILE,
-    source_end_workplace_file=END_PERIOD_WORKPLACE_FILE,
-    source_end_worker_file=END_PERIOD_WORKER_FILE,
+    source_start_workplace_file,
+    source_start_worker_file,
+    source_end_workplace_file,
+    source_end_worker_file,
     destination=None,
 ):
 
