@@ -8,6 +8,7 @@ from pyspark.sql.functions import col
 def main(source, destination):
     return True
 
+
 def get_dataset_worker(worker_source):
     spark = utils.get_spark()
 
