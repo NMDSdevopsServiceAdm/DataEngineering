@@ -1,0 +1,94 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Ingest ASCWDS",
+    "States": {
+        "Ingest ASCWDS": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "ingest_ascwds_dataset_job",
+                "Arguments": {
+                    "--destination.$": "$.jobs.ingest_ascwds_dataset.destination",
+                    "--source.$": "$.jobs.ingest_ascwds_dataset.source"
+                }
+            },
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "Fail"
+                }
+            ],
+            "Next": "Parallel",
+            "ResultPath": null
+        },
+        "Parallel": {
+            "Type": "Parallel",
+            "Next": "Estimate 2021 Jobs",
+            "ResultPath": null,
+            "Branches": [
+                {
+                    "StartAt": "Run ASCWDS Crawler",
+                    "States": {
+                        "Run ASCWDS Crawler": {
+                            "Type": "Task",
+                            "Parameters": {
+                                "Name": "data_engineering_ASCWDS"
+                            },
+                            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                            "End": true
+                        }
+                    }
+                },
+                {
+                    "StartAt": "Prepare Locations",
+                    "States": {
+                        "Prepare Locations": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                            "Parameters": {
+                                "JobName": "prepare_locations_job",
+                                "Arguments": {
+                                    "--destination.$": "$.jobs.prepare_locations_job.destination",
+                                    "--pir_source.$": "$.jobs.prepare_locations_job.pir_source",
+                                    "--workplace_source.$": "$.jobs.prepare_locations_job.workplace_source",
+                                    "--cqc_provider_source.$": "$.jobs.prepare_locations_job.cqc_provider_source",
+                                    "--cqc_location_source.$": "$.jobs.prepare_locations_job.cqc_location_source"
+                                }
+                            },
+                            "End": true
+                        }
+                    }
+                }
+            ]
+        },
+        "Estimate 2021 Jobs": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "estimate_2021_jobs_job",
+                "Arguments": {
+                    "--destination.$": "$.jobs.estimate_2021_jobs_job.destination",
+                    "--prepared_locations_source.$": "$.jobs.estimate_2021_jobs_job.prepared_locations_source"
+                }
+            },
+            "Next": "Run Data Engineering Crawler",
+            "ResultPath": null
+        },
+        "Run Data Engineering Crawler": {
+            "Type": "Task",
+            "Parameters": {
+                "Name": "data_engineering_DATA_ENGINEERING"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+            "Next": "Success"
+        },
+        "Success": {
+            "Type": "Succeed"
+        },
+        "Fail": {
+            "Type": "Fail"
+        }
+    }
+}
