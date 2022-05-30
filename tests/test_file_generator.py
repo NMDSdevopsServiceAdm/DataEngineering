@@ -374,3 +374,19 @@ def generate_ascwds_workplace_file(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_ascwds_worker_file(output_destination):
+    spark = utils.get_spark()
+    columns = ["period", "establishmentid"]
+
+    rows = [
+        ("M202203", 12345)
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df

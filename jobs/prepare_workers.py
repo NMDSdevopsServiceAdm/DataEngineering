@@ -11,18 +11,15 @@ def main(source, destination):
 def get_dataset_worker(worker_source):
     spark = utils.get_spark()
 
-    print(f"Reading workplaces parquet from {worker_source}")
-    # worker_df = (
-    #     spark.read.option("basePath", worker_source)
-    #     .parquet(worker_source)
-    #     .select(
-    #         col("col_a"),
-    #         col("col_b"),
-    #         col("col_c"),
-    #         col("date_col")
-    #     )
-    # )
-    worker_df = utils.read_csv(worker_source, ",")
+    print(f"Reading worker parquet from {worker_source}")
+    worker_df = (
+        spark.read.option("basePath", worker_source)
+        .parquet(worker_source)
+        .select(
+            col("period"),
+            col("establishmentid")
+        )
+    )
     return worker_df
 
 
