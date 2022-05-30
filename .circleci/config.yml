@@ -43,16 +43,50 @@ jobs:
           command: |
             pipenv run python -m unittest discover tests/integration
 
-    
+  terraform-plan:
+    working_directory: /tmp/project
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: terraform plan
+          command: |
+            cd terraform/pipeline
+            terraform init -input=false
+            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform plan -out tfapply
+      - store_artifacts:
+          path: terraform/pipeline/tfapply
+      - persist_to_workspace:
+          root: .
+          paths:
+            - terraform/pipeline/tfapply
+            - terraform/pipeline/.*
+            - .
 
-
-  deploy:
+  terraform-apply:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: .
+          
+      - run:
+          name: terraform apply
+          command: |
+            cd terraform/pipeline
+            terraform apply -auto-approve tfapply
+  
+  deploy-dependencies:
     docker:
       - image: circleci/python:3.9.6
     resource_class: small
-
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
 
       - run:
           name: package utils, schemas and environment
@@ -62,20 +96,44 @@ jobs:
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
-          to: 's3://sfc-data-engineering/scripts/dependencies'
+          to: 's3://sfc-${CIRCLE_BRANCH}-pipeline-resources/dependencies'
 
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: jobs
-          to: 's3://sfc-data-engineering/scripts/'
-
-
-
+          
 workflows:
-  build-test-and-deploy:
+  version: 2
+  test-plan-approve-and-deploy-to-main:
     jobs:
-      - test
-      - deploy:
+      - test:
+          filters:
+            branches:
+              only: main
+      - terraform-plan:
           requires:
             - test
-        
+      - plan-approval:
+          type: approval
+          requires:
+            - terraform-plan
+      - terraform-apply:
+          requires:
+            - plan-approval
+      - deploy-dependencies:
+          requires:
+            - terraform-apply
+
+  
+  test-plan-and-deploy-to-dev:    
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: main
+      - terraform-plan:
+          requires:
+            - test
+      - terraform-apply:
+          requires:
+            - terraform-plan
+      - deploy-dependencies:
+          requires:
+            - terraform-apply
