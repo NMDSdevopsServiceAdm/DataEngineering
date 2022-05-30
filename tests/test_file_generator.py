@@ -380,7 +380,7 @@ def generate_ascwds_worker_file(output_destination):
     columns = ["period", "establishmentid"]
 
     rows = [
-        ("M202203", 12345)
+        ("M202001", 12345)
     ]
 
     df = spark.createDataFrame(rows, columns)
