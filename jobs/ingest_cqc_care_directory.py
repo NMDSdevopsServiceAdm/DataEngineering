@@ -91,7 +91,7 @@ def main(source, provider_destination=None, location_destination=None):
     df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
 
     print("Create CQC provider parquet file")
-    provider_df = unique_providers_with_locations(df)
+    provider_df = unique_providerids_with_array_of_their_locationids(df)
     distinct_provider_info_df = get_distinct_provider_info(df)
     provider_df = provider_df.join(distinct_provider_info_df, "providerId")
 
@@ -107,20 +107,24 @@ def main(source, provider_destination=None, location_destination=None):
     print("Create CQC location parquet file")
     location_df = get_general_location_info(df)
 
-    reg_man_df = reg_man_to_struct(df)
+    reg_man_df = create_contacts_from_registered_manager_name(df)
 
-    regulatedactivities_df = reformat_cols(df, REGULATEDACTIVITIES_DICT, "regulatedactivities")
-    regulatedactivities_df = regulatedactivities_df.join(reg_man_df, "locationId")
-    regulatedactivities_df = regulatedactivities_to_struct(regulatedactivities_df)
+    regulated_activities_df = convert_multiple_boolean_columns_into_single_array(
+        df, REGULATEDACTIVITIES_DICT, "regulatedactivities"
+    )
+    regulated_activities_df = regulated_activities_df.join(reg_man_df, "locationId")
+    regulated_activities_df = regulated_activities_to_struct(regulated_activities_df)
 
-    gacservicetypes_df = reformat_cols(df, GACSERVICETYPES_DICT, "gacservicetypes")
-    gacservicetypes_df = gacservicetypes_to_struct(gacservicetypes_df)
+    gac_service_types_df = convert_multiple_boolean_columns_into_single_array(
+        df, GACSERVICETYPES_DICT, "gacservicetypes"
+    )
+    gac_service_types_df = gac_service_types_to_struct(gac_service_types_df)
 
-    specialisms_df = reformat_cols(df, SPECIALISMS_DICT, "specialisms")
+    specialisms_df = convert_multiple_boolean_columns_into_single_array(df, SPECIALISMS_DICT, "specialisms")
     specialisms_df = specialisms_to_struct(specialisms_df)
 
-    location_df = location_df.join(regulatedactivities_df, "locationId")
-    location_df = location_df.join(gacservicetypes_df, "locationId")
+    location_df = location_df.join(regulated_activities_df, "locationId")
+    location_df = location_df.join(gac_service_types_df, "locationId")
     location_df = location_df.join(specialisms_df, "locationId")
 
     output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
@@ -135,7 +139,7 @@ def main(source, provider_destination=None, location_destination=None):
     return return_datasets
 
 
-def unique_providers_with_locations(df):
+def unique_providerids_with_array_of_their_locationids(df):
     locations_at_prov_df = df.select("providerId", "locationId")
     locations_at_prov_df = (
         locations_at_prov_df.groupby("providerId")
@@ -189,7 +193,7 @@ def get_general_location_info(df):
     return loc_info_df
 
 
-def reformat_cols(df, value_mapping_dict, alias):
+def convert_multiple_boolean_columns_into_single_array(df, value_mapping_dict, alias):
     column_names = ["locationId"]
     column_names.extend(list(value_mapping_dict.keys()))
 
@@ -212,7 +216,7 @@ def specialisms_to_struct(df):
     return df
 
 
-def gacservicetypes_to_struct(df):
+def gac_service_types_to_struct(df):
 
     df = df.withColumn(
         "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
@@ -221,7 +225,7 @@ def gacservicetypes_to_struct(df):
     return df
 
 
-def reg_man_to_struct(df):
+def create_contacts_from_registered_manager_name(df):
     df = df.select("locationId", "registered_manager_name")
     df = df.replace("*", None)
 
@@ -241,7 +245,7 @@ def reg_man_to_struct(df):
     return df
 
 
-def regulatedactivities_to_struct(df):
+def regulated_activities_to_struct(df):
     df = df.select("locationId", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
 
     df = df.withColumn("name", col("regulatedactivities").getItem(0))

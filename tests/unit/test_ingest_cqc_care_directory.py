@@ -32,7 +32,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        locations_at_prov_df = ingest_cqc_care_directory.unique_providers_with_locations(df)
+        locations_at_prov_df = ingest_cqc_care_directory.unique_providerids_with_array_of_their_locationids(df)
 
         self.assertEqual(locations_at_prov_df.count(), 2)
         self.assertEqual(locations_at_prov_df.columns, ["providerId", "locationIds"])
@@ -192,7 +192,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_reformat_cols(self):
+    def test_convert_multiple_boolean_columns_into_single_array(self):
         columns = [
             "locationId",
             "Column A",
@@ -210,7 +210,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        services_df = ingest_cqc_care_directory.reformat_cols(df, self.REFORMAT_DICT, "new_alias")
+        services_df = ingest_cqc_care_directory.convert_multiple_boolean_columns_into_single_array(
+            df, self.REFORMAT_DICT, "new_alias"
+        )
 
         self.assertEqual(services_df.count(), 3)
         self.assertEqual(services_df.columns, ["locationId", "new_alias"])
@@ -222,7 +224,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
         self.assertEqual(sorted(services_df[2]["new_alias"]), [["name E", "description E"]])
 
-    def test_reg_man_to_struct(self):
+    def test_create_contacts_from_registered_manager_name(self):
         register_manager_schema = StructType(
             fields=[
                 StructField("locationId", StringType(), True),
@@ -238,7 +240,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(data=rows, schema=register_manager_schema)
 
-        df = ingest_cqc_care_directory.reg_man_to_struct(df)
+        df = ingest_cqc_care_directory.create_contacts_from_registered_manager_name(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "contacts"])
@@ -278,7 +280,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_gacservicetypes_to_struct(self):
+    def test_gac_service_types_to_struct(self):
         columns = [
             "locationId",
             "gacservicetypes",
@@ -292,7 +294,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = ingest_cqc_care_directory.gacservicetypes_to_struct(df)
+        df = ingest_cqc_care_directory.gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "gacservicetypes"])
