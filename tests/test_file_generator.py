@@ -1,7 +1,6 @@
 from utils import utils
-from pyspark.sql.functions import col
 from datetime import date
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType, IntegerType
+from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
 
 
 def generate_ethnicity_parquet(output_destination):

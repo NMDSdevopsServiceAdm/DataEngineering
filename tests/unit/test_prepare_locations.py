@@ -1,4 +1,3 @@
-import os
 import shutil
 import unittest
 from datetime import date
@@ -191,7 +190,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_clean(self):
-
         columns = ["locationid", "worker_record_count", "total_staff"]
         rows = [
             ("1-000000001", None, "0"),
