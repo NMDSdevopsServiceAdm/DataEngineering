@@ -1,21 +1,22 @@
 import argparse
 import sys
 
+from pyspark.sql.functions import col
+
 from utils import utils
 
-from pyspark.sql.functions import col
 
 def main(source, destination):
     return True
 
 
-def get_dataset_worker(worker_source):
+def get_dataset_worker(source):
     spark = utils.get_spark()
 
-    print(f"Reading worker parquet from {worker_source}")
+    print(f"Reading worker parquet from {source}")
     worker_df = (
-        spark.read.option("basePath", worker_source)
-        .parquet(worker_source)
+        spark.read.option("basePath", source)
+        .parquet(source)
         .select(
             col("period"),
             col("establishmentid")

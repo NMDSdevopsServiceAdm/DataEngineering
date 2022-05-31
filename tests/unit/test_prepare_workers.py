@@ -1,10 +1,10 @@
-import unittest
 import shutil
+import unittest
+
 from pyspark.sql import SparkSession
+
 from jobs import prepare_workers
-
 from tests.test_file_generator import generate_ascwds_worker_file
-
 
 class PrepareWorkersTests(unittest.TestCase):
 
