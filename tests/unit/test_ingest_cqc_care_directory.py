@@ -1,14 +1,16 @@
 import unittest
+import shutil
 
 from datetime import date
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.types import StructField, StringType, StructType
 from jobs import ingest_cqc_care_directory
+from tests.test_file_generator import generate_cqc_care_directory_csv_file
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
-    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/example_cqc_care_directory.csv"
+    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
 
     REFORMAT_DICT = {
         "Column A": "name A",
@@ -18,8 +20,17 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         "Column-E": "name E,description E",
     }
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+        generate_cqc_care_directory_csv_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
+
+    @classmethod
+    def tearDownClass(self):
+        try:
+            shutil.rmtree(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        except OSError():
+            pass  # Ignore dir does not exist
 
     def test_get_all_job_roles_per_location_df(self):
         columns = ["providerId", "locationId", "other_cols"]
