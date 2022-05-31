@@ -4,6 +4,8 @@ WORKER_SCHEMA = StructType(
     fields=[
         StructField("period", StringType(), True),
         StructField("establishmentid", IntegerType(), True),
+        StructField("tribalid", FloatType(), True),
+        StructField("tribalid_worker", FloatType(), True),
         StructField("parentid", FloatType(), True),
         StructField("orgid", IntegerType(), True),
         StructField("nmdsid", StringType(), True),
@@ -59,6 +61,7 @@ WORKER_SCHEMA = StructType(
         StructField("listhiqualev", IntegerType(), True),
         StructField("jd16registered", IntegerType(), True),
         StructField("amhp", IntegerType(), True),
+        StructField("trainflag", IntegerType(), True),
         StructField("flujab2020", IntegerType(), True),
         StructField("derivedfrom_hasbulkuploaded", IntegerType(), True),
         StructField("previous_pay", FloatType(), True),
