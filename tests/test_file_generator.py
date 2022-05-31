@@ -1,7 +1,7 @@
 from utils import utils
-from pyspark.sql.functions import col
 from datetime import date
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType, IntegerType
+from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
+from schemas import cqc_care_directory_schema
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -378,96 +378,6 @@ def generate_ascwds_workplace_file(output_destination):
 
 def generate_cqc_care_directory_csv_file(output_destination):
     spark = utils.get_spark()
-    columns = [
-        "locationid",
-        "registrationdate",
-        "carehome",
-        "name",
-        "type",
-        "mainphonenumber",
-        "registered_manager_name",
-        "website",
-        "numberofbeds",
-        "region",
-        "localauthority",
-        "postaladdressline1",
-        "postaladdressline2",
-        "postaladdresstowncity",
-        "postaladdresscounty",
-        "postalcode",
-        "provider_brandid",
-        "provider_brandname",
-        "providerid",
-        "provider_name",
-        "provider_mainphonenumber",
-        "provider_website",
-        "provider_postaladdressline1",
-        "provider_postaladdressline2",
-        "provider_postaladdresstowncity",
-        "provider_postaladdresscounty",
-        "provider_postalcode",
-        "provider_nominated_individual_name",
-        "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
-        "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
-        "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
-        "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
-        "Regulated_activity_Diagnostic_and_screening_procedures",
-        "Regulated_activity_Family_planning",
-        "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
-        "Regulated_activity_Maternity_and_midwifery_services",
-        "Regulated_activity_Nursing_care",
-        "Regulated_activity_Personal_care",
-        "Regulated_activity_Services_in_slimming_clinics",
-        "Regulated_activity_Surgical_procedures",
-        "Regulated_activity_Termination_of_pregnancies",
-        "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
-        "Regulated_activity_Treatment_of_disease_disorder_or_injury",
-        "Service_type_Acute_services_with_overnight_beds",
-        "Service_type_Acute_services_without_overnight_beds__listed_acute_services_with_or_without_overnight_beds",
-        "Service_type_Ambulance_service",
-        "Service_type_Blood_and_Transplant_service",
-        "Service_type_Care_home_service_with_nursing",
-        "Service_type_Care_home_service_without_nursing",
-        "Service_type_Community_based_services_for_people_who_misuse_substances",
-        "Service_type_Community_based_services_for_people_with_a_learning_disability",
-        "Service_type_Community_based_services_for_people_with_mental_health_needs",
-        "Service_type_Community_health_care_services_Nurses_Agency_only",
-        "Service_type_Community_healthcare_service",
-        "Service_type_Dental_service",
-        "Service_type_Diagnostic_andor_screening_service",
-        "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers",
-        "Service_type_Doctors_consultation_service",
-        "Service_type_Doctors_treatment_service",
-        "Service_type_Domiciliary_care_service",
-        "Service_type_Extra_Care_housing_services",
-        "Service_type_Hospice_services",
-        "Service_type_Hospice_services_at_home",
-        "Service_type_Hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_problems_with_substance_misuse",
-        "Service_type_Hyperbaric_Chamber",
-        "Service_type_Long_term_conditions_services",
-        "Service_type_Mobile_doctors_service",
-        "Service_type_Prison_Healthcare_Services",
-        "Service_type_Rehabilitation_services",
-        "Service_type_Remote_clinical_advice_service",
-        "Service_type_Residential_substance_misuse_treatment_andor_rehabilitation_service",
-        "Service_type_Shared_Lives",
-        "Service_type_Specialist_college_service",
-        "Service_type_Supported_living_service",
-        "Service_type_Urgent_care_services",
-        "Service_user_band_Children_0-18_years",
-        "Service_user_band_Dementia",
-        "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
-        "Service_user_band_Mental_Health",
-        "Service_user_band_Older_People",
-        "Service_user_band_People_detained_under_the_Mental_Health_Act",
-        "Service_user_band_People_who_misuse_drugs_and_alcohol",
-        "Service_user_band_People_with_an_eating_disorder",
-        "Service_user_band_Physical_Disability",
-        "Service_user_band_Sensory_Impairment",
-        "Service_user_band_Whole_Population",
-        "Service_user_band_Younger_Adults",
-    ]
-
     rows = [
         (
             "1-10000000001",
@@ -1628,9 +1538,9 @@ def generate_cqc_care_directory_csv_file(output_destination):
         ),
     ]
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
 
     return df
