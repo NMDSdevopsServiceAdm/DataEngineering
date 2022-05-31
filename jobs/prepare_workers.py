@@ -19,7 +19,11 @@ def get_dataset_worker(source):
         .parquet(source)
         .select(
             col("period"),
-            col("establishmentid")
+            col("establishmentid").alias("establishment_id"),
+            col("parentid").alias("parent_id"),
+            col("orgid").alias("org_id"),
+            col("nmdsid").alias("nmds_id"),
+            col("workerid").alias("worker_id")
         )
     )
     return worker_df

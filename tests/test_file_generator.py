@@ -1,6 +1,10 @@
 from utils import utils
 from datetime import date
+
 from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
+import dbldatagen as dg
+
+from schemas import worker_schema
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -377,13 +381,11 @@ def generate_ascwds_workplace_file(output_destination):
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    columns = ["period", "establishmentid"]
+    dataspec = (dg.DataGenerator(spark, rows=10000000, partitions=8, 
+                  randomSeedMethod="hash_fieldname")
+            .withSchema(worker_schema.WORKER_SCHEMA))
 
-    rows = [
-        ("M202001", 12345)
-    ]
-
-    df = spark.createDataFrame(rows, columns)
+    df = dataspec.build()
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
