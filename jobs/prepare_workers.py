@@ -1,8 +1,6 @@
 import argparse
 import sys
 
-from pyspark.sql.functions import col
-
 from utils import utils
 
 
@@ -13,12 +11,12 @@ COLUMNS = ['period', 'establishmentid', 'tribalid', 'tribalid_worker', 'parentid
        'emplstat', 'mainjrid', 'strtdate', 'age', 'gender', 'disabled',
        'ethnicity', 'isbritish', 'nationality', 'britishcitizen', 'borninuk',
        'countryofbirth', 'yearofentry', 'homeregionid', 'homecssrid',
-       'homelauthid', 'homeparliamentaryconstituency', 'distwrkk', 'scerec',
+       'homelauthid', 'distwrkk', 'scerec',
        'startsec', 'startage', 'dayssick', 'zerohours', 'averagehours',
        'conthrs', 'salaryint', 'salary', 'hrlyrate', 'ccstatus', 'apprentice',
        'scqheld', 'levelscqheld', 'nonscqheld', 'levelnonscqheld',
        'listqualsachflag', 'listhiqualev', 'jd16registered', 'amhp',
-       'trainflag', 'parliamentaryconstituency', 'flujab2020',
+       'trainflag', 'flujab2020',
        'derivedfrom_hasbulkuploaded', 'previous_pay', 'previous_mainjrid',
        'version', 'year', 'month', 'day', 'import_date']
 

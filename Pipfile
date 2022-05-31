@@ -13,6 +13,8 @@ mock = "*"
 requests = "*"
 ratelimit = "*"
 spark = "*"
+dbldatagen==0.2.0rc1
+numpy==1.22.4
 
 [dev-packages]
 pylint = "2.11.1"
