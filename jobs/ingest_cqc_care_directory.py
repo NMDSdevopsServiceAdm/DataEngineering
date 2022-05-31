@@ -113,15 +113,15 @@ def main(source, provider_destination=None, location_destination=None):
         df, REGULATEDACTIVITIES_DICT, "regulatedactivities"
     )
     regulated_activities_df = regulated_activities_df.join(reg_man_df, "locationId")
-    regulated_activities_df = regulated_activities_to_struct(regulated_activities_df)
+    regulated_activities_df = convert_regulated_activities_to_struct(regulated_activities_df)
 
     gac_service_types_df = convert_multiple_boolean_columns_into_single_array(
         df, GACSERVICETYPES_DICT, "gacservicetypes"
     )
-    gac_service_types_df = gac_service_types_to_struct(gac_service_types_df)
+    gac_service_types_df = convert_gac_service_types_to_struct(gac_service_types_df)
 
     specialisms_df = convert_multiple_boolean_columns_into_single_array(df, SPECIALISMS_DICT, "specialisms")
-    specialisms_df = specialisms_to_struct(specialisms_df)
+    specialisms_df = convert_specialisms_to_struct(specialisms_df)
 
     location_df = location_df.join(regulated_activities_df, "locationId")
     location_df = location_df.join(gac_service_types_df, "locationId")
@@ -210,13 +210,13 @@ def convert_multiple_boolean_columns_into_single_array(df, value_mapping_dict, a
     return df
 
 
-def specialisms_to_struct(df):
+def convert_specialisms_to_struct(df):
     df = df.withColumn("specialisms", expr("transform(specialisms, x-> named_struct('name',x[0]))"))
 
     return df
 
 
-def gac_service_types_to_struct(df):
+def convert_gac_service_types_to_struct(df):
 
     df = df.withColumn(
         "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
@@ -245,7 +245,7 @@ def create_contacts_from_registered_manager_name(df):
     return df
 
 
-def regulated_activities_to_struct(df):
+def convert_regulated_activities_to_struct(df):
     df = df.select("locationId", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
 
     df = df.withColumn("name", col("regulatedactivities").getItem(0))

@@ -280,7 +280,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_gac_service_types_to_struct(self):
+    def test_convert_gac_service_types_to_struct(self):
         columns = [
             "locationId",
             "gacservicetypes",
@@ -294,7 +294,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = ingest_cqc_care_directory.gac_service_types_to_struct(df)
+        df = ingest_cqc_care_directory.convert_gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "gacservicetypes"])
@@ -324,7 +324,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             [],
         )
 
-    def test_specialisms_to_struct(self):
+    def test_convert_specialisms_to_struct(self):
         columns = [
             "locationId",
             "specialisms",
@@ -338,7 +338,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = ingest_cqc_care_directory.specialisms_to_struct(df)
+        df = ingest_cqc_care_directory.convert_specialisms_to_struct(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "specialisms"])
