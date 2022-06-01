@@ -13,9 +13,11 @@ from enum import Enum
 
 # stubber_type = Enum("client", "resource")
 
+
 class StubberType(Enum):
     client = "client"
     resource = "resource"
+
 
 class StubberClass:
     __s3_client = None
@@ -67,15 +69,13 @@ class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
-    
+
     # increase length of string to simulate realistic file size
-    hundred_percent_string_boost = 100 
+    hundred_percent_string_boost = 100
     smaller_string_boost = 35
 
     def setUp(self):
-        spark = SparkSession.builder.appName(
-            "sfc_data_engineering_csv_to_parquet"
-        ).getOrCreate()
+        spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
         self.df = spark.read.csv(self.test_csv_path, header=True)
 
     def tearDown(self):
@@ -191,9 +191,7 @@ class UtilsTests(unittest.TestCase):
         )
 
         print(f"S3 object list {object_list}")
-        self.assertEqual(
-            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
-        )
+        self.assertEqual(object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
         self.assertEqual(len(object_list), 1)
 
     def test_read_partial_csv_content(self):
@@ -204,19 +202,14 @@ class UtilsTests(unittest.TestCase):
 
         body = StreamingBody(BytesIO(body_encoded), byte_string_length)
 
-        partial_response = {
-            "Body": body,
-            "ContentLength": byte_string_length * self.hundred_percent_string_boost
-        }
+        partial_response = {"Body": body, "ContentLength": byte_string_length * self.hundred_percent_string_boost}
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", stubber.get_s3_client()
-        )
+        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -241,9 +234,7 @@ class UtilsTests(unittest.TestCase):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content(
-            "test-bucket", "my-test/key/", stubber.get_s3_client()
-        )
+        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -266,12 +257,10 @@ class UtilsTests(unittest.TestCase):
     def test_generate_s3_dir_date_path(self):
 
         dec_first_21 = datetime(2021, 12, 1)
-        dir_path = utils.generate_s3_dir_date_path(
-            "test_domain", "test_dateset", dec_first_21
-        )
+        dir_path = utils.generate_s3_dir_date_path("test_domain", "test_dateset", dec_first_21)
         self.assertEqual(
             dir_path,
-            "s3://sfc-data-engineering/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201",
+            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201",
         )
 
     def test_read_csv(self):
@@ -295,9 +284,7 @@ class UtilsTests(unittest.TestCase):
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
         formatted_df = utils.format_date_fields(self.df)
-        self.assertEqual(
-            str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00"
-        )
+        self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00")
 
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
@@ -305,9 +292,7 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(csv_test)
 
     def test_is_csv_for_non_csv(self):
-        csv_name_without_extention = (
-            "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
-        )
+        csv_name_without_extention = "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
         csv_test = utils.is_csv(csv_name_without_extention)
         self.assertFalse(csv_test)
 
@@ -340,13 +325,13 @@ class UtilsTests(unittest.TestCase):
         )
 
     def test_construct_new_destination_path(self):
-        destination = "s3://sfc-data-engineering/"
+        destination = "s3://sfc-main-datasets/"
         key = "domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/workers.csv"
         destination_path = utils.construct_destination_path(destination, key)
 
         self.assertEqual(
             destination_path,
-            "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
+            "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
 
 

@@ -15,18 +15,18 @@ variable "region" {
 
 variable "ascwds_root_data_location" {
   type        = string
-  default     = "s3://sfc-data-engineering/domain=ASCWDS/"
+  default     = "s3://sfc-main-datasets/domain=ASCWDS/"
   description = "Root directory for all data sourced from the ASCWDS domain"
 }
 
 variable "data_engineering_root_data_location" {
   type        = string
-  default     = "s3://sfc-data-engineering/domain=data_engineering/"
+  default     = "s3://sfc-main-datasets/domain=data_engineering/"
   description = "Root directory for all data generated in the Data Engineering domain"
 }
 variable "cqc_root_data_location" {
   type        = string
-  default     = "s3://sfc-data-engineering/domain=CQC/"
+  default     = "s3://sfc-main-datasets/domain=CQC/"
   description = "Root directory for all data sourced from the CQC domain"
 }
 
