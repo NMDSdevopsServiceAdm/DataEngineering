@@ -1,7 +1,6 @@
 from utils import utils
-from pyspark.sql.functions import col
 from datetime import date
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType, IntegerType
+from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -366,6 +365,22 @@ def generate_ascwds_workplace_file(output_destination):
         ("1-000000008", "108", 36, 34, "20210101", "4", date(2021, 7, 1), 0),
         ("1-000000009", "109", 34, 32, "20210101", "5", date(2021, 12, 1), 0),
         ("1-0000000010", "110", 14, 20, "20210101", "6", date(2021, 3, 1), 0),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_ascwds_worker_file(output_destination):
+    spark = utils.get_spark()
+    columns = ["period", "establishmentid"]
+
+    rows = [
+        ("M202001", 12345)
     ]
 
     df = spark.createDataFrame(rows, columns)
