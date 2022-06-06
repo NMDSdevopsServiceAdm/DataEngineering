@@ -124,4 +124,3 @@ def construct_destination_path(destination, key):
 
 def extract_column_from_schema(schema):
     return [field.name for field in schema.fields]
-    
