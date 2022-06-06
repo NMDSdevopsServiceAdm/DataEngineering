@@ -24,7 +24,7 @@ class PrepareWorkersTests(unittest.TestCase):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
         self.assertEqual(worker_df.columns[0], "period")
         self.assertEqual(worker_df.columns[1], "establishmentid")
-        self.assertEqual(worker_df.count(), 10000000)
+        self.assertEqual(worker_df.count(), 1000)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
