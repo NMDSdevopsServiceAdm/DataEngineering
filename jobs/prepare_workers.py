@@ -1,24 +1,25 @@
 import argparse
 import sys
+from schemas.worker_schema import WORKER_SCHEMA
 
 from utils import utils
 
 
-COLUMNS = ['period', 'establishmentid', 'tribalid', 'tribalid_worker', 'parentid',
-       'orgid', 'nmdsid', 'workerid', 'wrkglbid', 'wkplacestat', 'createddate',
-       'updateddate', 'cqcpermission', 'lapermission', 'regtype', 'providerid',
-       'locationid', 'esttype', 'regionid', 'cssr', 'lauthid', 'mainstid',
-       'emplstat', 'mainjrid', 'strtdate', 'age', 'gender', 'disabled',
-       'ethnicity', 'isbritish', 'nationality', 'britishcitizen', 'borninuk',
-       'countryofbirth', 'yearofentry', 'homeregionid', 'homecssrid',
-       'homelauthid', 'distwrkk', 'scerec',
-       'startsec', 'startage', 'dayssick', 'zerohours', 'averagehours',
-       'conthrs', 'salaryint', 'salary', 'hrlyrate', 'ccstatus', 'apprentice',
-       'scqheld', 'levelscqheld', 'nonscqheld', 'levelnonscqheld',
-       'listqualsachflag', 'listhiqualev', 'jd16registered', 'amhp',
-       'trainflag', 'flujab2020',
-       'derivedfrom_hasbulkuploaded', 'previous_pay', 'previous_mainjrid',
-       'version', 'year', 'month', 'day', 'import_date']
+# COLUMNS = ['period', 'establishmentid', 'tribalid', 'tribalid_worker', 'parentid',
+#        'orgid', 'nmdsid', 'workerid', 'wrkglbid', 'wkplacestat', 'createddate',
+#        'updateddate', 'cqcpermission', 'lapermission', 'regtype', 'providerid',
+#        'locationid', 'esttype', 'regionid', 'cssr', 'lauthid', 'mainstid',
+#        'emplstat', 'mainjrid', 'strtdate', 'age', 'gender', 'disabled',
+#        'ethnicity', 'isbritish', 'nationality', 'britishcitizen', 'borninuk',
+#        'countryofbirth', 'yearofentry', 'homeregionid', 'homecssrid',
+#        'homelauthid', 'distwrkk', 'scerec',
+#        'startsec', 'startage', 'dayssick', 'zerohours', 'averagehours',
+#        'conthrs', 'salaryint', 'salary', 'hrlyrate', 'ccstatus', 'apprentice',
+#        'scqheld', 'levelscqheld', 'nonscqheld', 'levelnonscqheld',
+#        'listqualsachflag', 'listhiqualev', 'jd16registered', 'amhp',
+#        'trainflag', 'flujab2020',
+#        'derivedfrom_hasbulkuploaded', 'previous_pay', 'previous_mainjrid',
+#        'version', 'year', 'month', 'day', 'import_date']
 
 
 def main(source, destination):
@@ -27,13 +28,13 @@ def main(source, destination):
 
 def get_dataset_worker(source):
     spark = utils.get_spark()
-
+    column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
     print(f"Reading worker parquet from {source}")
 
     worker_df = (
         spark.read.option("basePath", source)
         .parquet(source)
-        .select(COLUMNS)
+        .select(column_names)
     )
 
     return worker_df

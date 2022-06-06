@@ -381,7 +381,7 @@ def generate_ascwds_workplace_file(output_destination):
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    dataspec = (dg.DataGenerator(spark, rows=1000, partitions=8, 
+    dataspec = (dg.DataGenerator(spark, rows=100, partitions=8, 
                   randomSeedMethod="hash_fieldname")
             .withSchema(worker_schema.WORKER_SCHEMA))
 
