@@ -8,6 +8,7 @@ from schemas.worker_schema import WORKER_SCHEMA
 from tests.test_file_generator import generate_ascwds_worker_file
 from utils import utils
 
+
 class PrepareWorkersTests(unittest.TestCase):
 
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
@@ -30,6 +31,7 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_get_dataset_worker_has_correct_rows_number(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
         self.assertEqual(worker_df.count(), 100)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

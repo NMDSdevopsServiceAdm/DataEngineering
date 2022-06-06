@@ -1,22 +1,24 @@
-from ctypes.wintypes import SMALL_RECT
 from datetime import datetime
 from pathlib import Path
-from utils import utils
 import shutil
 import unittest
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructField, StructType, IntegerType, StringType
-from botocore.stub import Stubber
-from botocore.response import StreamingBody
 from io import BytesIO
-import boto3
 from enum import Enum
 
-# stubber_type = Enum("client", "resource")
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructField, StructType, IntegerType, StringType
+
+import boto3
+from botocore.stub import Stubber
+from botocore.response import StreamingBody
+
+from utils import utils
+
 
 class StubberType(Enum):
     client = "client"
     resource = "resource"
+
 
 class StubberClass:
     __s3_client = None
@@ -68,9 +70,9 @@ class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
-    
+
     # increase length of string to simulate realistic file size
-    hundred_percent_string_boost = 100 
+    hundred_percent_string_boost = 100
     smaller_string_boost = 35
 
     def setUp(self):
@@ -207,7 +209,7 @@ class UtilsTests(unittest.TestCase):
 
         partial_response = {
             "Body": body,
-            "ContentLength": byte_string_length * self.hundred_percent_string_boost
+            "ContentLength": byte_string_length * self.hundred_percent_string_boost,
         }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
@@ -354,8 +356,9 @@ class UtilsTests(unittest.TestCase):
         schema = StructType(
             fields=[
                 StructField("estid", IntegerType(), True),
-                StructField("userid", StringType(), True)
-        ])
+                StructField("userid", StringType(), True),
+            ]
+        )
         column_list = utils.extract_column_from_schema(schema)
         expected_column_list = ["estid", "userid"]
 
@@ -364,8 +367,9 @@ class UtilsTests(unittest.TestCase):
     def test_extract_col_from_schema_returns_no_columns(self):
         schema = StructType(fields=[])
         column_list = utils.extract_column_from_schema(schema)
-        
+
         self.assertFalse(column_list)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
