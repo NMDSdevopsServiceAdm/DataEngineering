@@ -5,6 +5,7 @@ from utils import utils
 import shutil
 import unittest
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructField, StructType, IntegerType, StringType
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from io import BytesIO
@@ -349,6 +350,22 @@ class UtilsTests(unittest.TestCase):
             "s3://sfc-data-engineering/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
 
+    def test_extract_col_from_schema_returns_2_col_names(self):
+        schema = StructType(
+            fields=[
+                StructField("estid", IntegerType(), True),
+                StructField("userid", StringType(), True)
+        ])
+        column_list = utils.extract_column_from_schema(schema)
+        expected_column_list = ["estid", "userid"]
+
+        self.assertEqual(column_list, expected_column_list)
+
+    def test_extract_col_from_schema_returns_no_columns(self):
+        schema = StructType(fields=[])
+        column_list = utils.extract_column_from_schema(schema)
+        
+        self.assertFalse(column_list)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
