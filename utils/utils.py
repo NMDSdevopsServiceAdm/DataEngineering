@@ -56,8 +56,8 @@ def identify_csv_delimiter(sample_csv):
     return dialect.delimiter
 
 
-def generate_s3_dir_date_path(domain, dataset, date):
-    dir_prepend = "s3://sfc-data-engineering"
+def generate_s3_main_datasets_dir_date_path(domain, dataset, date):
+    dir_prepend = "s3://sfc-main-datasets"
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
@@ -76,9 +76,7 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
