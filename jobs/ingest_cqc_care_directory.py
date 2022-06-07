@@ -12,14 +12,7 @@ def main(source, provider_destination=None, location_destination=None):
 
     return_datasets = []
 
-    print("Reading CSV from {source}")
-    df = utils.read_csv(source)
-
-    print("Formatting date fields")
-    df = utils.format_date_fields(df)
-
-    df = df.filter("type=='Social Care Org'")
-    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
+    df = get_cqc_care_directory(source)
 
     print("Create CQC provider parquet file")
     provider_df = unique_providerids_with_array_of_their_locationids(df)
@@ -70,6 +63,19 @@ def main(source, provider_destination=None, location_destination=None):
         return_datasets.append(output_location_df)
 
     return return_datasets
+
+
+def get_cqc_care_directory(source):
+    print("Reading CSV from {source}")
+    df = utils.read_csv(source)
+
+    print("Formatting date fields")
+    df = utils.format_date_fields(df)
+
+    df = df.filter("type=='Social Care Org'")
+    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
+
+    return df
 
 
 def unique_providerids_with_array_of_their_locationids(df):
