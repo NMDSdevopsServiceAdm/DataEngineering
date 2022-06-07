@@ -4,9 +4,9 @@ WORKER_SCHEMA = StructType(
     fields=[
         StructField("period", StringType(), True),
         StructField("establishmentid", IntegerType(), True),
-        StructField("tribalid", FloatType(), True),
-        StructField("tribalid_worker", FloatType(), True),
-        StructField("parentid", FloatType(), True),
+        StructField("tribalid", IntegerType(), True),
+        StructField("tribalid_worker", IntegerType(), True),
+        StructField("parentid", IntegerType(), True),
         StructField("orgid", IntegerType(), True),
         StructField("nmdsid", StringType(), True),
         StructField("workerid", IntegerType(), True),
