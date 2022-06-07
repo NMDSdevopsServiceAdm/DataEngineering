@@ -1,7 +1,15 @@
-from utils import utils
 from datetime import date
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
+
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    ArrayType,
+    IntegerType,
+)
+
 from schemas import cqc_care_directory_schema
+from utils import utils
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -1568,6 +1576,208 @@ def generate_locationid_and_providerid_file(output_destination):
         ("1-000000001", "1-000000001", "other_data"),
         ("1-000000002", "1-000000002", "other_data"),
         ("1-000000002", "1-000000003", "other_data"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_duplicate_providerid_data_file(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "providerId",
+        "provider_name",
+        "provider_mainphonenumber",
+        "provider_postaladdressline1",
+        "provider_postaladdresstowncity",
+        "provider_postaladdresscounty",
+        "provider_postalcode",
+    ]
+    rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6"),
+        ("1-000000002", "2", "3", "4", "5", "6", "7"),
+        ("1-000000002", "2", "3", "4", "5", "6", "7"),
+        ("1-000000003", "3", "4", "5", "6", "7", "8"),
+        ("1-000000003", "3", "4", "5", "6", "7", "8"),
+        ("1-000000003", "3", "4", "5", "6", "7", "8"),
+        ("1-000000004", "4", "5", "6", "7", "8", "9"),
+        ("1-000000004", "4", "5", "6", "7", "8", "9"),
+        ("1-000000004", "4", "5", "6", "7", "8", "9"),
+        ("1-000000004", "4", "5", "6", "7", "8", "9"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_care_directory_locationid_file(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "locationId",
+        "providerId",
+        "type",
+        "name",
+        "registrationdate",
+        "numberofbeds",
+        "website",
+        "postaladdressline1",
+        "postaladdresstowncity",
+        "postaladdresscounty",
+        "region",
+        "postalcode",
+        "carehome",
+        "mainphonenumber",
+        "localauthority",
+        "othercolumn",
+    ]
+    rows = [
+        (
+            "1-000000001",
+            "1-000000001",
+            "Social Care Org",
+            "Name 1",
+            date(2023, 3, 19),
+            5,
+            "www.website.com",
+            "1 rd",
+            "Town",
+            "County",
+            "Region",
+            "AB1 2CD",
+            "Y",
+            "07",
+            "LA",
+            "Other data",
+        ),
+        (
+            "1-000000002",
+            "1-000000002",
+            "Social Care Org",
+            "Name 2",
+            date(2023, 3, 19),
+            5,
+            "www.website.com",
+            "1 rd",
+            "Town",
+            "County",
+            "Region",
+            "AB1 2CD",
+            "Y",
+            "07",
+            "LA",
+            "Other data",
+        ),
+        (
+            "1-000000003",
+            "1-000000002",
+            "Social Care Org",
+            "Name 3",
+            date(2023, 3, 19),
+            5,
+            "www.website.com",
+            "1 rd",
+            "Town",
+            "County",
+            "Region",
+            "AB1 2CD",
+            "Y",
+            "07",
+            "LA",
+            "Other data",
+        ),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_multiple_boolean_columns(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "locationId",
+        "Column A",
+        "Column B",
+        "Column C",
+        "Column D",
+        "Column-E",
+    ]
+    rows = [
+        ("1-000000001", "Y", "Y", "Y", None, None),
+        ("1-000000002", None, "Y", None, "Y", None),
+        ("1-000000003", None, None, None, None, "Y"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+
+    return df
+
+
+def generate_care_directory_registered_manager_name(output_destination):
+    spark = utils.get_spark()
+    register_manager_schema = StructType(
+        fields=[
+            StructField("locationId", StringType(), True),
+            StructField("registered_manager_name", StringType(), True),
+        ]
+    )
+    rows = [
+        ("1-000000001", "Surname, Firstname"),
+        ("1-000000002", "Surname, First Name"),
+        ("1-000000003", None),
+    ]
+    df = spark.createDataFrame(data=rows, schema=register_manager_schema)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_care_directory_gac_service_types(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "locationId",
+        "gacservicetypes",
+    ]
+    rows = [
+        ("1-000000001", [["The name", "description"], ["The name 2", "description 2"]]),
+        ("1-000000002", [["Another name", "Some other description"]]),
+        ("1-000000003", []),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_care_directory_specialisms(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "locationId",
+        "specialisms",
+    ]
+    rows = [
+        ("1-000000001", [["The name"], ["The name 2"]]),
+        ("1-000000002", [["Another name"]]),
+        ("1-000000003", []),
     ]
 
     df = spark.createDataFrame(rows, columns)

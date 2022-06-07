@@ -1,18 +1,32 @@
 import unittest
 import shutil
 
-from utils import utils
-from datetime import date
 from pyspark.sql import SparkSession, Row
-from pyspark.sql.types import StructField, StringType, StructType
+
+from utils import utils
 from jobs import ingest_cqc_care_directory
-from tests.test_file_generator import generate_cqc_care_directory_csv_file, generate_locationid_and_providerid_file
+from tests.test_file_generator import (
+    generate_cqc_care_directory_csv_file,
+    generate_locationid_and_providerid_file,
+    generate_duplicate_providerid_data_file,
+    generate_care_directory_locationid_file,
+    generate_multiple_boolean_columns,
+    generate_care_directory_registered_manager_name,
+    generate_care_directory_gac_service_types,
+    generate_care_directory_specialisms,
+)
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
     TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
     TEST_LOCATIONID_AND_PROVIDERID_FILE = "tests/test_data/tmp/locationid-and-providerid"
+    TEST_DUPLICATE_PROVIDER_DATA_FILE = "tests/test_data/tmp/duplicate-provider-data"
+    TEST_CARE_DIRECTORY_LOCATION_DATA_FILE = "tests/test_data/tmp/care-directory-location-data"
+    TEST_MULTIPLE_BOOLEAN_COLUMNS = "tests/test_data/tmp/multiple-boolean-column-data"
+    TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME = "tests/test_data/tmp/care-directory-registered-manager-name"
+    TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES = "tests/test_data/tmp/care-directory-gac-service-types"
+    TEST_CARE_DIRECTORY_SPECIALISMS = "tests/test_data/tmp/care-directory-specialisms"
 
     REFORMAT_DICT = {
         "Column A": "name A",
@@ -27,12 +41,24 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
         generate_cqc_care_directory_csv_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
         generate_locationid_and_providerid_file(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
+        generate_duplicate_providerid_data_file(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
+        generate_care_directory_locationid_file(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
+        generate_multiple_boolean_columns(self.TEST_MULTIPLE_BOOLEAN_COLUMNS)
+        generate_care_directory_registered_manager_name(self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME)
+        generate_care_directory_gac_service_types(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
+        generate_care_directory_specialisms(self.TEST_CARE_DIRECTORY_SPECIALISMS)
 
     @classmethod
     def tearDownClass(self):
         try:
             shutil.rmtree(self.TEST_CQC_CARE_DIRECTORY_FILE)
             shutil.rmtree(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
+            shutil.rmtree(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
+            shutil.rmtree(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
+            shutil.rmtree(self.TEST_MULTIPLE_BOOLEAN_COLUMNS)
+            shutil.rmtree(self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME)
+            shutil.rmtree(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
+            shutil.rmtree(self.TEST_CARE_DIRECTORY_SPECIALISMS)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -53,30 +79,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(sorted(locations_at_prov_df[1]["locationIds"]), ["1-000000002", "1-000000003"])
 
     def test_get_distinct_provider_info(self):
-        columns = [
-            "providerId",
-            "provider_name",
-            "provider_mainphonenumber",
-            "provider_postaladdressline1",
-            "provider_postaladdresstowncity",
-            "provider_postaladdresscounty",
-            "provider_postalcode",
-        ]
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", "1", "2", "3", "4", "5", "6"),
-            ("1-000000002", "2", "3", "4", "5", "6", "7"),
-            ("1-000000002", "2", "3", "4", "5", "6", "7"),
-            ("1-000000003", "3", "4", "5", "6", "7", "8"),
-            ("1-000000003", "3", "4", "5", "6", "7", "8"),
-            ("1-000000003", "3", "4", "5", "6", "7", "8"),
-            ("1-000000004", "4", "5", "6", "7", "8", "9"),
-            ("1-000000004", "4", "5", "6", "7", "8", "9"),
-            ("1-000000004", "4", "5", "6", "7", "8", "9"),
-            ("1-000000004", "4", "5", "6", "7", "8", "9"),
-        ]
-
-        df = self.spark.createDataFrame(rows, columns)
+        df = spark.read.parquet(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
 
         distinct_prov_df = ingest_cqc_care_directory.get_distinct_provider_info(df)
 
@@ -96,86 +101,12 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_get_distinct_location_info(self):
-        columns = [
-            "locationId",
-            "providerId",
-            "type",
-            "name",
-            "registrationdate",
-            "numberofbeds",
-            "website",
-            "postaladdressline1",
-            "postaladdresstowncity",
-            "postaladdresscounty",
-            "region",
-            "postalcode",
-            "carehome",
-            "mainphonenumber",
-            "localauthority",
-            "othercolumn",
-        ]
+    def test_get_general_location_info(self):
+        spark = utils.get_spark()
 
-        rows = [
-            (
-                "1-000000001",
-                "1-000000001",
-                "Social Care Org",
-                "Name 1",
-                date(2023, 3, 19),
-                5,
-                "www.website.com",
-                "1 rd",
-                "Town",
-                "County",
-                "Region",
-                "AB1 2CD",
-                "Y",
-                "07",
-                "LA",
-                "Other data",
-            ),
-            (
-                "1-000000002",
-                "1-000000002",
-                "Social Care Org",
-                "Name 2",
-                date(2023, 3, 19),
-                5,
-                "www.website.com",
-                "1 rd",
-                "Town",
-                "County",
-                "Region",
-                "AB1 2CD",
-                "Y",
-                "07",
-                "LA",
-                "Other data",
-            ),
-            (
-                "1-000000003",
-                "1-000000002",
-                "Social Care Org",
-                "Name 3",
-                date(2023, 3, 19),
-                5,
-                "www.website.com",
-                "1 rd",
-                "Town",
-                "County",
-                "Region",
-                "AB1 2CD",
-                "Y",
-                "07",
-                "LA",
-                "Other data",
-            ),
-        ]
+        df = spark.read.parquet(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
 
-        location_df = self.spark.createDataFrame(rows, columns)
-
-        location_df = ingest_cqc_care_directory.get_general_location_info(location_df)
+        location_df = ingest_cqc_care_directory.get_general_location_info(df)
 
         self.assertEqual(location_df.count(), 3)
         self.assertEqual(
@@ -202,22 +133,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
     def test_convert_multiple_boolean_columns_into_single_array(self):
-        columns = [
-            "locationId",
-            "Column A",
-            "Column B",
-            "Column C",
-            "Column D",
-            "Column-E",
-        ]
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", "Y", "Y", "Y", None, None),
-            ("1-000000002", None, "Y", None, "Y", None),
-            ("1-000000003", None, None, None, None, "Y"),
-        ]
-
-        df = self.spark.createDataFrame(rows, columns)
+        df = spark.read.csv(self.TEST_MULTIPLE_BOOLEAN_COLUMNS, header=True)
 
         services_df = ingest_cqc_care_directory.convert_multiple_boolean_columns_into_single_array(
             df, self.REFORMAT_DICT, "new_alias"
@@ -234,20 +152,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(sorted(services_df[2]["new_alias"]), [["name E", "description E"]])
 
     def test_create_contacts_from_registered_manager_name(self):
-        register_manager_schema = StructType(
-            fields=[
-                StructField("locationId", StringType(), True),
-                StructField("registered_manager_name", StringType(), True),
-            ]
-        )
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", "Surname, Firstname"),
-            ("1-000000002", "Surname, First Name"),
-            ("1-000000003", None),
-        ]
-
-        df = self.spark.createDataFrame(data=rows, schema=register_manager_schema)
+        df = spark.read.parquet(self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME)
 
         df = ingest_cqc_care_directory.create_contacts_from_registered_manager_name(df)
 
@@ -290,18 +197,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
     def test_convert_gac_service_types_to_struct(self):
-        columns = [
-            "locationId",
-            "gacservicetypes",
-        ]
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", [["The name", "description"], ["The name 2", "description 2"]]),
-            ("1-000000002", [["Another name", "Some other description"]]),
-            ("1-000000003", []),
-        ]
-
-        df = self.spark.createDataFrame(rows, columns)
+        df = spark.read.parquet(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
 
         df = ingest_cqc_care_directory.convert_gac_service_types_to_struct(df)
 
@@ -334,18 +232,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
     def test_convert_specialisms_to_struct(self):
-        columns = [
-            "locationId",
-            "specialisms",
-        ]
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", [["The name"], ["The name 2"]]),
-            ("1-000000002", [["Another name"]]),
-            ("1-000000003", []),
-        ]
-
-        df = self.spark.createDataFrame(rows, columns)
+        df = spark.read.parquet(self.TEST_CARE_DIRECTORY_SPECIALISMS)
 
         df = ingest_cqc_care_directory.convert_specialisms_to_struct(df)
 
