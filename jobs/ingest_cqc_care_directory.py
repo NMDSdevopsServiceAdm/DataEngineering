@@ -8,59 +8,25 @@ import argparse
 
 
 def main(source, provider_destination=None, location_destination=None):
-    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
-
     return_datasets = []
 
     df = get_cqc_care_directory(source)
 
-    print("Create CQC provider parquet file")
-    provider_df = unique_providerids_with_array_of_their_locationids(df)
-    distinct_provider_info_df = get_distinct_provider_info(df)
-    provider_df = provider_df.join(distinct_provider_info_df, "providerId")
-
-    output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
-    output_provider_df = output_provider_df.unionByName(provider_df, allowMissingColumns=True)
+    provider_api_df = replicate_cqc_provider_api_format(df)
 
     print(f"Exporting Provider information as parquet to {provider_destination}")
     if provider_destination:
-        utils.write_to_parquet(output_provider_df, provider_destination)
+        utils.write_to_parquet(provider_api_df, provider_destination)
     else:
-        return_datasets.append(output_provider_df)
+        return_datasets.append(provider_api_df)
 
-    print("Create CQC location parquet file")
-    location_df = get_general_location_info(df)
-
-    reg_man_df = create_contacts_from_registered_manager_name(df)
-
-    regulated_activities_df = convert_multiple_boolean_columns_into_single_array(
-        df, cqc_care_directory_dictionaries.REGULATED_ACTIVITIES_DICT, "regulatedactivities"
-    )
-    regulated_activities_df = regulated_activities_df.join(reg_man_df, "locationId")
-    regulated_activities_df = convert_regulated_activities_to_struct(regulated_activities_df)
-
-    gac_service_types_df = convert_multiple_boolean_columns_into_single_array(
-        df, cqc_care_directory_dictionaries.GAC_SERVICE_TYPES_DICT, "gacservicetypes"
-    )
-    gac_service_types_df = convert_gac_service_types_to_struct(gac_service_types_df)
-
-    specialisms_df = convert_multiple_boolean_columns_into_single_array(
-        df, cqc_care_directory_dictionaries.SPECIALISMS_DICT, "specialisms"
-    )
-    specialisms_df = convert_specialisms_to_struct(specialisms_df)
-
-    location_df = location_df.join(regulated_activities_df, "locationId")
-    location_df = location_df.join(gac_service_types_df, "locationId")
-    location_df = location_df.join(specialisms_df, "locationId")
-
-    output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
-    output_location_df = output_location_df.unionByName(location_df, allowMissingColumns=True)
+    location_api_df = replicate_cqc_location_api_format(df)
 
     print(f"Exporting Location information as parquet to {location_destination}")
     if location_destination:
-        utils.write_to_parquet(output_location_df, location_destination)
+        utils.write_to_parquet(location_api_df, location_destination)
     else:
-        return_datasets.append(output_location_df)
+        return_datasets.append(location_api_df)
 
     return return_datasets
 
@@ -76,6 +42,18 @@ def get_cqc_care_directory(source):
     df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
 
     return df
+
+
+def replicate_cqc_provider_api_format(df):
+    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+
+    print("Create CQC provider parquet file")
+    provider_df = unique_providerids_with_array_of_their_locationids(df)
+    distinct_provider_info_df = get_distinct_provider_info(df)
+    provider_df = provider_df.join(distinct_provider_info_df, "providerId")
+
+    output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
+    output_provider_df = output_provider_df.unionByName(provider_df, allowMissingColumns=True)
 
 
 def unique_providerids_with_array_of_their_locationids(df):
@@ -104,6 +82,38 @@ def get_distinct_provider_info(df):
     prov_info_df = prov_info_df.withColumn("registrationStatus", lit("Registered").cast(StringType()))
 
     return prov_info_df
+
+
+def replicate_cqc_location_api_format(df):
+    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+
+    print("Create CQC location parquet file")
+    location_df = get_general_location_info(df)
+
+    reg_man_df = create_contacts_from_registered_manager_name(df)
+
+    regulated_activities_df = convert_multiple_boolean_columns_into_single_array(
+        df, cqc_care_directory_dictionaries.REGULATED_ACTIVITIES_DICT, "regulatedactivities"
+    )
+    regulated_activities_df = regulated_activities_df.join(reg_man_df, "locationId")
+    regulated_activities_df = convert_regulated_activities_to_struct(regulated_activities_df)
+
+    gac_service_types_df = convert_multiple_boolean_columns_into_single_array(
+        df, cqc_care_directory_dictionaries.GAC_SERVICE_TYPES_DICT, "gacservicetypes"
+    )
+    gac_service_types_df = convert_gac_service_types_to_struct(gac_service_types_df)
+
+    specialisms_df = convert_multiple_boolean_columns_into_single_array(
+        df, cqc_care_directory_dictionaries.SPECIALISMS_DICT, "specialisms"
+    )
+    specialisms_df = convert_specialisms_to_struct(specialisms_df)
+
+    location_df = location_df.join(regulated_activities_df, "locationId")
+    location_df = location_df.join(gac_service_types_df, "locationId")
+    location_df = location_df.join(specialisms_df, "locationId")
+
+    output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
+    output_location_df = output_location_df.unionByName(location_df, allowMissingColumns=True)
 
 
 def get_general_location_info(df):
