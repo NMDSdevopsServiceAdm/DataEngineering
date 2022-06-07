@@ -1,10 +1,7 @@
 from utils import utils
 from datetime import date
 from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
-<<<<<<< HEAD
 from schemas import cqc_care_directory_schema
-=======
->>>>>>> 945edc53bc21f841eb21fdf30979256c02119253
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -1547,14 +1544,13 @@ def generate_cqc_care_directory_csv_file(output_destination):
         df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
 
     return df
-    
+
+
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
     columns = ["period", "establishmentid"]
 
-    rows = [
-        ("M202001", 12345)
-    ]
+    rows = [("M202001", 12345)]
 
     df = spark.createDataFrame(rows, columns)
 
@@ -1562,7 +1558,8 @@ def generate_ascwds_worker_file(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
-    
+
+
 def generate_locationid_and_providerid_file(output_destination):
     spark = utils.get_spark()
     columns = ["providerId", "locationId", "other_cols"]
