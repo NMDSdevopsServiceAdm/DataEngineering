@@ -55,6 +55,8 @@ def replicate_cqc_provider_api_format(df):
     output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
     output_provider_df = output_provider_df.unionByName(provider_df, allowMissingColumns=True)
 
+    return output_provider_df
+
 
 def unique_providerids_with_array_of_their_locationids(df):
     locations_at_prov_df = df.select("providerId", "locationId")
@@ -114,6 +116,8 @@ def replicate_cqc_location_api_format(df):
 
     output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
     output_location_df = output_location_df.unionByName(location_df, allowMissingColumns=True)
+
+    return output_location_df
 
 
 def get_general_location_info(df):
