@@ -1,16 +1,18 @@
 import unittest
 import shutil
 
+from utils import utils
 from datetime import date
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.types import StructField, StringType, StructType
 from jobs import ingest_cqc_care_directory
-from tests.test_file_generator import generate_cqc_care_directory_csv_file
+from tests.test_file_generator import generate_cqc_care_directory_csv_file, generate_locationid_and_providerid_file
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
     TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
+    TEST_LOCATIONID_AND_PROVIDERID_FILE = "tests/test_data/tmp/locationid-and-providerid"
 
     REFORMAT_DICT = {
         "Column A": "name A",
@@ -24,24 +26,20 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
         generate_cqc_care_directory_csv_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        generate_locationid_and_providerid_file(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
 
     @classmethod
     def tearDownClass(self):
         try:
             shutil.rmtree(self.TEST_CQC_CARE_DIRECTORY_FILE)
+            shutil.rmtree(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
-    def test_get_all_job_roles_per_location_df(self):
-        columns = ["providerId", "locationId", "other_cols"]
+    def test_unique_providerids_with_array_of_their_locationids(self):
+        spark = utils.get_spark()
 
-        rows = [
-            ("1-000000001", "1-000000001", "other_data"),
-            ("1-000000002", "1-000000002", "other_data"),
-            ("1-000000002", "1-000000003", "other_data"),
-        ]
-
-        df = self.spark.createDataFrame(rows, columns)
+        df = spark.read.parquet(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
 
         locations_at_prov_df = ingest_cqc_care_directory.unique_providerids_with_array_of_their_locationids(df)
 

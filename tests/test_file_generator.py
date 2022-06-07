@@ -1562,3 +1562,20 @@ def generate_ascwds_worker_file(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+    
+def generate_locationid_and_providerid_file(output_destination):
+    spark = utils.get_spark()
+    columns = ["providerId", "locationId", "other_cols"]
+
+    rows = [
+        ("1-000000001", "1-000000001", "other_data"),
+        ("1-000000002", "1-000000002", "other_data"),
+        ("1-000000002", "1-000000003", "other_data"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
