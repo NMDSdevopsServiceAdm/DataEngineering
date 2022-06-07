@@ -118,3 +118,7 @@ def construct_destination_path(destination, key):
     destination_bucket = split_s3_uri(destination)[0]
     dir_path = get_file_directory(key)
     return construct_s3_uri(destination_bucket, dir_path)
+
+
+def extract_column_from_schema(schema):
+    return [field.name for field in schema.fields]

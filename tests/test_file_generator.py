@@ -1,6 +1,16 @@
-from utils import utils
 from datetime import date
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, IntegerType
+
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    ArrayType,
+    IntegerType,
+)
+import dbldatagen as dg
+
+from schemas import worker_schema
+from utils import utils
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -68,7 +78,12 @@ def generate_worker_parquet(output_destination):
 
 def generate_all_job_roles_parquet(output_destination):
     spark = utils.get_spark()
-    columns = ["master_locationid", "primary_service_type", "main_job_role", "estimate_job_role_count_2021"]
+    columns = [
+        "master_locationid",
+        "primary_service_type",
+        "main_job_role",
+        "estimate_job_role_count_2021",
+    ]
 
     rows = [
         ("1-000000001", "Care home without nursing", "1", 0.5),
@@ -122,10 +137,38 @@ def generate_ons_geography_parquet(output_destination):
     columns = ["pcds", "lsoa11", "msoa11", "rgn", "ctry", "other_cols"]
 
     rows = [
-        ("AB1 2CD", "E01000001", "E02000003", "E12000001", "E92000001", "other geography stuff"),
-        ("WX9 0YZ", "E01000003", "E02000002", "E12000001", "E92000001", "other geography stuff"),
-        ("GH5 6IJ", "E01000002", "E02000001", "E12000002", "E92000001", "other geography stuff"),
-        ("ZZ2 2ZZ", "S01000002", "S02000001", "S12000002", "S92000001", "other geography stuff"),
+        (
+            "AB1 2CD",
+            "E01000001",
+            "E02000003",
+            "E12000001",
+            "E92000001",
+            "other geography stuff",
+        ),
+        (
+            "WX9 0YZ",
+            "E01000003",
+            "E02000002",
+            "E12000001",
+            "E92000001",
+            "other geography stuff",
+        ),
+        (
+            "GH5 6IJ",
+            "E01000002",
+            "E02000001",
+            "E12000002",
+            "E92000001",
+            "other geography stuff",
+        ),
+        (
+            "ZZ2 2ZZ",
+            "S01000002",
+            "S02000001",
+            "S12000002",
+            "S92000001",
+            "other geography stuff",
+        ),
     ]
 
     df = spark.createDataFrame(rows, columns)
@@ -152,16 +195,62 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     ]
 
     rows = [
-        ("E01000001 : Area name 001A", "876", "767", "608", "18", "141", "15", "74", "4", "16"),
-        ("E01000002 : Area name 001B", "830", "763", "630", "13", "120", "16", "45", "2", "4"),
-        ("E01000003 : Area name 001C", "817", "678", "533", "26", "119", "22", "84", "20", "13"),
-        ("E01000005 : Area name 001E", "467", "311", "222", "11", "78", "23", "77", "37", "19"),
+        (
+            "E01000001 : Area name 001A",
+            "876",
+            "767",
+            "608",
+            "18",
+            "141",
+            "15",
+            "74",
+            "4",
+            "16",
+        ),
+        (
+            "E01000002 : Area name 001B",
+            "830",
+            "763",
+            "630",
+            "13",
+            "120",
+            "16",
+            "45",
+            "2",
+            "4",
+        ),
+        (
+            "E01000003 : Area name 001C",
+            "817",
+            "678",
+            "533",
+            "26",
+            "119",
+            "22",
+            "84",
+            "20",
+            "13",
+        ),
+        (
+            "E01000005 : Area name 001E",
+            "467",
+            "311",
+            "222",
+            "11",
+            "78",
+            "23",
+            "77",
+            "37",
+            "19",
+        ),
     ]
 
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
@@ -342,7 +431,16 @@ def generate_pir_file(output_destination):
 
 def generate_ascwds_workplace_file(output_destination):
     spark = utils.get_spark()
-    columns = ["locationid", "establishmentid", "totalstaff", "wkrrecs", "import_date", "orgid", "mupddate", "isparent"]
+    columns = [
+        "locationid",
+        "establishmentid",
+        "totalstaff",
+        "wkrrecs",
+        "import_date",
+        "orgid",
+        "mupddate",
+        "isparent",
+    ]
 
     rows = [
         ("1-000000001", "101", 14, 16, "20220101", "1", date(2021, 2, 1), 0),
@@ -377,13 +475,11 @@ def generate_ascwds_workplace_file(output_destination):
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    columns = ["period", "establishmentid"]
+    dataspec = dg.DataGenerator(
+        spark, rows=100, partitions=8, randomSeedMethod="hash_fieldname"
+    ).withSchema(worker_schema.WORKER_SCHEMA)
 
-    rows = [
-        ("M202001", 12345)
-    ]
-
-    df = spark.createDataFrame(rows, columns)
+    df = dataspec.build()
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
