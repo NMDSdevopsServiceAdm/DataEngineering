@@ -7,28 +7,13 @@ from schemas import cqc_location_schema, cqc_provider_schema
 import argparse
 
 
-def main(source, provider_destination=None, location_destination=None):
-    return_datasets = []
-
+def main(source, provider_destination, location_destination):
     df = get_cqc_care_directory(source)
 
-    provider_api_df = replicate_cqc_provider_api_format(df)
+    provider_df = convert_to_cqc_provider_api_format(df)
+    location_df = convert_to_cqc_location_api_format(df)
 
-    print(f"Exporting Provider information as parquet to {provider_destination}")
-    if provider_destination:
-        utils.write_to_parquet(provider_api_df, provider_destination)
-    else:
-        return_datasets.append(provider_api_df)
-
-    location_api_df = replicate_cqc_location_api_format(df)
-
-    print(f"Exporting Location information as parquet to {location_destination}")
-    if location_destination:
-        utils.write_to_parquet(location_api_df, location_destination)
-    else:
-        return_datasets.append(location_api_df)
-
-    return return_datasets
+    export_parquet_files(provider_df, provider_destination, location_df, location_destination)
 
 
 def get_cqc_care_directory(source):
@@ -44,7 +29,7 @@ def get_cqc_care_directory(source):
     return df
 
 
-def replicate_cqc_provider_api_format(df):
+def convert_to_cqc_provider_api_format(df):
     spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
 
     print("Create CQC provider parquet file")
@@ -86,7 +71,7 @@ def get_distinct_provider_info(df):
     return prov_info_df
 
 
-def replicate_cqc_location_api_format(df):
+def convert_to_cqc_location_api_format(df):
     spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
 
     print("Create CQC location parquet file")
@@ -211,18 +196,25 @@ def convert_regulated_activities_to_struct(df):
     return df
 
 
+def export_parquet_files(provider_df, provider_destination, location_df, location_destination):
+    print(f"Exporting as CQC provider parquet to {provider_destination}")
+    utils.write_to_parquet(provider_df, provider_destination)
+    print(f"Exporting as CQC location parquet to {location_destination}")
+    utils.write_to_parquet(location_df, location_destination)
+
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", help="A CSV file used as source input", required=True)
     parser.add_argument(
         "--provider_destination",
         help="A destination directory for outputting CQC Provider parquet file",
-        required=False,
+        required=True,
     )
     parser.add_argument(
         "--location_destination",
         help="A destination directory for outputting CQC Location parquet file",
-        required=False,
+        required=True,
     )
 
     args, unknown = parser.parse_known_args()
