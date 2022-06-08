@@ -1,17 +1,19 @@
-from ctypes.wintypes import SMALL_RECT
 from datetime import datetime
 from pathlib import Path
-from utils import utils
 import shutil
 import unittest
-from pyspark.sql import SparkSession
-from botocore.stub import Stubber
-from botocore.response import StreamingBody
 from io import BytesIO
-import boto3
 from enum import Enum
 
-# stubber_type = Enum("client", "resource")
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructField, StructType, IntegerType, StringType
+
+import boto3
+from botocore.stub import Stubber
+from botocore.response import StreamingBody
+
+from utils import utils
+
 
 
 class StubberType(Enum):
@@ -202,7 +204,10 @@ class UtilsTests(unittest.TestCase):
 
         body = StreamingBody(BytesIO(body_encoded), byte_string_length)
 
-        partial_response = {"Body": body, "ContentLength": byte_string_length * self.hundred_percent_string_boost}
+        partial_response = {
+            "Body": body,
+            "ContentLength": byte_string_length * self.hundred_percent_string_boost,
+        }
 
         expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
 
@@ -333,6 +338,24 @@ class UtilsTests(unittest.TestCase):
             destination_path,
             "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
+
+    def test_extract_col_from_schema_returns_2_col_names(self):
+        schema = StructType(
+            fields=[
+                StructField("estid", IntegerType(), True),
+                StructField("userid", StringType(), True),
+            ]
+        )
+        column_list = utils.extract_column_from_schema(schema)
+        expected_column_list = ["estid", "userid"]
+
+        self.assertEqual(column_list, expected_column_list)
+
+    def test_extract_col_from_schema_returns_no_columns(self):
+        schema = StructType(fields=[])
+        column_list = utils.extract_column_from_schema(schema)
+
+        self.assertFalse(column_list)
 
 
 if __name__ == "__main__":
