@@ -258,10 +258,12 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             [],
         )
 
-    def test_main(self):
-        datasets = ingest_cqc_care_directory.main(self.TEST_CQC_CARE_DIRECTORY_FILE)
+    def test_convert_to_cqc_provider_api_format(self):
+        spark = utils.get_spark()
 
-        provider_df = datasets[0]
+        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE)
+
+        provider_df = ingest_cqc_care_directory.convert_to_cqc_provider_api_format(df)
 
         self.assertEqual(provider_df.count(), 4)
         self.assertEqual(
@@ -292,7 +294,12 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-        location_df = datasets[1]
+    def test_convert_to_cqc_location_api_format(self):
+        spark = utils.get_spark()
+
+        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE)
+
+        location_df = ingest_cqc_care_directory.convert_to_cqc_location_api_format(df)
 
         self.assertEqual(location_df.count(), 10)
         self.assertEqual(
