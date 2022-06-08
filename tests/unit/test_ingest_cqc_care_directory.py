@@ -6,7 +6,8 @@ from pyspark.sql import SparkSession, Row
 from utils import utils
 from jobs import ingest_cqc_care_directory
 from tests.test_file_generator import (
-    generate_cqc_care_directory_csv_file,
+    generate_raw_cqc_care_directory_csv_file,
+    generate_cqc_care_directory_file,
     generate_locationid_and_providerid_file,
     generate_duplicate_providerid_data_file,
     generate_care_directory_locationid_file,
@@ -18,8 +19,8 @@ from tests.test_file_generator import (
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
-
-    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
+    TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
+    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/tmp/formatted-registered-provider-list"
     TEST_LOCATIONID_AND_PROVIDERID_FILE = "tests/test_data/tmp/locationid-and-providerid"
     TEST_DUPLICATE_PROVIDER_DATA_FILE = "tests/test_data/tmp/duplicate-provider-data"
     TEST_CARE_DIRECTORY_LOCATION_DATA_FILE = "tests/test_data/tmp/care-directory-location-data"
@@ -39,7 +40,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
-        generate_cqc_care_directory_csv_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        generate_raw_cqc_care_directory_csv_file(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
+        generate_cqc_care_directory_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
         generate_locationid_and_providerid_file(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
         generate_duplicate_providerid_data_file(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
         generate_care_directory_locationid_file(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
@@ -51,6 +53,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         try:
+            shutil.rmtree(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
             shutil.rmtree(self.TEST_CQC_CARE_DIRECTORY_FILE)
             shutil.rmtree(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
             shutil.rmtree(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
@@ -61,6 +64,15 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             shutil.rmtree(self.TEST_CARE_DIRECTORY_SPECIALISMS)
         except OSError():
             pass  # Ignore dir does not exist
+
+    def test_get_cqc_care_directory(self):
+        df = ingest_cqc_care_directory.get_cqc_care_directory(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
+
+        self.assertEqual(df.count(), 1)
+        self.assertEqual(df.columns, ["locationId", "registrationdate", "name", "type", "providerId"])
+
+        collected_df = df.collect()
+        self.assertEqual(collected_df[0]["name"], "Location 1")
 
     def test_unique_providerids_with_array_of_their_locationids(self):
         spark = utils.get_spark()
