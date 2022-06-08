@@ -261,7 +261,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def test_convert_to_cqc_provider_api_format(self):
         spark = utils.get_spark()
 
-        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE, header=True)
 
         provider_df = ingest_cqc_care_directory.convert_to_cqc_provider_api_format(df)
 
@@ -297,7 +297,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def test_convert_to_cqc_location_api_format(self):
         spark = utils.get_spark()
 
-        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE, header=True)
 
         location_df = ingest_cqc_care_directory.convert_to_cqc_location_api_format(df)
 
