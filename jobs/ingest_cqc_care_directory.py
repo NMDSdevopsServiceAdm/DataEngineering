@@ -201,7 +201,9 @@ def export_parquet_files(provider_df, provider_destination, location_df, locatio
     utils.write_to_parquet(provider_df, provider_destination)
     print(f"Exporting as CQC location parquet to {location_destination}")
     utils.write_to_parquet(location_df, location_destination)
-
+def export_parquet_files(df, destination):
+   print(f"Exporting as CQC provider parquet to {destination}")
+   utils.write_to_parquet(df, destination)
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
