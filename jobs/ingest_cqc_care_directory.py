@@ -1,19 +1,21 @@
+import sys
+import argparse
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
 from pyspark.sql.types import StringType, IntegerType
+
 from utils import utils, cqc_care_directory_dictionaries
-import sys
 from schemas import cqc_location_schema, cqc_provider_schema
-import argparse
 
 
 def main(source, provider_destination, location_destination):
     df = get_cqc_care_directory(source)
 
     provider_df = convert_to_cqc_provider_api_format(df)
-    location_df = convert_to_cqc_location_api_format(df)
-
     export_parquet_files(provider_df, provider_destination)
+
+    location_df = convert_to_cqc_location_api_format(df)
     export_parquet_files(location_df, location_destination)
 
 
@@ -197,14 +199,10 @@ def convert_regulated_activities_to_struct(df):
     return df
 
 
-def export_parquet_files(provider_df, provider_destination, location_df, location_destination):
-    print(f"Exporting as CQC provider parquet to {provider_destination}")
-    utils.write_to_parquet(provider_df, provider_destination)
-    print(f"Exporting as CQC location parquet to {location_destination}")
-    utils.write_to_parquet(location_df, location_destination)
 def export_parquet_files(df, destination):
-   print(f"Exporting as CQC provider parquet to {destination}")
-   utils.write_to_parquet(df, destination)
+    print(f"Exporting as CQC provider parquet to {destination}")
+    utils.write_to_parquet(df, destination)
+
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
