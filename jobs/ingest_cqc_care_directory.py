@@ -17,7 +17,7 @@ def main(source, provider_destination, location_destination):
 
 
 def get_cqc_care_directory(source):
-    print("Reading CSV from {source}")
+    print(f"Reading CSV from {source}")
     df = utils.read_csv(source)
 
     print("Formatting date fields")
