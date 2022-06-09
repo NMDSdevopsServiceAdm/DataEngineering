@@ -21,14 +21,14 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 
 # Building the project
 
-### Prerequisite installs:
+### Download the following prerequisite installs:
 Tool | Windows | Mac/Linux
 --- | --- | ---
-Python | https://www.python.org/downloads/ | https://www.python.org/downloads/
+Python version 3.9.6 | https://www.python.org/downloads/ | https://www.python.org/downloads/
 Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
 Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
 Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
-java jdk8 | https://www.java.com/en/download/ | https://www.java.com/en/download/
+java jdk8 (need to create an oracle account) | https://www.java.com/en/download/ | https://www.java.com/en/download/
 
 ## Install Java (MacOS)
 This project is using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
