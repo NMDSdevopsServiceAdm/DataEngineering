@@ -13,7 +13,8 @@ def main(source, provider_destination, location_destination):
     provider_df = convert_to_cqc_provider_api_format(df)
     location_df = convert_to_cqc_location_api_format(df)
 
-    export_parquet_files(provider_df, provider_destination, location_df, location_destination)
+    export_parquet_files(provider_df, provider_destination)
+    export_parquet_files(location_df, location_destination)
 
 
 def get_cqc_care_directory(source):
