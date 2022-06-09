@@ -160,11 +160,24 @@ terraform init
 terraform workspace list
 ```
 
+To switch to a different workspace run:
+
+```
+terraform workspace select <workspace_name>
+```
+
 Then run:
 
 ```
 terraform destroy
 ```
+
+To delete an workspace make sure it is not your current workspace (you can select the default workspace) and run:
+
+```
+terraform workspace delete <workspace_name>
+```
+
 This will generate a "destruction plan" - closely read through this plan and ensure you want to execute all of the planned changes. Once satisfied, confirm the changes. Terraform will then proceed to tear down all of the running infrastructure in your current workspace. <br>
 
 
