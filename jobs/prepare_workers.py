@@ -1,24 +1,67 @@
 import argparse
 import sys
+import re
+
+from pyspark.sql.functions import to_json, struct
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
 def main(source, destination):
-    return True
+    # TODO - read data as df
+    main_df = get_dataset_worker(source)
+
+    # TODO - extract training columns - they might need to be replace with only one col
+    training_df = []
+
+    # TODO - write the main df somewhere
+    return main_df
 
 
 def get_dataset_worker(source):
     spark = utils.get_spark()
     column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
-    print(f"Reading worker parquet from {source}")
 
+    print(f"Reading worker parquet from {source}")
     worker_df = (
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
 
     return worker_df
+
+
+def replace_columns_with_aggregated_column(df, columns_df, aggregated_col):
+    # TODO - drop columns
+    
+    # TODO - add the one column that has the aggregated values
+    # df.withColumn(aggregated_col)
+    # return df
+    pass
+
+def select_col_with_pattern(starting_pattern, df):
+  pattern = re.compile(fr'^{starting_pattern}.')
+  for col in df.columns:
+    match = re.search(pattern, col)
+    if not match:
+      df = df.drop([col], axis=1)
+  return df
+
+def aggregate_training_columns(tr_df):
+    # TODO - cram together the training columns into one
+    # training = []
+    # flags_partial = ["tr01", "tr02",]
+    # for i in range(2):
+    #     df = tr_df.iloc[[i]]
+    #     training_types = {}
+    #     for flag in flags_partial:
+    #         flag_df = select_col_with_pattern(flag, df)
+    #         flags_dict = flag_df.to_dict(orient="records")
+    #         training_types[flag] = flags_dict
+    #     training.append(training_types)
+    cols = ["tr01flag", "tr01latestdate", "tr01count", "tr01ac", "tr01nac", "tr01dn",]
+    df2 = tr_df.withColumn("training", to_json(struct(cols)))
+    return df2.select('training')
 
 
 def collect_arguments():
