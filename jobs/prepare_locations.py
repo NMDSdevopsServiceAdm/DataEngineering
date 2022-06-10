@@ -1,6 +1,5 @@
 import argparse
 import builtins
-import os
 
 from pyspark.sql.functions import abs, add_months, coalesce, col, greatest, lit, lower, max, to_date, when
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType

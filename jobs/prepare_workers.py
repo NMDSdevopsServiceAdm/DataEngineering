@@ -1,9 +1,24 @@
 import argparse
 import sys
 
+from schemas.worker_schema import WORKER_SCHEMA
+from utils import utils
+
 
 def main(source, destination):
     return True
+
+
+def get_dataset_worker(source):
+    spark = utils.get_spark()
+    column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
+    print(f"Reading worker parquet from {source}")
+
+    worker_df = (
+        spark.read.option("basePath", source).parquet(source).select(column_names)
+    )
+
+    return worker_df
 
 
 def collect_arguments():

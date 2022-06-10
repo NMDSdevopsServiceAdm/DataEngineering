@@ -1,4 +1,3 @@
-import os
 import shutil
 import unittest
 from datetime import date
@@ -191,7 +190,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertIsNotNone(result)
 
     def test_clean(self):
-
         columns = ["locationid", "worker_record_count", "total_staff"]
         rows = [
             ("1-000000001", None, "0"),
@@ -257,7 +255,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[4]["cqc_sector"], "Independent")
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
-        columns = ["locationid", "worker_record_count", "total_staff", "number_of_beds", "job_count"]
         rows = [
             ("1-000000001", 20, 20, 25, None),
         ]
