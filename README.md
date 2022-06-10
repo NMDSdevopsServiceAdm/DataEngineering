@@ -118,6 +118,9 @@ tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 
 <br>
 
+### Installing AWS CLI
+AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it. 
+
 ### Deploying Terraform
 
 1. Ensure you set the following environment variables
