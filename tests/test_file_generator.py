@@ -832,6 +832,3 @@ def generate_care_directory_specialisms(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
-
-
-# comment
