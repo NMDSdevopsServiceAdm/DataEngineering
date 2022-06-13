@@ -2,7 +2,7 @@ import shutil
 import unittest
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 from pyspark.sql.functions import udf
 from pyspark.sql.functions import struct
 
@@ -55,6 +55,19 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_aggregate_training_columns_return_correct_value_format(self):
         # TODO - check the values have the right format, nested dict
         pass
+
+    def test_extract_training_types(self):
+        schema = StructType(
+            fields=[StructField("tr01flag", IntegerType(), True),
+                    StructField("tr01latestdate", IntegerType(), True),
+                    StructField("tr01count", IntegerType(), True),
+                    StructField("tr01ac", IntegerType(), True),
+                    StructField("tr01nac", IntegerType(), True),
+                    StructField("tr01dn", IntegerType(), True),
+            ]
+        )
+        training_types = prepare_workers.extract_training_types(schema)
+        self.assertEqual(training_types, ["tr01"])
 
 
 if __name__ == "__main__":

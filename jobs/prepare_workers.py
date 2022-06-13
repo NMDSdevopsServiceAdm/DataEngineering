@@ -1,7 +1,7 @@
 import argparse
 import sys
-import re
 import json
+import re
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -30,39 +30,31 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_columns_with_aggregated_column(df, columns_df, aggregated_col):
-    # TODO - drop columns
-    
-    # TODO - add the one column that has the aggregated values
-    # df.withColumn(aggregated_col)
-    # return df
-    pass
-
-def select_col_with_pattern(starting_pattern, df):
-  pattern = re.compile(fr'^{starting_pattern}.')
-  for col in df.columns:
-    match = re.search(pattern, col)
-    if not match:
-      df = df.drop([col], axis=1)
-  return df
-
 def aggregate_training_columns(row):
-    #TODO - func that will generate all types of training = 39
-  types_training = ["tr01", "tr02"]
-  aggregated_training = {}
-  print(row)
-  for training in types_training:
-    print(row[f"{training}flag"])
-    if row[f"{training}flag"] == 1:
-      aggregated_training[training] = {
-          'latestdate': row[training + "latestdate"],
-          'count': row[training + "count"],
-          'ac': row[training + "ac"],
-          'nac': row[training + "nac"],
-          'dn': row[training + "dn"]
-      }
+    #   types_training = extract_training_types(WORKER_SCHEMA)
+    types_training = ["tr01", "tr02"]
+    aggregated_training = {}
+    for training in types_training:
+        if row[f"{training}flag"] == 1:
+            aggregated_training[training] = {
+                "latestdate": row[training + "latestdate"],
+                "count": row[training + "count"],
+                "ac": row[training + "ac"],
+                "nac": row[training + "nac"],
+                "dn": row[training + "dn"],
+            }
 
-  return json.dumps(aggregated_training)
+    return json.dumps(aggregated_training)
+
+
+def extract_training_types(schema):
+    columns = utils.extract_column_from_schema(schema)
+    pattern = re.compile(r"^tr\d\dflag$")
+    training_types = []
+    for col in columns:
+        if pattern.match(col):
+            training_types.append(col[0:4])
+    return training_types
 
 
 def collect_arguments():
