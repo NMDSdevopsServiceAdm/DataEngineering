@@ -56,19 +56,5 @@ class PrepareWorkersTests(unittest.TestCase):
         # TODO - check the values have the right format, nested dict
         pass
 
-    def test_extract_training_types(self):
-        schema = StructType(
-            fields=[StructField("tr01flag", IntegerType(), True),
-                    StructField("tr01latestdate", IntegerType(), True),
-                    StructField("tr01count", IntegerType(), True),
-                    StructField("tr01ac", IntegerType(), True),
-                    StructField("tr01nac", IntegerType(), True),
-                    StructField("tr01dn", IntegerType(), True),
-            ]
-        )
-        training_types = prepare_workers.extract_training_types(schema)
-        self.assertEqual(training_types, ["tr01"])
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

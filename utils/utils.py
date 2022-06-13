@@ -1,3 +1,4 @@
+import re
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 import os
@@ -122,3 +123,20 @@ def construct_destination_path(destination, key):
 
 def extract_column_from_schema(schema):
     return [field.name for field in schema.fields]
+
+
+def extract_col_with_pattern(pattern, schema):
+    columns = extract_column_from_schema(schema)
+    pattern = re.compile(fr"{pattern}")
+    training_types = []
+    for col in columns:
+        if pattern.match(col):
+            training_types.append(col)
+    return training_types
+
+def extract_training_types(schema):
+    columns = extract_col_with_pattern("^tr\d\dflag$", schema)
+    training_types = []
+    for col in columns:
+        training_types.append(col[0:4])
+    return training_types

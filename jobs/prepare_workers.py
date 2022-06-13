@@ -31,7 +31,7 @@ def get_dataset_worker(source):
 
 
 def aggregate_training_columns(row):
-    #   types_training = extract_training_types(WORKER_SCHEMA)
+    #   types_training = utils.extract_training_types(WORKER_SCHEMA)
     types_training = ["tr01", "tr02"]
     aggregated_training = {}
     for training in types_training:
@@ -45,16 +45,6 @@ def aggregate_training_columns(row):
             }
 
     return json.dumps(aggregated_training)
-
-
-def extract_training_types(schema):
-    columns = utils.extract_column_from_schema(schema)
-    pattern = re.compile(r"^tr\d\dflag$")
-    training_types = []
-    for col in columns:
-        if pattern.match(col):
-            training_types.append(col[0:4])
-    return training_types
 
 
 def collect_arguments():
