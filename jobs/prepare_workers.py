@@ -1,8 +1,7 @@
 import argparse
 import sys
 import re
-
-from pyspark.sql.functions import to_json, struct
+import json
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -47,21 +46,23 @@ def select_col_with_pattern(starting_pattern, df):
       df = df.drop([col], axis=1)
   return df
 
-def aggregate_training_columns(tr_df):
-    # TODO - cram together the training columns into one
-    # training = []
-    # flags_partial = ["tr01", "tr02",]
-    # for i in range(2):
-    #     df = tr_df.iloc[[i]]
-    #     training_types = {}
-    #     for flag in flags_partial:
-    #         flag_df = select_col_with_pattern(flag, df)
-    #         flags_dict = flag_df.to_dict(orient="records")
-    #         training_types[flag] = flags_dict
-    #     training.append(training_types)
-    cols = ["tr01flag", "tr01latestdate", "tr01count", "tr01ac", "tr01nac", "tr01dn",]
-    df2 = tr_df.withColumn("training", to_json(struct(cols)))
-    return df2.select('training')
+def aggregate_training_columns(row):
+    #TODO - func that will generate all types of training = 39
+  types_training = ["tr01", "tr02"]
+  aggregated_training = {}
+  print(row)
+  for training in types_training:
+    print(row[f"{training}flag"])
+    if row[f"{training}flag"] == 1:
+      aggregated_training[training] = {
+          'latestdate': row[training + "latestdate"],
+          'count': row[training + "count"],
+          'ac': row[training + "ac"],
+          'nac': row[training + "nac"],
+          'dn': row[training + "dn"]
+      }
+
+  return json.dumps(aggregated_training)
 
 
 def collect_arguments():

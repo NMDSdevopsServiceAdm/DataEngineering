@@ -2,6 +2,9 @@ import shutil
 import unittest
 
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import udf
+from pyspark.sql.functions import struct
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
@@ -43,9 +46,11 @@ class PrepareWorkersTests(unittest.TestCase):
             (0, 0, 1, 0, 0, 0,0, 0, 1, 0, 0, 0),
         ]
         tr_df = spark.createDataFrame(row, column)
-        aggregated_col = prepare_workers.aggregate_training_columns(tr_df)
-        self.assertEqual(aggregated_col.columns, ['training'])
-        self.assertEqual(aggregated_col.first()['training'], '{"tr01flag":1,"tr01latestdate":0,"tr01count":1,"tr01ac":0,"tr01nac":0,"tr01dn":0}')
+        aggregate_training_udf = udf(prepare_workers.aggregate_training_columns, StringType())
+        tr_df = tr_df.withColumn('training', aggregate_training_udf(struct([tr_df[x] for x in tr_df.columns])))
+        # aggregated_col = prepare_workers.aggregate_training_columns(tr_df)
+        self.assertEqual(tr_df.columns[-1], 'training')
+        self.assertEqual(tr_df.first()['training'], '{"tr01": {"latestdate": 0, "count": 1, "ac": 0, "nac": 0, "dn": 0}}')
 
     def test_aggregate_training_columns_return_correct_value_format(self):
         # TODO - check the values have the right format, nested dict
