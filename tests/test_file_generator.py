@@ -715,3 +715,19 @@ def generate_care_directory_specialisms(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_training_file(output_destination):
+    spark = utils.get_spark()
+    dataspec = dg.DataGenerator(spark, rows=1, partitions=8, randomSeedMethod="hash_fieldname").withSchema(
+        worker_schema.WORKER_SCHEMA
+    ).withColumn("tr01flag", IntegerType(), 1).withColumn("tr01count", IntegerType(), 1)
+
+    df = dataspec.build()
+    training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA)
+    training_df = df.select(training_columns)
+
+    if output_destination:
+        training_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df

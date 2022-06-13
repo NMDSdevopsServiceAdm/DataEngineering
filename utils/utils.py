@@ -1,9 +1,12 @@
+import os
 import re
+import csv
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
-import os
+
 import boto3
-import csv
+
 
 TWO_MB = 2000000
 

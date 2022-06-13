@@ -1,7 +1,6 @@
 import argparse
 import sys
 import json
-import re
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -31,8 +30,7 @@ def get_dataset_worker(source):
 
 
 def aggregate_training_columns(row):
-    #   types_training = utils.extract_training_types(WORKER_SCHEMA)
-    types_training = ["tr01", "tr02"]
+    types_training = utils.extract_training_types(WORKER_SCHEMA)
     aggregated_training = {}
     for training in types_training:
         if row[f"{training}flag"] == 1:
