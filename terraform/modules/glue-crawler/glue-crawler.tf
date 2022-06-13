@@ -1,6 +1,6 @@
 resource "aws_glue_crawler" "crawler" {
   database_name = var.workspace_glue_database_name
-  name          = "${terraform.workspace}-data_engineering_${var.dataset_for_crawler}"
+  name          = "${local.workspace_prefix}-data_engineering_${var.dataset_for_crawler}"
   role          = var.glue_role.arn
   schedule      = var.schedule
 
@@ -9,7 +9,7 @@ resource "aws_glue_crawler" "crawler" {
   }
 
   s3_target {
-    path = "s3://sfc-${terraform.workspace}-datasets/domain=${var.dataset_for_crawler}/"
+    path = "s3://sfc-${local.workspace_prefix}-datasets/domain=${var.dataset_for_crawler}/"
   }
 
   schema_change_policy {
