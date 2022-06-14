@@ -719,7 +719,7 @@ def generate_care_directory_specialisms(output_destination):
 
 def generate_training_file(output_destination):
     spark = utils.get_spark()
-    dataspec = dg.DataGenerator(spark, rows=1, partitions=8, randomSeedMethod="hash_fieldname").withSchema(
+    dataspec = dg.DataGenerator(spark, rows=10, partitions=8, randomSeedMethod="hash_fieldname").withSchema(
         worker_schema.WORKER_SCHEMA
     ).withColumn("tr01flag", IntegerType(), 1).withColumn("tr01count", IntegerType(), 1)
 
