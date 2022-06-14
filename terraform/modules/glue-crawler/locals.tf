@@ -1,3 +1,3 @@
 locals {
-  workspace_prefix = lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-"))
+  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 40)
 }
