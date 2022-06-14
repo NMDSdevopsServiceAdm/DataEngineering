@@ -50,7 +50,7 @@ terraform.rc
 # Ignore terraform lock
 .terraform.lock.hcl
 
-
+terraform.tfvars
 
 # ------ python ------ #
 .python-version

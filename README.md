@@ -123,18 +123,20 @@ AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs
 
 ### Deploying Terraform
 
-1. Ensure you set the following environment variables
+1. Set up your AWS crendentials as terraform variables
 
-``` 
-export TF_VAR_aws_secret_key= [ aws secret key ]
-export TF_VAR_aws_access_key= [ aws access key ]
+Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
+
 ```
+cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars
+```
+Populate this file with your access key and secret access key.
 
 2. From terminal/command line ensure you're in the Terraform directory
 
 ```
-adamprobert@Adams-MBP DataEngineering % pwd
-/Users/adamprobert/Projects/skillsforcare/DataEngineering/terraform/pipeline
+% pwd
+/Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
 ```
 
 3. Run `terraform plan` to evaluate the planned changes
@@ -177,7 +179,7 @@ terraform destroy
 
 This will generate a "destruction plan" - closely read through this plan and ensure you want to execute all of the planned changes. Once satisfied, confirm the changes. Terraform will then proceed to tear down all of the running infrastructure in your current workspace. <br>
 
-To delete an workspace make sure it is not your current workspace (you can select the default workspace) and run:
+To delete a workspace make sure it is not your current workspace (you can select the default workspace) and run:
 
 ```
 terraform workspace select default
