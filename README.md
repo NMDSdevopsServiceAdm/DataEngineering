@@ -217,8 +217,35 @@ We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are 
     - Select the running cluster
     - Click *"Terminate"*
 
+### Installing extra python libraries
+
+We run a bash script as an EMR step after the cluster has started which installs any python libraries we need on the cluster using pip.
+
+The script is stored [here][install_python_libs_script] in S3.
+You can edit this script to upload extra python libraries and they will be uploaded the next time a cluster is started.
+
+To add extra libraries:
+1. Download the script either via the "Download" button [in the console][install_python_libs_script] or using the [aws cli][aws_cli_docs].
+```
+aws s3 cp s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh .
+```
+2. Open the downloaded script and add the following line to the end of the script for each library that needs installing.
+```
+sudo python3 -m pip install package_name
+```
+3. Upload the updated script to the same location (s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh).
+Either using console or the aws cli.
+```
+aws s3 cp ./install-python-libraries-for-emr.sh s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh
+```
+
+The libraries will be installed the next time a new cluster is cloned and started.
+
 
 ## Notebook costs
 An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
 The notebooks are free, but require a cluster to run on. 
 The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
+
+[install_python_libs_script]: https://s3.console.aws.amazon.com/s3/object/aws-emr-resources-344210435447-eu-west-2?region=eu-west-2&prefix=bootstrap-scripts/install-python-libraries-for-emr.sh
+[aws_cli_docs]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
