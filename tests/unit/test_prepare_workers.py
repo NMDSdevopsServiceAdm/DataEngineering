@@ -2,7 +2,7 @@ import shutil
 import unittest
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+from pyspark.sql.types import StringType
 from pyspark.sql.functions import udf
 from pyspark.sql.functions import struct
 
@@ -15,7 +15,7 @@ from utils import utils
 class PrepareWorkersTests(unittest.TestCase):
 
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
-    TEST_TRAINING_FILE = "tests/test_data/tmp"
+    TEST_TRAINING_FILE = "tests/test_data/domain=ascwds/dataset=training"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
