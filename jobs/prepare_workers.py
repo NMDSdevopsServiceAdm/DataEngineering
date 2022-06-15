@@ -4,8 +4,8 @@ import json
 
 from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import StringType
-from schemas import worker_schema
 
+from schemas import worker_schema
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 

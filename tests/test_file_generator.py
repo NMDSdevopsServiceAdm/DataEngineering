@@ -1,5 +1,6 @@
 from datetime import date
 
+import dbldatagen as dg
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -9,8 +10,6 @@ from pyspark.sql.types import (
 )
 
 from schemas import cqc_care_directory_schema, worker_schema
-import dbldatagen as dg
-
 from utils import utils
 
 
@@ -249,7 +248,9 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
@@ -502,7 +503,9 @@ def generate_raw_cqc_care_directory_csv_file(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
@@ -524,21 +527,25 @@ def generate_cqc_care_directory_file(output_destination):
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA)
+    df = spark.createDataFrame(
+        rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA
+    )
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    dataspec = dg.DataGenerator(spark, rows=100, partitions=8, randomSeedMethod="hash_fieldname").withSchema(
-        worker_schema.WORKER_SCHEMA
-    )
+    dataspec = dg.DataGenerator(
+        spark, rows=100, partitions=8, randomSeedMethod="hash_fieldname"
+    ).withSchema(worker_schema.WORKER_SCHEMA)
 
-    dataspec = (dataspec.withColumnSpec("tr01flag", 1).withColumnSpec("tr01count", 1))
+    dataspec = dataspec.withColumnSpec("tr01flag", 1).withColumnSpec("tr01count", 1)
 
     df = dataspec.build()
 
@@ -653,7 +660,9 @@ def generate_multiple_boolean_columns(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
