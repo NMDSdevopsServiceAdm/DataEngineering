@@ -54,7 +54,7 @@ class PrepareWorkersTests(unittest.TestCase):
 
         df = prepare_workers.replace_training_columns(df)
 
-        self.assertTrue("training", df.columns[-1])
+        self.assertEqual("training", df.columns[-1])
         self.assertNotIn(training_cols, df.columns)
 
 
