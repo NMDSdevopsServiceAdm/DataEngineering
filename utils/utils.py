@@ -143,3 +143,4 @@ def extract_training_types(schema):
     for col in columns:
         training_types.append(col[0:4])
     return training_types
+    
