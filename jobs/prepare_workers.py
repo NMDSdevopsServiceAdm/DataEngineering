@@ -14,14 +14,10 @@ def main(source, destination):
     # TODO - read data as df
     main_df = get_dataset_worker(source)
 
-    # TODO - extract training columns - they might need to be replace with only one col
-    tr_df = []
+    # TODO - replace training/jb/ql columns with aggregated columns
+    main_df = replace_training_columns(main_df)
 
-    # TODO - get training column and replace in main
-    aggregated_column = get_training_aggregated_column(tr_df)
-    main_df = replace_training_columns(main_df, aggregated_column)
-
-    # TODO - write the main df somewhere
+    # TODO - write the main df to destination
     return main_df
 
 
@@ -38,21 +34,31 @@ def get_dataset_worker(source):
 
 
 def replace_training_columns(df):
-    training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA)
+    training_cols = utils.extract_col_with_pattern(
+        "^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA
+    )
+    df = get_aggregated_training_column(df, training_cols)
+
     df = df.drop(struct(training_cols))
-    # df = df.withColumn("training", aggregated_column)
+
     return df
 
 
-def get_training_aggregated_column(tr_df):
+def get_aggregated_training_column(df, training_columns):
     aggregate_training_udf = udf(get_training_into_json, StringType())
-    tr_df = tr_df.withColumn('training', aggregate_training_udf(struct([tr_df[x] for x in tr_df.columns])))
-    return tr_df.select("training")
+
+    tr_df = df.select(training_columns)
+    df = df.withColumn(
+        "training", aggregate_training_udf(struct([tr_df[x] for x in tr_df.columns]))
+    )
+
+    return df
 
 
 def get_training_into_json(row):
     types_training = utils.extract_training_types(WORKER_SCHEMA)
     aggregated_training = {}
+
     for training in types_training:
         if row[f"{training}flag"] == 1:
             aggregated_training[training] = {
