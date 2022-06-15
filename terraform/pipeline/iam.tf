@@ -108,4 +108,10 @@ resource "aws_iam_role_policy_attachment" "glue_jobs_read_raw_s3_data_policy_att
   role       = aws_iam_role.sfc_glue_service_iam_role.name
 }
 
+resource "aws_iam_policy" "query_all_in_athena" {
+  name        = "${terraform.workspace}-query-all-in-athena"
+  path        = "/"
+  description = "All read and list privileges for any athena resources"
 
+  policy = templatefile("policy-documents/query-all-in-athena.json", { account_id = data.aws_caller_identity.current.account_id })
+}
