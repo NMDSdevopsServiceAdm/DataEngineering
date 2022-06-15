@@ -32,20 +32,24 @@ class PrepareWorkersTests(unittest.TestCase):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
         self.assertEqual(worker_df.count(), 100)
 
-    def test_get_aggregated_training_column_returns_one_column(self):
+    def test_get_aggregated_training_column_adds_json_training_col(self):
         spark = utils.get_spark()
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
 
         training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        aggregated_col = prepare_workers.get_aggregated_training_column(
+        df = prepare_workers.add_aggregated_training_column(
             df, training_columns
         )
+        training_types_flag = utils.extract_col_with_pattern("^tr\d\dflag$", WORKER_SCHEMA)
+        training_types_flag.remove("tr01flag")
 
-        self.assertEqual(aggregated_col.columns[-1], "training")
+        self.assertEqual(df.columns[-1], "training")
         self.assertEqual(
-            aggregated_col.first()["training"],
+            df.first()["training"],
             '{"tr01": {"latestdate": 0, "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
         )
+        for training in training_types_flag:
+            self.assertEqual(df.first()[training], 0)
 
     def test_replace_training_columns(self):
         spark = utils.get_spark()

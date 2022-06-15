@@ -37,14 +37,14 @@ def replace_training_columns(df):
     training_cols = utils.extract_col_with_pattern(
         "^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA
     )
-    df = get_aggregated_training_column(df, training_cols)
+    df = add_aggregated_training_column(df, training_cols)
 
     df = df.drop(struct(training_cols))
 
     return df
 
 
-def get_aggregated_training_column(df, training_columns):
+def add_aggregated_training_column(df, training_columns):
     aggregate_training_udf = udf(get_training_into_json, StringType())
 
     tr_df = df.select(training_columns)
