@@ -16,6 +16,8 @@ def main(source, destination):
 
     # TODO - replace training/jb/ql columns with aggregated columns
     main_df = replace_training_columns(main_df)
+    main_df = replace_job_role_columns(main_df)
+
 
     # TODO - write the main df to destination
     return main_df
@@ -70,6 +72,39 @@ def get_training_into_json(row):
             }
 
     return json.dumps(aggregated_training)
+
+
+def replace_job_role_columns(df):
+    job_role_cols = utils.extract_col_with_pattern(
+        "^jr\d\d[a-z]", worker_schema.WORKER_SCHEMA
+    )
+    df = add_aggregated_job_role_column(df, job_role_cols)
+
+    df = df.drop(struct(job_role_cols))
+
+    return df
+
+
+def add_aggregated_job_role_column(df, job_role_columns):
+    aggregate_jr_udf = udf(get_job_role_into_json, StringType())
+
+    jr_df = df.select(job_role_columns)
+    df = df.withColumn(
+        "job_role", aggregate_jr_udf(struct([jr_df[x] for x in jr_df.columns]))
+    )
+
+    return df
+
+def get_job_role_into_json(row):
+    job_role_cols = utils.extract_col_with_pattern(
+        "^jr\d\d[a-z]", worker_schema.WORKER_SCHEMA
+    )
+    agg_jr = []
+    for jr in job_role_cols:
+        if row[jr] == 1:
+            agg_jr.append(jr)
+
+    return json.dumps(agg_jr)
 
 
 def collect_arguments():

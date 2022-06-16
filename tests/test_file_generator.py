@@ -542,10 +542,10 @@ def generate_cqc_care_directory_file(output_destination):
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
     dataspec = dg.DataGenerator(
-        spark, rows=100, partitions=8, randomSeedMethod="hash_fieldname"
+        spark, rows=50, partitions=8, randomSeedMethod="hash_fieldname"
     ).withSchema(worker_schema.WORKER_SCHEMA)
 
-    dataspec = dataspec.withColumnSpec("tr01flag", 1).withColumnSpec("tr01count", 1)
+    dataspec = dataspec.withColumnSpec("tr01flag", 1).withColumnSpec("tr01count", 1).withColumnSpec("jr01flag", 1).withColumnSpec("jr03flag", 1).withColumnSpec("jr16cat1", 1)
 
     df = dataspec.build()
 
