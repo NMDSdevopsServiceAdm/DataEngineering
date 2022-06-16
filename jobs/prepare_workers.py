@@ -14,9 +14,22 @@ def main(source, destination):
     # TODO - read data as df
     main_df = get_dataset_worker(source)
 
+    columns_to_be_aggregated_patterns = {
+        "training":{
+            "pattern": "^tr\d\d[a-z]",
+            "udf_function": get_training_into_json
+        },
+        "job_role": {
+            "pattern": "^jr\d\d[a-z]",
+            "udf_function": get_job_role_into_json
+        },
+        "qualifications": {}
+    }
+    
     # TODO - replace training/jb/ql columns with aggregated columns
-    main_df = replace_training_columns(main_df)
-    main_df = replace_job_role_columns(main_df)
+    for column, pattern in columns_to_be_aggregated_patterns.items():
+        main_df = replace_columns_after_aggregation(main_df, pattern)
+    # main_df = replace_job_role_columns(main_df)
 
 
     # TODO - write the main df to destination
@@ -35,18 +48,19 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_training_columns(df):
-    training_cols = utils.extract_col_with_pattern(
-        "^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA
+def replace_columns_after_aggregation(df, pattern):
+    cols = utils.extract_col_with_pattern(
+        pattern, worker_schema.WORKER_SCHEMA
     )
-    df = add_aggregated_training_column(df, training_cols)
+    df = add_aggregated_training_column(df, cols)
 
-    df = df.drop(struct(training_cols))
+    df = df.drop(struct(cols))
 
     return df
 
 
 def add_aggregated_training_column(df, training_columns):
+    # TODO - can this be made more general so it will call both functions
     aggregate_training_udf = udf(get_training_into_json, StringType())
 
     tr_df = df.select(training_columns)
@@ -74,15 +88,15 @@ def get_training_into_json(row):
     return json.dumps(aggregated_training)
 
 
-def replace_job_role_columns(df):
-    job_role_cols = utils.extract_col_with_pattern(
-        "^jr\d\d[a-z]", worker_schema.WORKER_SCHEMA
-    )
-    df = add_aggregated_job_role_column(df, job_role_cols)
+# def replace_job_role_columns(df):
+#     job_role_cols = utils.extract_col_with_pattern(
+#         "^jr\d\d[a-z]", worker_schema.WORKER_SCHEMA
+#     )
+#     df = add_aggregated_job_role_column(df, job_role_cols)
 
-    df = df.drop(struct(job_role_cols))
+#     df = df.drop(struct(job_role_cols))
 
-    return df
+#     return df
 
 
 def add_aggregated_job_role_column(df, job_role_columns):

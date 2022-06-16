@@ -51,12 +51,13 @@ class PrepareWorkersTests(unittest.TestCase):
         for training in training_types_flag:
             self.assertEqual(df.first()[training], 0)
 
-    def test_replace_training_columns(self):
+    def test_replace_columns_after_aggregation(self):
         spark = utils.get_spark()
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-
-        df = prepare_workers.replace_training_columns(df)
+        # TODO - make it run with all the other patterns and columns
+        pattern = "^jr\d\d[a-z]"
+        df = prepare_workers.replace_columns_after_aggregation(df, pattern)
 
         self.assertEqual("training", df.columns[-1])
         self.assertNotIn(training_cols, df.columns)
