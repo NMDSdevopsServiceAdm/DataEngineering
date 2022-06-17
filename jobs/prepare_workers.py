@@ -40,9 +40,9 @@ def get_dataset_worker(source):
 
 
 def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
-    cols = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
-    df = add_aggregated_column(df, col_name, cols, udf_function)
-    df = df.drop(struct(cols))
+    cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
+    df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
+    df = df.drop(struct(cols_to_aggregate))
 
     return df
 
