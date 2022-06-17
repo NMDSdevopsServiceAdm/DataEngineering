@@ -357,6 +357,36 @@ class UtilsTests(unittest.TestCase):
 
         self.assertFalse(column_list)
 
+    def test_extract_training_types(self):
+        schema = StructType(
+            fields=[
+                StructField("tr01flag", IntegerType(), True),
+                StructField("tr02flag", IntegerType(), True),
+                StructField("tr01count", IntegerType(), True),
+                StructField("tr01ac", IntegerType(), True),
+                StructField("tr03flag", IntegerType(), True),
+                StructField("tr01dn", IntegerType(), True),
+            ]
+        )
+        training_types = utils.extract_training_types(schema)
+        self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
+        
+    def test_extract_col_with_pattern(self):
+        schema = StructType(
+            fields=[
+                StructField("tr01flag", IntegerType(), True),
+                StructField("tr01latestdate", IntegerType(), True),
+                StructField("tr01count", IntegerType(), True),
+                StructField("tr02flag", IntegerType(), True),
+                StructField("tr02latestdate", IntegerType(), True),
+                StructField("tr02count", IntegerType(), True),
+                StructField("training", StringType(), True),
+                StructField("tr00034type", IntegerType()),
+            ]
+        )
+        training = utils.extract_col_with_pattern("^tr\d\d[a-z]", schema)
+        self.assertEqual(training, ["tr01flag", "tr01latestdate", "tr01count", "tr02flag", "tr02latestdate", "tr02count"])
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
