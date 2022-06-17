@@ -38,7 +38,9 @@ class PrepareWorkersTests(unittest.TestCase):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
         # TODO - make it run with all the other patterns and columns
         pattern = "^tr\d\d[a-z]"
-        df = prepare_workers.replace_columns_after_aggregation(df, "training", pattern, prepare_workers.get_training_into_json)
+        df = prepare_workers.replace_columns_after_aggregation(
+            df, "training", pattern, prepare_workers.get_training_into_json
+        )
 
         self.assertEqual("training", df.columns[-1])
         self.assertNotIn(training_cols, df.columns)
@@ -51,7 +53,9 @@ class PrepareWorkersTests(unittest.TestCase):
         df = prepare_workers.add_aggregated_column(
             df, "training", training_columns, prepare_workers.get_training_into_json
         )
-        training_types_flag = utils.extract_col_with_pattern("^tr\d\dflag$", WORKER_SCHEMA)
+        training_types_flag = utils.extract_col_with_pattern(
+            "^tr\d\dflag$", WORKER_SCHEMA
+        )
         training_types_flag.remove("tr01flag")
 
         self.assertEqual(df.columns[-1], "training")

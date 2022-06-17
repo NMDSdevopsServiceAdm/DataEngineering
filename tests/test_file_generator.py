@@ -1,6 +1,6 @@
 from datetime import date
-
 import dbldatagen as dg
+
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -545,7 +545,13 @@ def generate_ascwds_worker_file(output_destination):
         spark, rows=50, partitions=8, randomSeedMethod="hash_fieldname"
     ).withSchema(worker_schema.WORKER_SCHEMA)
 
-    dataspec = dataspec.withColumnSpec("tr01flag", 1).withColumnSpec("tr01count", 1).withColumnSpec("jr01flag", 1).withColumnSpec("jr03flag", 1).withColumnSpec("jr16cat1", 1)
+    dataspec = (
+        dataspec.withColumnSpec("tr01flag", 1)
+        .withColumnSpec("tr01count", 1)
+        .withColumnSpec("jr01flag", 1)
+        .withColumnSpec("jr03flag", 1)
+        .withColumnSpec("jr16cat1", 1)
+    )
 
     df = dataspec.build()
 
