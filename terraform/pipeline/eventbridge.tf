@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
   is_enabled  = terraform.workspace == "main" ? true : false
-  name        = "ascwds-csv-added"
+  name        = "${local.workspace_prefix}-ascwds-csv-added"
   description = "Captures when a new ASC WDS worker or workspace CSV is uploaded to sfc-data-engineering-raw bucket"
 
   event_pattern = <<EOF
@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "start_state_machines" {
 
 resource "aws_cloudwatch_event_target" "trigger_transform_ascwds_state_machine" {
   rule      = aws_cloudwatch_event_rule.ascwds_csv_added.name
-  target_id = "StartTransformASCWDSStateMachine"
+  target_id = "${local.workspace_prefix}-StartTransformASCWDSStateMachine"
   arn       = aws_sfn_state_machine.transform_ascwds_state_machine.arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
