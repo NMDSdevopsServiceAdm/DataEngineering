@@ -27,9 +27,7 @@ resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/TransformASCWDS-StepFunction.json", {
     ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
-    prepare_locations_job_name           = module.prepare_locations_job.job_name
     data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
-    data_engineering_crawler_name        = module.data_engineering_crawler.crawler_name
     dataset_bucket_name                  = module.datasets_bucket.bucket_name
   })
 
