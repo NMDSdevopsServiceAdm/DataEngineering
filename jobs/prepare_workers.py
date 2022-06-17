@@ -27,8 +27,9 @@ def main(source, destination):
     }
     
     # TODO - replace training/jb/ql columns with aggregated columns
-    for column, pattern in columns_to_be_aggregated_patterns.items():
-        main_df = replace_columns_after_aggregation(main_df, pattern)
+    for col_name, info in columns_to_be_aggregated_patterns.items():
+        for pattern, udf_function in info.items():
+            main_df = replace_columns_after_aggregation(main_df, col_name, pattern, udf_function)
     # main_df = replace_job_role_columns(main_df)
 
 
@@ -48,24 +49,24 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_columns_after_aggregation(df, pattern):
+def replace_columns_after_aggregation(df, col_name, pattern, udf_function):
     cols = utils.extract_col_with_pattern(
         pattern, worker_schema.WORKER_SCHEMA
     )
-    df = add_aggregated_training_column(df, cols)
+    df = add_aggregated_column(df, col_name, cols, udf_function)
 
     df = df.drop(struct(cols))
 
     return df
 
 
-def add_aggregated_training_column(df, training_columns):
+def add_aggregated_column(df, col_name, columns, udf_function):
     # TODO - can this be made more general so it will call both functions
-    aggregate_training_udf = udf(get_training_into_json, StringType())
+    aggregate_udf = udf(udf_function, StringType())
 
-    tr_df = df.select(training_columns)
+    to_be_aggregated_df = df.select(columns)
     df = df.withColumn(
-        "training", aggregate_training_udf(struct([tr_df[x] for x in tr_df.columns]))
+        col_name, aggregate_udf(struct([to_be_aggregated_df[x] for x in to_be_aggregated_df.columns]))
     )
 
     return df
@@ -99,15 +100,15 @@ def get_training_into_json(row):
 #     return df
 
 
-def add_aggregated_job_role_column(df, job_role_columns):
-    aggregate_jr_udf = udf(get_job_role_into_json, StringType())
+# def add_aggregated_job_role_column(df, job_role_columns):
+#     aggregate_jr_udf = udf(get_job_role_into_json, StringType())
 
-    jr_df = df.select(job_role_columns)
-    df = df.withColumn(
-        "job_role", aggregate_jr_udf(struct([jr_df[x] for x in jr_df.columns]))
-    )
+#     jr_df = df.select(job_role_columns)
+#     df = df.withColumn(
+#         "job_role", aggregate_jr_udf(struct([jr_df[x] for x in jr_df.columns]))
+#     )
 
-    return df
+    # return df
 
 def get_job_role_into_json(row):
     job_role_cols = utils.extract_col_with_pattern(

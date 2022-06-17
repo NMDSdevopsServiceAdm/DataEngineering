@@ -32,13 +32,24 @@ class PrepareWorkersTests(unittest.TestCase):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
         self.assertEqual(worker_df.count(), 50)
 
-    def test_get_training_into_json_column_adds_json_training_col(self):
+    def test_replace_columns_after_aggregation(self):
+        spark = utils.get_spark()
+        df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
+        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
+        # TODO - make it run with all the other patterns and columns
+        pattern = "^tr\d\d[a-z]"
+        df = prepare_workers.replace_columns_after_aggregation(df, "training", pattern, prepare_workers.get_training_into_json)
+
+        self.assertEqual("training", df.columns[-1])
+        self.assertNotIn(training_cols, df.columns)
+
+    def test_get_training_into_json(self):
         spark = utils.get_spark()
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
 
         training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        df = prepare_workers.add_aggregated_training_column(
-            df, training_columns
+        df = prepare_workers.add_aggregated_column(
+            df, "training", training_columns, prepare_workers.get_training_into_json
         )
         training_types_flag = utils.extract_col_with_pattern("^tr\d\dflag$", WORKER_SCHEMA)
         training_types_flag.remove("tr01flag")
@@ -51,24 +62,13 @@ class PrepareWorkersTests(unittest.TestCase):
         for training in training_types_flag:
             self.assertEqual(df.first()[training], 0)
 
-    def test_replace_columns_after_aggregation(self):
-        spark = utils.get_spark()
-        df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
-        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        # TODO - make it run with all the other patterns and columns
-        pattern = "^jr\d\d[a-z]"
-        df = prepare_workers.replace_columns_after_aggregation(df, pattern)
-
-        self.assertEqual("training", df.columns[-1])
-        self.assertNotIn(training_cols, df.columns)
-
     def test_get_job_role_into_json(self):
         spark = utils.get_spark()
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
 
         jr_columns = utils.extract_col_with_pattern("^jr\d\d[a-z]", WORKER_SCHEMA)
-        df = prepare_workers.add_aggregated_job_role_column(
-            df, jr_columns
+        df = prepare_workers.add_aggregated_column(
+            df, "job_role", jr_columns, prepare_workers.get_job_role_into_json
         )
         jr_types_flag = utils.extract_col_with_pattern("^jr\d\d*[a-z]\d", WORKER_SCHEMA)
 
