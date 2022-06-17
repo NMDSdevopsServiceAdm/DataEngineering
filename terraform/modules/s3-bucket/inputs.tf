@@ -1,5 +1,5 @@
 variable "bucket_name" {
-  description = "Name of the python script to run"
+  description = "Name of the S3 bucket"
   type        = string
 }
 

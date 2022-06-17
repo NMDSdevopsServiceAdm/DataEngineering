@@ -1,6 +1,6 @@
 resource "aws_glue_catalog_database" "glue_catalog_database" {
-  name        = "${terraform.workspace}-${var.glue_database_name}"
-  description = "Database for all datasets belonging to the ${terraform.workspace} environment."
+  name        = "${local.workspace_prefix}-${var.glue_database_name}"
+  description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
 module "csv_to_parquet_job" {
@@ -106,14 +106,14 @@ module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "data_engineering_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_engineering"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "cqc_crawler" {
@@ -121,5 +121,5 @@ module "cqc_crawler" {
   dataset_for_crawler          = "CQC"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   schedule                     = "cron(00 07 * * ? *)"
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

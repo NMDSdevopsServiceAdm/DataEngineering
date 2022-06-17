@@ -79,6 +79,15 @@ jobs:
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
+      - run:
+          name: save pipeline resources bucket name
+          command: |
+            cd terraform/pipeline
+            echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
+
+      - persist_to_workspace:
+          root: .
+          paths: ./terraform/pipeline/pipeline_resources_bucket_name
   
   deploy-dependencies:
     docker:
@@ -96,7 +105,7 @@ jobs:
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
-          to: 's3://sfc-${CIRCLE_BRANCH}-pipeline-resources/dependencies'
+          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
           
 workflows:

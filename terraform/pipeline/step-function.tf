@@ -1,5 +1,5 @@
 resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
-  name       = "${terraform.workspace}-EthnicityBreakdownPipeline"
+  name       = "${local.workspace_prefix}-EthnicityBreakdownPipeline"
   role_arn   = aws_iam_role.step_function_iam_role.arn
   type       = "STANDARD"
   definition = templatefile("EthnicityBreakdownPipeline-StepFunction.json", {})
@@ -7,7 +7,7 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
 
 
 resource "aws_iam_role" "step_function_iam_role" {
-  name               = "${terraform.workspace}-AWSStepFunction-role"
+  name               = "${local.workspace_prefix}-AWSStepFunction-role"
   assume_role_policy = data.aws_iam_policy_document.step_function_iam_policy.json
 }
 
@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "step_function_iam_policy" {
 }
 
 resource "aws_iam_policy" "step_function_iam_policy" {
-  name        = "${terraform.workspace}-step_function_iam_policy"
+  name        = "${local.workspace_prefix}-step_function_iam_policy"
   path        = "/"
   description = "IAM Policy for step functions"
 

@@ -11,6 +11,11 @@ terraform {
     region         = "eu-west-2"
     dynamodb_table = "terraform-locks"
     encrypt        = true
-
   }
 }
+
+locals {
+  workspace_prefix = substr(lower(replace(terraform.workspace, "/[^a-zA-Z0-9]+/", "-")), 0, 40)
+}
+
+data "aws_caller_identity" "current" {}

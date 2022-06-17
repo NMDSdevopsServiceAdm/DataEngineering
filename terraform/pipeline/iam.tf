@@ -1,5 +1,5 @@
 resource "aws_iam_role" "sfc_glue_service_iam_role" {
-  name               = "${terraform.workspace}-glue_service_iam_role"
+  name               = "${local.workspace_prefix}-glue_service_iam_role"
   assume_role_policy = data.aws_iam_policy_document.glue_service_assume_role_policy.json
 }
 
@@ -21,9 +21,9 @@ resource "aws_iam_role_policy_attachment" "AWSGlueServiceRole_policy_attachment"
 
 
 resource "aws_iam_policy" "glue_crawler_logging_policy" {
-  name        = "${terraform.workspace}-logging_policy"
+  name        = "${local.workspace_prefix}-logging_policy"
   path        = "/"
-  description = "Iam logging policy crawlers on ${terraform.workspace} environment"
+  description = "Iam logging policy crawlers on ${local.workspace_prefix} environment"
 
   policy = jsonencode({
 
@@ -50,9 +50,9 @@ resource "aws_iam_role_policy_attachment" "glue_crawler_logging_policy_attachmen
 }
 
 resource "aws_iam_policy" "glue_job_s3_data_engineering_policy" {
-  name        = "${terraform.workspace}-glue_job_bucket_access_policy"
+  name        = "${local.workspace_prefix}-glue_job_bucket_access_policy"
   path        = "/"
-  description = "Iam policy for the all glue jobs on workspace: ${terraform.workspace}"
+  description = "Iam policy for the all glue jobs on workspace: ${local.workspace_prefix}"
 
   policy = jsonencode({
 
@@ -81,9 +81,9 @@ resource "aws_iam_role_policy_attachment" "glue_job_s3_policy_attachment" {
 }
 
 resource "aws_iam_policy" "glue_jobs_read_raw_s3_data_policy" {
-  name        = "${terraform.workspace}-glue_job_read_raw_s3_bucket_access_policy"
+  name        = "${local.workspace_prefix}-glue_job_read_raw_s3_bucket_access_policy"
   path        = "/"
-  description = "Iam policy for the all glue jobs on workspace: ${terraform.workspace} to read the raw data"
+  description = "Iam policy for the all glue jobs on workspace: ${local.workspace_prefix} to read the raw data"
 
   policy = jsonencode({
 
@@ -108,4 +108,10 @@ resource "aws_iam_role_policy_attachment" "glue_jobs_read_raw_s3_data_policy_att
   role       = aws_iam_role.sfc_glue_service_iam_role.name
 }
 
+resource "aws_iam_policy" "query_all_in_athena" {
+  name        = "${terraform.workspace}-query-all-in-athena"
+  path        = "/"
+  description = "All read and list privileges for any athena resources"
 
+  policy = templatefile("policy-documents/query-all-in-athena.json", { account_id = data.aws_caller_identity.current.account_id })
+}
