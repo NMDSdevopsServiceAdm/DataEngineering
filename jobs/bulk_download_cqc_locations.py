@@ -27,7 +27,7 @@ def collect_arguments():
         required=False,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.destination
 

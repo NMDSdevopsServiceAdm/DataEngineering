@@ -1,5 +1,4 @@
 import argparse
-import datetime
 
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
@@ -316,7 +315,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.prepared_locations_source, args.destination
 

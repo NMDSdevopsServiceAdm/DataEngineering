@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp
 import argparse
 import sys
 from utils.utils import format_date_fields
@@ -32,7 +31,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.source, args.destination
 
