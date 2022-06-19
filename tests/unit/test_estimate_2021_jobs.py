@@ -17,12 +17,21 @@ from jobs import estimate_2021_jobs as job
 
 class Estimate2021JobsTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_estimate_2021_jobs").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_estimate_2021_jobs"
+        ).getOrCreate()
 
     def test_determine_ascwds_primary_service_type(self):
         columns = ["locationid", "services_offered"]
         rows = [
-            ("1-000000001", ["Care home service with nursing", "Care home service without nursing", "Fake service"]),
+            (
+                "1-000000001",
+                [
+                    "Care home service with nursing",
+                    "Care home service without nursing",
+                    "Fake service",
+                ],
+            ),
             ("1-000000002", ["Care home service without nursing", "Fake service"]),
             ("1-000000003", ["Fake service"]),
             ("1-000000003", []),
