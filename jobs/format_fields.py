@@ -1,6 +1,8 @@
-from pyspark.sql import SparkSession
 import argparse
 import sys
+
+from pyspark.sql import SparkSession
+
 from utils.utils import format_date_fields
 
 

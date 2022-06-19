@@ -1,8 +1,9 @@
+import argparse
+from datetime import date
+
 from utils import cqc_api as cqc
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
-from datetime import date
-import argparse
 
 
 def main(destination):

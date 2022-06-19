@@ -1,6 +1,7 @@
-from utils import utils
 import sys
 import argparse
+
+from utils import utils
 
 
 def main(source, destination):
