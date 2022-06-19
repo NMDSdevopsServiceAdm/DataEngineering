@@ -13,7 +13,9 @@ def main(source, destination):
 
 
 def read_parquet(source):
-    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     df = spark.read.parquet(source)
 
@@ -26,7 +28,9 @@ def write_parquet(df, destination):
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", help="A parquet file used as source input", required=True)
+    parser.add_argument(
+        "--source", help="A parquet file used as source input", required=True
+    )
     parser.add_argument(
         "--destination",
         help="A destination directory for outputting parquet files",
