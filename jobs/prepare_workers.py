@@ -5,7 +5,6 @@ import json
 from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import StringType
 
-from schemas import worker_schema
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
@@ -14,8 +13,17 @@ def main(source, destination):
     # TODO - read data as df
     main_df = get_dataset_worker(source)
 
+    columns_to_be_aggregated_patterns = {
+        "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
+        "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
+        "qualifications": {},
+    }
+
     # TODO - replace training/jb/ql columns with aggregated columns
-    main_df = replace_training_columns(main_df)
+    for col_name, info in columns_to_be_aggregated_patterns.items():
+        main_df = replace_columns_with_aggregated_column(
+            main_df, col_name, info["pattern"], info["udf_function"]
+        )
 
     # TODO - write the main df to destination
     return main_df
@@ -33,23 +41,23 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_training_columns(df):
-    training_cols = utils.extract_col_with_pattern(
-        "^tr\d\d[a-z]", worker_schema.WORKER_SCHEMA
-    )
-    df = add_aggregated_training_column(df, training_cols)
-
-    df = df.drop(struct(training_cols))
+def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
+    cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
+    df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
+    df = df.drop(struct(cols_to_aggregate))
 
     return df
 
 
-def add_aggregated_training_column(df, training_columns):
-    aggregate_training_udf = udf(get_training_into_json, StringType())
+def add_aggregated_column(df, col_name, columns, udf_function):
+    aggregate_udf = udf(udf_function, StringType())
 
-    tr_df = df.select(training_columns)
+    to_be_aggregated_df = df.select(columns)
     df = df.withColumn(
-        "training", aggregate_training_udf(struct([tr_df[x] for x in tr_df.columns]))
+        col_name,
+        aggregate_udf(
+            struct([to_be_aggregated_df[x] for x in to_be_aggregated_df.columns])
+        ),
     )
 
     return df
@@ -70,6 +78,16 @@ def get_training_into_json(row):
             }
 
     return json.dumps(aggregated_training)
+
+
+def get_job_role_into_json(row):
+    job_role_cols = utils.extract_col_with_pattern("^jr\d\d[a-z]", WORKER_SCHEMA)
+    agg_jr = []
+    for jr in job_role_cols:
+        if row[jr] == 1:
+            agg_jr.append(jr)
+
+    return json.dumps(agg_jr)
 
 
 def collect_arguments():
