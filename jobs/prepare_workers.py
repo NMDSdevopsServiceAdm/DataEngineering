@@ -66,7 +66,7 @@ def add_aggregated_column(df, col_name, columns, udf_function):
 
 
 def get_training_into_json(row):
-    types_training = utils.extract_training_types(WORKER_SCHEMA)
+    types_training = utils.extract_specific_column_types("^tr\d\dflag$", WORKER_SCHEMA)
     aggregated_training = {}
 
     for training in types_training:
