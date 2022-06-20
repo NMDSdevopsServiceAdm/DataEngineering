@@ -80,7 +80,9 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_csv_to_parquet"
+    ).getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -130,12 +132,13 @@ def extract_column_from_schema(schema):
 
 def extract_col_with_pattern(pattern, schema):
     columns = extract_column_from_schema(schema)
-    pattern = re.compile(fr"{pattern}")
+    pattern = re.compile(rf"{pattern}")
     training_types = []
     for col in columns:
         if pattern.match(col):
             training_types.append(col)
     return training_types
+
 
 def extract_training_types(schema):
     columns = extract_col_with_pattern("^tr\d\dflag$", schema)
@@ -143,4 +146,3 @@ def extract_training_types(schema):
     for col in columns:
         training_types.append(col[0:4])
     return training_types
-    
