@@ -39,8 +39,12 @@ def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
         )
     )
 
-    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType()))
-    locations_df = collect_ascwds_historical_job_figures(spark, prepared_locations_source, locations_df)
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType())
+    )
+    locations_df = collect_ascwds_historical_job_figures(
+        spark, prepared_locations_source, locations_df
+    )
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
     locations_df = model_populate_known_2021_jobs(locations_df)
@@ -67,9 +71,16 @@ def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
 def determine_ascwds_primary_service_type(input_df):
     return input_df.withColumn(
         PRIMARY_SERVICE_TYPE,
-        when(array_contains(input_df[SERVICES_OFFERED], "Care home service with nursing"), NURSING_HOME_IDENTIFIER)
+        when(
+            array_contains(
+                input_df[SERVICES_OFFERED], "Care home service with nursing"
+            ),
+            NURSING_HOME_IDENTIFIER,
+        )
         .when(
-            array_contains(input_df[SERVICES_OFFERED], "Care home service without nursing"),
+            array_contains(
+                input_df[SERVICES_OFFERED], "Care home service without nursing"
+            ),
             NONE_NURSING_HOME_IDENTIFIER,
         )
         .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
@@ -95,7 +106,9 @@ def collect_ascwds_historical_job_figures(spark, data_source, input_df):
         input_df = input_df.join(jobs_previous, LOCATION_ID, "left")
 
     # Calculate last known jobs previous to 2021
-    input_df = input_df.withColumn(LAST_KNOWN_JOB_COUNT, coalesce("job_count_2020", "job_count_2019"))
+    input_df = input_df.withColumn(
+        LAST_KNOWN_JOB_COUNT, coalesce("job_count_2020", "job_count_2019")
+    )
 
     return input_df
 
@@ -104,7 +117,11 @@ def model_populate_known_2021_jobs(df):
     df = df.withColumn(
         ESTIMATE_JOB_COUNT_2021,
         when(
-            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col("job_count_2021").isNotNull())), col("job_count_2021")
+            (
+                col(ESTIMATE_JOB_COUNT_2021).isNull()
+                & (col("job_count_2021").isNotNull())
+            ),
+            col("job_count_2021"),
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -161,7 +178,11 @@ def model_non_res_default(df):
     df = df.withColumn(
         ESTIMATE_JOB_COUNT_2021,
         when(
-            (col(ESTIMATE_JOB_COUNT_2021).isNull() & (col(PRIMARY_SERVICE_TYPE) == "non-residential")), 54.09
+            (
+                col(ESTIMATE_JOB_COUNT_2021).isNull()
+                & (col(PRIMARY_SERVICE_TYPE) == "non-residential")
+            ),
+            54.09,
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 

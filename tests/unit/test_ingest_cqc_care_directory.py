@@ -19,14 +19,26 @@ from tests.test_file_generator import (
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
-    TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE = "tests/test_data/domain=cqc/dataset=registered-provider-list"
-    TEST_CQC_CARE_DIRECTORY_FILE = "tests/test_data/tmp/formatted-registered-provider-list"
-    TEST_LOCATIONID_AND_PROVIDERID_FILE = "tests/test_data/tmp/locationid-and-providerid"
+    TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE = (
+        "tests/test_data/domain=cqc/dataset=registered-provider-list"
+    )
+    TEST_CQC_CARE_DIRECTORY_FILE = (
+        "tests/test_data/tmp/formatted-registered-provider-list"
+    )
+    TEST_LOCATIONID_AND_PROVIDERID_FILE = (
+        "tests/test_data/tmp/locationid-and-providerid"
+    )
     TEST_DUPLICATE_PROVIDER_DATA_FILE = "tests/test_data/tmp/duplicate-provider-data"
-    TEST_CARE_DIRECTORY_LOCATION_DATA_FILE = "tests/test_data/tmp/care-directory-location-data"
+    TEST_CARE_DIRECTORY_LOCATION_DATA_FILE = (
+        "tests/test_data/tmp/care-directory-location-data"
+    )
     TEST_MULTIPLE_BOOLEAN_COLUMNS = "tests/test_data/tmp/multiple-boolean-column-data"
-    TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME = "tests/test_data/tmp/care-directory-registered-manager-name"
-    TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES = "tests/test_data/tmp/care-directory-gac-service-types"
+    TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME = (
+        "tests/test_data/tmp/care-directory-registered-manager-name"
+    )
+    TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES = (
+        "tests/test_data/tmp/care-directory-gac-service-types"
+    )
     TEST_CARE_DIRECTORY_SPECIALISMS = "tests/test_data/tmp/care-directory-specialisms"
 
     REFORMAT_DICT = {
@@ -39,15 +51,27 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
-        generate_raw_cqc_care_directory_csv_file(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
+        self.spark = SparkSession.builder.appName(
+            "test_ingest_cqc_care_directory"
+        ).getOrCreate()
+        generate_raw_cqc_care_directory_csv_file(
+            self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE
+        )
         generate_cqc_care_directory_file(self.TEST_CQC_CARE_DIRECTORY_FILE)
-        generate_locationid_and_providerid_file(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
+        generate_locationid_and_providerid_file(
+            self.TEST_LOCATIONID_AND_PROVIDERID_FILE
+        )
         generate_duplicate_providerid_data_file(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
-        generate_care_directory_locationid_file(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
+        generate_care_directory_locationid_file(
+            self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE
+        )
         generate_multiple_boolean_columns(self.TEST_MULTIPLE_BOOLEAN_COLUMNS)
-        generate_care_directory_registered_manager_name(self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME)
-        generate_care_directory_gac_service_types(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
+        generate_care_directory_registered_manager_name(
+            self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME
+        )
+        generate_care_directory_gac_service_types(
+            self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES
+        )
         generate_care_directory_specialisms(self.TEST_CARE_DIRECTORY_SPECIALISMS)
 
     @classmethod
@@ -66,10 +90,14 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_cqc_care_directory(self):
-        df = ingest_cqc_care_directory.get_cqc_care_directory(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
+        df = ingest_cqc_care_directory.get_cqc_care_directory(
+            self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE
+        )
 
         self.assertEqual(df.count(), 1)
-        self.assertEqual(df.columns, ["locationId", "registrationdate", "name", "type", "providerId"])
+        self.assertEqual(
+            df.columns, ["locationId", "registrationdate", "name", "type", "providerId"]
+        )
 
         collected_df = df.collect()
         self.assertEqual(collected_df[0]["name"], "Location 1")
@@ -79,16 +107,25 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
 
-        locations_at_prov_df = ingest_cqc_care_directory.unique_providerids_with_array_of_their_locationids(df)
+        locations_at_prov_df = ingest_cqc_care_directory.unique_providerids_with_array_of_their_locationids(
+            df
+        )
 
         self.assertEqual(locations_at_prov_df.count(), 2)
         self.assertEqual(locations_at_prov_df.columns, ["providerId", "locationIds"])
 
-        provider1check_df = locations_at_prov_df.filter("providerId=='1-000000001'").select("locationIds")
-        self.assertEqual(provider1check_df.collect(), [Row(locationIds=["1-000000001"])])
+        provider1check_df = locations_at_prov_df.filter(
+            "providerId=='1-000000001'"
+        ).select("locationIds")
+        self.assertEqual(
+            provider1check_df.collect(), [Row(locationIds=["1-000000001"])]
+        )
 
         locations_at_prov_df = locations_at_prov_df.collect()
-        self.assertEqual(sorted(locations_at_prov_df[1]["locationIds"]), ["1-000000002", "1-000000003"])
+        self.assertEqual(
+            sorted(locations_at_prov_df[1]["locationIds"]),
+            ["1-000000002", "1-000000003"],
+        )
 
     def test_get_distinct_provider_info(self):
         spark = utils.get_spark()
@@ -157,11 +194,17 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(services_df.columns, ["locationId", "new_alias"])
 
         services_df = services_df.collect()
-        self.assertEqual(sorted(services_df[0]["new_alias"]), [["name A"], ["name B", "description B"], ["name C"]])
         self.assertEqual(
-            sorted(services_df[1]["new_alias"]), [["name B", "description B"], ["name D", "description D"]]
+            sorted(services_df[0]["new_alias"]),
+            [["name A"], ["name B", "description B"], ["name C"]],
         )
-        self.assertEqual(sorted(services_df[2]["new_alias"]), [["name E", "description E"]])
+        self.assertEqual(
+            sorted(services_df[1]["new_alias"]),
+            [["name B", "description B"], ["name D", "description D"]],
+        )
+        self.assertEqual(
+            sorted(services_df[2]["new_alias"]), [["name E", "description E"]]
+        )
 
     def test_create_contacts_from_registered_manager_name(self):
         spark = utils.get_spark()
