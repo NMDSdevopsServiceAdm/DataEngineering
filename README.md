@@ -92,7 +92,7 @@ For verbose output add `-v` to the end of the command.
 
 # Infrastructure
 
-So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code). 
+So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
 
 ## Our Continuous Depoyment Pipeline 
 ***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
@@ -102,11 +102,39 @@ When creating a new git branch and pushing to the remote repository a CircleCi w
 One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
 Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.<br>
 
-Environments must be torn down manually once a git branch has been deleted. This is a simple process, detailed below.
+Environments must be torn down manually once a git branch has been deleted. This is a simple process, [detailed below](#destroying-terraform).
 
 > ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
 
 <br>
+
+## Continuous Integration
+***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
+
+When you push to a remote git branch, we run some linting checks for Python and Terraform code as a part of the CircleCi workflow (mentioned above).
+If your branch fails either of these checks, you need to run the relevant linter to fix the errors.
+Instructions for both Terraform and Python are detailed below.
+
+### Linting Python code
+
+We use [black](https://black.readthedocs.io/en/stable/) to lint our Python code.
+Install black using pip
+```
+pip install black
+```
+To lint all the Python files, first ensure you're at the root of the repository, then run
+```
+black .
+```
+
+### Linting Terraform code
+
+Install Terraform following [the instructions below](#installing-terraform).
+
+Ensure you are at the root of the repository, then run
+```
+terraform fmt -recursive
+```
 
 ## The manual approach
 ### Installing Terraform
