@@ -21,7 +21,9 @@ def main(source, destination):
 
     # TODO - replace training/jb/ql columns with aggregated columns
     for col_name, info in columns_to_be_aggregated_patterns.items():
-        main_df = replace_columns_with_aggregated_column(main_df, col_name, info["pattern"], info["udf_function"])
+        main_df = replace_columns_with_aggregated_column(
+            main_df, col_name, info["pattern"], info["udf_function"]
+        )
 
     # TODO - write the main df to destination
     return main_df

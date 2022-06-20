@@ -305,7 +305,6 @@ WORKER_SCHEMA = StructType(
         StructField("tr40ac", IntegerType(), True),
         StructField("tr40nac", IntegerType(), True),
         StructField("tr40dn", IntegerType(), True),
-
         StructField("jr01flag", IntegerType(), True),
         StructField("jr02flag", IntegerType(), True),
         StructField("jr03flag", IntegerType(), True),
@@ -335,8 +334,8 @@ WORKER_SCHEMA = StructType(
         StructField("jr40flag", IntegerType(), True),
         StructField("jr41flag", IntegerType(), True),
         StructField("jr42flag", IntegerType(), True),
-        StructField("jr16cat1", IntegerType(), True),    
-        StructField("jr16cat2", IntegerType(), True),          
+        StructField("jr16cat1", IntegerType(), True),
+        StructField("jr16cat2", IntegerType(), True),
         StructField("jr16cat3", IntegerType(), True),
         StructField("jr16cat4", IntegerType(), True),
         StructField("jr16cat5", IntegerType(), True),
