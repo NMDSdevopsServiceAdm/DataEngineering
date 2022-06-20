@@ -6,7 +6,7 @@
             "Type": "Task",
             "Resource": "arn:aws:states:::glue:startJobRun.sync",
             "Parameters": {
-                "JobName": "ingest_ascwds_dataset_job",
+                "JobName": "${ingest_ascwds_job_name}",
                 "Arguments": {
                     "--destination.$": "$.jobs.ingest_ascwds_dataset.destination",
                     "--source.$": "$.jobs.ingest_ascwds_dataset.source"
@@ -34,7 +34,7 @@
                         "Run ASCWDS Crawler": {
                             "Type": "Task",
                             "Parameters": {
-                                "Name": "data_engineering_ASCWDS"
+                                "Name": "${data_engineering_ascwds_crawler_name}"
                             },
                             "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
                             "End": true
@@ -48,7 +48,7 @@
                             "Type": "Task",
                             "Resource": "arn:aws:states:::glue:startJobRun.sync",
                             "Parameters": {
-                                "JobName": "prepare_locations_job",
+                                "JobName": "${prepare_locations_job_name}",
                                 "Arguments": {
                                     "--destination.$": "$.jobs.prepare_locations_job.destination",
                                     "--pir_source.$": "$.jobs.prepare_locations_job.pir_source",
@@ -67,7 +67,7 @@
             "Type": "Task",
             "Resource": "arn:aws:states:::glue:startJobRun.sync",
             "Parameters": {
-                "JobName": "estimate_2021_jobs_job",
+                "JobName": "${estimate_2021_jobs_job_name}",
                 "Arguments": {
                     "--destination.$": "$.jobs.estimate_2021_jobs_job.destination",
                     "--prepared_locations_source.$": "$.jobs.estimate_2021_jobs_job.prepared_locations_source"
@@ -79,7 +79,7 @@
         "Run Data Engineering Crawler": {
             "Type": "Task",
             "Parameters": {
-                "Name": "data_engineering_DATA_ENGINEERING"
+                "Name": "${data_engineering_crawler_name}"
             },
             "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
             "Next": "Success"

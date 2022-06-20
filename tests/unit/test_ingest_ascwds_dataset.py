@@ -5,7 +5,9 @@ from jobs import ingest_ascwds_dataset
 
 class IngestASCWDSDatasetTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("sfc_data_engineering_test_ingest_ascwds_dataset").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "sfc_data_engineering_test_ingest_ascwds_dataset"
+        ).getOrCreate()
 
     def test_filter_test_accounts(self):
         columns = [
@@ -45,6 +47,7 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
 
         df = ingest_ascwds_dataset.filter_test_accounts(df)
         self.assertEqual(df.count(), 4)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
