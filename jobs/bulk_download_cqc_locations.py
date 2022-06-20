@@ -1,8 +1,9 @@
+import argparse
+from datetime import date
+
 from utils import cqc_api as cqc
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
-from datetime import date
-import argparse
 
 
 def main(destination):
@@ -27,7 +28,7 @@ def collect_arguments():
         required=False,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.destination
 

@@ -1,6 +1,7 @@
-from utils import utils
 import sys
 import argparse
+
+from utils import utils
 
 
 def main(source, destination):
@@ -74,7 +75,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.source, args.destination
 

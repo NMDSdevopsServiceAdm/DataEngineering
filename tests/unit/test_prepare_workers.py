@@ -37,10 +37,10 @@ class PrepareWorkersTests(unittest.TestCase):
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
 
         training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        df = prepare_workers.add_aggregated_training_column(
-            df, training_columns
+        df = prepare_workers.add_aggregated_training_column(df, training_columns)
+        training_types_flag = utils.extract_col_with_pattern(
+            "^tr\d\dflag$", WORKER_SCHEMA
         )
-        training_types_flag = utils.extract_col_with_pattern("^tr\d\dflag$", WORKER_SCHEMA)
         training_types_flag.remove("tr01flag")
 
         self.assertEqual(df.columns[-1], "training")
