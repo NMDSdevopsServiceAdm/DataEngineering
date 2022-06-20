@@ -15,6 +15,10 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
     include_execution_data = true
     level                  = "ERROR"
   }
+
+  depends_on = [
+    aws_iam_role.step_function_iam_role
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "state_machines" {
@@ -36,6 +40,10 @@ resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
     include_execution_data = true
     level                  = "ERROR"
   }
+
+  depends_on = [
+    aws_iam_role.step_function_iam_role
+  ]
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
