@@ -16,7 +16,7 @@ def main(source, destination):
     columns_to_be_aggregated_patterns = {
         "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
         "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
-        "qualifications": {},
+        "qualifications": {"pattern": "^ql\d\d[a-z]+.", "udf_function": get_qualification_into_json},
     }
 
     # TODO - replace training/jb/ql columns with aggregated columns
@@ -90,6 +90,10 @@ def get_job_role_into_json(row):
             agg_jr.append(jr)
 
     return json.dumps(agg_jr)
+
+
+def get_qualification_into_json(row):
+    pass
 
 
 def collect_arguments():
