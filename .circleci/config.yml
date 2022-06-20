@@ -1,5 +1,19 @@
 version: 2.1
 
+parameters:
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
+
 orbs:
   aws-s3: circleci/aws-s3@3.0
 
@@ -107,10 +121,31 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-          
+  terraform-destroy:
+    working_directory: /tmp/project
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Print github actions vars
+          command: |
+            echo << pipeline.parameters.GHA_Meta >>
+      # - run:
+      #     name: terraform destroy
+      #     command: |
+      #       cd terraform/pipeline
+      #       terraform init -input=false
+      #       terraform workspace select << pipeline.parameters.GHA_Meta >>
+      #       terraform destroy -auto-approve
+      #       terraform workspace select default
+      #       terraform workspace delete << pipeline.parameters.GHA_Meta >>
+
 workflows:
   version: 2
   test-plan-approve-and-deploy-to-main:
+    unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - test:
           filters:
@@ -131,7 +166,8 @@ workflows:
             - terraform-apply
 
   
-  test-plan-and-deploy-to-dev:    
+  test-plan-and-deploy-to-dev:
+    unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - test:
           filters:
@@ -146,3 +182,8 @@ workflows:
       - deploy-dependencies:
           requires:
             - terraform-apply
+
+  delete-development-environment:
+    when: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - terraform-destroy
