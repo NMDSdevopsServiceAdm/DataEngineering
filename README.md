@@ -111,27 +111,27 @@ Environments must be torn down manually once a git branch has been deleted. This
 ## Continuous Integration
 ***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
 
-When you push to a remote git branch, we run some linting checks for Python and terraform code as a part of the CircleCi workflow (mentioned above).
-If your branch fails either of these checks it means you need to run the relevent linter to fix the errors.
-Instructions for both terraform and python are detailed below.
+When you push to a remote git branch, we run some linting checks for Python and Terraform code as a part of the CircleCi workflow (mentioned above).
+If your branch fails either of these checks, you need to run the relevant linter to fix the errors.
+Instructions for both Terraform and Python are detailed below.
 
-### Linting python code
+### Linting Python code
 
-We use [black](https://black.readthedocs.io/en/stable/) to lint our python code.
+We use [black](https://black.readthedocs.io/en/stable/) to lint our Python code.
 Install black using pip
 ```
 pip install black
 ```
-To lint all the python files, first ensure you're at the root of the repository then run
+To lint all the Python files, first ensure you're at the root of the repository, then run
 ```
 black .
 ```
 
-### Linting terraform code
+### Linting Terraform code
 
-Install terraform following [the instructions below](#installing-terraform).
+Install Terraform following [the instructions below](#installing-terraform).
 
-Ensure you are at the root of the repository then run
+Ensure you are at the root of the repository, then run
 ```
 terraform fmt -recursive
 ```
