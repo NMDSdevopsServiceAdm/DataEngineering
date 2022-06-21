@@ -104,27 +104,17 @@ def get_qualification_into_json(row):
     qualification_types = qualification_types_achq + qualification_types_app
     aggregated_qualifications = {}
 
-    pattern = re.compile(rf"ql\d\d[a-z]+")
-
     for qualification in qualification_types:
+
         if qualification[-1].isdigit():
             level = int(qualification[-1])
-            if pattern.match(qualification):
-                year = f"{qualification[0:4]}year{level}"
-            else:
-                year = f"{qualification[0:5]}year{level}"
+            year = is_two_digit_qualification(qualification) + qualification[-1]
         elif qualification[-1] == "e":
             level = qualification[-1]
-            if pattern.match(qualification):
-                year = f"{qualification[0:4]}year{level}"
-            else:
-                year = f"{qualification[0:5]}year{level}"
+            year = is_two_digit_qualification(qualification) + "e"
         else:
             level = 0
-            if pattern.match(qualification):
-                year = f"{qualification[0:4]}year"
-            else:
-                year = f"{qualification[0:5]}year"
+            year = is_two_digit_qualification(qualification)
 
         if row[qualification] == 1:
             aggregated_qualifications[qualification] = {
@@ -135,8 +125,20 @@ def get_qualification_into_json(row):
     return json.dumps(aggregated_qualifications)
 
 
+def is_two_digit_qualification(qualification):
+    pattern = re.compile(rf"ql\d\d[a-z]+")
+
+    if pattern.match(qualification):
+        year = f"{qualification[0:4]}year"
+    else:
+        year = f"{qualification[0:5]}year"
+
+    return year
+
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--source",
         help="A CSV file or directory of files used as job input",
