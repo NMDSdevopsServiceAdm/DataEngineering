@@ -551,6 +551,8 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("jr01flag", 1)
         .withColumnSpec("jr03flag", 1)
         .withColumnSpec("jr16cat1", 1)
+        .withColumnSpec("ql01achq2", 1)
+        .withColumnSpec("ql01year2", 2009)
     )
 
     df = dataspec.build()

@@ -1,5 +1,6 @@
 import shutil
 import unittest
+import warnings
 
 from pyspark.sql import SparkSession
 
@@ -14,6 +15,8 @@ class PrepareWorkersTests(unittest.TestCase):
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
 
     def setUp(self):
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
         generate_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
 
@@ -84,6 +87,31 @@ class PrepareWorkersTests(unittest.TestCase):
         for jr in jr_types_flag:
             self.assertEqual(df.first()[jr], 0)
 
+    def test_get_qualification_into_json(self):
+        spark = utils.get_spark()
+        df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
+
+        qualification_columns = utils.extract_col_with_pattern("^ql\d{1,3}.", WORKER_SCHEMA)
+        df = prepare_workers.add_aggregated_column(
+            df, "qualification", qualification_columns, prepare_workers.get_qualification_into_json
+        )
+
+        qualification_types_achieved = utils.extract_col_with_pattern(
+            "^tr\d\dachq\d*$", WORKER_SCHEMA
+        )
+        qualification_types_app = utils.extract_col_with_pattern(
+            "^tr\d\dapp\d*$", WORKER_SCHEMA
+        )
+
+        # training_types_flag.remove("tr01flag")
+
+        self.assertEqual(df.columns[-1], "qualification")
+        self.assertEqual(
+            df.first()["qualification"],
+            '{"ql01achq2": {"level": 2, "year": 2009}}',
+        )
+        # for training in training_types_flag:
+        #     self.assertEqual(df.first()[training], 0)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

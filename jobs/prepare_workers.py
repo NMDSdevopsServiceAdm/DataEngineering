@@ -1,6 +1,7 @@
 import argparse
 import sys
 import json
+import re
 
 from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import StringType
@@ -93,8 +94,40 @@ def get_job_role_into_json(row):
 
 
 def get_qualification_into_json(row):
-    pass
+    qualification_types_achq = utils.extract_col_with_pattern("^ql\d{1,3}achq(\d*|[a-z]*)", WORKER_SCHEMA)
+    qualification_types_app = utils.extract_col_with_pattern("^ql\d{1,3}app\d*", WORKER_SCHEMA)
+    qualification_types = qualification_types_achq + qualification_types_app
+    aggregated_qualifications = {}
 
+    pattern = re.compile(fr"ql\d\d[a-z]+")
+
+    for qualification in qualification_types:
+        if qualification[-1].isdigit():
+            level = int(qualification[-1])
+            if pattern.match(qualification):
+                year = f"{qualification[0:4]}year{level}"
+            else:
+                year = f"{qualification[0:5]}year{level}"
+        elif qualification[-1] == "e":
+            level = qualification[-1]
+            if pattern.match(qualification):
+                year = f"{qualification[0:4]}year{level}"
+            else:
+                year = f"{qualification[0:5]}year{level}"
+        else:
+            level = 0
+            if pattern.match(qualification):
+                year = f"{qualification[0:4]}year"
+            else:
+                year = f"{qualification[0:5]}year"
+
+        if row[qualification] == 1:
+            aggregated_qualifications[qualification] = {
+                "level": level,
+                "year": row[year]
+            }
+
+    return json.dumps(aggregated_qualifications)
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
