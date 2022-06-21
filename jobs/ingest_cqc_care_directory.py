@@ -2,7 +2,18 @@ import sys
 import argparse
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import lit, collect_set, array, col, split, expr, when, length, struct, explode
+from pyspark.sql.functions import (
+    lit,
+    collect_set,
+    array,
+    col,
+    split,
+    expr,
+    when,
+    length,
+    struct,
+    explode,
+)
 from pyspark.sql.types import StringType, IntegerType
 
 from utils import utils, cqc_care_directory_dictionaries
@@ -27,7 +38,9 @@ def get_cqc_care_directory(source):
     df = utils.format_date_fields(df)
 
     df = df.filter("type=='Social Care Org'")
-    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed("locationid", "locationId")
+    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed(
+        "locationid", "locationId"
+    )
 
     return df
 
@@ -40,8 +53,12 @@ def convert_to_cqc_provider_api_format(df):
     distinct_provider_info_df = get_distinct_provider_info(df)
     provider_df = provider_df.join(distinct_provider_info_df, "providerId")
 
-    output_provider_df = spark.createDataFrame(data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA)
-    output_provider_df = output_provider_df.unionByName(provider_df, allowMissingColumns=True)
+    output_provider_df = spark.createDataFrame(
+        data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA
+    )
+    output_provider_df = output_provider_df.unionByName(
+        provider_df, allowMissingColumns=True
+    )
 
     return output_provider_df
 
@@ -68,8 +85,12 @@ def get_distinct_provider_info(df):
         "provider_postalcode as postalCode",
     ).distinct()
 
-    prov_info_df = prov_info_df.withColumn("organisationType", lit("Provider").cast(StringType()))
-    prov_info_df = prov_info_df.withColumn("registrationStatus", lit("Registered").cast(StringType()))
+    prov_info_df = prov_info_df.withColumn(
+        "organisationType", lit("Provider").cast(StringType())
+    )
+    prov_info_df = prov_info_df.withColumn(
+        "registrationStatus", lit("Registered").cast(StringType())
+    )
 
     return prov_info_df
 
@@ -83,10 +104,14 @@ def convert_to_cqc_location_api_format(df):
     reg_man_df = create_contacts_from_registered_manager_name(df)
 
     regulated_activities_df = convert_multiple_boolean_columns_into_single_array(
-        df, cqc_care_directory_dictionaries.REGULATED_ACTIVITIES_DICT, "regulatedactivities"
+        df,
+        cqc_care_directory_dictionaries.REGULATED_ACTIVITIES_DICT,
+        "regulatedactivities",
     )
     regulated_activities_df = regulated_activities_df.join(reg_man_df, "locationId")
-    regulated_activities_df = convert_regulated_activities_to_struct(regulated_activities_df)
+    regulated_activities_df = convert_regulated_activities_to_struct(
+        regulated_activities_df
+    )
 
     gac_service_types_df = convert_multiple_boolean_columns_into_single_array(
         df, cqc_care_directory_dictionaries.GAC_SERVICE_TYPES_DICT, "gacservicetypes"
@@ -102,8 +127,12 @@ def convert_to_cqc_location_api_format(df):
     location_df = location_df.join(gac_service_types_df, "locationId")
     location_df = location_df.join(specialisms_df, "locationId")
 
-    output_location_df = spark.createDataFrame(data=[], schema=cqc_location_schema.LOCATION_SCHEMA)
-    output_location_df = output_location_df.unionByName(location_df, allowMissingColumns=True)
+    output_location_df = spark.createDataFrame(
+        data=[], schema=cqc_location_schema.LOCATION_SCHEMA
+    )
+    output_location_df = output_location_df.unionByName(
+        location_df, allowMissingColumns=True
+    )
 
     return output_location_df
 
@@ -127,7 +156,9 @@ def get_general_location_info(df):
         "localauthority as localAuthority",
     ).distinct()
 
-    loc_info_df = loc_info_df.withColumn("numberOfBeds", col("numberOfBeds").cast(IntegerType()))
+    loc_info_df = loc_info_df.withColumn(
+        "numberOfBeds", col("numberOfBeds").cast(IntegerType())
+    )
     loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
     loc_info_df = loc_info_df.withColumn("registrationStatus", lit("Registered"))
 
@@ -152,7 +183,9 @@ def convert_multiple_boolean_columns_into_single_array(df, value_mapping_dict, a
 
 
 def convert_specialisms_to_struct(df):
-    df = df.withColumn("specialisms", expr("transform(specialisms, x-> named_struct('name',x[0]))"))
+    df = df.withColumn(
+        "specialisms", expr("transform(specialisms, x-> named_struct('name',x[0]))")
+    )
 
     return df
 
@@ -160,7 +193,10 @@ def convert_specialisms_to_struct(df):
 def convert_gac_service_types_to_struct(df):
 
     df = df.withColumn(
-        "gacservicetypes", expr("transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))")
+        "gacservicetypes",
+        expr(
+            "transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))"
+        ),
     )
 
     return df
@@ -170,15 +206,28 @@ def create_contacts_from_registered_manager_name(df):
     df = df.select("locationId", "registered_manager_name")
     df = df.replace("*", None)
 
-    df = df.withColumn("personTitle", when(length(col("registered_manager_name")) > 1, "M").otherwise(lit(None)))
-    df = df.withColumn("personGivenName", split(col("registered_manager_name"), ", ").getItem(1))
-    df = df.withColumn("personFamilyName", split(col("registered_manager_name"), ",").getItem(0))
     df = df.withColumn(
-        "personRoles", when(length(col("registered_manager_name")) > 1, "Registered Manager").otherwise(lit(None))
+        "personTitle",
+        when(length(col("registered_manager_name")) > 1, "M").otherwise(lit(None)),
+    )
+    df = df.withColumn(
+        "personGivenName", split(col("registered_manager_name"), ", ").getItem(1)
+    )
+    df = df.withColumn(
+        "personFamilyName", split(col("registered_manager_name"), ",").getItem(0)
+    )
+    df = df.withColumn(
+        "personRoles",
+        when(
+            length(col("registered_manager_name")) > 1, "Registered Manager"
+        ).otherwise(lit(None)),
     )
 
     df = df.select(
-        "locationId", struct("personTitle", "personGivenName", "personFamilyName", "personRoles").alias("contacts")
+        "locationId",
+        struct(
+            "personTitle", "personGivenName", "personFamilyName", "personRoles"
+        ).alias("contacts"),
     )
 
     df = df.select("locationId", array("contacts").alias("contacts"))
@@ -187,14 +236,22 @@ def create_contacts_from_registered_manager_name(df):
 
 
 def convert_regulated_activities_to_struct(df):
-    df = df.select("locationId", "contacts", explode(col("regulatedactivities")).alias("regulatedactivities"))
+    df = df.select(
+        "locationId",
+        "contacts",
+        explode(col("regulatedactivities")).alias("regulatedactivities"),
+    )
 
     df = df.withColumn("name", col("regulatedactivities").getItem(0))
     df = df.withColumn("code", col("regulatedactivities").getItem(1))
 
-    df = df.select("locationId", struct("name", "code", "contacts").alias("regulatedactivities"))
+    df = df.select(
+        "locationId", struct("name", "code", "contacts").alias("regulatedactivities")
+    )
 
-    df = df.groupBy("locationId").agg(collect_set("regulatedactivities").alias("regulatedactivities"))
+    df = df.groupBy("locationId").agg(
+        collect_set("regulatedactivities").alias("regulatedactivities")
+    )
 
     return df
 
@@ -206,7 +263,9 @@ def export_parquet_files(df, destination):
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", help="A CSV file used as source input", required=True)
+    parser.add_argument(
+        "--source", help="A CSV file used as source input", required=True
+    )
     parser.add_argument(
         "--provider_destination",
         help="A destination directory for outputting CQC Provider parquet file",
@@ -218,7 +277,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.source, args.provider_destination, args.location_destination
 

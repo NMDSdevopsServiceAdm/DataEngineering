@@ -15,7 +15,6 @@ from botocore.response import StreamingBody
 from utils import utils
 
 
-
 class StubberType(Enum):
     client = "client"
     resource = "resource"
@@ -77,7 +76,9 @@ class UtilsTests(unittest.TestCase):
     smaller_string_boost = 35
 
     def setUp(self):
-        spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
+        spark = SparkSession.builder.appName(
+            "sfc_data_engineering_csv_to_parquet"
+        ).getOrCreate()
         self.df = spark.read.csv(self.test_csv_path, header=True)
 
     def tearDown(self):
@@ -193,7 +194,9 @@ class UtilsTests(unittest.TestCase):
         )
 
         print(f"S3 object list {object_list}")
-        self.assertEqual(object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
+        self.assertEqual(
+            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
+        )
         self.assertEqual(len(object_list), 1)
 
     def test_read_partial_csv_content(self):
@@ -214,7 +217,9 @@ class UtilsTests(unittest.TestCase):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", stubber.get_s3_client()
+        )
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -239,7 +244,9 @@ class UtilsTests(unittest.TestCase):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", stubber.get_s3_client()
+        )
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -262,7 +269,9 @@ class UtilsTests(unittest.TestCase):
     def test_generate_s3_main_datasets_dir_date_path(self):
 
         dec_first_21 = datetime(2021, 12, 1)
-        dir_path = utils.generate_s3_main_datasets_dir_date_path("test_domain", "test_dateset", dec_first_21)
+        dir_path = utils.generate_s3_main_datasets_dir_date_path(
+            "test_domain", "test_dateset", dec_first_21
+        )
         self.assertEqual(
             dir_path,
             "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201",
@@ -289,7 +298,9 @@ class UtilsTests(unittest.TestCase):
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
         formatted_df = utils.format_date_fields(self.df)
-        self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00")
+        self.assertEqual(
+            str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00"
+        )
 
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
@@ -297,7 +308,9 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(csv_test)
 
     def test_is_csv_for_non_csv(self):
-        csv_name_without_extention = "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
+        csv_name_without_extention = (
+            "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
+        )
         csv_test = utils.is_csv(csv_name_without_extention)
         self.assertFalse(csv_test)
 
@@ -370,7 +383,7 @@ class UtilsTests(unittest.TestCase):
         )
         training_types = utils.extract_specific_column_types("^tr\d\dflag$",schema)
         self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
-        
+
     def test_extract_col_with_pattern(self):
         schema = StructType(
             fields=[
@@ -385,7 +398,17 @@ class UtilsTests(unittest.TestCase):
             ]
         )
         training = utils.extract_col_with_pattern("^tr\d\d[a-z]", schema)
-        self.assertEqual(training, ["tr01flag", "tr01latestdate", "tr01count", "tr02flag", "tr02latestdate", "tr02count"])
+        self.assertEqual(
+            training,
+            [
+                "tr01flag",
+                "tr01latestdate",
+                "tr01count",
+                "tr02flag",
+                "tr02latestdate",
+                "tr02count",
+            ],
+        )
 
 
 if __name__ == "__main__":

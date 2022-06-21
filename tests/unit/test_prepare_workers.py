@@ -41,7 +41,7 @@ class PrepareWorkersTests(unittest.TestCase):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
         # TODO - make it run with all the other patterns and columns
         pattern = "^tr\d\d[a-z]"
-        df = prepare_workers.replace_columns_after_aggregation(
+        df = prepare_workers.replace_columns_with_aggregated_column(
             df, "training", pattern, prepare_workers.get_training_into_json
         )
 

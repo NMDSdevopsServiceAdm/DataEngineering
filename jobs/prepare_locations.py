@@ -1,7 +1,18 @@
 import argparse
 import builtins
 
-from pyspark.sql.functions import abs, add_months, coalesce, col, greatest, lit, lower, max, to_date, when
+from pyspark.sql.functions import (
+    abs,
+    add_months,
+    coalesce,
+    col,
+    greatest,
+    lit,
+    lower,
+    max,
+    to_date,
+    when,
+)
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType
 
 from utils import utils
@@ -10,7 +21,13 @@ MIN_ABSOLUTE_DIFFERENCE = 5
 MIN_PERCENTAGE_DIFFERENCE = 0.1
 
 
-def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination=None):
+def main(
+    workplace_source,
+    cqc_location_source,
+    cqc_provider_source,
+    pir_source,
+    destination=None,
+):
 
     print("Building locations prepared dataset")
     master_df = None
@@ -21,7 +38,10 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
     complete_pir_df = get_pir_df(pir_source)
 
     date_matrix = generate_closest_date_matrix(
-        complete_ascwds_workplace_df, complete_cqc_location_df, complete_cqc_provider_df, complete_pir_df
+        complete_ascwds_workplace_df,
+        complete_cqc_location_df,
+        complete_cqc_provider_df,
+        complete_pir_df,
     )
 
     date_matrix = date_matrix.collect()
@@ -33,14 +53,26 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
 
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
-        cqc_locations_df = complete_cqc_location_df.filter(col("import_date") == snapshot_date_row["cqc_location_date"])
-        cqc_providers_df = complete_cqc_provider_df.filter(col("import_date") == snapshot_date_row["cqc_provider_date"])
-        pir_df = complete_pir_df.filter(col("import_date") == snapshot_date_row["pir_date"])
+        cqc_locations_df = complete_cqc_location_df.filter(
+            col("import_date") == snapshot_date_row["cqc_location_date"]
+        )
+        cqc_providers_df = complete_cqc_provider_df.filter(
+            col("import_date") == snapshot_date_row["cqc_provider_date"]
+        )
+        pir_df = complete_pir_df.filter(
+            col("import_date") == snapshot_date_row["pir_date"]
+        )
 
         # Rename import_date columns to ensure uniqueness
-        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
-        cqc_locations_df = cqc_locations_df.withColumnRenamed("import_date", "cqc_locations_import_date")
-        cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
+        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
+            "import_date", "ascwds_workplace_import_date"
+        )
+        cqc_locations_df = cqc_locations_df.withColumnRenamed(
+            "import_date", "cqc_locations_import_date"
+        )
+        cqc_providers_df = cqc_providers_df.withColumnRenamed(
+            "import_date", "cqc_providers_import_date"
+        )
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
@@ -48,7 +80,9 @@ def main(workplace_source, cqc_location_source, cqc_provider_source, pir_source,
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = calculate_jobcount(output_df)
 
-        output_df = output_df.withColumn("snapshot_date", lit(snapshot_date_row["snapshot_date"]))
+        output_df = output_df.withColumn(
+            "snapshot_date", lit(snapshot_date_row["snapshot_date"])
+        )
 
         if master_df is None:
             master_df = output_df
@@ -168,7 +202,9 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
     cqc_provider_df = (
         spark.read.option("basePath", cqc_provider_source)
         .parquet(cqc_provider_source)
-        .select(col("providerid"), col("name").alias("provider_name"), col("import_date"))
+        .select(
+            col("providerid"), col("name").alias("provider_name"), col("import_date")
+        )
     )
 
     cqc_provider_df = add_cqc_sector(cqc_provider_df)
@@ -211,8 +247,12 @@ def get_pir_df(pir_source, import_date=None):
 
 
 def get_unique_import_dates(df):
-    distinct_ordered_import_date_df = df.select("import_date").distinct().orderBy("import_date")
-    distinct_ordered_import_date_list = distinct_ordered_import_date_df.rdd.flatMap(lambda x: x).collect()
+    distinct_ordered_import_date_df = (
+        df.select("import_date").distinct().orderBy("import_date")
+    )
+    distinct_ordered_import_date_list = distinct_ordered_import_date_df.rdd.flatMap(
+        lambda x: x
+    ).collect()
     return distinct_ordered_import_date_list
 
 
@@ -233,7 +273,9 @@ def format_import_date(df, fieldname="import_date"):
     return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
 
 
-def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
+def generate_closest_date_matrix(
+    dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir
+):
     spark = utils.get_spark()
 
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
@@ -243,15 +285,21 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
 
     closest_cqc_location_dates = []
     for date in unique_asc_dates:
-        closest_cqc_location_dates.append(get_date_closest_to_search_date(date, unique_cqc_location_dates))
+        closest_cqc_location_dates.append(
+            get_date_closest_to_search_date(date, unique_cqc_location_dates)
+        )
 
     closest_cqc_provider_dates = []
     for date in unique_asc_dates:
-        closest_cqc_provider_dates.append(get_date_closest_to_search_date(date, unique_cqc_provider_dates))
+        closest_cqc_provider_dates.append(
+            get_date_closest_to_search_date(date, unique_cqc_provider_dates)
+        )
 
     closest_pir_dates = []
     for date in unique_asc_dates:
-        closest_pir_dates.append(get_date_closest_to_search_date(date, unique_pir_dates))
+        closest_pir_dates.append(
+            get_date_closest_to_search_date(date, unique_pir_dates)
+        )
 
     transpose = []
     for i in range(len(unique_asc_dates)):
@@ -286,9 +334,13 @@ def clean(input_df):
     input_df = input_df.replace("0", None).replace("-1", None)
 
     # Cast strings to integers
-    input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
+    input_df = input_df.withColumn(
+        "total_staff", input_df["total_staff"].cast(IntegerType())
+    )
 
-    input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
+    input_df = input_df.withColumn(
+        "worker_record_count", input_df["worker_record_count"].cast(IntegerType())
+    )
 
     return input_df
 
@@ -308,7 +360,10 @@ def purge_workplaces(input_df):
     )
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
-        "date_for_purge", when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate)
+        "date_for_purge",
+        when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(
+            input_df.mupddate
+        ),
     )
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
@@ -332,7 +387,10 @@ def add_cqc_sector(input_df):
     )
 
     input_df = input_df.withColumn(
-        "cqc_sector", when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority")
+        "cqc_sector",
+        when(input_df.cqc_sector == "false", "Independent").otherwise(
+            "Local authority"
+        ),
     )
 
     return input_df
@@ -362,8 +420,14 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
             (
                 col("job_count").isNull()
                 & (
-                    (col("total_staff").isNull() & col("worker_record_count").isNotNull())
-                    | (col("total_staff").isNotNull() & col("worker_record_count").isNull())
+                    (
+                        col("total_staff").isNull()
+                        & col("worker_record_count").isNotNull()
+                    )
+                    | (
+                        col("total_staff").isNotNull()
+                        & col("worker_record_count").isNull()
+                    )
                 )
             ),
             coalesce(input_df.total_staff, input_df.worker_record_count),
@@ -373,7 +437,9 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
 
 def calculate_jobcount_abs_difference_within_range(input_df):
     # Abs difference between total_staff & worker_record_count < 5 or < 10% take average:
-    input_df = input_df.withColumn("abs_difference", abs(input_df.total_staff - input_df.worker_record_count))
+    input_df = input_df.withColumn(
+        "abs_difference", abs(input_df.total_staff - input_df.worker_record_count)
+    )
 
     input_df = input_df.withColumn(
         "job_count",
@@ -382,7 +448,10 @@ def calculate_jobcount_abs_difference_within_range(input_df):
                 col("job_count").isNull()
                 & (
                     (col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (col("abs_difference") / col("total_staff") < MIN_PERCENTAGE_DIFFERENCE)
+                    | (
+                        col("abs_difference") / col("total_staff")
+                        < MIN_PERCENTAGE_DIFFERENCE
+                    )
                 )
             ),
             (col("total_staff") + col("worker_record_count")) / 2,
@@ -399,7 +468,10 @@ def calculate_jobcount_handle_tiny_values(input_df):
     return input_df.withColumn(
         "job_count",
         when(
-            (col("job_count").isNull() & ((col("total_staff") < 3) | (col("worker_record_count") < 3))),
+            (
+                col("job_count").isNull()
+                & ((col("total_staff") < 3) | (col("worker_record_count") < 3))
+            ),
             greatest(col("total_staff"), col("worker_record_count")),
         ).otherwise(col("job_count")),
     )
@@ -412,13 +484,21 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "bed_estimate_jobcount",
         when(
             (col("job_count").isNull() & (col("number_of_beds") > 0)),
-            (beds_to_jobcount_intercept + (col("number_of_beds") * beds_to_jobcount_coefficient)),
+            (
+                beds_to_jobcount_intercept
+                + (col("number_of_beds") * beds_to_jobcount_coefficient)
+            ),
         ).otherwise(None),
     )
 
     # Determine differences
-    input_df = input_df.withColumn("totalstaff_diff", abs(input_df.total_staff - input_df.bed_estimate_jobcount))
-    input_df = input_df.withColumn("wkrrecs_diff", abs(input_df.worker_record_count - input_df.bed_estimate_jobcount))
+    input_df = input_df.withColumn(
+        "totalstaff_diff", abs(input_df.total_staff - input_df.bed_estimate_jobcount)
+    )
+    input_df = input_df.withColumn(
+        "wkrrecs_diff",
+        abs(input_df.worker_record_count - input_df.bed_estimate_jobcount),
+    )
     input_df = input_df.withColumn(
         "totalstaff_percentage_diff",
         abs(input_df.totalstaff_diff / input_df.bed_estimate_jobcount),
@@ -439,7 +519,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 & (
                     (
                         (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                        | (col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                        | (
+                            col("totalstaff_percentage_diff")
+                            < MIN_PERCENTAGE_DIFFERENCE
+                        )
                     )
                     & (
                         (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
@@ -541,7 +624,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return (
         args.workplace_source,
@@ -561,4 +644,10 @@ if __name__ == "__main__":
         destination,
     ) = collect_arguments()
 
-    main(workplace_source, cqc_location_source, cqc_provider_source, pir_source, destination)
+    main(
+        workplace_source,
+        cqc_location_source,
+        cqc_provider_source,
+        pir_source,
+        destination,
+    )

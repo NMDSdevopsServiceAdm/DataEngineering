@@ -22,10 +22,9 @@ def main(source, destination):
 
     # TODO - replace training/jb/ql columns with aggregated columns
     for col_name, info in columns_to_be_aggregated_patterns.items():
-        for pattern, udf_function in info.items():
-            main_df = replace_columns_after_aggregation(
-                main_df, col_name, pattern, udf_function
-            )
+        main_df = replace_columns_with_aggregated_column(
+            main_df, col_name, info["pattern"], info["udf_function"]
+        )
 
     # TODO - write the main df to destination
     return main_df
@@ -43,11 +42,10 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_columns_after_aggregation(df, col_name, pattern, udf_function):
-    cols = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
-    df = add_aggregated_column(df, col_name, cols, udf_function)
-
-    df = df.drop(struct(cols))
+def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
+    cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
+    df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
+    df = df.drop(struct(cols_to_aggregate))
 
     return df
 
@@ -142,7 +140,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.source, args.destination
 
