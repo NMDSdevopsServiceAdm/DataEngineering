@@ -89,15 +89,6 @@ def main(
         else:
             master_df = master_df.union(output_df)
 
-    master_df = master_df.withColumn(
-        "region",
-        (
-            when(
-                master_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
-            ).otherwise(master_df.region)
-        ),
-    )
-
     master_df = master_df.select(
         "snapshot_date",
         "ascwds_workplace_import_date",
@@ -195,6 +186,15 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
     )
 
     cqc_df = format_import_date(cqc_df)
+    cqc_df = cqc_df.withColumn(
+        "region",
+        (
+            when(
+                cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
+            ).otherwise(cqc_df.region)
+        ),
+    )
+    cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
