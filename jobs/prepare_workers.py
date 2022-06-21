@@ -95,13 +95,9 @@ def get_job_role_into_json(row):
 
 
 def get_qualification_into_json(row):
-    qualification_types_achq = utils.extract_col_with_pattern(
-        "^ql\d{1,3}achq(\d*|[a-z]*)", WORKER_SCHEMA
+    qualification_types = utils.extract_col_with_pattern(
+        "^ql\d{1,3}(achq|app)(\d*|[a-z]*)", WORKER_SCHEMA
     )
-    qualification_types_app = utils.extract_col_with_pattern(
-        "^ql\d{1,3}app\d*", WORKER_SCHEMA
-    )
-    qualification_types = qualification_types_achq + qualification_types_app
     aggregated_qualifications = {}
 
     for qualification in qualification_types:
