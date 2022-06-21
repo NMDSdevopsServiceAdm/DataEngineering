@@ -342,7 +342,6 @@ WORKER_SCHEMA = StructType(
         StructField("jr16cat6", IntegerType(), True),
         StructField("jr16cat7", IntegerType(), True),
         StructField("jr16cat8", IntegerType(), True),
-
         StructField("ql01achq2", IntegerType(), True),
         StructField("ql01year2", IntegerType(), True),
         StructField("ql02achq3", IntegerType(), True),
@@ -573,7 +572,6 @@ WORKER_SCHEMA = StructType(
         StructField("ql143year", IntegerType(), True),
         StructField("ql144achq", IntegerType(), True),
         StructField("ql144year", IntegerType(), True),
-        
         StructField("ql301app", IntegerType(), True),
         StructField("ql301year", IntegerType(), True),
         StructField("ql302app", IntegerType(), True),

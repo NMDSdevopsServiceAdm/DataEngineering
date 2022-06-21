@@ -91,9 +91,14 @@ class PrepareWorkersTests(unittest.TestCase):
         spark = utils.get_spark()
         df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
 
-        qualification_columns = utils.extract_col_with_pattern("^ql\d{1,3}.", WORKER_SCHEMA)
+        qualification_columns = utils.extract_col_with_pattern(
+            "^ql\d{1,3}.", WORKER_SCHEMA
+        )
         df = prepare_workers.add_aggregated_column(
-            df, "qualification", qualification_columns, prepare_workers.get_qualification_into_json
+            df,
+            "qualification",
+            qualification_columns,
+            prepare_workers.get_qualification_into_json,
         )
 
         qualification_types_achieved = utils.extract_col_with_pattern(
@@ -112,6 +117,7 @@ class PrepareWorkersTests(unittest.TestCase):
         )
         # for training in training_types_flag:
         #     self.assertEqual(df.first()[training], 0)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

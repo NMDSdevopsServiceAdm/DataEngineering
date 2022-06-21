@@ -17,7 +17,10 @@ def main(source, destination):
     columns_to_be_aggregated_patterns = {
         "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
         "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
-        "qualifications": {"pattern": "^ql\d\d[a-z]+.", "udf_function": get_qualification_into_json},
+        "qualifications": {
+            "pattern": "^ql\d\d[a-z]+.",
+            "udf_function": get_qualification_into_json,
+        },
     }
 
     # TODO - replace training/jb/ql columns with aggregated columns
@@ -92,12 +95,16 @@ def get_job_role_into_json(row):
 
 
 def get_qualification_into_json(row):
-    qualification_types_achq = utils.extract_col_with_pattern("^ql\d{1,3}achq(\d*|[a-z]*)", WORKER_SCHEMA)
-    qualification_types_app = utils.extract_col_with_pattern("^ql\d{1,3}app\d*", WORKER_SCHEMA)
+    qualification_types_achq = utils.extract_col_with_pattern(
+        "^ql\d{1,3}achq(\d*|[a-z]*)", WORKER_SCHEMA
+    )
+    qualification_types_app = utils.extract_col_with_pattern(
+        "^ql\d{1,3}app\d*", WORKER_SCHEMA
+    )
     qualification_types = qualification_types_achq + qualification_types_app
     aggregated_qualifications = {}
 
-    pattern = re.compile(fr"ql\d\d[a-z]+")
+    pattern = re.compile(rf"ql\d\d[a-z]+")
 
     for qualification in qualification_types:
         if qualification[-1].isdigit():
@@ -122,10 +129,11 @@ def get_qualification_into_json(row):
         if row[qualification] == 1:
             aggregated_qualifications[qualification] = {
                 "level": level,
-                "year": row[year]
+                "year": row[year],
             }
 
     return json.dumps(aggregated_qualifications)
+
 
 def collect_arguments():
     parser = argparse.ArgumentParser()

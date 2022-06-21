@@ -139,10 +139,10 @@ def extract_col_with_pattern(pattern, schema):
             training_types.append(col)
     return training_types
 
+
 def extract_specific_column_types(pattern, schema):
     columns = extract_col_with_pattern(pattern, schema)
     types = []
     for col in columns:
         types.append(col[0:4])
     return types
-    
