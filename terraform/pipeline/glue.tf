@@ -47,6 +47,19 @@ module "prepare_locations_job" {
   }
 }
 
+module "prepare_workers_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_workers.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--destination" = ""
+  }
+}
+
 module "job_role_breakdown_job" {
   source          = "../modules/glue-job"
   script_name     = "job_role_breakdown.py"
