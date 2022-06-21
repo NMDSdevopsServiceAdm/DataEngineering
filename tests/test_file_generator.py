@@ -553,10 +553,13 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("jr16cat1", 1)
         .withColumnSpec("ql01achq2", 1)
         .withColumnSpec("ql01year2", 2009)
+        .withColumnSpec("ql02achq3", 0)
         .withColumnSpec("ql34achqe", 1)
         .withColumnSpec("ql34yeare", 2010)
         .withColumnSpec("ql37achq", 3)
         .withColumnSpec("ql37year", 2021)
+        .withColumnSpec("ql313app", 1)
+        .withColumnSpec("ql313year", 2013)
     )
 
     df = dataspec.build()

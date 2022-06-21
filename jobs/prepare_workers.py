@@ -96,7 +96,7 @@ def get_job_role_into_json(row):
 
 def get_qualification_into_json(row):
     qualification_types = utils.extract_col_with_pattern(
-        "^ql\d{1,3}(achq|app)(\d*|[a-z]*)", WORKER_SCHEMA
+        "^ql\d{1,3}(achq|app)(\d*|e)", WORKER_SCHEMA
     )
     aggregated_qualifications = {}
 
@@ -110,31 +110,21 @@ def get_qualification_into_json(row):
 
 
 def extract_year_column_name(qualification):
-    pattern = re.compile(rf"ql\d\d[a-z]+")
-
-    if pattern.match(qualification):
-        year = f"{qualification[0:4]}year"
-    else:
-        year = f"{qualification[0:5]}year"
-
-    return year
+    capture_year = re.search(r"ql(\d+)[a-z]+", qualification)
+    return f"ql{capture_year.group(1)}year"
 
 
 def extract_qualification_info(row, qualification):
     if qualification == "ql34achqe":
-        return {"level": 0, "count": None, "year": row["ql34yeare"]}
+        return {"value": row["ql34achqe"], "year": row["ql34yeare"]}
 
     if qualification[-1].isdigit():
-        level = int(qualification[-1])
-        count = None
         year = row[extract_year_column_name(qualification) + qualification[-1]]
 
     else:
-        level = None
-        count = row[qualification]
         year = row[extract_year_column_name(qualification)]
 
-    return {"level": level, "count": count, "year": year}
+    return {"value": row[qualification], "year": year}
 
 
 def collect_arguments():
