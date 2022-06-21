@@ -89,6 +89,15 @@ def main(
         else:
             master_df = master_df.union(output_df)
 
+    master_df = master_df.withColumn(
+        "region",
+        (
+            when(
+                master_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
+            ).otherwise(master_df.region)
+        ),
+    )
+
     master_df = master_df.select(
         "snapshot_date",
         "ascwds_workplace_import_date",

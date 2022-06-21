@@ -401,6 +401,24 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(jobcount_df_list[10]["job_count"], 102.0)
         self.assertEqual(jobcount_df_list[11]["job_count"], 90.0)
 
+    def test_main_standardises_yorkshire_and_the_humber_region(self):
+        prepared_locations_df = prepare_locations.main(
+            self.TEST_ASCWDS_WORKPLACE_FILE,
+            self.TEST_CQC_LOCATION_FILE,
+            self.TEST_CQC_PROVIDERS_FILE,
+            self.TEST_PIR_FILE,
+        )
+
+        yorks_and_the_humber_count = prepared_locations_df.filter(
+            prepared_locations_df.region == "Yorkshire and The Humber"
+        ).count()
+        yorks_and_humberside_count = prepared_locations_df.filter(
+            prepared_locations_df.region == "Yorkshire & Humberside"
+        ).count()
+
+        self.assertEqual(yorks_and_humberside_count, 0)
+        self.assertEqual(yorks_and_the_humber_count, 5)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
