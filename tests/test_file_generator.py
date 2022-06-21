@@ -561,6 +561,24 @@ def generate_ascwds_worker_file(output_destination):
     return df
 
 
+def generate_prepared_locations_file_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = ["location_id", "services_offered"]
+
+    rows = [
+        ("1-1783948", ["Domiciliary care service", "Supported living service"]),
+        ("1-1334987222", ["Domiciliary care service"]),
+        ("1-348374832", ["Domiciliary care service", "Extra Care housing services"]),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
 def generate_locationid_and_providerid_file(output_destination):
     spark = utils.get_spark()
     columns = ["providerId", "locationId", "other_cols"]
