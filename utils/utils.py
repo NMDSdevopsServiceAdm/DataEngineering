@@ -140,9 +140,9 @@ def extract_col_with_pattern(pattern, schema):
     return training_types
 
 
-def extract_training_types(schema):
-    columns = extract_col_with_pattern("^tr\d\dflag$", schema)
-    training_types = []
+def extract_specific_column_types(pattern, schema):
+    columns = extract_col_with_pattern(pattern, schema)
+    types = []
     for col in columns:
-        training_types.append(col[0:4])
-    return training_types
+        types.append(col[0:4])
+    return types

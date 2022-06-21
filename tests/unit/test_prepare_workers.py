@@ -84,6 +84,27 @@ class PrepareWorkersTests(unittest.TestCase):
         for jr in jr_types_flag:
             self.assertEqual(df.first()[jr], 0)
 
+    def test_get_qualification_into_json(self):
+        spark = utils.get_spark()
+        df = spark.read.parquet(self.TEST_ASCWDS_WORKER_FILE)
+
+        qualification_columns = utils.extract_col_with_pattern(
+            "^ql\d{1,3}.", WORKER_SCHEMA
+        )
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "qualification",
+            qualification_columns,
+            prepare_workers.get_qualification_into_json,
+        )
+
+        self.assertEqual(df.columns[-1], "qualification")
+        self.assertEqual(
+            df.first()["qualification"],
+            '{"ql01achq2": {"value": 1, "year": 2009}, "ql34achqe": {"value": 1, "year": 2010}, "ql37achq": {"value": 3, "year": 2021}, "ql313app": {"value": 1, "year": 2013}}',
+        )
+        self.assertEqual(df.first()["ql02achq3"], 0)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

@@ -1,6 +1,7 @@
 import argparse
 import sys
 import json
+import re
 
 from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import StringType
@@ -16,7 +17,10 @@ def main(source, destination):
     columns_to_be_aggregated_patterns = {
         "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
         "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
-        "qualifications": {},
+        "qualifications": {
+            "pattern": "^ql\d{1,3}[a-z]+.",
+            "udf_function": get_qualification_into_json,
+        },
     }
 
     # TODO - replace training/jb/ql columns with aggregated columns
@@ -64,7 +68,7 @@ def add_aggregated_column(df, col_name, columns, udf_function):
 
 
 def get_training_into_json(row):
-    types_training = utils.extract_training_types(WORKER_SCHEMA)
+    types_training = utils.extract_specific_column_types("^tr\d\dflag$", WORKER_SCHEMA)
     aggregated_training = {}
 
     for training in types_training:
@@ -90,8 +94,42 @@ def get_job_role_into_json(row):
     return json.dumps(agg_jr)
 
 
+def get_qualification_into_json(row):
+    qualification_types = utils.extract_col_with_pattern(
+        "^ql\d{1,3}(achq|app)(\d*|e)", WORKER_SCHEMA
+    )
+    aggregated_qualifications = {}
+
+    for qualification in qualification_types:
+        if row[qualification] >= 1:
+            aggregated_qualifications[qualification] = extract_qualification_info(
+                row, qualification
+            )
+
+    return json.dumps(aggregated_qualifications)
+
+
+def extract_year_column_name(qualification):
+    capture_year = re.search(r"ql(\d+)[a-z]+", qualification)
+    return f"ql{capture_year.group(1)}year"
+
+
+def extract_qualification_info(row, qualification):
+    if qualification == "ql34achqe":
+        return {"value": row["ql34achqe"], "year": row["ql34yeare"]}
+
+    if qualification[-1].isdigit():
+        year = row[extract_year_column_name(qualification) + qualification[-1]]
+
+    else:
+        year = row[extract_year_column_name(qualification)]
+
+    return {"value": row[qualification], "year": year}
+
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--source",
         help="A CSV file or directory of files used as job input",
