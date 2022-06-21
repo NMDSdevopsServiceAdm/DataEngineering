@@ -1,6 +1,5 @@
 import shutil
 import unittest
-import warnings
 
 from pyspark.sql import SparkSession
 
