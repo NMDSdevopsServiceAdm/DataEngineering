@@ -15,8 +15,6 @@ class PrepareWorkersTests(unittest.TestCase):
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
 
     def setUp(self):
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
         generate_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
 
