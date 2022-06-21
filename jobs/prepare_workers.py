@@ -18,7 +18,7 @@ def main(source, destination):
         "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
         "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
         "qualifications": {
-            "pattern": "^ql\d\d[a-z]+.",
+            "pattern": "^ql\d{1,3}[a-z]+.",
             "udf_function": get_qualification_into_json,
         },
     }
@@ -105,27 +105,15 @@ def get_qualification_into_json(row):
     aggregated_qualifications = {}
 
     for qualification in qualification_types:
-
-        if qualification[-1].isdigit():
-            level = int(qualification[-1])
-            year = is_two_digit_qualification(qualification) + qualification[-1]
-        elif qualification[-1] == "e":
-            level = qualification[-1]
-            year = is_two_digit_qualification(qualification) + "e"
-        else:
-            level = 0
-            year = is_two_digit_qualification(qualification)
-
-        if row[qualification] == 1:
-            aggregated_qualifications[qualification] = {
-                "level": level,
-                "year": row[year],
-            }
+        if row[qualification] >= 1:
+            aggregated_qualifications[qualification] = extract_qualification_info(
+                row, qualification
+            )
 
     return json.dumps(aggregated_qualifications)
 
 
-def is_two_digit_qualification(qualification):
+def extract_year_column_name(qualification):
     pattern = re.compile(rf"ql\d\d[a-z]+")
 
     if pattern.match(qualification):
@@ -134,6 +122,23 @@ def is_two_digit_qualification(qualification):
         year = f"{qualification[0:5]}year"
 
     return year
+
+
+def extract_qualification_info(row, qualification):
+    if qualification == "ql34achqe":
+        return {"level": 0, "count": None, "year": row["ql34yeare"]}
+
+    if qualification[-1].isdigit():
+        level = int(qualification[-1])
+        count = None
+        year = row[extract_year_column_name(qualification) + qualification[-1]]
+
+    else:
+        level = None
+        count = row[qualification]
+        year = row[extract_year_column_name(qualification)]
+
+    return {"level": level, "count": count, "year": year}
 
 
 def collect_arguments():

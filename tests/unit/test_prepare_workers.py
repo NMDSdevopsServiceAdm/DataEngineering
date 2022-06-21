@@ -101,22 +101,24 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.get_qualification_into_json,
         )
 
-        qualification_types_achieved = utils.extract_col_with_pattern(
-            "^tr\d\dachq\d*$", WORKER_SCHEMA
+        qualification_types_achq = utils.extract_col_with_pattern(
+            "^ql\d{1,3}achq(\d*|[a-z]*)", WORKER_SCHEMA
         )
         qualification_types_app = utils.extract_col_with_pattern(
-            "^tr\d\dapp\d*$", WORKER_SCHEMA
+            "^ql\d{1,3}app\d*", WORKER_SCHEMA
         )
-
-        # training_types_flag.remove("tr01flag")
+        qualification_types = qualification_types_achq + qualification_types_app
+        qualification_types.remove("ql01achq2")
+        qualification_types.remove("ql34achqe")
+        qualification_types.remove("ql37achq")
 
         self.assertEqual(df.columns[-1], "qualification")
         self.assertEqual(
             df.first()["qualification"],
-            '{"ql01achq2": {"level": 2, "year": 2009}}',
+            '{"ql01achq2": {"level": 2, "count": null, "year": 2009}, "ql34achqe": {"level": 0, "count": null, "year": 2010}, "ql37achq": {"level": null, "count": 3, "year": 2021}}',
         )
-        # for training in training_types_flag:
-        #     self.assertEqual(df.first()[training], 0)
+        for qualification in qualification_types:
+            self.assertEqual(df.first()[qualification], 0)
 
 
 if __name__ == "__main__":
