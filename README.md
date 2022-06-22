@@ -111,7 +111,8 @@ When creating a new git branch and pushing to the remote repository a CircleCi w
 One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
 Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.<br>
 
-Environments must be torn down manually once a git branch has been deleted. This is a simple process, [detailed below](#destroying-terraform).
+Environments will be torn down when the branch is deleted from GitHub.
+So make sure you delete your branch after merging into main (this is good practice anyway!).
 
 > ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
 
