@@ -60,6 +60,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         rows = df.collect()
 
         self.assertEqual(rows[7].date_diff, 52)
+        self.assertEqual(rows[13].date_diff, 0)
 
     # OTHER METHODS TEST
 
@@ -116,7 +117,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)
 
     def test_add_date_diff_column_works_out_diff_from_max_snapshop(self):
-        df = locations_feature_engineering.diff_from_latest_snapshot(self.test_df)
+        df = locations_feature_engineering.days_diff_from_latest_snapshot(self.test_df)
 
         self.assertIn("date_diff", df.columns)
 

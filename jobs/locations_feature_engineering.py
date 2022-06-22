@@ -16,7 +16,7 @@ def main(prepared_locations_source):
         "service_count", F.size(locations_df.services_offered)
     )
 
-    locations_df = diff_from_latest_snapshot(locations_df)
+    locations_df = days_diff_from_latest_snapshot(locations_df)
     locations_df = explode_services(locations_df)
     locations_df, regions = explode_regions(locations_df)
 
@@ -50,7 +50,7 @@ def explode_services(locations_df):
     return locations_df
 
 
-def diff_from_latest_snapshot(locations_df):
+def days_diff_from_latest_snapshot(locations_df):
     max_snapshot_date = (
         locations_df.select(F.max("snapshot_date").alias("max")).first().max
     )
