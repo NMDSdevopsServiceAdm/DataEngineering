@@ -45,6 +45,10 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(rows[2].service_10, 1)
 
+    def test_main_adds_vectorized_column(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+        self.assertIn("features", df.columns)
+
     # OTHER METHODS TEST
 
     def test_explode_services_creates_a_column_for_each_service(self):
@@ -68,12 +72,14 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
     def test_vectorize_adds_new_features_column(self):
         df = locations_feature_engineering.explode_services(self.test_df)
-        features = ['service_1',
-        'service_2','service_3','service_4','service_5','service_6','service_7',
-        'service_8','service_9','service_10','service_11','service_12','service_13',
-        'service_14','service_15','service_16','service_17','service_18','service_19',
-        'service_20','service_21','service_22','service_23','service_24','service_25',
-        'service_26','service_27','service_28','service_29']
+        # fmt: off
+        features = [
+            'service_1','service_2','service_3','service_4','service_5','service_6','service_7','service_8',
+            'service_9','service_10','service_11','service_12','service_13','service_14','service_15','service_16',
+            'service_17','service_18','service_19','service_20','service_21','service_22','service_23','service_24',
+            'service_25','service_26','service_27','service_28','service_29'
+            ]
+        # fmt: on
         df = locations_feature_engineering.vectorize(df, features)
 
         self.assertIn("features", df.columns)

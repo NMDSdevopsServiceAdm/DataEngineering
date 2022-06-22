@@ -1,5 +1,4 @@
 import argparse
-from attr import define
 
 import pyspark.sql.functions as F
 from pyspark.ml.feature import VectorAssembler
@@ -19,6 +18,8 @@ def main(prepared_locations_source):
     )
 
     locations_df = explode_services(locations_df)
+    feature_list = define_features_list(regions=[])
+    locations_df = vectorize(locations_df, feature_list)
 
     return locations_df
 
@@ -37,9 +38,10 @@ def explode_services(locations_df):
 
 
 def define_features_list(regions):
+    # TODO - add 'number_of_beds' back in the list of features
     # fmt: off
     features = [
-        'service_count','number_of_beds', 'dormancy_bool','service_1',
+        'service_count', 'dormancy_bool','service_1',
         'service_2','service_3','service_4','service_5','service_6','service_7',
         'service_8','service_9','service_10','service_11','service_12','service_13',
         'service_14','service_15','service_16','service_17','service_18','service_19',
