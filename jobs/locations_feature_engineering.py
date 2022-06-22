@@ -1,7 +1,8 @@
 import argparse
 
-from utils import utils
 import pyspark.sql.functions as F
+
+from utils import utils, feature_engineering_dictionaries
 
 
 def main(prepared_locations_source):
@@ -15,6 +16,21 @@ def main(prepared_locations_source):
         "service_count", F.size(locations_df.services_offered)
     )
 
+    locations_df = explode_services(locations_df)
+
+    return locations_df
+
+
+def explode_services(locations_df):
+    services_lookup = feature_engineering_dictionaries.SERVICES_LOOKUP
+    for column_name, service_description in services_lookup.items():
+
+        locations_df = locations_df.withColumn(
+            column_name,
+            F.when(
+                F.array_contains(locations_df.services_offered, service_description), 1
+            ).otherwise(0),
+        )
     return locations_df
 
 

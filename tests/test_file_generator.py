@@ -572,13 +572,25 @@ def generate_ascwds_worker_file(output_destination):
 
 def generate_prepared_locations_file_parquet(output_destination):
     spark = utils.get_spark()
-    columns = ["location_id", "services_offered"]
-
+    columns = ["locationid", "services_offered"]
+    # fmt: off
     rows = [
-        ("1-1783948", ["Domiciliary care service", "Supported living service"]),
+        ("1-1783948", ["Supported living service", "Acute services with overnight beds"]),
         ("1-1334987222", ["Domiciliary care service"]),
-        ("1-348374832", ["Domiciliary care service", "Extra Care housing services"]),
+        ("1-348374832", ["Extra Care housing services"]),
+        ("1-683746776",["Doctors treatment service","Long term conditions services","Shared Lives"]),
+        ("1-10478686 ", ["Community health care services - Nurses Agency only"]),
+        ("1-10235302415", ["Urgent care services", "Supported living service"]),
+        ("1-1060912125", ["Acute services with overnight beds"]),
+        ("1-107095666",["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
+        ("1-108369587", ["Specialist college service"]),
+        ("1-10758359583", ["Mobile doctors service"]),
+        ("1-108387554", ["Doctors treatment service", "Hospice services at home"]),
+        ("1-10894414510", ["Care home service with nursing"]),
+        ("1-108950835", ["Care home service without nursing'"]),
+        ("1-108967195", ["Domiciliary care service"]),
     ]
+    # fmt: on
 
     df = spark.createDataFrame(rows, columns)
 
