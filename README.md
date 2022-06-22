@@ -63,18 +63,27 @@ exit
 Do not use `deactivate` or `source deactivate` - this will leave pipenv in a confused state because you will still be in that spawned shell instance but not in an activated virtualenv. 
 
 ## Testing
-### Run test
+### Run tests
 *Make sure you have the virtual environment running (see above).*
 
-Run specific test:
+Run a specific test file once
 ```
 python -m unittest tests/unit/<test_name.py>
 ```
-Run all tests
+Watch a specific test file and auto rerun the tests when there are changes
+```
+pytest-watch -m unittest tests/unit/<test_name.py>
+```
+
+Run all tests once
 ```
 python -m unittest discover tests/unit "test_*.py"
 ```
-Run specific test within test file
+Watch all the tests and auto rerun the tests when there are any changes
+```
+pytest-watch
+```
+#### Run specific test within test file
 ```
 python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test>
 ```
@@ -102,7 +111,8 @@ When creating a new git branch and pushing to the remote repository a CircleCi w
 One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
 Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.<br>
 
-Environments must be torn down manually once a git branch has been deleted. This is a simple process, [detailed below](#destroying-terraform).
+Environments will be torn down when the branch is deleted from GitHub.
+So make sure you delete your branch after merging into main (this is good practice anyway!).
 
 > ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
 
