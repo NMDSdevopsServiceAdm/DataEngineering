@@ -57,6 +57,15 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)
 
+    def test_main_adds_date_diff_column(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+        self.assertIn("date_diff", df.columns)
+
+        rows = df.collect()
+
+        self.assertEqual(rows[7].date_diff, 52)
+        self.assertEqual(rows[13].date_diff, 0)
+
     # OTHER METHODS TEST
 
     def test_explode_services_creates_a_column_for_each_service(self):
@@ -125,3 +134,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[3].merseyside, 1)
         self.assertEqual(rows[4].london_senate, 1)
         self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)
+
+    def test_add_date_diff_column_works_out_diff_from_max_snapshop(self):
+        df = locations_feature_engineering.days_diff_from_latest_snapshot(self.test_df)
+
+        self.assertIn("date_diff", df.columns)
+
+        rows = df.select("date_diff").collect()
+
+        self.assertEqual(rows[0].date_diff, 80)
+        self.assertEqual(rows[2].date_diff, 100)
