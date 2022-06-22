@@ -45,10 +45,6 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(rows[2].service_10, 1)
 
-    def test_main_adds_vectorized_column(self):
-        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-        self.assertIn("features", df.columns)
-
     def test_main_explodes_region_columns(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("south_east", df.columns)

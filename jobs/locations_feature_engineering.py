@@ -19,8 +19,6 @@ def main(prepared_locations_source):
 
     locations_df = explode_services(locations_df)
     locations_df, regions = explode_regions(locations_df)
-    feature_list = define_features_list(regions)
-    locations_df = vectorize(locations_df, feature_list)
 
     return locations_df
 
