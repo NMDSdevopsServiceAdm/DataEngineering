@@ -152,18 +152,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Print github actions vars
+          name: terraform destroy
           command: |
-            echo << pipeline.parameters.GHA_Meta >>
-      # - run:
-      #     name: terraform destroy
-      #     command: |
-      #       cd terraform/pipeline
-      #       terraform init -input=false
-      #       terraform workspace select << pipeline.parameters.GHA_Meta >>
-      #       terraform destroy -auto-approve
-      #       terraform workspace select default
-      #       terraform workspace delete << pipeline.parameters.GHA_Meta >>
+            cd terraform/pipeline
+            terraform init -input=false
+            terraform workspace select << pipeline.parameters.GHA_Meta >>
+            terraform destroy -auto-approve
+      - run:
+          name: delete workspace
+          command: |
+            cd terraform/pipeline
+            terraform workspace select default
+            terraform workspace delete << pipeline.parameters.GHA_Meta >>
 
 workflows:
   version: 2
