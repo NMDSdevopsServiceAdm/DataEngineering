@@ -48,7 +48,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_main_adds_vectorized_column(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("features", df.columns)
-        
+
     def test_main_explodes_region_columns(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("south_east", df.columns)
