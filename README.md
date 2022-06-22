@@ -63,18 +63,27 @@ exit
 Do not use `deactivate` or `source deactivate` - this will leave pipenv in a confused state because you will still be in that spawned shell instance but not in an activated virtualenv. 
 
 ## Testing
-### Run test
+### Run tests
 *Make sure you have the virtual environment running (see above).*
 
-Run specific test:
+Run a specific test file once
 ```
 python -m unittest tests/unit/<test_name.py>
 ```
-Run all tests
+Watch a specific test file and auto rerun the tests when there are changes
+```
+pytest-watch -m unittest tests/unit/<test_name.py>
+```
+
+Run all tests once
 ```
 python -m unittest discover tests/unit "test_*.py"
 ```
-Run specific test within test file
+Watch all the tests and auto rerun the tests when there are any changes
+```
+pytest-watch
+```
+#### Run specific test within test file
 ```
 python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test>
 ```
