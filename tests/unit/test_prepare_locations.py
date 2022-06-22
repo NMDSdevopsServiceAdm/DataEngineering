@@ -1,5 +1,5 @@
-import shutil
 import unittest
+import shutil
 from datetime import date
 
 from pyspark.sql import SparkSession
@@ -9,6 +9,7 @@ from pyspark.sql.types import (
     StringType,
     StructField,
     StructType,
+    BooleanType,
 )
 
 from jobs import prepare_locations
@@ -400,6 +401,34 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(jobcount_df_list[9]["job_count"], 96.0)
         self.assertEqual(jobcount_df_list[10]["job_count"], 102.0)
         self.assertEqual(jobcount_df_list[11]["job_count"], 90.0)
+
+    def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
+        cqc_locations = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE
+        )
+
+        yorks_and_the_humber_count = cqc_locations.filter(
+            cqc_locations.region == "Yorkshire and The Humber"
+        ).count()
+        yorks_and_humberside_count = cqc_locations.filter(
+            cqc_locations.region == "Yorkshire & Humberside"
+        ).count()
+
+        self.assertEqual(yorks_and_humberside_count, 0)
+        self.assertEqual(yorks_and_the_humber_count, 5)
+
+    def test_get_cqc_location_df_convert_dormancy_to_a_bool(self):
+        cqc_locations = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE
+        )
+
+        dormancy_data_type = cqc_locations.schema["dormancy"].dataType
+
+        self.assertEqual(dormancy_data_type, BooleanType())
+
+        dormancy_count = cqc_locations.filter(cqc_locations.dormancy).count()
+
+        self.assertEqual(dormancy_count, 5)
 
 
 if __name__ == "__main__":
