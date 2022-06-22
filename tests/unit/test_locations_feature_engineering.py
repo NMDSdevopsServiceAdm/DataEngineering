@@ -2,7 +2,7 @@ import unittest
 import shutil
 
 from pyspark.sql import SparkSession
-import pyspark.sql.functions as F
+from pyspark.ml.linalg import SparseVector
 
 from jobs import locations_feature_engineering
 from tests.test_file_generator import generate_prepared_locations_file_parquet
@@ -45,6 +45,10 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(rows[2].service_10, 1)
 
+    def test_main_adds_vectorized_column(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+        self.assertIn("features", df.columns)
+
     def test_main_explodes_region_columns(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("south_east", df.columns)
@@ -60,7 +64,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         rows = df.collect()
 
         self.assertEqual(rows[7].date_diff, 52)
-        self.assertEqual(rows[13].date_diff, 0)
+        self.assertEqual(rows[12].date_diff, 0)
 
     # OTHER METHODS TEST
 
@@ -82,6 +86,21 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[8].service_8, 1)
         self.assertEqual(rows[8].service_12, 0)
         self.assertEqual(rows[8].service_23, 0)
+
+    def test_vectorize_adds_new_features_column(self):
+        df = locations_feature_engineering.explode_services(self.test_df)
+        # fmt: off
+        features = [
+            'service_1','service_2','service_3','service_4','service_5','service_6','service_7','service_8',
+            'service_9','service_10','service_11','service_12','service_13','service_14','service_15','service_16',
+            'service_17','service_18','service_19','service_20','service_21','service_22','service_23','service_24',
+            'service_25','service_26','service_27','service_28','service_29'
+            ]
+        # fmt: on
+        df = locations_feature_engineering.vectorize(df, features)
+
+        self.assertIn("features", df.columns)
+        self.assertIsInstance(df.first()["features"], SparseVector)
 
     def test_explode_regions_returns_codifies_regions(self):
         _, regions = locations_feature_engineering.explode_regions(self.test_df)

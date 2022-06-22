@@ -1,6 +1,7 @@
 import argparse
 
 import pyspark.sql.functions as F
+from pyspark.ml.feature import VectorAssembler
 
 from utils import utils, feature_engineering_dictionaries
 
@@ -19,6 +20,9 @@ def main(prepared_locations_source):
     locations_df = days_diff_from_latest_snapshot(locations_df)
     locations_df = explode_services(locations_df)
     locations_df, regions = explode_regions(locations_df)
+
+    feature_list = define_features_list(regions)
+    locations_df = vectorize(locations_df, feature_list)
 
     return locations_df
 
@@ -48,6 +52,27 @@ def explode_services(locations_df):
             ).otherwise(0),
         )
     return locations_df
+
+
+def define_features_list(regions):
+    # fmt: off
+    features = [
+        'service_count','number_of_beds','dormancy','service_1',
+        'service_2','service_3','service_4','service_5','service_6','service_7',
+        'service_8','service_9','service_10','service_11','service_12','service_13',
+        'service_14','service_15','service_16','service_17','service_18','service_19',
+        'service_20','service_21','service_22','service_23','service_24','service_25',
+        'service_26','service_27','service_28','service_29','date_diff'
+    ]
+    # fmt: on
+    return features + regions
+
+
+def vectorize(locations_df, feature_list):
+    vectorized_df = VectorAssembler(
+        inputCols=feature_list, outputCol="features", handleInvalid="skip"
+    ).transform(locations_df)
+    return vectorized_df
 
 
 def days_diff_from_latest_snapshot(locations_df):
