@@ -6,7 +6,7 @@ from pyspark.ml.feature import VectorAssembler
 from utils import utils, feature_engineering_dictionaries
 
 
-def main(prepared_locations_source):
+def main(prepared_locations_source, destination=None):
     spark = utils.get_spark()
 
     locations_df = spark.read.option("basePath", prepared_locations_source).parquet(
@@ -24,7 +24,11 @@ def main(prepared_locations_source):
     feature_list = define_features_list(regions)
     locations_df = vectorize(locations_df, feature_list)
 
-    return locations_df
+    if destination:
+        print(f"Exporting as parquet to {destination}")
+        utils.write_to_parquet(locations_df, destination)
+    else:
+        return locations_df
 
 
 def explode_regions(locations_df):
@@ -94,12 +98,17 @@ def collect_arguments():
         help="Source S3 directory for data engineering prepared locations dataset",
         required=True,
     )
+    parser.add_argument(
+        "--destination",
+        help="A destination directory for outputting locations dataset after feature engineering and vectorizing",
+        required=True,
+    )
     args, _ = parser.parse_known_args()
 
-    return args.prepared_locations_source
+    return args.prepared_locations_source, args.destination
 
 
 if __name__ == "__main__":
-    (prepared_locations_source) = collect_arguments()
+    (prepared_locations_source, destination) = collect_arguments()
 
-    main(prepared_locations_source)
+    main(prepared_locations_source, destination)
