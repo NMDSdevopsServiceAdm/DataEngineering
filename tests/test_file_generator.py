@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     ArrayType,
     IntegerType,
 )
+import pyspark.sql.functions as F
 
 from schemas import cqc_care_directory_schema, worker_schema
 from utils import utils
@@ -572,27 +573,29 @@ def generate_ascwds_worker_file(output_destination):
 
 def generate_prepared_locations_file_parquet(output_destination):
     spark = utils.get_spark()
-    columns = ["locationid", "region", "services_offered"]
+    columns = ["locationid", "snapshot_date", "region", "services_offered"]
     # fmt: off
     rows = [
-        ("1-1783948", "South East", ["Supported living service", "Acute services with overnight beds"]),
-        ("1-1334987222", "South West", ["Domiciliary care service"]),
-        ("1-348374832", "Merseyside", ["Extra Care housing services"]),
-        ("1-683746776", "Merseyside", ["Doctors treatment service","Long term conditions services","Shared Lives"]),
-        ("1-10478686 ", "London Senate", ["Community health care services - Nurses Agency only"]),
-        ("1-10235302415", "South West", ["Urgent care services", "Supported living service"]),
-        ("1-1060912125", "Yorkshire and The Humbler", ["Acute services with overnight beds"]),
-        ("1-107095666", "Yorkshire and The Humbler", ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
-        ("1-108369587", "South West", ["Specialist college service"]),
-        ("1-10758359583", "Yorkshire and The Humbler", ["Mobile doctors service"]),
-        ("1-108387554", "Yorkshire and The Humbler", ["Doctors treatment service", "Hospice services at home"]),
-        ("1-10894414510", "Yorkshire and The Humbler", ["Care home service with nursing"]),
-        ("1-108950835", "Merseyside", ["Care home service without nursing'"]),
-        ("1-108967195", "Merseyside", ["Domiciliary care service"]),
+        ("1-1783948","20220201", "South East", ["Supported living service", "Acute services with overnight beds"]),
+        ("1-1334987222","20220201", "South West", ["Domiciliary care service"]),
+        ("1-348374832","20220112", "Merseyside", ["Extra Care housing services"]),
+        ("1-683746776","20220101", "Merseyside", ["Doctors treatment service","Long term conditions services","Shared Lives"]),
+        ("1-10478686 ","20220101", "London Senate", ["Community health care services - Nurses Agency only"]),
+        ("1-10235302415","20220112", "South West", ["Urgent care services", "Supported living service"]),
+        ("1-1060912125","20220112", "Yorkshire and The Humbler", ["Acute services with overnight beds"]),
+        ("1-107095666","20220301", "Yorkshire and The Humbler", ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
+        ("1-108369587","20220308", "South West", ["Specialist college service"]),
+        ("1-10758359583","20220308", "Yorkshire and The Humbler", ["Mobile doctors service"]),
+        ("1-108387554","20220381", "Yorkshire and The Humbler", ["Doctors treatment service", "Hospice services at home"]),
+        ("1-10894414510","20220308", "Yorkshire and The Humbler", ["Care home service with nursing"]),
+        ("1-108950835","20220315", "Merseyside", ["Care home service without nursing'"]),
+        ("1-108967195","20220422", "Merseyside", ["Domiciliary care service"]),
     ]
     # fmt: on
 
     df = spark.createDataFrame(rows, columns)
+
+    df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
