@@ -16,6 +16,7 @@ def main(prepared_locations_source):
         "service_count", F.size(locations_df.services_offered)
     )
 
+    locations_df = diff_from_latest_snapshot(locations_df)
     locations_df = explode_services(locations_df)
     locations_df, regions = explode_regions(locations_df)
 
@@ -46,6 +47,17 @@ def explode_services(locations_df):
                 F.array_contains(locations_df.services_offered, service_description), 1
             ).otherwise(0),
         )
+    return locations_df
+
+
+def diff_from_latest_snapshot(locations_df):
+    max_snapshot_date = (
+        locations_df.select(F.max("snapshot_date").alias("max")).first().max
+    )
+    locations_df = locations_df.withColumn(
+        "date_diff", F.datediff(F.lit(max_snapshot_date), locations_df.snapshot_date)
+    )
+
     return locations_df
 
 
