@@ -64,7 +64,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         rows = df.collect()
 
         self.assertEqual(rows[7].date_diff, 52)
-        self.assertEqual(rows[13].date_diff, 0)
+        self.assertEqual(rows[12].date_diff, 0)
 
     # OTHER METHODS TEST
 
