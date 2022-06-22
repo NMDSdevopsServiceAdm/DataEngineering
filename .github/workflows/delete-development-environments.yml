@@ -14,4 +14,4 @@ jobs:
         with:
           GHA_Meta: ${{ github.event.ref }}
         env:
-          CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
+          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
