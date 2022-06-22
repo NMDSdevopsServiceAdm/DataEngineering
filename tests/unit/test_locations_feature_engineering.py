@@ -2,6 +2,7 @@ import unittest
 import shutil
 
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
 
 from jobs import locations_feature_engineering
 from tests.test_file_generator import generate_prepared_locations_file_parquet
@@ -44,6 +45,14 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(rows[2].service_10, 1)
 
+    def test_main_explodes_region_columns(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+        self.assertIn("south_east", df.columns)
+
+        rows = df.collect()
+
+        self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)
+
     # OTHER METHODS TEST
 
     def test_explode_services_creates_a_column_for_each_service(self):
@@ -64,3 +73,36 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[8].service_8, 1)
         self.assertEqual(rows[8].service_12, 0)
         self.assertEqual(rows[8].service_23, 0)
+
+    def test_explode_regions_returns_codifies_regions(self):
+        _, regions = locations_feature_engineering.explode_regions(self.test_df)
+
+        self.assertIn("south_east", regions)
+        self.assertIn("south_west", regions)
+        self.assertIn("yorkshire_and_the_humbler", regions)
+
+        self.assertNotIn("South East", regions)
+        self.assertNotIn("South West", regions)
+        self.assertNotIn("Yorkshire and The Humbler", regions)
+
+    def test_explode_regions_returns_distinct_regions(self):
+        _, regions = locations_feature_engineering.explode_regions(self.test_df)
+
+        self.assertEqual(len(regions), 5)
+
+    def test_explode_regions_creates_a_column_for_each_region(self):
+        df, regions = locations_feature_engineering.explode_regions(self.test_df)
+
+        for region in regions:
+            self.assertIn(region, df.columns)
+
+        rows = df.select(regions).collect()
+
+        self.assertEqual(rows[0].south_east, 1)
+        self.assertEqual(rows[0].south_west, 0)
+        self.assertEqual(rows[0].yorkshire_and_the_humbler, 0)
+        self.assertEqual(rows[0].merseyside, 0)
+
+        self.assertEqual(rows[3].merseyside, 1)
+        self.assertEqual(rows[4].london_senate, 1)
+        self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)

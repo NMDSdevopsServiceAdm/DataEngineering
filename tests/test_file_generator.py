@@ -572,23 +572,23 @@ def generate_ascwds_worker_file(output_destination):
 
 def generate_prepared_locations_file_parquet(output_destination):
     spark = utils.get_spark()
-    columns = ["locationid", "services_offered"]
+    columns = ["locationid", "region", "services_offered"]
     # fmt: off
     rows = [
-        ("1-1783948", ["Supported living service", "Acute services with overnight beds"]),
-        ("1-1334987222", ["Domiciliary care service"]),
-        ("1-348374832", ["Extra Care housing services"]),
-        ("1-683746776",["Doctors treatment service","Long term conditions services","Shared Lives"]),
-        ("1-10478686 ", ["Community health care services - Nurses Agency only"]),
-        ("1-10235302415", ["Urgent care services", "Supported living service"]),
-        ("1-1060912125", ["Acute services with overnight beds"]),
-        ("1-107095666",["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
-        ("1-108369587", ["Specialist college service"]),
-        ("1-10758359583", ["Mobile doctors service"]),
-        ("1-108387554", ["Doctors treatment service", "Hospice services at home"]),
-        ("1-10894414510", ["Care home service with nursing"]),
-        ("1-108950835", ["Care home service without nursing'"]),
-        ("1-108967195", ["Domiciliary care service"]),
+        ("1-1783948", "South East", ["Supported living service", "Acute services with overnight beds"]),
+        ("1-1334987222", "South West", ["Domiciliary care service"]),
+        ("1-348374832", "Merseyside", ["Extra Care housing services"]),
+        ("1-683746776", "Merseyside", ["Doctors treatment service","Long term conditions services","Shared Lives"]),
+        ("1-10478686 ", "London Senate", ["Community health care services - Nurses Agency only"]),
+        ("1-10235302415", "South West", ["Urgent care services", "Supported living service"]),
+        ("1-1060912125", "Yorkshire and The Humbler", ["Acute services with overnight beds"]),
+        ("1-107095666", "Yorkshire and The Humbler", ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
+        ("1-108369587", "South West", ["Specialist college service"]),
+        ("1-10758359583", "Yorkshire and The Humbler", ["Mobile doctors service"]),
+        ("1-108387554", "Yorkshire and The Humbler", ["Doctors treatment service", "Hospice services at home"]),
+        ("1-10894414510", "Yorkshire and The Humbler", ["Care home service with nursing"]),
+        ("1-108950835", "Merseyside", ["Care home service without nursing'"]),
+        ("1-108967195", "Merseyside", ["Domiciliary care service"]),
     ]
     # fmt: on
 

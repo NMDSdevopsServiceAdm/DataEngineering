@@ -17,8 +17,23 @@ def main(prepared_locations_source):
     )
 
     locations_df = explode_services(locations_df)
+    locations_df, regions = explode_regions(locations_df)
 
     return locations_df
+
+
+def explode_regions(locations_df):
+    distinct_region_rows = locations_df.select("region").distinct().collect()
+    regions = []
+    for row in distinct_region_rows:
+        region_column_name = row.region.replace(" ", "_").lower()
+        regions.append(region_column_name)
+
+        locations_df = locations_df.withColumn(
+            region_column_name,
+            F.when(locations_df.region == row.region, 1).otherwise(0),
+        )
+    return locations_df, regions
 
 
 def explode_services(locations_df):
