@@ -573,7 +573,14 @@ def generate_ascwds_worker_file(output_destination):
 
 def generate_prepared_locations_file_parquet(output_destination):
     spark = utils.get_spark()
-    columns = ["locationid", "snapshot_date", "region", 'number_of_beds', 'dormancy', "services_offered"]
+    columns = [
+        "locationid",
+        "snapshot_date",
+        "region",
+        "number_of_beds",
+        "dormancy",
+        "services_offered",
+    ]
     # fmt: off
     rows = [
         ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"]),
