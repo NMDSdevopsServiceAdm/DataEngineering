@@ -2,11 +2,7 @@ import unittest
 import shutil
 
 from pyspark.sql import SparkSession
-<<<<<<< HEAD
 from pyspark.ml.linalg import SparseVector
-=======
-import pyspark.sql.functions as F
->>>>>>> main
 
 from jobs import locations_feature_engineering
 from tests.test_file_generator import generate_prepared_locations_file_parquet
