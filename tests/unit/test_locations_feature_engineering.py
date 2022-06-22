@@ -2,6 +2,7 @@ import unittest
 import shutil
 
 from pyspark.sql import SparkSession
+
 from jobs import locations_feature_engineering
 from tests.test_file_generator import generate_prepared_locations_file_parquet
 
