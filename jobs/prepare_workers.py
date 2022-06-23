@@ -42,6 +42,8 @@ def get_dataset_worker(source):
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
 
+    worker_df = utils.format_import_date(worker_df)
+
     return worker_df
 
 
