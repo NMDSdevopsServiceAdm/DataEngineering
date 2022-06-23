@@ -6,13 +6,14 @@ from io import BytesIO
 from enum import Enum
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructField, StructType, IntegerType, StringType
+from pyspark.sql.types import StructField, StructType, IntegerType, StringType, DateType
 
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
 
 from utils import utils
+from tests.test_file_generator import generate_ascwds_workplace_file
 
 
 class StubberType(Enum):
@@ -70,6 +71,7 @@ class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
+    TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
 
     # increase length of string to simulate realistic file size
     hundred_percent_string_boost = 100
@@ -80,10 +82,14 @@ class UtilsTests(unittest.TestCase):
             "sfc_data_engineering_csv_to_parquet"
         ).getOrCreate()
         self.df = spark.read.csv(self.test_csv_path, header=True)
+        self.test_workplace_df = generate_ascwds_workplace_file(
+            self.TEST_ASCWDS_WORKPLACE_FILE
+        )
 
     def tearDown(self):
         try:
             shutil.rmtree(self.tmp_dir)
+            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
         except OSError as e:
             pass  # Ignore dir does not exist
 
@@ -409,6 +415,12 @@ class UtilsTests(unittest.TestCase):
                 "tr02count",
             ],
         )
+
+    def test_format_import_date_returns_date_format(self):
+        df = utils.format_import_date(self.test_workplace_df)
+
+        self.assertEqual(df.schema["import_date"].dataType, DateType())
+        self.assertEqual(str(df.select("import_date").first()[0]), "2022-01-01")
 
 
 if __name__ == "__main__":
