@@ -46,7 +46,10 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_get_training_into_json(self):
         training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
         df = prepare_workers.add_aggregated_column(
-            self.test_df, "training", training_columns, prepare_workers.get_training_into_json
+            self.test_df,
+            "training",
+            training_columns,
+            prepare_workers.get_training_into_json,
         )
         training_types_flag = utils.extract_col_with_pattern(
             "^tr\d\dflag$", WORKER_SCHEMA
