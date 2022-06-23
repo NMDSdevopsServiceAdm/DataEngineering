@@ -29,6 +29,8 @@ def main(source, destination):
             main_df, col_name, info["pattern"], info["udf_function"]
         )
 
+    main_df = utils.format_date_fields(main_df)
+    
     # TODO - write the main df to destination
     return main_df
 
