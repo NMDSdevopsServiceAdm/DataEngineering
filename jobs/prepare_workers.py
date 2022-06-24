@@ -10,8 +10,7 @@ from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
-def main(source, destination):
-    # TODO - read data as df
+def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
     columns_to_be_aggregated_patterns = {
@@ -22,17 +21,19 @@ def main(source, destination):
             "udf_function": get_qualification_into_json,
         },
     }
-
-    # TODO - replace training/jb/ql columns with aggregated columns
     for col_name, info in columns_to_be_aggregated_patterns.items():
         main_df = replace_columns_with_aggregated_column(
             main_df, col_name, info["pattern"], info["udf_function"]
         )
 
+    main_df = utils.format_import_date(main_df)
     main_df = utils.format_date_fields(main_df)
 
-    # TODO - write the main df to destination
-    return main_df
+    if destination:
+        print(f"Exporting as parquet to {destination}")
+        utils.write_to_parquet(main_df, destination)
+    else:
+        return main_df
 
 
 def get_dataset_worker(source):
@@ -43,8 +44,6 @@ def get_dataset_worker(source):
     worker_df = (
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
-
-    worker_df = utils.format_import_date(worker_df)
 
     return worker_df
 

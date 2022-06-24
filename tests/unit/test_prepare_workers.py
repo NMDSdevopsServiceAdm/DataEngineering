@@ -1,5 +1,6 @@
 import shutil
 import unittest
+import warnings
 
 from pyspark.sql import SparkSession
 
@@ -16,12 +17,26 @@ class PrepareWorkersTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
         self.test_df = generate_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
         try:
             shutil.rmtree(self.TEST_ASCWDS_WORKER_FILE)
         except OSError():
             pass  # Ignore dir does not exist
+
+    def test_main_adds_aggregated_columns(self):
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
+        df.select("tr01latestdate").show()
+        aggregated_cols = ["training", "job_role", "qualifications"]
+
+        for col in aggregated_cols:
+            self.assertIn(col, df.columns)
+
+        self.assertEqual(
+            str(df.select("tr01latestdate").first()[0]), "2020-12-01 00:00:00"
+        )
 
     def test_get_dataset_worker_has_correct_columns(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
@@ -59,7 +74,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(df.columns[-1], "training")
         self.assertEqual(
             df.first()["training"],
-            '{"tr01": {"latestdate": 0, "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
+            '{"tr01": {"latestdate": "01/12/2020", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
         )
         for training in training_types_flag:
             self.assertEqual(df.first()[training], 0)
