@@ -10,7 +10,6 @@ from pyspark.sql.functions import (
     lit,
     lower,
     max,
-    to_date,
     when,
 )
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType
@@ -146,7 +145,7 @@ def get_ascwds_workplace_df(workplace_source, import_date=None):
     )
 
     # Format date
-    workplace_df = format_import_date(workplace_df)
+    workplace_df = utils.format_import_date(workplace_df)
 
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
@@ -185,7 +184,7 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
         )
     )
 
-    cqc_df = format_import_date(cqc_df)
+    cqc_df = utils.format_import_date(cqc_df)
     cqc_df = cqc_df.withColumn(
         "region",
         (
@@ -218,7 +217,7 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
 
     cqc_provider_df = add_cqc_sector(cqc_provider_df)
 
-    cqc_provider_df = format_import_date(cqc_provider_df)
+    cqc_provider_df = utils.format_import_date(cqc_provider_df)
 
     if import_date is not None:
         cqc_provider_df = cqc_provider_df.filter(col("import_date") == import_date)
@@ -245,7 +244,7 @@ def get_pir_df(pir_source, import_date=None):
         )
     )
 
-    pir_df = format_import_date(pir_df)
+    pir_df = utils.format_import_date(pir_df)
 
     pir_df = pir_df.dropDuplicates(["locationid", "import_date"])
 
@@ -276,10 +275,6 @@ def get_date_closest_to_search_date(search_date, date_list):
         return None
 
     return closest_date
-
-
-def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
 
 
 def generate_closest_date_matrix(
