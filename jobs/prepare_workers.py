@@ -10,27 +10,36 @@ from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
-def main(source, destination):
-    # TODO - read data as df
+def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
+    main_df = utils.format_import_date(main_df)
+    main_df = utils.format_date_fields(main_df)
+
     columns_to_be_aggregated_patterns = {
-        "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
-        "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
+        "training": {
+            "pattern": "^tr\d\d[a-z]+",
+            "udf_function": get_training_into_json,
+        },
+        "job_role": {
+            "pattern": "^jr\d\d[a-z]+",
+            "udf_function": get_job_role_into_json,
+        },
         "qualifications": {
             "pattern": "^ql\d{1,3}[a-z]+.",
             "udf_function": get_qualification_into_json,
         },
     }
-
-    # TODO - replace training/jb/ql columns with aggregated columns
     for col_name, info in columns_to_be_aggregated_patterns.items():
         main_df = replace_columns_with_aggregated_column(
             main_df, col_name, info["pattern"], info["udf_function"]
         )
 
-    # TODO - write the main df to destination
-    return main_df
+    if destination:
+        print(f"Exporting as parquet to {destination}")
+        utils.write_to_parquet(main_df, destination)
+    else:
+        return main_df
 
 
 def get_dataset_worker(source):
@@ -42,15 +51,13 @@ def get_dataset_worker(source):
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
 
-    worker_df = utils.format_import_date(worker_df)
-
     return worker_df
 
 
 def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
     cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
     df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
-    df = df.drop(struct(cols_to_aggregate))
+    df = df.drop(*cols_to_aggregate)
 
     return df
 
@@ -76,7 +83,7 @@ def get_training_into_json(row):
     for training in types_training:
         if row[f"{training}flag"] == 1:
             aggregated_training[training] = {
-                "latestdate": row[training + "latestdate"],
+                "latestdate": str(row[training + "latestdate"])[0:10],
                 "count": row[training + "count"],
                 "ac": row[training + "ac"],
                 "nac": row[training + "nac"],

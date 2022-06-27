@@ -563,6 +563,13 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("ql313year", 2013)
     )
 
+    dataspec = dataspec.withColumnSpecs(
+        patterns=".*date.*",
+        matchTypes=StringType(),
+        values=["2017-06-15T00:00:00.000Z", "2018-06-15T00:00:00.000Z"],
+        random=True,
+    )
+
     df = dataspec.build()
 
     if output_destination:
