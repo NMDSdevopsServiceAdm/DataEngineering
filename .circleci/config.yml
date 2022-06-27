@@ -21,8 +21,6 @@ jobs:
   test:
     docker:
       - image: circleci/python:3.9.6
-      environment:
-      TZ: "Europe/London"
     resource_class: small
 
     steps:
