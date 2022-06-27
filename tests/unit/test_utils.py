@@ -304,9 +304,7 @@ class UtilsTests(unittest.TestCase):
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
         formatted_df = utils.format_date_fields(self.df, raw_date_format="dd/MM/yyyy")
-        self.assertEqual(
-            str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00"
-        )
+        self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28")
 
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
