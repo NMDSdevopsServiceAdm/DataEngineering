@@ -1,5 +1,4 @@
 import shutil
-from tkinter import W
 import unittest
 import warnings
 import json
