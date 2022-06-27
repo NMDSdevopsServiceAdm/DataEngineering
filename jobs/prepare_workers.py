@@ -2,9 +2,10 @@ import argparse
 import sys
 import json
 import re
+from pandas import NA
 
 from pyspark.sql.functions import udf, struct
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, FloatType
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -129,8 +130,60 @@ def extract_qualification_info(row, qualification):
     return {"value": row[qualification], "year": year}
 
 
-def salary_calculation():
-    pass
+def add_salary_columns(df):
+    hours_worked_udf = udf(calculate_hours_worked, FloatType())
+    hourly_pay_udf = udf(calculate_hourly_pay, FloatType())
+    columns = ["worker_id", "emp_status", "zero_hr_cont", "avg_hrs", "cont_hrs", "salary", "salary_int", "hr_rate"]
+    df = df.withColumn("hrs_worked", hours_worked_udf(struct([df[x] for x in columns])))
+    df = df.withColumn("hourly_rate", hourly_pay_udf(struct([df[x] for x in columns])))
+    return df
+
+
+def calculate_hours_worked(row):
+    cHrs = row.cont_hrs
+    aHrs = row.avg_hrs
+
+    if cHrs in [None, -1, -2] or cHrs > 100:
+            cHrs = None
+
+    if aHrs in [None, -1, -2] or aHrs > 100:
+            aHrs = None
+
+    # Role is perm or temp
+    if row.emp_status in ["Permanent", "Temporary"]:
+        # role is zero hr
+        if row.zero_hr_cont == "Yes":
+            if not aHrs:
+                if not cHrs:
+                    return cHrs
+                return aHrs
+            return aHrs
+        # role is NOT zero hr
+        if row.zero_hr_cont != "Yes":
+            if not cHrs:
+                if not aHrs:
+                    return aHrs
+                return cHrs
+            return cHrs
+    # If role not perm or temp
+    else:
+        if not aHrs:
+            if not cHrs:
+                return cHrs
+            return aHrs
+        return aHrs
+
+
+def calculate_hourly_pay(row):
+    if row["salary_int"] == 250:
+        if row["salary"].isNull():
+            return None
+        try:
+            return(row["salary"] / 52 / row["hrs_worked"]).round(2)
+        except:
+            return None
+    if row["salary_int"] == 252:
+        return row["hr_rate"]
 
 
 def collect_arguments():
