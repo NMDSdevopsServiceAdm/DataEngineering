@@ -129,6 +129,10 @@ def extract_qualification_info(row, qualification):
     return {"value": row[qualification], "year": year}
 
 
+def salary_calculation():
+    pass
+
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
 
