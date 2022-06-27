@@ -1,6 +1,5 @@
 from datetime import date
 import dbldatagen as dg
-import re
 
 from pyspark.sql.types import (
     StructField,
@@ -8,7 +7,6 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
-    TimestampType,
 )
 import pyspark.sql.functions as F
 
@@ -568,7 +566,7 @@ def generate_ascwds_worker_file(output_destination):
     dataspec = dataspec.withColumnSpecs(
         patterns=".*date.*",
         matchTypes=StringType(),
-        values=["01/12/2020", "03/12/2021"],
+        values=["2017-06-15T00:00:00.000Z", "2018-06-15T00:00:00.000Z"],
         random=True,
     )
 

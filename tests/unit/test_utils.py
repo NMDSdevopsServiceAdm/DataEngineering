@@ -303,7 +303,7 @@ class UtilsTests(unittest.TestCase):
 
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
-        formatted_df = utils.format_date_fields(self.df)
+        formatted_df = utils.format_date_fields(self.df, raw_date_format="dd/MM/yyyy")
         self.assertEqual(
             str(formatted_df.select("date_col").first()[0]), "1993-11-28 00:00:00"
         )
@@ -390,7 +390,6 @@ class UtilsTests(unittest.TestCase):
         training_types = utils.extract_specific_column_types("^tr\d\dflag$", schema)
         self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
 
-    def test_extract_col_with_pattern(self):
         schema = StructType(
             fields=[
                 StructField("tr01flag", IntegerType(), True),
@@ -403,7 +402,7 @@ class UtilsTests(unittest.TestCase):
                 StructField("tr00034type", IntegerType()),
             ]
         )
-        training = utils.extract_col_with_pattern("^tr\d\d[a-z]", schema)
+        training = utils.extract_col_with_pattern("^tr\d\d[a-z]+", schema)
         self.assertEqual(
             training,
             [

@@ -1,6 +1,8 @@
 import shutil
+from tkinter import W
 import unittest
 import warnings
+import json
 
 from pyspark.sql import SparkSession
 
@@ -28,23 +30,28 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def test_main_adds_aggregated_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
-        df.select("tr01latestdate").show()
+
         aggregated_cols = ["training", "job_role", "qualifications"]
+        training_json = json.loads(df.first()["training"])
+        extracted_date = training_json["tr01"]["latestdate"]
 
         for col in aggregated_cols:
             self.assertIn(col, df.columns)
-
-        self.assertEqual(
-            str(df.select("tr01latestdate").first()[0]), "2020-12-01 00:00:00"
-        )
+        self.assertNotIn("tr01latestdate", df.columns)
+        self.assertNotIn("jr01flag", df.columns)
+        self.assertNotIn("ql15year3", df.columns)
+        self.assertEqual(len(df.columns), 77)
+        self.assertEqual(extracted_date, "2017-06-15 01:00:00")
 
     def test_get_dataset_worker_has_correct_columns(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
         column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
+
         self.assertEqual(worker_df.columns, column_names)
 
     def test_get_dataset_worker_has_correct_rows_number(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
+
         self.assertEqual(worker_df.count(), 50)
 
     def test_replace_columns_after_aggregation(self):
@@ -56,7 +63,8 @@ class PrepareWorkersTests(unittest.TestCase):
         )
 
         self.assertEqual("training", df.columns[-1])
-        self.assertNotIn(training_cols, df.columns)
+        for training_col in training_cols:
+            self.assertNotIn(training_col, df.columns)
 
     def test_get_training_into_json(self):
         training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
@@ -74,7 +82,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(df.columns[-1], "training")
         self.assertEqual(
             df.first()["training"],
-            '{"tr01": {"latestdate": "01/12/2020", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
+            '{"tr01": {"latestdate": "2017-06-15T00:00:00.000Z", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
         )
         for training in training_types_flag:
             self.assertEqual(df.first()[training], 0)

@@ -13,9 +13,18 @@ from utils import utils
 def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
+    main_df = utils.format_import_date(main_df)
+    main_df = utils.format_date_fields(main_df)
+
     columns_to_be_aggregated_patterns = {
-        "training": {"pattern": "^tr\d\d[a-z]", "udf_function": get_training_into_json},
-        "job_role": {"pattern": "^jr\d\d[a-z]", "udf_function": get_job_role_into_json},
+        "training": {
+            "pattern": "^tr\d\d[a-z]+",
+            "udf_function": get_training_into_json,
+        },
+        "job_role": {
+            "pattern": "^jr\d\d[a-z]+",
+            "udf_function": get_job_role_into_json,
+        },
         "qualifications": {
             "pattern": "^ql\d{1,3}[a-z]+.",
             "udf_function": get_qualification_into_json,
@@ -25,9 +34,6 @@ def main(source, destination=None):
         main_df = replace_columns_with_aggregated_column(
             main_df, col_name, info["pattern"], info["udf_function"]
         )
-
-    main_df = utils.format_import_date(main_df)
-    main_df = utils.format_date_fields(main_df)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -51,7 +57,7 @@ def get_dataset_worker(source):
 def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
     cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
     df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
-    df = df.drop(struct(cols_to_aggregate))
+    df = df.drop(*cols_to_aggregate)
 
     return df
 
@@ -77,7 +83,7 @@ def get_training_into_json(row):
     for training in types_training:
         if row[f"{training}flag"] == 1:
             aggregated_training[training] = {
-                "latestdate": row[training + "latestdate"],
+                "latestdate": str(row[training + "latestdate"]),
                 "count": row[training + "count"],
                 "ac": row[training + "ac"],
                 "nac": row[training + "nac"],

@@ -8,7 +8,7 @@ from utils.utils import format_date_fields
 
 def main(source, destination):
     df = read_parquet(source)
-    df = format_date_fields(df)
+    df = format_date_fields(df, raw_date_format="dd/MM/yyyy")
     write_parquet(df, destination)
 
 

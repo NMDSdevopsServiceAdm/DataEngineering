@@ -89,7 +89,7 @@ def read_csv(source, delimiter=","):
     return df
 
 
-def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
+def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
