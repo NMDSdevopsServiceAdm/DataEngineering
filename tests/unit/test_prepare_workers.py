@@ -41,7 +41,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertNotIn("jr01flag", df.columns)
         self.assertNotIn("ql15year3", df.columns)
         self.assertEqual(len(df.columns), 77)
-        self.assertEqual(extracted_date, "2017-06-15 01:00:00")
+        self.assertEqual(extracted_date, "2017-06-15")
 
     def test_get_dataset_worker_has_correct_columns(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
@@ -82,7 +82,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(df.columns[-1], "training")
         self.assertEqual(
             df.first()["training"],
-            '{"tr01": {"latestdate": "2017-06-15T00:00:00.000Z", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
+            '{"tr01": {"latestdate": "2017-06-15", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
         )
         for training in training_types_flag:
             self.assertEqual(df.first()[training], 0)

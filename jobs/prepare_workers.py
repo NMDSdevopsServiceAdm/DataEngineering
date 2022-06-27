@@ -83,7 +83,7 @@ def get_training_into_json(row):
     for training in types_training:
         if row[f"{training}flag"] == 1:
             aggregated_training[training] = {
-                "latestdate": str(row[training + "latestdate"]),
+                "latestdate": str(row[training + "latestdate"])[0:10],
                 "count": row[training + "count"],
                 "ac": row[training + "ac"],
                 "nac": row[training + "nac"],
