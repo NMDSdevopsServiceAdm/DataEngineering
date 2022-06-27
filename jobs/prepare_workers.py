@@ -133,7 +133,16 @@ def extract_qualification_info(row, qualification):
 def add_salary_columns(df):
     hours_worked_udf = udf(calculate_hours_worked, FloatType())
     hourly_pay_udf = udf(calculate_hourly_pay, FloatType())
-    columns = ["worker_id", "emp_status", "zero_hr_cont", "avg_hrs", "cont_hrs", "salary", "salary_int", "hr_rate"]
+    columns = [
+        "worker_id",
+        "emp_status",
+        "zero_hr_cont",
+        "avg_hrs",
+        "cont_hrs",
+        "salary",
+        "salary_int",
+        "hr_rate",
+    ]
     df = df.withColumn("hrs_worked", hours_worked_udf(struct([df[x] for x in columns])))
     df = df.withColumn("hourly_rate", hourly_pay_udf(struct([df[x] for x in columns])))
     return df
@@ -144,10 +153,10 @@ def calculate_hours_worked(row):
     aHrs = row.avg_hrs
 
     if cHrs in [None, -1, -2] or cHrs > 100:
-            cHrs = None
+        cHrs = None
 
     if aHrs in [None, -1, -2] or aHrs > 100:
-            aHrs = None
+        aHrs = None
 
     # Role is perm or temp
     if row.emp_status in ["Permanent", "Temporary"]:
@@ -179,7 +188,7 @@ def calculate_hourly_pay(row):
         if row["salary"].isNull():
             return None
         try:
-            return(row["salary"] / 52 / row["hrs_worked"]).round(2)
+            return (row["salary"] / 52 / row["hrs_worked"]).round(2)
         except:
             return None
     if row["salary_int"] == 252:
