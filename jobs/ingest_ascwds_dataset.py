@@ -37,7 +37,7 @@ def ingest_dataset(source, destination, delimiter):
     )
     df = utils.read_csv(source, delimiter)
     df = filter_test_accounts(df)
-    df = utils.format_date_fields(df)
+    df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)

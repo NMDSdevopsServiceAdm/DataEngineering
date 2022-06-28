@@ -35,7 +35,7 @@ def get_cqc_care_directory(source):
     df = utils.read_csv(source)
 
     print("Formatting date fields")
-    df = utils.format_date_fields(df)
+    df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
     df = df.filter("type=='Social Care Org'")
     df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed(
