@@ -31,16 +31,35 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_main_adds_aggregated_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
 
-        aggregated_cols = ["training", "job_role", "qualifications"]
+        aggregated_cols = [
+            "training",
+            "job_role",
+            "qualifications",
+            "hrs_worked",
+            "hourly_rate",
+        ]
+        cols_removed = [
+            "tr01latestdate",
+            "jr01flag",
+            "ql15year3",
+            "averagehours",
+            "conthrs",
+            "salary",
+            "hrlyrate",
+        ]
+        columns_kept = [
+            "emplstat",
+            "zerohours",
+            "salaryint",
+        ]
         training_json = json.loads(df.first()["training"])
         extracted_date = training_json["tr01"]["latestdate"]
 
-        for col in aggregated_cols:
+        for col in aggregated_cols + columns_kept:
             self.assertIn(col, df.columns)
-        self.assertNotIn("tr01latestdate", df.columns)
-        self.assertNotIn("jr01flag", df.columns)
-        self.assertNotIn("ql15year3", df.columns)
-        self.assertEqual(len(df.columns), 77)
+        for col in cols_removed:
+            self.assertNotIn(col, df.columns)
+        self.assertEqual(len(df.columns), 75)
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_get_dataset_worker_has_correct_columns(self):
@@ -59,7 +78,10 @@ class PrepareWorkersTests(unittest.TestCase):
         # TODO - make it run with all the other patterns and columns
         pattern = "^tr\d\d[a-z]"
         df = prepare_workers.replace_columns_with_aggregated_column(
-            self.test_df, "training", pattern, prepare_workers.get_training_into_json
+            self.test_df,
+            "training",
+            prepare_workers.get_training_into_json,
+            pattern=pattern,
         )
 
         self.assertEqual("training", df.columns[-1])

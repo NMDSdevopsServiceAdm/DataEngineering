@@ -4,7 +4,7 @@ import json
 import re
 
 from pyspark.sql.functions import udf, struct
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, FloatType
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -32,23 +32,27 @@ def main(source, destination=None):
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():
         main_df = replace_columns_with_aggregated_column(
-            main_df, col_name, info["pattern"], info["udf_function"]
+            main_df, col_name, info["udf_function"], pattern=info["pattern"]
         )
 
     # get hours worked
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hrs_worked",
-        ["emplstat", "zerohours", "averagehours", "conthrs"],
         calculate_hours_worked,
+        cols_to_aggregate=["emplstat", "zerohours", "averagehours", "conthrs"],
+        cols_to_remove=["averagehours", "conthrs"],
+        output_type=FloatType(),
     )
 
     # add salary per hour
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hourly_rate",
-        ["salary", "salaryint", "hrlyrate"],
         calculate_hourly_pay,
+        cols_to_aggregate=["salary", "salaryint", "hrlyrate"],
+        cols_to_remove=["salary", "hrlyrate"],
+        output_type=FloatType(),
     )
 
     if destination:
@@ -70,10 +74,25 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
-    cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
-    df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
-    df = df.drop(*cols_to_aggregate)
+def replace_columns_with_aggregated_column(
+    df,
+    col_name,
+    udf_function,
+    pattern=None,
+    cols_to_aggregate=None,
+    cols_to_remove=None,
+    output_type=StringType(),
+):
+    if pattern:
+        cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
+
+    df = add_aggregated_column(
+        df, col_name, cols_to_aggregate, udf_function, output_type
+    )
+    if cols_to_remove:
+        df = df.drop(*cols_to_remove)
+    else:
+        df = df.drop(*cols_to_aggregate)
 
     return df
 
