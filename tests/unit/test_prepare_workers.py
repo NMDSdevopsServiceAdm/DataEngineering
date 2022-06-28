@@ -1,11 +1,9 @@
-from multiprocessing.spawn import prepare
 import shutil
 import unittest
 import warnings
 import json
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import FloatType
 
 from jobs import prepare_workers

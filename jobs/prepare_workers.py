@@ -2,10 +2,9 @@ import argparse
 import sys
 import json
 import re
-from pandas import StringDtype
 
 from pyspark.sql.functions import udf, struct
-from pyspark.sql.types import StringType, FloatType
+from pyspark.sql.types import StringType
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils

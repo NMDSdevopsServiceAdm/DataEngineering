@@ -3,7 +3,7 @@ import re
 import csv
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp, to_date, col
+from pyspark.sql.functions import to_date, col
 
 import boto3
 
