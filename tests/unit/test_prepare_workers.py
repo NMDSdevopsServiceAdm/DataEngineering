@@ -1,7 +1,10 @@
+from multiprocessing.spawn import prepare
 import shutil
 import unittest
 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf, struct
+from pyspark.sql.types import FloatType
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
@@ -96,6 +99,37 @@ class PrepareWorkersTests(unittest.TestCase):
             '{"ql01achq2": {"value": 1, "year": 2009}, "ql34achqe": {"value": 1, "year": 2010}, "ql37achq": {"value": 3, "year": 2021}, "ql313app": {"value": 1, "year": 2013}}',
         )
         self.assertEqual(df.first()["ql02achq3"], 0)
+
+    def test_calculate_hours_worked(self):
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            self.test_df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertIn("hrs_worked", df.columns)
+        self.assertEqual(df.first()["hrs_worked"], 26.5)
+
+    def test_calculate_hourly_rate(self):
+        columns = ["salary", "salaryint", "hrlyrate"]
+        df = prepare_workers.add_aggregated_column(
+            self.test_df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertIn("hourly_rate", df.columns)
+        self.assertEqual(df.first()["hourly_rate"], 100.5)
 
 
 if __name__ == "__main__":

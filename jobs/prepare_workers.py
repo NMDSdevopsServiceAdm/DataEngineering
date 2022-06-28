@@ -2,7 +2,7 @@ import argparse
 import sys
 import json
 import re
-from pandas import NA
+from pandas import StringDtype
 
 from pyspark.sql.functions import udf, struct
 from pyspark.sql.types import StringType, FloatType
@@ -30,6 +30,21 @@ def main(source, destination):
             main_df, col_name, info["pattern"], info["udf_function"]
         )
 
+    # get hours worked
+    main_df = replace_columns_with_aggregated_column(
+        main_df,
+        "hrs_worked",
+        ["emplstat", "zerohours", "averagehours", "conthrs"],
+        calculate_hours_worked,
+    )
+
+    # add salary per hour
+    main_df = replace_columns_with_aggregated_column(
+        main_df,
+        "hourly_rate",
+        ["salary", "salaryint", "hrlyrate"],
+        calculate_hourly_pay,
+    )
     # TODO - write the main df to destination
     return main_df
 
@@ -56,8 +71,10 @@ def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
     return df
 
 
-def add_aggregated_column(df, col_name, columns, udf_function):
-    aggregate_udf = udf(udf_function, StringType())
+def add_aggregated_column(
+    df, col_name, columns, udf_function, output_type=StringType()
+):
+    aggregate_udf = udf(udf_function, output_type)
 
     to_be_aggregated_df = df.select(columns)
     df = df.withColumn(
@@ -128,24 +145,6 @@ def extract_qualification_info(row, qualification):
         year = row[extract_year_column_name(qualification)]
 
     return {"value": row[qualification], "year": year}
-
-
-def add_salary_columns(df):
-    hours_worked_udf = udf(calculate_hours_worked, FloatType())
-    hourly_pay_udf = udf(calculate_hourly_pay, FloatType())
-    columns = [
-        "emplstat",
-        "zerohours",
-        "averagehours",
-        "conthrs",
-        "salary",
-        "salaryint",
-        "hrlyrate",
-    ]
-    df = df.withColumn("hrs_worked", hours_worked_udf(struct([df[x] for x in columns])))
-    columns.append("hrs_worked")
-    df = df.withColumn("hourly_rate", hourly_pay_udf(struct([df[x] for x in columns])))
-    return df
 
 
 def calculate_hours_worked(row):

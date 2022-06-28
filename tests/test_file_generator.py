@@ -561,6 +561,12 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("ql37year", 2021)
         .withColumnSpec("ql313app", 1)
         .withColumnSpec("ql313year", 2013)
+        .withColumnSpec("emplstat", 190)
+        .withColumnSpec("conthrs", 8.5)
+        .withColumnSpec("averagehours", 26.5)
+        .withColumnSpec("zerohours", "Yes")
+        .withColumnSpec("salaryint", 252)
+        .withColumnSpec("hrlyrate", 100.5)
     )
 
     df = dataspec.build()
