@@ -134,23 +134,23 @@ def add_salary_columns(df):
     hours_worked_udf = udf(calculate_hours_worked, FloatType())
     hourly_pay_udf = udf(calculate_hourly_pay, FloatType())
     columns = [
-        "worker_id",
-        "emp_status",
-        "zero_hr_cont",
-        "avg_hrs",
-        "cont_hrs",
+        "emplstat",
+        "zerohours",
+        "averagehours",
+        "conthrs",
         "salary",
-        "salary_int",
-        "hr_rate",
+        "salaryint",
+        "hrlyrate",
     ]
     df = df.withColumn("hrs_worked", hours_worked_udf(struct([df[x] for x in columns])))
+    columns.append("hrs_worked")
     df = df.withColumn("hourly_rate", hourly_pay_udf(struct([df[x] for x in columns])))
     return df
 
 
 def calculate_hours_worked(row):
-    cHrs = row.cont_hrs
-    aHrs = row.avg_hrs
+    cHrs = row["conthrs"]
+    aHrs = row["averagehours"]
 
     if cHrs in [None, -1, -2] or cHrs > 100:
         cHrs = None
@@ -159,16 +159,16 @@ def calculate_hours_worked(row):
         aHrs = None
 
     # Role is perm or temp
-    if row.emp_status in ["Permanent", "Temporary"]:
+    if row["emplstat"] in ["Permanent", "Temporary"]:
         # role is zero hr
-        if row.zero_hr_cont == "Yes":
+        if row["zerohours"] == "Yes":
             if not aHrs:
                 if not cHrs:
                     return cHrs
                 return aHrs
             return aHrs
         # role is NOT zero hr
-        if row.zero_hr_cont != "Yes":
+        if row["zerohours"] != "Yes":
             if not cHrs:
                 if not aHrs:
                     return aHrs
@@ -184,15 +184,15 @@ def calculate_hours_worked(row):
 
 
 def calculate_hourly_pay(row):
-    if row["salary_int"] == 250:
+    if row["salaryint"] == 250:
         if row["salary"].isNull():
             return None
         try:
             return (row["salary"] / 52 / row["hrs_worked"]).round(2)
         except:
             return None
-    if row["salary_int"] == 252:
-        return row["hr_rate"]
+    if row["salaryint"] == 252:
+        return row["hrlyrate"]
 
 
 def collect_arguments():
