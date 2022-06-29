@@ -32,24 +32,25 @@ def main(source, destination=None):
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():
         main_df = replace_columns_with_aggregated_column(
-            main_df, col_name, info["udf_function"], pattern=info["pattern"]
+            main_df,
+            col_name,
+            udf_function=info["udf_function"],
+            pattern=info["pattern"],
         )
 
-    # get hours worked
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hrs_worked",
-        calculate_hours_worked,
+        udf_function=calculate_hours_worked,
         cols_to_aggregate=["emplstat", "zerohours", "averagehours", "conthrs"],
         cols_to_remove=["averagehours", "conthrs"],
         output_type=FloatType(),
     )
 
-    # add salary per hour
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hourly_rate",
-        calculate_hourly_pay,
+        udf_function=calculate_hourly_pay,
         cols_to_aggregate=["salary", "salaryint", "hrlyrate", "hrs_worked"],
         cols_to_remove=["salary", "hrlyrate"],
         output_type=FloatType(),
@@ -174,45 +175,47 @@ def extract_qualification_info(row, qualification):
 
 
 def calculate_hours_worked(row):
-    cHrs = row["conthrs"]
-    aHrs = row["averagehours"]
+    contracted_hrs, average_hrs = apply_sense_check_to_hrs_worked(
+        row["conthrs"], row["averagehours"]
+    )
 
-    if cHrs in [None, -1, -2] or cHrs > 100:
-        cHrs = None
-
-    if aHrs in [None, -1, -2] or aHrs > 100:
-        aHrs = None
-
-    # Role is perm or temp
     if row["emplstat"] in ["Permanent", "Temporary"]:
-        # role is zero hr
         if row["zerohours"] == "Yes":
-            if not aHrs:
-                if not cHrs:
-                    return cHrs
-                return aHrs
-            return aHrs
-        # role is NOT zero hr
+            if average_hrs:
+                return average_hrs
+
         if row["zerohours"] != "Yes":
-            if not cHrs:
-                if not aHrs:
-                    return aHrs
-                return cHrs
-            return cHrs
-    # If role not perm or temp
-    else:
-        if not aHrs:
-            if not cHrs:
-                return cHrs
-            return aHrs
-        return aHrs
+            if contracted_hrs:
+                return contracted_hrs
+
+    if row["emplstat"] not in ["Permanent", "Temporary"]:
+        if average_hrs:
+            return average_hrs
+
+    if average_hrs > 0:
+        return average_hrs
+
+    if contracted_hrs > 0:
+        return contracted_hrs
+
+    return None
+
+
+def apply_sense_check_to_hrs_worked(contracted_hrs, average_hrs):
+    if contracted_hrs in [None, -1, -2] or contracted_hrs > 100:
+        contracted_hrs = None
+
+    if average_hrs in [None, -1, -2] or average_hrs > 100:
+        average_hrs = None
+
+    return contracted_hrs, average_hrs
 
 
 def calculate_hourly_pay(row):
     if row["salaryint"] == 250:
         if row["salary"]:
             try:
-                return row["salary"] / 52 / row["hrs_worked"]
+                return round(row["salary"] / 52 / row["hrs_worked"], 2)
             except:
                 return None
 
