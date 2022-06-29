@@ -50,7 +50,7 @@ def main(source, destination=None):
         main_df,
         "hourly_rate",
         calculate_hourly_pay,
-        cols_to_aggregate=["salary", "salaryint", "hrlyrate"],
+        cols_to_aggregate=["salary", "salaryint", "hrlyrate", "hrs_worked"],
         cols_to_remove=["salary", "hrlyrate"],
         output_type=FloatType(),
     )
@@ -210,14 +210,16 @@ def calculate_hours_worked(row):
 
 def calculate_hourly_pay(row):
     if row["salaryint"] == 250:
-        if row["salary"].isNull():
-            return None
-        try:
-            return (row["salary"] / 52 / row["hrs_worked"]).round(2)
-        except:
-            return None
+        if row["salary"]:
+            try:
+                return row["salary"] / 52 / row["hrs_worked"]
+            except:
+                return None
+
     if row["salaryint"] == 252:
         return row["hrlyrate"]
+
+    return None
 
 
 def collect_arguments():

@@ -5,6 +5,7 @@ import json
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import FloatType
+from pyspark.sql.functions import lit
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
@@ -161,17 +162,19 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(df.first()["hrs_worked"], 26.5)
 
     def test_calculate_hourly_rate(self):
-        columns = ["salary", "salaryint", "hrlyrate"]
+        df = self.test_df.withColumn("hrs_worked", lit(10))
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
         df = prepare_workers.add_aggregated_column(
-            self.test_df,
+            df,
             "hourly_rate",
             columns,
             prepare_workers.calculate_hourly_pay,
             FloatType(),
         )
 
+        self.assertIn("hrs_worked", df.columns)
         self.assertIn("hourly_rate", df.columns)
-        self.assertEqual(df.first()["hourly_rate"], 100.5)
+        self.assertEqual(df.first()["hourly_rate"], 10.0)
 
 
 if __name__ == "__main__":
