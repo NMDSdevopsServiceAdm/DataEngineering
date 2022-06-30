@@ -2,6 +2,7 @@ import argparse
 
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
+from pyspark.ml.regression import GBTRegressionModel
 
 from utils import utils
 
@@ -30,6 +31,7 @@ def main(
     prepared_locations_source,
     prepared_locations_features,
     destination,
+    care_home_model_directory,
     snapshot_date="'2022-01-31'",
 ):
     spark = utils.get_spark()
@@ -59,14 +61,21 @@ def main(
     locations_df = model_non_res_historical_pir(locations_df)
     locations_df = model_non_res_default(locations_df)
 
+    # Care homes with historical model
+    latest_model_version = max(
+        utils.get_s3_sub_folders_for_path(care_home_model_directory)
+    )
+    locations_df = model_care_home_with_historical(
+        locations_df,
+        features_df,
+        f"{care_home_model_directory}/{latest_model_version}/",
+    )
+
     # Nursing models
-    locations_df = model_care_home_with_historical(locations_df, features_df)
-    locations_df = model_care_home_with_nursing_historical(locations_df)
     locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
     locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
 
     # Non-nursing models
-    locations_df = model_care_home_without_nursing_historical(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
 
@@ -196,7 +205,42 @@ def model_non_res_default(df):
     return df
 
 
-def model_care_home_with_historical(locations_df, features_df):
+def insert_predictions_into_locations(locations_df, predictions_df):
+    locations_with_predictions = locations_df.join(
+        predictions_df,
+        (locations_df["locationid"] == predictions_df["locationid"])
+        & (locations_df["snapshot_date"] == predictions_df["snapshot_date"]),
+        "left",
+    )
+
+    locations_with_predictions = locations_with_predictions.select(
+        locations_df["*"], predictions_df["prediction"]
+    )
+
+    locations_with_predictions = locations_with_predictions.withColumn(
+        "estimate_job_count_2021",
+        when(col("prediction").isNotNull(), col("prediction")).otherwise(
+            col(ESTIMATE_JOB_COUNT_2021)
+        ),
+    )
+
+    locations_df = locations_with_predictions.drop(col("prediction"))
+    return locations_df
+
+
+def model_care_home_with_historical(locations_df, features_df, model_path):
+    gbt_trained_model = GBTRegressionModel.load(model_path)
+
+    features_df = features_df.where("carehome = 'Y'")
+    features_df = features_df.where("region is not null")
+    features_df = features_df.where("number_of_beds is not null")
+
+    care_home_predictions = gbt_trained_model.transform(features_df)
+
+    locations_df = insert_predictions_into_locations(
+        locations_df, care_home_predictions
+    )
+
     return locations_df
 
 
@@ -352,10 +396,20 @@ def collect_arguments():
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
     )
+    parser.add_argument(
+        "--care_home_model_directory",
+        help="The directory where the care home models are saved",
+        required=True,
+    )
 
     args, _ = parser.parse_known_args()
 
-    return args.prepared_locations_source, args.destination
+    return (
+        args.prepared_locations_source,
+        args.prepared_locations_features,
+        args.destination,
+        args.care_home_model_directory,
+    )
 
 
 if __name__ == "__main__":
@@ -363,6 +417,12 @@ if __name__ == "__main__":
         prepared_locations_source,
         prepared_locations_features,
         destination,
+        care_home_model_directory,
     ) = collect_arguments()
 
-    main(prepared_locations_source, prepared_locations_features, destination)
+    main(
+        prepared_locations_source,
+        prepared_locations_features,
+        destination,
+        care_home_model_directory,
+    )
