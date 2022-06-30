@@ -205,6 +205,45 @@ class UtilsTests(unittest.TestCase):
         )
         self.assertEqual(len(object_list), 1)
 
+    def test_get_s3_sub_folders_returns_one_common_prefix(self):
+        response = {"CommonPrefixes": [{"Prefix": "models/my-model/versions/1.0.0/"}]}
+
+        expected_params = {
+            "Bucket": "test-bucket",
+            "Prefix": "models/my-model/versions/",
+            "Delimiter": "/",
+        }
+
+        stubber = StubberClass(StubberType.client)
+        stubber.add_response("list_objects_v2", response, expected_params)
+
+        sub_directory_list = utils.get_s3_sub_folders_for_path(
+            "s3://test-bucket/models/my-model/versions/", stubber.get_s3_client()
+        )
+        self.assertEqual(sub_directory_list, ["1.0.0"])
+
+    def test_get_s3_sub_folders_returns_multiple_common_prefix(self):
+        response = {
+            "CommonPrefixes": [
+                {"Prefix": "models/my-model/1.0.0/"},
+                {"Prefix": "models/my-model/apples/"},
+            ]
+        }
+
+        expected_params = {
+            "Bucket": "model-bucket",
+            "Prefix": "models/my-model/",
+            "Delimiter": "/",
+        }
+
+        stubber = StubberClass(StubberType.client)
+        stubber.add_response("list_objects_v2", response, expected_params)
+
+        sub_directory_list = utils.get_s3_sub_folders_for_path(
+            "s3://model-bucket/models/my-model/", stubber.get_s3_client()
+        )
+        self.assertEqual(sub_directory_list, ["1.0.0", "apples"])
+
     def test_read_partial_csv_content(self):
         body_data = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
 
