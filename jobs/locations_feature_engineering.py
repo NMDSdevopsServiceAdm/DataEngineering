@@ -1,4 +1,5 @@
 import argparse
+import re
 
 import pyspark.sql.functions as F
 from pyspark.ml.feature import VectorAssembler
@@ -35,7 +36,9 @@ def explode_regions(locations_df):
     distinct_region_rows = locations_df.select("region").distinct().na.drop().collect()
     regions = []
     for row in distinct_region_rows:
+        non_lower_alpha = re.compile("[^a-z_]")
         region_column_name = row.region.replace(" ", "_").lower()
+        region_column_name = re.sub(non_lower_alpha, "", region_column_name)
         regions.append(region_column_name)
 
         locations_df = locations_df.withColumn(

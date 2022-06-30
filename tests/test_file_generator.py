@@ -603,7 +603,7 @@ def generate_prepared_locations_file_parquet(output_destination):
         ("1-108387554","20220381", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"]),
         ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"]),
         ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"]),
-        ("1-108967195","20220422", "Merseyside", 2, True, ["Domiciliary care service"]),
+        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"]),
     ]
     # fmt: on
 
