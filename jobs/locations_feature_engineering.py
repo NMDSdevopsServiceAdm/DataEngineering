@@ -32,7 +32,7 @@ def main(prepared_locations_source, destination=None):
 
 
 def explode_regions(locations_df):
-    distinct_region_rows = locations_df.select("region").distinct().collect()
+    distinct_region_rows = locations_df.select("region").distinct().na.drop().collect()
     regions = []
     for row in distinct_region_rows:
         region_column_name = row.region.replace(" ", "_").lower()
