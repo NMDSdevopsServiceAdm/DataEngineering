@@ -175,40 +175,34 @@ def extract_qualification_info(row, qualification):
 
 
 def calculate_hours_worked(row):
-    contracted_hrs, average_hrs = apply_sense_check_to_hrs_worked(
-        row["conthrs"], row["averagehours"]
-    )
+    contracted_hrs = apply_sense_check_to_hrs_worked(row["conthrs"])
+    average_hrs = apply_sense_check_to_hrs_worked(row["averagehours"])
 
-    if row["emplstat"] in ["Permanent", "Temporary"]:
-        if row["zerohours"] == "Yes":
+    if row["emplstat"] in [190, 191]:
+        if row["zerohours"] == 1:
             if average_hrs:
                 return average_hrs
 
-        if row["zerohours"] != "Yes":
+        if row["zerohours"] != 1:
             if contracted_hrs:
                 return contracted_hrs
-
-    if row["emplstat"] not in ["Permanent", "Temporary"]:
+    else:
         if average_hrs:
             return average_hrs
 
-    if average_hrs > 0:
-        return average_hrs
-
-    if contracted_hrs > 0:
+    if contracted_hrs and contracted_hrs > 0:
         return contracted_hrs
+
+    if average_hrs and average_hrs > 0:
+        return average_hrs
 
     return None
 
 
-def apply_sense_check_to_hrs_worked(contracted_hrs, average_hrs):
-    if contracted_hrs in [None, -1, -2] or contracted_hrs > 100:
-        contracted_hrs = None
-
-    if average_hrs in [None, -1, -2] or average_hrs > 100:
-        average_hrs = None
-
-    return contracted_hrs, average_hrs
+def apply_sense_check_to_hrs_worked(hours):
+    if hours in [None, -1, -2] or hours > 100:
+        return None
+    return hours
 
 
 def calculate_hourly_pay(row):

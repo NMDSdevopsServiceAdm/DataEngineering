@@ -564,7 +564,7 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("emplstat", 190)
         .withColumnSpec("conthrs", 8.5)
         .withColumnSpec("averagehours", 26.5)
-        .withColumnSpec("zerohours", "Yes")
+        .withColumnSpec("zerohours", 1)
         .withColumnSpec("salaryint", 250)
         .withColumnSpec("salary", 5200)
         .withColumnSpec("hrlyrate", 100.5)
