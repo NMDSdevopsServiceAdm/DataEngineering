@@ -385,7 +385,7 @@ class UtilsTests(unittest.TestCase):
                 StructField("tr01dn", IntegerType(), True),
             ]
         )
-        training_types = utils.extract_specific_column_types("^tr\d\dflag$", schema)
+        training_types = utils.extract_specific_column_types("^tr[0-9]{2}flag$", schema)
         self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
 
         schema = StructType(
@@ -400,7 +400,7 @@ class UtilsTests(unittest.TestCase):
                 StructField("tr00034type", IntegerType()),
             ]
         )
-        training = utils.extract_col_with_pattern("^tr\d\d[a-z]+", schema)
+        training = utils.extract_col_with_pattern("^tr[0-9]{2}[a-z]+", schema)
         self.assertEqual(
             training,
             [
