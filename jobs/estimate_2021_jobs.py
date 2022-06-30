@@ -26,7 +26,12 @@ ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 SNAPSHOT_DATE = "snapshot_date"
 
 
-def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
+def main(
+    prepared_locations_source,
+    prepared_locations_features,
+    destination,
+    snapshot_date="'2022-01-31'",
+):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
@@ -37,6 +42,8 @@ def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
             and {SNAPSHOT_DATE} = {snapshot_date}"
         )
     )
+
+    features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType())
@@ -53,6 +60,7 @@ def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
     locations_df = model_non_res_default(locations_df)
 
     # Nursing models
+    locations_df = model_care_home_with_historical(locations_df, features_df)
     locations_df = model_care_home_with_nursing_historical(locations_df)
     locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
     locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
@@ -188,6 +196,10 @@ def model_non_res_default(df):
     return df
 
 
+def model_care_home_with_historical(locations_df, features_df):
+    return locations_df
+
+
 def model_care_home_with_nursing_historical(df):
     """
     Care home with nursing : Historical :  : 2021 jobs = Last known value * 1.004
@@ -203,6 +215,27 @@ def model_care_home_with_nursing_historical(df):
                 & col(LAST_KNOWN_JOB_COUNT).isNotNull()
             ),
             col(LAST_KNOWN_JOB_COUNT) * 1.004,
+        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
+    )
+
+    return df
+
+
+def model_care_home_without_nursing_historical(df):
+    """
+    Care home without nursing : Historical :  : 2021 jobs = Last known value * 1.01
+    """
+    # TODO: remove magic number 1.01
+
+    df = df.withColumn(
+        ESTIMATE_JOB_COUNT_2021,
+        when(
+            (
+                col(ESTIMATE_JOB_COUNT_2021).isNull()
+                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
+                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
+            ),
+            col(LAST_KNOWN_JOB_COUNT) * 1.01,
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -249,27 +282,6 @@ def model_care_home_with_nursing_cqc_beds(df):
                 & col(NUMBER_OF_BEDS).isNotNull()
             ),
             (1.203 * col(NUMBER_OF_BEDS) + 2.39),
-        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_historical(df):
-    """
-    Care home without nursing : Historical :  : 2021 jobs = Last known value * 1.01
-    """
-    # TODO: remove magic number 1.01
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT_2021,
-        when(
-            (
-                col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.01,
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -331,6 +343,11 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--prepared_locations_features",
+        help="Source s3 directory for prepared_locations ML features",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
         required=True,
@@ -344,7 +361,8 @@ def collect_arguments():
 if __name__ == "__main__":
     (
         prepared_locations_source,
+        prepared_locations_features,
         destination,
     ) = collect_arguments()
 
-    main(prepared_locations_source, destination)
+    main(prepared_locations_source, prepared_locations_features, destination)

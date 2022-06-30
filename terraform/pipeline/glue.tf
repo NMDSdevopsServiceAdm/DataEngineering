@@ -95,8 +95,9 @@ module "estimate_2021_jobs_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = ""
-    "--destination"               = ""
+    "--prepared_locations_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/verison=1.0.0/"
+    "--prepared_locations_features" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+    "--destination"                 = ""
   }
 }
 

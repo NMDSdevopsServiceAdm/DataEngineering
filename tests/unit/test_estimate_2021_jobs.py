@@ -1,17 +1,6 @@
-import datetime
-import shutil
 import unittest
-from pathlib import Path
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    DoubleType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
-
 from jobs import estimate_2021_jobs as job
 
 
@@ -137,6 +126,36 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df[1]["estimate_job_count_2021"], None)
         self.assertEqual(df[2]["estimate_job_count_2021"], 54.09)
         self.assertEqual(df[3]["estimate_job_count_2021"], 10)
+
+    def generate_locations_and_features_for_care_homes(self):
+        #fmt: off
+        columns = [
+            "locationid",
+            "primary_service_type",
+            "last_known_job_count",
+            "estimate_job_count_2021",
+            "carehome",
+            "region",
+            "number_of_beds",
+        ]
+        rows = [
+            ("1-000000001", "Care home with nursing", 10, None, "Y", "South West", 67),
+            ("1-000000002", "Care home without nursing", 10, None, "N", "Merseyside", 12),
+            ("1-000000003", "Care home with nursing", 20, None, None, "Merseyside", 34),
+            ("1-000000004", "non-residential", 10, 10, "N", None, 0),
+        ]
+        #fmt: on
+        locations_df = self.spark.createDataFrame(rows, columns)
+
+        features_df = self.spark.createDataFrame(
+            [("2020-03-12", "1-000000001")], ["snapshot_date", "locationid"]
+        )
+        return locations_df, features_df
+
+    def test_model_care_home_with_historical_returns_all_locations(self):
+        locations_df, features_df = self.generate_locations_and_features_for_care_homes()
+        df = job.model_care_home_with_historical(locations_df, features_df)
+        self.assertEqual(df.count(), 4)
 
     def test_model_care_home_with_nursing_historical(self):
         columns = [
