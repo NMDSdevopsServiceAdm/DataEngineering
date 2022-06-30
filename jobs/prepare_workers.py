@@ -52,7 +52,7 @@ def main(source, destination=None):
         "hourly_rate",
         udf_function=calculate_hourly_pay,
         cols_to_aggregate=["salary", "salaryint", "hrlyrate", "hrs_worked"],
-        cols_to_remove=["salary", "hrlyrate"],
+        cols_to_remove=["salary", "salaryint", "hrlyrate"],
         output_type=FloatType(),
     )
 
@@ -182,12 +182,14 @@ def calculate_hours_worked(row):
         if row["zerohours"] == 1:
             if average_hrs:
                 return average_hrs
-
-        if row["zerohours"] != 1:
+        else:
             if contracted_hrs:
                 return contracted_hrs
-    else:
+
+    if row["emplstat"] in [192, 193, 194, 196]:
+        print("here", average_hrs)
         if average_hrs:
+            print(average_hrs)
             return average_hrs
 
     if contracted_hrs and contracted_hrs > 0:
@@ -206,12 +208,8 @@ def apply_sense_check_to_hrs_worked(hours):
 
 
 def calculate_hourly_pay(row):
-    if row["salaryint"] == 250:
-        if row["salary"]:
-            try:
-                return round(row["salary"] / 52 / row["hrs_worked"], 2)
-            except:
-                return None
+    if row["salaryint"] == 250 and row["salary"] and row["hrs_worked"] > 0:
+        return round(row["salary"] / 52 / row["hrs_worked"], 2)
 
     if row["salaryint"] == 252:
         return row["hrlyrate"]

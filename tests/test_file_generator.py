@@ -543,7 +543,7 @@ def generate_cqc_care_directory_file(output_destination):
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
     dataspec = dg.DataGenerator(
-        spark, rows=50, partitions=8, randomSeedMethod="hash_fieldname"
+        spark, rows=10, partitions=8, randomSeedMethod="hash_fieldname"
     ).withSchema(worker_schema.WORKER_SCHEMA)
 
     dataspec = (
@@ -581,6 +581,23 @@ def generate_ascwds_worker_file(output_destination):
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_flexible_worker_file_hours_worked(
+    emplstat, zerohours, averagehours, conthrs
+):
+    spark = utils.get_spark()
+    columns = [
+        "emplstat",
+        "zerohours",
+        "averagehours",
+        "conthrs",
+    ]
+    rows = [(emplstat, zerohours, averagehours, conthrs)]
+
+    df = spark.createDataFrame(rows, columns)
 
     return df
 
