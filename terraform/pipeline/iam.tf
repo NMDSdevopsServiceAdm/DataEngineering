@@ -97,7 +97,7 @@ resource "aws_iam_policy" "glue_jobs_read_raw_s3_data_policy" {
         ],
         "Resource" : [
           "arn:aws:s3:::sfc-data-engineering-raw/*",
-          "arn:aws:s3:::sfc-main-datasets/domain=CQC*"
+          "arn:aws:s3:::sfc-main-datasets/*"
         ]
       }
     ]
