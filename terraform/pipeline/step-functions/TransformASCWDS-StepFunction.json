@@ -1,0 +1,40 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Ingest ASCWDS",
+    "States": {
+        "Ingest ASCWDS": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "${ingest_ascwds_job_name}",
+                "Arguments": {
+                    "--destination": "s3://${dataset_bucket_name}/domain=ASCWDS/",
+                    "--source.$": "$.jobs.ingest_ascwds_dataset.source"
+                }
+            },
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "Fail"
+                }
+            ],
+            "Next": "Run Data Engineering ASC WDS Crawler"
+        },
+        "Run Data Engineering ASC WDS Crawler": {
+            "Type": "Task",
+            "Parameters": {
+                "Name": "${data_engineering_ascwds_crawler_name}"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+            "Next": "Success"
+        },
+        "Success": {
+            "Type": "Succeed"
+        },
+        "Fail": {
+            "Type": "Fail"
+        }
+    }
+}

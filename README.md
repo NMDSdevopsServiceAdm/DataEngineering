@@ -63,18 +63,27 @@ exit
 Do not use `deactivate` or `source deactivate` - this will leave pipenv in a confused state because you will still be in that spawned shell instance but not in an activated virtualenv. 
 
 ## Testing
-### Run test
+### Run tests
 *Make sure you have the virtual environment running (see above).*
 
-Run specific test:
+Run a specific test file once
 ```
 python -m unittest tests/unit/<test_name.py>
 ```
-Run all tests
+Watch a specific test file and auto rerun the tests when there are changes
+```
+pytest-watch -m unittest tests/unit/<test_name.py>
+```
+
+Run all tests once
 ```
 python -m unittest discover tests/unit "test_*.py"
 ```
-Run specific test within test file
+Watch all the tests and auto rerun the tests when there are any changes
+```
+pytest-watch
+```
+#### Run specific test within test file
 ```
 python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test>
 ```
@@ -92,7 +101,7 @@ For verbose output add `-v` to the end of the command.
 
 # Infrastructure
 
-So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code). 
+So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
 
 ## Our Continuous Depoyment Pipeline 
 ***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
@@ -102,11 +111,40 @@ When creating a new git branch and pushing to the remote repository a CircleCi w
 One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
 Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.<br>
 
-Environments must be torn down manually once a git branch has been deleted. This is a simple process, detailed below.
+Environments will be torn down when the branch is deleted from GitHub.
+So make sure you delete your branch after merging into main (this is good practice anyway!).
 
 > ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
 
 <br>
+
+## Continuous Integration
+***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
+
+When you push to a remote git branch, we run some linting checks for Python and Terraform code as a part of the CircleCi workflow (mentioned above).
+If your branch fails either of these checks, you need to run the relevant linter to fix the errors.
+Instructions for both Terraform and Python are detailed below.
+
+### Linting Python code
+
+We use [black](https://black.readthedocs.io/en/stable/) to lint our Python code.
+Install black using pip
+```
+pip install black
+```
+To lint all the Python files, first ensure you're at the root of the repository, then run
+```
+black .
+```
+
+### Linting Terraform code
+
+Install Terraform following [the instructions below](#installing-terraform).
+
+Ensure you are at the root of the repository, then run
+```
+terraform fmt -recursive
+```
 
 ## The manual approach
 ### Installing Terraform
@@ -118,20 +156,25 @@ tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 
 <br>
 
+### Installing AWS CLI
+AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it. 
+
 ### Deploying Terraform
 
-1. Ensure you set the following environment variables
+1. Set up your AWS crendentials as terraform variables
 
-``` 
-export TF_VAR_aws_secret_key= [ aws secret key ]
-export TF_VAR_aws_access_key= [ aws access key ]
+Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
+
 ```
+cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars
+```
+Populate this file with your access key and secret access key.
 
 2. From terminal/command line ensure you're in the Terraform directory
 
 ```
-adamprobert@Adams-MBP DataEngineering % pwd
-/Users/adamprobert/Projects/skillsforcare/DataEngineering/terraform/pipeline
+% pwd
+/Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
 ```
 
 3. Run `terraform plan` to evaluate the planned changes
@@ -160,13 +203,26 @@ terraform init
 terraform workspace list
 ```
 
+To switch to a different workspace run:
+
+```
+terraform workspace select <workspace_name>
+```
+
 Then run:
 
 ```
 terraform destroy
 ```
+
 This will generate a "destruction plan" - closely read through this plan and ensure you want to execute all of the planned changes. Once satisfied, confirm the changes. Terraform will then proceed to tear down all of the running infrastructure in your current workspace. <br>
 
+To delete a workspace make sure it is not your current workspace (you can select the default workspace) and run:
+
+```
+terraform workspace select default
+terraform workspace delete <workspace_name>
+```
 
 # Jupyter Notebooks
 
@@ -201,8 +257,35 @@ We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are 
     - Select the running cluster
     - Click *"Terminate"*
 
+### Installing extra python libraries
+
+We run a bash script as an EMR step after the cluster has started which installs any python libraries we need on the cluster using pip.
+
+The script is stored [here][install_python_libs_script] in S3.
+You can edit this script to upload extra python libraries and they will be uploaded the next time a cluster is started.
+
+To add extra libraries:
+1. Download the script either via the "Download" button [in the console][install_python_libs_script] or using the [aws cli][aws_cli_docs].
+```
+aws s3 cp s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh .
+```
+2. Open the downloaded script and add the following line to the end of the script for each library that needs installing.
+```
+sudo python3 -m pip install package_name
+```
+3. Upload the updated script to the same location (s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh).
+Either using console or the aws cli.
+```
+aws s3 cp ./install-python-libraries-for-emr.sh s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh
+```
+
+The libraries will be installed the next time a new cluster is cloned and started.
+
 
 ## Notebook costs
 An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
 The notebooks are free, but require a cluster to run on. 
 The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
+
+[install_python_libs_script]: https://s3.console.aws.amazon.com/s3/object/aws-emr-resources-344210435447-eu-west-2?region=eu-west-2&prefix=bootstrap-scripts/install-python-libraries-for-emr.sh
+[aws_cli_docs]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html

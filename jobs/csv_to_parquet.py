@@ -1,9 +1,7 @@
-from pyspark.sql import SparkSession
-from pyspark.context import SparkContext
-from utils import utils
 import sys
-import pyspark
 import argparse
+
+from utils import utils
 
 DEFAULT_DELIMITER = ","
 
@@ -30,7 +28,7 @@ def collect_arguments():
         default=",",
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     if args.delimiter:
         print(f"Utilising custom delimiter '{args.delimiter}'")

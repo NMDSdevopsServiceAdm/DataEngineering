@@ -1,0 +1,16 @@
+name: delete-dev-envs
+
+on: [ delete ]
+
+jobs:
+  trigger-circleci-delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: print branch name
+        run: echo "Calling Cicle CI pipeline with parameter GHA_Meta - ${{ github.event.ref }}"
+      - name: Trigger circle CI delete development environment workflow
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.5
+        with:
+          GHA_Meta: ${{ github.event.ref }}
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}

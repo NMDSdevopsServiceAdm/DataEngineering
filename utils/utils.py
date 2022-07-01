@@ -1,8 +1,12 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp, to_date, col
 import os
-import boto3
+import re
 import csv
+
+from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
+
+import boto3
+
 
 TWO_MB = 2000000
 
@@ -83,17 +87,17 @@ def read_csv(source, delimiter=","):
     return df
 
 
-def format_date_fields(df, date_column_identifier="date", raw_date_format="dd/MM/yyyy"):
+def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, to_timestamp(date_column, raw_date_format))
+        df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
 
 
 def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
+    return df.withColumn(fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd"))
 
 
 def is_csv(filename):
@@ -126,3 +130,21 @@ def construct_destination_path(destination, key):
 
 def extract_column_from_schema(schema):
     return [field.name for field in schema.fields]
+
+
+def extract_col_with_pattern(pattern, schema):
+    columns = extract_column_from_schema(schema)
+    pattern = re.compile(rf"{pattern}")
+    training_types = []
+    for col in columns:
+        if pattern.match(col):
+            training_types.append(col)
+    return training_types
+
+
+def extract_specific_column_types(pattern, schema):
+    columns = extract_col_with_pattern(pattern, schema)
+    types = []
+    for col in columns:
+        types.append(col[0:4])
+    return types

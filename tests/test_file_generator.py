@@ -1,4 +1,5 @@
 from datetime import date
+import dbldatagen as dg
 
 from pyspark.sql.types import (
     StructField,
@@ -7,10 +8,9 @@ from pyspark.sql.types import (
     ArrayType,
     IntegerType,
 )
+import pyspark.sql.functions as F
 
 from schemas import cqc_care_directory_schema, worker_schema
-import dbldatagen as dg
-
 from utils import utils
 
 
@@ -249,7 +249,9 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
@@ -311,30 +313,30 @@ def generate_cqc_locations_file(output_destination):
 
     # fmt: off
     rows = [
-        ("1-000000001", 1, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
+        ("1-000000001", 1, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "Yorkshire & Humberside", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000002", 2, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000003", 3, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
-        ("1-000000004", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
+        ("1-000000004", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "Y", 50, "Yorkshire & Humberside", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
         ("1-000000005", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
         ("1-000000006", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
-        ("1-000000007", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
+        ("1-000000007", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "Yorkshire and The Humber", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
         ("1-000000008", 6, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
-        ("1-000000009", 7, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
+        ("1-000000009", 7, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "Y", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20220101"),
         ("1-000000010", 8, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000011", 9, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000012", 9, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000013", 10, "location", "Social Care Org", "name of organisation", "Deregistered", "2011-02-15", "2015-01-01", "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000014", 11, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
         ("1-000000015", 12, "location", "Not social care", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
-        ("1-000000001", 1, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
-        ("1-000000002", 2, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
+        ("1-000000001", 1, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "Y", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
+        ("1-000000002", 2, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "Yorkshire and The Humber", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
         ("1-000000003", 3, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
         ("1-000000004", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
-        ("1-000000005", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
+        ("1-000000005", 4, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "Y", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
         ("1-000000006", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
-        ("1-000000007", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
+        ("1-000000007", 5, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "Yorkshire and The Humber", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
         ("1-000000008", 6, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
-        ("1-000000009", 7, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
+        ("1-000000009", 7, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "Y", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service without nursing"}], "20210101"),
         ("1-000000010", 8, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
         ("1-000000011", 9, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
         ("1-000000012", 9, "location", "Social Care Org", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", "OX29 9UB", "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20210101"),
@@ -530,7 +532,9 @@ def generate_raw_cqc_care_directory_csv_file(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
@@ -552,21 +556,88 @@ def generate_cqc_care_directory_file(output_destination):
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA)
+    df = spark.createDataFrame(
+        rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA
+    )
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    dataspec = dg.DataGenerator(spark, rows=100, partitions=8, randomSeedMethod="hash_fieldname").withSchema(
-        worker_schema.WORKER_SCHEMA
+    dataspec = dg.DataGenerator(
+        spark, rows=50, partitions=8, randomSeedMethod="hash_fieldname"
+    ).withSchema(worker_schema.WORKER_SCHEMA)
+
+    dataspec = (
+        dataspec.withColumnSpec("tr01flag", 1)
+        .withColumnSpec("tr01count", 1)
+        .withColumnSpec("jr01flag", 1)
+        .withColumnSpec("jr03flag", 1)
+        .withColumnSpec("jr16cat1", 1)
+        .withColumnSpec("ql01achq2", 1)
+        .withColumnSpec("ql01year2", 2009)
+        .withColumnSpec("ql02achq3", 0)
+        .withColumnSpec("ql34achqe", 1)
+        .withColumnSpec("ql34yeare", 2010)
+        .withColumnSpec("ql37achq", 3)
+        .withColumnSpec("ql37year", 2021)
+        .withColumnSpec("ql313app", 1)
+        .withColumnSpec("ql313year", 2013)
+    )
+
+    dataspec = dataspec.withColumnSpecs(
+        patterns=".*date.*",
+        matchTypes=StringType(),
+        values=["2017-06-15T00:00:00.000Z", "2018-06-15T00:00:00.000Z"],
+        random=True,
     )
 
     df = dataspec.build()
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_prepared_locations_file_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "locationid",
+        "snapshot_date",
+        "region",
+        "number_of_beds",
+        "dormancy",
+        "services_offered",
+    ]
+    # fmt: off
+    rows = [
+        ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"]),
+        ("1-1334987222","20220201", "South West", 2, True, ["Domiciliary care service"]),
+        ("1-348374832","20220112", "Merseyside", 2, True, ["Extra Care housing services"]),
+        ("1-683746776","20220101", "Merseyside", 2, True, ["Doctors treatment service","Long term conditions services","Shared Lives"]),
+        ("1-10478686 ","20220101", "London Senate", 2, True, ["Community health care services - Nurses Agency only"]),
+        ("1-10235302415","20220112", "South West", 2, True, ["Urgent care services", "Supported living service"]),
+        ("1-1060912125","20220112", "Yorkshire and The Humbler", 2, True, ["Acute services with overnight beds"]),
+        ("1-107095666","20220301", "Yorkshire and The Humbler", 2, True, ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
+        ("1-108369587","20220308", "South West", 2, True, ["Specialist college service"]),
+        ("1-10758359583","20220308", None, 2, True, ["Mobile doctors service"]),
+        ("1-108387554","20220381", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"]),
+        ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"]),
+        ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"]),
+        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"]),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, columns)
+
+    df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
@@ -740,7 +811,9 @@ def generate_multiple_boolean_columns(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 

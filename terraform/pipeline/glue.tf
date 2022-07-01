@@ -1,6 +1,6 @@
 resource "aws_glue_catalog_database" "glue_catalog_database" {
-  name        = "${terraform.workspace}-${var.glue_database_name}"
-  description = "Database for all datasets belonging to the ${terraform.workspace} environment."
+  name        = "${local.workspace_prefix}-${var.glue_database_name}"
+  description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
 module "csv_to_parquet_job" {
@@ -55,11 +55,38 @@ module "worker_tracking_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--source_start_workplace_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
-    "--source_start_worker_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
-    "--source_end_workplace_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
-    "--source_end_worker_file" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
+    "--source_start_workplace_file" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
+    "--source_start_worker_file" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
+    "--source_end_workplace_file" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
+    "--source_end_worker_file" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
     "--destination" = "s3://skillsforcare/test_worker_tracking_2021_to_2022/"
+  }
+}
+
+
+module "locations_feature_engineering_job" {
+  source          = "../modules/glue-job"
+  script_name     = "locations_feature_engineering.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+  }
+}
+
+module "prepare_workers_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_workers.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--destination" = ""
   }
 }
 
@@ -122,14 +149,14 @@ module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "data_engineering_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_engineering"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
 module "cqc_crawler" {
@@ -137,5 +164,5 @@ module "cqc_crawler" {
   dataset_for_crawler          = "CQC"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   schedule                     = "cron(00 07 * * ? *)"
-  workspace_glue_database_name = "${terraform.workspace}-${var.glue_database_name}"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

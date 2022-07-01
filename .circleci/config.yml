@@ -1,5 +1,19 @@
 version: 2.1
 
+parameters:
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
+
 orbs:
   aws-s3: circleci/aws-s3@3.0
 
@@ -42,6 +56,29 @@ jobs:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
+  lint-python:
+    docker:
+      - image: circleci/python:3.9.6
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install black
+          command: pip install black
+      - run:
+          name: Check Python fomatting
+          command: black . --check
+
+  lint-terraform:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Check terraform fomatting
+          command: terraform fmt -check -recursive -diff
+
 
   terraform-plan:
     working_directory: /tmp/project
@@ -79,21 +116,15 @@ jobs:
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
-
       - run:
-          name: persist resource bucket name
+          name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
-            echo "s3://$(terraform output -raw s3_resources_bucket_name)" > bucketname
-      
+            echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
+
       - persist_to_workspace:
           root: .
-          paths:
-            - terraform/pipeline/tfapply
-            - terraform/pipeline/.*
-            - .
-            - terraform/pipeline/bucketname
-            
+          paths: ./terraform/pipeline/pipeline_resources_bucket_name
   
   deploy-dependencies:
     docker:
@@ -117,12 +148,33 @@ jobs:
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
-          to: '${BUCKET_NAME}/dependencies'
+          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-          
+  terraform-destroy:
+    working_directory: /tmp/project
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: terraform destroy
+          command: |
+            cd terraform/pipeline
+            terraform init -input=false
+            terraform workspace select << pipeline.parameters.GHA_Meta >>
+            terraform destroy -auto-approve
+      - run:
+          name: delete workspace
+          command: |
+            cd terraform/pipeline
+            terraform workspace select default
+            terraform workspace delete << pipeline.parameters.GHA_Meta >>
+
 workflows:
   version: 2
   test-plan-approve-and-deploy-to-main:
+    unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - test:
           filters:
@@ -143,9 +195,18 @@ workflows:
             - terraform-apply
 
   
-  test-plan-and-deploy-to-dev:    
+  test-plan-and-deploy-to-dev:
+    unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - test:
+          filters:
+            branches:
+              ignore: main
+      - lint-python:
+          filters:
+            branches:
+              ignore: main
+      - lint-terraform:
           filters:
             branches:
               ignore: main
@@ -158,3 +219,8 @@ workflows:
       - deploy-dependencies:
           requires:
             - terraform-apply
+
+  delete-development-environment:
+    when: << pipeline.parameters.GHA_Action >>
+    jobs:
+      - terraform-destroy

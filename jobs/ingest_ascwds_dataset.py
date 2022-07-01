@@ -1,6 +1,7 @@
-from utils import utils
 import sys
 import argparse
+
+from utils import utils
 
 
 def main(source, destination):
@@ -36,7 +37,7 @@ def ingest_dataset(source, destination, delimiter):
     )
     df = utils.read_csv(source, delimiter)
     df = filter_test_accounts(df)
-    df = utils.format_date_fields(df)
+    df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
@@ -74,7 +75,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return args.source, args.destination
 
