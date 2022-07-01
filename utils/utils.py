@@ -3,7 +3,7 @@ import re
 import csv
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_date, col
+from pyspark.sql.functions import F
 
 import boto3
 
@@ -93,7 +93,7 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, to_date(date_column, raw_date_format))
+        df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
 
@@ -149,4 +149,4 @@ def extract_specific_column_types(pattern, schema):
 
 
 def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(fieldname, to_date(col(fieldname).cast("string"), "yyyyMMdd"))
+    return df.withColumn(fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd"))
