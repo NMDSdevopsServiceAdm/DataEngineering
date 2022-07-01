@@ -180,7 +180,7 @@ def calculate_hours_worked(row):
 
     # employment status is permanent or temporary
     if row["emplstat"] in [190, 191]:
-        
+
         # role is zero hours contract
         if row["zerohours"] == 1:
             if average_hrs:
