@@ -178,7 +178,10 @@ def calculate_hours_worked(row):
     contracted_hrs = apply_sense_check_to_hrs_worked(row["conthrs"])
     average_hrs = apply_sense_check_to_hrs_worked(row["averagehours"])
 
+    # employment status is permanent or temporary
     if row["emplstat"] in [190, 191]:
+        
+        # role is zero hours contract
         if row["zerohours"] == 1:
             if average_hrs:
                 return average_hrs
@@ -186,6 +189,7 @@ def calculate_hours_worked(row):
             if contracted_hrs:
                 return contracted_hrs
 
+    # employment status is bank/pool, agency, hourly, other
     if row["emplstat"] in [192, 193, 194, 196]:
         if average_hrs:
             return average_hrs
@@ -206,9 +210,11 @@ def apply_sense_check_to_hrs_worked(hours):
 
 
 def calculate_hourly_pay(row):
+    # salary is annual
     if row["salaryint"] == 250 and row["salary"] and row["hrs_worked"] > 0:
         return round(row["salary"] / 52 / row["hrs_worked"], 2)
 
+    # salary is hourly
     if row["salaryint"] == 252:
         return row["hrlyrate"]
 
