@@ -209,7 +209,8 @@ def apply_sense_check_to_hrs_worked(hours):
 
 def calculate_hourly_pay(row):
     if row["salaryint"] == 250 and row["salary"] and row["hrs_worked"] > 0:
-        return round(row["salary"] / 52 / row["hrs_worked"], 2)
+        hrlyrate = row["salary"] / 52 / row["hrs_worked"]
+        return round(hrlyrate, 2)
 
     if row["salaryint"] == 252:
         return row["hrlyrate"]

@@ -602,6 +602,16 @@ def generate_flexible_worker_file_hours_worked(
     return df
 
 
+def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_worked):
+    spark = utils.get_spark()
+    columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+    rows = [(salary, salaryint, hrlyrate, hrs_worked)]
+
+    df = spark.createDataFrame(rows, columns)
+
+    return df
+
+
 def generate_prepared_locations_file_parquet(output_destination):
     spark = utils.get_spark()
     columns = [

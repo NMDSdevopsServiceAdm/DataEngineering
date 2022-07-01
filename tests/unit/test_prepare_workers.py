@@ -5,13 +5,13 @@ import json
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import FloatType
-from pyspark.sql.functions import lit
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
 from tests.test_file_generator import (
     generate_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
+    generate_flexible_worker_file_hourly_rate,
 )
 from utils import utils
 
@@ -154,7 +154,6 @@ class PrepareWorkersTests(unittest.TestCase):
         df = generate_flexible_worker_file_hours_worked(
             emplstat, zerohours, averagehours, conthrs
         )
-        df.show()
         columns = [
             "emplstat",
             "zerohours",
@@ -168,7 +167,7 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
-        df.select("hrs_worked").show()
+
         self.assertIn("hrs_worked", df.columns)
         self.assertEqual(df.first()["hrs_worked"], averagehours)
 
@@ -180,7 +179,6 @@ class PrepareWorkersTests(unittest.TestCase):
         df = generate_flexible_worker_file_hours_worked(
             emplstat, zerohours, averagehours, conthrs
         )
-        df.show()
         columns = [
             "emplstat",
             "zerohours",
@@ -194,7 +192,7 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
-        df.select("hrs_worked").show()
+
         self.assertEqual(df.first()["hrs_worked"], conthrs)
 
     def test_calculate_hours_worked_returns_avghrs_for_other_empl(self):
@@ -205,7 +203,6 @@ class PrepareWorkersTests(unittest.TestCase):
         df = generate_flexible_worker_file_hours_worked(
             emplstat, zerohours, averagehours, conthrs
         )
-        df.show()
         columns = [
             "emplstat",
             "zerohours",
@@ -219,7 +216,7 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
-        df.select("hrs_worked").show()
+
         self.assertEqual(df.first()["hrs_worked"], averagehours)
 
     def test_calculate_hours_worked_returns_conthrs_for_empl_none(self):
@@ -230,7 +227,6 @@ class PrepareWorkersTests(unittest.TestCase):
         df = generate_flexible_worker_file_hours_worked(
             emplstat, zerohours, averagehours, conthrs
         )
-        df.show()
         columns = [
             "emplstat",
             "zerohours",
@@ -244,7 +240,7 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
-        df.select("hrs_worked").show()
+
         self.assertEqual(df.first()["hrs_worked"], conthrs)
 
     def test_calculate_hours_worked_returns_avghrs_for_empl_conthrs_none(self):
@@ -255,7 +251,6 @@ class PrepareWorkersTests(unittest.TestCase):
         df = generate_flexible_worker_file_hours_worked(
             emplstat, zerohours, averagehours, conthrs
         )
-        df.show()
         columns = [
             "emplstat",
             "zerohours",
@@ -269,7 +264,7 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
-        df.select("hrs_worked").show()
+
         self.assertEqual(df.first()["hrs_worked"], averagehours)
 
     def test_calculate_hours_worked_returns_one_for_empl_avghrs_conthrs_none(self):
@@ -293,10 +288,17 @@ class PrepareWorkersTests(unittest.TestCase):
             prepare_workers.calculate_hours_worked,
             FloatType(),
         )
+
         self.assertEqual(df.first()["hrs_worked"], None)
 
-    def test_calculate_hourly_rate(self):
-        df = self.test_df.withColumn("hrs_worked", lit(10))
+    def test_calculate_hourly_rate_returns_hrlyrate_calculation(self):
+        salary = 5200.0
+        salaryint = 250
+        hrlyrate = 100.5
+        hrs_worked = 2.5
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
         df = prepare_workers.add_aggregated_column(
             df,
@@ -308,7 +310,45 @@ class PrepareWorkersTests(unittest.TestCase):
 
         self.assertIn("hrs_worked", df.columns)
         self.assertIn("hourly_rate", df.columns)
-        self.assertEqual(df.first()["hourly_rate"], 10.0)
+        self.assertEqual(df.first()["hourly_rate"], 40.0)
+
+    def test_calculate_hourly_rate_returns_hrlyrate_from_column(self):
+        salary = 5200.0
+        salaryint = 252
+        hrlyrate = 100.5
+        hrs_worked = 2.3
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hourly_rate"], 100.5)
+
+    def test_calculate_hourly_rate_returns_none_for_other_salaryint(self):
+        salary = 5200.0
+        salaryint = -1
+        hrlyrate = 100.5
+        hrs_worked = 2.3
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hourly_rate"], None)
 
 
 if __name__ == "__main__":
