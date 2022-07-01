@@ -55,8 +55,8 @@ module "locations_feature_engineering_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/"
-    "--destination"               = ""
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
   }
 }
 
