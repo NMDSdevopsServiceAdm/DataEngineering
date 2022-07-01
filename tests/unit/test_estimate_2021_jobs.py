@@ -200,20 +200,26 @@ class Estimate2021JobsTests(unittest.TestCase):
         df = job.model_care_home_with_historical(
             locations_df, features_df, self.CAREHOME_WITH_HISTORICAL_MODEL
         )
-        locations = df.collect()
+        expected_location_with_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000002"
+        ).collect()[0]
 
-        self.assertIsNotNone(locations[0].estimate_job_count_2021)
-        self.assertIsNone(locations[1].estimate_job_count_2021)
-        self.assertIsNone(locations[2].estimate_job_count_2021)
+        self.assertIsNotNone(expected_location_with_prediction.estimate_job_count_2021)
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count_2021)
 
     def test_insert_predictions_into_locations_doesnt_remove_existing_estimates(self):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
 
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
-        locations = df.collect()
 
-        self.assertEqual(locations[3].estimate_job_count_2021, 10)
+        expected_location_with_prediction = df.where(
+            df["locationid"] == "1-000000004"
+        ).collect()[0]
+        self.assertEqual(expected_location_with_prediction.estimate_job_count_2021, 10)
 
     def test_insert_predictions_into_locations_inserts_prediction_when_locationid_matches(
         self,
@@ -222,11 +228,17 @@ class Estimate2021JobsTests(unittest.TestCase):
         predictions_df = self.generate_predictions_df()
 
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
-        locations = df.collect()
 
-        self.assertEqual(locations[0].estimate_job_count_2021, 56.89)
-        self.assertIsNone(locations[1].estimate_job_count_2021)
-        self.assertIsNone(locations[2].estimate_job_count_2021)
+        expected_location_with_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000003"
+        ).collect()[0]
+        self.assertEqual(
+            expected_location_with_prediction.estimate_job_count_2021, 56.89
+        )
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count_2021)
 
     def test_insert_predictions_into_locations_only_inserts_for_matching_snapshots(
         self,
@@ -235,9 +247,11 @@ class Estimate2021JobsTests(unittest.TestCase):
         predictions_df = self.generate_predictions_df()
 
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
-        locations = df.collect()
 
-        self.assertIsNone(locations[4].estimate_job_count_2021)
+        expected_location_without_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-02-20")
+        ).collect()[0]
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count_2021)
 
     def test_insert_predictions_into_locations_removes_all_columns_from_predictions_df(
         self,
