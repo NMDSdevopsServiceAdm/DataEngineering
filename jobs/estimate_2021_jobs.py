@@ -244,48 +244,6 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     return locations_df
 
 
-def model_care_home_with_nursing_historical(df):
-    """
-    Care home with nursing : Historical :  : 2021 jobs = Last known value * 1.004
-    """
-    # TODO: remove magic number 1.004
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT_2021,
-        when(
-            (
-                col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == NURSING_HOME_IDENTIFIER)
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.004,
-        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_historical(df):
-    """
-    Care home without nursing : Historical :  : 2021 jobs = Last known value * 1.01
-    """
-    # TODO: remove magic number 1.01
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT_2021,
-        when(
-            (
-                col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.01,
-        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
-    )
-
-    return df
-
-
 def model_care_home_with_nursing_pir_and_cqc_beds(df):
     """
     Care home with nursing : Not Historical : PIR :  2021 jobs = (0.773*beds)+(0.551*PIR)+0.304

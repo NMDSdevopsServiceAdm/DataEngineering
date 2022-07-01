@@ -262,30 +262,6 @@ class Estimate2021JobsTests(unittest.TestCase):
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
         self.assertEqual(locations_df.columns, df.columns)
 
-    def test_model_care_home_with_nursing_historical(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "last_known_job_count",
-            "estimate_job_count_2021",
-        ]
-        rows = [
-            ("1-000000001", "Care home with nursing", 10, None),
-            ("1-000000002", "Care home without nursing", 10, None),
-            ("1-000000003", "Care home with nursing", 20, None),
-            ("1-000000004", "non-residential", 10, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_with_nursing_historical(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count_2021"], 10.04)
-        self.assertEqual(df[1]["estimate_job_count_2021"], None)
-        self.assertEqual(df[2]["estimate_job_count_2021"], 20.08)
-        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
-
     def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
         columns = [
             "locationid",
@@ -333,30 +309,6 @@ class Estimate2021JobsTests(unittest.TestCase):
         self.assertEqual(df[0]["estimate_job_count_2021"], 14.420000000000002)
         self.assertEqual(df[1]["estimate_job_count_2021"], None)
         self.assertEqual(df[2]["estimate_job_count_2021"], 8.405000000000001)
-        self.assertEqual(df[3]["estimate_job_count_2021"], 10)
-
-    def test_model_care_home_without_nursing_historical(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "last_known_job_count",
-            "estimate_job_count_2021",
-        ]
-        rows = [
-            ("1-000000001", "Care home without nursing", 10, None),
-            ("1-000000002", "Care home with nursing", 10, None),
-            ("1-000000003", "Care home without nursing", 20, None),
-            ("1-000000004", "non-residential", 10, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_without_nursing_historical(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count_2021"], 10.1)
-        self.assertEqual(df[1]["estimate_job_count_2021"], None)
-        self.assertEqual(df[2]["estimate_job_count_2021"], 20.2)
         self.assertEqual(df[3]["estimate_job_count_2021"], 10)
 
     def test_model_care_home_without_nursing_cqc_beds_and_pir(self):
