@@ -172,3 +172,10 @@ module "cqc_crawler" {
   schedule                     = "cron(00 07 * * ? *)"
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
+
+module "ons_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "ONS"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
