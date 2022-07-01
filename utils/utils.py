@@ -3,7 +3,7 @@ import re
 import csv
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import F
+import pyspark.sql.functions as F
 
 import boto3
 
