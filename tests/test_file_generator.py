@@ -721,7 +721,15 @@ def generate_duplicate_providerid_data_file(output_destination):
 
 def generate_ascwds_stayer_leaver_worker_start_file(output_destination):
     spark = utils.get_spark()
-    columns = ["establishmentid", "workerid", "emplstat", "loads", "of", "other", "columns"]
+    columns = [
+        "establishmentid",
+        "workerid",
+        "emplstat",
+        "loads",
+        "of",
+        "other",
+        "columns",
+    ]
 
     rows = [
         ("108", "1", "190", "random text", 1, date(2020, 1, 1), "0"),
