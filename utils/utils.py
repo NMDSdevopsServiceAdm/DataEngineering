@@ -149,4 +149,6 @@ def extract_specific_column_types(pattern, schema):
 
 
 def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd"))
+    return df.withColumn(
+        fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
+    )
