@@ -110,7 +110,7 @@ def get_qualification_into_json(row):
     aggregated_qualifications = {}
 
     for qualification in qualification_types:
-        if row[qualification] >= 1:
+        if int(row[qualification]) >= 1:
             aggregated_qualifications[qualification] = extract_qualification_info(
                 row, qualification
             )
