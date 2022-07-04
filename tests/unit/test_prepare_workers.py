@@ -39,7 +39,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertNotIn("tr01latestdate", df.columns)
         self.assertNotIn("jr01flag", df.columns)
         self.assertNotIn("ql15year3", df.columns)
-        self.assertEqual(len(df.columns), 77)
+        self.assertEqual(len(df.columns), 72)
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_get_dataset_worker_has_correct_columns(self):

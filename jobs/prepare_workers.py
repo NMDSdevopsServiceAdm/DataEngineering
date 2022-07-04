@@ -13,7 +13,7 @@ from utils import utils
 def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
-    main_df = utils.format_import_date(main_df)
+    # main_df = utils.format_import_date(main_df)
     main_df = utils.format_date_fields(main_df)
 
     columns_to_be_aggregated_patterns = {
