@@ -4,10 +4,15 @@ import warnings
 import json
 
 from pyspark.sql import SparkSession
+from pyspark.sql.types import FloatType
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
-from tests.test_file_generator import generate_ascwds_worker_file
+from tests.test_file_generator import (
+    generate_ascwds_worker_file,
+    generate_flexible_worker_file_hours_worked,
+    generate_flexible_worker_file_hourly_rate,
+)
 from utils import utils
 
 
@@ -30,16 +35,35 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_main_adds_aggregated_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
 
-        aggregated_cols = ["training", "job_role", "qualifications"]
+        aggregated_cols = [
+            "training",
+            "job_role",
+            "qualifications",
+            "hrs_worked",
+            "hourly_rate",
+        ]
+        cols_removed = [
+            "tr01latestdate",
+            "jr01flag",
+            "ql15year3",
+            "averagehours",
+            "conthrs",
+            "salary",
+            "salaryint",
+            "hrlyrate",
+        ]
+        columns_kept = [
+            "emplstat",
+            "zerohours",
+        ]
         training_json = json.loads(df.first()["training"])
         extracted_date = training_json["tr01"]["latestdate"]
 
-        for col in aggregated_cols:
+        for col in aggregated_cols + columns_kept:
             self.assertIn(col, df.columns)
-        self.assertNotIn("tr01latestdate", df.columns)
-        self.assertNotIn("jr01flag", df.columns)
-        self.assertNotIn("ql15year3", df.columns)
-        self.assertEqual(len(df.columns), 77)
+        for col in cols_removed:
+            self.assertNotIn(col, df.columns)
+        self.assertEqual(len(df.columns), 74)
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_get_dataset_worker_has_correct_columns(self):
@@ -51,14 +75,17 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_get_dataset_worker_has_correct_rows_number(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
 
-        self.assertEqual(worker_df.count(), 50)
+        self.assertEqual(worker_df.count(), 10)
 
     def test_replace_columns_after_aggregation(self):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
         # TODO - make it run with all the other patterns and columns
         pattern = "^tr\d\d[a-z]"
         df = prepare_workers.replace_columns_with_aggregated_column(
-            self.test_df, "training", pattern, prepare_workers.get_training_into_json
+            self.test_df,
+            "training",
+            prepare_workers.get_training_into_json,
+            pattern=pattern,
         )
 
         self.assertEqual("training", df.columns[-1])
@@ -118,6 +145,210 @@ class PrepareWorkersTests(unittest.TestCase):
             '{"ql01achq2": {"value": 1, "year": 2009}, "ql34achqe": {"value": 1, "year": 2010}, "ql37achq": {"value": 3, "year": 2021}, "ql313app": {"value": 1, "year": 2013}}',
         )
         self.assertEqual(df.first()["ql02achq3"], 0)
+
+    def test_calculate_hours_worked_returns_avghrs_for_empl_with_zerohours(self):
+        emplstat = 191
+        zerohours = 1
+        averagehours = 26.5
+        conthrs = 8.5
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertIn("hrs_worked", df.columns)
+        self.assertEqual(df.first()["hrs_worked"], averagehours)
+
+    def test_calculate_hours_worked_returns_conthrs_for_empl_without_zerohours(self):
+        emplstat = 190
+        zerohours = 0
+        averagehours = 26.5
+        conthrs = 8.5
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hrs_worked"], conthrs)
+
+    def test_calculate_hours_worked_returns_avghrs_for_other_empl(self):
+        emplstat = 196
+        zerohours = 0
+        averagehours = 2.0
+        conthrs = 30.0
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hrs_worked"], averagehours)
+
+    def test_calculate_hours_worked_returns_conthrs_for_empl_none(self):
+        emplstat = -1
+        zerohours = 0
+        averagehours = 23.6
+        conthrs = 20.0
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hrs_worked"], conthrs)
+
+    def test_calculate_hours_worked_returns_avghrs_for_empl_conthrs_none(self):
+        emplstat = -1
+        zerohours = 0
+        averagehours = 26.5
+        conthrs = -1
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hrs_worked"], averagehours)
+
+    def test_calculate_hours_worked_returns_one_for_empl_avghrs_conthrs_none(self):
+        emplstat = -1
+        zerohours = 0
+        averagehours = -1
+        conthrs = -1
+        df = generate_flexible_worker_file_hours_worked(
+            emplstat, zerohours, averagehours, conthrs
+        )
+        columns = [
+            "emplstat",
+            "zerohours",
+            "averagehours",
+            "conthrs",
+        ]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hrs_worked",
+            columns,
+            prepare_workers.calculate_hours_worked,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hrs_worked"], None)
+
+    def test_calculate_hourly_rate_returns_hrlyrate_calculation(self):
+        salary = 5200.0
+        salaryint = 250
+        hrlyrate = 100.5
+        hrs_worked = 2.5
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertIn("hrs_worked", df.columns)
+        self.assertIn("hourly_rate", df.columns)
+        self.assertEqual(df.first()["hourly_rate"], 40.0)
+
+    def test_calculate_hourly_rate_returns_hrlyrate_from_column(self):
+        salary = 5200.0
+        salaryint = 252
+        hrlyrate = 100.5
+        hrs_worked = 2.3
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hourly_rate"], 100.5)
+
+    def test_calculate_hourly_rate_returns_none_for_other_salaryint(self):
+        salary = 5200.0
+        salaryint = -1
+        hrlyrate = 100.5
+        hrs_worked = 2.3
+        df = generate_flexible_worker_file_hourly_rate(
+            salary, salaryint, hrlyrate, hrs_worked
+        )
+        columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "hourly_rate",
+            columns,
+            prepare_workers.calculate_hourly_pay,
+            FloatType(),
+        )
+
+        self.assertEqual(df.first()["hourly_rate"], None)
 
 
 if __name__ == "__main__":
