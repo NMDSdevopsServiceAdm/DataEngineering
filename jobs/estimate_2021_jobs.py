@@ -38,7 +38,13 @@ def main(
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
+        .select(
+            LOCATION_ID,
+            SERVICES_OFFERED,
+            PIR_SERVICE_USERS,
+            NUMBER_OF_BEDS,
+            SNAPSHOT_DATE,
+        )
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
             and {SNAPSHOT_DATE} = {snapshot_date}"
@@ -68,7 +74,7 @@ def main(
     locations_df = model_care_home_with_historical(
         locations_df,
         features_df,
-        f"{care_home_model_directory}/{latest_model_version}/",
+        f"{care_home_model_directory}{latest_model_version}/",
     )
 
     # Nursing models
