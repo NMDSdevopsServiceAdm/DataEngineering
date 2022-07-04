@@ -78,6 +78,7 @@ WORKER_SCHEMA = StructType(
         StructField("derivedfrom_hasbulkuploaded", IntegerType(), True),
         StructField("previous_pay", FloatType(), True),
         StructField("previous_mainjrid", IntegerType(), True),
+        # these will have to be removed
         StructField("version", StringType(), True),
         StructField("year", IntegerType(), True),
         StructField("month", IntegerType(), True),
