@@ -15,7 +15,9 @@ from tests.test_file_generator import (
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
-    START_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_start.parquet"
+    START_PERIOD_WORKPLACE_FILE = (
+        "tests/test_data/tmp/ascwds_workplace_file_start.parquet"
+    )
     START_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_start.parquet"
     END_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_end.parquet"
     END_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_end.parquet"
@@ -23,7 +25,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
-        generate_ascwds_stayer_leaver_workplace_start_file(self.START_PERIOD_WORKPLACE_FILE)
+        generate_ascwds_stayer_leaver_workplace_start_file(
+            self.START_PERIOD_WORKPLACE_FILE
+        )
         generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
         generate_ascwds_stayer_leaver_workplace_end_file(self.END_PERIOD_WORKPLACE_FILE)
         generate_ascwds_stayer_leaver_worker_end_file(self.END_PERIOD_WORKER_FILE)
@@ -40,7 +44,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     def test_updated_within_time_period(self):
 
-        filtered_df = worker_tracking.updated_within_time_period(self.START_PERIOD_WORKPLACE_FILE)
+        filtered_df = worker_tracking.updated_within_time_period(
+            self.START_PERIOD_WORKPLACE_FILE
+        )
 
         self.assertEqual(filtered_df.count(), 4)
         self.assertEqual(filtered_df.columns, ["establishmentid"])
@@ -57,8 +63,12 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
     def test_workplaces_in_both_dfs(self):
-        df_start = self.spark.createDataFrame([("1",), ("2",), ("3",), ("4",), ("5",)], ["establishmentid"])
-        df_end = self.spark.createDataFrame([("2",), ("4",), ("6",)], ["establishmentid"])
+        df_start = self.spark.createDataFrame(
+            [("1",), ("2",), ("3",), ("4",), ("5",)], ["establishmentid"]
+        )
+        df_end = self.spark.createDataFrame(
+            [("2",), ("4",), ("6",)], ["establishmentid"]
+        )
 
         df = worker_tracking.workplaces_in_both_dfs(df_start, df_end)
 
@@ -70,9 +80,13 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(collected_df[1]["establishmentid"], "4")
 
     def test_get_ascwds_worker_df(self):
-        estab_list_df = self.spark.createDataFrame([("108",), ("110",), ("111",)], ["establishmentid"])
+        estab_list_df = self.spark.createDataFrame(
+            [("108",), ("110",), ("111",)], ["establishmentid"]
+        )
 
-        df = worker_tracking.get_ascwds_worker_df(estab_list_df, self.START_PERIOD_WORKER_FILE)
+        df = worker_tracking.get_ascwds_worker_df(
+            estab_list_df, self.START_PERIOD_WORKER_FILE
+        )
 
         self.assertEqual(df.count(), 12)
         self.assertEqual(
