@@ -116,9 +116,15 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertNotIn("(pseudo) Wales", regions)
 
     def test_explode_regions_returns_distinct_regions(self):
+        df, regions = locations_feature_engineering.explode_regions(self.test_df)
+
+        self.assertIn("unspecified", regions)
+        self.assertEqual(df.collect()[9].unspecified, 1)
+
+    def test_explode_regions_returns_marks_missing_regions_as_unspecified(self):
         _, regions = locations_feature_engineering.explode_regions(self.test_df)
 
-        self.assertEqual(len(regions), 6)
+        self.assertEqual(len(regions), 7)
 
     def test_explode_regions_creates_a_column_for_each_region(self):
         df, regions = locations_feature_engineering.explode_regions(self.test_df)

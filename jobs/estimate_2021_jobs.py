@@ -2,6 +2,7 @@ import argparse
 
 from pyspark.sql.functions import coalesce, col, lit, array_contains, when
 from pyspark.sql.types import IntegerType
+from pyspark.ml.regression import GBTRegressionModel
 
 from utils import utils
 
@@ -26,17 +27,31 @@ ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 SNAPSHOT_DATE = "snapshot_date"
 
 
-def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
+def main(
+    prepared_locations_source,
+    prepared_locations_features,
+    destination,
+    care_home_model_directory,
+    snapshot_date="'2022-01-31'",
+):
     spark = utils.get_spark()
     print("Estimating 2021 jobs")
     locations_df = (
         spark.read.parquet(prepared_locations_source)
-        .select(LOCATION_ID, SERVICES_OFFERED, PIR_SERVICE_USERS, NUMBER_OF_BEDS)
+        .select(
+            LOCATION_ID,
+            SERVICES_OFFERED,
+            PIR_SERVICE_USERS,
+            NUMBER_OF_BEDS,
+            SNAPSHOT_DATE,
+        )
         .filter(
             f"{REGISTRATION_STATUS} = 'Registered' \
             and {SNAPSHOT_DATE} = {snapshot_date}"
         )
     )
+
+    features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT_2021, lit(None).cast(IntegerType())
@@ -52,13 +67,21 @@ def main(prepared_locations_source, destination, snapshot_date="'2022-01-31'"):
     locations_df = model_non_res_historical_pir(locations_df)
     locations_df = model_non_res_default(locations_df)
 
+    # Care homes with historical model
+    latest_model_version = max(
+        utils.get_s3_sub_folders_for_path(care_home_model_directory)
+    )
+    locations_df = model_care_home_with_historical(
+        locations_df,
+        features_df,
+        f"{care_home_model_directory}{latest_model_version}/",
+    )
+
     # Nursing models
-    locations_df = model_care_home_with_nursing_historical(locations_df)
     locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
     locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
 
     # Non-nursing models
-    locations_df = model_care_home_without_nursing_historical(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
 
@@ -188,25 +211,43 @@ def model_non_res_default(df):
     return df
 
 
-def model_care_home_with_nursing_historical(df):
-    """
-    Care home with nursing : Historical :  : 2021 jobs = Last known value * 1.004
-    """
-    # TODO: remove magic number 1.004
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT_2021,
-        when(
-            (
-                col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == NURSING_HOME_IDENTIFIER)
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.004,
-        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
+def insert_predictions_into_locations(locations_df, predictions_df):
+    locations_with_predictions = locations_df.join(
+        predictions_df,
+        (locations_df["locationid"] == predictions_df["locationid"])
+        & (locations_df["snapshot_date"] == predictions_df["snapshot_date"]),
+        "left",
     )
 
-    return df
+    locations_with_predictions = locations_with_predictions.select(
+        locations_df["*"], predictions_df["prediction"]
+    )
+
+    locations_with_predictions = locations_with_predictions.withColumn(
+        "estimate_job_count_2021",
+        when(col("prediction").isNotNull(), col("prediction")).otherwise(
+            col(ESTIMATE_JOB_COUNT_2021)
+        ),
+    )
+
+    locations_df = locations_with_predictions.drop(col("prediction"))
+    return locations_df
+
+
+def model_care_home_with_historical(locations_df, features_df, model_path):
+    gbt_trained_model = GBTRegressionModel.load(model_path)
+
+    features_df = features_df.where("carehome = 'Y'")
+    features_df = features_df.where("region is not null")
+    features_df = features_df.where("number_of_beds is not null")
+
+    care_home_predictions = gbt_trained_model.transform(features_df)
+
+    locations_df = insert_predictions_into_locations(
+        locations_df, care_home_predictions
+    )
+
+    return locations_df
 
 
 def model_care_home_with_nursing_pir_and_cqc_beds(df):
@@ -249,27 +290,6 @@ def model_care_home_with_nursing_cqc_beds(df):
                 & col(NUMBER_OF_BEDS).isNotNull()
             ),
             (1.203 * col(NUMBER_OF_BEDS) + 2.39),
-        ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_historical(df):
-    """
-    Care home without nursing : Historical :  : 2021 jobs = Last known value * 1.01
-    """
-    # TODO: remove magic number 1.01
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT_2021,
-        when(
-            (
-                col(ESTIMATE_JOB_COUNT_2021).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.01,
         ).otherwise(col(ESTIMATE_JOB_COUNT_2021)),
     )
 
@@ -331,20 +351,42 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
+        "--prepared_locations_features",
+        help="Source s3 directory for prepared_locations ML features",
+        required=True,
+    )
+    parser.add_argument(
         "--destination",
         help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
+        required=True,
+    )
+    parser.add_argument(
+        "--care_home_model_directory",
+        help="The directory where the care home models are saved",
         required=True,
     )
 
     args, _ = parser.parse_known_args()
 
-    return args.prepared_locations_source, args.destination
+    return (
+        args.prepared_locations_source,
+        args.prepared_locations_features,
+        args.destination,
+        args.care_home_model_directory,
+    )
 
 
 if __name__ == "__main__":
     (
         prepared_locations_source,
+        prepared_locations_features,
         destination,
+        care_home_model_directory,
     ) = collect_arguments()
 
-    main(prepared_locations_source, destination)
+    main(
+        prepared_locations_source,
+        prepared_locations_features,
+        destination,
+        care_home_model_directory,
+    )

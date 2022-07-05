@@ -32,19 +32,33 @@ def main(prepared_locations_source, destination=None):
         return locations_df
 
 
+def format_region(region):
+    non_lower_alpha = re.compile("[^a-z_]")
+    region_name = region.replace(" ", "_").lower()
+    return re.sub(non_lower_alpha, "", region_name)
+
+
 def explode_regions(locations_df):
-    distinct_region_rows = locations_df.select("region").distinct().na.drop().collect()
+    distinct_region_rows = locations_df.select("region").distinct().collect()
     regions = []
     for row in distinct_region_rows:
-        non_lower_alpha = re.compile("[^a-z_]")
-        region_column_name = row.region.replace(" ", "_").lower()
-        region_column_name = re.sub(non_lower_alpha, "", region_column_name)
+        if row.region:
+            region_column_name = format_region(row.region)
+
+            locations_df = locations_df.withColumn(
+                region_column_name,
+                F.when(locations_df.region == row.region, 1).otherwise(0),
+            )
+        else:
+            region_column_name = "unspecified"
+
+            locations_df = locations_df.withColumn(
+                region_column_name,
+                F.when(locations_df.region.isNull(), 1).otherwise(0),
+            )
+
         regions.append(region_column_name)
 
-        locations_df = locations_df.withColumn(
-            region_column_name,
-            F.when(locations_df.region == row.region, 1).otherwise(0),
-        )
     return locations_df, regions
 
 
