@@ -55,11 +55,11 @@ module "worker_tracking_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--source_start_workplace_file" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
-    "--source_start_worker_file"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/version=0.0.1/year=2021/month=04/day=01/import_date=20210401/"
-    "--source_end_workplace_file"   = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
-    "--source_end_worker_file"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/version=1.0.0/year=2022/month=04/day=01/import_date=20220401/"
-    "--destination"                 = "s3://skillsforcare/test_worker_tracking_2021_to_2022/"
+    "--source_start_workplace_file" = ""
+    "--source_start_worker_file"    = ""
+    "--source_end_workplace_file"   = ""
+    "--source_end_worker_file"      = ""
+    "--destination"                 = ""
   }
 }
 
