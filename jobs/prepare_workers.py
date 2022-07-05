@@ -4,7 +4,7 @@ import json
 import re
 
 from pyspark.sql.functions import udf, struct
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, FloatType
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -32,8 +32,29 @@ def main(source, destination=None):
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():
         main_df = replace_columns_with_aggregated_column(
-            main_df, col_name, info["pattern"], info["udf_function"]
+            main_df,
+            col_name,
+            udf_function=info["udf_function"],
+            pattern=info["pattern"],
         )
+
+    main_df = replace_columns_with_aggregated_column(
+        main_df,
+        "hrs_worked",
+        udf_function=calculate_hours_worked,
+        cols_to_aggregate=["emplstat", "zerohours", "averagehours", "conthrs"],
+        cols_to_remove=["averagehours", "conthrs"],
+        output_type=FloatType(),
+    )
+
+    main_df = replace_columns_with_aggregated_column(
+        main_df,
+        "hourly_rate",
+        udf_function=calculate_hourly_pay,
+        cols_to_aggregate=["salary", "salaryint", "hrlyrate", "hrs_worked"],
+        cols_to_remove=["salary", "salaryint", "hrlyrate"],
+        output_type=FloatType(),
+    )
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -54,16 +75,33 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def replace_columns_with_aggregated_column(df, col_name, pattern, udf_function):
-    cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
-    df = add_aggregated_column(df, col_name, cols_to_aggregate, udf_function)
-    df = df.drop(*cols_to_aggregate)
+def replace_columns_with_aggregated_column(
+    df,
+    col_name,
+    udf_function,
+    pattern=None,
+    cols_to_aggregate=None,
+    cols_to_remove=None,
+    output_type=StringType(),
+):
+    if pattern:
+        cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
+
+    df = add_aggregated_column(
+        df, col_name, cols_to_aggregate, udf_function, output_type
+    )
+    if cols_to_remove:
+        df = df.drop(*cols_to_remove)
+    else:
+        df = df.drop(*cols_to_aggregate)
 
     return df
 
 
-def add_aggregated_column(df, col_name, columns, udf_function):
-    aggregate_udf = udf(udf_function, StringType())
+def add_aggregated_column(
+    df, col_name, columns, udf_function, output_type=StringType()
+):
+    aggregate_udf = udf(udf_function, output_type)
 
     to_be_aggregated_df = df.select(columns)
     df = df.withColumn(
@@ -134,6 +172,53 @@ def extract_qualification_info(row, qualification):
         year = row[extract_year_column_name(qualification)]
 
     return {"value": row[qualification], "year": year}
+
+
+def calculate_hours_worked(row):
+    contracted_hrs = apply_sense_check_to_hrs_worked(row["conthrs"])
+    average_hrs = apply_sense_check_to_hrs_worked(row["averagehours"])
+
+    # employment status is permanent or temporary
+    if row["emplstat"] in [190, 191]:
+
+        # role is zero hours contract
+        if row["zerohours"] == 1:
+            if average_hrs:
+                return average_hrs
+        else:
+            if contracted_hrs:
+                return contracted_hrs
+
+    # employment status is bank/pool, agency, hourly, other
+    if row["emplstat"] in [192, 193, 194, 196]:
+        if average_hrs:
+            return average_hrs
+
+    if contracted_hrs and contracted_hrs > 0:
+        return contracted_hrs
+
+    if average_hrs and average_hrs > 0:
+        return average_hrs
+
+    return None
+
+
+def apply_sense_check_to_hrs_worked(hours):
+    if hours in [None, -1, -2] or hours > 100:
+        return None
+    return hours
+
+
+def calculate_hourly_pay(row):
+    # salary is annual
+    if row["salaryint"] == 250 and row["salary"] and row["hrs_worked"] > 0:
+        return round(row["salary"] / 52 / row["hrs_worked"], 2)
+
+    # salary is hourly
+    if row["salaryint"] == 252:
+        return row["hrlyrate"]
+
+    return None
 
 
 def collect_arguments():
