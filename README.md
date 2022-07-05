@@ -294,7 +294,7 @@ The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/
 ## Connect AWS Athena to Tableau
 To visualise the data in Tableau we need to connect AWS Athena to Tableau. 
 
-1. Install JDBC driver on your pc, download from [here:] (https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html) version 'JDBC 4.1 with AWS SDK'
+1. Install JDBC driver on your pc, download from [here] (https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html): version 'JDBC 4.1 with AWS SDK'.
 2. This needs saving here: 'C:\Program Files\Tableau\Drivers' - This will require admin/IT to move from your downloads to this folder location.
 3. Open a new Tableau document, on the left hand side select 'Amazon Athena' from the 'Connect' menu under _To a server_
 4. This will open a screen where you need to add credentials into the fields - to get these go to 'F:\ASC-WDS Copy Files\Research & Analysis Team Folders\Analysis Team\c. Ongoing Work\Tanya\Data engineering' in a file called 'Tableau Athena Access Key'
