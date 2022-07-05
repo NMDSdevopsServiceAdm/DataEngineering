@@ -1,1 +1,0 @@
-s3://${terraform output -raw s3_resources_bucket_name}
