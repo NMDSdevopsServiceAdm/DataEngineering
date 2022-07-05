@@ -13,7 +13,7 @@ from utils import utils
 def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
-    # main_df = utils.format_import_date(main_df)
+    main_df = utils.format_import_date(main_df)
     main_df = utils.format_date_fields(main_df)
 
     columns_to_be_aggregated_patterns = {
@@ -119,7 +119,7 @@ def get_training_into_json(row):
     aggregated_training = {}
 
     for training in types_training:
-        if row[f"{training}flag"] == 1:
+        if int(row[f"{training}flag"]) == 1:
             aggregated_training[training] = {
                 "latestdate": str(row[training + "latestdate"])[0:10],
                 "count": row[training + "count"],
@@ -135,7 +135,7 @@ def get_job_role_into_json(row):
     job_role_cols = utils.extract_col_with_pattern("^jr\d\d[a-z]", WORKER_SCHEMA)
     agg_jr = []
     for jr in job_role_cols:
-        if row[jr] == 1:
+        if int(row[jr]) == 1:
             agg_jr.append(jr)
 
     return json.dumps(agg_jr)
@@ -163,15 +163,15 @@ def extract_year_column_name(qualification):
 
 def extract_qualification_info(row, qualification):
     if qualification == "ql34achqe":
-        return {"value": row["ql34achqe"], "year": row["ql34yeare"]}
+        return {"count": int(row["ql34achqe"]), "year": int(row["ql34yeare"])}
 
     if qualification[-1].isdigit():
-        year = row[extract_year_column_name(qualification) + qualification[-1]]
+        year = int(row[extract_year_column_name(qualification) + qualification[-1]])
 
     else:
-        year = row[extract_year_column_name(qualification)]
+        year = int(row[extract_year_column_name(qualification)])
 
-    return {"value": row[qualification], "year": year}
+    return {"count": int(row[qualification]), "year": year}
 
 
 def calculate_hours_worked(row):

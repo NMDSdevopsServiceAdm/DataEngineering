@@ -63,7 +63,7 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 69)
+        self.assertEqual(len(df.columns), 70)
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_get_dataset_worker_has_correct_columns(self):
@@ -142,7 +142,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(df.columns[-1], "qualification")
         self.assertEqual(
             df.first()["qualification"],
-            '{"ql01achq2": {"value": 1, "year": 2009}, "ql34achqe": {"value": 1, "year": 2010}, "ql37achq": {"value": 3, "year": 2021}, "ql313app": {"value": 1, "year": 2013}}',
+            '{"ql01achq2": {"count": 1, "year": 2009}, "ql34achqe": {"count": 1, "year": 2010}, "ql37achq": {"count": 3, "year": 2021}, "ql313app": {"count": 1, "year": 2013}}',
         )
         self.assertEqual(df.first()["ql02achq3"], 0)
 

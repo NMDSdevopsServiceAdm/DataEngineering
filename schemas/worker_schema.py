@@ -5,6 +5,7 @@ from pyspark.sql.types import (
     IntegerType,
     FloatType,
     TimestampType,
+    DateType,
 )
 
 WORKER_SCHEMA = StructType(
@@ -82,7 +83,7 @@ WORKER_SCHEMA = StructType(
         # StructField("year", IntegerType(), True),
         # StructField("month", IntegerType(), True),
         # StructField("day", IntegerType(), True),
-        # StructField("import_date", TimestampType(), True),
+        StructField("import_date", DateType(), True),
         StructField("tr01flag", IntegerType(), True),
         StructField("tr01latestdate", StringType(), True),
         StructField("tr01count", IntegerType(), True),
