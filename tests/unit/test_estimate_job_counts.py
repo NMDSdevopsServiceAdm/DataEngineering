@@ -2,10 +2,10 @@ import unittest
 
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
-from jobs import estimate_2021_jobs as job
+from jobs import estimate_job_counts as job
 
 
-class Estimate2021JobsTests(unittest.TestCase):
+class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
     )

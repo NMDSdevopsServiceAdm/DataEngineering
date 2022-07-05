@@ -89,7 +89,7 @@ module "job_role_breakdown_job" {
 
 module "estimate_2021_jobs_job" {
   source          = "../modules/glue-job"
-  script_name     = "estimate_2021_jobs.py"
+  script_name     = "estimate_job_counts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
