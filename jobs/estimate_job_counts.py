@@ -46,8 +46,7 @@ def main(
             SNAPSHOT_DATE,
         )
         .filter(
-            f"{REGISTRATION_STATUS} = 'Registered' \
-            and {SNAPSHOT_DATE} = {snapshot_date}"
+            f"{REGISTRATION_STATUS} = 'Registered'"
         )
     )
 
