@@ -80,9 +80,7 @@ def write_to_parquet(df, output_dir, append=False):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -96,12 +94,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
         df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
-
-
-def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(
-        fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
-    )
 
 
 def is_csv(filename):
@@ -152,3 +144,7 @@ def extract_specific_column_types(pattern, schema):
     for col in columns:
         types.append(col[0:4])
     return types
+
+
+def format_import_date(df, fieldname="import_date"):
+    return df.withColumn(fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd"))

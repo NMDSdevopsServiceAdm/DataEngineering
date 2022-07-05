@@ -571,7 +571,7 @@ def generate_cqc_care_directory_file(output_destination):
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
     dataspec = dg.DataGenerator(
-        spark, rows=50, partitions=8, randomSeedMethod="hash_fieldname"
+        spark, rows=10, partitions=8, randomSeedMethod="hash_fieldname"
     ).withSchema(worker_schema.WORKER_SCHEMA)
 
     dataspec = (
@@ -589,6 +589,13 @@ def generate_ascwds_worker_file(output_destination):
         .withColumnSpec("ql37year", 2021)
         .withColumnSpec("ql313app", 1)
         .withColumnSpec("ql313year", 2013)
+        .withColumnSpec("emplstat", 190)
+        .withColumnSpec("conthrs", 8.5)
+        .withColumnSpec("averagehours", 26.5)
+        .withColumnSpec("zerohours", 1)
+        .withColumnSpec("salaryint", 250)
+        .withColumnSpec("salary", 5200)
+        .withColumnSpec("hrlyrate", 100.5)
     )
 
     dataspec = dataspec.withColumnSpecs(
@@ -602,6 +609,33 @@ def generate_ascwds_worker_file(output_destination):
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_flexible_worker_file_hours_worked(
+    emplstat, zerohours, averagehours, conthrs
+):
+    spark = utils.get_spark()
+    columns = [
+        "emplstat",
+        "zerohours",
+        "averagehours",
+        "conthrs",
+    ]
+    rows = [(emplstat, zerohours, averagehours, conthrs)]
+
+    df = spark.createDataFrame(rows, columns)
+
+    return df
+
+
+def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_worked):
+    spark = utils.get_spark()
+    columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
+    rows = [(salary, salaryint, hrlyrate, hrs_worked)]
+
+    df = spark.createDataFrame(rows, columns)
 
     return df
 
