@@ -32,8 +32,8 @@ def main(source, destination=None):
             "pattern": "^ql\d{1,3}[a-z]+.",
             "udf_function": get_qualification_into_json,
             "types": utils.extract_col_with_pattern(
-        "^ql\d{1,3}(achq|app)(\d*|e)", WORKER_SCHEMA
-    )
+                "^ql\d{1,3}(achq|app)(\d*|e)", WORKER_SCHEMA
+            ),
         },
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():

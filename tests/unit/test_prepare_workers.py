@@ -142,10 +142,7 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def test_get_job_role_into_json(self):
         columns = ["jr01flag", "jr05flag", "jr16cat8"]
-        rows = [
-            (1, 1, 0), 
-            (0, 0, 0)
-        ]
+        rows = [(1, 1, 0), (0, 0, 0)]
         df = self.spark.createDataFrame(rows, columns)
         df = prepare_workers.add_aggregated_column(
             df,
@@ -156,15 +153,25 @@ class PrepareWorkersTests(unittest.TestCase):
         )
 
         self.assertEqual(df.columns[-1], "job_role")
-        self.assertEqual(df.first()["job_role"],'["jr01flag", "jr05flag"]',)
+        self.assertEqual(
+            df.first()["job_role"],
+            '["jr01flag", "jr05flag"]',
+        )
         self.assertEqual(df.first()["jr16cat8"], 0)
 
     def test_get_qualification_into_json(self):
-        columns = ["ql01achq2", "ql01year2", "ql34achqe", "ql34yeare", "ql37achq", "ql37year"]
+        columns = [
+            "ql01achq2",
+            "ql01year2",
+            "ql34achqe",
+            "ql34yeare",
+            "ql37achq",
+            "ql37year",
+        ]
         rows = [
-            (1, 2010, 0, 2019, 0, 2020), 
+            (1, 2010, 0, 2019, 0, 2020),
             (0, 2010, 1, 2019, 0, 2020),
-            (0, 2010, 0, 2019, 3, 2020)
+            (0, 2010, 0, 2019, 3, 2020),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
@@ -173,13 +180,19 @@ class PrepareWorkersTests(unittest.TestCase):
             "qualification",
             columns,
             prepare_workers.get_qualification_into_json,
-            types=["ql01achq2", "ql34achqe", "ql37achq"]
+            types=["ql01achq2", "ql34achqe", "ql37achq"],
         )
         df_list = df.collect()
         self.assertEqual(df.columns[-1], "qualification")
-        self.assertEqual(df_list[0]["qualification"],'{"ql01achq2": {"count": 1, "year": 2010}}')
-        self.assertEqual(df_list[1]["qualification"], '{"ql34achqe": {"count": 1, "year": 2019}}')
-        self.assertEqual(df_list[2]["qualification"], '{"ql37achq": {"count": 3, "year": 2020}}')
+        self.assertEqual(
+            df_list[0]["qualification"], '{"ql01achq2": {"count": 1, "year": 2010}}'
+        )
+        self.assertEqual(
+            df_list[1]["qualification"], '{"ql34achqe": {"count": 1, "year": 2019}}'
+        )
+        self.assertEqual(
+            df_list[2]["qualification"], '{"ql37achq": {"count": 3, "year": 2020}}'
+        )
         self.assertEqual(df.first()["ql37achq"], 0)
 
     def test_calculate_hours_worked_returns_avghrs_for_empl_with_zerohours(self):
