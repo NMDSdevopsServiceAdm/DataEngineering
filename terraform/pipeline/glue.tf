@@ -106,14 +106,17 @@ module "job_role_breakdown_job" {
 
 module "estimate_2021_jobs_job" {
   source          = "../modules/glue-job"
-  script_name     = "estimate_2021_jobs.py"
+  script_name     = "estimate_job_counts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
-    "--prepared_locations_source" = ""
-    "--destination"               = ""
+    "--prepared_locations_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--prepared_locations_features" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+    "--destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
+    "--care_home_model_directory"   = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
   }
 }
 
