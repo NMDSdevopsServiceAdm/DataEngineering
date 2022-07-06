@@ -1,7 +1,7 @@
 resource "aws_glue_job" "glue_job" {
   name              = local.job_name
   role_arn          = var.glue_role.arn
-  glue_version      = "2.0"
+  glue_version      = var.glue_version
   worker_type       = "Standard"
   number_of_workers = 2
   max_retries       = 0

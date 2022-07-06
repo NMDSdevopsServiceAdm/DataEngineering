@@ -14,3 +14,14 @@ variable "trigger_schedule" {
   type        = string
   default     = ""
 }
+
+variable "glue_version" {
+  description = "Version of glue to use for the job. Default of 2.0"
+  type        = string
+  default     = "2.0"
+
+  validation {
+    condition     = contains(["1.0", "2.0", "3.0"], var.glue_version)
+    error_message = "Must be one of 1.0, 2.0 of 3.0"
+  }
+}

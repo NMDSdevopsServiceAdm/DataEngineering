@@ -43,6 +43,17 @@ def get_s3_objects_list(bucket_source, prefix, s3_resource=None):
     return object_keys
 
 
+def get_s3_sub_folders_for_path(path, s3_client=None):
+    if s3_client is None:
+        s3_client = boto3.client("s3")
+    bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-_/]*)$", path).groups()
+    response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
+    return [
+        common_prefix["Prefix"].replace(prefix, "").replace("/", "")
+        for common_prefix in response["CommonPrefixes"]
+    ]
+
+
 def read_partial_csv_content(bucket, key, s3_client=None):
     if s3_client is None:
         s3_client = boto3.client("s3")
