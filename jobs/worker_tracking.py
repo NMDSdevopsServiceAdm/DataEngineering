@@ -6,10 +6,8 @@ from utils import utils
 
 
 def main(
-    source_start_workplace_file,
-    source_start_worker_file,
-    source_end_workplace_file,
-    source_end_worker_file,
+    source_ascwds_workplace,
+    source_ascwds_worker,
     destination=None,
 ):
 
@@ -34,6 +32,14 @@ def main(
         utils.write_to_parquet(start_worker_df, destination)
     else:
         return start_worker_df
+
+
+def max_import_date_in_two_datasets(workplace_df, worker_df):
+    workplace_df = workplace_df.join(worker_df, ["import_date"], "inner")
+
+    max_import_date = workplace_df.select(F.max(F.col("import_date")).alias("max"))
+
+    return max_import_date.first().max
 
 
 def updated_within_time_period(df):
