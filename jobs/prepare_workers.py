@@ -114,7 +114,6 @@ def replace_columns_with_aggregated_column(
 ):
     if pattern:
         cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
-
     df = add_aggregated_column(
         df, col_name, cols_to_aggregate, udf_function, types, output_type
     )
@@ -131,9 +130,7 @@ def add_aggregated_column(
 ):
     curried_func = partial(udf_function, types=types)
     aggregate_udf = udf(curried_func, output_type)
-
     to_be_aggregated_df = df.select(columns)
-
     df = df.withColumn(
         col_name,
         aggregate_udf(

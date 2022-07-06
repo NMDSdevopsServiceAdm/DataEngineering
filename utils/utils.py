@@ -133,11 +133,11 @@ def extract_column_from_schema(schema):
 def extract_col_with_pattern(pattern, schema):
     columns = extract_column_from_schema(schema)
     pattern = re.compile(rf"{pattern}")
-    columns = []
+    output_columns = []
     for col in columns:
         if pattern.match(col):
-            columns.append(col)
-    return columns
+            output_columns.append(col)
+    return output_columns
 
 
 def extract_specific_column_types(pattern, schema):

@@ -97,7 +97,7 @@ class PrepareWorkersTests(unittest.TestCase):
         df = prepare_workers.replace_columns_with_aggregated_column(
             self.test_df,
             "training",
-            prepare_workers.get_training_into_json,
+            udf_function=prepare_workers.get_training_into_json,
             pattern=pattern,
         )
 
