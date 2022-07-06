@@ -87,7 +87,7 @@ module "job_role_breakdown_job" {
   }
 }
 
-module "estimate_2021_jobs_job" {
+module "estimate_job_counts_job" {
   source          = "../modules/glue-job"
   script_name     = "estimate_job_counts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role

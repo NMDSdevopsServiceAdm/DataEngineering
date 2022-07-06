@@ -41,24 +41,89 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df[2]["primary_service_type"], "non-residential")
         self.assertEqual(df[3]["primary_service_type"], "non-residential")
 
-    def test_model_populate_known_2021_jobs(self):
-        columns = ["locationid", "job_count_2021", "estimate_job_count"]
+    def test_populate_known_jobs_use_job_count_from_current_snapshot(self):
+        columns = ["locationid", "job_count", "snapshot_date", "estimate_job_count"]
         rows = [
-            ("1-000000001", 1, None),
-            ("1-000000002", None, None),
-            ("1-000000003", 5, 4),
-            ("1-000000003", 10, None),
+            ("1-000000001", 1, "2022-03-04", None),
+            ("1-000000002", None, "2022-03-04", None),
+            ("1-000000003", 5, "2022-03-04", 4),
+            ("1-000000004", 10, "2022-03-04", None),
+            ("1-000000002", 7, "2022-02-04", None),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        df = job.model_populate_known_2021_jobs(df)
-        self.assertEqual(df.count(), 4)
+        df = job.populate_estimate_jobs_when_job_count_known(df)
+        self.assertEqual(df.count(), 5)
 
         df = df.collect()
         self.assertEqual(df[0]["estimate_job_count"], 1)
         self.assertEqual(df[1]["estimate_job_count"], None)
         self.assertEqual(df[2]["estimate_job_count"], 4)
         self.assertEqual(df[3]["estimate_job_count"], 10)
+
+    def test_last_known_job_count_takes_job_count_from_current_snapshot(self):
+        columns = ["locationid", "job_count", "snapshot_date"]
+        rows = [
+            ("1-000000001", 1, "2022-03-04"),
+            ("1-000000002", None, "2022-03-04"),
+            ("1-000000003", 5, "2022-03-04"),
+            ("1-000000004", 10, "2022-03-04"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = job.populate_last_known_job_count(df)
+
+        df = df.collect()
+        self.assertEqual(df[0].last_known_job_count, 1)
+        self.assertEqual(df[1].last_known_job_count, None)
+        self.assertEqual(df[2].last_known_job_count, 5)
+        self.assertEqual(df[3].last_known_job_count, 10)
+
+    def test_last_known_job_count_takes_job_count_from_previous_snapshot(self):
+        columns = ["locationid", "job_count", "snapshot_date"]
+        rows = [
+            ("1-000000001", None, "2022-03-04"),
+            ("1-000000002", None, "2022-03-04"),
+            ("1-000000003", 5, "2022-03-04"),
+            ("1-000000004", 10, "2022-03-04"),
+            ("1-000000001", 4, "2022-02-04"),
+            ("1-000000002", None, "2022-02-04"),
+            ("1-000000003", 5, "2022-02-04"),
+            ("1-000000004", 12, "2022-02-04"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = (
+            job.populate_last_known_job_count(df)
+            .filter(df["snapshot_date"] == "2022-03-04")
+            .collect()
+        )
+
+        self.assertEqual(df[0].last_known_job_count, 4)
+        self.assertEqual(df[1].last_known_job_count, None)
+        self.assertEqual(df[2].last_known_job_count, 5)
+        self.assertEqual(df[3].last_known_job_count, 10)
+
+    def test_last_known_job_count_takes_job_count_from_most_recent_snapshot(self):
+        columns = ["locationid", "job_count", "snapshot_date"]
+        rows = [
+            ("1-000000001", None, "2022-03-04"),
+            ("1-000000002", None, "2022-03-04"),
+            ("1-000000001", None, "2022-02-04"),
+            ("1-000000002", 5, "2022-02-04"),
+            ("1-000000001", 4, "2021-03-04"),
+            ("1-000000002", 7, "2021-02-04"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = (
+            job.populate_last_known_job_count(df)
+            .filter(df["snapshot_date"] == "2022-03-04")
+            .collect()
+        )
+
+        self.assertEqual(df[0].last_known_job_count, 4)
+        self.assertEqual(df[1].last_known_job_count, 5)
 
     def test_model_non_res_historical(self):
         columns = [

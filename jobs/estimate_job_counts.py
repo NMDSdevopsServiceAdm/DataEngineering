@@ -1,8 +1,9 @@
 import argparse
 
-from pyspark.sql.functions import coalesce, col, lit, array_contains, when
+import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 from pyspark.ml.regression import GBTRegressionModel
+from pyspark.sql import Window
 
 from utils import utils
 
@@ -49,15 +50,14 @@ def main(
 
     features_df = spark.read.parquet(prepared_locations_features)
 
+    locations_df = populate_last_know_job_count(locations_df)
     locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT, lit(None).cast(IntegerType())
+        ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
-    locations_df = collect_ascwds_historical_job_figures(
-        spark, prepared_locations_source, locations_df
-    )
+
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
-    locations_df = model_populate_known_2021_jobs(locations_df)
+    locations_df = populate_known_job_count(locations_df)
     # Non-res models
     locations_df = model_non_res_historical(locations_df)
     locations_df = model_non_res_historical_pir(locations_df)
@@ -89,14 +89,14 @@ def main(
 def determine_ascwds_primary_service_type(input_df):
     return input_df.withColumn(
         PRIMARY_SERVICE_TYPE,
-        when(
-            array_contains(
+        F.when(
+            F.array_contains(
                 input_df[SERVICES_OFFERED], "Care home service with nursing"
             ),
             NURSING_HOME_IDENTIFIER,
         )
         .when(
-            array_contains(
+            F.array_contains(
                 input_df[SERVICES_OFFERED], "Care home service without nursing"
             ),
             NONE_NURSING_HOME_IDENTIFIER,
@@ -105,39 +105,45 @@ def determine_ascwds_primary_service_type(input_df):
     )
 
 
-def collect_ascwds_historical_job_figures(spark, data_source, input_df):
-    spark.read.parquet(data_source).createOrReplaceTempView("temp_locations_prepared")
-    for year in ["2021", "2020", "2019"]:
-
-        jobs_previous = spark.sql(
-            f"""select
-                locationid,
-                max(job_count) as job_count_{year}
-                from
-                    temp_locations_prepared
-                where
-                    year(ascwds_workplace_import_date) = {year}
-                group by year(ascwds_workplace_import_date), locationid
-                having max(year(ascwds_workplace_import_date))
-            """
-        )
-        input_df = input_df.join(jobs_previous, LOCATION_ID, "left")
-
-    # Calculate last known jobs previous to 2021
-    input_df = input_df.withColumn(
-        LAST_KNOWN_JOB_COUNT, coalesce("job_count_2020", "job_count_2019")
-    )
-
-    return input_df
-
-
-def model_populate_known_2021_jobs(df):
+def populate_estimate_jobs_when_job_count_known(df):
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
-            (col(ESTIMATE_JOB_COUNT).isNull() & (col("job_count_2021").isNotNull())),
-            col("job_count_2021"),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+        F.when(
+            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col("job_count").isNotNull())),
+            F.col("job_count"),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
+    )
+
+    return df
+
+
+def populate_last_known_job_count(df):
+    og_columns = df.columns
+    df = df.alias("current").join(
+        df.alias("previous"),
+        (F.col("current.locationid") == F.col("previous.locationid"))
+        & (F.col("current.snapshot_date") >= F.col("previous.snapshot_date"))
+        & (F.col("previous.job_count").isNotNull()),
+        "leftouter",
+    )
+
+    locationAndSnapshotPartition = Window.partitionBy(
+        "current.locationid", "current.snapshot_date"
+    )
+    df = df.withColumn(
+        "max_date_with_job_count",
+        F.max("previous.snapshot_date").over(locationAndSnapshotPartition),
+    )
+
+    df = df.where(
+        F.col("max_date_with_job_count").isNull()
+        | (F.col("max_date_with_job_count") == F.col("previous.snapshot_date"))
+    )
+    df = df.drop("max_date_with_job_count")
+
+    df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
+    df = df.select(
+        [f"current.{colname}" for colname in og_columns] + [LAST_KNOWN_JOB_COUNT]
     )
 
     return df
@@ -150,14 +156,14 @@ def model_non_res_historical(df):
     # TODO: remove magic number 1.03
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & col(LAST_KNOWN_JOB_COUNT).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
+                & F.col(LAST_KNOWN_JOB_COUNT).isNotNull()
             ),
-            col(LAST_KNOWN_JOB_COUNT) * 1.03,
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            F.col(LAST_KNOWN_JOB_COUNT) * 1.03,
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
@@ -172,14 +178,14 @@ def model_non_res_historical_pir(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & col(PIR_SERVICE_USERS).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
+                & F.col(PIR_SERVICE_USERS).isNotNull()
             ),
-            (25.046 + (0.469 * col(PIR_SERVICE_USERS))),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            (25.046 + (0.469 * F.col(PIR_SERVICE_USERS))),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
     return df
 
@@ -192,13 +198,13 @@ def model_non_res_default(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "non-residential")
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
             ),
             54.09,
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
@@ -218,12 +224,12 @@ def insert_predictions_into_locations(locations_df, predictions_df):
 
     locations_with_predictions = locations_with_predictions.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(col("prediction").isNotNull(), col("prediction")).otherwise(
-            col(ESTIMATE_JOB_COUNT)
+        F.when(F.col("prediction").isNotNull(), F.col("prediction")).otherwise(
+            F.col(ESTIMATE_JOB_COUNT)
         ),
     )
 
-    locations_df = locations_with_predictions.drop(col("prediction"))
+    locations_df = locations_with_predictions.drop(F.col("prediction"))
     return locations_df
 
 
@@ -253,15 +259,19 @@ def model_care_home_with_nursing_pir_and_cqc_beds(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & col(PIR_SERVICE_USERS).isNotNull()
-                & col(NUMBER_OF_BEDS).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
+                & F.col(PIR_SERVICE_USERS).isNotNull()
+                & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
-            ((0.773 * col(NUMBER_OF_BEDS)) + (0.551 * col(PIR_SERVICE_USERS)) + 0.304),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            (
+                (0.773 * F.col(NUMBER_OF_BEDS))
+                + (0.551 * F.col(PIR_SERVICE_USERS))
+                + 0.304
+            ),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
@@ -276,14 +286,14 @@ def model_care_home_with_nursing_cqc_beds(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & col(NUMBER_OF_BEDS).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
+                & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (1.203 * col(NUMBER_OF_BEDS) + 2.39),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            (1.203 * F.col(NUMBER_OF_BEDS) + 2.39),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
@@ -299,15 +309,19 @@ def model_care_home_without_nursing_cqc_beds_and_pir(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(PIR_SERVICE_USERS).isNotNull()
-                & col(NUMBER_OF_BEDS).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
+                & F.col(PIR_SERVICE_USERS).isNotNull()
+                & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (10.652 + (0.571 * col(NUMBER_OF_BEDS)) + (0.296 * col(PIR_SERVICE_USERS))),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            (
+                10.652
+                + (0.571 * F.col(NUMBER_OF_BEDS))
+                + (0.296 * F.col(PIR_SERVICE_USERS))
+            ),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
@@ -322,14 +336,14 @@ def model_care_home_without_nursing_cqc_beds(df):
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
-        when(
+        F.when(
             (
-                col(ESTIMATE_JOB_COUNT).isNull()
-                & (col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & col(NUMBER_OF_BEDS).isNotNull()
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
+                & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
-            (11.291 + (0.8126 * col(NUMBER_OF_BEDS))),
-        ).otherwise(col(ESTIMATE_JOB_COUNT)),
+            (11.291 + (0.8126 * F.col(NUMBER_OF_BEDS))),
+        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     return df
