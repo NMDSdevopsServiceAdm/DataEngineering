@@ -79,6 +79,7 @@ def get_dataset_worker(source):
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
     worker_df = clean(worker_df, column_names)
+
     return worker_df
 
 
@@ -92,13 +93,29 @@ def clean(input_df, column_names):
     for column in column_names:
         if ("year" in column) or ("flag" in column) or ("ql" in column):
             should_be_integers.append(column)
+    others = ["emplstat", "zerohours", "salaryint"]
 
     # Cast strings to integers
-    for column_name in should_be_integers:
+    for column_name in should_be_integers + others:
         input_df = input_df.withColumn(
             column_name, input_df[column_name].cast(IntegerType())
         )
 
+    should_be_floats = [
+        # "distwrkk",
+        # "dayssick",
+        "averagehours",
+        "conthrs",
+        "salary",
+        "hrlyrate",
+        # "previous_pay",
+    ]
+
+    # Cast strings to integers
+    for column_name in should_be_floats:
+        input_df = input_df.withColumn(
+            column_name, input_df[column_name].cast(FloatType())
+        )
     return input_df
 
 

@@ -67,10 +67,22 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_clean(self):
-        columns = ["ql01year2", "tr03flag", "jr03flag", "ql05achq3"]
+        columns = [
+            "ql01year2",
+            "tr03flag",
+            "jr03flag",
+            "ql05achq3",
+            "emplstat",
+            "zerohours",
+            "salaryint",
+            "averagehours",
+            "conthrs",
+            "salary",
+            "hrlyrate",
+        ]
         rows = [
-            ("0", "1", "1", "1"),
-            ("0", "1", None, "1"),
+            ("0", "1", "1", "1", "190", "-1", "252", "26.5", "20.0", "0.53", "2.0"),
+            ("0", "1", None, "1", "191", "0", "250", "26.5", "20.0", "0.53", "2.0"),
         ]
         df = self.spark.createDataFrame(rows, columns)
         cleaned_df = prepare_workers.clean(df, columns)
@@ -78,6 +90,10 @@ class PrepareWorkersTests(unittest.TestCase):
 
         self.assertEqual(cleaned_df.count(), 2)
         self.assertEqual(cleaned_df_list[0]["ql01year2"], 0)
+        self.assertEqual(cleaned_df_list[0]["zerohours"], -1)
+        self.assertEqual(cleaned_df_list[0]["salaryint"], 252)
+        self.assertEqual(cleaned_df_list[0]["averagehours"], 26.5)
+        self.assertEqual(cleaned_df_list[0]["salary"], 0.53)
         self.assertEqual(cleaned_df_list[1]["jr03flag"], None)
 
     def test_get_dataset_worker_has_correct_columns(self):
