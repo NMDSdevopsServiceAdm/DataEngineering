@@ -32,11 +32,14 @@ module "ingest_ascwds_dataset_job" {
 }
 
 module "prepare_locations_job" {
-  source          = "../modules/glue-job"
-  script_name     = "prepare_locations.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "prepare_locations.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  glue_version      = "3.0"
+  worker_type       = "G.2X"
+  number_of_workers = 6
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
