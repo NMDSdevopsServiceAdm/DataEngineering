@@ -1,6 +1,8 @@
 import argparse
+from time import strptime
 
 import pyspark.sql.functions as F
+from datetime import datetime, timedelta
 
 from utils import utils
 
@@ -38,6 +40,22 @@ def max_import_date_in_two_datasets(workplace_df, worker_df):
     workplace_df = workplace_df.join(worker_df, ["import_date"], "inner")
 
     max_import_date = workplace_df.select(F.max(F.col("import_date")).alias("max"))
+
+    return max_import_date.first().max
+
+
+def get_start_period_import_date(workplace_df, worker_df, end_period_import_date):
+    import_date = workplace_df.join(worker_df, ["import_date"], "inner")
+
+    max_import_date_as_date = datetime.strptime(end_period_import_date, "%Y%m%d")
+
+    start_period_import_date = max_import_date_as_date - timedelta(days=365)
+
+    start_period_import_date = start_period_import_date.strftime("%Y%m%d")
+
+    import_date = import_date.filter(F.col("import_date") <= start_period_import_date)
+
+    max_import_date = import_date.select(F.max(F.col("import_date")).alias("max"))
 
     return max_import_date.first().max
 

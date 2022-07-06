@@ -56,6 +56,22 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         self.assertEqual(max_import_date, "20220101")
 
+    def test_get_start_period_import_date(self):
+        # fmt: off
+        workplace_df = self.spark.createDataFrame(
+            [("20220601",), ("20220101",), ("20210202",), ("20201225",), ], ["import_date"],
+        )
+        worker_df = self.spark.createDataFrame(
+            [("20220101",), ("20211212",), ("20210101",), ("20201225",), ], ["import_date"],
+        )
+        # fmt: on
+
+        start_period_import_date = worker_tracking.get_start_period_import_date(
+            workplace_df, worker_df, "20220101"
+        )
+
+        self.assertEqual(start_period_import_date, "20201225")
+
     def test_updated_within_time_period(self):
 
         filtered_df = worker_tracking.updated_within_time_period(
