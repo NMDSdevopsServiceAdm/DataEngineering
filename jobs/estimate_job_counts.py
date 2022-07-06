@@ -44,6 +44,7 @@ def main(
             PIR_SERVICE_USERS,
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
+            JOB_COUNT,
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
@@ -224,9 +225,9 @@ def insert_predictions_into_locations(locations_df, predictions_df):
 
     locations_with_predictions = locations_with_predictions.withColumn(
         ESTIMATE_JOB_COUNT,
-        F.when(F.col("prediction").isNotNull(), F.col("prediction")).otherwise(
-            F.col(ESTIMATE_JOB_COUNT)
-        ),
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("prediction")),
     )
 
     locations_df = locations_with_predictions.drop(F.col("prediction"))

@@ -218,7 +218,8 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "prediction" ]
 
         rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", 56.89)
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", 56.89),
+            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", 12.34),
         ]
         # fmt: on
         return self.spark.createDataFrame(
