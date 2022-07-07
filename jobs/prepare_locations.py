@@ -1,17 +1,7 @@
 import argparse
 import builtins
 
-from pyspark.sql.functions import (
-    abs,
-    add_months,
-    coalesce,
-    col,
-    greatest,
-    lit,
-    lower,
-    max,
-    when,
-)
+from pyspark.sql.functions import F
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType
 
 from utils import utils
@@ -47,19 +37,19 @@ def main(
 
     for snapshot_date_row in date_matrix:
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
-            col("import_date") == snapshot_date_row["asc_workplace_date"]
+            F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
 
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
 
         cqc_locations_df = complete_cqc_location_df.filter(
-            col("import_date") == snapshot_date_row["cqc_location_date"]
+            F.col("import_date") == snapshot_date_row["cqc_location_date"]
         )
         cqc_providers_df = complete_cqc_provider_df.filter(
-            col("import_date") == snapshot_date_row["cqc_provider_date"]
+            F.col("import_date") == snapshot_date_row["cqc_provider_date"]
         )
         pir_df = complete_pir_df.filter(
-            col("import_date") == snapshot_date_row["pir_date"]
+            F.col("import_date") == snapshot_date_row["pir_date"]
         )
 
         # Rename import_date columns to ensure uniqueness
@@ -80,7 +70,7 @@ def main(
         output_df = calculate_jobcount(output_df)
 
         output_df = output_df.withColumn(
-            "snapshot_date", lit(snapshot_date_row["snapshot_date"])
+            "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
 
         if master_df is None:
@@ -133,14 +123,14 @@ def get_ascwds_workplace_df(workplace_source, import_date=None):
         spark.read.option("basePath", workplace_source)
         .parquet(workplace_source)
         .select(
-            col("locationid"),
-            col("establishmentid"),
-            col("totalstaff").alias("total_staff"),
-            col("wkrrecs").alias("worker_record_count"),
-            col("import_date"),
-            col("orgid"),
-            col("mupddate"),
-            col("isparent"),
+            F.col("locationid"),
+            F.col("establishmentid"),
+            F.col("totalstaff").alias("total_staff"),
+            F.col("wkrrecs").alias("worker_record_count"),
+            F.col("import_date"),
+            F.col("orgid"),
+            F.col("mupddate"),
+            F.col("isparent"),
         )
     )
 
@@ -151,7 +141,7 @@ def get_ascwds_workplace_df(workplace_source, import_date=None):
     workplace_df = clean(workplace_df)
 
     if import_date is not None:
-        workplace_df = workplace_df.filter(col("import_date") == import_date)
+        workplace_df = workplace_df.filter(F.col("import_date") == import_date)
 
     return workplace_df
 
@@ -164,23 +154,23 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
         spark.read.option("basePath", cqc_location_source)
         .parquet(cqc_location_source)
         .select(
-            col("locationid"),
-            col("providerid"),
-            col("organisationtype").alias("organisation_type"),
-            col("type").alias("location_type"),
-            col("name").alias("location_name"),
-            col("registrationstatus").alias("registration_status"),
-            col("registrationdate").alias("registration_date"),
-            col("deregistrationdate").alias("deregistration_date"),
-            col("dormancy"),
-            col("numberofbeds").alias("number_of_beds"),
-            col("region"),
-            col("postalcode").alias("postal_code"),
-            col("carehome"),
-            col("constituency"),
-            col("localauthority").alias("local_authority"),
-            col("gacservicetypes.description").alias("services_offered"),
-            col("import_date"),
+            F.col("locationid"),
+            F.col("providerid"),
+            F.col("organisationtype").alias("organisation_type"),
+            F.col("type").alias("location_type"),
+            F.col("name").alias("location_name"),
+            F.col("registrationstatus").alias("registration_status"),
+            F.col("registrationdate").alias("registration_date"),
+            F.col("deregistrationdate").alias("deregistration_date"),
+            F.col("dormancy"),
+            F.col("numberofbeds").alias("number_of_beds"),
+            F.col("region"),
+            F.col("postalcode").alias("postal_code"),
+            F.col("carehome"),
+            F.col("constituency"),
+            F.col("localauthority").alias("local_authority"),
+            F.col("gacservicetypes.description").alias("services_offered"),
+            F.col("import_date"),
         )
     )
 
@@ -188,7 +178,7 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
     cqc_df = cqc_df.withColumn(
         "region",
         (
-            when(
+            F.when(
                 cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
             ).otherwise(cqc_df.region)
         ),
@@ -198,7 +188,7 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
 
     if import_date is not None:
-        cqc_df = cqc_df.filter(col("import_date") == import_date)
+        cqc_df = cqc_df.filter(F.col("import_date") == import_date)
 
     return cqc_df
 
@@ -211,7 +201,7 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
         spark.read.option("basePath", cqc_provider_source)
         .parquet(cqc_provider_source)
         .select(
-            col("providerid"), col("name").alias("provider_name"), col("import_date")
+            F.col("providerid"), F.col("name").alias("provider_name"), F.col("import_date")
         )
     )
 
@@ -220,7 +210,7 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
     cqc_provider_df = utils.format_import_date(cqc_provider_df)
 
     if import_date is not None:
-        cqc_provider_df = cqc_provider_df.filter(col("import_date") == import_date)
+        cqc_provider_df = cqc_provider_df.filter(F.col("import_date") == import_date)
 
     return cqc_provider_df
 
@@ -234,13 +224,13 @@ def get_pir_df(pir_source, import_date=None):
         spark.read.option("basePath", pir_source)
         .parquet(pir_source)
         .select(
-            col("location_id").alias("locationid"),
-            col(
+            F.col("location_id").alias("locationid"),
+            F.col(
                 "21_How_many_people_are_currently_receiving_support"
                 "_with_regulated_activities_as_defined_by_the_Health"
                 "_and_Social_Care_Act_from_your_service"
             ).alias("pir_service_users"),
-            col("import_date"),
+            F.col("import_date"),
         )
     )
 
@@ -249,7 +239,7 @@ def get_pir_df(pir_source, import_date=None):
     pir_df = pir_df.dropDuplicates(["locationid", "import_date"])
 
     if import_date is not None:
-        pir_df = pir_df.filter(col("import_date") == import_date)
+        pir_df = pir_df.filter(F.col("import_date") == import_date)
 
     return pir_df
 
@@ -354,7 +344,7 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("purge_date", add_months(col("import_date"), -24))
+    input_df = input_df.withColumn("purge_date", F.add_months(F.col("import_date"), -24))
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
@@ -365,7 +355,7 @@ def purge_workplaces(input_df):
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge",
-        when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(
+        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(
             input_df.mupddate
         ),
     )
@@ -384,15 +374,15 @@ def add_cqc_sector(input_df):
     # allocate service based on provider name
     input_df = input_df.withColumn(
         "cqc_sector",
-        lower(input_df.provider_name).rlike(
+        F.lower(input_df.provider_name).rlike(
             "department of community services|social & community services|scc adult social care|cheshire west and chester reablement service|council|social services|mbc|mdc|london borough|royal borough|borough of"
         )
-        & ~lower(input_df.provider_name).rlike("the council of st monica trust"),
+        & ~F.lower(input_df.provider_name).rlike("the council of st monica trust"),
     )
 
     input_df = input_df.withColumn(
         "cqc_sector",
-        when(input_df.cqc_sector == "false", "Independent").otherwise(
+        F.when(input_df.cqc_sector == "false", "Independent").otherwise(
             "Local authority"
         ),
     )
@@ -404,15 +394,15 @@ def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
     # total_staff = wkrrrecs: Take total_staff
     return input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
-                & (col("worker_record_count") == col("total_staff"))
-                & col("total_staff").isNotNull()
-                & col("worker_record_count").isNotNull()
+                F.col("job_count").isNull()
+                & (F.col("worker_record_count") == F.col("total_staff"))
+                & F.col("total_staff").isNotNull()
+                & F.col("worker_record_count").isNotNull()
             ),
-            col("total_staff"),
-        ).otherwise(col("job_count")),
+            F.col("total_staff"),
+        ).otherwise(F.col("job_count")),
     )
 
 
@@ -420,22 +410,22 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
     # Either worker_record_count or total_staff is null: return first not null
     return input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
+                F.col("job_count").isNull()
                 & (
                     (
-                        col("total_staff").isNull()
-                        & col("worker_record_count").isNotNull()
+                        F.col("total_staff").isNull()
+                        & F.col("worker_record_count").isNotNull()
                     )
                     | (
-                        col("total_staff").isNotNull()
-                        & col("worker_record_count").isNull()
+                        F.col("total_staff").isNotNull()
+                        & F.col("worker_record_count").isNull()
                     )
                 )
             ),
-            coalesce(input_df.total_staff, input_df.worker_record_count),
-        ).otherwise(coalesce(col("job_count"))),
+            F.coalesce(input_df.total_staff, input_df.worker_record_count),
+        ).otherwise(F.coalesce(F.col("job_count"))),
     )
 
 
@@ -447,19 +437,19 @@ def calculate_jobcount_abs_difference_within_range(input_df):
 
     input_df = input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
+                F.col("job_count").isNull()
                 & (
-                    (col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
+                    (F.col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
                     | (
-                        col("abs_difference") / col("total_staff")
+                        F.col("abs_difference") / F.col("total_staff")
                         < MIN_PERCENTAGE_DIFFERENCE
                     )
                 )
             ),
-            (col("total_staff") + col("worker_record_count")) / 2,
-        ).otherwise(col("job_count")),
+            (F.col("total_staff") + F.col("worker_record_count")) / 2,
+        ).otherwise(F.col("job_count")),
     )
 
     input_df = input_df.drop("abs_difference")
@@ -471,13 +461,13 @@ def calculate_jobcount_handle_tiny_values(input_df):
     # total_staff or worker_record_count < 3: return max
     return input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
-                & ((col("total_staff") < 3) | (col("worker_record_count") < 3))
+                F.col("job_count").isNull()
+                & ((F.col("total_staff") < 3) | (F.col("worker_record_count") < 3))
             ),
-            greatest(col("total_staff"), col("worker_record_count")),
-        ).otherwise(col("job_count")),
+            F.greatest(F.col("total_staff"), F.col("worker_record_count")),
+        ).otherwise(F.col("job_count")),
     )
 
 
@@ -486,11 +476,11 @@ def calculate_jobcount_estimate_from_beds(input_df):
     beds_to_jobcount_coefficient = 1.0010753137758377001
     input_df = input_df.withColumn(
         "bed_estimate_jobcount",
-        when(
-            (col("job_count").isNull() & (col("number_of_beds") > 0)),
+        F.when(
+            (F.col("job_count").isNull() & (F.col("number_of_beds") > 0)),
             (
                 beds_to_jobcount_intercept
-                + (col("number_of_beds") * beds_to_jobcount_coefficient)
+                + (F.col("number_of_beds") * beds_to_jobcount_coefficient)
             ),
         ).otherwise(None),
     )
@@ -516,58 +506,58 @@ def calculate_jobcount_estimate_from_beds(input_df):
     # if total_staff and worker_record_count within 10% or < 5: return avg(total_staff + wkrrds)
     input_df = input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
-                & col("bed_estimate_jobcount").isNotNull()
+                F.col("job_count").isNull()
+                & F.col("bed_estimate_jobcount").isNotNull()
                 & (
                     (
-                        (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
+                        (F.col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
                         | (
-                            col("totalstaff_percentage_diff")
+                            F.col("totalstaff_percentage_diff")
                             < MIN_PERCENTAGE_DIFFERENCE
                         )
                     )
                     & (
-                        (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                        | (col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                        (F.col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
+                        | (F.col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                     )
                 )
             ),
-            (col("total_staff") + col("worker_record_count")) / 2,
-        ).otherwise(col("job_count")),
+            (F.col("total_staff") + F.col("worker_record_count")) / 2,
+        ).otherwise(F.col("job_count")),
     )
 
     # if total_staff within 10% or < 5: return total_staff
     input_df = input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
-                & col("bed_estimate_jobcount").isNotNull()
+                F.col("job_count").isNull()
+                & F.col("bed_estimate_jobcount").isNotNull()
                 & (
-                    (col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                    (F.col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
+                    | (F.col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            col("total_staff"),
-        ).otherwise(col("job_count")),
+            F.col("total_staff"),
+        ).otherwise(F.col("job_count")),
     )
 
     # if worker_record_count within 10% or < 5: return worker_record_count
     input_df = input_df.withColumn(
         "job_count",
-        when(
+        F.when(
             (
-                col("job_count").isNull()
-                & col("bed_estimate_jobcount").isNotNull()
+                F.col("job_count").isNull()
+                & F.col("bed_estimate_jobcount").isNotNull()
                 & (
-                    (col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                    (F.col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
+                    | (F.col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
                 )
             ),
-            col("worker_record_count"),
-        ).otherwise(col("job_count")),
+            F.col("worker_record_count"),
+        ).otherwise(F.col("job_count")),
     )
 
     # Drop temporary columns
@@ -588,7 +578,7 @@ def calculate_jobcount(input_df):
     print("Calculating job_count...")
 
     # Add null/empty job_count column
-    input_df = input_df.withColumn("job_count", lit(None).cast(IntegerType()))
+    input_df = input_df.withColumn("job_count", F.lit(None).cast(IntegerType()))
 
     input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
     input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
