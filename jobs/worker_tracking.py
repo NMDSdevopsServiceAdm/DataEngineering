@@ -13,10 +13,24 @@ def main(
     destination=None,
 ):
 
-    print("Creating stayer vs leaver parquet file")
-    start_workplace_df = updated_within_time_period(source_start_workplace_file)
+    spark = utils.get_spark()
 
-    end_workplace_df = updated_within_time_period(source_end_workplace_file)
+    print("Creating stayer vs leaver parquet file")
+
+    ascwds_workplace = spark.read.parquet(source_ascwds_workplace).select(
+        "establishmentid",
+        "mupddate",
+        "import_date",
+        "wkrrecs",
+    )
+
+    ascwds_worker = spark.read.parquet(source_ascwds_worker)
+
+    end_period_import_date = max_import_date_in_two_datasets(
+        ascwds_workplace, ascwds_worker
+    )
+
+    ascwds_workplace = updated_within_time_period(source_ascwds_workplace)
 
     starters_vs_leavers_df = workplaces_in_both_dfs(
         start_workplace_df, end_workplace_df
@@ -115,23 +129,13 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--source_start_workplace_file",
-        help="Source s3 directory for ASCWDS workplace dataset - start of 12 month period.",
+        "--source_ascwds_workplace",
+        help="Source s3 directory for ASCWDS workplace data.",
         required=True,
     )
     parser.add_argument(
-        "--source_start_worker_file",
-        help="Source s3 directory for ASCWDS worker dataset - start of 12 month period.",
-        required=True,
-    )
-    parser.add_argument(
-        "--source_end_workplace_file",
-        help="Source s3 directory for ASCWDS workplace dataset - end of 12 month period.",
-        required=True,
-    )
-    parser.add_argument(
-        "--source_end_worker_file",
-        help="Source s3 directory for ASCWDS worker dataset - end of 12 month period.",
+        "--source_ascwds_worker",
+        help="Source s3 directory for ASCWDS worker data.",
         required=True,
     )
     parser.add_argument(
@@ -143,27 +147,21 @@ def collect_arguments():
     args, unknown = parser.parse_known_args()
 
     return (
-        args.source_start_workplace_file,
-        args.source_start_worker_file,
-        args.source_end_workplace_file,
-        args.source_end_worker_file,
+        args.source_ascwds_workplace,
+        args.source_ascwds_worker,
         args.destination,
     )
 
 
 if __name__ == "__main__":
     (
-        source_start_workplace_file,
-        source_start_worker_file,
-        source_end_workplace_file,
-        source_end_worker_file,
+        source_ascwds_workplace,
+        source_ascwds_worker,
         destination,
     ) = collect_arguments()
 
     main(
-        source_start_workplace_file,
-        source_start_worker_file,
-        source_end_workplace_file,
-        source_end_worker_file,
+        source_ascwds_workplace,
+        source_ascwds_worker,
         destination,
     )
