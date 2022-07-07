@@ -1,7 +1,21 @@
 import argparse
 import builtins
 
-import pyspark.sql.functions as F
+from pyspark.sql.functions import (
+    abs,
+    add_months,
+    coalesce,
+    col,
+    greatest,
+    lit,
+    lower,
+    max,
+    when,
+    year,
+    month,
+    dayofmonth,
+    lpad,
+)
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType
 
 from utils import utils
@@ -72,6 +86,13 @@ def main(
         output_df = output_df.withColumn(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
+        output_df = output_df.withColumn("snapshot_year", year(col("snapshot_date")))
+        output_df = output_df.withColumn(
+            "snapshot_month", lpad(month(col("snapshot_date")), 2, "0")
+        )
+        output_df = output_df.withColumn(
+            "snapshot_day", lpad(dayofmonth(col("snapshot_date")), 2, "0")
+        )
 
         if master_df is None:
             master_df = output_df
@@ -80,6 +101,9 @@ def main(
 
     master_df = master_df.select(
         "snapshot_date",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
         "ascwds_workplace_import_date",
         "cqc_locations_import_date",
         "cqc_providers_import_date",
@@ -110,7 +134,11 @@ def main(
 
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(master_df, destination)
+        utils.write_to_parquet(
+            master_df,
+            destination,
+            partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
+        )
     else:
         return master_df
 

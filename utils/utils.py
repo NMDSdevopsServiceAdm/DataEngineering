@@ -82,12 +82,12 @@ def generate_s3_main_datasets_dir_date_path(domain, dataset, date):
     return output_dir
 
 
-def write_to_parquet(df, output_dir, append=False):
+def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
 
     if append:
         df.write.mode("append").parquet(output_dir)
     else:
-        df.write.parquet(output_dir)
+        df.write.partitionBy(*partitionKeys).parquet(output_dir)
 
 
 def read_csv(source, delimiter=","):

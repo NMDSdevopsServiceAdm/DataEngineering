@@ -72,6 +72,9 @@ class PrepareLocationsTests(unittest.TestCase):
             output_df.columns,
             [
                 "snapshot_date",
+                "snapshot_year",
+                "snapshot_month",
+                "snapshot_day",
                 "ascwds_workplace_import_date",
                 "cqc_locations_import_date",
                 "cqc_providers_import_date",
