@@ -4,7 +4,7 @@ import json
 import re
 from functools import partial
 
-from pyspark.sql.functions import udf, struct
+import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, FloatType, IntegerType
 
 from schemas.worker_schema import WORKER_SCHEMA
@@ -14,6 +14,7 @@ from utils import utils
 def main(source, destination=None):
     main_df = get_dataset_worker(source)
 
+    print("Formating date fields")
     main_df = utils.format_import_date(main_df)
     main_df = utils.format_date_fields(main_df)
 
@@ -37,6 +38,7 @@ def main(source, destination=None):
         },
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():
+        print(f"Aggregating {col_name}")
         main_df = replace_columns_with_aggregated_column(
             main_df,
             col_name,
@@ -45,6 +47,7 @@ def main(source, destination=None):
             pattern=info["pattern"],
         )
 
+    print("Aggregating hours worked")
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hrs_worked",
@@ -54,6 +57,7 @@ def main(source, destination=None):
         output_type=FloatType(),
     )
 
+    print("Aggregating hourly rate")
     main_df = replace_columns_with_aggregated_column(
         main_df,
         "hourly_rate",
@@ -83,39 +87,40 @@ def get_dataset_worker(source):
     return worker_df
 
 
-def clean(input_df, column_names):
+def clean(input_df, all_columns, schema=WORKER_SCHEMA):
     print("Cleaning...")
-    # training flags + count, ac, nac, dn
-    # jr flags
-    # ql
-    # year
-    should_be_integers = []
-    for column in column_names:
+
+    should_be_integers = get_columns_that_should_be_integers(all_columns, schema)
+    input_df = cast_column_to_type(input_df, should_be_integers, IntegerType())
+
+    should_be_floats = get_columns_that_should_be_floats()
+    input_df = cast_column_to_type(input_df, should_be_floats, FloatType())
+
+    return input_df
+
+
+def get_columns_that_should_be_integers(all_columns, schema=WORKER_SCHEMA):
+    relevant_columns = []
+
+    for column in all_columns:
         if ("year" in column) or ("flag" in column) or ("ql" in column):
-            should_be_integers.append(column)
+            relevant_columns.append(column)
+
+    training_related = utils.extract_col_with_pattern(
+        "^tr\d\d(count|ac|nac|dn)$", schema
+    )
     others = ["emplstat", "zerohours", "salaryint"]
 
-    # Cast strings to integers
-    for column_name in should_be_integers + others:
-        input_df = input_df.withColumn(
-            column_name, input_df[column_name].cast(IntegerType())
-        )
+    return relevant_columns + training_related + others
 
-    should_be_floats = [
-        # "distwrkk",
-        # "dayssick",
-        "averagehours",
-        "conthrs",
-        "salary",
-        "hrlyrate",
-        # "previous_pay",
-    ]
 
-    # Cast strings to integers
-    for column_name in should_be_floats:
-        input_df = input_df.withColumn(
-            column_name, input_df[column_name].cast(FloatType())
-        )
+def get_columns_that_should_be_floats():
+    return ["distwrkk", "dayssick", "averagehours", "conthrs", "salary", "hrlyrate", "previous_pay"]
+
+
+def cast_column_to_type(input_df, columns, type):
+    for column_name in columns:
+        input_df = input_df.withColumn(column_name, input_df[column_name].cast(type))
     return input_df
 
 
@@ -146,12 +151,12 @@ def add_aggregated_column(
     df, col_name, columns, udf_function, types=None, output_type=StringType()
 ):
     curried_func = partial(udf_function, types=types)
-    aggregate_udf = udf(curried_func, output_type)
+    aggregate_udf = F.udf(curried_func, output_type)
     to_be_aggregated_df = df.select(columns)
     df = df.withColumn(
         col_name,
         aggregate_udf(
-            struct([to_be_aggregated_df[x] for x in to_be_aggregated_df.columns])
+            F.struct([to_be_aggregated_df[x] for x in to_be_aggregated_df.columns])
         ),
     )
 
@@ -188,7 +193,7 @@ def get_qualification_into_json(row, types):
     aggregated_qualifications = {}
 
     for qualification in types:
-        if row[qualification] >= 1:
+        if row[qualification] and (row[qualification] >= 1):
             aggregated_qualifications[qualification] = extract_qualification_info(
                 row, qualification
             )
@@ -251,7 +256,12 @@ def apply_sense_check_to_hrs_worked(hours):
 
 def calculate_hourly_pay(row, types=None):
     # salary is annual
-    if row["salaryint"] == 250 and row["salary"] and row["hrs_worked"] > 0:
+    if (
+        (row["salaryint"] == 250)
+        and row["salary"]
+        and row["hrs_worked"]
+        and (row["hrs_worked"] > 0)
+    ):
         return round(row["salary"] / 52 / row["hrs_worked"], 2)
 
     # salary is hourly

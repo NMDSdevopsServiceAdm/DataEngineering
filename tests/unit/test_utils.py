@@ -427,12 +427,16 @@ class UtilsTests(unittest.TestCase):
         training_types = utils.extract_specific_column_types("^tr[0-9]{2}flag$", schema)
         self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
 
+    def test_extract_col_with_pattern(self):
         schema = StructType(
             fields=[
                 StructField("tr01flag", IntegerType(), True),
                 StructField("tr01latestdate", IntegerType(), True),
                 StructField("tr01count", IntegerType(), True),
                 StructField("tr02flag", IntegerType(), True),
+                StructField("tr02ac", IntegerType(), True),
+                StructField("tr02nac", IntegerType(), True),
+                StructField("tr02dn", IntegerType(), True),
                 StructField("tr02latestdate", IntegerType(), True),
                 StructField("tr02count", IntegerType(), True),
                 StructField("training", StringType(), True),
@@ -440,6 +444,7 @@ class UtilsTests(unittest.TestCase):
             ]
         )
         training = utils.extract_col_with_pattern("^tr[0-9]{2}[a-z]+", schema)
+        tr = utils.extract_col_with_pattern("^tr\d\d(count|ac|nac|dn)$", schema)
         self.assertEqual(
             training,
             [
@@ -447,10 +452,14 @@ class UtilsTests(unittest.TestCase):
                 "tr01latestdate",
                 "tr01count",
                 "tr02flag",
+                "tr02ac",
+                "tr02nac", 
+                "tr02dn",
                 "tr02latestdate",
                 "tr02count",
             ],
         )
+        self.assertEqual(tr, ["tr01count", "tr02ac", "tr02nac", "tr02dn", "tr02count"])
 
     def test_format_import_date_returns_date_format(self):
         df = utils.format_import_date(self.test_workplace_df)

@@ -4,7 +4,7 @@ import warnings
 import json
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 from jobs import prepare_workers
 from schemas.worker_schema import WORKER_SCHEMA
@@ -67,6 +67,18 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(extracted_date, "2017-06-15")
 
     def test_clean(self):
+        schema = StructType(
+            fields=[
+                StructField("tr01flag", StringType(), True),
+                StructField("tr01latestdate", StringType(), True),
+                StructField("tr01count", StringType(), True),
+                StructField("tr02flag", StringType(), True),
+                StructField("tr02ac", StringType(), True),
+                StructField("tr02nac", StringType(), True),
+                StructField("tr02dn", StringType(), True),
+                StructField("tr02latestdate", StringType(), True),
+            ]
+        )
         columns = [
             "ql01year2",
             "tr03flag",
@@ -78,14 +90,15 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
             "salary",
-            "hrlyrate",
+            "hrlyrate", "tr01count", "tr02ac", "tr02nac", "tr02dn",
+            "distwrkk", "dayssick", "previous_pay",
         ]
         rows = [
-            ("0", "1", "1", "1", "190", "-1", "252", "26.5", "20.0", "0.530", "2.0"),
-            ("0", "1", None, "1", "191", "0", "250", "26.5", "20.0", "0.530", "2.0"),
+            ("0", "1", "1", "1", "190", "-1", "252", "26.5", "20.0", "0.53", "2.0", "0", "1", "0", "1", "10.0", "15.3", "13"),
+            ("0", "1", None, "1", "191", "0", "250", "26.5", "20.0", "0.53", "2.0",  "0", "1", "0", "1", "10.0", "15.3", "13"),
         ]
         df = self.spark.createDataFrame(rows, columns)
-        cleaned_df = prepare_workers.clean(df, columns)
+        cleaned_df = prepare_workers.clean(df, columns, schema)
         cleaned_df_list = cleaned_df.collect()
 
         self.assertEqual(cleaned_df.count(), 2)
@@ -94,6 +107,10 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(cleaned_df_list[0]["salaryint"], 252)
         self.assertEqual(cleaned_df_list[0]["averagehours"], 26.5)
         self.assertEqual(cleaned_df_list[1]["jr03flag"], None)
+        self.assertAlmostEqual(cleaned_df_list[1]["salary"], 0.53)
+        self.assertEqual(cleaned_df_list[1]["tr02ac"], 1)
+        self.assertEqual(cleaned_df_list[1]["tr02dn"], 1)
+        self.assertAlmostEqual(cleaned_df_list[1]["dayssick"], 15.30, places=2)
 
     def test_get_dataset_worker_has_correct_columns(self):
         worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
