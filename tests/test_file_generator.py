@@ -947,3 +947,39 @@ def generate_care_directory_specialisms(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_workplace_import_dates(output_destination):
+    spark = utils.get_spark()
+    workplace_df = spark.createDataFrame(
+        [
+            ("20220601",),
+            ("20220101",),
+            ("20210202",),
+            ("20201225",),
+        ],
+        ["import_date"],
+    )
+
+    if output_destination:
+        workplace_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return workplace_df
+
+
+def generate_worker_import_dates(output_destination):
+    spark = utils.get_spark()
+    worker_df = spark.createDataFrame(
+        [
+            ("20220101",),
+            ("20211212",),
+            ("20210101",),
+            ("20201225",),
+        ],
+        ["import_date"],
+    )
+
+    if output_destination:
+        worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return worker_df
