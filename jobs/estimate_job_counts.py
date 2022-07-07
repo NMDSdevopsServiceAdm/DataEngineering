@@ -119,7 +119,7 @@ def populate_estimate_jobs_when_job_count_known(df):
 
 
 def populate_last_known_job_count(df):
-    og_columns = df.columns
+    column_names = df.columns
     df = df.alias("current").join(
         df.alias("previous"),
         (F.col("current.locationid") == F.col("previous.locationid"))
@@ -144,7 +144,7 @@ def populate_last_known_job_count(df):
 
     df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
     df = df.select(
-        [f"current.{colname}" for colname in og_columns] + [LAST_KNOWN_JOB_COUNT]
+        [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
     )
 
     return df
