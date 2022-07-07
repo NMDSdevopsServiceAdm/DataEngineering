@@ -354,7 +354,7 @@ def purge_workplaces(input_df):
     org_purge_df = (
         input_df.select("locationid", "orgid", "mupddate", "import_date")
         .groupBy("orgid", "import_date")
-        .agg(max("mupddate").alias("mupddate_org"))
+        .agg(F.max("mupddate").alias("mupddate_org"))
     )
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
@@ -436,7 +436,7 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
 def calculate_jobcount_abs_difference_within_range(input_df):
     # Abs difference between total_staff & worker_record_count < 5 or < 10% take average:
     input_df = input_df.withColumn(
-        "abs_difference", abs(input_df.total_staff - input_df.worker_record_count)
+        "abs_difference", F.abs(input_df.total_staff - input_df.worker_record_count)
     )
 
     input_df = input_df.withColumn(
@@ -491,19 +491,19 @@ def calculate_jobcount_estimate_from_beds(input_df):
 
     # Determine differences
     input_df = input_df.withColumn(
-        "totalstaff_diff", abs(input_df.total_staff - input_df.bed_estimate_jobcount)
+        "totalstaff_diff", F.abs(input_df.total_staff - input_df.bed_estimate_jobcount)
     )
     input_df = input_df.withColumn(
         "wkrrecs_diff",
-        abs(input_df.worker_record_count - input_df.bed_estimate_jobcount),
+        F.abs(input_df.worker_record_count - input_df.bed_estimate_jobcount),
     )
     input_df = input_df.withColumn(
         "totalstaff_percentage_diff",
-        abs(input_df.totalstaff_diff / input_df.bed_estimate_jobcount),
+        F.abs(input_df.totalstaff_diff / input_df.bed_estimate_jobcount),
     )
     input_df = input_df.withColumn(
         "wkrrecs_percentage_diff",
-        abs(input_df.worker_record_count / input_df.bed_estimate_jobcount),
+        F.abs(input_df.worker_record_count / input_df.bed_estimate_jobcount),
     )
 
     # Bounding predictions to certain locations with differences in range
