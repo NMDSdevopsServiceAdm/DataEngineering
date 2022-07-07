@@ -474,7 +474,7 @@ def generate_ascwds_workplace_file(output_destination):
     return df
 
 
-def generate_ascwds_stayer_leaver_workplace_start_file(output_destination):
+def generate_ascwds_stayer_leaver_workplace_data(output_destination):
     spark = utils.get_spark()
     columns = ["establishmentid", "import_date", "wkrrecs", "mupddate", "other_column"]
 
@@ -492,6 +492,15 @@ def generate_ascwds_stayer_leaver_workplace_start_file(output_destination):
         ("111", "20210101", 5, date(2020, 11, 1), "0"),
         ("112", "20210101", 10, date(2020, 12, 1), "1"),
         ("113", "20210101", None, date(2020, 12, 1), "1"),
+        ("106", "20220101", 10, date(2021, 12, 1), "1"),
+        ("107", "20220101", 10, date(2021, 12, 1), "0"),
+        ("108", "20220101", 10, date(2021, 11, 1), "0"),
+        ("109", "20220101", 10, date(2021, 11, 1), "0"),
+        ("110", "20220101", 10, date(2021, 10, 1), "0"),
+        ("111", "20220101", 10, date(2021, 10, 1), "0"),
+        ("112", "20220101", 10, date(2021, 5, 1), "1"),
+        ("113", "20220101", 10, date(2021, 12, 1), "0"),
+        ("114", "20220101", 10, date(2021, 12, 1), "0"),
     ]
 
     df = spark.createDataFrame(rows, columns)
@@ -687,30 +696,6 @@ def generate_locationid_and_providerid_file(output_destination):
         ("1-000000001", "1-000000001", "other_data"),
         ("1-000000002", "1-000000002", "other_data"),
         ("1-000000002", "1-000000003", "other_data"),
-    ]
-
-    df = spark.createDataFrame(rows, columns)
-
-    if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
-
-    return df
-
-
-def generate_ascwds_stayer_leaver_workplace_end_file(output_destination):
-    spark = utils.get_spark()
-    columns = ["establishmentid", "import_date", "wkrrecs", "mupddate", "other_column"]
-
-    rows = [
-        ("106", "20220101", 10, date(2021, 12, 1), "1"),
-        ("107", "20220101", 10, date(2021, 12, 1), "0"),
-        ("108", "20220101", 10, date(2021, 11, 1), "0"),
-        ("109", "20220101", 10, date(2021, 11, 1), "0"),
-        ("110", "20220101", 10, date(2021, 10, 1), "0"),
-        ("111", "20220101", 10, date(2021, 10, 1), "0"),
-        ("112", "20220101", 10, date(2021, 5, 1), "1"),
-        ("113", "20220101", 10, date(2021, 12, 1), "0"),
-        ("114", "20220101", 10, date(2021, 12, 1), "0"),
     ]
 
     df = spark.createDataFrame(rows, columns)
