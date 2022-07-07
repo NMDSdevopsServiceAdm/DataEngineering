@@ -453,7 +453,7 @@ class UtilsTests(unittest.TestCase):
                 "tr01count",
                 "tr02flag",
                 "tr02ac",
-                "tr02nac", 
+                "tr02nac",
                 "tr02dn",
                 "tr02latestdate",
                 "tr02count",

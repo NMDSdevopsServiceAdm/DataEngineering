@@ -115,7 +115,15 @@ def get_columns_that_should_be_integers(all_columns, schema=WORKER_SCHEMA):
 
 
 def get_columns_that_should_be_floats():
-    return ["distwrkk", "dayssick", "averagehours", "conthrs", "salary", "hrlyrate", "previous_pay"]
+    return [
+        "distwrkk",
+        "dayssick",
+        "averagehours",
+        "conthrs",
+        "salary",
+        "hrlyrate",
+        "previous_pay",
+    ]
 
 
 def cast_column_to_type(input_df, columns, type):

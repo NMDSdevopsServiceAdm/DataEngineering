@@ -201,7 +201,9 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
         spark.read.option("basePath", cqc_provider_source)
         .parquet(cqc_provider_source)
         .select(
-            F.col("providerid"), F.col("name").alias("provider_name"), F.col("import_date")
+            F.col("providerid"),
+            F.col("name").alias("provider_name"),
+            F.col("import_date"),
         )
     )
 
@@ -344,7 +346,9 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("purge_date", F.add_months(F.col("import_date"), -24))
+    input_df = input_df.withColumn(
+        "purge_date", F.add_months(F.col("import_date"), -24)
+    )
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (

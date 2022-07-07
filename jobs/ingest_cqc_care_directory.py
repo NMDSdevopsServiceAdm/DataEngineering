@@ -197,7 +197,9 @@ def create_contacts_from_registered_manager_name(df):
 
     df = df.withColumn(
         "personTitle",
-        F.when(F.length(F.col("registered_manager_name")) > 1, "M").otherwise(F.lit(None)),
+        F.when(F.length(F.col("registered_manager_name")) > 1, "M").otherwise(
+            F.lit(None)
+        ),
     )
     df = df.withColumn(
         "personGivenName", F.split(F.col("registered_manager_name"), ", ").getItem(1)
