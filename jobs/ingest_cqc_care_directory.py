@@ -2,7 +2,7 @@ import sys
 import argparse
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import F
+import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType
 
 from utils import utils, cqc_care_directory_dictionaries

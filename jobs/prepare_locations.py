@@ -1,7 +1,7 @@
 import argparse
 import builtins
 
-from pyspark.sql.functions import F
+import pyspark.sql.functions as F
 from pyspark.sql.types import DateType, IntegerType, StructField, StructType
 
 from utils import utils
