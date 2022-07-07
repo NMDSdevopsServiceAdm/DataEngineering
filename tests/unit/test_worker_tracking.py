@@ -6,68 +6,59 @@ from pyspark.sql import SparkSession
 from jobs import worker_tracking
 from utils import utils
 from tests.test_file_generator import (
-    generate_ascwds_stayer_leaver_workplace_start_file,
-    generate_ascwds_stayer_leaver_workplace_end_file,
+    generate_ascwds_stayer_leaver_workplace_data,
     generate_ascwds_stayer_leaver_worker_start_file,
     generate_ascwds_stayer_leaver_worker_end_file,
+    generate_workplace_import_dates,
+    generate_worker_import_dates,
 )
 
 
 class CQC_Care_Directory_Tests(unittest.TestCase):
 
-    START_PERIOD_WORKPLACE_FILE = (
-        "tests/test_data/tmp/ascwds_workplace_file_start.parquet"
-    )
-    START_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_start.parquet"
-    END_PERIOD_WORKPLACE_FILE = "tests/test_data/tmp/ascwds_workplace_file_end.parquet"
-    END_PERIOD_WORKER_FILE = "tests/test_data/tmp/ascwds_worker_file_end.parquet"
+    ASCWDS_WORKPLACE = "tests/test_data/tmp/ascwds_workplace.parquet"
+    ASCWDS_WORKER = "tests/test_data/tmp/ascwds_worker.parquet"
+    WORKPLACE_IMPORT_DATES = "tests/test_data/tmp/workplace_import_dates.parquet"
+    WORKER_IMPORT_DATES = "tests/test_data/tmp/worker_import_dates.parquet"
 
     @classmethod
     def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
-        generate_ascwds_stayer_leaver_workplace_start_file(
-            self.START_PERIOD_WORKPLACE_FILE
-        )
-        generate_ascwds_stayer_leaver_worker_start_file(self.START_PERIOD_WORKER_FILE)
-        generate_ascwds_stayer_leaver_workplace_end_file(self.END_PERIOD_WORKPLACE_FILE)
-        generate_ascwds_stayer_leaver_worker_end_file(self.END_PERIOD_WORKER_FILE)
+        generate_ascwds_stayer_leaver_workplace_data(self.ASCWDS_WORKPLACE)
+        generate_ascwds_stayer_leaver_worker_start_file(self.ASCWDS_WORKER)
+        generate_workplace_import_dates(self.WORKPLACE_IMPORT_DATES)
+        generate_worker_import_dates(self.WORKER_IMPORT_DATES)
 
     @classmethod
     def tearDownClass(self):
         try:
-            shutil.rmtree(self.START_PERIOD_WORKPLACE_FILE)
-            shutil.rmtree(self.START_PERIOD_WORKER_FILE)
-            shutil.rmtree(self.END_PERIOD_WORKPLACE_FILE)
-            shutil.rmtree(self.END_PERIOD_WORKER_FILE)
+            shutil.rmtree(self.ASCWDS_WORKPLACE)
+            shutil.rmtree(self.ASCWDS_WORKER)
+            shutil.rmtree(self.WORKPLACE_IMPORT_DATES)
+            shutil.rmtree(self.WORKER_IMPORT_DATES)
         except OSError():
             pass  # Ignore dir does not exist
 
     def test_max_import_date_in_two_datasets(self):
-        workplace_df = self.spark.createDataFrame(
-            [("20220601",), ("20220101",)], ["import_date"]
-        )
-        worker_df = self.spark.createDataFrame(
-            [("20220101",), ("20211212",)], ["import_date"]
-        )
+        spark = utils.get_spark()
+
+        workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
+        worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
         max_import_date = worker_tracking.max_import_date_in_two_datasets(
-            workplace_df, worker_df
+            workplace_dates, worker_dates
         )
 
         self.assertEqual(max_import_date, "20220101")
 
     def test_get_start_period_import_date(self):
-        # fmt: off
-        workplace_df = self.spark.createDataFrame(
-            [("20220601",), ("20220101",), ("20210202",), ("20201225",), ], ["import_date"],
-        )
-        worker_df = self.spark.createDataFrame(
-            [("20220101",), ("20211212",), ("20210101",), ("20201225",), ], ["import_date"],
-        )
-        # fmt: on
+        spark = utils.get_spark()
+
+        workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
+        worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
         start_period_import_date = worker_tracking.get_start_period_import_date(
-            workplace_df, worker_df, "20220101"
+            workplace_dates, worker_dates, "20220101"
         )
 
         self.assertEqual(start_period_import_date, "20201225")
@@ -159,10 +150,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     def test_main(self):
         output_df = worker_tracking.main(
-            self.START_PERIOD_WORKPLACE_FILE,
-            self.START_PERIOD_WORKER_FILE,
-            self.END_PERIOD_WORKPLACE_FILE,
-            self.END_PERIOD_WORKER_FILE,
+            self.WORKPLACE_DATA,
+            self.WORKER_DATA,
         )
 
         self.assertIsNotNone(output_df)
