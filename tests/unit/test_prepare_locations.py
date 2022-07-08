@@ -40,8 +40,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
     )
 
-    @classmethod
-    def setUpClass(self):
+    def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_prepare_locations"
         ).getOrCreate()
@@ -50,8 +49,7 @@ class PrepareLocationsTests(unittest.TestCase):
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
         generate_pir_file(self.TEST_PIR_FILE)
 
-    @classmethod
-    def tearDownClass(self):
+    def tearDown(self):
         try:
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
             shutil.rmtree(self.TEST_CQC_LOCATION_FILE)
