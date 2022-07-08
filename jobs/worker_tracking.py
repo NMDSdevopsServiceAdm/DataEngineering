@@ -26,14 +26,13 @@ def main(
 
     ascwds_worker = spark.read.parquet(source_ascwds_worker)
 
-    end_period_import_date = max_import_date_in_two_datasets(
-        ascwds_workplace, ascwds_worker
-    )
+    (
+        start_period_import_date,
+        end_period_import_date,
+    ) = get_start_and_end_period_import_dates(ascwds_workplace, ascwds_worker)
 
-    ascwds_workplace = updated_within_time_period(source_ascwds_workplace)
-
-    starters_vs_leavers_df = workplaces_in_both_dfs(
-        start_workplace_df, end_workplace_df
+    ascwds_workplace = filter_workplaces(
+        ascwds_workplace, start_period_import_date, end_period_import_date
     )
 
     start_worker_df = get_ascwds_worker_df(
@@ -74,24 +73,37 @@ def get_start_period_import_date(workplace_df, worker_df, end_period_import_date
     return max_import_date.first().max
 
 
-def updated_within_time_period(df):
-    spark = utils.get_spark()
+def get_start_and_end_period_import_dates(workplace_df, worker_df):
+    end_period_import_date = max_import_date_in_two_datasets(workplace_df, worker_df)
 
-    df = spark.read.parquet(df)
-    df = df.select("establishmentid", "mupddate", "import_date", "wkrrecs")
+    start_period_import_date = get_start_period_import_date(
+        workplace_df, worker_df, end_period_import_date
+    )
+
+    return start_period_import_date, end_period_import_date
+
+
+def filter_workplaces(
+    ascwds_workplace, start_period_import_date, end_period_import_date
+):
+
+    df = ascwds_workplace.filter(
+        (ascwds_workplace.import_date == start_period_import_date)
+        | (ascwds_workplace.import_date == end_period_import_date)
+    )
+
     df = utils.format_import_date(df)
     df = df.withColumn("mupddate_cutoff", F.add_months(df.import_date, -6))
     df = df.filter((df.mupddate > df.mupddate_cutoff) & (df.wkrrecs >= 1))
     df = df.select("establishmentid")
 
-    return df
+    workplace_count = df.join(
+        df.groupBy("establishmentid").count(), on="establishmentid"
+    )
 
+    workplaces_to_include = workplace_count.filter(workplace_count["count"] == 2)
 
-def workplaces_in_both_dfs(start_workplace_df, end_workplace_df):
-
-    df = start_workplace_df.join(end_workplace_df, ["establishmentid"], "inner")
-
-    return df
+    return workplaces_to_include
 
 
 def get_ascwds_worker_df(estab_list_df, worker_df):
