@@ -2,18 +2,7 @@ import sys
 import argparse
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import (
-    lit,
-    collect_set,
-    array,
-    col,
-    split,
-    expr,
-    when,
-    length,
-    struct,
-    explode,
-)
+import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType
 
 from utils import utils, cqc_care_directory_dictionaries
@@ -67,7 +56,7 @@ def unique_providerids_with_array_of_their_locationids(df):
     locations_at_prov_df = df.select("providerId", "locationId")
     locations_at_prov_df = (
         locations_at_prov_df.groupby("providerId")
-        .agg(collect_set("locationId"))
+        .agg(F.collect_set("locationId"))
         .withColumnRenamed("collect_set(locationId)", "locationIds")
     )
 
@@ -86,10 +75,10 @@ def get_distinct_provider_info(df):
     ).distinct()
 
     prov_info_df = prov_info_df.withColumn(
-        "organisationType", lit("Provider").cast(StringType())
+        "organisationType", F.lit("Provider").cast(StringType())
     )
     prov_info_df = prov_info_df.withColumn(
-        "registrationStatus", lit("Registered").cast(StringType())
+        "registrationStatus", F.lit("Registered").cast(StringType())
     )
 
     return prov_info_df
@@ -157,10 +146,10 @@ def get_general_location_info(df):
     ).distinct()
 
     loc_info_df = loc_info_df.withColumn(
-        "numberOfBeds", col("numberOfBeds").cast(IntegerType())
+        "numberOfBeds", F.col("numberOfBeds").cast(IntegerType())
     )
-    loc_info_df = loc_info_df.withColumn("organisationType", lit("Location"))
-    loc_info_df = loc_info_df.withColumn("registrationStatus", lit("Registered"))
+    loc_info_df = loc_info_df.withColumn("organisationType", F.lit("Location"))
+    loc_info_df = loc_info_df.withColumn("registrationStatus", F.lit("Registered"))
 
     return loc_info_df
 
@@ -173,18 +162,18 @@ def convert_multiple_boolean_columns_into_single_array(df, value_mapping_dict, a
 
     for new_name, column_name in value_mapping_dict.items():
         df = df.replace("Y", column_name, new_name)
-        df = df.withColumn(new_name, split(col(new_name), ",").alias(new_name))
+        df = df.withColumn(new_name, F.split(F.col(new_name), ",").alias(new_name))
 
-    df = df.select(col("locationId"), array(df.columns[1:]).alias(alias))
+    df = df.select(F.col("locationId"), F.array(df.columns[1:]).alias(alias))
 
-    df = df.withColumn(alias, expr("filter(" + alias + ", elem -> elem is not null)"))
+    df = df.withColumn(alias, F.expr("filter(" + alias + ", elem -> elem is not null)"))
 
     return df
 
 
 def convert_specialisms_to_struct(df):
     df = df.withColumn(
-        "specialisms", expr("transform(specialisms, x-> named_struct('name',x[0]))")
+        "specialisms", F.expr("transform(specialisms, x-> named_struct('name',x[0]))")
     )
 
     return df
@@ -194,7 +183,7 @@ def convert_gac_service_types_to_struct(df):
 
     df = df.withColumn(
         "gacservicetypes",
-        expr(
+        F.expr(
             "transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))"
         ),
     )
@@ -208,29 +197,31 @@ def create_contacts_from_registered_manager_name(df):
 
     df = df.withColumn(
         "personTitle",
-        when(length(col("registered_manager_name")) > 1, "M").otherwise(lit(None)),
+        F.when(F.length(F.col("registered_manager_name")) > 1, "M").otherwise(
+            F.lit(None)
+        ),
     )
     df = df.withColumn(
-        "personGivenName", split(col("registered_manager_name"), ", ").getItem(1)
+        "personGivenName", F.split(F.col("registered_manager_name"), ", ").getItem(1)
     )
     df = df.withColumn(
-        "personFamilyName", split(col("registered_manager_name"), ",").getItem(0)
+        "personFamilyName", F.split(F.col("registered_manager_name"), ",").getItem(0)
     )
     df = df.withColumn(
         "personRoles",
-        when(
-            length(col("registered_manager_name")) > 1, "Registered Manager"
-        ).otherwise(lit(None)),
+        F.when(
+            F.length(F.col("registered_manager_name")) > 1, "Registered Manager"
+        ).otherwise(F.lit(None)),
     )
 
     df = df.select(
         "locationId",
-        struct(
+        F.struct(
             "personTitle", "personGivenName", "personFamilyName", "personRoles"
         ).alias("contacts"),
     )
 
-    df = df.select("locationId", array("contacts").alias("contacts"))
+    df = df.select("locationId", F.array("contacts").alias("contacts"))
 
     return df
 
@@ -239,18 +230,18 @@ def convert_regulated_activities_to_struct(df):
     df = df.select(
         "locationId",
         "contacts",
-        explode(col("regulatedactivities")).alias("regulatedactivities"),
+        F.explode(F.col("regulatedactivities")).alias("regulatedactivities"),
     )
 
-    df = df.withColumn("name", col("regulatedactivities").getItem(0))
-    df = df.withColumn("code", col("regulatedactivities").getItem(1))
+    df = df.withColumn("name", F.col("regulatedactivities").getItem(0))
+    df = df.withColumn("code", F.col("regulatedactivities").getItem(1))
 
     df = df.select(
-        "locationId", struct("name", "code", "contacts").alias("regulatedactivities")
+        "locationId", F.struct("name", "code", "contacts").alias("regulatedactivities")
     )
 
     df = df.groupBy("locationId").agg(
-        collect_set("regulatedactivities").alias("regulatedactivities")
+        F.collect_set("regulatedactivities").alias("regulatedactivities")
     )
 
     return df

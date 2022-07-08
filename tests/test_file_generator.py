@@ -1,5 +1,4 @@
 from datetime import date
-import dbldatagen as dg
 
 from pyspark.sql.types import (
     StructField,
@@ -10,7 +9,7 @@ from pyspark.sql.types import (
 )
 import pyspark.sql.functions as F
 
-from schemas import cqc_care_directory_schema, worker_schema
+from schemas import cqc_care_directory_schema
 from utils import utils
 
 
@@ -542,47 +541,56 @@ def generate_cqc_care_directory_file(output_destination):
 
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
-    dataspec = dg.DataGenerator(
-        spark, rows=10, partitions=8, randomSeedMethod="hash_fieldname"
-    ).withSchema(worker_schema.WORKER_SCHEMA)
 
-    dataspec = (
-        dataspec.withColumnSpec("tr01flag", 1)
-        .withColumnSpec("tr01count", 1)
-        .withColumnSpec("jr01flag", 1)
-        .withColumnSpec("jr03flag", 1)
-        .withColumnSpec("jr16cat1", 1)
-        .withColumnSpec("ql01achq2", 1)
-        .withColumnSpec("ql01year2", 2009)
-        .withColumnSpec("ql02achq3", 0)
-        .withColumnSpec("ql34achqe", 1)
-        .withColumnSpec("ql34yeare", 2010)
-        .withColumnSpec("ql37achq", 3)
-        .withColumnSpec("ql37year", 2021)
-        .withColumnSpec("ql313app", 1)
-        .withColumnSpec("ql313year", 2013)
-        .withColumnSpec("emplstat", 190)
-        .withColumnSpec("conthrs", 8.5)
-        .withColumnSpec("averagehours", 26.5)
-        .withColumnSpec("zerohours", 1)
-        .withColumnSpec("salaryint", 250)
-        .withColumnSpec("salary", 5200)
-        .withColumnSpec("hrlyrate", 100.5)
+    schema = StructType(
+        fields=[
+            StructField("tr01flag", StringType(), True),
+            StructField("tr01latestdate", StringType(), True),
+            StructField("tr01count", StringType(), True),
+            StructField("tr01ac", StringType(), True),
+            StructField("tr01nac", StringType(), True),
+            StructField("tr01dn", StringType(), True),
+            StructField("jr01flag", StringType(), True),
+            StructField("jr03flag", StringType(), True),
+            StructField("jr16cat1", StringType(), True),
+            StructField("ql01achq2", StringType(), True),
+            StructField("ql01year2", StringType(), True),
+            StructField("ql02achq3", StringType(), True),
+            StructField("ql34achqe", StringType(), True),
+            StructField("ql34yeare", StringType(), True),
+            StructField("ql37achq", StringType(), True),
+            StructField("ql37year", StringType(), True),
+            StructField("ql313app", StringType(), True),
+            StructField("ql313year", StringType(), True),
+            StructField("distwrkk", StringType(), True),
+            StructField("dayssick", StringType(), True),
+            StructField("previous_pay", StringType(), True),
+            StructField("emplstat", StringType(), True),
+            StructField("conthrs", StringType(), True),
+            StructField("averagehours", StringType(), True),
+            StructField("zerohours", StringType(), True),
+            StructField("salaryint", StringType(), True),
+            StructField("salary", StringType(), True),
+            StructField("hrlyrate", StringType(), True),
+            StructField("import_date", StringType(), True),
+        ]
     )
 
-    dataspec = dataspec.withColumnSpecs(
-        patterns=".*date.*",
-        matchTypes=StringType(),
-        values=["2017-06-15T00:00:00.000Z", "2018-06-15T00:00:00.000Z"],
-        random=True,
-    )
+    # fmt:off
+    rows = [
+        (
+        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
+        )
+    ]
+    # fmt:on
 
-    df = dataspec.build()
+    df = spark.createDataFrame(rows, schema)
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
-    return df
+    return df, schema
 
 
 def generate_flexible_worker_file_hours_worked(
