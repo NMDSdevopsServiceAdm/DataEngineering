@@ -85,7 +85,7 @@ def generate_s3_main_datasets_dir_date_path(domain, dataset, date):
 def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
 
     if append:
-        df.write.mode("append").parquet(output_dir)
+        df.write.mode("append").partitionBy(*partitionKeys).parquet(output_dir)
     else:
         df.write.partitionBy(*partitionKeys).parquet(output_dir)
 

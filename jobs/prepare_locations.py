@@ -1,6 +1,5 @@
 import argparse
 import builtins
-
 from pyspark.sql.functions import (
     abs,
     add_months,
@@ -11,12 +10,9 @@ from pyspark.sql.functions import (
     lower,
     max,
     when,
-    year,
-    month,
-    dayofmonth,
-    lpad,
 )
-from pyspark.sql.types import DateType, IntegerType, StructField, StructType
+from pyspark.sql.types import StringType, IntegerType, StructField, StructType
+from datetime import datetime
 
 from utils import utils
 
@@ -47,35 +43,36 @@ def main(
         complete_pir_df,
     )
 
-    date_matrix = date_matrix.collect()
-
     for snapshot_date_row in date_matrix:
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
             F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
-
+        ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
+        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
+            "import_date", "ascwds_workplace_import_date"
+        )
 
         cqc_locations_df = complete_cqc_location_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_location_date"]
         )
-        cqc_providers_df = complete_cqc_provider_df.filter(
-            F.col("import_date") == snapshot_date_row["cqc_provider_date"]
-        )
-        pir_df = complete_pir_df.filter(
-            F.col("import_date") == snapshot_date_row["pir_date"]
-        )
-
-        # Rename import_date columns to ensure uniqueness
-        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-            "import_date", "ascwds_workplace_import_date"
-        )
+        cqc_locations_df = utils.format_import_date(cqc_locations_df)
         cqc_locations_df = cqc_locations_df.withColumnRenamed(
             "import_date", "cqc_locations_import_date"
         )
+
+        cqc_providers_df = complete_cqc_provider_df.filter(
+            col("import_date") == snapshot_date_row["cqc_provider_date"]
+        )
+        cqc_providers_df = utils.format_import_date(cqc_providers_df)
         cqc_providers_df = cqc_providers_df.withColumnRenamed(
             "import_date", "cqc_providers_import_date"
         )
+
+        pir_df = complete_pir_df.filter(
+            col("import_date") == snapshot_date_row["pir_date"]
+        )
+        pir_df = utils.format_import_date(pir_df)
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
@@ -86,64 +83,75 @@ def main(
         output_df = output_df.withColumn(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
-        output_df = output_df.withColumn("snapshot_year", year(col("snapshot_date")))
+        output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
         output_df = output_df.withColumn(
-            "snapshot_month", lpad(month(col("snapshot_date")), 2, "0")
+            "snapshot_year", col("snapshot_date").substr(1, 4)
         )
         output_df = output_df.withColumn(
-            "snapshot_day", lpad(dayofmonth(col("snapshot_date")), 2, "0")
+            "snapshot_month", col("snapshot_date").substr(5, 2)
+        )
+        output_df = output_df.withColumn(
+            "snapshot_day", col("snapshot_date").substr(7, 2)
         )
 
-        if master_df is None:
-            master_df = output_df
+        output_df = output_df.select(
+            "snapshot_date",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
+            "ascwds_workplace_import_date",
+            "cqc_locations_import_date",
+            "cqc_providers_import_date",
+            "cqc_pir_import_date",
+            "locationid",
+            "location_type",
+            "location_name",
+            "organisation_type",
+            "providerid",
+            "provider_name",
+            "orgid",
+            "establishmentid",
+            "registration_status",
+            "registration_date",
+            "deregistration_date",
+            "carehome",
+            "dormancy",
+            "number_of_beds",
+            "services_offered",
+            "pir_service_users",
+            "job_count",
+            "region",
+            "postal_code",
+            "constituency",
+            "local_authority",
+            "cqc_sector",
+        )
+
+        if destination:
+            print(
+                "Exporting snapshot {} as parquet to {}".format(
+                    snapshot_date_row["snapshot_date"], destination
+                )
+            )
+            utils.write_to_parquet(
+                output_df,
+                destination,
+                append=True,
+                partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
+            )
         else:
-            master_df = master_df.union(output_df)
-
-    master_df = master_df.select(
-        "snapshot_date",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-        "ascwds_workplace_import_date",
-        "cqc_locations_import_date",
-        "cqc_providers_import_date",
-        "cqc_pir_import_date",
-        "locationid",
-        "location_type",
-        "location_name",
-        "organisation_type",
-        "providerid",
-        "provider_name",
-        "orgid",
-        "establishmentid",
-        "registration_status",
-        "registration_date",
-        "deregistration_date",
-        "carehome",
-        "dormancy",
-        "number_of_beds",
-        "services_offered",
-        "pir_service_users",
-        "job_count",
-        "region",
-        "postal_code",
-        "constituency",
-        "local_authority",
-        "cqc_sector",
-    )
-
-    if destination:
-        print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(
-            master_df,
-            destination,
-            partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
-        )
-    else:
-        return master_df
+            if master_df is None:
+                master_df = output_df
+            else:
+                master_df = master_df.union(output_df)
+    return master_df
 
 
-def get_ascwds_workplace_df(workplace_source, import_date=None):
+def get_max_snapshot_of_locations_prepared():
+    return ""
+
+
+def get_ascwds_workplace_df(workplace_source, since_date=None):
     spark = utils.get_spark()
 
     print(f"Reading workplaces parquet from {workplace_source}")
@@ -162,19 +170,15 @@ def get_ascwds_workplace_df(workplace_source, import_date=None):
         )
     )
 
-    # Format date
-    workplace_df = utils.format_import_date(workplace_df)
-
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
 
-    if import_date is not None:
-        workplace_df = workplace_df.filter(F.col("import_date") == import_date)
+    workplace_df = filter_out_import_dates_older_than(workplace_df, since_date)
 
     return workplace_df
 
 
-def get_cqc_location_df(cqc_location_source, import_date=None):
+def get_cqc_location_df(cqc_location_source, since_date=None):
     spark = utils.get_spark()
 
     print(f"Reading CQC locations parquet from {cqc_location_source}")
@@ -202,7 +206,6 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
         )
     )
 
-    cqc_df = utils.format_import_date(cqc_df)
     cqc_df = cqc_df.withColumn(
         "region",
         (
@@ -214,14 +217,19 @@ def get_cqc_location_df(cqc_location_source, import_date=None):
     cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
-
-    if import_date is not None:
-        cqc_df = cqc_df.filter(F.col("import_date") == import_date)
+    cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
 
     return cqc_df
 
 
-def get_cqc_provider_df(cqc_provider_source, import_date=None):
+def filter_out_import_dates_older_than(df, date):
+    if date is None:
+        return df
+    since_date = date.strftime("%Y%m%d")
+    return df.filter(col("import_date") > since_date)
+
+
+def get_cqc_provider_df(cqc_provider_source, since_date=None):
     spark = utils.get_spark()
 
     print(f"Reading CQC providers parquet from {cqc_provider_source}")
@@ -237,15 +245,12 @@ def get_cqc_provider_df(cqc_provider_source, import_date=None):
 
     cqc_provider_df = add_cqc_sector(cqc_provider_df)
 
-    cqc_provider_df = utils.format_import_date(cqc_provider_df)
-
-    if import_date is not None:
-        cqc_provider_df = cqc_provider_df.filter(F.col("import_date") == import_date)
+    cqc_provider_df = filter_out_import_dates_older_than(cqc_provider_df, since_date)
 
     return cqc_provider_df
 
 
-def get_pir_df(pir_source, import_date=None):
+def get_pir_df(pir_source, since_date=None):
     spark = utils.get_spark()
 
     # Join PIR service users
@@ -264,12 +269,9 @@ def get_pir_df(pir_source, import_date=None):
         )
     )
 
-    pir_df = utils.format_import_date(pir_df)
-
     pir_df = pir_df.dropDuplicates(["locationid", "import_date"])
 
-    if import_date is not None:
-        pir_df = pir_df.filter(F.col("import_date") == import_date)
+    pir_df = filter_out_import_dates_older_than(pir_df, since_date)
 
     return pir_df
 
@@ -278,18 +280,15 @@ def get_unique_import_dates(df):
     distinct_ordered_import_date_df = (
         df.select("import_date").distinct().orderBy("import_date")
     )
-    distinct_ordered_import_date_list = distinct_ordered_import_date_df.rdd.flatMap(
-        lambda x: x
-    ).collect()
+    distinct_ordered_import_date_list = [
+        date.import_date for date in distinct_ordered_import_date_df.collect()
+    ]
     return distinct_ordered_import_date_list
 
 
 def get_date_closest_to_search_date(search_date, date_list):
-    if search_date in date_list:
-        return search_date
-
     try:
-        closest_date = builtins.max(d for d in date_list if d < search_date)
+        closest_date = builtins.max(d for d in date_list if d <= search_date)
     except ValueError:
         # No dates in search_list provided less than search date
         return None
@@ -300,55 +299,55 @@ def get_date_closest_to_search_date(search_date, date_list):
 def generate_closest_date_matrix(
     dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir
 ):
-    spark = utils.get_spark()
-
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
     unique_pir_dates = get_unique_import_dates(dataset_pir)
 
-    closest_cqc_location_dates = []
+    date_matrix = []
     for date in unique_asc_dates:
-        closest_cqc_location_dates.append(
-            get_date_closest_to_search_date(date, unique_cqc_location_dates)
+        closest_cqc_location_date = get_date_closest_to_search_date(
+            date, unique_cqc_location_dates
+        )
+        closest_cqc_provider_date = get_date_closest_to_search_date(
+            date, unique_cqc_provider_dates
+        )
+        closest_pir_date = get_date_closest_to_search_date(date, unique_pir_dates)
+        date_matrix.append(
+            {
+                "snapshot_date": date,
+                "asc_workplace_date": date,
+                "cqc_location_date": closest_cqc_location_date,
+                "cqc_provider_date": closest_cqc_provider_date,
+                "pir_date": closest_pir_date,
+            }
         )
 
-    closest_cqc_provider_dates = []
-    for date in unique_asc_dates:
-        closest_cqc_provider_dates.append(
-            get_date_closest_to_search_date(date, unique_cqc_provider_dates)
-        )
+    return date_matrix
 
-    closest_pir_dates = []
-    for date in unique_asc_dates:
-        closest_pir_dates.append(
-            get_date_closest_to_search_date(date, unique_pir_dates)
-        )
 
-    transpose = []
-    for i in range(len(unique_asc_dates)):
-        transpose.append(
-            (
-                unique_asc_dates[i],
-                unique_asc_dates[i],
-                closest_cqc_location_dates[i],
-                closest_cqc_provider_dates[i],
-                closest_pir_dates[i],
-            )
-        )
-
+def date_matrix_to_df(matrix):
+    spark = utils.get_spark()
     schema = StructType(
         [
-            StructField("snapshot_date", DateType(), True),
-            StructField("asc_workplace_date", DateType(), True),
-            StructField("cqc_location_date", DateType(), True),
-            StructField("cqc_provider_date", DateType(), True),
-            StructField("pir_date", DateType(), True),
+            StructField("snapshot_date", StringType(), True),
+            StructField("asc_workplace_date", StringType(), True),
+            StructField("cqc_location_date", StringType(), True),
+            StructField("cqc_provider_date", StringType(), True),
+            StructField("pir_date", StringType(), True),
         ]
     )
-    date_matrix_df = spark.createDataFrame(data=transpose, schema=schema)
-
-    return date_matrix_df
+    matrix = [
+        (
+            row["snapshot_date"],
+            row["asc_workplace_date"],
+            row["cqc_location_date"],
+            row["cqc_provider_date"],
+            row["pir_date"],
+        )
+        for row in matrix
+    ]
+    return spark.createDataFrame(data=matrix, schema=schema)
 
 
 def clean(input_df):

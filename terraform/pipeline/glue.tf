@@ -42,11 +42,11 @@ module "prepare_locations_job" {
   datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
-    "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
-    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
-    "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--destination"         = ""
+    "--workplace_source"    = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
+    "--cqc_location_source" = "s3://sfc-main-datasets/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_source" = "s3://sfc-main-datasets/domain=CQC/dataset=providers-api/"
+    "--pir_source"          = "s3://sfc-main-datasets/domain=CQC/dataset=pir/"
+    "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
   }
 }
 
