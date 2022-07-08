@@ -14,40 +14,6 @@ from tests.test_file_generator import (
 )
 from utils import utils
 
-TEST_SCHEMA = StructType(
-    fields=[
-        StructField("tr01flag", StringType(), True),
-        StructField("tr01latestdate", StringType(), True),
-        StructField("tr01count", StringType(), True),
-        StructField("tr01ac", StringType(), True),
-        StructField("tr01nac", StringType(), True),
-        StructField("tr01dn", StringType(), True),
-        StructField("jr01flag", StringType(), True),
-        StructField("jr03flag", StringType(), True),
-        StructField("jr16cat1", StringType(), True),
-        StructField("ql01achq2", StringType(), True),
-        StructField("ql01year2", StringType(), True),
-        StructField("ql02achq3", StringType(), True),
-        StructField("ql34achqe", StringType(), True),
-        StructField("ql34yeare", StringType(), True),
-        StructField("ql37achq", StringType(), True),
-        StructField("ql37year", StringType(), True),
-        StructField("ql313app", StringType(), True),
-        StructField("ql313year", StringType(), True),
-        StructField("distwrkk", StringType(), True),
-        StructField("dayssick", StringType(), True),
-        StructField("previous_pay", StringType(), True),
-        StructField("emplstat", StringType(), True),
-        StructField("conthrs", StringType(), True),
-        StructField("averagehours", StringType(), True),
-        StructField("zerohours", StringType(), True),
-        StructField("salaryint", StringType(), True),
-        StructField("salary", StringType(), True),
-        StructField("hrlyrate", StringType(), True),
-        StructField("import_date", StringType(), True),
-    ]
-)
-
 
 class PrepareWorkersTests(unittest.TestCase):
 
@@ -55,7 +21,9 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
-        self.test_df = generate_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
+        self.TEST_DF, self.TEST_SCHEMA = generate_ascwds_worker_file(
+            self.TEST_ASCWDS_WORKER_FILE
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -66,7 +34,7 @@ class PrepareWorkersTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=TEST_SCHEMA)
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
 
         aggregated_cols = [
             "training",
@@ -97,7 +65,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(len(df.columns), 11)
 
     def test_main_aggregates_right_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=TEST_SCHEMA)
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
 
         # training
         training_json = json.loads(df.first()["training"])
@@ -139,68 +107,15 @@ class PrepareWorkersTests(unittest.TestCase):
                 StructField("tr02latestdate", StringType(), True),
             ]
         )
-        columns = [
-            "ql01year2",
-            "tr03flag",
-            "jr03flag",
-            "ql05achq3",
-            "emplstat",
-            "zerohours",
-            "salaryint",
-            "averagehours",
-            "conthrs",
-            "salary",
-            "hrlyrate",
-            "tr01count",
-            "tr02ac",
-            "tr02nac",
-            "tr02dn",
-            "distwrkk",
-            "dayssick",
-            "previous_pay",
+        # fmt:off
+        columns = ["ql01year2", "tr03flag", "jr03flag", "ql05achq3", "emplstat", "zerohours", "salaryint", "averagehours", 
+        "conthrs", "salary", "hrlyrate", "tr01count", "tr02ac", "tr02nac", "tr02dn", "distwrkk", "dayssick", "previous_pay",
         ]
         rows = [
-            (
-                "0",
-                "1",
-                "1",
-                "1",
-                "190",
-                "-1",
-                "252",
-                "26.5",
-                "20.0",
-                "0.53",
-                "2.0",
-                "0",
-                "1",
-                "0",
-                "1",
-                "10.0",
-                "15.3",
-                "13",
-            ),
-            (
-                "0",
-                "1",
-                None,
-                "1",
-                "191",
-                "0",
-                "250",
-                "26.5",
-                "20.0",
-                "0.53",
-                "2.0",
-                "0",
-                "1",
-                "0",
-                "1",
-                "10.0",
-                "15.3",
-                "13",
-            ),
+            ("0", "1", "1", "1", "190", "-1", "252", "26.5", "20.0", "0.53", "2.0", "0", "1", "0", "1", "10.0", "15.3", "13",),
+            ("0", "1", None, "1", "191", "0", "250", "26.5", "20.0", "0.53", "2.0", "0", "1", "0", "1", "10.0", "15.3", "13",),
         ]
+        # fmt:on
         df = self.spark.createDataFrame(rows, columns)
         cleaned_df = prepare_workers.clean(df, columns, schema)
         cleaned_df_list = cleaned_df.collect()
@@ -218,23 +133,23 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def test_get_dataset_worker_has_correct_columns(self):
         worker_df = prepare_workers.get_dataset_worker(
-            self.TEST_ASCWDS_WORKER_FILE, TEST_SCHEMA
+            self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
         )
-        column_names = utils.extract_column_from_schema(TEST_SCHEMA)
+        column_names = utils.extract_column_from_schema(self.TEST_SCHEMA)
 
         self.assertEqual(worker_df.columns, column_names)
 
     def test_get_dataset_worker_has_correct_rows_number(self):
         worker_df = prepare_workers.get_dataset_worker(
-            self.TEST_ASCWDS_WORKER_FILE, TEST_SCHEMA
+            self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
         )
 
         self.assertEqual(worker_df.count(), 1)
 
     def test_replace_columns_after_aggregation(self):
-        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", TEST_SCHEMA)
+        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", self.TEST_SCHEMA)
         df = prepare_workers.replace_columns_with_aggregated_column(
-            self.test_df,
+            self.TEST_DF,
             "training",
             udf_function=prepare_workers.get_training_into_json,
             cols_to_aggregate=training_cols,

@@ -542,7 +542,7 @@ def generate_cqc_care_directory_file(output_destination):
 def generate_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
 
-    TEST_SCHEMA = StructType(
+    schema = StructType(
         fields=[
             StructField("tr01flag", StringType(), True),
             StructField("tr01latestdate", StringType(), True),
@@ -576,45 +576,21 @@ def generate_ascwds_worker_file(output_destination):
         ]
     )
 
+    # fmt:off
     rows = [
         (
-            "1",
-            "2017-06-15",
-            "10",
-            "0",
-            "0",
-            "0",
-            "1",
-            "1",
-            "1",
-            "1",
-            "2009",
-            "0",
-            "1",
-            "2020",
-            "3",
-            None,
-            "1",
-            "2013",
-            "30.3",
-            "19.0",
-            "0.5",
-            "190",
-            "8.5",
-            "26.5",
-            "1",
-            "250",
-            "5200",
-            "100.5",
-            "20220101",
+        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
         )
     ]
-    df = spark.createDataFrame(rows, TEST_SCHEMA)
+    # fmt:on
+
+    df = spark.createDataFrame(rows, schema)
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
-    return df
+    return df, schema
 
 
 def generate_flexible_worker_file_hours_worked(
