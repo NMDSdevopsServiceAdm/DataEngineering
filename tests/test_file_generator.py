@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    DateType,
     LongType,
     BooleanType,
 )
@@ -583,17 +584,20 @@ def generate_prepared_locations_file_parquet(
     output_destination, partitions=["2022", "03", "08"], append=False
 ):
     spark = utils.get_spark()
-    columns = [
-        "locationid",
-        "snapshot_date",
-        "region",
-        "number_of_beds",
-        "dormancy",
-        "services_offered",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-    ]
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("snapshot_date", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("number_of_beds", LongType(), True),
+            StructField("dormancy", BooleanType(), True),
+            StructField("services_offered", ArrayType(StringType(), True), True),
+            StructField("snapshot_year", StringType(), True),
+            StructField("snapshot_month", StringType(), True),
+            StructField("snapshot_day", StringType(), True),
+        ]
+    )
 
     # fmt: off
     rows = [
@@ -614,7 +618,7 @@ def generate_prepared_locations_file_parquet(
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema)
 
     df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
     if append:

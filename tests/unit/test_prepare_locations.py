@@ -108,7 +108,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_ascwds_workplace_df(self):
         workplace_df = prepare_locations.get_ascwds_workplace_df(
-            self.TEST_ASCWDS_WORKPLACE_FILE, date(2020, 1, 1)
+            self.TEST_ASCWDS_WORKPLACE_FILE, "20200101"
         )
 
         self.assertEqual(workplace_df.columns[0], "locationid")
@@ -120,7 +120,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_cqc_location_df(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE, date(2020, 1, 1)
+            self.TEST_CQC_LOCATION_FILE, "20200101"
         )
 
         self.assertEqual(cqc_location_df.columns[0], "locationid")
@@ -130,7 +130,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_cqc_provider_df(self):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(
-            self.TEST_CQC_PROVIDERS_FILE, date(2021, 1, 5)
+            self.TEST_CQC_PROVIDERS_FILE, "20210105"
         )
 
         self.assertEqual(cqc_provider_df.columns[0], "providerid")
@@ -139,7 +139,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_provider_df.count(), 3)
 
     def test_get_pir_df(self):
-        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, date(2021, 1, 5))
+        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, "20210105")
 
         self.assertEqual(pir_df.count(), 8)
         self.assertEqual(len(pir_df.columns), 3)
@@ -191,7 +191,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
         cqc_location_df = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE, date(2021, 1, 1)
+            self.TEST_CQC_LOCATION_FILE, "20210101"
         )
 
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
