@@ -1,20 +1,9 @@
 import argparse
 import builtins
-from pyspark.sql.functions import (
-    abs,
-    add_months,
-    coalesce,
-    col,
-    greatest,
-    lit,
-    lower,
-    max,
-    when,
-)
+
 import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType, StructField, StructType
 from pyspark.sql.utils import AnalysisException
-from datetime import datetime
 
 from utils import utils
 
@@ -71,7 +60,7 @@ def main(
         )
 
         cqc_providers_df = complete_cqc_provider_df.filter(
-            col("import_date") == snapshot_date_row["cqc_provider_date"]
+            F.col("import_date") == snapshot_date_row["cqc_provider_date"]
         )
         cqc_providers_df = utils.format_import_date(cqc_providers_df)
         cqc_providers_df = cqc_providers_df.withColumnRenamed(
@@ -79,7 +68,7 @@ def main(
         )
 
         pir_df = complete_pir_df.filter(
-            col("import_date") == snapshot_date_row["pir_date"]
+            F.col("import_date") == snapshot_date_row["pir_date"]
         )
         pir_df = utils.format_import_date(pir_df)
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
@@ -93,13 +82,13 @@ def main(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
         output_df = output_df.withColumn(
-            "snapshot_year", col("snapshot_date").substr(1, 4)
+            "snapshot_year", F.col("snapshot_date").substr(1, 4)
         )
         output_df = output_df.withColumn(
-            "snapshot_month", col("snapshot_date").substr(5, 2)
+            "snapshot_month", F.col("snapshot_date").substr(5, 2)
         )
         output_df = output_df.withColumn(
-            "snapshot_day", col("snapshot_date").substr(7, 2)
+            "snapshot_day", F.col("snapshot_date").substr(7, 2)
         )
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
@@ -165,9 +154,11 @@ def get_max_snapshot_of_locations_prepared(destination):
         return None
 
     max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
+    previous_snpashots = previous_snpashots.where(F.F.col("snapshot_year") == max_year)
     max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
+    previous_snpashots = previous_snpashots.where(
+        F.F.col("snapshot_month") == max_month
+    )
     max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
 
     return f"{max_year}{max_month:0>2}{max_day:0>2}"
@@ -247,7 +238,7 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 def filter_out_import_dates_older_than(df, date):
     if date is None:
         return df
-    return df.filter(col("import_date") > date)
+    return df.filter(F.col("import_date") > date)
 
 
 def get_cqc_provider_df(cqc_provider_source, since_date=None):
