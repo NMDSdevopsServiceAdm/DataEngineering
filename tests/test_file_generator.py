@@ -606,7 +606,7 @@ def generate_ascwds_worker_file(output_destination):
             "250",
             "5200",
             "100.5",
-            "2020-06-17",
+            "20220101",
         )
     ]
     df = spark.createDataFrame(rows, TEST_SCHEMA)

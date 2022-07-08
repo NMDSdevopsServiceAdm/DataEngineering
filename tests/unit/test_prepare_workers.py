@@ -7,7 +7,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 from jobs import prepare_workers
-from schemas.worker_schema import WORKER_SCHEMA
 from tests.test_file_generator import (
     generate_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
@@ -95,11 +94,11 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 70)
+        self.assertEqual(len(df.columns), 11)
 
     def test_main_aggregates_right_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=TEST_SCHEMA)
-        df.show()
+
         # training
         training_json = json.loads(df.first()["training"])
         expected_train_date = training_json["tr01"]["latestdate"]
@@ -114,7 +113,6 @@ class PrepareWorkersTests(unittest.TestCase):
         # qualifications
         qualification_json = json.loads(df.first()["qualifications"])
         expected_qual_count = qualification_json["ql01achq2"]["count"]
-        print(qualification_json)
         expected_qual_year = qualification_json["ql34achqe"]["year"]
         expected_qual_year2 = qualification_json["ql37achq"]["year"]
 
@@ -219,24 +217,27 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertAlmostEqual(cleaned_df_list[1]["dayssick"], 15.30, places=2)
 
     def test_get_dataset_worker_has_correct_columns(self):
-        worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
-        column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
+        worker_df = prepare_workers.get_dataset_worker(
+            self.TEST_ASCWDS_WORKER_FILE, TEST_SCHEMA
+        )
+        column_names = utils.extract_column_from_schema(TEST_SCHEMA)
 
         self.assertEqual(worker_df.columns, column_names)
 
     def test_get_dataset_worker_has_correct_rows_number(self):
-        worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
+        worker_df = prepare_workers.get_dataset_worker(
+            self.TEST_ASCWDS_WORKER_FILE, TEST_SCHEMA
+        )
 
-        self.assertEqual(worker_df.count(), 10)
+        self.assertEqual(worker_df.count(), 1)
 
     def test_replace_columns_after_aggregation(self):
-        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        pattern = "^tr\d\d[a-z]"
+        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", TEST_SCHEMA)
         df = prepare_workers.replace_columns_with_aggregated_column(
             self.test_df,
             "training",
             udf_function=prepare_workers.get_training_into_json,
-            pattern=pattern,
+            cols_to_aggregate=training_cols,
         )
 
         self.assertEqual("training", df.columns[-1])

@@ -20,29 +20,26 @@ def main(source, schema, destination=None):
 
     columns_to_be_aggregated_patterns = {
         "training": {
-            "pattern": "^tr\d\d[a-z]+",
-            "udf_function": get_training_into_json,
-            "types": utils.extract_specific_column_types("^tr\d\dflag$", schema),
             "cols_to_aggregate": utils.extract_col_with_pattern(
                 "^tr\d\d[a-z]+", schema
             ),
+            "udf_function": get_training_into_json,
+            "types": utils.extract_specific_column_types("^tr\d\dflag$", schema),
         },
         "job_role": {
-            "pattern": "^jr\d\d[a-z]+",
-            "udf_function": get_job_role_into_json,
-            "types": utils.extract_col_with_pattern("^jr\d\d[a-z]", schema),
             "cols_to_aggregate": utils.extract_col_with_pattern(
                 "^jr\d\d[a-z]+", schema
             ),
+            "udf_function": get_job_role_into_json,
+            "types": utils.extract_col_with_pattern("^jr\d\d[a-z]", schema),
         },
         "qualifications": {
-            "pattern": "^ql\d{1,3}[a-z]+.",
+            "cols_to_aggregate": utils.extract_col_with_pattern(
+                "^ql\d{1,3}[a-z]+.", schema
+            ),
             "udf_function": get_qualification_into_json,
             "types": utils.extract_col_with_pattern(
                 "^ql\d{1,3}(achq|app)(\d*|e)", schema
-            ),
-            "cols_to_aggregate": utils.extract_col_with_pattern(
-                "^ql\d{1,3}[a-z]+.", schema
             ),
         },
     }
@@ -52,9 +49,8 @@ def main(source, schema, destination=None):
             main_df,
             col_name,
             udf_function=info["udf_function"],
-            types=info["types"],
-            # pattern=info["pattern"],
             cols_to_aggregate=info["cols_to_aggregate"],
+            types=info["types"],
         )
 
     print("Aggregating hours worked")
@@ -112,6 +108,7 @@ def clean(input_df, all_columns, schema):
 def get_columns_that_should_be_integers(all_columns, schema):
     relevant_columns = []
 
+    # TODO use function to extract these using regex patterns
     for column in all_columns:
         if ("year" in column) or ("flag" in column) or ("ql" in column):
             relevant_columns.append(column)
@@ -146,14 +143,11 @@ def replace_columns_with_aggregated_column(
     df,
     col_name,
     udf_function,
-    # pattern=None,
     cols_to_aggregate=None,
     cols_to_remove=None,
     types=None,
     output_type=StringType(),
 ):
-    # if pattern:
-    #     cols_to_aggregate = utils.extract_col_with_pattern(pattern, WORKER_SCHEMA)
     df = add_aggregated_column(
         df, col_name, cols_to_aggregate, udf_function, types, output_type
     )
@@ -216,9 +210,7 @@ def get_qualification_into_json(row, types):
                 row, qualification
             )
 
-    json_dump = json.dumps(aggregated_qualifications)
-    print(json_dump)
-    return json_dump
+    return json.dumps(aggregated_qualifications)
 
 
 def extract_year_column_name(qualification):
@@ -234,8 +226,7 @@ def extract_qualification_info(row, qualification):
         year = row[extract_year_column_name(qualification) + qualification[-1]]
     else:
         year = row[extract_year_column_name(qualification)]
-    if qualification == "ql37achq":
-        print(f"year: {year}, qualification: {qualification}")
+
     return {"count": row[qualification], "year": year}
 
 
@@ -282,7 +273,6 @@ def calculate_hourly_pay(row, types=None):
         and row["hrs_worked"]
         and (row["hrs_worked"] > 0)
     ):
-        print(round(row["salary"] / 52 / row["hrs_worked"], 2))
         return round(row["salary"] / 52 / row["hrs_worked"], 2)
 
     # salary is hourly
