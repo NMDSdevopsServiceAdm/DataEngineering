@@ -15,6 +15,40 @@ from tests.test_file_generator import (
 )
 from utils import utils
 
+TEST_SCHEMA = StructType(
+    fields=[
+        StructField("tr01flag", StringType(), True),
+        StructField("tr01latestdate", StringType(), True),
+        StructField("tr01count", StringType(), True),
+        StructField("tr01ac", StringType(), True),
+        StructField("tr01nac", StringType(), True),
+        StructField("tr01dn", StringType(), True),
+        StructField("jr01flag", StringType(), True),
+        StructField("jr03flag", StringType(), True),
+        StructField("jr16cat1", StringType(), True),
+        StructField("ql01achq2", StringType(), True),
+        StructField("ql01year2", StringType(), True),
+        StructField("ql02achq3", StringType(), True),
+        StructField("ql34achqe", StringType(), True),
+        StructField("ql34yeare", StringType(), True),
+        StructField("ql37achq", StringType(), True),
+        StructField("ql37year", StringType(), True),
+        StructField("ql313app", StringType(), True),
+        StructField("ql313year", StringType(), True),
+        StructField("distwrkk", StringType(), True),
+        StructField("dayssick", StringType(), True),
+        StructField("previous_pay", StringType(), True),
+        StructField("emplstat", StringType(), True),
+        StructField("conthrs", StringType(), True),
+        StructField("averagehours", StringType(), True),
+        StructField("zerohours", StringType(), True),
+        StructField("salaryint", StringType(), True),
+        StructField("salary", StringType(), True),
+        StructField("hrlyrate", StringType(), True),
+        StructField("import_date", StringType(), True),
+    ]
+)
+
 
 class PrepareWorkersTests(unittest.TestCase):
 
@@ -33,7 +67,7 @@ class PrepareWorkersTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=TEST_SCHEMA)
 
         aggregated_cols = [
             "training",
@@ -56,15 +90,43 @@ class PrepareWorkersTests(unittest.TestCase):
             "emplstat",
             "zerohours",
         ]
-        training_json = json.loads(df.first()["training"])
-        extracted_date = training_json["tr01"]["latestdate"]
 
         for col in aggregated_cols + columns_kept:
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
         self.assertEqual(len(df.columns), 70)
-        self.assertEqual(extracted_date, "2017-06-15")
+
+    def test_main_aggregates_right_columns(self):
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=TEST_SCHEMA)
+        df.show()
+        # training
+        training_json = json.loads(df.first()["training"])
+        expected_train_date = training_json["tr01"]["latestdate"]
+        expected_train_count = training_json["tr01"]["count"]
+
+        self.assertEqual(expected_train_date, "2017-06-15")
+        self.assertEqual(expected_train_count, 10)
+
+        # job role
+        self.assertEqual(df.first()["job_role"], '["jr01flag", "jr03flag"]')
+
+        # qualifications
+        qualification_json = json.loads(df.first()["qualifications"])
+        expected_qual_count = qualification_json["ql01achq2"]["count"]
+        print(qualification_json)
+        expected_qual_year = qualification_json["ql34achqe"]["year"]
+        expected_qual_year2 = qualification_json["ql37achq"]["year"]
+
+        self.assertEqual(expected_qual_count, 1)
+        self.assertEqual(expected_qual_year, 2020)
+        self.assertEqual(expected_qual_year2, None)
+
+        # hours worked
+        self.assertEqual(df.first()["hrs_worked"], 26.5)
+
+        # hourly rate
+        self.assertAlmostEqual(df.first()["hourly_rate"], 3.77, 2)
 
     def test_clean(self):
         schema = StructType(
