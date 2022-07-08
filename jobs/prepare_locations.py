@@ -154,11 +154,9 @@ def get_max_snapshot_of_locations_prepared(destination):
         return None
 
     max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.F.col("snapshot_year") == max_year)
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
     max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(
-        F.F.col("snapshot_month") == max_month
-    )
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
     max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
 
     return f"{max_year}{max_month:0>2}{max_day:0>2}"
