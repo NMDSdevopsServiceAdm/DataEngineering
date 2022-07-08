@@ -6,6 +6,9 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    DateType,
+    LongType,
+    BooleanType,
 )
 import pyspark.sql.functions as F
 
@@ -577,41 +580,55 @@ def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_w
     return df
 
 
-def generate_prepared_locations_file_parquet(output_destination):
+def generate_prepared_locations_file_parquet(
+    output_destination, partitions=["2022", "03", "08"], append=False
+):
     spark = utils.get_spark()
-    columns = [
-        "locationid",
-        "snapshot_date",
-        "region",
-        "number_of_beds",
-        "dormancy",
-        "services_offered",
-    ]
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("snapshot_date", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("number_of_beds", LongType(), True),
+            StructField("dormancy", BooleanType(), True),
+            StructField("services_offered", ArrayType(StringType(), True), True),
+            StructField("snapshot_year", StringType(), True),
+            StructField("snapshot_month", StringType(), True),
+            StructField("snapshot_day", StringType(), True),
+        ]
+    )
+
     # fmt: off
     rows = [
-        ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"]),
-        ("1-1334987222","20220201", "South West", 2, True, ["Domiciliary care service"]),
-        ("1-348374832","20220112", "Merseyside", 2, True, ["Extra Care housing services"]),
-        ("1-683746776","20220101", "Merseyside", 2, True, ["Doctors treatment service","Long term conditions services","Shared Lives"]),
-        ("1-10478686 ","20220101", "London Senate", 2, True, ["Community health care services - Nurses Agency only"]),
-        ("1-10235302415","20220112", "South West", 2, True, ["Urgent care services", "Supported living service"]),
-        ("1-1060912125","20220112", "Yorkshire and The Humbler", 2, True, ["Acute services with overnight beds"]),
-        ("1-107095666","20220301", "Yorkshire and The Humbler", 2, True, ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"]),
-        ("1-108369587","20220308", "South West", 2, True, ["Specialist college service"]),
-        ("1-10758359583","20220308", None, 2, True, ["Mobile doctors service"]),
-        ("1-108387554","20220381", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"]),
-        ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"]),
-        ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"]),
-        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"]),
+        ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"], partitions[0], partitions[1], partitions[2]),
+        ("1-1334987222","20220201", "South West", 2, True, ["Domiciliary care service"], partitions[0], partitions[1], partitions[2]),
+        ("1-348374832","20220112", "Merseyside", 2, True, ["Extra Care housing services"], partitions[0], partitions[1], partitions[2]),
+        ("1-683746776","20220101", "Merseyside", 2, True, ["Doctors treatment service","Long term conditions services","Shared Lives"], partitions[0], partitions[1], partitions[2]),
+        ("1-10478686 ","20220101", "London Senate", 2, True, ["Community health care services - Nurses Agency only"], partitions[0], partitions[1], partitions[2]),
+        ("1-10235302415","20220112", "South West", 2, True, ["Urgent care services", "Supported living service"], partitions[0], partitions[1], partitions[2]),
+        ("1-1060912125","20220112", "Yorkshire and The Humbler", 2, True, ["Acute services with overnight beds"], partitions[0], partitions[1], partitions[2]),
+        ("1-107095666","20220301", "Yorkshire and The Humbler", 2, True, ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"], partitions[0], partitions[1], partitions[2]),
+        ("1-108369587","20220308", "South West", 2, True, ["Specialist college service"], partitions[0], partitions[1], partitions[2]),
+        ("1-10758359583","20220308", None, 2, True, ["Mobile doctors service"], partitions[0], partitions[1], partitions[2]),
+        ("1-108387554","20220308", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"], partitions[0], partitions[1], partitions[2]),
+        ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"], partitions[0], partitions[1], partitions[2]),
+        ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"], partitions[0], partitions[1], partitions[2]),
+        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"], partitions[0], partitions[1], partitions[2]),
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema)
 
     df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
-
+    if append:
+        mode = "append"
+    else:
+        mode = "overwrite"
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+        df.write.mode(mode).partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(output_destination)
 
     return df
 

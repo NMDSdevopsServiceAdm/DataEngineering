@@ -11,7 +11,9 @@ from pyspark.sql.functions import (
     max,
     when,
 )
+import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType, StructField, StructType
+from pyspark.sql.utils import AnalysisException
 from datetime import datetime
 
 from utils import utils
@@ -31,10 +33,17 @@ def main(
     print("Building locations prepared dataset")
     master_df = None
 
-    complete_ascwds_workplace_df = get_ascwds_workplace_df(workplace_source)
-    complete_cqc_location_df = get_cqc_location_df(cqc_location_source)
-    complete_cqc_provider_df = get_cqc_provider_df(cqc_provider_source)
-    complete_pir_df = get_pir_df(pir_source)
+    max_snapshot_date_processed = get_max_snapshot_of_locations_prepared(destination)
+    complete_ascwds_workplace_df = get_ascwds_workplace_df(
+        workplace_source, since_date=max_snapshot_date_processed
+    )
+    complete_cqc_location_df = get_cqc_location_df(
+        cqc_location_source, since_date=max_snapshot_date_processed
+    )
+    complete_cqc_provider_df = get_cqc_provider_df(
+        cqc_provider_source, since_date=max_snapshot_date_processed
+    )
+    complete_pir_df = get_pir_df(pir_source, since_date=max_snapshot_date_processed)
 
     date_matrix = generate_closest_date_matrix(
         complete_ascwds_workplace_df,
@@ -83,7 +92,6 @@ def main(
         output_df = output_df.withColumn(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
-        output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
         output_df = output_df.withColumn(
             "snapshot_year", col("snapshot_date").substr(1, 4)
         )
@@ -93,6 +101,7 @@ def main(
         output_df = output_df.withColumn(
             "snapshot_day", col("snapshot_date").substr(7, 2)
         )
+        output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
         output_df = output_df.select(
             "snapshot_date",
@@ -139,7 +148,6 @@ def main(
                 append=True,
                 partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
             )
-        else:
             if master_df is None:
                 master_df = output_df
             else:
@@ -147,8 +155,22 @@ def main(
     return master_df
 
 
-def get_max_snapshot_of_locations_prepared():
-    return ""
+def get_max_snapshot_of_locations_prepared(destination):
+    spark = utils.get_spark()
+    try:
+        previous_snpashots = spark.read.option("basePath", destination).parquet(
+            destination
+        )
+    except AnalysisException:
+        return None
+
+    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
+    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
+    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
+
+    return f"{max_year}{max_month:0>2}{max_day:0>2}"
 
 
 def get_ascwds_workplace_df(workplace_source, since_date=None):
@@ -225,8 +247,7 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 def filter_out_import_dates_older_than(df, date):
     if date is None:
         return df
-    since_date = date.strftime("%Y%m%d")
-    return df.filter(col("import_date") > since_date)
+    return df.filter(col("import_date") > date)
 
 
 def get_cqc_provider_df(cqc_provider_source, since_date=None):
