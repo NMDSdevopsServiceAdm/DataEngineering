@@ -4,10 +4,9 @@ import warnings
 import json
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 from jobs import prepare_workers
-from schemas.worker_schema import WORKER_SCHEMA
 from tests.test_file_generator import (
     generate_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
@@ -22,7 +21,9 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
-        self.test_df = generate_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
+        self.TEST_DF, self.TEST_SCHEMA = generate_ascwds_worker_file(
+            self.TEST_ASCWDS_WORKER_FILE
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -33,7 +34,7 @@ class PrepareWorkersTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE)
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
 
         aggregated_cols = [
             "training",
@@ -56,36 +57,102 @@ class PrepareWorkersTests(unittest.TestCase):
             "emplstat",
             "zerohours",
         ]
-        training_json = json.loads(df.first()["training"])
-        extracted_date = training_json["tr01"]["latestdate"]
 
         for col in aggregated_cols + columns_kept:
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 74)
-        self.assertEqual(extracted_date, "2017-06-15")
+        self.assertEqual(len(df.columns), 11)
+
+    def test_main_aggregates_right_columns(self):
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+
+        # training
+        training_json = json.loads(df.first()["training"])
+        expected_train_date = training_json["tr01"]["latestdate"]
+        expected_train_count = training_json["tr01"]["count"]
+
+        self.assertEqual(expected_train_date, "2017-06-15")
+        self.assertEqual(expected_train_count, 10)
+
+        # job role
+        self.assertEqual(df.first()["job_role"], '["jr01flag", "jr03flag"]')
+
+        # qualifications
+        qualification_json = json.loads(df.first()["qualifications"])
+        expected_qual_count = qualification_json["ql01achq2"]["count"]
+        expected_qual_year = qualification_json["ql34achqe"]["year"]
+        expected_qual_year2 = qualification_json["ql37achq"]["year"]
+
+        self.assertEqual(expected_qual_count, 1)
+        self.assertEqual(expected_qual_year, 2020)
+        self.assertEqual(expected_qual_year2, None)
+
+        # hours worked
+        self.assertEqual(df.first()["hrs_worked"], 26.5)
+
+        # hourly rate
+        self.assertAlmostEqual(df.first()["hourly_rate"], 3.77, 2)
+
+    def test_clean(self):
+        schema = StructType(
+            fields=[
+                StructField("tr01flag", StringType(), True),
+                StructField("tr01latestdate", StringType(), True),
+                StructField("tr01count", StringType(), True),
+                StructField("tr02flag", StringType(), True),
+                StructField("tr02ac", StringType(), True),
+                StructField("tr02nac", StringType(), True),
+                StructField("tr02dn", StringType(), True),
+                StructField("tr02latestdate", StringType(), True),
+            ]
+        )
+        # fmt:off
+        columns = ["ql01year2", "tr03flag", "jr03flag", "ql05achq3", "emplstat", "zerohours", "salaryint", "averagehours", 
+        "conthrs", "salary", "hrlyrate", "tr01count", "tr02ac", "tr02nac", "tr02dn", "distwrkk", "dayssick", "previous_pay",
+        ]
+        rows = [
+            ("0", "1", "1", "1", "190", "-1", "252", "26.5", "20.0", "0.53", "2.0", "0", "1", "0", "1", "10.0", "15.3", "13",),
+            ("0", "1", None, "1", "191", "0", "250", "26.5", "20.0", "0.53", "2.0", "0", "1", "0", "1", "10.0", "15.3", "13",),
+        ]
+        # fmt:on
+        df = self.spark.createDataFrame(rows, columns)
+        cleaned_df = prepare_workers.clean(df, columns, schema)
+        cleaned_df_list = cleaned_df.collect()
+
+        self.assertEqual(cleaned_df.count(), 2)
+        self.assertEqual(cleaned_df_list[0]["ql01year2"], 0)
+        self.assertEqual(cleaned_df_list[0]["zerohours"], -1)
+        self.assertEqual(cleaned_df_list[0]["salaryint"], 252)
+        self.assertEqual(cleaned_df_list[0]["averagehours"], 26.5)
+        self.assertEqual(cleaned_df_list[1]["jr03flag"], None)
+        self.assertAlmostEqual(cleaned_df_list[1]["salary"], 0.53)
+        self.assertEqual(cleaned_df_list[1]["tr02ac"], 1)
+        self.assertEqual(cleaned_df_list[1]["tr02dn"], 1)
+        self.assertAlmostEqual(cleaned_df_list[1]["dayssick"], 15.30, places=2)
 
     def test_get_dataset_worker_has_correct_columns(self):
-        worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
-        column_names = utils.extract_column_from_schema(WORKER_SCHEMA)
+        worker_df = prepare_workers.get_dataset_worker(
+            self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
+        )
+        column_names = utils.extract_column_from_schema(self.TEST_SCHEMA)
 
         self.assertEqual(worker_df.columns, column_names)
 
     def test_get_dataset_worker_has_correct_rows_number(self):
-        worker_df = prepare_workers.get_dataset_worker(self.TEST_ASCWDS_WORKER_FILE)
+        worker_df = prepare_workers.get_dataset_worker(
+            self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
+        )
 
-        self.assertEqual(worker_df.count(), 10)
+        self.assertEqual(worker_df.count(), 1)
 
     def test_replace_columns_after_aggregation(self):
-        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
-        # TODO - make it run with all the other patterns and columns
-        pattern = "^tr\d\d[a-z]"
+        training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", self.TEST_SCHEMA)
         df = prepare_workers.replace_columns_with_aggregated_column(
-            self.test_df,
+            self.TEST_DF,
             "training",
-            prepare_workers.get_training_into_json,
-            pattern=pattern,
+            udf_function=prepare_workers.get_training_into_json,
+            cols_to_aggregate=training_cols,
         )
 
         self.assertEqual("training", df.columns[-1])
@@ -93,58 +160,94 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertNotIn(training_col, df.columns)
 
     def test_get_training_into_json(self):
-        training_columns = utils.extract_col_with_pattern("^tr\d\d[a-z]", WORKER_SCHEMA)
+        columns = [
+            "tr01flag",
+            "tr01latestdate",
+            "tr01count",
+            "tr01ac",
+            "tr01nac",
+            "tr01dn",
+            "tr02flag",
+            "tr02latestdate",
+            "tr02count",
+            "tr02ac",
+            "tr02nac",
+            "tr02dn",
+        ]
+        rows = [
+            (1, "2017-06-15", 1, 0, 0, 0, 0, "2018-06-15", 1, 0, 0, 0),
+            (0, "2017-05-15", 1, 0, 0, 0, 0, "2019-06-15", 1, 0, 0, 0),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
         df = prepare_workers.add_aggregated_column(
-            self.test_df,
+            df,
             "training",
-            training_columns,
+            columns,
             prepare_workers.get_training_into_json,
+            types=["tr01", "tr02"],
         )
-        training_types_flag = utils.extract_col_with_pattern(
-            "^tr\d\dflag$", WORKER_SCHEMA
-        )
-        training_types_flag.remove("tr01flag")
 
         self.assertEqual(df.columns[-1], "training")
         self.assertEqual(
             df.first()["training"],
             '{"tr01": {"latestdate": "2017-06-15", "count": 1, "ac": 0, "nac": 0, "dn": 0}}',
         )
-        for training in training_types_flag:
-            self.assertEqual(df.first()[training], 0)
+        self.assertEqual(df.first()["tr02flag"], 0)
 
     def test_get_job_role_into_json(self):
-        jr_columns = utils.extract_col_with_pattern("^jr\d\d[a-z]", WORKER_SCHEMA)
+        columns = ["jr01flag", "jr05flag", "jr16cat8"]
+        rows = [(1, 1, 0), (0, 0, 0)]
+        df = self.spark.createDataFrame(rows, columns)
         df = prepare_workers.add_aggregated_column(
-            self.test_df, "job_role", jr_columns, prepare_workers.get_job_role_into_json
+            df,
+            "job_role",
+            columns,
+            prepare_workers.get_job_role_into_json,
+            types=columns,
         )
-        jr_types_flag = utils.extract_col_with_pattern("^jr\d\d*[a-z]\d", WORKER_SCHEMA)
 
         self.assertEqual(df.columns[-1], "job_role")
         self.assertEqual(
             df.first()["job_role"],
-            '["jr01flag", "jr03flag", "jr16cat1"]',
+            '["jr01flag", "jr05flag"]',
         )
-        for jr in jr_types_flag:
-            self.assertEqual(df.first()[jr], 0)
+        self.assertEqual(df.first()["jr16cat8"], 0)
 
     def test_get_qualification_into_json(self):
-        qualification_columns = utils.extract_col_with_pattern(
-            "^ql\d{1,3}.", WORKER_SCHEMA
-        )
-        df = prepare_workers.add_aggregated_column(
-            self.test_df,
-            "qualification",
-            qualification_columns,
-            prepare_workers.get_qualification_into_json,
-        )
+        columns = [
+            "ql01achq2",
+            "ql01year2",
+            "ql34achqe",
+            "ql34yeare",
+            "ql37achq",
+            "ql37year",
+        ]
+        rows = [
+            (1, 2010, 0, 2019, 0, 2020),
+            (0, 2010, 1, 2019, 0, 2020),
+            (0, 2010, 0, 2019, 3, 2020),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
 
+        df = prepare_workers.add_aggregated_column(
+            df,
+            "qualification",
+            columns,
+            prepare_workers.get_qualification_into_json,
+            types=["ql01achq2", "ql34achqe", "ql37achq"],
+        )
+        df_list = df.collect()
         self.assertEqual(df.columns[-1], "qualification")
         self.assertEqual(
-            df.first()["qualification"],
-            '{"ql01achq2": {"value": 1, "year": 2009}, "ql34achqe": {"value": 1, "year": 2010}, "ql37achq": {"value": 3, "year": 2021}, "ql313app": {"value": 1, "year": 2013}}',
+            df_list[0]["qualification"], '{"ql01achq2": {"count": 1, "year": 2010}}'
         )
-        self.assertEqual(df.first()["ql02achq3"], 0)
+        self.assertEqual(
+            df_list[1]["qualification"], '{"ql34achqe": {"count": 1, "year": 2019}}'
+        )
+        self.assertEqual(
+            df_list[2]["qualification"], '{"ql37achq": {"count": 3, "year": 2020}}'
+        )
+        self.assertEqual(df.first()["ql37achq"], 0)
 
     def test_calculate_hours_worked_returns_avghrs_for_empl_with_zerohours(self):
         emplstat = 191
@@ -162,10 +265,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertIn("hrs_worked", df.columns)
@@ -187,10 +290,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hrs_worked"], conthrs)
@@ -211,10 +314,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hrs_worked"], averagehours)
@@ -235,10 +338,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hrs_worked"], conthrs)
@@ -259,10 +362,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hrs_worked"], averagehours)
@@ -283,10 +386,10 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hrs_worked",
-            columns,
-            prepare_workers.calculate_hours_worked,
-            FloatType(),
+            col_name="hrs_worked",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hours_worked,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hrs_worked"], None)
@@ -302,10 +405,10 @@ class PrepareWorkersTests(unittest.TestCase):
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hourly_rate",
-            columns,
-            prepare_workers.calculate_hourly_pay,
-            FloatType(),
+            col_name="hourly_rate",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hourly_pay,
+            output_type=FloatType(),
         )
 
         self.assertIn("hrs_worked", df.columns)
@@ -323,10 +426,10 @@ class PrepareWorkersTests(unittest.TestCase):
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hourly_rate",
-            columns,
-            prepare_workers.calculate_hourly_pay,
-            FloatType(),
+            col_name="hourly_rate",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hourly_pay,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hourly_rate"], 100.5)
@@ -342,10 +445,10 @@ class PrepareWorkersTests(unittest.TestCase):
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
         df = prepare_workers.add_aggregated_column(
             df,
-            "hourly_rate",
-            columns,
-            prepare_workers.calculate_hourly_pay,
-            FloatType(),
+            col_name="hourly_rate",
+            columns=columns,
+            udf_function=prepare_workers.calculate_hourly_pay,
+            output_type=FloatType(),
         )
 
         self.assertEqual(df.first()["hourly_rate"], None)

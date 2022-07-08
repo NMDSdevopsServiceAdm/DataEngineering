@@ -25,3 +25,25 @@ variable "glue_version" {
     error_message = "Must be one of 1.0, 2.0 of 3.0"
   }
 }
+
+variable "worker_type" {
+  description = "Glue worker type"
+  default     = "Standard"
+  type        = string
+
+  validation {
+    condition     = contains(["Standard", "G.1X", "G.2X"], var.worker_type)
+    error_message = "Must be one of Standard, G.1X or G.2X"
+  }
+}
+
+variable "number_of_workers" {
+  description = "Number of glue workers"
+  default     = 2
+  type        = number
+
+  validation {
+    condition     = var.number_of_workers >= 2
+    error_message = "Must be at least 2"
+  }
+}
