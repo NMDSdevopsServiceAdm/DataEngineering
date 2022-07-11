@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
@@ -14,6 +15,8 @@ class EstimateJobCountTests(unittest.TestCase):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
         ).getOrCreate()
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_determine_ascwds_primary_service_type(self):
         columns = ["locationid", "services_offered"]
@@ -325,6 +328,21 @@ class EstimateJobCountTests(unittest.TestCase):
 
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
         self.assertEqual(locations_df.columns, df.columns)
+
+    def test_generate_r2_metric(self):
+        # prediction_and_labels = [
+        #     (28.98343821, 27.0),
+        #     (20.21491975, 21.5), 
+        #     (74.69283752, 71.0)
+        # ]
+        scoreAndLabels = [(-28.98343821, -27.0), (20.21491975, 21.5),
+        (-25.98418959, -22.0), (30.69731842, 33.0), (74.69283752, 71.0)]
+        df = self.spark.createDataFrame(scoreAndLabels, ["prediction", "job_count"])
+        r2 = job.generate_r2_metric(df, "prediction", "job_count")
+
+        self.assertAlmostEqual(r2, 0.993, places=2)
+
+
 
     def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
         columns = [
