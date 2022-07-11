@@ -6,8 +6,6 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
-    LongType,
-    BooleanType,
 )
 import pyspark.sql.functions as F
 

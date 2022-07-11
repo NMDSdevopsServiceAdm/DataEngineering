@@ -18,7 +18,6 @@ from tests.test_file_generator import (
     generate_cqc_locations_file,
     generate_cqc_providers_file,
     generate_pir_file,
-    generate_prepared_locations_file_parquet,
 )
 
 
