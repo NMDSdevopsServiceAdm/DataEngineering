@@ -184,3 +184,13 @@ def get_max_snapshot_partitions(location=None):
     max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
 
     return (f"{max_year}", f"{max_month:0>2}", f"{max_day:0>2}")
+
+
+def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")):
+    max_year = df.select(F.max(df[partition_keys[0]])).first()[0]
+    df = df.where(df[partition_keys[0]] == max_year)
+    max_month = df.select(F.max(df[partition_keys[1]])).first()[0]
+    df = df.where(df[partition_keys[1]] == max_month)
+    max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
+    df = df.where(df[partition_keys[2]] == max_day)
+    return df
