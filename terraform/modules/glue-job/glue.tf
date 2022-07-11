@@ -19,5 +19,6 @@ resource "aws_glue_job" "glue_job" {
       "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
       "--enable-continuous-cloudwatch-log" = "true"
       "--enable-auto-scaling"              = var.worker_type == "Standard" ? "false" : "true"
+      "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false"
   })
 }

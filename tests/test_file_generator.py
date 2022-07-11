@@ -579,8 +579,31 @@ def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_w
     return df
 
 
+def generate_location_features_file_parquet(output_destination=None):
+    spark = utils.get_spark()
+    # fmt: off
+    feature_columns = [ "locationid", "job_count", "carehome", "region", "snapshot_year", "snapshot_month", "snapshot_day", "snapshot_date" ]
+
+    feature_rows = [
+        ("1-000000001", 10, "Y", "South West", "2022", "02", "28", "2022-03-29"),
+        ("1-000000002", 10, "N", "Merseyside", "2022", "02", "28", "2022-03-29"),
+        ("1-000000003", 20, None, "Merseyside", "2022", "02", "28", "2022-03-29"),
+        ("1-000000004", 10, "N", None, "2022", "02", "28", "2022-03-29"),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(
+        feature_rows,
+        schema=feature_columns,
+    )
+    if output_destination:
+        df.write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(output_destination)
+    return df
+
+
 def generate_prepared_locations_file_parquet(
-    output_destination, partitions=["2022", "03", "08"], append=False
+    output_destination=None, partitions=["2022", "03", "08"], append=False
 ):
     spark = utils.get_spark()
     columns = [
