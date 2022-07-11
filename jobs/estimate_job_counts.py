@@ -243,7 +243,7 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     features_df = features_df.where("number_of_beds is not null")
 
     care_home_predictions = gbt_trained_model.transform(features_df)
- 
+
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
@@ -252,7 +252,9 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
 
 
 def generate_r2_metric(df, prediction, label):
-    model_evaluator = RegressionEvaluator(predictionCol=prediction, labelCol=label, metricName="r2")
+    model_evaluator = RegressionEvaluator(
+        predictionCol=prediction, labelCol=label, metricName="r2"
+    )
     r2 = model_evaluator.evaluate(df)
     print("R Squared (R2) on test data = %g" % r2)
     return r2
