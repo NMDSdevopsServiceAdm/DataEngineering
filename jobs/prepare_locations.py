@@ -22,17 +22,21 @@ def main(
     print("Building locations prepared dataset")
     master_df = None
 
-    max_snapshot_date_processed = get_max_snapshot_of_locations_prepared(destination)
+    last_processed_date = utils.get_max_snapshot_partitions(destination)
+    if last_processed_date is not None:
+        last_processed_date = (
+            f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
+        )
     complete_ascwds_workplace_df = get_ascwds_workplace_df(
-        workplace_source, since_date=max_snapshot_date_processed
+        workplace_source, since_date=last_processed_date
     )
     complete_cqc_location_df = get_cqc_location_df(
-        cqc_location_source, since_date=max_snapshot_date_processed
+        cqc_location_source, since_date=last_processed_date
     )
     complete_cqc_provider_df = get_cqc_provider_df(
-        cqc_provider_source, since_date=max_snapshot_date_processed
+        cqc_provider_source, since_date=last_processed_date
     )
-    complete_pir_df = get_pir_df(pir_source, since_date=max_snapshot_date_processed)
+    complete_pir_df = get_pir_df(pir_source, since_date=last_processed_date)
 
     date_matrix = generate_closest_date_matrix(
         complete_ascwds_workplace_df,
@@ -142,24 +146,6 @@ def main(
             else:
                 master_df = master_df.union(output_df)
     return master_df
-
-
-def get_max_snapshot_of_locations_prepared(destination):
-    spark = utils.get_spark()
-    try:
-        previous_snpashots = spark.read.option("basePath", destination).parquet(
-            destination
-        )
-    except AnalysisException:
-        return None
-
-    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
-    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
-    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
-
-    return f"{max_year}{max_month:0>2}{max_day:0>2}"
 
 
 def get_ascwds_workplace_df(workplace_source, since_date=None):

@@ -4,6 +4,7 @@ import csv
 
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
+from pyspark.sql.utils import AnalysisException
 
 import boto3
 
@@ -163,3 +164,23 @@ def format_import_date(df, fieldname="import_date"):
     return df.withColumn(
         fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
     )
+
+
+def get_max_snapshot_partitions(location=None):
+    if not location:
+        return None
+
+    spark = get_spark.spark
+
+    try:
+        previous_snpashots = spark.read.option("basePath", location).parquet(location)
+    except AnalysisException:
+        return None
+
+    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
+    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
+    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
+
+    return (f"{max_year}", f"{max_month:0>2}", f"{max_day:0>2}")
