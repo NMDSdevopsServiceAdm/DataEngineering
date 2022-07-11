@@ -2,7 +2,7 @@ import argparse
 import builtins
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import StringType, IntegerType, StructField, StructType
+from pyspark.sql.types import IntegerType
 from pyspark.sql.utils import AnalysisException
 
 from utils import utils
@@ -334,30 +334,6 @@ def generate_closest_date_matrix(
         )
 
     return date_matrix
-
-
-def date_matrix_to_df(matrix):
-    spark = utils.get_spark()
-    schema = StructType(
-        [
-            StructField("snapshot_date", StringType(), True),
-            StructField("asc_workplace_date", StringType(), True),
-            StructField("cqc_location_date", StringType(), True),
-            StructField("cqc_provider_date", StringType(), True),
-            StructField("pir_date", StringType(), True),
-        ]
-    )
-    matrix = [
-        (
-            row["snapshot_date"],
-            row["asc_workplace_date"],
-            row["cqc_location_date"],
-            row["cqc_provider_date"],
-            row["pir_date"],
-        )
-        for row in matrix
-    ]
-    return spark.createDataFrame(data=matrix, schema=schema)
 
 
 def clean(input_df):
