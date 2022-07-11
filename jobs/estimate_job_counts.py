@@ -1,7 +1,15 @@
 import argparse
+from datetime import datetime
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import (
+    IntegerType,
+    StructType,
+    StructField,
+    StringType,
+    FloatType,
+    TimestampType,
+)
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
@@ -243,21 +251,43 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     features_df = features_df.where("number_of_beds is not null")
 
     care_home_predictions = gbt_trained_model.transform(features_df)
+    r2 = generate_r2_metric(care_home_predictions, "prediction", "job_count")
 
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
 
-    return locations_df
+    return locations_df, r2
 
 
 def generate_r2_metric(df, prediction, label):
     model_evaluator = RegressionEvaluator(
         predictionCol=prediction, labelCol=label, metricName="r2"
     )
+
     r2 = model_evaluator.evaluate(df)
-    print("R Squared (R2) on test data = %g" % r2)
+    print("R Squared (R2) = %g" % r2)
+
     return r2
+
+
+def write_metrics_df(metrics_destination, r2, model_version, latest_snapshot):
+    spark = utils.get_spark()
+    schema = StructType(
+        fields=[
+            StructField("r2", FloatType(), False),
+            StructField("percentage_data", FloatType(), False),
+            StructField("model_version", StringType(), False),
+            StructField("latest_snapshot", StringType(), False),
+            StructField("job_id", IntegerType(), False),
+        ]
+    )
+    row = [(r2, 50.0, model_version, latest_snapshot, 1234)]
+    df = spark.createDataFrame(row, schema)
+    df = df.withColumn("generated_metric_date", F.current_timestamp())
+
+    # utils.write_to_parquet(metrics_destination, append=True)
+    return df
 
 
 def model_care_home_with_nursing_pir_and_cqc_beds(df):

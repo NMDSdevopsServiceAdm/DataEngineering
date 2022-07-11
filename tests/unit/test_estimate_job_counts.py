@@ -1,5 +1,6 @@
 import unittest
 import warnings
+from datetime import datetime
 
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
@@ -221,7 +222,7 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "prediction" ]
 
         rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", 56.89),
+            ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
             ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", 12.34),
         ]
         # fmt: on
@@ -256,7 +257,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df = job.model_care_home_with_historical(
+        df, _ = job.model_care_home_with_historical(
             locations_df, features_df, self.CAREHOME_WITH_HISTORICAL_MODEL
         )
 
@@ -266,7 +267,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df = job.model_care_home_with_historical(
+        df, _ = job.model_care_home_with_historical(
             locations_df, features_df, self.CAREHOME_WITH_HISTORICAL_MODEL
         )
         expected_location_with_prediction = df.where(
@@ -330,22 +331,29 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(locations_df.columns, df.columns)
 
     def test_generate_r2_metric(self):
-        # prediction_and_labels = [
-        #     (28.98343821, 27.0),
-        #     (20.21491975, 21.5),
-        #     (74.69283752, 71.0)
-        # ]
-        scoreAndLabels = [
-            (-28.98343821, -27.0),
-            (20.21491975, 21.5),
-            (-25.98418959, -22.0),
-            (30.69731842, 33.0),
-            (74.69283752, 71.0),
-        ]
-        df = self.spark.createDataFrame(scoreAndLabels, ["prediction", "job_count"])
+        df = self.generate_predictions_df()
         r2 = job.generate_r2_metric(df, "prediction", "job_count")
 
-        self.assertAlmostEqual(r2, 0.993, places=2)
+        self.assertAlmostEqual(r2, 0.93, places=2)
+
+    def test_write_metrics_df_creates_metrics_df(self):
+        df = job.write_metrics_df(
+            "somewhere", r2=0.99, model_version="1.0.0", latest_snapshot="20220601"
+        )
+        df.show()
+        expected_columns = [
+            "r2",
+            "percentage_data",
+            "model_version",
+            "latest_snapshot",
+            "job_id",
+            "generated_metric_date",
+        ]
+        self.assertEqual(expected_columns, df.columns)
+        self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
+        self.assertEqual(df.first()["model_version"], "1.0.0")
+        self.assertEqual(df.first()["latest_snapshot"], "20220601")
+        self.assertIsInstance(df.first()["generated_metric_date"], datetime)
 
     def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
         columns = [
