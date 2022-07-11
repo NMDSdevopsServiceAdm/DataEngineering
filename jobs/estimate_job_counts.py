@@ -4,8 +4,8 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import Window
-
 from utils import utils
+from datetime import datetime
 
 
 # Constant values
@@ -51,14 +51,14 @@ def main(
 
     features_df = spark.read.parquet(prepared_locations_features)
 
-    locations_df = populate_last_know_job_count(locations_df)
+    locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
-    locations_df = populate_known_job_count(locations_df)
+    locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
     # Non-res models
     locations_df = model_non_res_historical(locations_df)
     locations_df = model_non_res_historical_pir(locations_df)
@@ -82,9 +82,19 @@ def main(
     locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
 
+    today = datetime.now()
+    locations_df = locations_df.withColumn("run_year", F.lit(today.year))
+    locations_df = locations_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    locations_df = locations_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+
     print("Completed estimated job counts")
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(locations_df, destination)
+    utils.write_to_parquet(
+        locations_df,
+        destination,
+        append=True,
+        partitionKeys=["run_year", "run_month", "run_day"],
+    )
 
 
 def determine_ascwds_primary_service_type(input_df):
