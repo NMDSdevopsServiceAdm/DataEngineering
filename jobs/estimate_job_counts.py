@@ -42,7 +42,8 @@ def main(
     destination,
     care_home_model_directory,
     metrics_destination,
-    job_id,
+    JOB_RUN_ID,
+    JOB_NAME,
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
@@ -90,7 +91,8 @@ def main(
         data_percentage=metrics_info["data_percentage"],
         model_version=latest_model_version,
         latest_snapshot=latest_snapshot,
-        job_id=job_id,
+        job_id=JOB_RUN_ID,
+        job_name=JOB_NAME,
     )
 
     # Nursing models
@@ -296,7 +298,13 @@ def generate_r2_metric(df, prediction, label):
 
 
 def write_metrics_df(
-    metrics_destination, r2, data_percentage, model_version, latest_snapshot, job_id
+    metrics_destination,
+    r2,
+    data_percentage,
+    model_version,
+    latest_snapshot,
+    job_id,
+    job_name,
 ):
     spark = utils.get_spark()
     schema = StructType(
@@ -304,11 +312,12 @@ def write_metrics_df(
             StructField("r2", FloatType(), False),
             StructField("percentage_data", FloatType(), False),
             StructField("latest_snapshot", StringType(), False),
-            StructField("job_id", IntegerType(), False),
+            StructField("job_id", StringType(), False),
+            StructField("job_name", StringType(), False),
             StructField("model_version", StringType(), False),
         ]
     )
-    row = [(r2, data_percentage, latest_snapshot, job_id, model_version)]
+    row = [(r2, data_percentage, latest_snapshot, job_id, job_name, model_version)]
     df = spark.createDataFrame(row, schema)
     time = datetime.utcnow()
     df = df.withColumn("generated_metric_date", F.lit(time).cast(TimestampType()))
@@ -451,8 +460,13 @@ def collect_arguments():
         required=True,
     )
     parser.add_argument(
-        "--JOB_ID",
-        help="The Glue job ID",
+        "--JOB_RUN_ID",
+        help="The Glue job run id",
+        required=True,
+    )
+    parser.add_argument(
+        "--JOB_NAME",
+        help="The Glue job name",
         required=True,
     )
 
@@ -464,7 +478,8 @@ def collect_arguments():
         args.destination,
         args.care_home_model_directory,
         args.metrics_destination,
-        args.JOB_ID,
+        args.JOB_RUN_ID,
+        args.JOB_NAME,
     )
 
 
@@ -475,7 +490,8 @@ if __name__ == "__main__":
         destination,
         care_home_model_directory,
         metrics_destination,
-        JOB_ID,
+        JOB_RUN_ID,
+        JOB_NAME,
     ) = collect_arguments()
 
     main(
@@ -484,5 +500,6 @@ if __name__ == "__main__":
         destination,
         care_home_model_directory,
         metrics_destination,
-        JOB_ID,
+        JOB_RUN_ID,
+        JOB_NAME,
     )
