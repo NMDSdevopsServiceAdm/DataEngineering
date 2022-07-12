@@ -121,8 +121,11 @@ def get_employees_with_new_identifier(source_ascwds_worker):
 
 
 def determine_stayer_or_leaver(
-    ascwds_worker, start_period_import_date, end_period_import_date
+    source_ascwds_worker, start_period_import_date, end_period_import_date
 ):
+
+    ascwds_worker = get_employees_with_new_identifier(source_ascwds_worker)
+
     end_worker_df = get_relevant_end_period_workers(
         ascwds_worker, end_period_import_date
     )
