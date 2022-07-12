@@ -21,25 +21,25 @@ def main(source, schema, destination=None):
     columns_to_be_aggregated_patterns = {
         "training": {
             "cols_to_aggregate": utils.extract_col_with_pattern(
-                "^tr\d\d[a-z]+", schema
+                r"^tr\d\d[a-z]+", schema
             ),
             "udf_function": get_training_into_json,
-            "types": utils.extract_specific_column_types("^tr\d\dflag$", schema),
+            "types": utils.extract_specific_column_types(r"^tr\d\dflag$", schema),
         },
         "job_role": {
             "cols_to_aggregate": utils.extract_col_with_pattern(
-                "^jr\d\d[a-z]+", schema
+                r"^jr\d\d[a-z]+", schema
             ),
             "udf_function": get_job_role_into_json,
-            "types": utils.extract_col_with_pattern("^jr\d\d[a-z]", schema),
+            "types": utils.extract_col_with_pattern(r"^jr\d\d[a-z]", schema),
         },
         "qualifications": {
             "cols_to_aggregate": utils.extract_col_with_pattern(
-                "^ql\d{1,3}[a-z]+.", schema
+                r"^ql\d{1,3}[a-z]+.", schema
             ),
             "udf_function": get_qualification_into_json,
             "types": utils.extract_col_with_pattern(
-                "^ql\d{1,3}(achq|app)(\d*|e)", schema
+                r"^ql\d{1,3}(achq|app)(\d*|e)", schema
             ),
         },
     }
@@ -114,7 +114,7 @@ def get_columns_that_should_be_integers(all_columns, schema):
             relevant_columns.append(column)
 
     training_related = utils.extract_col_with_pattern(
-        "^tr\d\d(count|ac|nac|dn)$", schema
+        r"^tr\d\d(count|ac|nac|dn)$", schema
     )
     others = ["emplstat", "zerohours", "salaryint"]
 
