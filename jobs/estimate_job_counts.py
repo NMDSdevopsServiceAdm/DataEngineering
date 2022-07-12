@@ -41,6 +41,7 @@ def main(
     destination,
     care_home_model_directory,
     metrics_destination,
+    job_id,
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
@@ -76,18 +77,21 @@ def main(
     latest_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df, r2 = model_care_home_with_historical(
+    locations_df, metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_model_version}/",
     )
+    latest_snapshot = (
+        locations_df.select(F.max("snapshot_date").alias("max")).first().max
+    )
     write_metrics_df(
         metrics_destination,
-        r2,
-        data_percentage=0.0,
+        r2=metrics_info["r2"],
+        data_percentage=metrics_info["data_percentage"],
         model_version=latest_model_version,
-        latest_snapshot="",
-        job_id=1234,
+        latest_snapshot=latest_snapshot,
+        job_id=job_id,
     )
 
     # Nursing models
@@ -258,13 +262,18 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     features_df = features_df.where("number_of_beds is not null")
 
     care_home_predictions = gbt_trained_model.transform(features_df)
-    r2 = generate_r2_metric(care_home_predictions, "prediction", "job_count")
+    # r2 = generate_r2_metric(care_home_predictions, "prediction", "job_count")
+    # data_percentage = (features_df.count() /locations_df.count()) * 100
+    metrics_info = {
+        "r2": generate_r2_metric(care_home_predictions, "prediction", "job_count"),
+        "data_percentage": (features_df.count() / locations_df.count()) * 100,
+    }
 
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
 
-    return locations_df, r2
+    return locations_df, metrics_info
 
 
 def generate_r2_metric(df, prediction, label):
@@ -273,7 +282,7 @@ def generate_r2_metric(df, prediction, label):
     )
 
     r2 = model_evaluator.evaluate(df)
-    print("R Squared (R2) = %g" % r2)
+    print("Calculating R Squared (R2) = %g" % r2)
 
     return r2
 
@@ -286,16 +295,22 @@ def write_metrics_df(
         fields=[
             StructField("r2", FloatType(), False),
             StructField("percentage_data", FloatType(), False),
-            StructField("model_version", StringType(), False),
             StructField("latest_snapshot", StringType(), False),
             StructField("job_id", IntegerType(), False),
+            StructField("model_version", StringType(), False),
         ]
     )
-    row = [(r2, data_percentage, model_version, latest_snapshot, job_id)]
+    row = [(r2, data_percentage, latest_snapshot, job_id, model_version)]
     df = spark.createDataFrame(row, schema)
     df = df.withColumn("generated_metric_date", F.current_timestamp())
 
-    utils.write_to_parquet(df, metrics_destination)
+    print(f"Writing model metrics as parquet to {metrics_destination}")
+    utils.write_to_parquet(
+        df,
+        metrics_destination,
+        append=True,
+        partitionKeys=["model_version"],
+    )
 
 
 def model_care_home_with_nursing_pir_and_cqc_beds(df):
@@ -426,6 +441,11 @@ def collect_arguments():
         help="The destination for the R2 metric data",
         required=True,
     )
+    parser.add_argument(
+        "--JOB_ID",
+        help="The Glue job ID",
+        required=True,
+    )
 
     args, _ = parser.parse_known_args()
 
@@ -435,6 +455,7 @@ def collect_arguments():
         args.destination,
         args.care_home_model_directory,
         args.metrics_destination,
+        args.JOB_ID,
     )
 
 
@@ -445,6 +466,7 @@ if __name__ == "__main__":
         destination,
         care_home_model_directory,
         metrics_destination,
+        JOB_ID,
     ) = collect_arguments()
 
     main(
@@ -453,4 +475,5 @@ if __name__ == "__main__":
         destination,
         care_home_model_directory,
         metrics_destination,
+        JOB_ID,
     )

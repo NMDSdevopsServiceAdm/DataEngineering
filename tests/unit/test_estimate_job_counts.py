@@ -5,6 +5,7 @@ from datetime import datetime
 
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
+
 from jobs import estimate_job_counts as job
 
 
@@ -12,7 +13,9 @@ class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
     )
-    METRICS_DESTINATION = "tests/test_models/metrics"
+    METRICS_DESTINATION = (
+        "tests/test_data/domain=data_engineering/dataset=model_metrics/"
+    )
 
     @classmethod
     def setUpClass(self):
@@ -359,10 +362,10 @@ class EstimateJobCountTests(unittest.TestCase):
         expected_columns = [
             "r2",
             "percentage_data",
-            "model_version",
             "latest_snapshot",
             "job_id",
             "generated_metric_date",
+            "model_version",
         ]
 
         self.assertEqual(expected_columns, df.columns)
