@@ -18,5 +18,6 @@ resource "aws_glue_job" "glue_job" {
       "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip"
       "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
       "--enable-continuous-cloudwatch-log" = "true"
+      "--enable-auto-scaling"              = var.worker_type == "Standard" ? "false" : "true"
   })
 }

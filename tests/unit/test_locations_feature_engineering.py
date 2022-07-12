@@ -42,8 +42,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertIn("service_21", df.columns)
 
         rows = df.collect()
+        test_row = next(row for row in rows if row.locationid == "1-348374832")
 
-        self.assertEqual(rows[2].service_10, 1)
+        self.assertEqual(test_row.service_10, 1)
 
     def test_main_adds_vectorized_column(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
@@ -61,10 +62,16 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("date_diff", df.columns)
 
-        rows = df.collect()
+        results = df.collect()
+        test_date_diff_1 = next(
+            row.date_diff for row in results if row.locationid == "1-107095666"
+        )
+        test_date_diff_2 = next(
+            row.date_diff for row in results if row.locationid == "1-108967195"
+        )
 
-        self.assertEqual(rows[7].date_diff, 52)
-        self.assertEqual(rows[12].date_diff, 0)
+        self.assertEqual(test_date_diff_1, 52)
+        self.assertEqual(test_date_diff_2, 0)
 
     # OTHER METHODS TEST
 

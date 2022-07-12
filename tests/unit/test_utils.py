@@ -465,7 +465,7 @@ class UtilsTests(unittest.TestCase):
         df = utils.format_import_date(self.test_workplace_df)
 
         self.assertEqual(df.schema["import_date"].dataType, DateType())
-        self.assertEqual(str(df.select("import_date").first()[0]), "2022-01-01")
+        self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
 
 
 if __name__ == "__main__":
