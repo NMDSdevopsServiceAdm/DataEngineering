@@ -10,6 +10,7 @@ from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_worker_data,
     generate_workplace_import_dates,
     generate_worker_import_dates,
+    generate_filtered_workplaces,
 )
 
 
@@ -19,6 +20,7 @@ class Worker_Tracking(unittest.TestCase):
     ASCWDS_WORKER = "tests/test_data/tmp/ascwds_worker.parquet"
     WORKPLACE_IMPORT_DATES = "tests/test_data/tmp/workplace_import_dates.parquet"
     WORKER_IMPORT_DATES = "tests/test_data/tmp/worker_import_dates.parquet"
+    FILTERED_WORKPLACES = "tests/test_data/tmp/filtered_workplaces.parquet"
 
     @classmethod
     def setUpClass(self):
@@ -27,6 +29,7 @@ class Worker_Tracking(unittest.TestCase):
         generate_ascwds_stayer_leaver_worker_data(self.ASCWDS_WORKER)
         generate_workplace_import_dates(self.WORKPLACE_IMPORT_DATES)
         generate_worker_import_dates(self.WORKER_IMPORT_DATES)
+        generate_filtered_workplaces(self.FILTERED_WORKPLACES)
 
     @classmethod
     def tearDownClass(self):
@@ -35,6 +38,7 @@ class Worker_Tracking(unittest.TestCase):
             shutil.rmtree(self.ASCWDS_WORKER)
             shutil.rmtree(self.WORKPLACE_IMPORT_DATES)
             shutil.rmtree(self.WORKER_IMPORT_DATES)
+            shutil.rmtree(self.FILTERED_WORKPLACES)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -80,9 +84,12 @@ class Worker_Tracking(unittest.TestCase):
         self.assertEqual(start_period_import_date, "20201225")
 
     def test_filter_workplaces(self):
+        spark = utils.get_spark()
+
+        workplaces = spark.read.parquet(self.ASCWDS_WORKPLACE)
 
         filtered_df = worker_tracking.filter_workplaces(
-            self.ASCWDS_WORKPLACE, "20210101", "20220101"
+            workplaces, "20210101", "20220101"
         )
 
         self.assertEqual(filtered_df.columns, ["establishmentid"])
@@ -94,21 +101,15 @@ class Worker_Tracking(unittest.TestCase):
                 "108",
                 "109",
                 "111",
-                "112",
             ],
         )
 
     def test_get_employees_with_new_identifier(self):
         spark = utils.get_spark()
-        columns = ["establishmentid", "workerid", "emplstat", "other_data"]
-        rows = [
-            ("1", "100", "190", "other_data"),
-            ("20", "20", "195", "other_data"),
-            ("300", "3", "191", "other_data"),
-        ]
-        worker_df = spark.createDataFrame(rows, columns)
 
-        df = worker_tracking.get_employees_with_new_identifier(worker_df)
+        workers = spark.read.parquet(self.ASCWDS_WORKER)
+
+        df = worker_tracking.get_employees_with_new_identifier(workers)
 
         self.assertEqual(
             df.columns,
@@ -116,28 +117,28 @@ class Worker_Tracking(unittest.TestCase):
                 "establishmentid",
                 "workerid",
                 "emplstat",
-                "other_data",
-                "establishmentid_workerid",
+                "import_date",
+                "other_col",
+                "establishment_worker_id",
             ],
         )
-        self.assertCountEqual(
-            df.select("establishmentid_workerid").rdd.flatMap(lambda x: x).collect(),
-            [
-                "1_100",
-                "300_3",
-            ],
-        )
+        self.assertEqual(df.count(), 36)
+
+        collected_df = df.collect()
+        self.assertEqual(collected_df[0]["establishment_worker_id"], "108_1")
+        self.assertEqual(collected_df[9]["establishment_worker_id"], "109_10")
 
     def test_determine_stayer_or_leaver(self):
         spark = utils.get_spark()
 
-        workers = spark.read.parquet(self.WORKER_IMPORT_DATES)
+        workers = spark.read.parquet(self.ASCWDS_WORKER)
+        filtered_workplaces = spark.read.parquet(self.FILTERED_WORKPLACES)
 
         start_df = worker_tracking.determine_stayer_or_leaver(
-            workers, "20210101", "20220101"
+            filtered_workplaces, workers, "20210101", "20220101"
         )
 
-        self.assertEqual(start_df.count(), 11)
+        self.assertEqual(start_df.count(), 20)
 
         collected_start_df = start_df.collect()
         self.assertEqual(collected_start_df[0]["stayer_or_leaver"], "still employed")
@@ -154,7 +155,7 @@ class Worker_Tracking(unittest.TestCase):
         self.assertEqual(
             output_df.columns,
             [
-                "establishmentid_workerid",
+                "establishment_worker_id",
                 "establishmentid",
                 "workerid",
                 "emplstat",
@@ -163,6 +164,10 @@ class Worker_Tracking(unittest.TestCase):
                 "stayer_or_leaver",
             ],
         )
+
+        collected_output_df = output_df.collect()
+        self.assertEqual(collected_output_df[0]["stayer_or_leaver"], "still employed")
+        self.assertEqual(collected_output_df[1]["stayer_or_leaver"], "leaver")
 
 
 if __name__ == "__main__":
