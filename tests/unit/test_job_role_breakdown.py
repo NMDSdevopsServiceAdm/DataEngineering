@@ -1,17 +1,18 @@
 import unittest
-from pathlib import Path
+import shutil
+
 from pyspark.sql import SparkSession
+
 from jobs import job_role_breakdown
 from tests.test_file_generator import (
-    generate_estimate_jobs_2021_parquet,
+    generate_estimate_jobs_parquet,
     generate_worker_parquet,
 )
-import shutil
 
 
 class JobRoleBreakdownTests(unittest.TestCase):
 
-    TEST_JOB_ESTIMATES_FILE = "tests/test_data/tmp/job_estimates_2021.parquet"
+    TEST_JOB_ESTIMATES_FILE = "tests/test_data/tmp/job_estimates.parquet"
 
     TEST_WORKER_FILE = "tests/test_data/tmp/worker_file.parquet"
 
@@ -19,7 +20,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.spark = SparkSession.builder.appName(
             "test_job_role_breakdown"
         ).getOrCreate()
-        generate_estimate_jobs_2021_parquet(self.TEST_JOB_ESTIMATES_FILE)
+        generate_estimate_jobs_parquet(self.TEST_JOB_ESTIMATES_FILE)
         generate_worker_parquet(self.TEST_WORKER_FILE)
 
     def tearDown(self):
@@ -38,14 +39,24 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(breakdown_df.count(), 5)
         self.assertEqual(
             breakdown_df.columns,
-            ["master_locationid", "primary_service_type", "estimate_job_count_2021"],
+            [
+                "master_locationid",
+                "primary_service_type",
+                "estimate_job_count",
+                "snapshot_date",
+                "run_year",
+                "run_month",
+                "run_day",
+            ],
         )
 
     def test_get_worker_dataset(self):
         worker_df = job_role_breakdown.get_worker_dataset(self.TEST_WORKER_FILE)
 
         self.assertEqual(worker_df.count(), 15)
-        self.assertEqual(worker_df.columns, ["locationid", "workerid", "mainjrid"])
+        self.assertEqual(
+            worker_df.columns, ["locationid", "workerid", "mainjrid", "snapshot_date"]
+        )
 
     def test_get_distinct_list_with_alias(self):
         columns = ["mainjrid", "some_other_field"]
@@ -108,7 +119,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         master_columns = [
             "master_locationid",
             "primary_service_type",
-            "estimate_job_count_2021",
+            "estimate_job_count",
             "location_worker_records",
         ]
         master_rows = [
@@ -131,14 +142,14 @@ class JobRoleBreakdownTests(unittest.TestCase):
             [
                 "master_locationid",
                 "primary_service_type",
-                "estimate_job_count_2021",
+                "estimate_job_count",
                 "location_worker_records",
                 "main_job_role",
             ],
         )
 
     def test_determine_worker_record_to_jobs_ratio(self):
-        columns = ["estimate_job_count_2021", "location_worker_records"]
+        columns = ["estimate_job_count", "location_worker_records"]
         rows = [(10, 0), (10, 5), (10, 10), (10, 100)]
 
         df = self.spark.createDataFrame(rows, columns)
@@ -149,7 +160,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(
             df.columns,
             [
-                "estimate_job_count_2021",
+                "estimate_job_count",
                 "location_worker_records",
                 "location_jobs_ratio",
                 "location_jobs_to_model",
@@ -175,12 +186,16 @@ class JobRoleBreakdownTests(unittest.TestCase):
             [
                 "master_locationid",
                 "primary_service_type",
-                "estimate_job_count_2021",
+                "estimate_job_count",
+                "snapshot_date",
+                "run_year",
+                "run_month",
+                "run_day",
                 "main_job_role",
                 "location_jobs_ratio",
                 "ascwds_num_of_jobs",
                 "estimated_num_of_jobs",
-                "estimate_job_role_count_2021",
+                "estimate_job_role_count",
             ],
         )
 

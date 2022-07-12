@@ -1,6 +1,6 @@
 import argparse
 
-from pyspark.sql.functions import col, lit, least, greatest, sum, coalesce
+from pyspark.sql.functions import col, lit, least, greatest, sum, coalesce, date_format
 from pyspark.sql import Window
 
 from utils import utils
@@ -12,39 +12,64 @@ def main(job_estimates_source, worker_source, output_destination=None):
     worker_df = get_worker_dataset(worker_source)
     job_estimate_df = get_job_estimates_dataset(job_estimates_source)
     worker_record_count_df = count_grouped_by_field(
-        worker_df, grouping_field="locationid", alias="location_worker_records"
+        worker_df,
+        grouping_field=["locationid", "snapshot_date"],
+        alias="location_worker_records",
     )
 
-    master_df = job_estimate_df.join(
-        worker_record_count_df,
-        job_estimate_df.master_locationid == worker_record_count_df.locationid,
-        "left",
-    ).drop("locationid")
+    master_df = (
+        job_estimate_df.join(
+            worker_record_count_df,
+            (job_estimate_df.master_locationid == worker_record_count_df.locationid)
+            & (job_estimate_df.snapshot_date == worker_record_count_df.snapshot_date),
+            "left",
+        )
+        .drop("locationid")
+        .drop(worker_record_count_df.snapshot_date)
+    )
 
     master_df = master_df.na.fill(value=0, subset=["location_worker_records"])
 
     master_df = get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df)
 
     master_df = determine_worker_record_to_jobs_ratio(master_df)
-
     worker_record_per_location_count_df = count_grouped_by_field(
-        worker_df, grouping_field=["locationid", "mainjrid"], alias="ascwds_num_of_jobs"
+        worker_df,
+        grouping_field=["locationid", "snapshot_date", "mainjrid"],
+        alias="ascwds_num_of_jobs",
     )
 
-    master_df = master_df.join(
-        worker_record_per_location_count_df,
-        (worker_record_per_location_count_df.locationid == master_df.master_locationid)
-        & (worker_record_per_location_count_df.mainjrid == master_df.main_job_role),
-        "left",
-    ).drop("locationid", "mainjrid")
+    master_df = (
+        master_df.join(
+            worker_record_per_location_count_df,
+            (
+                worker_record_per_location_count_df.locationid
+                == master_df.master_locationid
+            )
+            & (worker_record_per_location_count_df.mainjrid == master_df.main_job_role)
+            & (
+                worker_record_per_location_count_df.snapshot_date
+                == master_df.snapshot_date
+            ),
+            "left",
+        )
+        .drop("locationid", "mainjrid")
+        .drop(worker_record_per_location_count_df.snapshot_date)
+    )
 
     master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
     master_df = calculate_job_count_breakdown_by_service(master_df)
+
     master_df = calculate_job_count_breakdown_by_jobrole(master_df)
 
     print(f"Exporting as parquet to {output_destination}")
     if output_destination:
-        utils.write_to_parquet(master_df, output_destination)
+        utils.write_to_parquet(
+            master_df,
+            output_destination,
+            append=True,
+            partitionKeys=["run_year", "run_month", "run_day"],
+        )
     else:
         return master_df
 
@@ -53,7 +78,7 @@ def calculate_job_count_breakdown_by_jobrole(master_df):
 
     master_df = master_df.withColumn(
         "estimated_jobs_in_role",
-        col("estimate_job_count_2021") * col("estimated_job_role_percentage"),
+        col("estimate_job_count") * col("estimated_job_role_percentage"),
     ).drop("estimated_job_role_percentage")
 
     master_df = master_df.withColumn(
@@ -80,7 +105,7 @@ def calculate_job_count_breakdown_by_jobrole(master_df):
     ).drop("location_jobs_to_model", "adjusted_job_role_percentage")
 
     master_df = master_df.withColumn(
-        "estimate_job_role_count_2021",
+        "estimate_job_role_count",
         col("ascwds_num_of_jobs") + col("estimated_num_of_jobs"),
     ).drop("location_worker_records")
 
@@ -93,13 +118,16 @@ def calculate_job_count_breakdown_by_service(master_df):
             "primary_service_type AS service_type",
             "main_job_role AS job_role",
             "ascwds_num_of_jobs",
+            "snapshot_date as breakdown_snapshot_date",
         )
-        .groupBy("service_type", "job_role")
+        .groupBy("service_type", "job_role", "breakdown_snapshot_date")
         .agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
     )
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "all_ascwds_jobs_in_service",
-        sum("ascwds_num_of_jobs_in_service").over(Window.partitionBy("service_type")),
+        sum("ascwds_num_of_jobs_in_service").over(
+            Window.partitionBy("service_type", "breakdown_snapshot_date")
+        ),
     )
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "estimated_job_role_percentage",
@@ -109,9 +137,13 @@ def calculate_job_count_breakdown_by_service(master_df):
     master_df = master_df.join(
         job_role_breakdown_by_service,
         (job_role_breakdown_by_service.service_type == master_df.primary_service_type)
-        & (job_role_breakdown_by_service.job_role == master_df.main_job_role),
+        & (job_role_breakdown_by_service.job_role == master_df.main_job_role)
+        & (
+            job_role_breakdown_by_service.breakdown_snapshot_date
+            == master_df.snapshot_date
+        ),
         "left",
-    ).drop("service_type", "job_role")
+    ).drop("service_type", "job_role", "breakdown_snapshot_date")
 
     return master_df
 
@@ -119,13 +151,11 @@ def calculate_job_count_breakdown_by_service(master_df):
 def determine_worker_record_to_jobs_ratio(master_df):
     master_df = master_df.withColumn(
         "location_jobs_ratio",
-        least(lit(1), col("estimate_job_count_2021") / col("location_worker_records")),
+        least(lit(1), col("estimate_job_count") / col("location_worker_records")),
     )
     master_df = master_df.withColumn(
         "location_jobs_to_model",
-        greatest(
-            lit(0), col("estimate_job_count_2021") - col("location_worker_records")
-        ),
+        greatest(lit(0), col("estimate_job_count") - col("location_worker_records")),
     )
 
     return master_df
@@ -161,10 +191,10 @@ def get_worker_dataset(worker_source):
     spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
     worker_df = spark.read.parquet(worker_source).select(
-        col("locationid"), col("workerid"), col("mainjrid")
+        col("locationid"), col("workerid"), col("mainjrid"), col("import_date")
     )
 
-    # GARY - THINK WE NEED TO FILTER THIS TO ONE IMPORT_DATE (20210331 in jupyter)
+    worker_df = worker_df.withColumnRenamed("import_date", "snapshot_date")
 
     return worker_df
 
@@ -175,7 +205,16 @@ def get_job_estimates_dataset(job_estimates_source):
     job_estimates_df = spark.read.parquet(job_estimates_source).select(
         col("locationid").alias("master_locationid"),
         col("primary_service_type"),
-        col("estimate_job_count_2021"),
+        col("estimate_job_count"),
+        col("snapshot_date"),
+        col("run_year"),
+        col("run_month"),
+        col("run_day"),
+    )
+
+    job_estimates_df = utils.get_latest_partition(job_estimates_df)
+    job_estimates_df = job_estimates_df.withColumn(
+        "snapshot_date", date_format(col("snapshot_date"), "yyyyMMdd")
     )
 
     return job_estimates_df

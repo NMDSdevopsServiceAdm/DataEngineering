@@ -18,7 +18,6 @@ from tests.test_file_generator import (
     generate_cqc_locations_file,
     generate_cqc_providers_file,
     generate_pir_file,
-    generate_prepared_locations_file_parquet,
 )
 
 
@@ -449,30 +448,6 @@ class PrepareLocationsTests(unittest.TestCase):
         dormancy_count = cqc_locations.filter(cqc_locations.dormancy).count()
 
         self.assertEqual(dormancy_count, 5)
-
-    def test_get_max_snapshot_of_destiantion_returns_none_if_no_data(self):
-        max = prepare_locations.get_max_snapshot_of_locations_prepared(self.DESTINATION)
-
-        self.assertIsNone(max)
-
-    def test_get_max_snapshot_of_destination_returns_only_partition(self):
-        generate_prepared_locations_file_parquet(
-            self.DESTINATION, partitions=["2022", "01", "01"]
-        )
-
-        max = prepare_locations.get_max_snapshot_of_locations_prepared(self.DESTINATION)
-        self.assertEqual(max, "20220101")
-
-    def test_get_max_snapshot_of_destination_returns_max_partition(self):
-        generate_prepared_locations_file_parquet(
-            self.DESTINATION, partitions=["2022", "01", "01"], append=True
-        )
-        generate_prepared_locations_file_parquet(
-            self.DESTINATION, partitions=["2021", "02", "01"], append=True
-        )
-
-        max = prepare_locations.get_max_snapshot_of_locations_prepared(self.DESTINATION)
-        self.assertEqual(max, "20220101")
 
 
 if __name__ == "__main__":

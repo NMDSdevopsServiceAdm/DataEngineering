@@ -97,11 +97,12 @@ module "job_role_breakdown_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
-    "--job_estimates_source" = ""
-    "--worker_source"        = ""
-    "--destination"          = ""
+    "--job_estimates_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
+    "--worker_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_role_breakdown/version=1.0.0/"
   }
 }
 
