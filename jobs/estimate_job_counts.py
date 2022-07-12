@@ -8,7 +8,7 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     FloatType,
-    TimestampType
+    TimestampType,
 )
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator

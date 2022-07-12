@@ -42,7 +42,9 @@ class EstimateJobCountTests(unittest.TestCase):
 
     @patch("utils.utils.get_s3_sub_folders_for_path")
     @patch("jobs.estimate_job_counts.date")
-    def test_main_partitions_data_based_on_todays_date(self, mock_date, mock_get_s3_folders):
+    def test_main_partitions_data_based_on_todays_date(
+        self, mock_date, mock_get_s3_folders
+    ):
         mock_get_s3_folders.return_value = ["1.0.0"]
         mock_date.today.return_value = date(2022, 6, 29)
         mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
