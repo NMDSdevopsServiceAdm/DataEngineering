@@ -1,5 +1,6 @@
 import unittest
 import warnings
+import shutil
 from datetime import datetime
 
 from pyspark.sql import SparkSession
@@ -11,13 +12,22 @@ class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
     )
+    METRICS_DESTINATION = "tests/test_models/metrics"
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
         ).getOrCreate()
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    @classmethod
+    def tearDownClass(self):
+        try:
+            shutil.rmtree(self.METRICS_DESTINATION)
+        except OSError():
+            pass  # Ignore dir does not exist
 
     def test_determine_ascwds_primary_service_type(self):
         columns = ["locationid", "services_offered"]
@@ -337,10 +347,15 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertAlmostEqual(r2, 0.93, places=2)
 
     def test_write_metrics_df_creates_metrics_df(self):
-        df = job.write_metrics_df(
-            "somewhere", r2=0.99, model_version="1.0.0", latest_snapshot="20220601"
+        job.write_metrics_df(
+            metrics_destination=self.METRICS_DESTINATION,
+            r2=0.99,
+            data_percentage=50.0,
+            model_version="1.0.0",
+            latest_snapshot="20220601",
+            job_id=1234,
         )
-        df.show()
+        df = self.spark.read.parquet(self.METRICS_DESTINATION)
         expected_columns = [
             "r2",
             "percentage_data",
@@ -349,6 +364,7 @@ class EstimateJobCountTests(unittest.TestCase):
             "job_id",
             "generated_metric_date",
         ]
+
         self.assertEqual(expected_columns, df.columns)
         self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
         self.assertEqual(df.first()["model_version"], "1.0.0")

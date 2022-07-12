@@ -1,5 +1,4 @@
 import argparse
-from datetime import datetime
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import (
@@ -8,7 +7,6 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     FloatType,
-    TimestampType,
 )
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
@@ -42,6 +40,7 @@ def main(
     prepared_locations_features,
     destination,
     care_home_model_directory,
+    metrics_destination,
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
@@ -77,10 +76,18 @@ def main(
     latest_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df = model_care_home_with_historical(
+    locations_df, r2 = model_care_home_with_historical(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_model_version}/",
+    )
+    write_metrics_df(
+        metrics_destination,
+        r2,
+        data_percentage=0.0,
+        model_version=latest_model_version,
+        latest_snapshot="",
+        job_id=1234,
     )
 
     # Nursing models
@@ -271,7 +278,9 @@ def generate_r2_metric(df, prediction, label):
     return r2
 
 
-def write_metrics_df(metrics_destination, r2, model_version, latest_snapshot):
+def write_metrics_df(
+    metrics_destination, r2, data_percentage, model_version, latest_snapshot, job_id
+):
     spark = utils.get_spark()
     schema = StructType(
         fields=[
@@ -282,12 +291,11 @@ def write_metrics_df(metrics_destination, r2, model_version, latest_snapshot):
             StructField("job_id", IntegerType(), False),
         ]
     )
-    row = [(r2, 50.0, model_version, latest_snapshot, 1234)]
+    row = [(r2, data_percentage, model_version, latest_snapshot, job_id)]
     df = spark.createDataFrame(row, schema)
     df = df.withColumn("generated_metric_date", F.current_timestamp())
 
-    # utils.write_to_parquet(metrics_destination, append=True)
-    return df
+    utils.write_to_parquet(df, metrics_destination)
 
 
 def model_care_home_with_nursing_pir_and_cqc_beds(df):
