@@ -7,14 +7,13 @@ from jobs import worker_tracking
 from utils import utils
 from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_workplace_data,
-    generate_ascwds_stayer_leaver_worker_start_file,
-    generate_ascwds_stayer_leaver_worker_end_file,
+    generate_ascwds_stayer_leaver_worker_data,
     generate_workplace_import_dates,
     generate_worker_import_dates,
 )
 
 
-class CQC_Care_Directory_Tests(unittest.TestCase):
+class Worker_Tracking(unittest.TestCase):
 
     ASCWDS_WORKPLACE = "tests/test_data/tmp/ascwds_workplace.parquet"
     ASCWDS_WORKER = "tests/test_data/tmp/ascwds_worker.parquet"
@@ -25,7 +24,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
     def setUpClass(self):
         self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
         generate_ascwds_stayer_leaver_workplace_data(self.ASCWDS_WORKPLACE)
-        generate_ascwds_stayer_leaver_worker_start_file(self.ASCWDS_WORKER)
+        generate_ascwds_stayer_leaver_worker_data(self.ASCWDS_WORKER)
         generate_workplace_import_dates(self.WORKPLACE_IMPORT_DATES)
         generate_worker_import_dates(self.WORKER_IMPORT_DATES)
 
@@ -80,13 +79,12 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(end_period_import_date, "20220101")
         self.assertEqual(start_period_import_date, "20201225")
 
-    def test_updated_within_time_period(self):
+    def test_filter_workplaces(self):
 
-        filtered_df = worker_tracking.updated_within_time_period(
-            self.START_PERIOD_WORKPLACE_FILE
+        filtered_df = worker_tracking.filter_workplaces(
+            self.ASCWDS_WORKPLACE, "20210101", "20220101"
         )
 
-        self.assertEqual(filtered_df.count(), 4)
         self.assertEqual(filtered_df.columns, ["establishmentid"])
 
         # asserts equivalent items are present in both sequences
@@ -100,66 +98,46 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_workplaces_in_both_dfs(self):
-        df_start = self.spark.createDataFrame(
-            [("1",), ("2",), ("3",), ("4",), ("5",)], ["establishmentid"]
-        )
-        df_end = self.spark.createDataFrame(
-            [("2",), ("4",), ("6",)], ["establishmentid"]
-        )
+    def test_get_employees_with_new_identifier(self):
+        spark = utils.get_spark()
+        columns = ["establishmentid", "workerid", "emplstat", "other_data"]
+        rows = [
+            ("1", "100", "190", "other_data"),
+            ("20", "20", "195", "other_data"),
+            ("300", "3", "191", "other_data"),
+        ]
+        worker_df = spark.createDataFrame(rows, columns)
 
-        df = worker_tracking.workplaces_in_both_dfs(df_start, df_end)
+        df = worker_tracking.get_employees_with_new_identifier(worker_df)
 
-        self.assertEqual(df.count(), 2)
-        self.assertEqual(df.columns, ["establishmentid"])
-
-        collected_df = df.collect()
-        self.assertEqual(collected_df[0]["establishmentid"], "2")
-        self.assertEqual(collected_df[1]["establishmentid"], "4")
-
-    def test_get_ascwds_worker_df(self):
-        estab_list_df = self.spark.createDataFrame(
-            [("108",), ("110",), ("111",)], ["establishmentid"]
-        )
-
-        df = worker_tracking.get_ascwds_worker_df(
-            estab_list_df, self.START_PERIOD_WORKER_FILE
-        )
-
-        self.assertEqual(df.count(), 12)
         self.assertEqual(
             df.columns,
             [
                 "establishmentid",
                 "workerid",
                 "emplstat",
-                "loads",
-                "of",
-                "other",
-                "columns",
+                "other_data",
                 "establishmentid_workerid",
+            ],
+        )
+        self.assertCountEqual(
+            df.select("establishmentid_workerid").rdd.flatMap(lambda x: x).collect(),
+            [
+                "1_100",
+                "300_3",
             ],
         )
 
     def test_determine_stayer_or_leaver(self):
         spark = utils.get_spark()
-        columns = ["establishmentid_workerid", "emplstat", "other", "columns"]
-        start_rows = [
-            ("10_1", "190", "other", "data"),
-            ("10_2", "191", "other", "data"),
-            ("10_3", "192", "other", "data"),
-        ]
-        start_df = spark.createDataFrame(start_rows, columns)
 
-        end_rows = [
-            ("10_1", "190", "other", "data"),
-            ("10_3", "190", "other", "data"),
-        ]
-        end_df = spark.createDataFrame(end_rows, columns)
+        workers = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
-        start_df = worker_tracking.determine_stayer_or_leaver(start_df, end_df)
+        start_df = worker_tracking.determine_stayer_or_leaver(
+            workers, "20210101", "20220101"
+        )
 
-        self.assertEqual(start_df.count(), 2)
+        self.assertEqual(start_df.count(), 11)
 
         collected_start_df = start_df.collect()
         self.assertEqual(collected_start_df[0]["stayer_or_leaver"], "still employed")
@@ -167,8 +145,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     def test_main(self):
         output_df = worker_tracking.main(
-            self.WORKPLACE_DATA,
-            self.WORKER_DATA,
+            self.ASCWDS_WORKPLACE,
+            self.ASCWDS_WORKER,
         )
 
         self.assertIsNotNone(output_df)
@@ -180,10 +158,8 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 "establishmentid",
                 "workerid",
                 "emplstat",
-                "loads",
-                "of",
-                "other",
-                "columns",
+                "import_date",
+                "other_col",
                 "stayer_or_leaver",
             ],
         )
