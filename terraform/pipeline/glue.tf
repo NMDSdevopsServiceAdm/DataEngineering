@@ -58,9 +58,9 @@ module "worker_tracking_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--source_ascwds_workplace"     = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--source_ascwds_worker"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination"                 = ""
+    "--source_ascwds_workplace" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--source_ascwds_worker"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--destination"             = ""
   }
 }
 
