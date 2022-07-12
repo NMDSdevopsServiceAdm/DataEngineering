@@ -33,7 +33,6 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree(self.DESTINATION)
             shutil.rmtree(self.METRICS_DESTINATION)
             shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
             shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
