@@ -437,6 +437,7 @@ def generate_ascwds_stayer_leaver_workplace_data(output_destination):
     columns = ["establishmentid", "import_date", "wkrrecs", "mupddate", "other_column"]
 
     rows = [
+        ("100", "20201231", 1, date(2020, 1, 1), "0"),
         ("101", "20210101", 1, date(2020, 1, 1), "0"),
         ("102", "20210101", 1, date(2020, 2, 1), "1"),
         ("103", "20210101", 1, date(2020, 3, 1), "0"),
@@ -450,6 +451,7 @@ def generate_ascwds_stayer_leaver_workplace_data(output_destination):
         ("111", "20210101", 5, date(2020, 11, 1), "0"),
         ("112", "20210101", 10, date(2020, 12, 1), "1"),
         ("113", "20210101", None, date(2020, 12, 1), "1"),
+        ("114", "20210601", 10, date(2021, 6, 1), "0"),
         ("106", "20220101", 10, date(2021, 12, 1), "1"),
         ("107", "20220101", 10, date(2021, 12, 1), "0"),
         ("108", "20220101", 10, date(2021, 11, 1), "0"),
@@ -716,41 +718,52 @@ def generate_duplicate_providerid_data_file(output_destination):
     return df
 
 
-def generate_ascwds_stayer_leaver_worker_start_file(output_destination):
+def generate_ascwds_stayer_leaver_worker_data(output_destination):
     spark = utils.get_spark()
     columns = [
         "establishmentid",
         "workerid",
         "emplstat",
-        "loads",
-        "of",
-        "other",
-        "columns",
+        "import_date",
+        "other_col",
     ]
 
     rows = [
-        ("108", "1", "190", "random text", 1, date(2020, 1, 1), "0"),
-        ("108", "2", "190", "random text", 1, date(2020, 2, 1), "1"),
-        ("108", "3", "190", "random text", 1, date(2020, 3, 1), "0"),
-        ("108", "4", "190", "random text", 1, date(2020, 4, 1), "0"),
-        ("108", "5", "190", "random text", 1, date(2020, 5, 1), "0"),
-        ("109", "6", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "7", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "8", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "9", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "10", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "11", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "12", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "13", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "14", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("109", "15", "190", "random text", 5, date(2020, 6, 1), "1"),
-        ("110", "16", "190", "random text", 1, date(2020, 1, 1), "0"),
-        ("111", "17", "190", "random text", 1, date(2020, 1, 1), "0"),
-        ("111", "18", "190", "random text", 1, date(2020, 2, 1), "1"),
-        ("111", "19", "190", "random text", 1, date(2020, 3, 1), "0"),
-        ("111", "20", "191", "random text", 1, date(2020, 4, 1), "0"),
-        ("111", "21", "191", "random text", 1, date(2020, 5, 1), "0"),
-        ("111", "22", "192", "random text", 1, date(2020, 5, 1), "0"),
+        ("108", "1", "190", "20210101", "other data"),
+        ("108", "2", "190", "20210101", "other data"),
+        ("108", "3", "190", "20210101", "other data"),
+        ("108", "4", "190", "20210101", "other data"),
+        ("108", "5", "190", "20210101", "other data"),
+        ("109", "6", "190", "20210101", "other data"),
+        ("109", "7", "190", "20210101", "other data"),
+        ("109", "8", "190", "20210101", "other data"),
+        ("109", "9", "190", "20210101", "other data"),
+        ("109", "10", "190", "20210101", "other data"),
+        ("109", "11", "190", "20210101", "other data"),
+        ("109", "12", "190", "20210101", "other data"),
+        ("109", "13", "190", "20210101", "other data"),
+        ("109", "14", "190", "20210101", "other data"),
+        ("109", "15", "190", "20210101", "other data"),
+        ("110", "16", "190", "20210101", "other data"),
+        ("111", "17", "190", "20210101", "other data"),
+        ("111", "18", "190", "20210101", "other data"),
+        ("111", "19", "190", "20210101", "other data"),
+        ("111", "20", "191", "20210101", "other data"),
+        ("111", "21", "191", "20210101", "other data"),
+        ("111", "22", "192", "20210101", "other data"),
+        ("108", "1", "190", "20220101", "other data"),
+        ("108", "3", "190", "20220101", "other data"),
+        ("108", "5", "190", "20220101", "other data"),
+        ("109", "7", "190", "20220101", "other data"),
+        ("109", "9", "190", "20220101", "other data"),
+        ("109", "11", "190", "20220101", "other data"),
+        ("109", "13", "190", "20220101", "other data"),
+        ("109", "15", "190", "20220101", "other data"),
+        ("111", "17", "190", "20220101", "other data"),
+        ("111", "19", "190", "20220101", "other data"),
+        ("111", "21", "190", "20220101", "other data"),
+        ("111", "22", "190", "20220101", "other data"),
+        ("112", "23", "190", "20220101", "other data"),
     ]
 
     df = spark.createDataFrame(rows, columns)
@@ -854,34 +867,6 @@ def generate_care_directory_gac_service_types(output_destination):
         ("1-000000001", [["The name", "description"], ["The name 2", "description 2"]]),
         ("1-000000002", [["Another name", "Some other description"]]),
         ("1-000000003", []),
-    ]
-
-    df = spark.createDataFrame(rows, columns)
-
-    if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
-
-    return df
-
-
-def generate_ascwds_stayer_leaver_worker_end_file(output_destination):
-    spark = utils.get_spark()
-    columns = ["establishmentid", "workerid", "other_columns"]
-
-    rows = [
-        ("108", "1", "other data"),
-        ("108", "3", "other data"),
-        ("108", "5", "other data"),
-        ("109", "7", "other data"),
-        ("109", "9", "other data"),
-        ("109", "11", "other data"),
-        ("109", "13", "other data"),
-        ("109", "15", "other data"),
-        ("111", "17", "other data"),
-        ("111", "19", "other data"),
-        ("111", "21", "other data"),
-        ("111", "22", "other data"),
-        ("112", "23", "other data"),
     ]
 
     df = spark.createDataFrame(rows, columns)
