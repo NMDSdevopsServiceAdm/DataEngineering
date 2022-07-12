@@ -63,6 +63,23 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         self.assertEqual(start_period_import_date, "20201225")
 
+    def test_get_start_and_end_period_import_dates(self):
+        spark = utils.get_spark()
+
+        workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
+        worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
+
+        end_period_import_date = worker_tracking.max_import_date_in_two_datasets(
+            workplace_dates, worker_dates
+        )
+
+        start_period_import_date = worker_tracking.get_start_period_import_date(
+            workplace_dates, worker_dates, end_period_import_date
+        )
+
+        self.assertEqual(end_period_import_date, "20220101")
+        self.assertEqual(start_period_import_date, "20201225")
+
     def test_updated_within_time_period(self):
 
         filtered_df = worker_tracking.updated_within_time_period(
