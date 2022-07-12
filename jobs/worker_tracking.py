@@ -18,8 +18,7 @@ def main(
     print("Creating stayer vs leaver parquet file")
 
     ascwds_workplace = spark.read.parquet(source_ascwds_workplace)
-
-    ascwds_worker = get_employees_with_new_identifier(source_ascwds_worker)
+    ascwds_worker = spark.read.parquet(source_ascwds_worker)
 
     (
         start_period_import_date,
@@ -31,7 +30,10 @@ def main(
     )
 
     start_worker_df = determine_stayer_or_leaver(
-        ascwds_worker, start_period_import_date, end_period_import_date
+        ascwds_worker,
+        ascwds_workplace,
+        start_period_import_date,
+        end_period_import_date,
     )
 
     if destination:
@@ -102,10 +104,13 @@ def filter_workplaces(
     return workplaces_to_include
 
 
-def get_employees_with_new_identifier(source_ascwds_worker):
-    spark = utils.get_spark()
+def get_workers_for_filtered_workplaces(ascwds_workplace, ascwds_worker):
+    worker_df = ascwds_workplace.join(ascwds_worker, ["establishmentid"], "inner")
 
-    worker_df = spark.read.parquet(source_ascwds_worker)
+    return worker_df
+
+
+def get_employees_with_new_identifier(worker_df):
 
     # employees are permament (=190) or temporary (=191) employed staff ('emplsat')
     worker_df = worker_df.filter(
@@ -118,29 +123,6 @@ def get_employees_with_new_identifier(source_ascwds_worker):
     )
 
     return worker_df
-
-
-def determine_stayer_or_leaver(
-    source_ascwds_worker, start_period_import_date, end_period_import_date
-):
-
-    ascwds_worker = get_employees_with_new_identifier(source_ascwds_worker)
-
-    end_worker_df = get_relevant_end_period_workers(
-        ascwds_worker, end_period_import_date
-    )
-
-    start_worker_df = get_relevant_start_period_workers(
-        ascwds_worker, start_period_import_date
-    )
-
-    start_worker_df = start_worker_df.join(
-        end_worker_df, ["establishment_worker_id"], "left"
-    )
-
-    start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
-
-    return start_worker_df
 
 
 def get_relevant_start_period_workers(ascwds_worker, start_period_import_date):
@@ -161,6 +143,31 @@ def get_relevant_end_period_workers(ascwds_worker, end_period_import_date):
     )
 
     return end_worker_df
+
+
+def determine_stayer_or_leaver(
+    ascwds_workplace, ascwds_worker, start_period_import_date, end_period_import_date
+):
+
+    ascwds_worker = get_workers_for_filtered_workplaces(ascwds_workplace, ascwds_worker)
+
+    ascwds_worker = get_employees_with_new_identifier(ascwds_worker)
+
+    end_worker_df = get_relevant_end_period_workers(
+        ascwds_worker, end_period_import_date
+    )
+
+    start_worker_df = get_relevant_start_period_workers(
+        ascwds_worker, start_period_import_date
+    )
+
+    start_worker_df = start_worker_df.join(
+        end_worker_df, ["establishment_worker_id"], "left"
+    )
+
+    start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
+
+    return start_worker_df
 
 
 def collect_arguments():
