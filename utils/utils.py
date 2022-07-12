@@ -163,3 +163,7 @@ def format_import_date(df, fieldname="import_date"):
     return df.withColumn(
         fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
     )
+
+
+def get_max_snapshot_date(locations_df):
+    return locations_df.select(F.max("snapshot_date").alias("max")).first().max

@@ -82,9 +82,7 @@ def main(
         features_df,
         f"{care_home_model_directory}{latest_model_version}/",
     )
-    latest_snapshot = (
-        locations_df.select(F.max("snapshot_date").alias("max")).first().max
-    )
+    latest_snapshot = utils.get_max_snapshot_date(locations_df)
     write_metrics_df(
         metrics_destination,
         r2=metrics_info["r2"],
