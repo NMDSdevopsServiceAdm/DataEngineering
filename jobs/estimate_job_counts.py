@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime, date
+from datetime import date
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import (
@@ -8,7 +8,6 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     FloatType,
-    TimestampType,
 )
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
@@ -319,8 +318,7 @@ def write_metrics_df(
     )
     row = [(r2, data_percentage, latest_snapshot, job_id, job_name, model_version)]
     df = spark.createDataFrame(row, schema)
-    time = datetime.utcnow()
-    df = df.withColumn("generated_metric_date", F.lit(time).cast(TimestampType()))
+    df = df.withColumn("generated_metric_date", F.current_timestamp())
 
     print(f"Writing model metrics as parquet to {metrics_destination}")
     utils.write_to_parquet(
