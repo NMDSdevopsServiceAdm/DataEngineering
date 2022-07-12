@@ -18,7 +18,7 @@ class EstimateJobCountTests(unittest.TestCase):
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
     METRICS_DESTINATION = (
-        "tests/test_data/domain=data_engineering/dataset=model_metrics/"
+        "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
     )
     PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
     LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
@@ -33,10 +33,11 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def tearDown(self):
         try:
+            shutil.rmtree(self.DESTINATION)
+            shutil.rmtree(self.METRICS_DESTINATION)
             shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
             shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
             shutil.rmtree(self.DESTINATION)
-            shutil.rmtree(self.METRICS_DESTINATION)
         except OSError:
             pass
 
