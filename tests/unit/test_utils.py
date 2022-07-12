@@ -506,6 +506,69 @@ class UtilsTests(unittest.TestCase):
 
         self.assertIsNone(max_snapshot)
 
+    def test_get_latest_partition_returns_only_partitions(self):
+        columns = ["id", "run_year", "run_month", "run_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (3, "2021", "01", "01"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(df)
+
+        self.assertEqual(result_df.count(), 3)
+
+    def test_get_latest_partition_returns_only_latest_partition(self):
+        columns = ["id", "run_year", "run_month", "run_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (1, "2020", "01", "01"),
+            (2, "2020", "01", "01"),
+            (1, "2021", "03", "01"),
+            (2, "2021", "03", "01"),
+            (1, "2021", "03", "05"),
+            (2, "2021", "03", "05"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(df)
+
+        self.assertEqual(result_df.count(), 2)
+
+        for idx, row in enumerate(result_df.collect()):
+            with self.subTest("Check row has correct partition", i=idx):
+                self.assertEqual(row.run_year, "2021")
+                self.assertEqual(row.run_month, "03")
+                self.assertEqual(row.run_day, "05")
+
+    def test_get_latest_partition_uses_correct_partition_keys(self):
+        columns = ["id", "process_year", "process_month", "process_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (1, "2020", "01", "01"),
+            (2, "2020", "01", "01"),
+            (1, "2021", "03", "01"),
+            (2, "2021", "03", "01"),
+            (1, "2021", "03", "05"),
+            (2, "2021", "03", "05"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(
+            df, partition_keys=("process_year", "process_month", "process_day")
+        )
+
+        self.assertEqual(result_df.count(), 2)
+
+        for idx, row in enumerate(result_df.collect()):
+            with self.subTest("Check row has correct partition", i=idx):
+                self.assertEqual(row.process_year, "2021")
+                self.assertEqual(row.process_month, "03")
+                self.assertEqual(row.process_day, "05")
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
