@@ -12,7 +12,21 @@ from utils import utils
 
 
 def main(source, schema, destination=None):
-    main_df = get_dataset_worker(source, schema)
+    last_processed_date = utils.get_max_snapshot_partitions(destination)
+    if last_processed_date is not None:
+        last_processed_date = (
+            f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
+        )
+    main_df = get_dataset_worker(source, schema, last_processed_date)
+
+    # TODO: Use snapshot year/month/day from prepared locations when joining with it
+    main_df = main_df.withColumn(
+        "snapshot_year", F.substring(main_df.import_date, 0, 4)
+    )
+    main_df = main_df.withColumn(
+        "snapshot_month", F.substring(main_df.import_date, 5, 2)
+    )
+    main_df = main_df.withColumn("snapshot_day", F.substring(main_df.import_date, 7, 2))
 
     print("Formating date fields")
     main_df = utils.format_import_date(main_df)
@@ -75,12 +89,17 @@ def main(source, schema, destination=None):
 
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(main_df, destination)
+        utils.write_to_parquet(
+            main_df,
+            destination,
+            append=True,
+            partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
+        )
     else:
         return main_df
 
 
-def get_dataset_worker(source, schema):
+def get_dataset_worker(source, schema, since_date=None):
     spark = utils.get_spark()
     column_names = utils.extract_column_from_schema(schema)
 
@@ -89,6 +108,8 @@ def get_dataset_worker(source, schema):
         spark.read.option("basePath", source).parquet(source).select(column_names)
     )
     worker_df = clean(worker_df, column_names, schema)
+    if since_date is not None:
+        return worker_df.filter(F.col("import_date") > since_date)
 
     return worker_df
 

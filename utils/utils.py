@@ -170,7 +170,9 @@ def get_max_snapshot_partitions(location=None):
     if not location:
         return None
 
-    spark = get_spark.spark
+    spark = SparkSession.builder.appName(
+        "sfc_get_max_snapshot_partitions"
+    ).getOrCreate()
 
     try:
         previous_snpashots = spark.read.option("basePath", location).parquet(location)
