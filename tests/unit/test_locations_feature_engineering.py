@@ -5,12 +5,18 @@ from pyspark.sql import SparkSession
 from pyspark.ml.linalg import SparseVector
 
 from jobs import locations_feature_engineering
-from tests.test_file_generator import generate_prepared_locations_file_parquet
+from tests.test_file_generator import (
+    generate_prepared_locations_file_parquet,
+    generate_location_features_file_parquet,
+)
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
     PREPARED_LOCATIONS_TEST_DATA = (
         "tests/test_data/domain=data_engineering/dataset=prepared_locations"
+    )
+    OUTPUT_DESTINATION = (
+        "tests/test_data/domain=data_engineering/dataset=locations_features"
     )
 
     def setUp(self):
@@ -23,7 +29,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        shutil.rmtree(self.PREPARED_LOCATIONS_TEST_DATA)
+        try:
+            shutil.rmtree(self.PREPARED_LOCATIONS_TEST_DATA)
+            shutil.rmtree(self.OUTPUT_DESTINATION)
+        except OSError:
+            pass
         return super().tearDown()
 
     # MAIN METHOD TESTS
@@ -73,7 +83,51 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(test_date_diff_1, 52)
         self.assertEqual(test_date_diff_2, 0)
 
+    def test_main_processes_only_new_data(self):
+        generate_location_features_file_parquet(self.OUTPUT_DESTINATION)
+        generate_prepared_locations_file_parquet(
+            self.PREPARED_LOCATIONS_TEST_DATA,
+            append=True,
+            partitions=["2022", "02", "28"],
+        )
+        generate_prepared_locations_file_parquet(
+            self.PREPARED_LOCATIONS_TEST_DATA,
+            append=True,
+            partitions=["2022", "01", "28"],
+        )
+        df = locations_feature_engineering.main(
+            self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
+        )
+
+        self.assertEqual(df.count(), 14)
+
     # OTHER METHODS TEST
+
+    def test_filter_records_since_snapshot_date_if_date_is_noene_does_nothing(self):
+        result_df = locations_feature_engineering.filter_records_since_snapshot_date(
+            self.test_df, None
+        )
+
+        self.assertEqual(result_df.count(), self.test_df.count())
+
+    def test_filter_records_since_snapshot_date_removes_data_on_before_date(self):
+        df = self.test_df.union(
+            generate_prepared_locations_file_parquet(
+                append=True,
+                partitions=["2022", "01", "28"],
+            )
+        )
+        df = df.union(
+            generate_prepared_locations_file_parquet(
+                append=True,
+                partitions=["2022", "04", "01"],
+            )
+        )
+        result_df = locations_feature_engineering.filter_records_since_snapshot_date(
+            df, ("2022", "03", "08")
+        )
+
+        self.assertEqual(result_df.count(), 14)
 
     def test_explode_services_creates_a_column_for_each_service(self):
         df = locations_feature_engineering.explode_services(self.test_df)
