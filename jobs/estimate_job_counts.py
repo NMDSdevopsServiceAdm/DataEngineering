@@ -421,6 +421,11 @@ def collect_arguments():
         help="The directory where the care home models are saved",
         required=True,
     )
+    parser.add_argument(
+        "--metrics_destination",
+        help="The destination for the R2 metric data",
+        required=True,
+    )
 
     args, _ = parser.parse_known_args()
 
@@ -429,6 +434,7 @@ def collect_arguments():
         args.prepared_locations_features,
         args.destination,
         args.care_home_model_directory,
+        args.metrics_destination,
     )
 
 
@@ -438,6 +444,7 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        metrics_destination,
     ) = collect_arguments()
 
     main(
@@ -445,4 +452,5 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        metrics_destination,
     )

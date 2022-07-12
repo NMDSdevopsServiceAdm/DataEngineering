@@ -103,6 +103,7 @@ module "estimate_job_counts_job" {
     "--prepared_locations_features" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
     "--destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
     "--care_home_model_directory"   = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
+    "--metrics_destination"         = "${module.datasets_resources.bucket_uri}/domain=data_engineering/dataset=model_metrics/"
   }
 }
 
