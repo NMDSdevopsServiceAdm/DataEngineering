@@ -94,11 +94,10 @@ def filter_workplaces(
     df = df.filter((df.mupddate > df.mupddate_cutoff) & (df.wkrrecs >= 1))
     df = df.select("establishmentid")
 
-    workplace_count = df.join(
-        df.groupBy("establishmentid").count(), on="establishmentid"
-    )
+    workplace_count = df.groupBy("establishmentid").count()
 
     workplaces_to_include = workplace_count.filter(workplace_count["count"] == 2)
+    workplaces_to_include = workplaces_to_include.drop("count")
 
     return workplaces_to_include
 
