@@ -1,36 +1,88 @@
 import unittest
 import warnings
 import shutil
-from datetime import datetime
+from datetime import datetime, date
+import re
+import os
 
+from unittest.mock import patch
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
+from tests.test_file_generator import generate_prepared_locations_file_parquet
 from jobs import estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
-        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
+        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
     METRICS_DESTINATION = (
         "tests/test_data/domain=data_engineering/dataset=model_metrics/"
     )
+    PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
+    LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
+    DESTINATION = "tests/test_data/tmp/estimated_job_counts/"
 
-    @classmethod
-    def setUpClass(self):
+    def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
         ).getOrCreate()
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    @classmethod
-    def tearDownClass(self):
+    def tearDown(self):
         try:
+            shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
+            shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
+            shutil.rmtree(self.DESTINATION)
             shutil.rmtree(self.METRICS_DESTINATION)
-        except OSError():
-            pass  # Ignore dir does not exist
+        except OSError:
+            pass
+
+    @patch("utils.utils.get_s3_sub_folders_for_path")
+    @patch("jobs.estimate_job_counts.date")
+    def test_main_partitions_data_based_on_todays_date(self, mock_date, mock_get_s3_folders):
+        mock_get_s3_folders.return_value = ["1.0.0"]
+        mock_date.today.return_value = date(2022, 6, 29)
+        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
+        generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_DIR)
+        features = self.generate_features_df()
+        features.write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(self.LOCATIONS_FEATURES_DIR)
+
+        job.main(
+            self.PREPARED_LOCATIONS_DIR,
+            self.LOCATIONS_FEATURES_DIR,
+            self.DESTINATION,
+            self.CAREHOME_WITH_HISTORICAL_MODEL,
+            self.METRICS_DESTINATION,
+            job_id=1234,
+        )
+
+        first_partitions = os.listdir(self.DESTINATION)
+        year_partition = next(
+            re.match("^run_year=([0-9]{4})$", path) for path in first_partitions
+        )
+        self.assertIsNotNone(year_partition)
+        self.assertEqual(year_partition.groups()[0], "2022")
+
+        second_partitions = os.listdir(f"{self.DESTINATION}/{year_partition.string}/")
+        month_partition = next(
+            re.match("^run_month=([0-9]{2})$", path) for path in second_partitions
+        )
+        self.assertIsNotNone(month_partition)
+        self.assertEqual(month_partition.groups()[0], "06")
+
+        third_partitions = os.listdir(
+            f"{self.DESTINATION}/{year_partition.string}/{month_partition.string}/"
+        )
+        day_partition = next(
+            re.match("^run_day=([0-9]{2})$", path) for path in third_partitions
+        )
+        self.assertIsNotNone(day_partition)
+        self.assertEqual(day_partition.groups()[0], "29")
 
     def test_determine_ascwds_primary_service_type(self):
         columns = ["locationid", "services_offered"]
@@ -216,13 +268,13 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features" ]
+        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features", "snapshot_year", "snapshot_month", "snapshot_day" ]
 
         feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0})),
-            ("1-000000002", "Care home without nursing", 10, "N", "Merseyside", 12, "2022-03-29", None),
-            ("1-000000003", "Care home with nursing", 20, None, "Merseyside", 34, "2022-03-29", None),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None),
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), "2021", "05", "05"),
+            ("1-000000002", "Care home without nursing", 10, "N", "Merseyside", 12, "2022-03-29", None, "2021", "05", "05"),
+            ("1-000000003", "Care home with nursing", 20, None, "Merseyside", 34, "2022-03-29", None, "2021", "05", "05"),
+            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, "2021", "05", "05"),
         ]
         # fmt: on
         return self.spark.createDataFrame(
@@ -271,7 +323,7 @@ class EstimateJobCountTests(unittest.TestCase):
         features_df = self.generate_features_df()
 
         df, _ = job.model_care_home_with_historical(
-            locations_df, features_df, self.CAREHOME_WITH_HISTORICAL_MODEL
+            locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
         )
 
         self.assertEqual(df.count(), 5)
@@ -281,7 +333,7 @@ class EstimateJobCountTests(unittest.TestCase):
         features_df = self.generate_features_df()
 
         df, _ = job.model_care_home_with_historical(
-            locations_df, features_df, self.CAREHOME_WITH_HISTORICAL_MODEL
+            locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
         )
         expected_location_with_prediction = df.where(
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")

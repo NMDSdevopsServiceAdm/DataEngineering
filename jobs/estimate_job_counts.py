@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime, date
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import (
@@ -7,13 +8,13 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     FloatType,
+    TimestampType
 )
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
 
 from utils import utils
-
 
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"
@@ -60,14 +61,14 @@ def main(
 
     features_df = spark.read.parquet(prepared_locations_features)
 
-    locations_df = populate_last_know_job_count(locations_df)
+    locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
-    locations_df = populate_known_job_count(locations_df)
+    locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
     # Non-res models
     locations_df = model_non_res_historical(locations_df)
     locations_df = model_non_res_historical_pir(locations_df)
@@ -100,9 +101,19 @@ def main(
     locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
 
+    today = date.today()
+    locations_df = locations_df.withColumn("run_year", F.lit(today.year))
+    locations_df = locations_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    locations_df = locations_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+
     print("Completed estimated job counts")
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(locations_df, destination)
+    utils.write_to_parquet(
+        locations_df,
+        destination,
+        append=True,
+        partitionKeys=["run_year", "run_month", "run_day"],
+    )
 
 
 def determine_ascwds_primary_service_type(input_df):
@@ -299,7 +310,8 @@ def write_metrics_df(
     )
     row = [(r2, data_percentage, latest_snapshot, job_id, model_version)]
     df = spark.createDataFrame(row, schema)
-    df = df.withColumn("generated_metric_date", F.current_timestamp())
+    time = datetime.utcnow()
+    df = df.withColumn("generated_metric_date", F.lit(time).cast(TimestampType()))
 
     print(f"Writing model metrics as parquet to {metrics_destination}")
     utils.write_to_parquet(

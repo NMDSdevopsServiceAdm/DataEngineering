@@ -78,10 +78,10 @@ class UtilsTests(unittest.TestCase):
     smaller_string_boost = 35
 
     def setUp(self):
-        spark = SparkSession.builder.appName(
+        self.spark = SparkSession.builder.appName(
             "sfc_data_engineering_csv_to_parquet"
         ).getOrCreate()
-        self.df = spark.read.csv(self.test_csv_path, header=True)
+        self.df = self.spark.read.csv(self.test_csv_path, header=True)
         self.test_workplace_df = generate_ascwds_workplace_file(
             self.TEST_ASCWDS_WORKPLACE_FILE
         )
@@ -466,6 +466,108 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(df.schema["import_date"].dataType, DateType())
         self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
+
+    def test_get_max_date_partition_returns_only_partition(self):
+        columns = ["id", "snapshot_year", "snapshot_month", "snapshot_day"]
+        rows = [(1, "2021", "01", "01")]
+        self.spark.createDataFrame(rows, columns).write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(self.tmp_dir)
+
+        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
+
+        self.assertEqual(max_snapshot, ("2021", "01", "01"))
+
+    def test_get_max_date_partition_returns_max_partition(self):
+        columns = ["id", "snapshot_year", "snapshot_month", "snapshot_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (1, "2022", "01", "01"),
+            (1, "2022", "02", "01"),
+            (1, "2021", "04", "01"),
+            (1, "2022", "02", "14"),
+            (1, "2022", "01", "22"),
+        ]
+        self.spark.createDataFrame(rows, columns).write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(self.tmp_dir)
+
+        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
+
+        self.assertEqual(max_snapshot, ("2022", "02", "14"))
+
+    def test_get_max_date_partition_if_theres_no_data_returns_none(self):
+        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
+
+        self.assertIsNone(max_snapshot)
+
+    def test_get_max_date_partition_if_theres_no_location_returns_none(self):
+        max_snapshot = utils.get_max_snapshot_partitions()
+
+        self.assertIsNone(max_snapshot)
+
+    def test_get_latest_partition_returns_only_partitions(self):
+        columns = ["id", "run_year", "run_month", "run_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (3, "2021", "01", "01"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(df)
+
+        self.assertEqual(result_df.count(), 3)
+
+    def test_get_latest_partition_returns_only_latest_partition(self):
+        columns = ["id", "run_year", "run_month", "run_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (1, "2020", "01", "01"),
+            (2, "2020", "01", "01"),
+            (1, "2021", "03", "01"),
+            (2, "2021", "03", "01"),
+            (1, "2021", "03", "05"),
+            (2, "2021", "03", "05"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(df)
+
+        self.assertEqual(result_df.count(), 2)
+
+        for idx, row in enumerate(result_df.collect()):
+            with self.subTest("Check row has correct partition", i=idx):
+                self.assertEqual(row.run_year, "2021")
+                self.assertEqual(row.run_month, "03")
+                self.assertEqual(row.run_day, "05")
+
+    def test_get_latest_partition_uses_correct_partition_keys(self):
+        columns = ["id", "process_year", "process_month", "process_day"]
+        rows = [
+            (1, "2021", "01", "01"),
+            (2, "2021", "01", "01"),
+            (1, "2020", "01", "01"),
+            (2, "2020", "01", "01"),
+            (1, "2021", "03", "01"),
+            (2, "2021", "03", "01"),
+            (1, "2021", "03", "05"),
+            (2, "2021", "03", "05"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        result_df = utils.get_latest_partition(
+            df, partition_keys=("process_year", "process_month", "process_day")
+        )
+
+        self.assertEqual(result_df.count(), 2)
+
+        for idx, row in enumerate(result_df.collect()):
+            with self.subTest("Check row has correct partition", i=idx):
+                self.assertEqual(row.process_year, "2021")
+                self.assertEqual(row.process_month, "03")
+                self.assertEqual(row.process_day, "05")
 
 
 if __name__ == "__main__":
