@@ -751,6 +751,7 @@ def generate_ascwds_stayer_leaver_worker_data(output_destination):
         ("111", "20", "191", "20210101", "other data"),
         ("111", "21", "191", "20210101", "other data"),
         ("111", "22", "192", "20210101", "other data"),
+        ("113", "24", "190", "20210101", "other data"),
         ("108", "1", "190", "20220101", "other data"),
         ("108", "3", "190", "20220101", "other data"),
         ("108", "5", "190", "20220101", "other data"),
@@ -764,9 +765,21 @@ def generate_ascwds_stayer_leaver_worker_data(output_destination):
         ("111", "21", "190", "20220101", "other data"),
         ("111", "22", "190", "20220101", "other data"),
         ("112", "23", "190", "20220101", "other data"),
+        ("113", "24", "190", "20220101", "other data"),
     ]
 
     df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_filtered_workplaces(output_destination):
+    spark = utils.get_spark()
+
+    df = spark.createDataFrame(["108", "109", "111"], "string").toDF("establishmentid")
 
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
