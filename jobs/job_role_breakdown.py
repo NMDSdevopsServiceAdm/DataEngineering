@@ -25,7 +25,7 @@ def main(job_estimates_source, worker_source, output_destination=None):
             "left",
         )
         .drop("locationid")
-        .drop(job_estimate_df.snapshot_date)
+        .drop(worker_record_count_df.snapshot_date)
     )
 
     master_df = master_df.na.fill(value=0, subset=["location_worker_records"])
