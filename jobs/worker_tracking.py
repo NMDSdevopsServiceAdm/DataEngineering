@@ -17,12 +17,7 @@ def main(
 
     print("Creating stayer vs leaver parquet file")
 
-    ascwds_workplace = spark.read.parquet(source_ascwds_workplace).select(
-        "establishmentid",
-        "mupddate",
-        "import_date",
-        "wkrrecs",
-    )
+    ascwds_workplace = spark.read.parquet(source_ascwds_workplace)
 
     ascwds_worker = get_employees_with_new_identifier(source_ascwds_worker)
 
@@ -83,7 +78,12 @@ def get_start_and_end_period_import_dates(workplace_df, worker_df):
 def filter_workplaces(
     ascwds_workplace, start_period_import_date, end_period_import_date
 ):
-
+    ascwds_workplace = ascwds_workplace.select(
+        "establishmentid",
+        "mupddate",
+        "import_date",
+        "wkrrecs",
+    )
     df = ascwds_workplace.filter(
         (ascwds_workplace.import_date == start_period_import_date)
         | (ascwds_workplace.import_date == end_period_import_date)
@@ -110,7 +110,7 @@ def get_employees_with_new_identifier(source_ascwds_worker):
 
     # employees are permament (=190) or temporary (=191) employed staff ('emplsat')
     worker_df = worker_df.filter(
-        (worker_df.emplstat == 190) | (worker_df.emplstat == 191)
+        (worker_df.emplstat == "190") | (worker_df.emplstat == "191")
     )
 
     worker_df = worker_df.withColumn(
