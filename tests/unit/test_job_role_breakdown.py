@@ -1,11 +1,13 @@
 import unittest
+import shutil
+
 from pyspark.sql import SparkSession
+
 from jobs import job_role_breakdown
 from tests.test_file_generator import (
     generate_estimate_jobs_parquet,
     generate_worker_parquet,
 )
-import shutil
 
 
 class JobRoleBreakdownTests(unittest.TestCase):

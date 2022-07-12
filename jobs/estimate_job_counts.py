@@ -1,12 +1,12 @@
 import argparse
+from datetime import datetime
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import Window
-from utils import utils
-from datetime import datetime
 
+from utils import utils
 
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"

@@ -4,11 +4,12 @@ import re
 import os
 
 from unittest.mock import patch
+from freezegun import freeze_time
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
-from jobs import estimate_job_counts as job
-from freezegun import freeze_time
+
 from tests.test_file_generator import generate_prepared_locations_file_parquet
+from jobs import estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
