@@ -55,6 +55,11 @@ def get_s3_sub_folders_for_path(path, s3_client=None):
     ]
 
 
+def get_model_name(path_to_model):
+    _, prefix = split_s3_uri(path_to_model)
+    return prefix.split("/")[1]
+
+
 def read_partial_csv_content(bucket, key, s3_client=None):
     if s3_client is None:
         s3_client = boto3.client("s3")

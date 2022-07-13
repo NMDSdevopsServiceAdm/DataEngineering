@@ -60,8 +60,8 @@ class EstimateJobCountTests(unittest.TestCase):
             self.DESTINATION,
             self.CAREHOME_WITH_HISTORICAL_MODEL,
             self.METRICS_DESTINATION,
-            JOB_RUN_ID="abc1234",
-            JOB_NAME="estimate_job_counts",
+            job_run_id="abc1234",
+            job_name="estimate_job_counts",
         )
 
         first_partitions = os.listdir(self.DESTINATION)
@@ -410,8 +410,9 @@ class EstimateJobCountTests(unittest.TestCase):
             r2=0.99,
             data_percentage=50.0,
             model_version="1.0.0",
+            model_name="care_home_jobs_prediction",
             latest_snapshot="20220601",
-            job_id="abc1234",
+            job_run_id="abc1234",
             job_name="estimate_job_counts",
         )
         df = self.spark.read.parquet(self.METRICS_DESTINATION)
@@ -419,15 +420,17 @@ class EstimateJobCountTests(unittest.TestCase):
             "r2",
             "percentage_data",
             "latest_snapshot",
-            "job_id",
+            "job_run_id",
             "job_name",
             "generated_metric_date",
+            "model_name",
             "model_version",
         ]
 
         self.assertEqual(expected_columns, df.columns)
         self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
         self.assertEqual(df.first()["model_version"], "1.0.0")
+        self.assertEqual(df.first()["model_name"], "care_home_jobs_prediction")
         self.assertEqual(df.first()["latest_snapshot"], "20220601")
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)

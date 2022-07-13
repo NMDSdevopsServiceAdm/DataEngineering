@@ -41,8 +41,8 @@ def main(
     destination,
     care_home_model_directory,
     metrics_destination,
-    JOB_RUN_ID,
-    JOB_NAME,
+    job_run_id,
+    job_name,
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
@@ -78,6 +78,7 @@ def main(
     latest_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
+    model_name = utils.get_model_name(care_home_model_directory)
     locations_df, metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
@@ -89,9 +90,10 @@ def main(
         r2=metrics_info["r2"],
         data_percentage=metrics_info["data_percentage"],
         model_version=latest_model_version,
+        model_name=model_name,
         latest_snapshot=latest_snapshot,
-        job_id=JOB_RUN_ID,
-        job_name=JOB_NAME,
+        job_run_id=job_run_id,
+        job_name=job_name,
     )
 
     # Nursing models
@@ -300,9 +302,10 @@ def write_metrics_df(
     metrics_destination,
     r2,
     data_percentage,
+    model_name,
     model_version,
     latest_snapshot,
-    job_id,
+    job_run_id,
     job_name,
 ):
     spark = utils.get_spark()
@@ -311,12 +314,23 @@ def write_metrics_df(
             StructField("r2", FloatType(), False),
             StructField("percentage_data", FloatType(), False),
             StructField("latest_snapshot", StringType(), False),
-            StructField("job_id", StringType(), False),
+            StructField("job_run_id", StringType(), False),
             StructField("job_name", StringType(), False),
+            StructField("model_name", StringType(), False),
             StructField("model_version", StringType(), False),
         ]
     )
-    row = [(r2, data_percentage, latest_snapshot, job_id, job_name, model_version)]
+    row = [
+        (
+            r2,
+            data_percentage,
+            latest_snapshot,
+            job_run_id,
+            job_name,
+            model_name,
+            model_version,
+        )
+    ]
     df = spark.createDataFrame(row, schema)
     df = df.withColumn("generated_metric_date", F.current_timestamp())
 
@@ -325,7 +339,7 @@ def write_metrics_df(
         df,
         metrics_destination,
         append=True,
-        partitionKeys=["model_version"],
+        partitionKeys=["model_name", "model_version"],
     )
 
 
