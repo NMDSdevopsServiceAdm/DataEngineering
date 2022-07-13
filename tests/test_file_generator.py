@@ -350,9 +350,9 @@ def generate_pir_file(output_destination):
         fields=[
             StructField("location_id", StringType(), True),
             StructField(
-                "21_How_many_people_are_currently_receiving_support"
-                "_with_regulated_activities_as_defined_by_the_Health"
-                "_and_Social_Care_Act_from_your_service",
+                "how_many_people_are_directly_employed"
+                "_and_deliver_regulated_activities_at_"
+                "your_service_as_part_of_their_daily_duties",
                 StringType(),
                 True,
             ),
