@@ -350,9 +350,9 @@ def generate_pir_file(output_destination):
         fields=[
             StructField("location_id", StringType(), True),
             StructField(
-                "21_How_many_people_are_currently_receiving_support"
-                "_with_regulated_activities_as_defined_by_the_Health"
-                "_and_Social_Care_Act_from_your_service",
+                "how_many_people_are_directly_employed"
+                "_and_deliver_regulated_activities_at_"
+                "your_service_as_part_of_their_daily_duties",
                 StringType(),
                 True,
             ),
@@ -540,6 +540,10 @@ def generate_ascwds_worker_file(output_destination):
         (
         "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
+        ),
+        (
+        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101",
         )
     ]
     # fmt:on
