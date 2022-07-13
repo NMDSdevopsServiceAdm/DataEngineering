@@ -123,9 +123,7 @@ def vectorize(locations_df, feature_list):
 
 
 def days_diff_from_latest_snapshot(locations_df):
-    max_snapshot_date = (
-        locations_df.select(F.max("snapshot_date").alias("max")).first().max
-    )
+    max_snapshot_date = utils.get_max_snapshot_date(locations_df)
     locations_df = locations_df.withColumn(
         "date_diff", F.datediff(F.lit(max_snapshot_date), locations_df.snapshot_date)
     )

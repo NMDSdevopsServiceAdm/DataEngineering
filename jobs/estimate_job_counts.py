@@ -1,9 +1,16 @@
 import argparse
-from datetime import datetime
+from datetime import date
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import (
+    IntegerType,
+    StructType,
+    StructField,
+    StringType,
+    FloatType,
+)
 from pyspark.ml.regression import GBTRegressionModel
+from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
 
 from utils import utils
@@ -33,6 +40,9 @@ def main(
     prepared_locations_features,
     destination,
     care_home_model_directory,
+    metrics_destination,
+    job_run_id,
+    job_name,
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
@@ -68,10 +78,22 @@ def main(
     latest_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df = model_care_home_with_historical(
+    model_name = utils.get_model_name(care_home_model_directory)
+    locations_df, metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_model_version}/",
+    )
+    latest_snapshot = utils.get_max_snapshot_date(locations_df)
+    write_metrics_df(
+        metrics_destination,
+        r2=metrics_info["r2"],
+        data_percentage=metrics_info["data_percentage"],
+        model_version=latest_model_version,
+        model_name=model_name,
+        latest_snapshot=latest_snapshot,
+        job_run_id=job_run_id,
+        job_name=job_name,
     )
 
     # Nursing models
@@ -82,7 +104,7 @@ def main(
     locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
     locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
 
-    today = datetime.now()
+    today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
     locations_df = locations_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
     locations_df = locations_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
@@ -253,11 +275,72 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
+    metrics_info = {
+        "r2": generate_r2_metric(care_home_predictions, "prediction", "job_count"),
+        "data_percentage": (features_df.count() / locations_df.count()) * 100,
+    }
+
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
 
-    return locations_df
+    return locations_df, metrics_info
+
+
+def generate_r2_metric(df, prediction, label):
+    model_evaluator = RegressionEvaluator(
+        predictionCol=prediction, labelCol=label, metricName="r2"
+    )
+
+    r2 = model_evaluator.evaluate(df)
+    print("Calculating R Squared (R2) = %g" % r2)
+
+    return r2
+
+
+def write_metrics_df(
+    metrics_destination,
+    r2,
+    data_percentage,
+    model_name,
+    model_version,
+    latest_snapshot,
+    job_run_id,
+    job_name,
+):
+    spark = utils.get_spark()
+    schema = StructType(
+        fields=[
+            StructField("r2", FloatType(), False),
+            StructField("percentage_data", FloatType(), False),
+            StructField("latest_snapshot", StringType(), False),
+            StructField("job_run_id", StringType(), False),
+            StructField("job_name", StringType(), False),
+            StructField("model_name", StringType(), False),
+            StructField("model_version", StringType(), False),
+        ]
+    )
+    row = [
+        (
+            r2,
+            data_percentage,
+            latest_snapshot,
+            job_run_id,
+            job_name,
+            model_name,
+            model_version,
+        )
+    ]
+    df = spark.createDataFrame(row, schema)
+    df = df.withColumn("generated_metric_date", F.current_timestamp())
+
+    print(f"Writing model metrics as parquet to {metrics_destination}")
+    utils.write_to_parquet(
+        df,
+        metrics_destination,
+        append=True,
+        partitionKeys=["model_name", "model_version"],
+    )
 
 
 def model_care_home_with_nursing_pir_and_cqc_beds(df):
@@ -383,6 +466,21 @@ def collect_arguments():
         help="The directory where the care home models are saved",
         required=True,
     )
+    parser.add_argument(
+        "--metrics_destination",
+        help="The destination for the R2 metric data",
+        required=True,
+    )
+    parser.add_argument(
+        "--JOB_RUN_ID",
+        help="The Glue job run id",
+        required=True,
+    )
+    parser.add_argument(
+        "--JOB_NAME",
+        help="The Glue job name",
+        required=True,
+    )
 
     args, _ = parser.parse_known_args()
 
@@ -391,6 +489,9 @@ def collect_arguments():
         args.prepared_locations_features,
         args.destination,
         args.care_home_model_directory,
+        args.metrics_destination,
+        args.JOB_RUN_ID,
+        args.JOB_NAME,
     )
 
 
@@ -400,6 +501,9 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        metrics_destination,
+        JOB_RUN_ID,
+        JOB_NAME,
     ) = collect_arguments()
 
     main(
@@ -407,4 +511,7 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        metrics_destination,
+        JOB_RUN_ID,
+        JOB_NAME,
     )

@@ -1,10 +1,11 @@
 import unittest
+import warnings
 import shutil
+from datetime import datetime, date
 import re
 import os
 
 from unittest.mock import patch
-from freezegun import freeze_time
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
@@ -16,6 +17,9 @@ class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
+    METRICS_DESTINATION = (
+        "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
+    )
     PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
     LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
     DESTINATION = "tests/test_data/tmp/estimated_job_counts/"
@@ -24,19 +28,26 @@ class EstimateJobCountTests(unittest.TestCase):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
         ).getOrCreate()
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
         try:
+            shutil.rmtree(self.METRICS_DESTINATION)
             shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
             shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
             shutil.rmtree(self.DESTINATION)
         except OSError:
             pass
 
-    @freeze_time("2022-06-29")
     @patch("utils.utils.get_s3_sub_folders_for_path")
-    def test_main_partitions_data_based_on_todays_date(self, mock_get_s3_folders):
+    @patch("jobs.estimate_job_counts.date")
+    def test_main_partitions_data_based_on_todays_date(
+        self, mock_date, mock_get_s3_folders
+    ):
         mock_get_s3_folders.return_value = ["1.0.0"]
+        mock_date.today.return_value = date(2022, 6, 29)
+        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
         generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_DIR)
         features = self.generate_features_df()
         features.write.mode("overwrite").partitionBy(
@@ -48,6 +59,9 @@ class EstimateJobCountTests(unittest.TestCase):
             self.LOCATIONS_FEATURES_DIR,
             self.DESTINATION,
             self.CAREHOME_WITH_HISTORICAL_MODEL,
+            self.METRICS_DESTINATION,
+            job_run_id="abc1234",
+            job_name="estimate_job_counts",
         )
 
         first_partitions = os.listdir(self.DESTINATION)
@@ -276,7 +290,7 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "prediction" ]
 
         rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", 56.89),
+            ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
             ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", 12.34),
         ]
         # fmt: on
@@ -311,7 +325,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df = job.model_care_home_with_historical(
+        df, _ = job.model_care_home_with_historical(
             locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
         )
 
@@ -321,7 +335,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df = job.model_care_home_with_historical(
+        df, _ = job.model_care_home_with_historical(
             locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
         )
         expected_location_with_prediction = df.where(
@@ -383,6 +397,43 @@ class EstimateJobCountTests(unittest.TestCase):
 
         df = job.insert_predictions_into_locations(locations_df, predictions_df)
         self.assertEqual(locations_df.columns, df.columns)
+
+    def test_generate_r2_metric(self):
+        df = self.generate_predictions_df()
+        r2 = job.generate_r2_metric(df, "prediction", "job_count")
+
+        self.assertAlmostEqual(r2, 0.93, places=2)
+
+    def test_write_metrics_df_creates_metrics_df(self):
+        job.write_metrics_df(
+            metrics_destination=self.METRICS_DESTINATION,
+            r2=0.99,
+            data_percentage=50.0,
+            model_version="1.0.0",
+            model_name="care_home_jobs_prediction",
+            latest_snapshot="20220601",
+            job_run_id="abc1234",
+            job_name="estimate_job_counts",
+        )
+        df = self.spark.read.parquet(self.METRICS_DESTINATION)
+        expected_columns = [
+            "r2",
+            "percentage_data",
+            "latest_snapshot",
+            "job_run_id",
+            "job_name",
+            "generated_metric_date",
+            "model_name",
+            "model_version",
+        ]
+
+        self.assertEqual(expected_columns, df.columns)
+        self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
+        self.assertEqual(df.first()["model_version"], "1.0.0")
+        self.assertEqual(df.first()["model_name"], "care_home_jobs_prediction")
+        self.assertEqual(df.first()["latest_snapshot"], "20220601")
+        self.assertEqual(df.first()["job_name"], "estimate_job_counts")
+        self.assertIsInstance(df.first()["generated_metric_date"], datetime)
 
     def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
         columns = [
