@@ -432,6 +432,45 @@ def generate_ascwds_workplace_file(output_destination):
     return df
 
 
+def generate_ascwds_stayer_leaver_workplace_data(output_destination):
+    spark = utils.get_spark()
+    columns = ["establishmentid", "import_date", "wkrrecs", "mupddate", "other_column"]
+
+    rows = [
+        ("100", "20201231", 1, date(2020, 1, 1), "0"),
+        ("101", "20210101", 1, date(2020, 1, 1), "0"),
+        ("102", "20210101", 1, date(2020, 2, 1), "1"),
+        ("103", "20210101", 1, date(2020, 3, 1), "0"),
+        ("104", "20210101", 1, date(2020, 4, 1), "0"),
+        ("105", "20210101", 1, date(2020, 5, 1), "0"),
+        ("106", "20210101", 5, date(2020, 6, 1), "1"),
+        ("107", "20210101", 5, date(2020, 7, 1), "0"),
+        ("108", "20210101", 5, date(2020, 8, 1), "0"),
+        ("109", "20210101", 10, date(2020, 9, 1), "0"),
+        ("110", "20210101", 0, date(2020, 10, 1), "0"),
+        ("111", "20210101", 5, date(2020, 11, 1), "0"),
+        ("112", "20210101", 10, date(2020, 12, 1), "1"),
+        ("113", "20210101", None, date(2020, 12, 1), "1"),
+        ("114", "20210601", 10, date(2021, 6, 1), "0"),
+        ("106", "20220101", 10, date(2021, 12, 1), "1"),
+        ("107", "20220101", 10, date(2021, 12, 1), "0"),
+        ("108", "20220101", 10, date(2021, 11, 1), "0"),
+        ("109", "20220101", 10, date(2021, 11, 1), "0"),
+        ("110", "20220101", 10, date(2021, 10, 1), "0"),
+        ("111", "20220101", 10, date(2021, 10, 1), "0"),
+        ("112", "20220101", 10, date(2021, 5, 1), "1"),
+        ("113", "20220101", 10, date(2021, 12, 1), "0"),
+        ("114", "20220101", 10, date(2021, 12, 1), "0"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
 def generate_raw_cqc_care_directory_csv_file(output_destination):
     spark = utils.get_spark()
     columns = [
@@ -709,6 +748,75 @@ def generate_duplicate_providerid_data_file(output_destination):
     return df
 
 
+def generate_ascwds_stayer_leaver_worker_data(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "establishmentid",
+        "workerid",
+        "emplstat",
+        "import_date",
+        "other_col",
+    ]
+
+    rows = [
+        ("108", "1", "190", "20210101", "other data"),
+        ("108", "2", "190", "20210101", "other data"),
+        ("108", "3", "190", "20210101", "other data"),
+        ("108", "4", "190", "20210101", "other data"),
+        ("108", "5", "190", "20210101", "other data"),
+        ("109", "6", "190", "20210101", "other data"),
+        ("109", "7", "190", "20210101", "other data"),
+        ("109", "8", "190", "20210101", "other data"),
+        ("109", "9", "190", "20210101", "other data"),
+        ("109", "10", "190", "20210101", "other data"),
+        ("109", "11", "190", "20210101", "other data"),
+        ("109", "12", "190", "20210101", "other data"),
+        ("109", "13", "190", "20210101", "other data"),
+        ("109", "14", "190", "20210101", "other data"),
+        ("109", "15", "190", "20210101", "other data"),
+        ("110", "16", "190", "20210101", "other data"),
+        ("111", "17", "190", "20210101", "other data"),
+        ("111", "18", "190", "20210101", "other data"),
+        ("111", "19", "190", "20210101", "other data"),
+        ("111", "20", "191", "20210101", "other data"),
+        ("111", "21", "191", "20210101", "other data"),
+        ("111", "22", "192", "20210101", "other data"),
+        ("113", "24", "190", "20210101", "other data"),
+        ("108", "1", "190", "20220101", "other data"),
+        ("108", "3", "190", "20220101", "other data"),
+        ("108", "5", "190", "20220101", "other data"),
+        ("109", "7", "190", "20220101", "other data"),
+        ("109", "9", "190", "20220101", "other data"),
+        ("109", "11", "190", "20220101", "other data"),
+        ("109", "13", "190", "20220101", "other data"),
+        ("109", "15", "190", "20220101", "other data"),
+        ("111", "17", "190", "20220101", "other data"),
+        ("111", "19", "190", "20220101", "other data"),
+        ("111", "21", "190", "20220101", "other data"),
+        ("111", "22", "190", "20220101", "other data"),
+        ("112", "23", "190", "20220101", "other data"),
+        ("113", "24", "190", "20220101", "other data"),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_filtered_workplaces(output_destination):
+    spark = utils.get_spark()
+
+    df = spark.createDataFrame(["108", "109", "111"], "string").toDF("establishmentid")
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
 def generate_care_directory_locationid_file(output_destination):
     spark = utils.get_spark()
     columns = [
@@ -830,3 +938,39 @@ def generate_care_directory_specialisms(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_workplace_import_dates(output_destination):
+    spark = utils.get_spark()
+    workplace_df = spark.createDataFrame(
+        [
+            ("20220601",),
+            ("20220101",),
+            ("20210202",),
+            ("20201225",),
+        ],
+        ["import_date"],
+    )
+
+    if output_destination:
+        workplace_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return workplace_df
+
+
+def generate_worker_import_dates(output_destination):
+    spark = utils.get_spark()
+    worker_df = spark.createDataFrame(
+        [
+            ("20220101",),
+            ("20211212",),
+            ("20210101",),
+            ("20201225",),
+        ],
+        ["import_date"],
+    )
+
+    if output_destination:
+        worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return worker_df
