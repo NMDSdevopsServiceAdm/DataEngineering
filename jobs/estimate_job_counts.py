@@ -22,6 +22,7 @@ PIR_SERVICE_USERS = "pir_service_users"
 NUMBER_OF_BEDS = "number_of_beds"
 REGISTRATION_STATUS = "registration_status"
 LOCATION_TYPE = "location_type"
+LOCAL_AUTHORITY = "local_authority"
 SERVICES_OFFERED = "services_offered"
 JOB_COUNT = "job_count"
 ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
@@ -45,6 +46,7 @@ def main(
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
             JOB_COUNT,
+            LOCAL_AUTHORITY,
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
