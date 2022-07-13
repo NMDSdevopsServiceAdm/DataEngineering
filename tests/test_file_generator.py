@@ -658,6 +658,7 @@ def generate_prepared_locations_file_parquet(
         "services_offered",
         "pir_service_users",
         "job_count",
+        "local_authority",
         "snapshot_year",
         "snapshot_month",
         "snapshot_day",
@@ -665,20 +666,20 @@ def generate_prepared_locations_file_parquet(
 
     # fmt: off
     rows = [
-        ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"], 5, 67, partitions[0], partitions[1], partitions[2]),
-        ("1-1334987222","20220201", "South West", 2, True, ["Domiciliary care service"], 12, 78, partitions[0], partitions[1], partitions[2]),
-        ("1-348374832","20220112", "Merseyside", 2, True, ["Extra Care housing services"], 23, 34, partitions[0], partitions[1], partitions[2]),
-        ("1-683746776","20220101", "Merseyside", 2, True, ["Doctors treatment service","Long term conditions services","Shared Lives"], 34, None, partitions[0], partitions[1], partitions[2]),
-        ("1-10478686 ","20220101", "London Senate", 2, True, ["Community health care services - Nurses Agency only"], 4, None, partitions[0], partitions[1], partitions[2]),
-        ("1-10235302415","20220112", "South West", 2, True, ["Urgent care services", "Supported living service"], 17, None, partitions[0], partitions[1], partitions[2]),
-        ("1-1060912125","20220112", "Yorkshire and The Humbler", 2, True, ["Acute services with overnight beds"], 34, None, partitions[0], partitions[1], partitions[2]),
-        ("1-107095666","20220301", "Yorkshire and The Humbler", 2, True, ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"], 34, None, partitions[0], partitions[1], partitions[2]),
-        ("1-108369587","20220308", "South West", 2, True, ["Specialist college service"], 15, None, partitions[0], partitions[1], partitions[2]),
-        ("1-10758359583","20220308", None, 2, True, ["Mobile doctors service"], 17, None, partitions[0], partitions[1], partitions[2]),
-        ("1-108387554","20220308", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"], None, None, partitions[0], partitions[1], partitions[2]),
-        ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"], 3, None, partitions[0], partitions[1], partitions[2]),
-        ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"], 23, None, partitions[0], partitions[1], partitions[2]),
-        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"], 11, None, partitions[0], partitions[1], partitions[2]),
+        ("1-1783948","20220201", "South East", 2, True, ["Supported living service", "Acute services with overnight beds"], 5, 67, "Surrey", partitions[0], partitions[1], partitions[2]),
+        ("1-1334987222","20220201", "South West", 2, True, ["Domiciliary care service"], 12, 78, "Gloucestershire", partitions[0], partitions[1], partitions[2]),
+        ("1-348374832","20220112", "Merseyside", 2, True, ["Extra Care housing services"], 23, 34, "Gloucestershire", partitions[0], partitions[1], partitions[2]),
+        ("1-683746776","20220101", "Merseyside", 2, True, ["Doctors treatment service","Long term conditions services","Shared Lives"], 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2]),
+        ("1-10478686 ","20220101", "London Senate", 2, True, ["Community health care services - Nurses Agency only"], 4, None, "Surrey", partitions[0], partitions[1], partitions[2]),
+        ("1-10235302415","20220112", "South West", 2, True, ["Urgent care services", "Supported living service"], 17, None, "Surrey", partitions[0], partitions[1], partitions[2]),
+        ("1-1060912125","20220112", "Yorkshire and The Humbler", 2, True, ["Acute services with overnight beds"], 34, None, "Surrey", partitions[0], partitions[1], partitions[2]),
+        ("1-107095666","20220301", "Yorkshire and The Humbler", 2, True, ["Specialist college service","Community based services for people who misuse substances","Urgent care services'"], 34, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-108369587","20220308", "South West", 2, True, ["Specialist college service"], 15, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-10758359583","20220308", None, 2, True, ["Mobile doctors service"], 17, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-108387554","20220308", "Yorkshire and The Humbler", 2, True, ["Doctors treatment service", "Hospice services at home"], None, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-10894414510","20220308", "Yorkshire and The Humbler", 2, True, ["Care home service with nursing"], 3, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-108950835","20220315", "Merseyside", 2, True, ["Care home service without nursing'"], 23, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
+        ("1-108967195","20220422", "(pseudo) Wales", 2, True, ["Domiciliary care service"], 11, None, "Lewisham", partitions[0], partitions[1], partitions[2]),
     ]
     # fmt: on
 
