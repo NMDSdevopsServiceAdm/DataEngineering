@@ -23,4 +23,3 @@ dbldatagen = {git = "git+https://github.com/databrickslabs/dbldatagen", editable
 numpy = "1.22.4"
 pandas = "1.4.2"
 pytest-watch = "*"
-freezegun = "*"

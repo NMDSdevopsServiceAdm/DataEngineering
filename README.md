@@ -148,7 +148,7 @@ terraform fmt -recursive
 
 ## The manual approach
 ### Installing Terraform
-The Terraform docs are an excellant resource for this: https://learn.hashicorp.com/
+The Terraform docs are an excellent resource for this: https://learn.hashicorp.com/
 tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 1. Download binary: https://www.terraform.io/downloads
 2. Unzip

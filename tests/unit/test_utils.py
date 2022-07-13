@@ -244,6 +244,15 @@ class UtilsTests(unittest.TestCase):
         )
         self.assertEqual(sub_directory_list, ["1.0.0", "apples"])
 
+    def test_get_model_name_returns_model_name(self):
+        path_to_model = (
+            "s3://sfc-bucket/models/care_home_jobs_prediction/1.0.0/subfolder/"
+        )
+        model_name = utils.get_model_name(path_to_model)
+        expected_model_name = "care_home_jobs_prediction"
+
+        self.assertEqual(expected_model_name, model_name)
+
     def test_read_partial_csv_content(self):
         body_data = "Id,SepalLengthCm,SepalWidthCm,PetalLengthCm,PetalWidthCm,Species"
 
