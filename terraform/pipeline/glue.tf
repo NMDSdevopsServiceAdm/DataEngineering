@@ -72,7 +72,7 @@ module "prepare_workers_job" {
 
   job_parameters = {
     "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination" = ""
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=workers_prepared/version=1.0.0/"
   }
 }
 

@@ -62,7 +62,7 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 11)
+        self.assertEqual(len(df.columns), 14)
 
     def test_main_aggregates_right_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
@@ -93,6 +93,14 @@ class PrepareWorkersTests(unittest.TestCase):
 
         # hourly rate
         self.assertAlmostEqual(df.first()["hourly_rate"], 3.77, 2)
+
+    def test_main_uses_import_date_to_create_snapshot_partitions(self):
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        rows = df.collect()
+
+        self.assertEqual(rows[0].snapshot_year, "2022")
+        self.assertEqual(rows[0].snapshot_month, "01")
+        self.assertEqual(rows[0].snapshot_day, "01")
 
     def test_clean(self):
         schema = StructType(
@@ -142,6 +150,13 @@ class PrepareWorkersTests(unittest.TestCase):
     def test_get_dataset_worker_has_correct_rows_number(self):
         worker_df = prepare_workers.get_dataset_worker(
             self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
+        )
+
+        self.assertEqual(worker_df.count(), 2)
+
+    def test_get_dataset_worker_filters_by_date_when_provided(self):
+        worker_df = prepare_workers.get_dataset_worker(
+            self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA, "20210101"
         )
 
         self.assertEqual(worker_df.count(), 1)
