@@ -86,22 +86,14 @@
                     "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_prepared/version=1.0.0/"
                   }
                 },
-                "Next": "Run Data Engineering Crawler 2"
-              },
-              "Run Data Engineering Crawler 2": {
-                "Type": "Task",
-                "End": true,
-                "Parameters": {
-                  "Name": "${data_engineering_crawler_name}"
-                },
-                "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+                "End": true
               }
             }
           }
         ],
-        "Next": "Run Data Engineering Crawler 3"
+        "Next": "Run Data Engineering Crawler 2"
       },
-      "Run Data Engineering Crawler 3": {
+      "Run Data Engineering Crawler 2": {
         "Type": "Task",
         "End": true,
         "Parameters": {
