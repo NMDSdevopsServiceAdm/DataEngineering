@@ -37,7 +37,7 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  version         = "3.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -192,4 +192,15 @@ module "ons_crawler" {
   dataset_for_crawler          = "ONS"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+  exclusions                   = ["dataset=postcode-directory-field-lookups/**"]
+}
+
+module "ons_lookups_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "ONS"
+  name_postfix                 = "_lookups"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+  exclusions                   = ["dataset=postcode-directory/**"]
+  table_level                  = 4
 }
