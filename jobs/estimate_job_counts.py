@@ -278,6 +278,8 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
+    care_home_predictions = care_home_predictions.where("job_count is not null")
+
     metrics_info = {
         "r2": generate_r2_metric(care_home_predictions, "prediction", "job_count"),
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
@@ -312,17 +314,6 @@ def write_metrics_df(
     job_name,
 ):
     spark = utils.get_spark()
-    # schema = StructType(
-    #     fields=[
-    #         StructField("r2", FloatType(), False),
-    #         StructField("percentage_data", FloatType(), False),
-    #         StructField("latest_snapshot", StringType(), False),
-    #         StructField("job_run_id", StringType(), False),
-    #         StructField("job_name", StringType(), False),
-    #         StructField("model_name", StringType(), False),
-    #         StructField("model_version", StringType(), False),
-    #     ]
-    # )
     columns = [
         "r2",
         "percentage_data",
