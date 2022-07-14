@@ -22,7 +22,7 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
 }
 
 resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix = "${local.workspace_prefix}-state-machines"
+  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
 
 resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
