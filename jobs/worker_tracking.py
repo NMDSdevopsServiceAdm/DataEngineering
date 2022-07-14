@@ -1,5 +1,5 @@
 import argparse
-from time import strptime
+import sys
 
 import pyspark.sql.functions as F
 from datetime import datetime, timedelta
@@ -189,7 +189,7 @@ def collect_arguments():
         required=True,
     )
 
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
     return (
         args.source_ascwds_workplace,
@@ -199,6 +199,9 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'worker_tracking' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         source_ascwds_workplace,
         source_ascwds_worker,
@@ -210,3 +213,5 @@ if __name__ == "__main__":
         source_ascwds_worker,
         destination,
     )
+
+    print("Spark job 'worker_tracking' complete")

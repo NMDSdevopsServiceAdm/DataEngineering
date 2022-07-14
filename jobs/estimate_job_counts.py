@@ -1,5 +1,6 @@
 import argparse
 from datetime import date
+import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import (
@@ -498,6 +499,9 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'estimate_job_counts' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         prepared_locations_source,
         prepared_locations_features,
@@ -517,3 +521,5 @@ if __name__ == "__main__":
         JOB_RUN_ID,
         JOB_NAME,
     )
+
+    print("Spark job 'estimate_job_counts' complete")
