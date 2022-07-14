@@ -4,7 +4,7 @@
     "States": {
       "Run prepare locations job": {
         "Type": "Task",
-        "Resource": "arn:aws:states:::glue:startJobRun",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
         "Parameters": {
           "JobName": "${prepare_locations_job_name}",
           "Arguments": {
@@ -34,7 +34,7 @@
             "States": {
               "Run feature engineering job": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
                   "JobName": "${locations_feature_engineering_job_name}",
                   "Arguments": {
@@ -46,7 +46,7 @@
               },
               "Run estimate job counts job": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
                   "JobName": "${estimate_jobs_job_name}",
                   "Arguments": {
@@ -60,7 +60,7 @@
               },
               "Run job role breakdown job": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
                   "JobName": "${job_role_breakdown_job_name}",
                   "Arguments": {
@@ -78,7 +78,7 @@
             "States": {
               "Run prepare worker jobs": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
                   "JobName": "${prepare_workers_job_name}",
                   "Arguments": {
