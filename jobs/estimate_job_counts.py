@@ -312,17 +312,26 @@ def write_metrics_df(
     job_name,
 ):
     spark = utils.get_spark()
-    schema = StructType(
-        fields=[
-            StructField("r2", FloatType(), False),
-            StructField("percentage_data", FloatType(), False),
-            StructField("latest_snapshot", StringType(), False),
-            StructField("job_run_id", StringType(), False),
-            StructField("job_name", StringType(), False),
-            StructField("model_name", StringType(), False),
-            StructField("model_version", StringType(), False),
-        ]
-    )
+    # schema = StructType(
+    #     fields=[
+    #         StructField("r2", FloatType(), False),
+    #         StructField("percentage_data", FloatType(), False),
+    #         StructField("latest_snapshot", StringType(), False),
+    #         StructField("job_run_id", StringType(), False),
+    #         StructField("job_name", StringType(), False),
+    #         StructField("model_name", StringType(), False),
+    #         StructField("model_version", StringType(), False),
+    #     ]
+    # )
+    columns = [
+        "r2",
+        "percentage_data",
+        "latest_snapshot",
+        "job_run_id",
+        "job_name",
+        "model_name",
+        "model_version",
+    ]
     row = [
         (
             r2,
@@ -334,7 +343,7 @@ def write_metrics_df(
             model_version,
         )
     ]
-    df = spark.createDataFrame(row, schema)
+    df = spark.createDataFrame(row, columns)
     df = df.withColumn("generated_metric_date", F.current_timestamp())
 
     print(f"Writing model metrics as parquet to {metrics_destination}")
