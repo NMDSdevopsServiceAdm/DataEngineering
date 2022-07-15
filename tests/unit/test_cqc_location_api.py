@@ -1,7 +1,7 @@
-from utils import cqc_api as cqc
-from pyspark.sql import SparkSession
 import mock
 import unittest
+
+from utils import cqc_api as cqc
 
 
 class TestCQCLocationAPI(unittest.TestCase):
