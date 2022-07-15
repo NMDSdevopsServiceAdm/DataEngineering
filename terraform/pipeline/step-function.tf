@@ -1,3 +1,29 @@
+resource "aws_sfn_state_machine" "data-engineering-state-machine" {
+  name     = "${local.workspace_prefix}-DataEngineeringPipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/DataEngineeringPipeline-StepFunction.json", {
+    prepare_locations_job_name             = module.prepare_locations_job.job_name
+    prepare_workers_job_name               = module.prepare_workers_job.job_name
+    estimate_jobs_job_name                 = module.estimate_job_counts_job.job_name
+    locations_feature_engineering_job_name = module.locations_feature_engineering_job.job_name
+    job_role_breakdown_job_name            = module.job_role_breakdown_job.job_name
+    data_engineering_crawler_name          = module.data_engineering_crawler.crawler_name
+    pipeline_resources_bucket_uri          = module.pipeline_resources.bucket_uri
+    dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_role.step_function_iam_role
+  ]
+}
+
 resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
   name     = "${local.workspace_prefix}-EthnicityBreakdownPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -22,7 +48,7 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
 }
 
 resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix = "${local.workspace_prefix}-state-machines"
+  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
 
 resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
