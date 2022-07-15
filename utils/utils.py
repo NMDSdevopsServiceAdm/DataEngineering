@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+import argparse
 
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
@@ -47,7 +48,7 @@ def get_s3_objects_list(bucket_source, prefix, s3_resource=None):
 def get_s3_sub_folders_for_path(path, s3_client=None):
     if s3_client is None:
         s3_client = boto3.client("s3")
-    bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-_/]*)$", path).groups()
+    bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-=_/]*)$", path).groups()
     response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
     return [
         common_prefix["Prefix"].replace(prefix, "").replace("/", "")
@@ -205,3 +206,17 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
     df = df.where(df[partition_keys[2]] == max_day)
     return df
+
+
+def collect_arguments(*args):
+    parser = argparse.ArgumentParser()
+    for arg in args:
+        parser.add_argument(
+            arg[0],
+            help=arg[1],
+            required=True,
+        )
+
+    parsed_args, _ = parser.parse_known_args()
+
+    return (vars(parsed_args)[arg[0][2:]] for arg in args)

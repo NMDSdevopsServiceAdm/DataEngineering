@@ -388,6 +388,23 @@ def generate_pir_file(output_destination):
     return df
 
 
+def generate_ons_data(output_destination):
+    spark = utils.get_spark()
+    # fmt: off
+    columns = ["pcd", "nhser", "year", "month", "day", "import_date"]
+    rows = [
+        ("SW9 0LL", "E40000003", "2021", "02", "01", "20210201"),
+        ("BH1 1QZ", "E40000006", "2021", "02", "01", "20210201"),
+        ("PO6 2EQ", "E40000005", "2021", "02", "01", "20210201"),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, columns)
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+    return df
+
+
 def generate_ascwds_workplace_file(output_destination):
     spark = utils.get_spark()
     columns = [
