@@ -278,10 +278,10 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
-    care_home_predictions = care_home_predictions.where("job_count is not null")
+    non_null_job_count_df = care_home_predictions.where("job_count is not null")
 
     metrics_info = {
-        "r2": generate_r2_metric(care_home_predictions, "prediction", "job_count"),
+        "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
     }
 
