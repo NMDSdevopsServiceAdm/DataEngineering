@@ -672,7 +672,7 @@ def generate_prepared_locations_file_parquet(
         "region",
         "number_of_beds",
         "services_offered",
-        "pir_service_users",
+        "people_directly_employed",
         "job_count",
         "local_authority",
         "snapshot_year",

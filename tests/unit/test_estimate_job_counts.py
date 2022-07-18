@@ -226,7 +226,7 @@ class EstimateJobCountTests(unittest.TestCase):
             "locationid",
             "primary_service_type",
             "last_known_job_count",
-            "pir_service_users",
+            "people_directly_employed",
             "estimate_job_count",
         ]
         rows = [
@@ -439,7 +439,7 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "pir_service_users",
+            "people_directly_employed",
             "number_of_beds",
             "estimate_job_count",
         ]
@@ -488,7 +488,7 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "pir_service_users",
+            "people_directly_employed",
             "number_of_beds",
             "estimate_job_count",
         ]

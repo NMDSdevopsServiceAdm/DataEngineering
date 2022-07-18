@@ -3,13 +3,7 @@ from datetime import date
 import sys
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import (
-    IntegerType,
-    StructType,
-    StructField,
-    StringType,
-    FloatType,
-)
+from pyspark.sql.types import IntegerType
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
@@ -26,7 +20,7 @@ LOCATION_ID = "locationid"
 LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT = "estimate_job_count"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
-PIR_SERVICE_USERS = "pir_service_users"
+PEOPLE_DIRECTLY_EMPLOYED = "people_directly_employed"
 NUMBER_OF_BEDS = "number_of_beds"
 REGISTRATION_STATUS = "registration_status"
 LOCATION_TYPE = "location_type"
@@ -53,7 +47,7 @@ def main(
         .select(
             LOCATION_ID,
             SERVICES_OFFERED,
-            PIR_SERVICE_USERS,
+            PEOPLE_DIRECTLY_EMPLOYED,
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
             JOB_COUNT,
@@ -218,9 +212,9 @@ def model_non_res_historical_pir(df):
             (
                 F.col(ESTIMATE_JOB_COUNT).isNull()
                 & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & F.col(PIR_SERVICE_USERS).isNotNull()
+                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
             ),
-            (25.046 + (0.469 * F.col(PIR_SERVICE_USERS))),
+            (25.046 + (0.469 * F.col(PEOPLE_DIRECTLY_EMPLOYED))),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
     return df
@@ -360,12 +354,12 @@ def model_care_home_with_nursing_pir_and_cqc_beds(df):
             (
                 F.col(ESTIMATE_JOB_COUNT).isNull()
                 & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & F.col(PIR_SERVICE_USERS).isNotNull()
+                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
                 & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
             (
                 (0.773 * F.col(NUMBER_OF_BEDS))
-                + (0.551 * F.col(PIR_SERVICE_USERS))
+                + (0.551 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
                 + 0.304
             ),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
@@ -410,13 +404,13 @@ def model_care_home_without_nursing_cqc_beds_and_pir(df):
             (
                 F.col(ESTIMATE_JOB_COUNT).isNull()
                 & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & F.col(PIR_SERVICE_USERS).isNotNull()
+                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
                 & F.col(NUMBER_OF_BEDS).isNotNull()
             ),
             (
                 10.652
                 + (0.571 * F.col(NUMBER_OF_BEDS))
-                + (0.296 * F.col(PIR_SERVICE_USERS))
+                + (0.296 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
             ),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
