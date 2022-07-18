@@ -105,7 +105,7 @@ def explode_services(locations_df):
 def define_features_list(regions):
     # fmt: off
     features = [
-        'service_count','number_of_beds','dormancy','service_1',
+        'service_count','number_of_beds','service_1',
         'service_2','service_3','service_4','service_5','service_6','service_7',
         'service_8','service_9','service_10','service_11','service_12','service_13',
         'service_14','service_15','service_16','service_17','service_18','service_19',
