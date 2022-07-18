@@ -120,7 +120,7 @@ def main(
             "dormancy",
             "number_of_beds",
             "services_offered",
-            "pir_service_users",
+            "people_directly_employed",
             "job_count",
             "region",
             "postal_code",
@@ -260,7 +260,7 @@ def get_pir_df(pir_source, since_date=None):
                 "how_many_people_are_directly_employed"
                 "_and_deliver_regulated_activities_at_"
                 "your_service_as_part_of_their_daily_duties"
-            ).alias("pir_service_users"),
+            ).alias("people_directly_employed"),
             F.col("import_date"),
         )
     )

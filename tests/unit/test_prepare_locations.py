@@ -95,7 +95,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "dormancy",
                 "number_of_beds",
                 "services_offered",
-                "pir_service_users",
+                "people_directly_employed",
                 "job_count",
                 "region",
                 "postal_code",
@@ -144,7 +144,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(len(pir_df.columns), 3)
 
         self.assertEqual(pir_df.columns[0], "locationid")
-        self.assertEqual(pir_df.columns[1], "pir_service_users")
+        self.assertEqual(pir_df.columns[1], "people_directly_employed")
         self.assertEqual(pir_df.columns[2], "import_date")
 
     def test_get_date_closest_to_search_date_returns_correct_date(self):
