@@ -9,12 +9,17 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
+    df = None
     for paginated_locations in cqc.get_all_objects(
         stream=True, object_type="locations", object_identifier="locationId"
     ):
+        if df:
+            df = df.union(paginated_locations)
+        else:
+            df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
 
-        df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
-        utils.write_to_parquet(df, destination, True)
+    df = df.dropDuplicates(["locationId"])
+    utils.write_to_parquet(df, destination, True)
 
     print(f"Finished! Files can be found in {destination}")
 
