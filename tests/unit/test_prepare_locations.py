@@ -1,6 +1,7 @@
 import unittest
 import shutil
 from datetime import date
+import warnings
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -17,6 +18,7 @@ from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
     generate_cqc_providers_file,
+    generate_ons_denormalised_data,
     generate_pir_file,
 )
 
@@ -27,6 +29,7 @@ class PrepareLocationsTests(unittest.TestCase):
     TEST_CQC_LOCATION_FILE = "tests/test_data/domain=cqc/dataset=location"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/domain=cqc/dataset=providers"
     TEST_PIR_FILE = "tests/test_data/domain=cqc/dataset=pir"
+    TEST_ONS_FILE = "tests/test_data/domain=ons/dataset=postcodes"
     DESTINATION = "tests/test_data/domain=data_engineering/dataset=locations_prepared/version=1.0.0"
 
     calculate_jobs_schema = StructType(
@@ -47,6 +50,9 @@ class PrepareLocationsTests(unittest.TestCase):
         generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
         generate_pir_file(self.TEST_PIR_FILE)
+        self.ons_df = generate_ons_denormalised_data(self.TEST_ONS_FILE)
+
+        warnings.simplefilter("ignore", ResourceWarning)
 
     def tearDown(self):
         try:
@@ -54,6 +60,7 @@ class PrepareLocationsTests(unittest.TestCase):
             shutil.rmtree(self.TEST_CQC_LOCATION_FILE)
             shutil.rmtree(self.TEST_CQC_PROVIDERS_FILE)
             shutil.rmtree(self.TEST_PIR_FILE)
+            shutil.rmtree(self.TEST_ONS_FILE)
             shutil.rmtree(self.DESTINATION)
         except OSError:
             pass  # Ignore dir does not exist
@@ -64,6 +71,7 @@ class PrepareLocationsTests(unittest.TestCase):
             self.TEST_CQC_LOCATION_FILE,
             self.TEST_CQC_PROVIDERS_FILE,
             self.TEST_PIR_FILE,
+            self.TEST_ONS_FILE,
             self.DESTINATION,
         )
 
@@ -80,6 +88,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "cqc_locations_import_date",
                 "cqc_providers_import_date",
                 "cqc_pir_import_date",
+                "ons_import_date",
                 "locationid",
                 "location_type",
                 "location_name",
@@ -102,6 +111,14 @@ class PrepareLocationsTests(unittest.TestCase):
                 "constituency",
                 "local_authority",
                 "cqc_sector",
+                "ons_region",
+                "nhs_england_region",
+                "country",
+                "lsoa_2011",
+                "msoa_2011",
+                "clinical_commisioning_group",
+                "rural_urban_indicator_2011",
+                "oslaua",
             ],
         )
 
@@ -146,6 +163,16 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(pir_df.columns[0], "locationid")
         self.assertEqual(pir_df.columns[1], "pir_service_users")
         self.assertEqual(pir_df.columns[2], "import_date")
+
+    def test_get_ons_df(self):
+        pir_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
+
+        self.assertEqual(pir_df.count(), 3)
+        self.assertEqual(len(pir_df.columns), 13)
+
+        self.assertIn("nhs_england_region", pir_df.columns)
+        self.assertIn("ons_region", pir_df.columns)
+        self.assertIn("ons_import_date", pir_df.columns)
 
     def test_get_date_closest_to_search_date_returns_correct_date(self):
         date_search_list = [
@@ -277,6 +304,27 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cleaned_df.count(), 6)
         self.assertEqual(cleaned_df_list[0]["total_staff"], None)
         self.assertEqual(cleaned_df_list[1]["total_staff"], 500)
+
+    def test_add_geographical_data(self):
+        columns = ["locationid", "postal_code"]
+        rows = [
+            ("1-000000001", "SW100AA"),
+            ("1-000000002", "SW10 0AA"),
+            ("1-000000003", "sw10 0AA"),
+        ]
+        locations_df = self.spark.createDataFrame(rows, columns)
+        ons_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
+
+        df = prepare_locations.add_geographical_data(locations_df, ons_df)
+
+        location_one = df.where(df.locationid == "1-000000001").first()
+        self.assertEqual(location_one.ons_region, "London")
+
+        location_two = df.where(df.locationid == "1-000000002").first()
+        self.assertEqual(location_two.ons_region, "London")
+
+        location_three = df.where(df.locationid == "1-000000003").first()
+        self.assertEqual(location_three.ons_region, "London")
 
     def test_purge_workplaces(self):
         columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]

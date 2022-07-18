@@ -39,6 +39,8 @@ def main(
     )
     complete_pir_df = get_pir_df(pir_source, since_date=last_processed_date)
 
+    latest_ons_data = get_ons_df(ons_source)
+
     date_matrix = generate_closest_date_matrix(
         complete_ascwds_workplace_df,
         complete_cqc_location_df,
@@ -81,6 +83,7 @@ def main(
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(ascwds_workplace_df, "locationid", "full")
         output_df = output_df.join(pir_df, "locationid", "left")
+        output_df = add_geographical_data(output_df, latest_ons_data)
         output_df = calculate_jobcount(output_df)
 
         output_df = output_df.withColumn(
@@ -106,6 +109,7 @@ def main(
             "cqc_locations_import_date",
             "cqc_providers_import_date",
             "cqc_pir_import_date",
+            "ons_import_date",
             "locationid",
             "location_type",
             "location_name",
@@ -128,6 +132,14 @@ def main(
             "constituency",
             "local_authority",
             "cqc_sector",
+            "ons_region",
+            "nhs_england_region",
+            "country",
+            "lsoa_2011",
+            "msoa_2011",
+            "clinical_commisioning_group",
+            "rural_urban_indicator_2011",
+            "oslaua",
         )
 
         if destination:
@@ -273,6 +285,31 @@ def get_pir_df(pir_source, since_date=None):
     return pir_df
 
 
+def get_ons_df(ons_source):
+    spark = utils.get_spark()
+
+    print(f"Reading ONS data from {ons_source}")
+    ons_df = spark.read.option("basePath", ons_source).parquet(ons_source)
+    ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
+    ons_df = ons_df.select(
+        ons_df.pcd.alias("ons_postcode"),
+        ons_df.rgn.alias("ons_region"),
+        ons_df.nhser.alias("nhs_england_region"),
+        ons_df.ctry.alias("country"),
+        ons_df.lsoa11.alias("lsoa_2011"),
+        ons_df.msoa11.alias("msoa_2011"),
+        ons_df.ccg.alias("clinical_commisioning_group"),
+        ons_df.ru11ind.alias("rural_urban_indicator_2011"),
+        ons_df.oslaua,
+        ons_df.year,
+        ons_df.month,
+        ons_df.day,
+        ons_df.import_date.alias("ons_import_date"),
+    )
+
+    return ons_df
+
+
 def get_unique_import_dates(df):
     distinct_ordered_import_date_df = (
         df.select("import_date").distinct().orderBy("import_date")
@@ -321,6 +358,21 @@ def generate_closest_date_matrix(
         )
 
     return date_matrix
+
+
+def add_geographical_data(locations_df, ons_df):
+    locations_df = locations_df.withColumn(
+        "postal_code_ws_removed", F.regexp_replace(locations_df.postal_code, " ", "")
+    )
+    locations_df = locations_df.join(
+        ons_df,
+        F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.ons_postcode),
+        "left",
+    )
+
+    locations_df.drop("postal_code_ws_removed")
+
+    return locations_df
 
 
 def clean(input_df):
