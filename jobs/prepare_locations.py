@@ -16,6 +16,7 @@ def main(
     cqc_location_source,
     cqc_provider_source,
     pir_source,
+    ons_source,
     destination=None,
 ):
 
@@ -592,63 +593,31 @@ def calculate_jobcount(input_df):
     return input_df
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--workplace_source",
-        help="Source s3 directory for ASCWDS workplace dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--cqc_location_source",
-        help="Source s3 directory for CQC locations api dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--cqc_provider_source",
-        help="Source s3 directory for CQC providers api dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--pir_source",
-        help="Source s3 directory for pir dataset",
-        required=True,
-    )
-    parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
-        required=True,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return (
-        args.workplace_source,
-        args.cqc_location_source,
-        args.cqc_provider_source,
-        args.pir_source,
-        args.destination,
-    )
-
-
 if __name__ == "__main__":
     print("Spark job 'prepare_locations' starting...")
     print(f"Job parameters: {sys.argv}")
-
     (
         workplace_source,
         cqc_location_source,
         cqc_provider_source,
         pir_source,
+        ons_source,
         destination,
-    ) = collect_arguments()
+    ) = utils.collect_arguments(
+        ("--workplace_source", "Source s3 directory for ASCWDS workplace dataset"),
+        ("--cqc_location_source", "Source s3 directory for CQC locations api dataset"),
+        ("--cqc_provider_source", "Source s3 directory for CQC providers api dataset"),
+        ("--pir_source", "Source s3 directory for pir dataset"),
+        ("--ons_source", "Source s3 directory for ons dataset"),
+        ("--destination", "A destination directory for outputting cqc locations."),
+    )
 
     main(
         workplace_source,
         cqc_location_source,
         cqc_provider_source,
         pir_source,
+        ons_source,
         destination,
     )
 
