@@ -9,7 +9,7 @@ from utils import utils
 
 def main(ons_source, lookup_source, destination):
     spark = utils.get_spark()
-    ons_data = get_previoulsy_unimported_data(spark, ons_source, destination)
+    ons_data = get_previously_unimported_data(spark, ons_source, destination)
     field_replacement_col_info = [
         # field_name, coded_column_name, named_column_name
         ("rgn", "RGN20CD", "RGN20NM"),
@@ -65,7 +65,7 @@ def remove_joined_columns(data, columns, alias):
     return data
 
 
-def get_previoulsy_unimported_data(spark, source, destination):
+def get_previously_unimported_data(spark, source, destination):
     ons_data = spark.read.parquet(source)
     previously_imported_dates = get_previous_import_dates(spark, destination)
 
@@ -88,7 +88,7 @@ def get_previous_import_dates(spark, destination):
 
 
 if __name__ == "__main__":
-    print("Spark job 'inges_ons_data' starting...")
+    print("Spark job 'denormalise_ons_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     ons_source, ons_lookup_source, ons_destination = utils.collect_arguments(

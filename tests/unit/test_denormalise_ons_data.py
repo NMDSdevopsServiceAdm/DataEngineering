@@ -81,7 +81,6 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         self.create_lookup_df(("E06000001", "Hartlepool"), ["lad21cd", "lad21nm"], "oslaua")
         self.create_lookup_df(("B1", "(England/Wales) Urban minor conurbation"), ["RU11IND", "RU11NM"], "ru11ind")
 
-        # field_ru11ind ?
         # fmt: on
 
     def test_main_writes_data_to_the_output(self):
