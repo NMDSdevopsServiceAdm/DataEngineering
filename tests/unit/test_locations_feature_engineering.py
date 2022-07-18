@@ -50,8 +50,10 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_main_explodes_service_columns(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("service_21", df.columns)
+        df.show()
 
         rows = df.collect()
+        print(rows)
         test_row = next(row for row in rows if row.locationid == "1-348374832")
 
         self.assertEqual(test_row.service_10, 1)
