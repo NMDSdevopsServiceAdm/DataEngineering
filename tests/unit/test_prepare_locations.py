@@ -311,6 +311,7 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000001", "SW100AA"),
             ("1-000000002", "SW10 0AA"),
             ("1-000000003", "sw10 0AA"),
+            ("1-000000004", "SW10 0AB"),
         ]
         locations_df = self.spark.createDataFrame(rows, columns)
         ons_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
@@ -325,6 +326,9 @@ class PrepareLocationsTests(unittest.TestCase):
 
         location_three = df.where(df.locationid == "1-000000003").first()
         self.assertEqual(location_three.ons_region, "London")
+
+        location_four = df.where(df.locationid == "1-000000004").first()
+        self.assertEqual(location_four.oslaua, "Kensington and Chelsea")
 
     def test_purge_workplaces(self):
         columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]

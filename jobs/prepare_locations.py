@@ -364,6 +364,9 @@ def add_geographical_data(locations_df, ons_df):
     locations_df = locations_df.withColumn(
         "postal_code_ws_removed", F.regexp_replace(locations_df.postal_code, " ", "")
     )
+    ons_df = ons_df.withColumn(
+        "ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", "")
+    )
     locations_df = locations_df.join(
         ons_df,
         F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.ons_postcode),
@@ -371,6 +374,7 @@ def add_geographical_data(locations_df, ons_df):
     )
 
     locations_df.drop("postal_code_ws_removed")
+    locations_df.drop("ons_postcode")
 
     return locations_df
 
