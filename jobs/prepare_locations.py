@@ -1,5 +1,6 @@
 import argparse
 import builtins
+import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
@@ -632,6 +633,9 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'prepare_locations' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         workplace_source,
         cqc_location_source,
@@ -647,3 +651,5 @@ if __name__ == "__main__":
         pir_source,
         destination,
     )
+
+    print("Spark job 'prepare_locations' complete")

@@ -1,5 +1,6 @@
 import argparse
 import re
+import sys
 
 import pyspark.sql.functions as F
 from pyspark.ml.feature import VectorAssembler
@@ -150,6 +151,11 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'locations_feature_engineering' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (prepared_locations_source, destination) = collect_arguments()
 
     main(prepared_locations_source, destination)
+
+    print("Spark job 'locations_feature_engineering' complete")

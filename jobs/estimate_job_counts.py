@@ -1,5 +1,6 @@
 import argparse
 from datetime import date
+import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import (
@@ -277,8 +278,10 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
+    non_null_job_count_df = care_home_predictions.where("job_count is not null")
+
     metrics_info = {
-        "r2": generate_r2_metric(care_home_predictions, "prediction", "job_count"),
+        "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
     }
 
@@ -311,17 +314,15 @@ def write_metrics_df(
     job_name,
 ):
     spark = utils.get_spark()
-    schema = StructType(
-        fields=[
-            StructField("r2", FloatType(), False),
-            StructField("percentage_data", FloatType(), False),
-            StructField("latest_snapshot", StringType(), False),
-            StructField("job_run_id", StringType(), False),
-            StructField("job_name", StringType(), False),
-            StructField("model_name", StringType(), False),
-            StructField("model_version", StringType(), False),
-        ]
-    )
+    columns = [
+        "r2",
+        "percentage_data",
+        "latest_snapshot",
+        "job_run_id",
+        "job_name",
+        "model_name",
+        "model_version",
+    ]
     row = [
         (
             r2,
@@ -333,7 +334,7 @@ def write_metrics_df(
             model_version,
         )
     ]
-    df = spark.createDataFrame(row, schema)
+    df = spark.createDataFrame(row, columns)
     df = df.withColumn("generated_metric_date", F.current_timestamp())
 
     print(f"Writing model metrics as parquet to {metrics_destination}")
@@ -498,6 +499,9 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'estimate_job_counts' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         prepared_locations_source,
         prepared_locations_features,
@@ -517,3 +521,5 @@ if __name__ == "__main__":
         JOB_RUN_ID,
         JOB_NAME,
     )
+
+    print("Spark job 'estimate_job_counts' complete")

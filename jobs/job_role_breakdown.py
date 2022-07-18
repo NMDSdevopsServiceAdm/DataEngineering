@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from pyspark.sql.functions import col, lit, least, greatest, sum, coalesce, date_format
 from pyspark.sql import Window
@@ -249,9 +250,15 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
+    print("Spark job 'job_role_breakdown' starting...")
+    print(f"Job parameters: {sys.argv}")
+
     (
         job_estimates_source,
         worker_source,
         destination,
     ) = collect_arguments()
+
     main(job_estimates_source, worker_source, destination)
+
+    print("Spark job 'job_role_breakdown' complete")
