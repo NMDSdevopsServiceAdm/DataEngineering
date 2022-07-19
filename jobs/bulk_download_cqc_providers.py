@@ -9,12 +9,18 @@ from utils import utils
 def main(destination):
     print("Collecting all providers from API")
     spark = utils.get_spark()
+    df = None
     for paginated_providers in cqc.get_all_objects(
         stream=True, object_type="providers", object_identifier="providerId"
     ):
-        # May need schema as second parameter
-        df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
-        utils.write_to_parquet(df, destination, True)
+        providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
+        if df:
+            df = df.union(providers_df)
+        else:
+            df = providers_df
+
+    df = df.dropDuplicates(["providerId"])
+    utils.write_to_parquet(df, destination, True)
 
     print(f"Finished! Files can be found in {destination}")
 

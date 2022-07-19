@@ -13,10 +13,11 @@ def main(destination):
     for paginated_locations in cqc.get_all_objects(
         stream=True, object_type="locations", object_identifier="locationId"
     ):
+        locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
-            df = df.union(paginated_locations)
+            df = df.union(locations_df)
         else:
-            df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
+            df = locations_df
 
     df = df.dropDuplicates(["locationId"])
     utils.write_to_parquet(df, destination, True)
