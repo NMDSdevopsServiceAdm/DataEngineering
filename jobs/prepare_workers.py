@@ -22,15 +22,6 @@ def main(source, workplace_source, schema, destination=None):
 
     main_df = worker_df.join(workplace_df, ["establishmentid"], "inner")
 
-    # TODO: Use snapshot year/month/day from prepared locations when joining with it
-    main_df = main_df.withColumn(
-        "snapshot_year", F.substring(main_df.import_date, 0, 4)
-    )
-    main_df = main_df.withColumn(
-        "snapshot_month", F.substring(main_df.import_date, 5, 2)
-    )
-    main_df = main_df.withColumn("snapshot_day", F.substring(main_df.import_date, 7, 2))
-
     print("Formating date fields")
     main_df = utils.format_import_date(main_df)
     main_df = utils.format_date_fields(main_df)
@@ -136,6 +127,9 @@ def get_workplace_with_ons_data(workplace_source, since_date=None):
             F.col("rural_urban_indicator_2011"),
             F.col("oslaua"),
             F.col("ons_import_date"),
+            F.col("snapshot_year"),
+            F.col("snapshot_month"),
+            F.col("snapshot_day"),
         )
     )
 

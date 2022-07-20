@@ -672,6 +672,9 @@ def generate_location_with_ons_parquet(output_destination):
         "oslaua",
         "ons_import_date",
         "import_date",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
     ]
 
     rows = [
@@ -688,6 +691,9 @@ def generate_location_with_ons_parquet(output_destination):
             "Kensington and Chelsea",
             "20210101",
             "20210102",
+            "2021",
+            "01",
+            "01",
         ),
         (
             "10000",
@@ -702,6 +708,9 @@ def generate_location_with_ons_parquet(output_destination):
             "Kensington and Chelsea",
             "20210103",
             "20210104",
+            "2021",
+            "01",
+            "04",
         ),
     ]
 

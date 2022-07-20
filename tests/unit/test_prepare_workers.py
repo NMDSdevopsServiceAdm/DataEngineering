@@ -116,7 +116,7 @@ class PrepareWorkersTests(unittest.TestCase):
         )
         rows = df.collect()
 
-        self.assertEqual(rows[0].snapshot_year, "2022")
+        self.assertEqual(rows[0].snapshot_year, "2021")
         self.assertEqual(rows[0].snapshot_month, "01")
         self.assertEqual(rows[0].snapshot_day, "01")
 
@@ -138,6 +138,9 @@ class PrepareWorkersTests(unittest.TestCase):
             "rural_urban_indicator_2011",
             "oslaua",
             "ons_import_date",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
         ]
 
         for column in expected_columns:
@@ -225,6 +228,9 @@ class PrepareWorkersTests(unittest.TestCase):
             "rural_urban_indicator_2011",
             "oslaua",
             "ons_import_date",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
         ]
         self.assertEqual(df.columns, expected_columns)
         self.assertEqual(df.count(), 2)
