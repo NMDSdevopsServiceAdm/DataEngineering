@@ -11,13 +11,16 @@ from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
-def main(source, schema, destination=None):
+def main(source, workplace_source, schema, destination=None):
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
         last_processed_date = (
             f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
         )
-    main_df = get_dataset_worker(source, schema, last_processed_date)
+    worker_df = get_dataset_worker(source, schema, last_processed_date)
+    workplace_df = get_workplace_with_ons_data(workplace_source, last_processed_date)
+
+    main_df = worker_df.join(workplace_df, ["establishmentid"], "inner")
 
     # TODO: Use snapshot year/month/day from prepared locations when joining with it
     main_df = main_df.withColumn(

@@ -40,7 +40,11 @@ class PrepareWorkersTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         aggregated_cols = [
             "training",
@@ -68,10 +72,14 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 14)
+        self.assertEqual(len(df.columns), 25)
 
     def test_main_aggregates_right_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         # training
         training_json = json.loads(df.first()["training"])
@@ -101,12 +109,46 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertAlmostEqual(df.first()["hourly_rate"], 3.77, 2)
 
     def test_main_uses_import_date_to_create_snapshot_partitions(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
         rows = df.collect()
 
         self.assertEqual(rows[0].snapshot_year, "2022")
         self.assertEqual(rows[0].snapshot_month, "01")
         self.assertEqual(rows[0].snapshot_day, "01")
+
+    def test_main_joins_location_ons_workers_dfs(self):
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
+        expected_columns = [
+            "establishmentid",
+            "postal_code",
+            "ons_region",
+            "nhs_england_region",
+            "country",
+            "lsoa_2011",
+            "msoa_2011",
+            "clinical_commisioning_group",
+            "rural_urban_indicator_2011",
+            "oslaua",
+            "ons_import_date",
+        ]
+
+        for column in expected_columns:
+            self.assertIn(column, df.columns)
+            self.assertEqual(df.columns.count(column), 1)
+        self.assertFalse(
+            bool(df.filter(df.establishmentid.contains("34567")).collect())
+        )
+        self.assertFalse(
+            bool(df.filter(df.establishmentid.contains("10000")).collect())
+        )
 
     def test_clean(self):
         schema = StructType(

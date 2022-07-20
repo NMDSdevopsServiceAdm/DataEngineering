@@ -576,6 +576,7 @@ def generate_ascwds_worker_file(output_destination):
 
     schema = StructType(
         fields=[
+            StructField("establishmentid", StringType(), True),
             StructField("tr01flag", StringType(), True),
             StructField("tr01latestdate", StringType(), True),
             StructField("tr01count", StringType(), True),
@@ -611,11 +612,11 @@ def generate_ascwds_worker_file(output_destination):
     # fmt:off
     rows = [
         (
-        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "12345", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
         ),
         (
-        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "34567", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101",
         )
     ]
@@ -687,7 +688,21 @@ def generate_location_with_ons_parquet(output_destination):
             "Kensington and Chelsea",
             "20210101",
             "20210102",
-        )
+        ),
+        (
+            "10000",
+            "EF0 7GH",
+            "South East",
+            "London",
+            "England",
+            "Tendring 128A",
+            "City of London 003",
+            "NHS Barnsley CCG",
+            "B1",
+            "Kensington and Chelsea",
+            "20210103",
+            "20210104",
+        ),
     ]
 
     df = spark.createDataFrame(rows, columns)
