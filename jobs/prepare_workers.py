@@ -114,6 +114,34 @@ def get_dataset_worker(source, schema, since_date=None):
     return worker_df
 
 
+def get_workplace_with_ons_data(workplace_source, since_date=None):
+    spark = utils.get_spark()
+
+    print(f"Reading workplace with ONS data from {workplace_source}")
+    workplace_df = (
+        spark.read.option("basePath", workplace_source)
+        .parquet(workplace_source)
+        .select(
+            F.col("establishmentid"),
+            F.col("postal_code"),
+            F.col("ons_region"),
+            F.col("nhs_england_region"),
+            F.col("country"),
+            F.col("lsoa_2011"),
+            F.col("msoa_2011"),
+            F.col("clinical_commisioning_group"),
+            F.col("rural_urban_indicator_2011"),
+            F.col("oslaua"),
+            F.col("ons_import_date"),
+        )
+    )
+
+    if since_date is not None:
+        return workplace_df.filter(F.col("ons_import_date") > since_date)
+
+    return workplace_df
+
+
 def clean(input_df, all_columns, schema):
     print("Cleaning...")
 

@@ -656,6 +656,48 @@ def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_w
     return df
 
 
+def generate_location_with_ons_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "establishmentid",
+        "postal_code",
+        "ons_region",
+        "nhs_england_region",
+        "country",
+        "lsoa_2011",
+        "msoa_2011",
+        "clinical_commisioning_group",
+        "rural_urban_indicator_2011",
+        "oslaua",
+        "ons_import_date",
+        "import_date",
+    ]
+
+    rows = [
+        (
+            "12345",
+            "AB0 7CD",
+            "South West",
+            "London",
+            "England",
+            "Tendring 018A",
+            "City of London 001",
+            "NHS Barnsley CCG",
+            "B1",
+            "Kensington and Chelsea",
+            "20210101",
+            "20210102",
+        )
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
 def generate_location_features_file_parquet(output_destination=None):
     spark = utils.get_spark()
     # fmt: off

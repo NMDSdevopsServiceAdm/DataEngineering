@@ -11,6 +11,7 @@ from tests.test_file_generator import (
     generate_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
     generate_flexible_worker_file_hourly_rate,
+    generate_location_with_ons_parquet,
 )
 from utils import utils
 
@@ -18,18 +19,23 @@ from utils import utils
 class PrepareWorkersTests(unittest.TestCase):
 
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
+    TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE = (
+        "tests/test_data/domain=ascwds/dataset=workplace"
+    )
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
         self.TEST_DF, self.TEST_SCHEMA = generate_ascwds_worker_file(
             self.TEST_ASCWDS_WORKER_FILE
         )
+        generate_location_with_ons_parquet(self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE)
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
         try:
             shutil.rmtree(self.TEST_ASCWDS_WORKER_FILE)
+            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
@@ -160,6 +166,27 @@ class PrepareWorkersTests(unittest.TestCase):
         )
 
         self.assertEqual(worker_df.count(), 1)
+
+    def test_get_workplace_with_ons_data(self):
+        df = prepare_workers.get_workplace_with_ons_data(
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE
+        )
+        expected_columns = [
+            "establishmentid",
+            "postal_code",
+            "ons_region",
+            "nhs_england_region",
+            "country",
+            "lsoa_2011",
+            "msoa_2011",
+            "clinical_commisioning_group",
+            "rural_urban_indicator_2011",
+            "oslaua",
+            "ons_import_date",
+        ]
+        self.assertEqual(df.columns, expected_columns)
+        self.assertEqual(df.count(), 1)
+        self.assertNotIn("import_date", df.columns)
 
     def test_replace_columns_after_aggregation(self):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", self.TEST_SCHEMA)
