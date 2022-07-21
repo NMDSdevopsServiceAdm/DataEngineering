@@ -27,6 +27,10 @@ def main(ons_source, lookup_source, destination):
             spark, lookup_source, ons_data, col_info[0], col_info[1], col_info[2]
         )
 
+    ons_data = ons_data.withColumn("lsoa", F.struct(ons_data.lsoa11.alias("2011")))
+    ons_data = ons_data.withColumn("msoa", F.struct(ons_data.msoa11.alias("2011")))
+    ons_data = ons_data.withColumn("ru_ind", F.struct(ons_data.ru11ind.alias("2011")))
+
     ons_data.write.mode("append").partitionBy(
         "year", "month", "day", "import_date"
     ).parquet(destination)

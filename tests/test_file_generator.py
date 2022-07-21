@@ -391,15 +391,29 @@ def generate_pir_file(output_destination):
 def generate_ons_denormalised_data(output_destination):
     spark = utils.get_spark()
     # fmt: off
-    columns = ["pcd", "oslaua", "nhser", "ctry", "rgn", "lsoa11", "msoa11", "ccg", "ru11ind", "year", "month", "day", "import_date"]
+    schema = StructType([
+        StructField("pcd", StringType(), False),
+        StructField("oslaua", StringType(), False),
+        StructField("nhser", StringType(), False),
+        StructField("ctry", StringType(), False),
+        StructField("rgn", StringType(), False),
+        StructField("lsoa", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("msoa", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("ccg", StringType(), False),
+        StructField("ru_ind", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("year", StringType(), False),
+        StructField("month", StringType(), False),
+        StructField("day", StringType(), False),
+        StructField("import_date", StringType(), False),
+    ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", "Hammersmith and Fulham 023C", "Hammersmith and Fulham 023", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501"),
-        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", "Kensington and Chelsea 021B", "Kensington and Chelsea 021", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501"),
-        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", "Kensington and Chelsea 020E", "Kensington and Chelsea 020", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501")
+        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",),("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
+        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
+        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501")
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema)
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
     return df
