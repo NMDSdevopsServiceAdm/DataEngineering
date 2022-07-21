@@ -8,24 +8,25 @@ from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 from jobs import prepare_workers
 from tests.test_file_generator import (
-    generate_ascwds_worker_file,
+    generate_version_1_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
     generate_flexible_worker_file_hourly_rate,
+    generate_version_0_ascwds_worker_file,
 )
 from utils import utils
 
 
 class PrepareWorkersTests(unittest.TestCase):
 
-    TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
+    TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker/"
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
-        self.TEST_DF, self.TEST_SCHEMA = generate_ascwds_worker_file(
+        self.TEST_DF, self.TEST_SCHEMA = generate_version_1_ascwds_worker_file(
             self.TEST_ASCWDS_WORKER_FILE
         )
+        generate_version_0_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
         warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
         try:
@@ -62,7 +63,7 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 14)
+        self.assertEqual(len(df.columns), 21)
 
     def test_main_aggregates_right_columns(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
@@ -88,19 +89,38 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(expected_qual_year, 2020)
         self.assertEqual(expected_qual_year2, None)
 
+        worker_ut = df.where(df.workerid == "855823").first()
         # hours worked
-        self.assertEqual(df.first()["hrs_worked"], 26.5)
+        self.assertEqual(worker_ut["hrs_worked"], 26.5)
 
         # hourly rate
-        self.assertAlmostEqual(df.first()["hourly_rate"], 3.77, 2)
+        self.assertAlmostEqual(worker_ut["hourly_rate"], 3.77, 2)
 
     def test_main_uses_import_date_to_create_snapshot_partitions(self):
         df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
-        rows = df.collect()
 
-        self.assertEqual(rows[0].snapshot_year, "2022")
-        self.assertEqual(rows[0].snapshot_month, "01")
-        self.assertEqual(rows[0].snapshot_day, "01")
+        worker_ut = df.where(df.workerid == "855823").first()
+
+        self.assertEqual(worker_ut.snapshot_year, "2022")
+        self.assertEqual(worker_ut.snapshot_month, "01")
+        self.assertEqual(worker_ut.snapshot_day, "01")
+
+    def test_main_handles_all_versions_of_data(self):
+        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA)
+
+        v0_worker = df.where(df.workerid == "855821").first()
+
+        # Set missing column values to none
+        self.assertIn("savedate", df.columns)
+        self.assertEqual(v0_worker.savedate, None)
+        self.assertIn("pay_savedate", df.columns)
+        self.assertEqual(v0_worker.pay_savedate, None)
+
+        # Retrains aggregation
+        self.assertEqual(
+            v0_worker.training,
+            '{"tr01": {"latestdate": "2017-06-15", "count": 10, "ac": 0, "nac": 0, "dn": 0}}',
+        )
 
     def test_clean(self):
         schema = StructType(
@@ -152,7 +172,7 @@ class PrepareWorkersTests(unittest.TestCase):
             self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
         )
 
-        self.assertEqual(worker_df.count(), 2)
+        self.assertEqual(worker_df.count(), 6)
 
     def test_get_dataset_worker_filters_by_date_when_provided(self):
         worker_df = prepare_workers.get_dataset_worker(

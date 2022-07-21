@@ -104,9 +104,24 @@ def get_dataset_worker(source, schema, since_date=None):
     column_names = utils.extract_column_from_schema(schema)
 
     print(f"Reading worker parquet from {source}")
-    worker_df = (
-        spark.read.option("basePath", source).parquet(source).select(column_names)
+    worker_df_v0 = spark.read.option("basePath", source).parquet(
+        f"{source}version=0.0.1/"
     )
+    worker_df_v1 = spark.read.option("basePath", source).parquet(
+        f"{source}version=1.0.0/"
+    )
+
+    worker_df_v0 = worker_df_v0.withColumn("previous_pay", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("savedate", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("previous_mainjrid", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("dayssick_savedate", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("pay_savedate", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("flujab2020", F.lit(None))
+    worker_df_v0 = worker_df_v0.withColumn("derivedfrom_hasbulkuploaded", F.lit(None))
+
+    worker_df = worker_df_v0.unionByName(worker_df_v1)
+    worker_df = worker_df.select(column_names)
+
     worker_df = clean(worker_df, column_names, schema)
     if since_date is not None:
         return worker_df.filter(F.col("import_date") > since_date)
