@@ -155,7 +155,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "events:DescribeRule",
         ],
         "Resource" : "arn:aws:events:eu-west-2:${data.aws_caller_identity.current.account_id}:rule/StepFunctions*"
-        # "Resource": "*"
       }
     ]
   })
