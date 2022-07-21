@@ -20,7 +20,7 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   }
 
   depends_on = [
-    aws_iam_role.step_function_iam_role
+    aws_iam_policy.step_function_iam_policy
   ]
 }
 
@@ -41,7 +41,24 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   }
 
   depends_on = [
-    aws_iam_role.step_function_iam_role
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "run_crawler" {
+  name       = "${local.workspace_prefix}-RunCrawler"
+  role_arn   = aws_iam_role.step_function_iam_role.arn
+  type       = "STANDARD"
+  definition = templatefile("step-functions/RunCrawler-StepFunction.json", {})
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
   ]
 }
 
