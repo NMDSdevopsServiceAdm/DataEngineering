@@ -24,29 +24,6 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
-  name     = "${local.workspace_prefix}-EthnicityBreakdownPipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/EthnicityBreakdownPipeline-StepFunction.json", {
-    ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
-    prepare_locations_job_name           = module.prepare_locations_job.job_name
-    estimate_2021_jobs_job_name          = module.estimate_job_counts_job.job_name
-    data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
-    data_engineering_crawler_name        = module.data_engineering_crawler.crawler_name
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_role.step_function_iam_role
-  ]
-}
-
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
