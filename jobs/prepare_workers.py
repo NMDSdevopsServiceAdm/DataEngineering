@@ -119,8 +119,9 @@ def get_dataset_worker(source, schema, since_date=None):
     worker_df_v0 = worker_df_v0.withColumn("flujab2020", F.lit(None))
     worker_df_v0 = worker_df_v0.withColumn("derivedfrom_hasbulkuploaded", F.lit(None))
 
+    worker_df_v0 = worker_df_v0.select(column_names)
+    worker_df_v1 = worker_df_v1.select(column_names)
     worker_df = worker_df_v0.unionByName(worker_df_v1)
-    worker_df = worker_df.select(column_names)
 
     worker_df = clean(worker_df, column_names, schema)
     if since_date is not None:

@@ -620,6 +620,7 @@ def generate_version_0_ascwds_worker_file(output_destination):
     df = spark.createDataFrame(rows, schema)
 
     df = df.withColumn("version", F.lit("0.0.1"))
+    df = df.withColumn("old_unused_column", F.lit("a"))
 
     if output_destination:
         df.coalesce(1).write.partitionBy("version").mode("append").parquet(
@@ -691,6 +692,7 @@ def generate_version_1_ascwds_worker_file(output_destination):
     df = spark.createDataFrame(rows, schema)
 
     df = df.withColumn("version", F.lit("1.0.0"))
+    df = df.withColumn("unused_column", F.lit("d"))
 
     if output_destination:
         df.coalesce(1).write.partitionBy("version").mode("append").parquet(
