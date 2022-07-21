@@ -32,6 +32,7 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
     ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
     data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
     dataset_bucket_name                  = module.datasets_bucket.bucket_name
+    run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
   })
 
   logging_configuration {
@@ -126,6 +127,35 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "logs:DescribeLogGroups"
         ],
         "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:StartExecution"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:DescribeExecution",
+          "states:StopExecution"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:execution:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "events:PutTargets",
+          "events:PutRule",
+          "events:DescribeRule",
+        ],
+        "Resource" : "arn:aws:events:eu-west-2:${data.aws_caller_identity.current.account_id}:rule/StepFunctions*"
+        # "Resource": "*"
       }
     ]
   })
