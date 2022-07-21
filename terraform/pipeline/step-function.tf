@@ -24,15 +24,11 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   ]
 }
 
-resource "aws_cloudwatch_log_group" "state_machines" {
-  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
-}
-
-resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
-  name     = "${local.workspace_prefix}-TransformASCWDS"
+resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-IngestASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/TransformASCWDS-StepFunction.json", {
+  definition = templatefile("step-functions/IngestASCWDS-StepFunction.json", {
     ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
     data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
     dataset_bucket_name                  = module.datasets_bucket.bucket_name
@@ -47,6 +43,10 @@ resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
   depends_on = [
     aws_iam_role.step_function_iam_role
   ]
+}
+
+resource "aws_cloudwatch_log_group" "state_machines" {
+  name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
