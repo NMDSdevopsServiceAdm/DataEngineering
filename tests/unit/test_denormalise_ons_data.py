@@ -147,23 +147,23 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.imd, "Tendring 018A")
 
-    def test_replaces_lsoa11_field_with_lookup_values(self):
+    def test_replaces_lsoa_fields_with_lookup_values(self):
         denormalise_ons_data.main(
             self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
         )
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
-        self.assertEqual(ons_data_row.lsoa11, "Aldergrove 1")
+        self.assertEqual(ons_data_row.lsoa["2011"], "Aldergrove 1")
 
-    def test_replaces_msoa11_field_with_lookup_values(self):
+    def test_replaces_msoa_fields_with_lookup_values(self):
         denormalise_ons_data.main(
             self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
         )
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
-        self.assertEqual(ons_data_row.msoa11, "City of London 001")
+        self.assertEqual(ons_data_row.msoa["2011"], "City of London 001")
 
     def test_replaces_oslaua_field_with_lookup_values(self):
         denormalise_ons_data.main(
@@ -174,7 +174,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.oslaua, "Hartlepool")
 
-    def test_replaces_ru11ind_field_with_lookup_values(self):
+    def test_replaces_ru_ind_fields_with_lookup_values(self):
         denormalise_ons_data.main(
             self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
         )
@@ -182,5 +182,6 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(
-            ons_data_row.ru11ind, "(England/Wales) Urban minor conurbation"
+            ons_data_row.ru_ind["2011"],
+            "(England/Wales) Urban minor conurbation",
         )
