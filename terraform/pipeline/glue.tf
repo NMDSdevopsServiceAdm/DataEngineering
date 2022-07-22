@@ -9,6 +9,7 @@ module "csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "2.0"
 
   job_parameters = {
     "--source"      = ""
@@ -24,6 +25,7 @@ module "ingest_ascwds_dataset_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "2.0"
 
   job_parameters = {
     "--source"      = ""
@@ -37,7 +39,6 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -51,7 +52,6 @@ module "denormalise_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
 
   job_parameters = {
     "--ons_source"    = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
@@ -64,7 +64,6 @@ module "prepare_locations_job" {
   source            = "../modules/glue-job"
   script_name       = "prepare_locations.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  glue_version      = "3.0"
   worker_type       = "G.2X"
   number_of_workers = 6
   resource_bucket   = module.pipeline_resources
@@ -86,6 +85,7 @@ module "worker_tracking_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "2.0"
 
   job_parameters = {
     "--source_ascwds_workplace" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
@@ -114,6 +114,7 @@ module "prepare_workers_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "2.0"
 
   job_parameters = {
     "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
@@ -127,7 +128,6 @@ module "job_role_breakdown_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
 
   job_parameters = {
     "--job_estimates_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
@@ -142,7 +142,6 @@ module "estimate_job_counts_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
 
   job_parameters = {
     "--prepared_locations_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
@@ -161,6 +160,7 @@ module "bulk_cqc_providers_download_job" {
   datasets_bucket  = module.datasets_bucket
   trigger          = true
   trigger_schedule = "cron(30 01 01 * ? *)"
+  glue_version     = "2.0"
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"
@@ -175,6 +175,7 @@ module "bulk_cqc_locations_download_job" {
   datasets_bucket  = module.datasets_bucket
   trigger          = true
   trigger_schedule = "cron(30 01 01 * ? *)"
+  glue_version     = "2.0"
 
   job_parameters = {
     "--additional-python-modules" : "ratelimit==2.2.1,"

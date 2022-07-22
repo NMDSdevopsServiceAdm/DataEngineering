@@ -18,7 +18,7 @@ variable "trigger_schedule" {
 variable "glue_version" {
   description = "Version of glue to use for the job. Default of 2.0"
   type        = string
-  default     = "2.0"
+  default     = "3.0"
 
   validation {
     condition     = contains(["1.0", "2.0", "3.0"], var.glue_version)
