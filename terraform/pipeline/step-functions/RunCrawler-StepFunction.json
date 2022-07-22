@@ -1,0 +1,42 @@
+{
+    "Comment": "Run crawler, wait for it to finish if currently running",
+    "StartAt": "StartCrawler",
+    "States": {
+      "StartCrawler": {
+        "Type": "Task",
+        "Parameters": {
+          "Name.$": "$.crawler_name"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "Glue.CrawlerRunningException"
+            ],
+            "Next": "Wait for 2 minutes",
+            "Comment": "Crawler already running",
+            "ResultPath": "$.response.start_crawler"
+          }
+        ],
+        "ResultPath": null,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Glue.EntityNotFoundException",
+              ""
+            ],
+            "BackoffRate": 1,
+            "IntervalSeconds": 1,
+            "MaxAttempts": 0,
+            "Comment": "Crawler not found, fail immediately"
+          }
+        ],
+        "End": true
+      },
+      "Wait for 2 minutes": {
+        "Type": "Wait",
+        "Seconds": 120,
+        "Next": "StartCrawler"
+      }
+    }
+  }
