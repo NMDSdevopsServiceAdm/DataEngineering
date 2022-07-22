@@ -111,13 +111,9 @@ def get_dataset_worker(source, schema, since_date=None):
         f"{source}version=1.0.0/"
     )
 
-    worker_df_v0 = worker_df_v0.withColumn("previous_pay", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("savedate", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("previous_mainjrid", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("dayssick_savedate", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("pay_savedate", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("flujab2020", F.lit(None))
-    worker_df_v0 = worker_df_v0.withColumn("derivedfrom_hasbulkuploaded", F.lit(None))
+    for column in column_names:
+        if column not in worker_df_v0.columns:
+            worker_df_v0 = worker_df_v0.withColumn(column, F.lit(None))
 
     worker_df_v0 = worker_df_v0.select(column_names)
     worker_df_v1 = worker_df_v1.select(column_names)

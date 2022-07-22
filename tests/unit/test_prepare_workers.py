@@ -112,9 +112,9 @@ class PrepareWorkersTests(unittest.TestCase):
 
         # Set missing column values to none
         self.assertIn("savedate", df.columns)
-        self.assertEqual(v0_worker.savedate, None)
+        self.assertIsNone(v0_worker.savedate)
         self.assertIn("pay_savedate", df.columns)
-        self.assertEqual(v0_worker.pay_savedate, None)
+        self.assertIsNone(v0_worker.pay_savedate)
 
         # Retrains aggregation
         self.assertEqual(
