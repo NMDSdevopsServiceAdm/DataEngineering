@@ -87,10 +87,11 @@ module "worker_tracking_job" {
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
+
   job_parameters = {
     "--source_ascwds_workplace" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--source_ascwds_worker"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination"             = ""
+    "--destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=worker_tracked/"
   }
 }
 
