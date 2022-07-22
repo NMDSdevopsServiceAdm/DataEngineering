@@ -501,6 +501,9 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual(dormancy_count, 5)
 
+    def test_map_illegitimate_postcodes_is_correcting_postcodes(self):
+        pass
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
