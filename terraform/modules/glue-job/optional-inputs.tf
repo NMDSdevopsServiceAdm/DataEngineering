@@ -16,7 +16,7 @@ variable "trigger_schedule" {
 }
 
 variable "glue_version" {
-  description = "Version of glue to use for the job. Default of 2.0"
+  description = "Version of glue to use for the job. Defaults to 3.0"
   type        = string
   default     = "3.0"
 
