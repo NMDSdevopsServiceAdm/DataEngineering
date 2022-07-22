@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pyspark.sql.types import (
     StructField,
@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    TimestampType,
 )
 import pyspark.sql.functions as F
 
@@ -585,11 +586,70 @@ def generate_cqc_care_directory_file(output_destination):
     return df
 
 
-def generate_ascwds_worker_file(output_destination):
+def generate_version_0_ascwds_worker_file(output_destination):
+    spark = utils.get_spark()
+    # version 0.0.1
+    schema = StructType(
+        [
+            StructField("workerid", StringType(), True),
+            StructField("emplstat", StringType(), True),
+            StructField("zerohours", StringType(), True),
+            StructField("salaryint", StringType(), True),
+            StructField("hrlyrate", StringType(), True),
+            StructField("distwrkk", StringType(), True),
+            StructField("dayssick", StringType(), True),
+            StructField("conthrs", StringType(), True),
+            StructField("averagehours", StringType(), True),
+            StructField("salary", StringType(), True),
+            StructField("import_date", StringType(), True),
+            StructField("tr01flag", StringType(), True),
+            StructField("tr01latestdate", StringType(), True),
+            StructField("tr01count", StringType(), True),
+            StructField("tr01ac", StringType(), True),
+            StructField("tr01nac", StringType(), True),
+            StructField("tr01dn", StringType(), True),
+            StructField("jr01flag", StringType(), True),
+            StructField("jr03flag", StringType(), True),
+            StructField("jr16cat1", StringType(), True),
+            StructField("ql01achq2", StringType(), True),
+            StructField("ql01year2", StringType(), True),
+            StructField("ql02achq3", StringType(), True),
+            StructField("ql34achqe", StringType(), True),
+            StructField("ql34yeare", StringType(), True),
+            StructField("ql37achq", StringType(), True),
+            StructField("ql37year", StringType(), True),
+            StructField("ql313app", StringType(), True),
+            StructField("ql313year", StringType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("855821", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109430", "190", "0", "252", "8.11", "2.028776943", "10", "37.5", "0", "", "20200601","1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109429", "191", "1", "252", "7.68", "24.96731587", "10", "0", "35", "", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("855824", "191", "0", "250", "7.68", "0", "10", "0", "35", "13260", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, schema)
+
+    df = df.withColumn("version", F.lit("0.0.1"))
+    df = df.withColumn("old_unused_column", F.lit("a"))
+
+    if output_destination:
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
+
+    return df, schema
+
+
+def generate_version_1_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
 
     schema = StructType(
         fields=[
+            StructField("workerid", StringType(), True),
             StructField("tr01flag", StringType(), True),
             StructField("tr01latestdate", StringType(), True),
             StructField("tr01count", StringType(), True),
@@ -619,26 +679,39 @@ def generate_ascwds_worker_file(output_destination):
             StructField("salary", StringType(), True),
             StructField("hrlyrate", StringType(), True),
             StructField("import_date", StringType(), True),
+            StructField("savedate", TimestampType(), True),
+            StructField("previous_mainjrid", StringType(), True),
+            StructField("dayssick_savedate", TimestampType(), True),
+            StructField("pay_savedate", TimestampType(), True),
+            StructField("flujab2020", StringType(), True),
+            StructField("derivedfrom_hasbulkuploaded", StringType(), True),
         ]
     )
 
     # fmt:off
     rows = [
         (
-        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "855823", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
+        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         ),
         (
-        "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "855819", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101",
+        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         )
     ]
     # fmt:on
 
     df = spark.createDataFrame(rows, schema)
 
+    df = df.withColumn("version", F.lit("1.0.0"))
+    df = df.withColumn("unused_column", F.lit("d"))
+
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
 
     return df, schema
 
