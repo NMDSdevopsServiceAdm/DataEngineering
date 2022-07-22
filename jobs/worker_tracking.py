@@ -36,9 +36,16 @@ def main(
         end_period_import_date,
     )
 
+    start_worker_df = add_partitioning(start_worker_df, end_period_import_date)
+
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(start_worker_df, destination)
+        utils.write_to_parquet(
+            start_worker_df,
+            destination,
+            append=True,
+            partitionKeys=["year", "month", "day", "end_period_import_date"],
+        )
     else:
         return start_worker_df
 
@@ -168,6 +175,16 @@ def determine_stayer_or_leaver(
     start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
 
     return start_worker_df
+
+
+def add_partitioning(df, end_period_import_date):
+    df = df.withColumnRenamed("import_date", "start_period_import_date")
+    df = df.withColumn("year", F.lit(end_period_import_date[0:4]))
+    df = df.withColumn("month", F.lit(end_period_import_date[4:6]))
+    df = df.withColumn("day", F.lit(end_period_import_date[6:8]))
+    df = df.withColumn("end_period_import_date", F.lit(end_period_import_date))
+
+    return df
 
 
 def collect_arguments():
