@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pyspark.sql.types import (
     StructField,
@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    TimestampType,
 )
 import pyspark.sql.functions as F
 
@@ -391,15 +392,29 @@ def generate_pir_file(output_destination):
 def generate_ons_denormalised_data(output_destination):
     spark = utils.get_spark()
     # fmt: off
-    columns = ["pcd", "oslaua", "nhser", "ctry", "rgn", "lsoa11", "msoa11", "ccg", "ru11ind", "year", "month", "day", "import_date"]
+    schema = StructType([
+        StructField("pcd", StringType(), False),
+        StructField("oslaua", StringType(), False),
+        StructField("nhser", StringType(), False),
+        StructField("ctry", StringType(), False),
+        StructField("rgn", StringType(), False),
+        StructField("lsoa", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("msoa", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("ccg", StringType(), False),
+        StructField("ru_ind", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("year", StringType(), False),
+        StructField("month", StringType(), False),
+        StructField("day", StringType(), False),
+        StructField("import_date", StringType(), False),
+    ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", "Hammersmith and Fulham 023C", "Hammersmith and Fulham 023", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501"),
-        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", "Kensington and Chelsea 021B", "Kensington and Chelsea 021", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501"),
-        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", "Kensington and Chelsea 020E", "Kensington and Chelsea 020", "NHS North West London CCG", "A1", "2022", "05", "01", "20220501")
+        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",),("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
+        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
+        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501")
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema)
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
     return df
@@ -571,12 +586,71 @@ def generate_cqc_care_directory_file(output_destination):
     return df
 
 
-def generate_ascwds_worker_file(output_destination):
+def generate_version_0_ascwds_worker_file(output_destination):
+    spark = utils.get_spark()
+    # version 0.0.1
+    schema = StructType(
+        [
+            StructField("workerid", StringType(), True),
+            StructField("emplstat", StringType(), True),
+            StructField("zerohours", StringType(), True),
+            StructField("salaryint", StringType(), True),
+            StructField("hrlyrate", StringType(), True),
+            StructField("distwrkk", StringType(), True),
+            StructField("dayssick", StringType(), True),
+            StructField("conthrs", StringType(), True),
+            StructField("averagehours", StringType(), True),
+            StructField("salary", StringType(), True),
+            StructField("import_date", StringType(), True),
+            StructField("tr01flag", StringType(), True),
+            StructField("tr01latestdate", StringType(), True),
+            StructField("tr01count", StringType(), True),
+            StructField("tr01ac", StringType(), True),
+            StructField("tr01nac", StringType(), True),
+            StructField("tr01dn", StringType(), True),
+            StructField("jr01flag", StringType(), True),
+            StructField("jr03flag", StringType(), True),
+            StructField("jr16cat1", StringType(), True),
+            StructField("ql01achq2", StringType(), True),
+            StructField("ql01year2", StringType(), True),
+            StructField("ql02achq3", StringType(), True),
+            StructField("ql34achqe", StringType(), True),
+            StructField("ql34yeare", StringType(), True),
+            StructField("ql37achq", StringType(), True),
+            StructField("ql37year", StringType(), True),
+            StructField("ql313app", StringType(), True),
+            StructField("ql313year", StringType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("855821", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109430", "190", "0", "252", "8.11", "2.028776943", "10", "37.5", "0", "", "20200601","1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109429", "191", "1", "252", "7.68", "24.96731587", "10", "0", "35", "", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("855824", "191", "0", "250", "7.68", "0", "10", "0", "35", "13260", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, schema)
+
+    df = df.withColumn("version", F.lit("0.0.1"))
+    df = df.withColumn("old_unused_column", F.lit("a"))
+
+    if output_destination:
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
+
+    return df, schema
+
+
+def generate_version_1_ascwds_worker_file(output_destination):
     spark = utils.get_spark()
 
     schema = StructType(
         fields=[
             StructField("establishmentid", StringType(), True),
+            StructField("workerid", StringType(), True),
             StructField("tr01flag", StringType(), True),
             StructField("tr01latestdate", StringType(), True),
             StructField("tr01count", StringType(), True),
@@ -606,26 +680,39 @@ def generate_ascwds_worker_file(output_destination):
             StructField("salary", StringType(), True),
             StructField("hrlyrate", StringType(), True),
             StructField("import_date", StringType(), True),
+            StructField("savedate", TimestampType(), True),
+            StructField("previous_mainjrid", StringType(), True),
+            StructField("dayssick_savedate", TimestampType(), True),
+            StructField("pay_savedate", TimestampType(), True),
+            StructField("flujab2020", StringType(), True),
+            StructField("derivedfrom_hasbulkuploaded", StringType(), True),
         ]
     )
 
     # fmt:off
     rows = [
         (
-        "12345", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "12345", "855823", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
+        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         ),
         (
-        "34567", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
+        "34567", "855819", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101",
+        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         )
     ]
     # fmt:on
 
     df = spark.createDataFrame(rows, schema)
 
+    df = df.withColumn("version", F.lit("1.0.0"))
+    df = df.withColumn("unused_column", F.lit("d"))
+
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
 
     return df, schema
 

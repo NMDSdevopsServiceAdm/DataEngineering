@@ -27,7 +27,7 @@ resource "aws_iam_policy" "start_state_machines" {
       {
         Effect   = "Allow"
         Action   = ["states:StartExecution"]
-        Resource = [aws_sfn_state_machine.transform_ascwds_state_machine.arn]
+        Resource = [aws_sfn_state_machine.ingest_ascwds_state_machine.arn]
       }
     ]
   })
@@ -57,10 +57,10 @@ resource "aws_iam_role_policy_attachment" "start_state_machines" {
   policy_arn = aws_iam_policy.start_state_machines.arn
 }
 
-resource "aws_cloudwatch_event_target" "trigger_transform_ascwds_state_machine" {
+resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
   rule      = aws_cloudwatch_event_rule.ascwds_csv_added.name
-  target_id = "${local.workspace_prefix}-StartTransformASCWDSStateMachine"
-  arn       = aws_sfn_state_machine.transform_ascwds_state_machine.arn
+  target_id = "${local.workspace_prefix}-StartIngestASCWDSStateMachine"
+  arn       = aws_sfn_state_machine.ingest_ascwds_state_machine.arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {

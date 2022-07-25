@@ -20,20 +20,19 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   }
 
   depends_on = [
-    aws_iam_role.step_function_iam_role
+    aws_iam_policy.step_function_iam_policy
   ]
 }
 
-resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
-  name     = "${local.workspace_prefix}-EthnicityBreakdownPipeline"
+resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-IngestASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/EthnicityBreakdownPipeline-StepFunction.json", {
+  definition = templatefile("step-functions/IngestASCWDS-StepFunction.json", {
     ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
-    prepare_locations_job_name           = module.prepare_locations_job.job_name
-    estimate_2021_jobs_job_name          = module.estimate_job_counts_job.job_name
     data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
-    data_engineering_crawler_name        = module.data_engineering_crawler.crawler_name
+    dataset_bucket_name                  = module.datasets_bucket.bucket_name
+    run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
   })
 
   logging_configuration {
@@ -43,33 +42,29 @@ resource "aws_sfn_state_machine" "ethnicity-breakdown-state-machine" {
   }
 
   depends_on = [
-    aws_iam_role.step_function_iam_role
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "run_crawler" {
+  name       = "${local.workspace_prefix}-RunCrawler"
+  role_arn   = aws_iam_role.step_function_iam_role.arn
+  type       = "STANDARD"
+  definition = templatefile("step-functions/RunCrawler-StepFunction.json", {})
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
   ]
 }
 
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
-}
-
-resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
-  name     = "${local.workspace_prefix}-TransformASCWDS"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/TransformASCWDS-StepFunction.json", {
-    ingest_ascwds_job_name               = module.ingest_ascwds_dataset_job.job_name
-    data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
-    dataset_bucket_name                  = module.datasets_bucket.bucket_name
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_role.step_function_iam_role
-  ]
 }
 
 resource "aws_iam_role" "step_function_iam_role" {
@@ -132,6 +127,34 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "logs:DescribeLogGroups"
         ],
         "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:StartExecution"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "states:DescribeExecution",
+          "states:StopExecution"
+        ],
+        "Resource" : [
+          "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:execution:*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "events:PutTargets",
+          "events:PutRule",
+          "events:DescribeRule",
+        ],
+        "Resource" : "arn:aws:events:eu-west-2:${data.aws_caller_identity.current.account_id}:rule/StepFunctions*"
       }
     ]
   })

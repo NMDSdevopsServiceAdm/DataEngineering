@@ -24,10 +24,14 @@
         },
         "Run Data Engineering ASC WDS Crawler": {
             "Type": "Task",
+            "Resource": "arn:aws:states:::states:startExecution.sync:2",
             "Parameters": {
-                "Name": "${data_engineering_ascwds_crawler_name}"
+              "StateMachineArn": "${run_crawler_state_machine_arn}",
+              "Input": {
+                "crawler_name": "${data_engineering_ascwds_crawler_name}",
+                "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+              }
             },
-            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
             "Next": "Success"
         },
         "Success": {

@@ -159,15 +159,24 @@ class Worker_Tracking(unittest.TestCase):
                 "establishmentid",
                 "workerid",
                 "emplstat",
-                "import_date",
+                "start_period_import_date",
                 "other_col",
                 "stayer_or_leaver",
+                "year",
+                "month",
+                "day",
+                "end_period_import_date",
             ],
         )
 
         collected_output_df = output_df.collect()
         self.assertEqual(collected_output_df[0]["stayer_or_leaver"], "still employed")
         self.assertEqual(collected_output_df[1]["stayer_or_leaver"], "leaver")
+
+        self.assertEqual(collected_output_df[0]["year"], "2022")
+        self.assertEqual(collected_output_df[0]["month"], "01")
+        self.assertEqual(collected_output_df[0]["day"], "01")
+        self.assertEqual(collected_output_df[0]["end_period_import_date"], "20220101")
 
 
 if __name__ == "__main__":

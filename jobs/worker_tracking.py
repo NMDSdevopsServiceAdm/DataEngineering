@@ -36,23 +36,32 @@ def main(
         end_period_import_date,
     )
 
+    start_worker_df = add_partitioning(start_worker_df, end_period_import_date)
+
     if destination:
         print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(start_worker_df, destination)
+        utils.write_to_parquet(
+            start_worker_df,
+            destination,
+            append=True,
+            partitionKeys=["year", "month", "day", "end_period_import_date"],
+        )
     else:
         return start_worker_df
 
 
-def max_import_date_in_two_datasets(workplace_df, worker_df):
-    workplace_df = workplace_df.join(worker_df, ["import_date"], "inner")
+def max_import_date_in_two_datasets(workplace_dates_df, worker_dates_df):
+    combined_dates = workplace_dates_df.join(worker_dates_df, ["import_date"], "inner")
 
-    max_import_date = workplace_df.select(F.max(F.col("import_date")).alias("max"))
+    max_import_date = combined_dates.select(F.max(F.col("import_date")).alias("max"))
 
     return max_import_date.first().max
 
 
-def get_start_period_import_date(workplace_df, worker_df, end_period_import_date):
-    import_date = workplace_df.join(worker_df, ["import_date"], "inner")
+def get_start_period_import_date(
+    workplace_dates_df, worker_dates_df, end_period_import_date
+):
+    import_date = workplace_dates_df.join(worker_dates_df, ["import_date"], "inner")
 
     max_import_date_as_date = datetime.strptime(end_period_import_date, "%Y%m%d")
 
@@ -68,11 +77,19 @@ def get_start_period_import_date(workplace_df, worker_df, end_period_import_date
 
 
 def get_start_and_end_period_import_dates(workplace_df, worker_df):
-    end_period_import_date = max_import_date_in_two_datasets(workplace_df, worker_df)
+    workplace_dates = workplace_df.select("import_date").distinct()
+    worker_dates = worker_df.select("import_date").distinct()
+    end_period_import_date = max_import_date_in_two_datasets(
+        workplace_dates, worker_dates
+    )
+
+    print(f"End period date calculated as: {end_period_import_date}")
 
     start_period_import_date = get_start_period_import_date(
-        workplace_df, worker_df, end_period_import_date
+        workplace_dates, worker_dates, end_period_import_date
     )
+
+    print(f"Start period date calculated as: {start_period_import_date}")
 
     return start_period_import_date, end_period_import_date
 
@@ -168,6 +185,16 @@ def determine_stayer_or_leaver(
     start_worker_df = start_worker_df.fillna("leaver", subset="stayer_or_leaver")
 
     return start_worker_df
+
+
+def add_partitioning(df, end_period_import_date):
+    df = df.withColumnRenamed("import_date", "start_period_import_date")
+    df = df.withColumn("year", F.lit(end_period_import_date[0:4]))
+    df = df.withColumn("month", F.lit(end_period_import_date[4:6]))
+    df = df.withColumn("day", F.lit(end_period_import_date[6:8]))
+    df = df.withColumn("end_period_import_date", F.lit(end_period_import_date))
+
+    return df
 
 
 def collect_arguments():
