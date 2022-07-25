@@ -111,7 +111,11 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertAlmostEqual(worker_ut["hourly_rate"], 3.77, 2)
 
     def test_main_uses_import_date_to_create_snapshot_partitions(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         worker_ut = df.where(df.workerid == "855823").first()
 
@@ -120,7 +124,11 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(worker_ut.snapshot_day, "01")
 
     def test_main_handles_all_versions_of_data(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         v0_worker = df.where(df.workerid == "855821").first()
 
