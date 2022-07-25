@@ -11,13 +11,13 @@ from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
-def main(source, workplace_source, schema, destination=None):
+def main(worker_source, workplace_source, schema, destination=None):
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
         last_processed_date = (
             f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
         )
-    worker_df = get_dataset_worker(source, schema, last_processed_date)
+    worker_df = get_dataset_worker(worker_source, schema, last_processed_date)
     workplace_df = get_workplace_with_ons_data(workplace_source, last_processed_date)
 
     main_df = worker_df.join(workplace_df, ["establishmentid"], "inner")
@@ -120,13 +120,13 @@ def get_dataset_worker(source, schema, since_date=None):
     return worker_df
 
 
-def get_workplace_with_ons_data(workplace_source, since_date=None):
+def get_workplace_with_ons_data(source, since_date=None):
     spark = utils.get_spark()
 
-    print(f"Reading workplace with ONS data from {workplace_source}")
+    print(f"Reading workplace with ONS data from {source}")
     workplace_df = (
-        spark.read.option("basePath", workplace_source)
-        .parquet(workplace_source)
+        spark.read.option("basePath", source)
+        .parquet(source)
         .select(
             F.col("establishmentid"),
             F.col("postal_code"),

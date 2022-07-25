@@ -177,6 +177,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertFalse(
             bool(df.filter(df.establishmentid.contains("10000")).collect())
         )
+        self.assertEqual(df.count(), 2)
 
     def test_clean(self):
         schema = StructType(

@@ -625,7 +625,7 @@ def generate_version_0_ascwds_worker_file(output_destination):
     )
     # fmt: off
     rows = [
-        ("855821", "12345", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("855821", "10101", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
         ("1109430", "34567", "190", "0", "252", "8.11", "2.028776943", "10", "37.5", "0", "", "20200601","1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
         ("1109429", "34567", "191", "1", "252", "7.68", "24.96731587", "10", "0", "35", "", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
         ("855824", "34567", "191", "0", "250", "7.68", "0", "10", "0", "35", "13260", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
@@ -765,59 +765,22 @@ def generate_location_with_ons_parquet(output_destination):
         "snapshot_day",
     ]
 
+    # fmt:off
     rows = [
-        (
-            "12345",
-            "AB0 7CD",
-            "South West",
-            "London",
-            "England",
-            "Tendring 018A",
-            "City of London 001",
-            "NHS Barnsley CCG",
-            "B1",
-            "Kensington and Chelsea",
-            "20210101",
-            "20220102",
-            "2022",
-            "01",
-            "01",
+        ( 
+            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "01",
         ),
-        (
-            "12345",
-            "EF0 7GH",
-            "South East",
-            "London",
-            "England",
-            "Tendring 128A",
-            "City of London 003",
-            "NHS Barnsley CCG",
-            "B1",
-            "Kensington and Chelsea",
-            "20210103",
-            "20220104",
-            "2022",
-            "01",
-            "01",
+        ( 
+            "10101", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20220104", "2021", "02", "03",
         ),
-        (
-            "10000",
-            "EF0 7GH",
-            "South East",
-            "London",
-            "England",
-            "Tendring 128A",
-            "City of London 003",
-            "NHS Barnsley CCG",
-            "B1",
-            "Kensington and Chelsea",
-            "20210103",
-            "20210104",
-            "2021",
-            "01",
-            "04",
+        ( 
+            "10000", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003",
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
         ),
     ]
+    # fmt:on
 
     df = spark.createDataFrame(rows, columns)
 
