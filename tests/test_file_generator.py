@@ -592,6 +592,7 @@ def generate_version_0_ascwds_worker_file(output_destination):
     schema = StructType(
         [
             StructField("workerid", StringType(), True),
+            StructField("establishmentid", StringType(), True),
             StructField("emplstat", StringType(), True),
             StructField("zerohours", StringType(), True),
             StructField("salaryint", StringType(), True),
@@ -624,10 +625,10 @@ def generate_version_0_ascwds_worker_file(output_destination):
     )
     # fmt: off
     rows = [
-        ("855821", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
-        ("1109430", "190", "0", "252", "8.11", "2.028776943", "10", "37.5", "0", "", "20200601","1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
-        ("1109429", "191", "1", "252", "7.68", "24.96731587", "10", "0", "35", "", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
-        ("855824", "191", "0", "250", "7.68", "0", "10", "0", "35", "13260", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("855821", "10101", "190", "1", "250", "7.68", "1.255169808", "10", "0", "35", "15462.34", "20200601", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109430", "34567", "190", "0", "252", "8.11", "2.028776943", "10", "37.5", "0", "", "20200601","1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("1109429", "34567", "191", "1", "252", "7.68", "24.96731587", "10", "0", "35", "", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
+        ("855824", "34567", "191", "0", "250", "7.68", "0", "10", "0", "35", "13260", "20200501", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, "1", "2013"),
     ]
     # fmt: on
 
@@ -650,6 +651,7 @@ def generate_version_1_ascwds_worker_file(output_destination):
     schema = StructType(
         fields=[
             StructField("workerid", StringType(), True),
+            StructField("establishmentid", StringType(), True),
             StructField("tr01flag", StringType(), True),
             StructField("tr01latestdate", StringType(), True),
             StructField("tr01count", StringType(), True),
@@ -691,12 +693,12 @@ def generate_version_1_ascwds_worker_file(output_destination):
     # fmt:off
     rows = [
         (
-        "855823", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
+        "855823", "12345", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101",
         datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         ),
         (
-        "855819", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
+        "855819", "34567", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
         "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101",
         datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         )
@@ -739,6 +741,55 @@ def generate_flexible_worker_file_hourly_rate(salary, salaryint, hrlyrate, hrs_w
     rows = [(salary, salaryint, hrlyrate, hrs_worked)]
 
     df = spark.createDataFrame(rows, columns)
+
+    return df
+
+
+def generate_location_with_ons_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = [
+        "establishmentid",
+        "postal_code",
+        "ons_region",
+        "nhs_england_region",
+        "country",
+        "lsoa_2011",
+        "msoa_2011",
+        "clinical_commisioning_group",
+        "rural_urban_indicator_2011",
+        "oslaua",
+        "ons_import_date",
+        "import_date",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+    ]
+
+    # fmt:off
+    rows = [
+        ( 
+            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "01",
+        ),
+        ( 
+            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2020", "05", "06",
+        ),
+        ( 
+            "10101", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20220104", "2021", "02", "03",
+        ),
+        ( 
+            "10000", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003",
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
+        ),
+    ]
+    # fmt:on
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
 

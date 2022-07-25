@@ -11,22 +11,16 @@ from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
 
 
-def main(source, schema, destination=None):
+def main(worker_source, workplace_source, schema, destination=None):
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
         last_processed_date = (
             f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
         )
-    main_df = get_dataset_worker(source, schema, last_processed_date)
+    worker_df = get_dataset_worker(worker_source, schema, last_processed_date)
+    workplace_df = get_workplace_with_ons_data(workplace_source, last_processed_date)
 
-    # TODO: Use snapshot year/month/day from prepared locations when joining with it
-    main_df = main_df.withColumn(
-        "snapshot_year", F.substring(main_df.import_date, 0, 4)
-    )
-    main_df = main_df.withColumn(
-        "snapshot_month", F.substring(main_df.import_date, 5, 2)
-    )
-    main_df = main_df.withColumn("snapshot_day", F.substring(main_df.import_date, 7, 2))
+    main_df = worker_df.join(workplace_df, ["establishmentid"], "inner")
 
     print("Formating date fields")
     main_df = utils.format_import_date(main_df)
@@ -124,6 +118,37 @@ def get_dataset_worker(source, schema, since_date=None):
         return worker_df.filter(F.col("import_date") > since_date)
 
     return worker_df
+
+
+def get_workplace_with_ons_data(source, since_date=None):
+    spark = utils.get_spark()
+
+    print(f"Reading workplace with ONS data from {source}")
+    workplace_df = (
+        spark.read.option("basePath", source)
+        .parquet(source)
+        .select(
+            F.col("establishmentid"),
+            F.col("postal_code"),
+            F.col("ons_region"),
+            F.col("nhs_england_region"),
+            F.col("country"),
+            F.col("lsoa_2011"),
+            F.col("msoa_2011"),
+            F.col("clinical_commisioning_group"),
+            F.col("rural_urban_indicator_2011"),
+            F.col("oslaua"),
+            F.col("ons_import_date"),
+            F.col("snapshot_year"),
+            F.col("snapshot_month"),
+            F.col("snapshot_day"),
+        )
+    )
+
+    if since_date is not None:
+        return workplace_df.filter(F.col("ons_import_date") > since_date)
+
+    return workplace_df
 
 
 def clean(input_df, all_columns, schema):
