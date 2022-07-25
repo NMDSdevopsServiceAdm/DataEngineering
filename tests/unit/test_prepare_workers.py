@@ -233,7 +233,7 @@ class PrepareWorkersTests(unittest.TestCase):
             "snapshot_day",
         ]
         self.assertEqual(df.columns, expected_columns)
-        self.assertEqual(df.count(), 2)
+        self.assertEqual(df.count(), 3)
         self.assertNotIn("import_date", df.columns)
 
     def test_replace_columns_after_aggregation(self):
