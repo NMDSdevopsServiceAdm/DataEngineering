@@ -19,7 +19,7 @@ from utils import utils
 
 class PrepareWorkersTests(unittest.TestCase):
 
-    TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
+    TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker/"
     TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE = (
         "tests/test_data/domain=ascwds/dataset=workplace"
     )
@@ -73,7 +73,7 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 25)
+        self.assertEqual(len(df.columns), 32)
 
     def test_main_aggregates_right_columns(self):
         df = prepare_workers.main(
@@ -110,7 +110,7 @@ class PrepareWorkersTests(unittest.TestCase):
         # hourly rate
         self.assertAlmostEqual(worker_ut["hourly_rate"], 3.77, 2)
 
-    def test_main_uses_import_date_to_create_snapshot_partitions(self):
+    def test_main_uses_snapshot_partitions_from_locations(self):
         df = prepare_workers.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
@@ -152,6 +152,7 @@ class PrepareWorkersTests(unittest.TestCase):
         )
         expected_columns = [
             "establishmentid",
+            "workerid",
             "postal_code",
             "ons_region",
             "nhs_england_region",
