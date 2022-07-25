@@ -119,9 +119,9 @@ class PrepareWorkersTests(unittest.TestCase):
 
         worker_ut = df.where(df.workerid == "855823").first()
 
-        self.assertEqual(worker_ut.snapshot_year, "2022")
-        self.assertEqual(worker_ut.snapshot_month, "01")
-        self.assertEqual(worker_ut.snapshot_day, "01")
+        self.assertEqual(worker_ut.snapshot_year, "2020")
+        self.assertEqual(worker_ut.snapshot_month, "05")
+        self.assertEqual(worker_ut.snapshot_day, "06")
 
     def test_main_handles_all_versions_of_data(self):
         df = prepare_workers.main(
@@ -177,7 +177,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertFalse(
             bool(df.filter(df.establishmentid.contains("10000")).collect())
         )
-        self.assertEqual(df.count(), 2)
+        self.assertEqual(df.count(), 3)
 
     def test_clean(self):
         schema = StructType(
@@ -259,7 +259,7 @@ class PrepareWorkersTests(unittest.TestCase):
             "snapshot_day",
         ]
         self.assertEqual(df.columns, expected_columns)
-        self.assertEqual(df.count(), 3)
+        self.assertEqual(df.count(), 4)
         self.assertNotIn("import_date", df.columns)
 
     def test_replace_columns_after_aggregation(self):

@@ -772,6 +772,10 @@ def generate_location_with_ons_parquet(output_destination):
             "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "01",
         ),
         ( 
+            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
+            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2020", "05", "06",
+        ),
+        ( 
             "10101", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003", 
             "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20220104", "2021", "02", "03",
         ),
