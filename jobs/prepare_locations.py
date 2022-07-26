@@ -279,7 +279,7 @@ def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):
         "N12 8FP": "N12 8NP",
         "ST4 4GF": "ST4 7AA",
         "BN6 4EA": "BN16 4EA",
-        "B97 6DT": "B98 8JY",
+        "B97 6DT": "B97 6AT",
     }
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return cqc_loc_df.withColumn("postal_code", map_func(F.col(column)))
