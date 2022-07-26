@@ -86,6 +86,19 @@
                     "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_prepared/version=1.0.0/"
                   }
                 },
+                "Next": "Run worker tracking job"
+              },
+              "Run worker tracking job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${worker_tracking_job_name}",
+                  "Arguments": {
+                    "--source_ascwds_workplace": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--source_ascwds_worker": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                    "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_tracking/version=1.0.0/"
+                  }
+                },
                 "End": true
               }
             }
