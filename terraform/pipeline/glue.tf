@@ -219,6 +219,6 @@ module "ons_lookups_crawler" {
   name_postfix                 = "_lookups"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-  exclusions                   = ["dataset=postcode-directory/**"]
+  exclusions                   = ["dataset=postcode-directory/**", "dataset=postcode-directory-denormalised/**"]
   table_level                  = 4
 }
