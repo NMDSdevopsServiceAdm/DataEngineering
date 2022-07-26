@@ -26,7 +26,7 @@ def main(prepared_locations_source, destination=None):
     locations_df, regions = explode_regions(locations_df)
 
     feature_list = define_features_list(regions)
-    locations_df = vectorize(locations_df, feature_list)
+    locations_df = vectorize_care_home_features(locations_df, feature_list)
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -116,9 +116,9 @@ def define_features_list(regions):
     return features + regions
 
 
-def vectorize(locations_df, feature_list):
+def vectorize_care_home_features(locations_df, feature_list):
     vectorized_df = VectorAssembler(
-        inputCols=feature_list, outputCol="features", handleInvalid="skip"
+        inputCols=feature_list, outputCol="care_home_features", handleInvalid="skip"
     ).transform(locations_df)
     return vectorized_df
 
