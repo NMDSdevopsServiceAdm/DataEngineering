@@ -23,7 +23,7 @@ def main(prepared_locations_source, destination=None):
 
     locations_df = days_diff_from_latest_snapshot(locations_df)
     locations_df = explode_services(locations_df)
-    locations_df, regions = explode_column(locations_df, "region")
+    locations_df, regions = explode_column(locations_df, "ons_region")
     locations_df, local_authorities = explode_column(locations_df, "local_authority")
 
     feature_list = define_features_list(regions, local_authorities)
@@ -32,7 +32,7 @@ def main(prepared_locations_source, destination=None):
     locations_df = locations_df.select(
         "locationid",
         "snapshot_date",
-        "region",
+        "ons_region",
         "number_of_beds",
         "people_directly_employed",
         "snapshot_year",

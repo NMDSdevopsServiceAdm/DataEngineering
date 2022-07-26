@@ -46,7 +46,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         expected_columns = [
             "locationid",
             "snapshot_date",
-            "region",
+            "ons_region",
             "number_of_beds",
             "people_directly_employed",
             "snapshot_year",
@@ -134,11 +134,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         df = locations_feature_engineering.explode_services(self.test_df)
         # fmt: off
         features = [
-            'service_1','service_2','service_3','service_4','service_5','service_6','service_7','service_8',
-            'service_9','service_10','service_11','service_12','service_13','service_14','service_15','service_16',
-            'service_17','service_18','service_19','service_20','service_21','service_22','service_23','service_24',
-            'service_25','service_26','service_27','service_28','service_29'
-            ]
+            'service_1', 'service_2', 'service_3', 'service_4', 'service_5', 'service_6', 'service_7', 'service_8',
+            'service_9', 'service_10', 'service_11', 'service_12', 'service_13', 'service_14', 'service_15', 'service_16',
+            'service_17', 'service_18', 'service_19', 'service_20', 'service_21', 'service_22', 'service_23', 'service_24',
+            'service_25', 'service_26', 'service_27', 'service_28', 'service_29'
+        ]
         # fmt: on
         df = locations_feature_engineering.vectorize_care_home_features(df, features)
 
@@ -147,7 +147,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
     def test_explode_column_returns_codifies_categories(self):
         _, regions = locations_feature_engineering.explode_column(
-            self.test_df, "region"
+            self.test_df, "ons_region"
         )
 
         self.assertIn("south_east", regions)
@@ -174,29 +174,29 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertNotIn("Lewisham", local_authorities)
 
     def test_explode_column_returns_distinct_categories(self):
-        df, regions = locations_feature_engineering.explode_column(
-            self.test_df, "region"
+        df, ons_regions = locations_feature_engineering.explode_column(
+            self.test_df, "ons_region"
         )
 
-        self.assertIn("unspecified", regions)
+        self.assertIn("unspecified", ons_regions)
         self.assertEqual(df.collect()[9].unspecified, 1)
 
     def test_explode_column_returns_marks_missing_category_as_unspecified(self):
-        _, regions = locations_feature_engineering.explode_column(
-            self.test_df, "region"
+        _, ons_regions = locations_feature_engineering.explode_column(
+            self.test_df, "ons_region"
         )
 
-        self.assertEqual(len(regions), 7)
+        self.assertEqual(len(ons_regions), 7)
 
     def test_explode_column_creates_a_column_for_each_category(self):
-        df, regions = locations_feature_engineering.explode_column(
-            self.test_df, "region"
+        df, ons_regions = locations_feature_engineering.explode_column(
+            self.test_df, "ons_region"
         )
 
-        for region in regions:
+        for region in ons_regions:
             self.assertIn(region, df.columns)
 
-        rows = df.select(regions).collect()
+        rows = df.select(ons_regions).collect()
 
         self.assertEqual(rows[0].south_east, 1)
         self.assertEqual(rows[0].south_west, 0)
