@@ -11,6 +11,7 @@ from tests.test_file_generator import (
     generate_version_1_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
     generate_flexible_worker_file_hourly_rate,
+    generate_location_with_ons_parquet,
     generate_version_0_ascwds_worker_file,
 )
 from utils import utils
@@ -19,23 +20,32 @@ from utils import utils
 class PrepareWorkersTests(unittest.TestCase):
 
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker/"
+    TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE = (
+        "tests/test_data/domain=ascwds/dataset=workplace"
+    )
 
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_prepare_workers").getOrCreate()
         self.TEST_DF, self.TEST_SCHEMA = generate_version_1_ascwds_worker_file(
             self.TEST_ASCWDS_WORKER_FILE
         )
+        generate_location_with_ons_parquet(self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE)
         generate_version_0_ascwds_worker_file(self.TEST_ASCWDS_WORKER_FILE)
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     def tearDown(self):
         try:
             shutil.rmtree(self.TEST_ASCWDS_WORKER_FILE)
+            shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE)
         except OSError():
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         aggregated_cols = [
             "training",
@@ -63,10 +73,14 @@ class PrepareWorkersTests(unittest.TestCase):
             self.assertIn(col, df.columns)
         for col in cols_removed:
             self.assertNotIn(col, df.columns)
-        self.assertEqual(len(df.columns), 21)
+        self.assertEqual(len(df.columns), 33)
 
     def test_main_aggregates_right_columns(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         # training
         training_json = json.loads(df.first()["training"])
@@ -96,17 +110,25 @@ class PrepareWorkersTests(unittest.TestCase):
         # hourly rate
         self.assertAlmostEqual(worker_ut["hourly_rate"], 3.77, 2)
 
-    def test_main_uses_import_date_to_create_snapshot_partitions(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, schema=self.TEST_SCHEMA)
+    def test_main_uses_snapshot_partitions_from_locations(self):
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         worker_ut = df.where(df.workerid == "855823").first()
 
         self.assertEqual(worker_ut.snapshot_year, "2022")
         self.assertEqual(worker_ut.snapshot_month, "01")
-        self.assertEqual(worker_ut.snapshot_day, "01")
+        self.assertEqual(worker_ut.snapshot_day, "02")
 
     def test_main_handles_all_versions_of_data(self):
-        df = prepare_workers.main(self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA)
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
 
         v0_worker = df.where(df.workerid == "855821").first()
 
@@ -121,6 +143,41 @@ class PrepareWorkersTests(unittest.TestCase):
             v0_worker.training,
             '{"tr01": {"latestdate": "2017-06-15", "count": 10, "ac": 0, "nac": 0, "dn": 0}}',
         )
+
+    def test_main_joins_location_ons_workers_dfs(self):
+        df = prepare_workers.main(
+            self.TEST_ASCWDS_WORKER_FILE,
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
+            schema=self.TEST_SCHEMA,
+        )
+        expected_columns = [
+            "establishmentid",
+            "workerid",
+            "postal_code",
+            "ons_region",
+            "nhs_england_region",
+            "country",
+            "lsoa_2011",
+            "msoa_2011",
+            "clinical_commisioning_group",
+            "rural_urban_indicator_2011",
+            "oslaua",
+            "ons_import_date",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
+        ]
+
+        for column in expected_columns:
+            self.assertIn(column, df.columns)
+            self.assertEqual(df.columns.count(column), 1)
+        self.assertFalse(
+            bool(df.filter(df.establishmentid.contains("34567")).collect())
+        )
+        self.assertFalse(
+            bool(df.filter(df.establishmentid.contains("10000")).collect())
+        )
+        self.assertEqual(df.count(), 2)
 
     def test_clean(self):
         schema = StructType(
@@ -180,6 +237,30 @@ class PrepareWorkersTests(unittest.TestCase):
         )
 
         self.assertEqual(worker_df.count(), 1)
+
+    def test_get_workplace_with_ons_data(self):
+        df = prepare_workers.get_workplace_with_ons_data(
+            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE
+        )
+        expected_columns = [
+            "establishmentid",
+            "postal_code",
+            "ons_region",
+            "nhs_england_region",
+            "country",
+            "lsoa_2011",
+            "msoa_2011",
+            "clinical_commisioning_group",
+            "rural_urban_indicator_2011",
+            "oslaua",
+            "ons_import_date",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
+            "snapshot_date",
+        ]
+        self.assertEqual(df.columns, expected_columns)
+        self.assertEqual(df.count(), 5)
 
     def test_replace_columns_after_aggregation(self):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", self.TEST_SCHEMA)
