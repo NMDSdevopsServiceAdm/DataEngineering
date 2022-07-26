@@ -13,6 +13,7 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
     pipeline_resources_bucket_uri          = module.pipeline_resources.bucket_uri
     dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
     pipeline_failure_sns_topic             = aws_sns_topic.pipeline_failures.arn
+    pipeline_failure_lambda_function_arn   = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
@@ -164,6 +165,13 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "SNS:Publish"
         ],
         "Resource" : "${aws_sns_topic.pipeline_failures.arn}"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "lambda:InvokeFunction"
+        ],
+        "Resource" : "${aws_lambda_function.error_notification_lambda.arn}*"
       }
     ]
   })
