@@ -40,57 +40,30 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
     # MAIN METHOD TESTS
 
-    def test_main_adds_service_count_column(self):
+    def test_main_selects_only_needed_columns(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-        self.assertIn("service_count", df.columns)
 
-        rows = df.collect()
+        expected_columns = [
+            "locationid",
+            "snapshot_date",
+            "region",
+            "number_of_beds",
+            "people_directly_employed",
+            "snapshot_year",
+            "snapshot_month",
+            "snapshot_day",
+            "carehome",
+            "care_home_features",
+        ]
 
-        test_service_count_1 = next(
-            row.service_count for row in rows if row.locationid == "1-1783948"
-        )
-        test_service_count_2 = next(
-            row.service_count for row in rows if row.locationid == "1-1334987222"
-        )
+        for column in expected_columns:
+            self.assertIn(column, df.columns)
 
-        self.assertEqual(test_service_count_1, 2)
-        self.assertEqual(test_service_count_2, 1)
-
-    def test_main_explodes_service_columns(self):
-        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-        self.assertIn("service_21", df.columns)
-
-        rows = df.collect()
-        test_row = next(row for row in rows if row.locationid == "1-348374832")
-
-        self.assertEqual(test_row.service_10, 1)
+        self.assertEqual(len(df.columns), len(expected_columns))
 
     def test_main_adds_vectorized_column(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("care_home_features", df.columns)
-
-    def test_main_explodes_region_columns(self):
-        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-        self.assertIn("south_east", df.columns)
-
-        rows = df.collect()
-
-        self.assertEqual(rows[6].yorkshire_and_the_humbler, 1)
-
-    def test_main_adds_date_diff_column(self):
-        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-        self.assertIn("date_diff", df.columns)
-
-        results = df.collect()
-        test_date_diff_1 = next(
-            row.date_diff for row in results if row.locationid == "1-107095666"
-        )
-        test_date_diff_2 = next(
-            row.date_diff for row in results if row.locationid == "1-108967195"
-        )
-
-        self.assertEqual(test_date_diff_1, 52)
-        self.assertEqual(test_date_diff_2, 0)
 
     def test_main_processes_only_new_data(self):
         generate_location_features_file_parquet(self.OUTPUT_DESTINATION)

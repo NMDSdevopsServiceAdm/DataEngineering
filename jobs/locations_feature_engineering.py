@@ -28,6 +28,19 @@ def main(prepared_locations_source, destination=None):
     feature_list = define_features_list(regions)
     locations_df = vectorize_care_home_features(locations_df, feature_list)
 
+    locations_df = locations_df.select(
+        "locationid",
+        "snapshot_date",
+        "region",
+        "number_of_beds",
+        "people_directly_employed",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+        "carehome",
+        "care_home_features",
+    )
+
     if destination:
         print(f"Exporting as parquet to {destination}")
         utils.write_to_parquet(
