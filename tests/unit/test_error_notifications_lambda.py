@@ -28,9 +28,9 @@ EXAMPLE_GENERIC_FAILURE_PAYLOAD = {
 
 class ErrorNotifications(unittest.TestCase):
     def setUp(self) -> None:
-        self.sns_client = boto3.client("sns")
+        self.sns_client = boto3.client("sns", region_name="eu-west-2")
         self.sns_stubber = Stubber(self.sns_client)
-        self.sf_client = boto3.client("stepfunctions")
+        self.sf_client = boto3.client("stepfunctions", region_name="eu-west-2")
         self.sf_stubber = Stubber(self.sf_client)
 
     def test_sns_called_with_topic_arn(self):
