@@ -145,8 +145,10 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertIn("care_home_features", df.columns)
         self.assertIsInstance(df.first()["care_home_features"], SparseVector)
 
-    def test_explode_regions_returns_codifies_regions(self):
-        _, regions = locations_feature_engineering.explode_regions(self.test_df)
+    def test_explode_column_returns_codifies_categories(self):
+        _, regions = locations_feature_engineering.explode_column(
+            self.test_df, "region"
+        )
 
         self.assertIn("south_east", regions)
         self.assertIn("south_west", regions)
@@ -158,19 +160,38 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertNotIn("Yorkshire and The Humbler", regions)
         self.assertNotIn("(pseudo) Wales", regions)
 
-    def test_explode_regions_returns_distinct_regions(self):
-        df, regions = locations_feature_engineering.explode_regions(self.test_df)
+    def test_explode_column_returns_codifies_categories_for_any_column(self):
+        _, local_authorities = locations_feature_engineering.explode_column(
+            self.test_df, "local_authority"
+        )
+
+        self.assertIn("surrey", local_authorities)
+        self.assertIn("gloucestershire", local_authorities)
+        self.assertIn("lewisham", local_authorities)
+
+        self.assertNotIn("Surrey", local_authorities)
+        self.assertNotIn("Gloucestershire", local_authorities)
+        self.assertNotIn("Lewisham", local_authorities)
+
+    def test_explode_column_returns_distinct_categories(self):
+        df, regions = locations_feature_engineering.explode_column(
+            self.test_df, "region"
+        )
 
         self.assertIn("unspecified", regions)
         self.assertEqual(df.collect()[9].unspecified, 1)
 
-    def test_explode_regions_returns_marks_missing_regions_as_unspecified(self):
-        _, regions = locations_feature_engineering.explode_regions(self.test_df)
+    def test_explode_column_returns_marks_missing_category_as_unspecified(self):
+        _, regions = locations_feature_engineering.explode_column(
+            self.test_df, "region"
+        )
 
         self.assertEqual(len(regions), 7)
 
-    def test_explode_regions_creates_a_column_for_each_region(self):
-        df, regions = locations_feature_engineering.explode_regions(self.test_df)
+    def test_explode_column_creates_a_column_for_each_category(self):
+        df, regions = locations_feature_engineering.explode_column(
+            self.test_df, "region"
+        )
 
         for region in regions:
             self.assertIn(region, df.columns)
