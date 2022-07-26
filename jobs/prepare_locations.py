@@ -238,7 +238,7 @@ def filter_out_import_dates_older_than(df, date):
     return df.filter(F.col("import_date") > date)
 
 
-def map_illegitimate_postcodes():
+def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):
     post_codes_mapping = {
         "B69 E3G": "B69 3EG",
         "UB4 0EJ.": "UB4 0EJ",
@@ -280,7 +280,8 @@ def map_illegitimate_postcodes():
         "BN6 4EA": "BN16 4EA",
         # "B97 6DT": "B98 8JY",
     }
-    pass
+    map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
+    return cqc_loc_df.withColumn("postal_code", map_func(F.col(column)))
 
 
 def get_cqc_provider_df(cqc_provider_source, since_date=None):
