@@ -164,6 +164,9 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(pir_df.columns[1], "people_directly_employed")
         self.assertEqual(pir_df.columns[2], "import_date")
 
+        data_type_of_column = dict(pir_df.dtypes)["people_directly_employed"]
+        self.assertEqual(data_type_of_column, "int")
+
     def test_get_ons_df(self):
         pir_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
 
