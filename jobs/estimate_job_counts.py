@@ -36,6 +36,7 @@ def main(
     prepared_locations_features,
     destination,
     care_home_model_directory,
+    non_res_with_pir_model_directory,
     metrics_destination,
     job_run_id,
     job_name,
@@ -62,36 +63,43 @@ def main(
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
+    latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
-    # Non-res models
-    locations_df = model_non_res_historical(locations_df)
-    locations_df = model_non_res_historical_pir(locations_df)
-    locations_df = model_non_res_default(locations_df)
 
     # Care homes with historical model
-    latest_model_version = max(
+    latest_care_home_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    model_name = utils.get_model_name(care_home_model_directory)
     locations_df, metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
-        f"{care_home_model_directory}{latest_model_version}/",
+        f"{care_home_model_directory}{latest_care_home_model_version}/",
     )
-    latest_snapshot = utils.get_max_snapshot_date(locations_df)
+
+    care_home_model_name = utils.get_model_name(care_home_model_directory)
     write_metrics_df(
         metrics_destination,
         r2=metrics_info["r2"],
         data_percentage=metrics_info["data_percentage"],
-        model_version=latest_model_version,
-        model_name=model_name,
+        model_version=latest_care_home_model_version,
+        model_name=care_home_model_name,
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
     )
+
+    # Non-res with PIR data model
+    latest_non_res_with_pir_model_version = max(
+        utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
+    )
+    locations_df = model_non_res_historical_pir(locations_df)
+
+    # Non-res & no PIR data models
+    locations_df = model_non_res_historical(locations_df)
+    locations_df = model_non_res_default(locations_df)
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -259,7 +267,7 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
 
     features_df = features_df.where("carehome = 'Y'")
-    features_df = features_df.where("region is not null")
+    features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("number_of_beds is not null")
 
     care_home_predictions = gbt_trained_model.transform(features_df)
@@ -276,6 +284,31 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     )
 
     return locations_df, metrics_info
+
+
+def model_non_residential_with_pir(locations_df, features_df, model_path):
+    gbt_trained_model = GBTRegressionModel.load(model_path)
+
+    features_df = features_df.where("carehome = 'N'")
+    features_df = features_df.where("ons_region is not null")
+    features_df = features_df.where("people_directly_employed > 0")
+
+    non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
+
+    non_null_job_count_df = non_residential_with_pir_predictions.where(
+        "job_count is not null"
+    )
+
+    # metrics_info = {
+    #     "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
+    #     "data_percentage": (features_df.count() / locations_df.count()) * 100,
+    # }
+
+    locations_df = insert_predictions_into_locations(
+        locations_df, non_residential_with_pir_predictions
+    )
+
+    return locations_df, {}
 
 
 def generate_r2_metric(df, prediction, label):
@@ -332,58 +365,6 @@ def write_metrics_df(
     )
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--prepared_locations_source",
-        help="Source s3 directory for prepared_locations",
-        required=True,
-    )
-    parser.add_argument(
-        "--prepared_locations_features",
-        help="Source s3 directory for prepared_locations ML features",
-        required=True,
-    )
-    parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
-        required=True,
-    )
-    parser.add_argument(
-        "--care_home_model_directory",
-        help="The directory where the care home models are saved",
-        required=True,
-    )
-    parser.add_argument(
-        "--metrics_destination",
-        help="The destination for the R2 metric data",
-        required=True,
-    )
-    parser.add_argument(
-        "--JOB_RUN_ID",
-        help="The Glue job run id",
-        required=True,
-    )
-    parser.add_argument(
-        "--JOB_NAME",
-        help="The Glue job name",
-        required=True,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return (
-        args.prepared_locations_source,
-        args.prepared_locations_features,
-        args.destination,
-        args.care_home_model_directory,
-        args.metrics_destination,
-        args.JOB_RUN_ID,
-        args.JOB_NAME,
-    )
-
-
 if __name__ == "__main__":
     print("Spark job 'estimate_job_counts' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -393,16 +374,39 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        non_res_with_pir_model_directory,
         metrics_destination,
         JOB_RUN_ID,
         JOB_NAME,
-    ) = collect_arguments()
+    ) = utils.collect_arguments(
+        ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
+        (
+            "--prepared_locations_features",
+            "Source s3 directory for prepared_locations ML features",
+        ),
+        (
+            "--destination",
+            "A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
+        ),
+        (
+            "--care_home_model_directory",
+            "The directory where the care home models are saved",
+        ),
+        (
+            "--non_res_with_pir_model_directory",
+            "The directory where the non residential with PIR data models are saved",
+        ),
+        ("--metrics_destination", "The destination for the R2 metric data"),
+        ("--JOB_RUN_ID", "The Glue job run id"),
+        ("--JOB_NAME", "The Glue job name"),
+    )
 
     main(
         prepared_locations_source,
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        non_res_with_pir_model_directory,
         metrics_destination,
         JOB_RUN_ID,
         JOB_NAME,
