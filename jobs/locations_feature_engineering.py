@@ -65,30 +65,20 @@ def main(prepared_locations_source, destination=None):
         )
     )
 
-    locations_df = (
-        care_homes_with_features_df.alias("res")
-        .join(
-            non_residential_with_pir_and_features_df.alias("non_res_pir"),
-            ["locationid", "snapshot_date"],
-            "outer",
-        )
-        .join(
-            non_residential_without_pir_df.alias("non_res_no_pir"),
-            ["locationid", "snapshot_date"],
-            "outer",
-        )
-    )
+    locations_df = care_homes_with_features_df.unionByName(
+        non_residential_with_pir_and_features_df, allowMissingColumns=True
+    ).unionByName(non_residential_without_pir_df, allowMissingColumns=True)
 
     locations_df = locations_df.select(
         "locationid",
         "snapshot_date",
-        "res.ons_region",
-        "res.number_of_beds",
-        "res.people_directly_employed",
-        "res.snapshot_year",
-        "res.snapshot_month",
-        "res.snapshot_day",
-        "res.carehome",
+        "ons_region",
+        "number_of_beds",
+        "people_directly_employed",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+        "carehome",
         "care_home_features",
         "non_residential_inc_pir_features",
     )
