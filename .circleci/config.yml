@@ -139,6 +139,19 @@ jobs:
           command: |
             mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas environment
 
+      - run:
+          name: Download Deequ jar
+          command: |
+            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/1.0.3/deequ-1.0.3.jar -O dependencies/deequ-1.0.3.jar
+
+      - run:
+          name: Package PyDeequ
+          command: |
+            pip install -t ./target pydeequ==1.0.1
+            cd target && zip -r pydeequ-1.0.1.zip pydeequ && cd ..
+            mv target/pydeequ-1.0.1.zip dependencies/pydeequ-1.0.1.zip
+            rm -rf target
+
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
