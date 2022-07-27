@@ -47,7 +47,7 @@ class PrepareLocationsTests(unittest.TestCase):
             "test_prepare_locations"
         ).getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
-        generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
+        self.cqc_loc_df = generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
         generate_pir_file(self.TEST_PIR_FILE)
         self.ons_df = generate_ons_denormalised_data(self.TEST_ONS_FILE)
@@ -173,6 +173,18 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertIn("nhs_england_region", pir_df.columns)
         self.assertIn("ons_region", pir_df.columns)
         self.assertIn("ons_import_date", pir_df.columns)
+
+    def test_map_illegitimate_postcodes_is_replacing_wrong_postcodes(self):
+        df = prepare_locations.map_illegitimate_postcodes(self.cqc_loc_df, "postalCode")
+
+        rows = df.collect()
+
+        self.assertEqual(rows[0]["postal_code"], "UB4 0EJ")
+        self.assertEqual(rows[1]["postal_code"], "OX29 9UB")
+        self.assertEqual(rows[5]["postal_code"], "YO61 3FN")
+        self.assertEqual(rows[10]["postal_code"], "HU170LS")
+        self.assertEqual(rows[21]["postal_code"], "TS20 2BL")
+        self.assertIsNone(rows[-1]["postal_code"])
 
     def test_get_date_closest_to_search_date_returns_correct_date(self):
         date_search_list = [
