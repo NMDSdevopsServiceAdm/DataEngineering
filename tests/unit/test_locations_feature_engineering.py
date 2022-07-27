@@ -10,6 +10,7 @@ from tests.test_file_generator import (
     generate_prepared_locations_file_parquet,
     generate_location_features_file_parquet,
 )
+from utils import feature_engineering_dictionaries
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
@@ -111,8 +112,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(result_df.count(), 14)
 
-    def test_explode_services_creates_a_column_for_each_service(self):
-        df = locations_feature_engineering.explode_services(self.test_df)
+    def test_explode_column_using_dictionary_creates_a_column_for_each_service(self):
+        services_dict = feature_engineering_dictionaries.SERVICES_LOOKUP
+        df = locations_feature_engineering.explode_array_column_using_dictionary(
+            self.test_df, "services_offered", services_dict
+        )
 
         expected_service_columns = [f"service_{i}" for i in range(1, 30)]
 
@@ -130,8 +134,28 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[8].service_12, 0)
         self.assertEqual(rows[8].service_23, 0)
 
+    def test_explode_column_creates_a_column_for_each_category(self):
+        rural_ind_dict = feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP
+        df = locations_feature_engineering.explode_string_column_using_dictionary(
+            self.test_df, "rural_urban_indicator.2011", rural_ind_dict
+        )
+
+        expected_columns = [f"indicator_{i}" for i in range(1, 11)]
+
+        for column in expected_columns:
+            self.assertIn(column, df.columns)
+
+        rows = df.select(expected_columns).collect()
+
+        self.assertEqual(rows[0].indicator_1, 1)
+
+        self.assertEqual(rows[8].indicator_4, 1)
+
     def test_vectorize_adds_new_care_home_features_column(self):
-        df = locations_feature_engineering.explode_services(self.test_df)
+        services_dict = feature_engineering_dictionaries.SERVICES_LOOKUP
+        df = locations_feature_engineering.explode_array_column_using_dictionary(
+            self.test_df, "services_offered", services_dict
+        )
         # fmt: off
         features = [
             'service_1', 'service_2', 'service_3', 'service_4', 'service_5', 'service_6', 'service_7', 'service_8',

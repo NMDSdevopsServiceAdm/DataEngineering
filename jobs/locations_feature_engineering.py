@@ -22,7 +22,17 @@ def main(prepared_locations_source, destination=None):
     )
 
     locations_df = days_diff_from_latest_snapshot(locations_df)
-    locations_df = explode_services(locations_df)
+    locations_df = explode_array_column_using_dictionary(
+        locations_df,
+        "services_offered",
+        feature_engineering_dictionaries.SERVICES_LOOKUP,
+    )
+    locations_df = explode_string_column_using_dictionary(
+        locations_df,
+        "rural_urban_indicator.2011",
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP,
+    )
+
     locations_df, regions = explode_column(locations_df, "ons_region")
     locations_df, local_authorities = explode_column(locations_df, "local_authority")
     locations_df, cqc_sectors = explode_column(locations_df, "cqc_sector")
@@ -104,22 +114,33 @@ def explode_column(locations_df, column_name):
     return locations_df, categories
 
 
-def explode_services(locations_df):
-    services_lookup = feature_engineering_dictionaries.SERVICES_LOOKUP
-    for column_name, service_description in services_lookup.items():
+def explode_array_column_using_dictionary(locations_df, column_name, dictionary):
+    for name, description in dictionary.items():
 
         locations_df = locations_df.withColumn(
-            column_name,
+            name,
             F.when(
-                F.array_contains(locations_df.services_offered, service_description), 1
+                F.array_contains(locations_df[column_name], description), 1
             ).otherwise(0),
+        )
+    return locations_df
+
+
+def explode_string_column_using_dictionary(locations_df, column_name, dictionary):
+    for name, description in dictionary.items():
+
+        locations_df = locations_df.withColumn(
+            name,
+            F.when(locations_df[column_name] == description, 1).otherwise(0),
         )
     return locations_df
 
 
 def define_features_list(regions, local_authorites, cqc_sectors):
     services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
-    rural_urban_indicators = []
+    rural_urban_indicators = list(
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
+    )
     features = ["service_count", "number_of_beds", "date_diff"]
     return (
         features
