@@ -56,3 +56,6 @@ terraform.tfvars
 .python-version
 *.pyc
 .DS_Store
+
+# ------ lambda artefacts ---- #
+lambdas/**.zip

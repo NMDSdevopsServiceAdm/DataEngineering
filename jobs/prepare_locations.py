@@ -227,6 +227,7 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
     cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
+    cqc_df = map_illegitimate_postcodes(cqc_df)
 
     return cqc_df
 
@@ -235,6 +236,52 @@ def filter_out_import_dates_older_than(df, date):
     if date is None:
         return df
     return df.filter(F.col("import_date") > date)
+
+
+def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):
+    post_codes_mapping = {
+        "B69 E3G": "B69 3EG",
+        "UB4 0EJ.": "UB4 0EJ",
+        "TS17 3TB": "TS18 3TB",
+        "TF7 3BY": "TF4 3BY",
+        "S26 4DW": "S26 4WD",
+        "B7 5DP": "B7 5PD",
+        "DE1 IBT": "DE1 1BT",
+        "YO61 3FF": "YO61 3FN",
+        "L20 4QC": "L20 4QG",
+        "PR! 9HL": "PR1 9HL",
+        "N8 5HY": "N8 7HS",
+        "PA20 3AR": "PO20 3BD",
+        "CRO 4TB": "CR0 4TB",
+        "PA20 3BD": "PO20 3BD",
+        "LE65 3LP": "LE65 2RW",
+        "NG6 3DG": "NG5 2AT",
+        "HU17 ORH": "HU17 0RH",
+        "SY2 9JN": "SY3 9JN",
+        "CA1 2XT": "CA1 2TX",
+        "MK9 1HF": "MK9 1FH",
+        "HP20 1SN.": "HP20 1SN",
+        "CH41 1UE": "CH41 1EU",
+        "WR13 3JS": "WF13 3JS",
+        "B12 ODG": "B12 0DG",
+        "PO8 4PY": "PO4 8PY",
+        "TS20 2BI": "TS20 2BL",
+        "NG10 9LA": "NN10 9LA",
+        "SG1 8AL": "SG18 8AL",
+        "CCT8 8SA": "CT8 8SA",
+        "OX4 2XQ": "OX4 2SQ",
+        "B66 2FF": "B66 2AL",
+        "EC2 5UU": "EC2M 5UU",
+        "HU21 0LS": "HU170LS",
+        "PL7 1RP": "PL7 1RF",
+        "WF12 2SE": "WF13 2SE",
+        "N12 8FP": "N12 8NP",
+        "ST4 4GF": "ST4 7AA",
+        "BN6 4EA": "BN16 4EA",
+        "B97 6DT": "B97 6AT",
+    }
+    map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
+    return cqc_loc_df.withColumn("postal_code", map_func(F.col(column)))
 
 
 def get_cqc_provider_df(cqc_provider_source, since_date=None):
