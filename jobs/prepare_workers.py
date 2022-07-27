@@ -5,7 +5,7 @@ import re
 from functools import partial
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import StringType, FloatType, IntegerType
+from pyspark.sql.types import StringType, FloatType, IntegerType, ArrayType, MapType
 
 from schemas.worker_schema import WORKER_SCHEMA
 from utils import utils
@@ -37,6 +37,7 @@ def main(worker_source, workplace_source, schema, destination=None):
             ),
             "udf_function": get_training_into_json,
             "types": utils.extract_specific_column_types(r"^tr\d\dflag$", schema),
+            "output_type": StringType(),
         },
         "job_role": {
             "cols_to_aggregate": utils.extract_col_with_pattern(
@@ -44,6 +45,7 @@ def main(worker_source, workplace_source, schema, destination=None):
             ),
             "udf_function": get_job_role_into_json,
             "types": utils.extract_col_with_pattern(r"^jr\d\d[a-z]", schema),
+            "output_type": ArrayType(StringType()),
         },
         "qualifications": {
             "cols_to_aggregate": utils.extract_col_with_pattern(
@@ -53,6 +55,7 @@ def main(worker_source, workplace_source, schema, destination=None):
             "types": utils.extract_col_with_pattern(
                 r"^ql\d{1,3}(achq|app)(\d*|e)", schema
             ),
+            "output_type": MapType(StringType(), MapType(StringType(), IntegerType())),
         },
     }
     for col_name, info in columns_to_be_aggregated_patterns.items():
@@ -63,6 +66,7 @@ def main(worker_source, workplace_source, schema, destination=None):
             udf_function=info["udf_function"],
             cols_to_aggregate=info["cols_to_aggregate"],
             types=info["types"],
+            output_type=info["output_type"],
         )
 
     print("Aggregating hours worked")
@@ -287,7 +291,7 @@ def get_job_role_into_json(row, types):
         if row[jr] == 1:
             agg_jr.append(jr)
 
-    return json.dumps(agg_jr)
+    return agg_jr
 
 
 def get_qualification_into_json(row, types):
@@ -299,7 +303,7 @@ def get_qualification_into_json(row, types):
                 row, qualification
             )
 
-    return json.dumps(aggregated_qualifications)
+    return aggregated_qualifications
 
 
 def extract_year_column_name(qualification):

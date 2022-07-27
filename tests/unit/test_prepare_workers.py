@@ -4,7 +4,15 @@ import warnings
 import json
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructField, StructType, StringType, FloatType
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    FloatType,
+    ArrayType,
+    MapType,
+    IntegerType,
+)
 
 from jobs import prepare_workers
 from tests.test_file_generator import (
@@ -91,10 +99,10 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(expected_train_count, 10)
 
         # job role
-        self.assertEqual(df.first()["job_role"], '["jr01flag", "jr03flag"]')
+        self.assertEqual(df.first()["job_role"], ["jr01flag", "jr03flag"])
 
         # qualifications
-        qualification_json = json.loads(df.first()["qualifications"])
+        qualification_json = df.first()["qualifications"]
         expected_qual_count = qualification_json["ql01achq2"]["count"]
         expected_qual_year = qualification_json["ql34achqe"]["year"]
         expected_qual_year2 = qualification_json["ql37achq"]["year"]
@@ -320,13 +328,11 @@ class PrepareWorkersTests(unittest.TestCase):
             columns,
             prepare_workers.get_job_role_into_json,
             types=columns,
+            output_type=ArrayType(StringType()),
         )
 
         self.assertEqual(df.columns[-1], "job_role")
-        self.assertEqual(
-            df.first()["job_role"],
-            '["jr01flag", "jr05flag"]',
-        )
+        self.assertEqual(df.first()["job_role"], ["jr01flag", "jr05flag"])
         self.assertEqual(df.first()["jr16cat8"], 0)
 
     def test_get_qualification_into_json(self):
@@ -351,17 +357,18 @@ class PrepareWorkersTests(unittest.TestCase):
             columns,
             prepare_workers.get_qualification_into_json,
             types=["ql01achq2", "ql34achqe", "ql37achq"],
+            output_type=MapType(StringType(), MapType(StringType(), IntegerType())),
         )
         df_list = df.collect()
         self.assertEqual(df.columns[-1], "qualification")
         self.assertEqual(
-            df_list[0]["qualification"], '{"ql01achq2": {"count": 1, "year": 2010}}'
+            df_list[0]["qualification"], {"ql01achq2": {"count": 1, "year": 2010}}
         )
         self.assertEqual(
-            df_list[1]["qualification"], '{"ql34achqe": {"count": 1, "year": 2019}}'
+            df_list[1]["qualification"], {"ql34achqe": {"count": 1, "year": 2019}}
         )
         self.assertEqual(
-            df_list[2]["qualification"], '{"ql37achq": {"count": 3, "year": 2020}}'
+            df_list[2]["qualification"], {"ql37achq": {"count": 3, "year": 2020}}
         )
         self.assertEqual(df.first()["ql37achq"], 0)
 
