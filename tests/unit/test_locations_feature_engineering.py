@@ -55,6 +55,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             "snapshot_day",
             "carehome",
             "care_home_features",
+            "non_residential_inc_pir_features",
         ]
 
         for column in expected_columns:
@@ -62,9 +63,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(len(df.columns), len(expected_columns))
 
-    def test_main_adds_vectorized_column(self):
+    def test_main_adds_care_home_vectorized_column(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("care_home_features", df.columns)
+
+    def test_main_adds_non_res_pir_vectorized_column(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+        self.assertIn("non_residential_inc_pir_features", df.columns)
 
     def test_main_processes_only_new_data(self):
         generate_location_features_file_parquet(self.OUTPUT_DESTINATION)
@@ -164,7 +169,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             'service_25', 'service_26', 'service_27', 'service_28', 'service_29'
         ]
         # fmt: on
-        df = locations_feature_engineering.vectorize_care_home_features(df, features)
+        df = locations_feature_engineering.vectorize_features(
+            df, features, "care_home_features"
+        )
 
         self.assertIn("care_home_features", df.columns)
         self.assertIsInstance(df.first()["care_home_features"], SparseVector)

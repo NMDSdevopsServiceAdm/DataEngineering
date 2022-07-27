@@ -37,8 +37,21 @@ def main(prepared_locations_source, destination=None):
     locations_df, local_authorities = explode_column(locations_df, "local_authority")
     locations_df, cqc_sectors = explode_column(locations_df, "cqc_sector")
 
-    feature_list = define_features_list(regions, local_authorities, cqc_sectors)
-    locations_df = vectorize_care_home_features(locations_df, feature_list)
+    care_home_feature_list = define_care_home_features_list(
+        regions, local_authorities, cqc_sectors
+    )
+    non_residential_inc_pir_feature_list = define_non_res_inc_pir_features_list(
+        regions, local_authorities, cqc_sectors
+    )
+
+    locations_df = vectorize_features(
+        locations_df, care_home_feature_list, "care_home_features"
+    )
+    locations_df = vectorize_features(
+        locations_df,
+        non_residential_inc_pir_feature_list,
+        "non_residential_inc_pir_features",
+    )
 
     locations_df = locations_df.select(
         "locationid",
@@ -51,6 +64,7 @@ def main(prepared_locations_source, destination=None):
         "snapshot_day",
         "carehome",
         "care_home_features",
+        "non_residential_inc_pir_features",
     )
 
     if destination:
@@ -136,7 +150,7 @@ def explode_string_column_using_dictionary(locations_df, column_name, dictionary
     return locations_df
 
 
-def define_features_list(regions, local_authorites, cqc_sectors):
+def define_care_home_features_list(regions, local_authorites, cqc_sectors):
     services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
     rural_urban_indicators = list(
         feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
@@ -152,9 +166,25 @@ def define_features_list(regions, local_authorites, cqc_sectors):
     )
 
 
-def vectorize_care_home_features(locations_df, feature_list):
+def define_non_res_inc_pir_features_list(regions, local_authorites, cqc_sectors):
+    services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
+    rural_urban_indicators = list(
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
+    )
+    features = ["service_count", "people_directly_employed", "date_diff"]
+    return (
+        features
+        + regions
+        + cqc_sectors
+        + rural_urban_indicators
+        + local_authorites
+        + services
+    )
+
+
+def vectorize_features(locations_df, feature_list, column_name):
     vectorized_df = VectorAssembler(
-        inputCols=feature_list, outputCol="care_home_features", handleInvalid="skip"
+        inputCols=feature_list, outputCol=column_name, handleInvalid="skip"
     ).transform(locations_df)
     return vectorized_df
 
