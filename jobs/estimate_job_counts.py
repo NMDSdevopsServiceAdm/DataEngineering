@@ -93,14 +93,6 @@ def main(
         job_name=job_name,
     )
 
-    # Nursing models
-    locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
-    locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
-
-    # Non-nursing models
-    locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
-    locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
-
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
     locations_df = locations_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
@@ -338,106 +330,6 @@ def write_metrics_df(
         append=True,
         partitionKeys=["model_name", "model_version"],
     )
-
-
-def model_care_home_with_nursing_pir_and_cqc_beds(df):
-    """
-    Care home with nursing : Not Historical : PIR :  2021 jobs = (0.773*beds)+(0.551*PIR)+0.304
-    """
-    # TODO: remove magic number 0.773
-    # TODO: remove magic number 0.551
-    # TODO: remove magic number 0.304
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (
-                (0.773 * F.col(NUMBER_OF_BEDS))
-                + (0.551 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
-                + 0.304
-            ),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_with_nursing_cqc_beds(df):
-    """
-    Care home with nursing : Not Historical : Not PIR : 2021 jobs = (1.203*beds) +2.39
-    """
-    # TODO: remove magic number 1.203
-    # TODO: remove magic number 2.39
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (1.203 * F.col(NUMBER_OF_BEDS) + 2.39),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_cqc_beds_and_pir(df):
-    """
-    Care home without nursing : Not Historical : PIR :  2021 jobs = 10.652+(0.571*beds)+(0.296*PIR)
-    """
-    # TODO: remove magic number 10.652
-    # TODO: remove magic number 0.571
-    # TODO: remove magic number 0.296
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (
-                10.652
-                + (0.571 * F.col(NUMBER_OF_BEDS))
-                + (0.296 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
-            ),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_cqc_beds(df):
-    """
-    Care home without nursing : Not Historical : Not PIR : 2021 jobs = 11.291+(0.8126*beds)
-    """
-    # TODO: remove magic number 11.291
-    # TODO: remove magic number 0.8126
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (11.291 + (0.8126 * F.col(NUMBER_OF_BEDS))),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
 
 
 def collect_arguments():
