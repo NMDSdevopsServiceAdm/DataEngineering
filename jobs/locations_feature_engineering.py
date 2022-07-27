@@ -25,8 +25,9 @@ def main(prepared_locations_source, destination=None):
     locations_df = explode_services(locations_df)
     locations_df, regions = explode_column(locations_df, "ons_region")
     locations_df, local_authorities = explode_column(locations_df, "local_authority")
+    locations_df, cqc_sectors = explode_column(locations_df, "cqc_sector")
 
-    feature_list = define_features_list(regions, local_authorities)
+    feature_list = define_features_list(regions, local_authorities, cqc_sectors)
     locations_df = vectorize_care_home_features(locations_df, feature_list)
 
     locations_df = locations_df.select(
@@ -116,15 +117,14 @@ def explode_services(locations_df):
     return locations_df
 
 
-def define_features_list(regions, local_authorites):
+def define_features_list(regions, local_authorites, cqc_sectors):
     services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
-    sectors = []
     rural_urban_indicators = []
     features = ["service_count", "number_of_beds", "date_diff"]
     return (
         features
         + regions
-        + sectors
+        + cqc_sectors
         + rural_urban_indicators
         + local_authorites
         + services
