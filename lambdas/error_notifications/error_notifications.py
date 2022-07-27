@@ -35,7 +35,7 @@ def glue_job_failure_message(statemachine_name, error, execution_details_url):
 
 def generic_failure_message(statemachine_name, error, execution_details_url):
     message = (
-        f"Execution of the step function {statemachine_name} has failed woth error. \n\n"
+        f"Execution of the step function {statemachine_name} has failed with error. \n\n"
         f"{error} \n\n"
         f"View the execution details for the state function here: {execution_details_url} \n"
     )
@@ -66,8 +66,8 @@ def send_sns_notification(snsTopicArn, message_params, sns_client):
     return response
 
 
-def success_callback(token, sns_resposne, sf_client):
-    sf_client.send_task_success(taskToken=token, output=json.dumps(sns_resposne))
+def success_callback(token, sns_response, sf_client):
+    sf_client.send_task_success(taskToken=token, output=json.dumps(sns_response))
 
 
 def failure_callback(token, error, cause, sf_client):
