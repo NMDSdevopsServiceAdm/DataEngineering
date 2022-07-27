@@ -154,7 +154,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
-        self.assertEqual(ons_data_row.lsoa["2011"], "Aldergrove 1")
+        self.assertEqual(ons_data_row.lsoa["year_2011"], "Aldergrove 1")
 
     def test_replaces_msoa_fields_with_lookup_values(self):
         denormalise_ons_data.main(
@@ -163,7 +163,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
-        self.assertEqual(ons_data_row.msoa["2011"], "City of London 001")
+        self.assertEqual(ons_data_row.msoa["year_2011"], "City of London 001")
 
     def test_replaces_oslaua_field_with_lookup_values(self):
         denormalise_ons_data.main(
@@ -182,6 +182,6 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(
-            ons_data_row.ru_ind["2011"],
+            ons_data_row.ru_ind["year_2011"],
             "(England/Wales) Urban minor conurbation",
         )
