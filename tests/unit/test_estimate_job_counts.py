@@ -17,6 +17,9 @@ class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
+    NON_RES_WITH_PIR_MODEL = (
+        "tests/test_models/non_residential_with_pir_jobs_prediction/"
+    )
     METRICS_DESTINATION = (
         "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
     )
@@ -271,13 +274,13 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features", "snapshot_year", "snapshot_month", "snapshot_day" ]
+        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day" ]
 
         feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), "2021", "05", "05"),
-            ("1-000000002", "Care home without nursing", 10, "N", "Merseyside", 12, "2022-03-29", None, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, None, "Merseyside", 34, "2022-03-29", None, "2021", "05", "05"),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, "2021", "05", "05"),
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 34, "2021", "05", "05"),
+            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
+            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, 0, "2021", "05", "05"),
+            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, "2021", "05", "05"),
         ]
         # fmt: on
         return self.spark.createDataFrame(
@@ -342,6 +345,25 @@ class EstimateJobCountTests(unittest.TestCase):
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
         ).collect()[0]
         expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000002"
+        ).collect()[0]
+
+        self.assertIsNotNone(expected_location_with_prediction.estimate_job_count)
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+
+    def test_model_non_residential_with_pir_estimates_jobs_for_non_res_with_pir_only(
+        self,
+    ):
+        locations_df = self.generate_locations_df()
+        features_df = self.generate_features_df()
+
+        df, _ = job.model_non_residential_with_pir(
+            locations_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
+        )
+        expected_location_without_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_with_prediction = df.where(
             df["locationid"] == "1-000000002"
         ).collect()[0]
 
