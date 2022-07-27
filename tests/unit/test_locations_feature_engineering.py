@@ -67,9 +67,42 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("care_home_features", df.columns)
 
+        rows = df.collect()
+
+        row_1 = next(row for row in rows if row.locationid == "1-1783948")
+        row_2 = next(row for row in rows if row.locationid == "1-108950835")
+        row_3 = next(row for row in rows if row.locationid == "1-1060912125")
+
+        self.assertIsNotNone(row_1.care_home_features)
+        self.assertIsNotNone(row_2.care_home_features)
+        self.assertIsNotNone(row_3.care_home_features)
+
     def test_main_adds_non_res_pir_vectorized_column(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
         self.assertIn("non_residential_inc_pir_features", df.columns)
+
+        rows = df.collect()
+
+        row_1 = next(row for row in rows if row.locationid == "1-348374832")
+        row_2 = next(row for row in rows if row.locationid == "1-10235302415")
+        row_3 = next(row for row in rows if row.locationid == "1-108369587")
+
+        self.assertIsNotNone(row_1.non_residential_inc_pir_features)
+        self.assertIsNotNone(row_2.non_residential_inc_pir_features)
+        self.assertIsNotNone(row_3.non_residential_inc_pir_features)
+
+    def test_main_feature_columns_are_null_if_non_residential_and_no_pir(self):
+        df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
+
+        rows = df.collect()
+
+        row_1 = next(row for row in rows if row.locationid == "1-10894414510")
+        row_2 = next(row for row in rows if row.locationid == "1-108387554")
+
+        self.assertIsNone(row_1.non_residential_inc_pir_features)
+        self.assertIsNone(row_1.care_home_features)
+        self.assertIsNone(row_2.non_residential_inc_pir_features)
+        self.assertIsNone(row_2.care_home_features)
 
     def test_main_processes_only_new_data(self):
         generate_location_features_file_parquet(self.OUTPUT_DESTINATION)
@@ -139,7 +172,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(rows[8].service_12, 0)
         self.assertEqual(rows[8].service_23, 0)
 
-    def test_explode_column_creates_a_column_for_each_category(self):
+    def test_explode_column_creates_a_column_for_each_category_in_dictionary(self):
         rural_ind_dict = feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP
         df = locations_feature_engineering.explode_string_column_using_dictionary(
             self.test_df, "rural_urban_indicator.2011", rural_ind_dict

@@ -43,26 +43,52 @@ def main(prepared_locations_source, destination=None):
     non_residential_inc_pir_feature_list = define_non_res_inc_pir_features_list(
         regions, local_authorities, cqc_sectors
     )
-
-    locations_df = vectorize_features(
-        locations_df, care_home_feature_list, "care_home_features"
+    care_homes_df = locations_df.where(locations_df.carehome == "Y")
+    care_homes_with_features_df = vectorize_features(
+        care_homes_df, care_home_feature_list, "care_home_features"
     )
-    locations_df = vectorize_features(
-        locations_df,
+
+    non_residential_with_pir_df = locations_df.where(
+        (locations_df.carehome == "N") & (locations_df.people_directly_employed > 0)
+    )
+    non_residential_with_pir_and_features_df = vectorize_features(
+        non_residential_with_pir_df,
         non_residential_inc_pir_feature_list,
         "non_residential_inc_pir_features",
+    )
+
+    non_residential_without_pir_df = locations_df.where(
+        (locations_df.carehome == "N")
+        & (
+            (locations_df.people_directly_employed == 0)
+            | locations_df.people_directly_employed.isNull()
+        )
+    )
+
+    locations_df = (
+        care_homes_with_features_df.alias("res")
+        .join(
+            non_residential_with_pir_and_features_df.alias("non_res_pir"),
+            ["locationid", "snapshot_date"],
+            "outer",
+        )
+        .join(
+            non_residential_without_pir_df.alias("non_res_no_pir"),
+            ["locationid", "snapshot_date"],
+            "outer",
+        )
     )
 
     locations_df = locations_df.select(
         "locationid",
         "snapshot_date",
-        "ons_region",
-        "number_of_beds",
-        "people_directly_employed",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-        "carehome",
+        "res.ons_region",
+        "res.number_of_beds",
+        "res.people_directly_employed",
+        "res.snapshot_year",
+        "res.snapshot_month",
+        "res.snapshot_day",
+        "res.carehome",
         "care_home_features",
         "non_residential_inc_pir_features",
     )
