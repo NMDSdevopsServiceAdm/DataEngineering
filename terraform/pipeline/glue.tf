@@ -185,6 +185,20 @@ module "bulk_cqc_locations_download_job" {
   }
 }
 
+module "collect_dq_metrics_on_workplaces_job" {
+  source          = "../modules/glue-job"
+  script_name     = "collect_dq_metrics_on_workplaces_job.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "2.0"
+
+  job_parameters = {
+    "--source"           = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
+    "--metrics_location" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace-dq-metrics/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
