@@ -118,8 +118,9 @@ module "prepare_workers_job" {
   glue_version    = "2.0"
 
   job_parameters = {
-    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=workers_prepared/version=1.0.0/"
+    "--worker_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/"
+    "--destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=workers_prepared/version=1.0.0/"
   }
 }
 
