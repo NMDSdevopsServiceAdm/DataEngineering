@@ -194,8 +194,7 @@ module "collect_dq_metrics_on_workplaces_job" {
   glue_version    = "2.0"
 
   job_parameters = {
-    "--source"           = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
-    "--metrics_location" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace-dq-metrics/"
+    "--source" = "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
   }
 }
 
