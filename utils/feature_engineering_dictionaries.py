@@ -29,3 +29,16 @@ SERVICES_LOOKUP = {
     "service_28": "Hospice services at home",
     "service_29": "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse",
 }
+
+RURAL_URBAN_INDICATOR_LOOKUP = {
+    "indicator_1": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
+    "indicator_2": "(England/Wales) Rural hamlet and isolated dwellings",
+    "indicator_3": "(England/Wales) Rural village",
+    "indicator_4": "(England/Wales) Rural town and fringe in a sparse setting",
+    "indicator_5": "(England/Wales) Rural town and fringe",
+    "indicator_6": "(England/Wales) Urban city and town in a sparse setting",
+    "indicator_7": "(England/Wales) Urban city and town",
+    "indicator_8": "(England/Wales) Urban major conurbation",
+    "indicator_9": "(England/Wales) Urban minor conurbation",
+    "indicator_10": "(England/Wales) Rural village in a sparse setting",
+}

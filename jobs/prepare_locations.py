@@ -319,7 +319,9 @@ def get_pir_df(pir_source, since_date=None):
                 "how_many_people_are_directly_employed"
                 "_and_deliver_regulated_activities_at_"
                 "your_service_as_part_of_their_daily_duties"
-            ).alias("people_directly_employed"),
+            )
+            .alias("people_directly_employed")
+            .cast("integer"),
             F.col("import_date"),
         )
     )

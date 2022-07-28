@@ -22,11 +22,66 @@ def main(prepared_locations_source, destination=None):
     )
 
     locations_df = days_diff_from_latest_snapshot(locations_df)
-    locations_df = explode_services(locations_df)
-    locations_df, regions = explode_regions(locations_df)
+    locations_df = explode_array_column_using_dictionary(
+        locations_df,
+        "services_offered",
+        feature_engineering_dictionaries.SERVICES_LOOKUP,
+    )
+    locations_df = explode_string_column_using_dictionary(
+        locations_df,
+        "rural_urban_indicator.2011",
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP,
+    )
 
-    feature_list = define_features_list(regions)
-    locations_df = vectorize(locations_df, feature_list)
+    locations_df, regions = explode_column(locations_df, "ons_region")
+    locations_df, local_authorities = explode_column(locations_df, "local_authority")
+    locations_df, cqc_sectors = explode_column(locations_df, "cqc_sector")
+
+    care_home_feature_list = define_care_home_features_list(
+        regions, local_authorities, cqc_sectors
+    )
+    non_residential_inc_pir_feature_list = define_non_res_inc_pir_features_list(
+        regions, local_authorities, cqc_sectors
+    )
+    care_homes_df = locations_df.where(locations_df.carehome == "Y")
+    care_homes_with_features_df = vectorize_features(
+        care_homes_df, care_home_feature_list, "care_home_features"
+    )
+
+    non_residential_with_pir_df = locations_df.where(
+        (locations_df.carehome == "N") & (locations_df.people_directly_employed > 0)
+    )
+    non_residential_with_pir_and_features_df = vectorize_features(
+        non_residential_with_pir_df,
+        non_residential_inc_pir_feature_list,
+        "non_residential_inc_pir_features",
+    )
+
+    non_residential_without_pir_df = locations_df.where(
+        (locations_df.carehome == "N")
+        & (
+            (locations_df.people_directly_employed == 0)
+            | locations_df.people_directly_employed.isNull()
+        )
+    )
+
+    locations_df = care_homes_with_features_df.unionByName(
+        non_residential_with_pir_and_features_df, allowMissingColumns=True
+    ).unionByName(non_residential_without_pir_df, allowMissingColumns=True)
+
+    locations_df = locations_df.select(
+        "locationid",
+        "snapshot_date",
+        "ons_region",
+        "number_of_beds",
+        "people_directly_employed",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+        "carehome",
+        "care_home_features",
+        "non_residential_inc_pir_features",
+    )
 
     if destination:
         print(f"Exporting as parquet to {destination}")
@@ -59,66 +114,93 @@ def filter_records_since_snapshot_date(locations_df, max_snapshot):
     return locations_df
 
 
-def format_region(region):
+def format_column_name(column):
     non_lower_alpha = re.compile("[^a-z_]")
-    region_name = region.replace(" ", "_").lower()
-    return re.sub(non_lower_alpha, "", region_name)
+    formatted_column_name = column.replace(" ", "_").lower()
+    return re.sub(non_lower_alpha, "", formatted_column_name)
 
 
-def explode_regions(locations_df):
-    distinct_region_rows = locations_df.select("region").distinct().collect()
-    regions = []
-    for row in distinct_region_rows:
-        if row.region:
-            region_column_name = format_region(row.region)
+def explode_column(locations_df, column_name):
+    distinct_category_rows = locations_df.select(column_name).distinct().collect()
+    categories = []
+    for row in distinct_category_rows:
+        if row[column_name]:
+            formatted_column_name = format_column_name(row[column_name])
 
             locations_df = locations_df.withColumn(
-                region_column_name,
-                F.when(locations_df.region == row.region, 1).otherwise(0),
+                formatted_column_name,
+                F.when(locations_df[column_name] == row[column_name], 1).otherwise(0),
             )
         else:
-            region_column_name = "unspecified"
+            formatted_column_name = "unspecified"
 
             locations_df = locations_df.withColumn(
-                region_column_name,
-                F.when(locations_df.region.isNull(), 1).otherwise(0),
+                formatted_column_name,
+                F.when(locations_df[column_name].isNull(), 1).otherwise(0),
             )
 
-        regions.append(region_column_name)
+        categories.append(formatted_column_name)
 
-    return locations_df, regions
+    return locations_df, categories
 
 
-def explode_services(locations_df):
-    services_lookup = feature_engineering_dictionaries.SERVICES_LOOKUP
-    for column_name, service_description in services_lookup.items():
+def explode_array_column_using_dictionary(locations_df, column_name, dictionary):
+    for name, description in dictionary.items():
 
         locations_df = locations_df.withColumn(
-            column_name,
+            name,
             F.when(
-                F.array_contains(locations_df.services_offered, service_description), 1
+                F.array_contains(locations_df[column_name], description), 1
             ).otherwise(0),
         )
     return locations_df
 
 
-def define_features_list(regions):
-    # fmt: off
-    features = [
-        'service_count','number_of_beds','service_1',
-        'service_2','service_3','service_4','service_5','service_6','service_7',
-        'service_8','service_9','service_10','service_11','service_12','service_13',
-        'service_14','service_15','service_16','service_17','service_18','service_19',
-        'service_20','service_21','service_22','service_23','service_24','service_25',
-        'service_26','service_27','service_28','service_29','date_diff'
-    ]
-    # fmt: on
-    return features + regions
+def explode_string_column_using_dictionary(locations_df, column_name, dictionary):
+    for name, description in dictionary.items():
+
+        locations_df = locations_df.withColumn(
+            name,
+            F.when(locations_df[column_name] == description, 1).otherwise(0),
+        )
+    return locations_df
 
 
-def vectorize(locations_df, feature_list):
+def define_care_home_features_list(regions, local_authorites, cqc_sectors):
+    services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
+    rural_urban_indicators = list(
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
+    )
+    features = ["service_count", "number_of_beds", "date_diff"]
+    return (
+        features
+        + regions
+        + cqc_sectors
+        + rural_urban_indicators
+        + local_authorites
+        + services
+    )
+
+
+def define_non_res_inc_pir_features_list(regions, local_authorites, cqc_sectors):
+    services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
+    rural_urban_indicators = list(
+        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
+    )
+    features = ["service_count", "people_directly_employed", "date_diff"]
+    return (
+        features
+        + regions
+        + cqc_sectors
+        + rural_urban_indicators
+        + local_authorites
+        + services
+    )
+
+
+def vectorize_features(locations_df, feature_list, column_name):
     vectorized_df = VectorAssembler(
-        inputCols=feature_list, outputCol="features", handleInvalid="skip"
+        inputCols=feature_list, outputCol=column_name, handleInvalid="skip"
     ).transform(locations_df)
     return vectorized_df
 
