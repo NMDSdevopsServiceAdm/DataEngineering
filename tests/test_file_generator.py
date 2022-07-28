@@ -133,53 +133,6 @@ def generate_cqc_locations_prepared_parquet(output_destination):
     return df
 
 
-def generate_ons_geography_parquet(output_destination):
-    spark = utils.get_spark()
-    columns = ["pcds", "lsoa11", "msoa11", "rgn", "ctry", "other_cols"]
-
-    rows = [
-        (
-            "AB1 2CD",
-            "E01000001",
-            "E02000003",
-            "E12000001",
-            "E92000001",
-            "other geography stuff",
-        ),
-        (
-            "WX9 0YZ",
-            "E01000003",
-            "E02000002",
-            "E12000001",
-            "E92000001",
-            "other geography stuff",
-        ),
-        (
-            "GH5 6IJ",
-            "E01000002",
-            "E02000001",
-            "E12000002",
-            "E92000001",
-            "other geography stuff",
-        ),
-        (
-            "ZZ2 2ZZ",
-            "S01000002",
-            "S02000001",
-            "S12000002",
-            "S92000001",
-            "other geography stuff",
-        ),
-    ]
-
-    df = spark.createDataFrame(rows, columns)
-
-    if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
-
-    return df
-
-
 def generate_ethnicity_census_lsoa_csv(output_destination):
     spark = utils.get_spark()
     columns = [
@@ -398,10 +351,10 @@ def generate_ons_denormalised_data(output_destination):
         StructField("nhser", StringType(), False),
         StructField("ctry", StringType(), False),
         StructField("rgn", StringType(), False),
-        StructField("lsoa", StructType([StructField("2011", StringType(), False)]), False),
-        StructField("msoa", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("lsoa", StructType([StructField("year_2011", StringType(), False)]), False),
+        StructField("msoa", StructType([StructField("year_2011", StringType(), False)]), False),
         StructField("ccg", StringType(), False),
-        StructField("ru_ind", StructType([StructField("2011", StringType(), False)]), False),
+        StructField("ru_ind", StructType([StructField("year_2011", StringType(), False)]), False),
         StructField("year", StringType(), False),
         StructField("month", StringType(), False),
         StructField("day", StringType(), False),
@@ -759,10 +712,10 @@ def generate_location_with_ons_parquet(output_destination):
         "ons_region",
         "nhs_england_region",
         "country",
-        "lsoa_2011",
-        "msoa_2011",
+        "lsoa",
+        "msoa",
         "clinical_commisioning_group",
-        "rural_urban_indicator_2011",
+        "rural_urban_indicator",
         "oslaua",
         "ons_import_date",
         "snapshot_date",
@@ -774,24 +727,24 @@ def generate_location_with_ons_parquet(output_destination):
     # fmt:off
     rows = [
         ( 
-            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
-            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "02",
+            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A"}, {"year_2011": "City of London 001"},
+            "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "02",
         ),
         ( 
-            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
-            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20200506", "2020", "05", "06",
+            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A" }, {"year_2011": "City of London 001"},
+            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210101", "20200506", "2020", "05", "06",
         ),
         ( 
-            "12345", "AB0 7CD", "South West", "London", "England", "Tendring 018A", "City of London 001", 
-            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210101", "20220202", "2022", "02", "02",
+            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A" }, {"year_2011": "City of London 001"},
+            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210101", "20220202", "2022", "02", "02",
         ),
         ( 
-            "10101", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003", 
-            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20210203", "2021", "02", "03",
+            "10101", "EF0 7GH", "South East", "London", "England", {"year_2011": "Tendring 128A" }, {"year_2011": "City of London 003"},
+            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210103", "20210203", "2021", "02", "03",
         ),
         ( 
-            "10000", "EF0 7GH", "South East", "London", "England", "Tendring 128A", "City of London 003",
-            "NHS Barnsley CCG", "B1", "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
+            "10000", "EF0 7GH", "South East", "London", "England", {"year_2011": "Tendring 128A"}, {"year_2011": "City of London 003"},
+            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
         ),
     ]
     # fmt:on
