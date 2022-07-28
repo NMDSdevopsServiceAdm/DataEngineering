@@ -29,7 +29,7 @@ def main(prepared_locations_source, destination=None):
     )
     locations_df = explode_string_column_using_dictionary(
         locations_df,
-        "rural_urban_indicator.2011",
+        "rural_urban_indicator.year_2011",
         feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP,
     )
 

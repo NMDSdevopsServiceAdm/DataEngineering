@@ -175,7 +175,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_explode_column_creates_a_column_for_each_category_in_dictionary(self):
         rural_ind_dict = feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP
         df = locations_feature_engineering.explode_string_column_using_dictionary(
-            self.test_df, "rural_urban_indicator.2011", rural_ind_dict
+            self.test_df, "rural_urban_indicator.year_2011", rural_ind_dict
         )
 
         expected_columns = [f"indicator_{i}" for i in range(1, 11)]
