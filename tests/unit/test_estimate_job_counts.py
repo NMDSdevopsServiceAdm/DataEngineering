@@ -17,6 +17,9 @@ class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_WITH_HISTORICAL_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
+    NON_RES_WITH_PIR_MODEL = (
+        "tests/test_models/non_residential_with_pir_jobs_prediction/"
+    )
     METRICS_DESTINATION = (
         "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
     )
@@ -59,6 +62,7 @@ class EstimateJobCountTests(unittest.TestCase):
             self.LOCATIONS_FEATURES_DIR,
             self.DESTINATION,
             self.CAREHOME_WITH_HISTORICAL_MODEL,
+            self.NON_RES_WITH_PIR_MODEL,
             self.METRICS_DESTINATION,
             job_run_id="abc1234",
             job_name="estimate_job_counts",
@@ -66,8 +70,11 @@ class EstimateJobCountTests(unittest.TestCase):
 
         first_partitions = os.listdir(self.DESTINATION)
         year_partition = next(
-            re.match("^run_year=([0-9]{4})$", path) for path in first_partitions
+            re.match("^run_year=([0-9]{4})$", path)
+            for path in first_partitions
+            if re.match("^run_year=([0-9]{4})$", path)
         )
+
         self.assertIsNotNone(year_partition)
         self.assertEqual(year_partition.groups()[0], "2022")
 
@@ -221,31 +228,6 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df[2]["estimate_job_count"], 20.6)
         self.assertEqual(df[3]["estimate_job_count"], 10)
 
-    def test_model_non_res_historical_pir(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "last_known_job_count",
-            "people_directly_employed",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "non-residential", 10, 5, None),
-            ("1-000000002", "Care home without nursing", 10, 3, None),
-            ("1-000000003", "non-residential", 10, 10, None),
-            ("1-000000004", "non-residential", 10, None, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_non_res_historical_pir(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 27.391)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], 29.735999999999997)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
-
     def test_model_non_res_default(self):
         columns = [
             "locationid",
@@ -271,13 +253,13 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features", "snapshot_year", "snapshot_month", "snapshot_day" ]
+        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
 
         feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), "2021", "05", "05"),
-            ("1-000000002", "Care home without nursing", 10, "N", "Merseyside", 12, "2022-03-29", None, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, None, "Merseyside", 34, "2022-03-29", None, "2021", "05", "05"),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, "2021", "05", "05"),
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
+            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None, Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
+            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021", "05", "05"),
+            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, None, "2021", "05", "05"),
         ]
         # fmt: on
         return self.spark.createDataFrame(
@@ -287,7 +269,7 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_predictions_df(self):
         # fmt: off
-        columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "prediction" ]
+        columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction" ]
 
         rows = [
             ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
@@ -307,7 +289,7 @@ class EstimateJobCountTests(unittest.TestCase):
             "last_known_job_count",
             "estimate_job_count",
             "carehome",
-            "region",
+            "ons_region",
             "number_of_beds",
             "snapshot_date"
         ]
@@ -342,6 +324,25 @@ class EstimateJobCountTests(unittest.TestCase):
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
         ).collect()[0]
         expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000002"
+        ).collect()[0]
+
+        self.assertIsNotNone(expected_location_with_prediction.estimate_job_count)
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+
+    def test_model_non_residential_with_pir_estimates_jobs_for_non_res_with_pir_only(
+        self,
+    ):
+        locations_df = self.generate_locations_df()
+        features_df = self.generate_features_df()
+
+        df = job.model_non_residential_with_pir(
+            locations_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
+        )
+        expected_location_without_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_with_prediction = df.where(
             df["locationid"] == "1-000000002"
         ).collect()[0]
 
@@ -434,104 +435,6 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df.first()["latest_snapshot"], "20220601")
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
-
-    def test_model_care_home_with_nursing_pir_and_cqc_beds(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "people_directly_employed",
-            "number_of_beds",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "Care home with nursing", 10, 10, None),
-            ("1-000000002", "Care home without nursing", 10, 5, None),
-            ("1-000000003", "Care home with nursing", 20, None, None),
-            ("1-000000004", "non-residential", 10, None, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_with_nursing_pir_and_cqc_beds(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 13.544000000000002)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], None)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
-
-    def test_model_care_home_with_nursing_cqc_beds(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "number_of_beds",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "Care home with nursing", 10, None),
-            ("1-000000002", "Care home without nursing", 5, None),
-            ("1-000000003", "Care home with nursing", 5, None),
-            ("1-000000004", "non-residential", 10, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_with_nursing_cqc_beds(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 14.420000000000002)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], 8.405000000000001)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
-
-    def test_model_care_home_without_nursing_cqc_beds_and_pir(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "people_directly_employed",
-            "number_of_beds",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "Care home without nursing", 10, 5, None),
-            ("1-000000002", "Care home with nursing", 10, 3, None),
-            ("1-000000003", "Care home without nursing", 20, None, None),
-            ("1-000000004", "non-residential", 10, None, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_without_nursing_cqc_beds_and_pir(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 16.467)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], None)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
-
-    def test_model_care_home_without_nursing_cqc_beds(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "number_of_beds",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "Care home without nursing", 10, None),
-            ("1-000000002", "Care home with nursing", 10, None),
-            ("1-000000003", "Care home without nursing", 20, None),
-            ("1-000000004", "non-residential", 10, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_care_home_without_nursing_cqc_beds(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 19.417)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], 27.543)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
 
 
 if __name__ == "__main__":
