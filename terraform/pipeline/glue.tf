@@ -146,11 +146,12 @@ module "estimate_job_counts_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--prepared_locations_features" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
-    "--destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
-    "--care_home_model_directory"   = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
-    "--metrics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=model_metrics/"
+    "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--prepared_locations_features"      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+    "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
+    "--care_home_model_directory"        = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
+    "--non_res_with_pir_model_directory" = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/"
+    "--metrics_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=model_metrics/"
   }
 }
 
