@@ -1,4 +1,3 @@
-import argparse
 from datetime import date
 import sys
 
@@ -36,6 +35,7 @@ def main(
     prepared_locations_features,
     destination,
     care_home_model_directory,
+    non_res_with_pir_model_directory,
     metrics_destination,
     job_run_id,
     job_name,
@@ -62,44 +62,48 @@ def main(
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
+    latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
-    # Non-res models
-    locations_df = model_non_res_historical(locations_df)
-    locations_df = model_non_res_historical_pir(locations_df)
-    locations_df = model_non_res_default(locations_df)
 
     # Care homes with historical model
-    latest_model_version = max(
+    latest_care_home_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    model_name = utils.get_model_name(care_home_model_directory)
     locations_df, metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
-        f"{care_home_model_directory}{latest_model_version}/",
+        f"{care_home_model_directory}{latest_care_home_model_version}/",
     )
-    latest_snapshot = utils.get_max_snapshot_date(locations_df)
+
+    care_home_model_name = utils.get_model_name(care_home_model_directory)
     write_metrics_df(
         metrics_destination,
         r2=metrics_info["r2"],
         data_percentage=metrics_info["data_percentage"],
-        model_version=latest_model_version,
-        model_name=model_name,
+        model_version=latest_care_home_model_version,
+        model_name=care_home_model_name,
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
     )
 
-    # Nursing models
-    locations_df = model_care_home_with_nursing_pir_and_cqc_beds(locations_df)
-    locations_df = model_care_home_with_nursing_cqc_beds(locations_df)
+    # Non-res with PIR data model
+    latest_non_res_with_pir_model_version = max(
+        utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
+    )
 
-    # Non-nursing models
-    locations_df = model_care_home_without_nursing_cqc_beds_and_pir(locations_df)
-    locations_df = model_care_home_without_nursing_cqc_beds(locations_df)
+    locations_df = model_non_residential_with_pir(
+        locations_df,
+        features_df,
+        f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
+    )
+
+    # Non-res & no PIR data models
+    locations_df = model_non_res_historical(locations_df)
+    locations_df = model_non_res_default(locations_df)
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -108,6 +112,7 @@ def main(
 
     print("Completed estimated job counts")
     print(f"Exporting as parquet to {destination}")
+
     utils.write_to_parquet(
         locations_df,
         destination,
@@ -199,27 +204,6 @@ def model_non_res_historical(df):
     return df
 
 
-def model_non_res_historical_pir(df):
-    """
-    Non-res : Not Historical : PIR : 2021 jobs = 25.046 + 0.469 * PIR service users
-    """
-    # TODO: remove magic number 25.046
-    # TODO: remove magic number 0.469
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-            ),
-            (25.046 + (0.469 * F.col(PEOPLE_DIRECTLY_EMPLOYED))),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-    return df
-
-
 def model_non_res_default(df):
     """
     Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
@@ -267,8 +251,10 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
 
     features_df = features_df.where("carehome = 'Y'")
-    features_df = features_df.where("region is not null")
+    features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("number_of_beds is not null")
+
+    features_df = features_df.withColumnRenamed("care_home_features", "features")
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
@@ -284,6 +270,26 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     )
 
     return locations_df, metrics_info
+
+
+def model_non_residential_with_pir(locations_df, features_df, model_path):
+    gbt_trained_model = GBTRegressionModel.load(model_path)
+
+    features_df = features_df.where("carehome = 'N'")
+    features_df = features_df.where("ons_region is not null")
+    features_df = features_df.where("people_directly_employed > 0")
+
+    features_df = features_df.withColumnRenamed(
+        "non_residential_inc_pir_features", "features"
+    )
+
+    non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
+
+    locations_df = insert_predictions_into_locations(
+        locations_df, non_residential_with_pir_predictions
+    )
+
+    return locations_df
 
 
 def generate_r2_metric(df, prediction, label):
@@ -340,158 +346,6 @@ def write_metrics_df(
     )
 
 
-def model_care_home_with_nursing_pir_and_cqc_beds(df):
-    """
-    Care home with nursing : Not Historical : PIR :  2021 jobs = (0.773*beds)+(0.551*PIR)+0.304
-    """
-    # TODO: remove magic number 0.773
-    # TODO: remove magic number 0.551
-    # TODO: remove magic number 0.304
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (
-                (0.773 * F.col(NUMBER_OF_BEDS))
-                + (0.551 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
-                + 0.304
-            ),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_with_nursing_cqc_beds(df):
-    """
-    Care home with nursing : Not Historical : Not PIR : 2021 jobs = (1.203*beds) +2.39
-    """
-    # TODO: remove magic number 1.203
-    # TODO: remove magic number 2.39
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home with nursing")
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (1.203 * F.col(NUMBER_OF_BEDS) + 2.39),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_cqc_beds_and_pir(df):
-    """
-    Care home without nursing : Not Historical : PIR :  2021 jobs = 10.652+(0.571*beds)+(0.296*PIR)
-    """
-    # TODO: remove magic number 10.652
-    # TODO: remove magic number 0.571
-    # TODO: remove magic number 0.296
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (
-                10.652
-                + (0.571 * F.col(NUMBER_OF_BEDS))
-                + (0.296 * F.col(PEOPLE_DIRECTLY_EMPLOYED))
-            ),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def model_care_home_without_nursing_cqc_beds(df):
-    """
-    Care home without nursing : Not Historical : Not PIR : 2021 jobs = 11.291+(0.8126*beds)
-    """
-    # TODO: remove magic number 11.291
-    # TODO: remove magic number 0.8126
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "Care home without nursing")
-                & F.col(NUMBER_OF_BEDS).isNotNull()
-            ),
-            (11.291 + (0.8126 * F.col(NUMBER_OF_BEDS))),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    return df
-
-
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--prepared_locations_source",
-        help="Source s3 directory for prepared_locations",
-        required=True,
-    )
-    parser.add_argument(
-        "--prepared_locations_features",
-        help="Source s3 directory for prepared_locations ML features",
-        required=True,
-    )
-    parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
-        required=True,
-    )
-    parser.add_argument(
-        "--care_home_model_directory",
-        help="The directory where the care home models are saved",
-        required=True,
-    )
-    parser.add_argument(
-        "--metrics_destination",
-        help="The destination for the R2 metric data",
-        required=True,
-    )
-    parser.add_argument(
-        "--JOB_RUN_ID",
-        help="The Glue job run id",
-        required=True,
-    )
-    parser.add_argument(
-        "--JOB_NAME",
-        help="The Glue job name",
-        required=True,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return (
-        args.prepared_locations_source,
-        args.prepared_locations_features,
-        args.destination,
-        args.care_home_model_directory,
-        args.metrics_destination,
-        args.JOB_RUN_ID,
-        args.JOB_NAME,
-    )
-
-
 if __name__ == "__main__":
     print("Spark job 'estimate_job_counts' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -501,16 +355,39 @@ if __name__ == "__main__":
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        non_res_with_pir_model_directory,
         metrics_destination,
         JOB_RUN_ID,
         JOB_NAME,
-    ) = collect_arguments()
+    ) = utils.collect_arguments(
+        ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
+        (
+            "--prepared_locations_features",
+            "Source s3 directory for prepared_locations ML features",
+        ),
+        (
+            "--destination",
+            "A destination directory for outputting cqc locations, if not provided shall default to S3 todays date.",
+        ),
+        (
+            "--care_home_model_directory",
+            "The directory where the care home models are saved",
+        ),
+        (
+            "--non_res_with_pir_model_directory",
+            "The directory where the non residential with PIR data models are saved",
+        ),
+        ("--metrics_destination", "The destination for the R2 metric data"),
+        ("--JOB_RUN_ID", "The Glue job run id"),
+        ("--JOB_NAME", "The Glue job name"),
+    )
 
     main(
         prepared_locations_source,
         prepared_locations_features,
         destination,
         care_home_model_directory,
+        non_res_with_pir_model_directory,
         metrics_destination,
         JOB_RUN_ID,
         JOB_NAME,
