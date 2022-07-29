@@ -46,10 +46,10 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
     ):
         import_date = partitions[0] + partitions[1] + partitions[2]
         # fmt: off
-        columns = ["pcd", "rgn", "nhser", "ccg", "ctry", "imd", "lsoa11", "msoa11", "oslaua", "ru11ind"] + self.PARTITION_COLS
+        columns = ["pcd", "rgn", "nhser", "ccg", "ctry", "imd", "lsoa11", "msoa11", "oslaua", "ru11ind", "stp"] + self.PARTITION_COLS
         partitions = (*partitions, import_date)
         rows = [
-            ("SW9 0LL", "E12000001", "E40000003", "E38000006", "E92000001", "E01021988", "95AA01S1", "E02000001", "E06000001", "B1") + partitions,
+            ("SW9 0LL", "E12000001", "E40000003", "E38000006", "E92000001", "E01021988", "95AA01S1", "E02000001", "E06000001", "B1", "E54000009") + partitions,
         ]
         # fmt: on
 
@@ -80,6 +80,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         self.create_lookup_df(("E02000001", "City of London 001"), ["msoa11cd", "msoa11nm"], "msoa11")
         self.create_lookup_df(("E06000001", "Hartlepool"), ["lad21cd", "lad21nm"], "oslaua")
         self.create_lookup_df(("B1", "(England/Wales) Urban minor conurbation"), ["RU11IND", "RU11NM"], "ru11ind")
+        self.create_lookup_df(("E54000009", "South Yorkshire and Bassetlaw"), ["stp21cd", "stp21nm"], 'stp')
 
         # fmt: on
 
@@ -185,3 +186,12 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
             ons_data_row.ru_ind["year_2011"],
             "(England/Wales) Urban minor conurbation",
         )
+
+    def test_replace_stp_fields_with_lookup_values(self):
+        denormalise_ons_data.main(
+            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
+        )
+
+        ons_data = self.spark.read.parquet(self.DESTINATION)
+        ons_data_row = ons_data.collect()[0]
+        self.assertEqual(ons_data_row.stp, "South Yorkshire and Bassetlaw")

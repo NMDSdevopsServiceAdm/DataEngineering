@@ -21,6 +21,7 @@ def main(ons_source, lookup_source, destination):
         ("msoa11", "msoa11cd", "msoa11nm"),
         ("oslaua", "lad21cd", "lad21nm"),
         ("ru11ind", "RU11IND", "RU11NM"),
+        ("stp", "stp21cd", "stp21nm"),
     ]
     for col_info in field_replacement_col_info:
         ons_data = replace_field_from_lookup(
