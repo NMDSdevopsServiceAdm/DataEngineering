@@ -336,7 +336,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df, _ = job.model_non_residential_with_pir(
+        df = job.model_non_residential_with_pir(
             locations_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
         )
         expected_location_without_prediction = df.where(
