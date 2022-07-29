@@ -286,20 +286,11 @@ def model_non_residential_with_pir(locations_df, features_df, model_path):
 
     non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
 
-    non_null_job_count_df = non_residential_with_pir_predictions.where(
-        "job_count is not null"
-    )
-
-    # metrics_info = {
-    #     "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
-    #     "data_percentage": (features_df.count() / locations_df.count()) * 100,
-    # }
-
     locations_df = insert_predictions_into_locations(
         locations_df, non_residential_with_pir_predictions
     )
 
-    return locations_df, {}
+    return locations_df
 
 
 def generate_r2_metric(df, prediction, label):
