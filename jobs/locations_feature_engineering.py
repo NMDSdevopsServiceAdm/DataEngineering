@@ -81,6 +81,7 @@ def main(prepared_locations_source, destination=None):
         "carehome",
         "care_home_features",
         "non_residential_inc_pir_features",
+        "job_count",
     )
 
     if destination:

@@ -56,6 +56,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             "carehome",
             "care_home_features",
             "non_residential_inc_pir_features",
+            "job_count",
         ]
 
         for column in expected_columns:
