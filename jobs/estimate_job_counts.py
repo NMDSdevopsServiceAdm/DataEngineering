@@ -95,7 +95,12 @@ def main(
     latest_non_res_with_pir_model_version = max(
         utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
     )
-    locations_df = model_non_res_historical_pir(locations_df)
+
+    locations_df = model_non_residential_with_pir(
+        locations_df,
+        features_df,
+        f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
+    )
 
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
@@ -108,6 +113,7 @@ def main(
 
     print("Completed estimated job counts")
     print(f"Exporting as parquet to {destination}")
+
     utils.write_to_parquet(
         locations_df,
         destination,
@@ -199,27 +205,6 @@ def model_non_res_historical(df):
     return df
 
 
-def model_non_res_historical_pir(df):
-    """
-    Non-res : Not Historical : PIR : 2021 jobs = 25.046 + 0.469 * PIR service users
-    """
-    # TODO: remove magic number 25.046
-    # TODO: remove magic number 0.469
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & F.col(PEOPLE_DIRECTLY_EMPLOYED).isNotNull()
-            ),
-            (25.046 + (0.469 * F.col(PEOPLE_DIRECTLY_EMPLOYED))),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-    return df
-
-
 def model_non_res_default(df):
     """
     Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
@@ -270,6 +255,8 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
     features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("number_of_beds is not null")
 
+    features_df = features_df.withColumnRenamed("care_home_features", "features")
+
     care_home_predictions = gbt_trained_model.transform(features_df)
 
     non_null_job_count_df = care_home_predictions.where("job_count is not null")
@@ -292,6 +279,10 @@ def model_non_residential_with_pir(locations_df, features_df, model_path):
     features_df = features_df.where("carehome = 'N'")
     features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("people_directly_employed > 0")
+
+    features_df = features_df.withColumnRenamed(
+        "non_residential_inc_pir_features", "features"
+    )
 
     non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
 

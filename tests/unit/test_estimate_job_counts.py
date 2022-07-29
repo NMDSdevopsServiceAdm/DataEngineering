@@ -62,6 +62,7 @@ class EstimateJobCountTests(unittest.TestCase):
             self.LOCATIONS_FEATURES_DIR,
             self.DESTINATION,
             self.CAREHOME_WITH_HISTORICAL_MODEL,
+            self.NON_RES_WITH_PIR_MODEL,
             self.METRICS_DESTINATION,
             job_run_id="abc1234",
             job_name="estimate_job_counts",
@@ -69,8 +70,11 @@ class EstimateJobCountTests(unittest.TestCase):
 
         first_partitions = os.listdir(self.DESTINATION)
         year_partition = next(
-            re.match("^run_year=([0-9]{4})$", path) for path in first_partitions
+            re.match("^run_year=([0-9]{4})$", path)
+            for path in first_partitions
+            if re.match("^run_year=([0-9]{4})$", path)
         )
+
         self.assertIsNotNone(year_partition)
         self.assertEqual(year_partition.groups()[0], "2022")
 
@@ -224,31 +228,6 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df[2]["estimate_job_count"], 20.6)
         self.assertEqual(df[3]["estimate_job_count"], 10)
 
-    def test_model_non_res_historical_pir(self):
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "last_known_job_count",
-            "people_directly_employed",
-            "estimate_job_count",
-        ]
-        rows = [
-            ("1-000000001", "non-residential", 10, 5, None),
-            ("1-000000002", "Care home without nursing", 10, 3, None),
-            ("1-000000003", "non-residential", 10, 10, None),
-            ("1-000000004", "non-residential", 10, None, 10),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.model_non_res_historical_pir(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 27.391)
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[2]["estimate_job_count"], 29.735999999999997)
-        self.assertEqual(df[3]["estimate_job_count"], 10)
-
     def test_model_non_res_default(self):
         columns = [
             "locationid",
@@ -274,13 +253,13 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day" ]
+        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
 
         feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 34, "2021", "05", "05"),
-            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, 0, "2021", "05", "05"),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, "2021", "05", "05"),
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
+            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None, Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
+            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021", "05", "05"),
+            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, None, "2021", "05", "05"),
         ]
         # fmt: on
         return self.spark.createDataFrame(
@@ -290,7 +269,7 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_predictions_df(self):
         # fmt: off
-        columns = [ "locationid", "primary_service_type", "job_count", "carehome", "region", "number_of_beds", "snapshot_date", "prediction" ]
+        columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction" ]
 
         rows = [
             ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
@@ -310,7 +289,7 @@ class EstimateJobCountTests(unittest.TestCase):
             "last_known_job_count",
             "estimate_job_count",
             "carehome",
-            "region",
+            "ons_region",
             "number_of_beds",
             "snapshot_date"
         ]
