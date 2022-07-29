@@ -375,30 +375,16 @@ def calculate_hourly_pay(row, types=None):
     return None
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--source",
-        help="A CSV file or directory of files used as job input",
-        required=True,
-    )
-    parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting parquet files",
-        required=True,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return args.source, args.destination
-
-
 if __name__ == "__main__":
     print("Spark job 'prepare_workers' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    source, destination = collect_arguments()
-    main(source, WORKER_SCHEMA, destination)
+    worker_source, workplace_source, destination = utils.collect_arguments(
+        ("--worker_source", "Source s3 directory for ASCWDS worker dataset"),
+        ("--workplace_source", "Source s3 directory for ASCWDS workplace dataset"),
+        ("--destination", "A destination directory for outputting cqc locations."),
+    )
+
+    main(worker_source, workplace_source, WORKER_SCHEMA, destination)
 
     print("Spark job 'prepare_workers' complete")
