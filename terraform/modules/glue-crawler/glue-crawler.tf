@@ -10,7 +10,7 @@ resource "aws_glue_crawler" "crawler" {
 
   s3_target {
     path       = "s3://sfc-${local.workspace_prefix}-datasets/domain=${var.dataset_for_crawler}/"
-    exclusions = var.exclusions
+    exclusions = var.exclusions == null ? ["*.json"] : concat(var.exclusions, ["*.json"])
   }
 
   schema_change_policy {
