@@ -1,6 +1,5 @@
 import unittest
 import warnings
-import shutil
 from datetime import datetime, date
 import re
 import os
@@ -10,6 +9,7 @@ from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
+from tests.test_helpers import remove_file_path
 from jobs import estimate_job_counts as job
 
 
@@ -20,9 +20,7 @@ class EstimateJobCountTests(unittest.TestCase):
     NON_RES_WITH_PIR_MODEL = (
         "tests/test_models/non_residential_with_pir_jobs_prediction/"
     )
-    METRICS_DESTINATION = (
-        "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
-    )
+    METRICS_DESTINATION = "tests/test_data/tmp/data_engineering/model_metrics/"
     PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
     LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
     DESTINATION = "tests/test_data/tmp/estimated_job_counts/"
@@ -35,13 +33,10 @@ class EstimateJobCountTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
-        try:
-            shutil.rmtree(self.METRICS_DESTINATION)
-            shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
-            shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
-            shutil.rmtree(self.DESTINATION)
-        except OSError:
-            pass
+        remove_file_path(self.PREPARED_LOCATIONS_DIR)
+        remove_file_path(self.LOCATIONS_FEATURES_DIR)
+        remove_file_path(self.DESTINATION)
+        remove_file_path(self.METRICS_DESTINATION)
 
     @patch("utils.utils.get_s3_sub_folders_for_path")
     @patch("jobs.estimate_job_counts.date")
@@ -253,7 +248,7 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
+        feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
 
         feature_rows = [
             ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
@@ -269,7 +264,7 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def generate_predictions_df(self):
         # fmt: off
-        columns = [ "locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction" ]
+        columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction"]
 
         rows = [
             ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
@@ -336,7 +331,7 @@ class EstimateJobCountTests(unittest.TestCase):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df = job.model_non_residential_with_pir(
+        df, _ = job.model_non_residential_with_pir(
             locations_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
         )
         expected_location_without_prediction = df.where(

@@ -72,7 +72,7 @@ def main(
     latest_care_home_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df, metrics_info = model_care_home_with_historical(
+    locations_df, care_home_metrics_info = model_care_home_with_historical(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
@@ -81,8 +81,8 @@ def main(
     care_home_model_name = utils.get_model_name(care_home_model_directory)
     write_metrics_df(
         metrics_destination,
-        r2=metrics_info["r2"],
-        data_percentage=metrics_info["data_percentage"],
+        r2=care_home_metrics_info["r2"],
+        data_percentage=care_home_metrics_info["data_percentage"],
         model_version=latest_care_home_model_version,
         model_name=care_home_model_name,
         latest_snapshot=latest_snapshot,
@@ -95,10 +95,27 @@ def main(
         utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
     )
 
-    locations_df = model_non_residential_with_pir(
+    (
+        locations_df,
+        non_residential_with_pir_metrics_info,
+    ) = model_non_residential_with_pir(
         locations_df,
         features_df,
         f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
+    )
+
+    non_residential_with_pir_model_name = utils.get_model_name(
+        non_res_with_pir_model_directory
+    )
+    write_metrics_df(
+        metrics_destination,
+        r2=non_residential_with_pir_metrics_info["r2"],
+        data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
+        model_version=latest_non_res_with_pir_model_version,
+        model_name=non_residential_with_pir_model_name,
+        latest_snapshot=latest_snapshot,
+        job_run_id=job_run_id,
+        job_name=job_name,
     )
 
     # Non-res & no PIR data models
@@ -285,11 +302,20 @@ def model_non_residential_with_pir(locations_df, features_df, model_path):
 
     non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
 
+    non_null_job_count_df = non_residential_with_pir_predictions.where(
+        "job_count is not null"
+    )
+
+    metrics_info = {
+        "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
+        "data_percentage": (features_df.count() / locations_df.count()) * 100,
+    }
+
     locations_df = insert_predictions_into_locations(
         locations_df, non_residential_with_pir_predictions
     )
 
-    return locations_df
+    return locations_df, metrics_info
 
 
 def generate_r2_metric(df, prediction, label):
