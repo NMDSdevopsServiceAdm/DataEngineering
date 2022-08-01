@@ -116,6 +116,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "country",
                 "lsoa",
                 "msoa",
+                "stp",
                 "clinical_commisioning_group",
                 "rural_urban_indicator",
                 "oslaua",
@@ -171,7 +172,7 @@ class PrepareLocationsTests(unittest.TestCase):
         pir_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
 
         self.assertEqual(pir_df.count(), 3)
-        self.assertEqual(len(pir_df.columns), 13)
+        self.assertEqual(len(pir_df.columns), 14)
 
         self.assertIn("nhs_england_region", pir_df.columns)
         self.assertIn("ons_region", pir_df.columns)

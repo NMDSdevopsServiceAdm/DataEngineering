@@ -355,15 +355,16 @@ def generate_ons_denormalised_data(output_destination):
         StructField("msoa", StructType([StructField("year_2011", StringType(), False)]), False),
         StructField("ccg", StringType(), False),
         StructField("ru_ind", StructType([StructField("year_2011", StringType(), False)]), False),
+        StructField("stp", StringType(), False),
         StructField("year", StringType(), False),
         StructField("month", StringType(), False),
         StructField("day", StringType(), False),
         StructField("import_date", StringType(), False),
     ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",),("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
-        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501"),
-        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "2022", "05", "01", "20220501")
+        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",),("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
+        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
+        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501")
     ]
     # fmt: on
 
