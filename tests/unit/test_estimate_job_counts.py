@@ -1,6 +1,5 @@
 import unittest
 import warnings
-import shutil
 from datetime import datetime, date
 import re
 import os
@@ -10,6 +9,7 @@ from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
+from tests.test_helpers import remove_file_path
 from jobs import estimate_job_counts as job
 
 
@@ -20,9 +20,7 @@ class EstimateJobCountTests(unittest.TestCase):
     NON_RES_WITH_PIR_MODEL = (
         "tests/test_models/non_residential_with_pir_jobs_prediction/"
     )
-    METRICS_DESTINATION = (
-        "tests/test_data/domain=data_engineering/dataset=model_metrics/version=1.0.0/"
-    )
+    METRICS_DESTINATION = "tests/test_data/tmp/data_engineering/model_metrics/"
     PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
     LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
     DESTINATION = "tests/test_data/tmp/estimated_job_counts/"
@@ -35,13 +33,10 @@ class EstimateJobCountTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
-        try:
-            shutil.rmtree(self.METRICS_DESTINATION)
-            shutil.rmtree(self.PREPARED_LOCATIONS_DIR)
-            shutil.rmtree(self.LOCATIONS_FEATURES_DIR)
-            shutil.rmtree(self.DESTINATION)
-        except OSError:
-            pass
+        remove_file_path(self.PREPARED_LOCATIONS_DIR)
+        remove_file_path(self.LOCATIONS_FEATURES_DIR)
+        remove_file_path(self.DESTINATION)
+        remove_file_path(self.METRICS_DESTINATION)
 
     @patch("utils.utils.get_s3_sub_folders_for_path")
     @patch("jobs.estimate_job_counts.date")
