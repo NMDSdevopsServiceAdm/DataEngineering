@@ -200,6 +200,7 @@ def define_non_res_inc_pir_features_list(regions, local_authorites, cqc_sectors)
 
 
 def vectorize_features(locations_df, feature_list, column_name):
+    feature_list.sort()
     vectorized_df = VectorAssembler(
         inputCols=feature_list, outputCol=column_name, handleInvalid="skip"
     ).transform(locations_df)
