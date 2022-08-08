@@ -193,8 +193,6 @@ def determine_stayer_or_leaver(
 
 
 def add_partitioning(df, end_period_import_date):
-    # df = df.drop("year", "month", "day")
-
     df = df.withColumnRenamed("import_date", "start_period_import_date")
     df = df.withColumn("year", F.lit(end_period_import_date[0:4]))
     df = df.withColumn("month", F.lit(end_period_import_date[4:6]))
