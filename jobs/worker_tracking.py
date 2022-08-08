@@ -17,8 +17,19 @@ def main(
 
     print("Creating stayer vs leaver parquet file")
 
-    ascwds_workplace = spark.read.parquet(source_ascwds_workplace)
-    ascwds_worker = spark.read.parquet(source_ascwds_worker)
+    ascwds_workplace = spark.read.parquet(source_ascwds_workplace).select(
+        "establishmentid",
+        "mupddate",
+        "import_date",
+        "wkrrecs",
+    )
+
+    ascwds_worker = spark.read.parquet(source_ascwds_worker).select(
+        "establishmentid",
+        "workerid",
+        "emplstat",
+        "import_date",
+    )
 
     (
         start_period_import_date,
@@ -97,12 +108,6 @@ def get_start_and_end_period_import_dates(workplace_df, worker_df):
 def filter_workplaces(
     ascwds_workplace, start_period_import_date, end_period_import_date
 ):
-    ascwds_workplace = ascwds_workplace.select(
-        "establishmentid",
-        "mupddate",
-        "import_date",
-        "wkrrecs",
-    )
     df = ascwds_workplace.filter(
         (ascwds_workplace.import_date == start_period_import_date)
         | (ascwds_workplace.import_date == end_period_import_date)
@@ -188,6 +193,8 @@ def determine_stayer_or_leaver(
 
 
 def add_partitioning(df, end_period_import_date):
+    # df = df.drop("year", "month", "day")
+
     df = df.withColumnRenamed("import_date", "start_period_import_date")
     df = df.withColumn("year", F.lit(end_period_import_date[0:4]))
     df = df.withColumn("month", F.lit(end_period_import_date[4:6]))
