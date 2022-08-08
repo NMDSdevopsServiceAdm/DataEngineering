@@ -108,20 +108,12 @@ class Worker_Tracking(unittest.TestCase):
         spark = utils.get_spark()
 
         workers = spark.read.parquet(self.ASCWDS_WORKER)
+        final_column_list = workers.columns
+        final_column_list.append("establishment_worker_id")
 
         df = worker_tracking.get_employees_with_new_identifier(workers)
 
-        self.assertEqual(
-            df.columns,
-            [
-                "establishmentid",
-                "workerid",
-                "emplstat",
-                "import_date",
-                "other_col",
-                "establishment_worker_id",
-            ],
-        )
+        self.assertEqual(df.columns, final_column_list)
         self.assertEqual(df.count(), 36)
 
         collected_df = df.collect()
@@ -160,7 +152,6 @@ class Worker_Tracking(unittest.TestCase):
                 "workerid",
                 "emplstat",
                 "start_period_import_date",
-                "other_col",
                 "stayer_or_leaver",
                 "year",
                 "month",
