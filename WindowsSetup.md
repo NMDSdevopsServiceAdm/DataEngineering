@@ -32,6 +32,11 @@ jdk-8u....-windows-x64.exe
 2. Save here: `C:\Program Files\Tableau\Drivers`
 
 
+### AWS Command Line Interface (AWS CLI) (requires IT)
+1. Download and run the AWS CLI MSI installer for Windows (64-bit):
+`https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html`
+
+
 ### Adding system variables (requires IT)
 1. In the search panel, type 'env' and select 'Edit the system environment variables' - this requires IT admin rights
 
@@ -304,6 +309,25 @@ Python
 ### Install black
 
 1. In the terminal, type `pip install black` and Enter
+
+
+### Set up your AWS crendentials as terraform variables
+1. In the terminal, type `cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars` and Enter
+
+2. In the explorer section, go to `terraform > pipeline > terraform.tfvars` and enter your aws access key and secret access key.
+
+3. If you do not have these to hand you can generate new ones by following these steps
+`https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html`
+
+4. Ensure you're in the Terraform directory `cd terraform/pipeline`
+
+5. Run `terraform plan` to evaluate the planned changes
+
+6. Check the planned changes to make sure they are correct!
+
+7. Run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
+
+8. Enter `C:\Users\gpolzin\DataEngineering` to change back to data engineering directory
 
 
 ### Connect AWS Athena to Tableau
