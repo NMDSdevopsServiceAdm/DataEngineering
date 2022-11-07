@@ -139,9 +139,9 @@ https://github.com/cdarlint/winutils
 
 4. If successful you should see something like `git version 2.38.1.windows.1`
 
-5. Set your username: `git config user.name "First_Name Last_Name"`
+5. Set your username: `git config --global user.name "First_Name Last_Name"`
 
-6. Set your email address: `git config user.email "Your.Name@skillsforcare.org.uk"`
+6. Set your email address: `git config --global user.email "Your.Name@skillsforcare.org.uk"`
 
 5. Leave command prompt open for the next install
 
@@ -309,6 +309,16 @@ Python
 ### Install black
 
 1. In the terminal, type `pip install black` and Enter
+
+
+### aws credentials
+1. Open cmd
+
+2. Type `aws configure`
+
+3. Add your aws access key and secret access key
+4. Region: eu-west-2
+5. Default output format: json
 
 
 ### Set up your AWS crendentials as terraform variables
