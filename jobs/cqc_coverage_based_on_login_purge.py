@@ -112,13 +112,12 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
         .parquet(workplace_source)
         .select(
             F.col("locationid"),
-            F.col("establishmentid"),
-            F.col("totalstaff").alias("total_staff"),
-            F.col("wkrrecs").alias("worker_record_count"),
             F.col("import_date"),
             F.col("orgid"),
             F.col("mupddate"),
             F.col("isparent"),
+            F.col("ParentSubSingle"),
+            F.col("lastloggedin"),
         )
     )
 
@@ -144,13 +143,10 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
             F.col("name").alias("location_name"),
             F.col("registrationstatus").alias("registration_status"),
             F.col("registrationdate").alias("registration_date"),
-            F.col("deregistrationdate").alias("deregistration_date"),
             F.col("dormancy"),
-            F.col("numberofbeds").alias("number_of_beds"),
             F.col("region"),
             F.col("postalcode").alias("postal_code"),
             F.col("carehome"),
-            F.col("constituency"),
             F.col("localauthority").alias("local_authority"),
             F.col("gacservicetypes.description").alias("services_offered"),
             F.col("import_date"),
@@ -161,7 +157,7 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
         "region",
         (F.when(cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber").otherwise(cqc_df.region)),
     )
-    cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
+    # cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
     cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
@@ -188,8 +184,6 @@ def get_cqc_provider_df(cqc_provider_source, since_date=None):
             F.col("import_date"),
         )
     )
-
-    # cqc_provider_df = add_cqc_sector(cqc_provider_df)
 
     cqc_provider_df = filter_out_import_dates_older_than(cqc_provider_df, since_date)
 
@@ -240,22 +234,29 @@ def purge_workplaces(input_df):
     # Convert import_date to date field and remove 2 years
     input_df = input_df.withColumn("purge_date", F.add_months(F.col("import_date"), -24))
 
+    # Use most recent of mupdate or lastloggedin for purge
+    input_df = input_df.withColumn(
+        "max_mupddate_and_lastloggedin", F.greatest(F.col("mupddate"), F.col("lastloggedin"))
+    )
+
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
-        input_df.select("locationid", "orgid", "mupddate", "import_date")
+        input_df.select("locationid", "orgid", "max_mupddate_and_lastloggedin", "import_date")
         .groupBy("orgid", "import_date")
-        .agg(F.max("mupddate").alias("mupddate_org"))
+        .agg(F.max("max_mupddate_and_lastloggedin").alias("max_mupddate_and_lastloggedin_org"))
     )
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge",
-        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate),
+        F.when((input_df.isparent == "1"), input_df.max_mupddate_and_lastloggedin_org).otherwise(
+            input_df.max_mupddate_and_lastloggedin
+        ),
     )
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
-    input_df.drop("isparent", "mupddate")
+    input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
 
     return input_df
 
