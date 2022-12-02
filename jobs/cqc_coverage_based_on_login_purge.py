@@ -5,7 +5,7 @@ import pyspark.sql.functions as F
 
 from utils import utils
 
-
+# 
 def main(
     workplace_source,
     cqc_location_source,
@@ -16,27 +16,33 @@ def main(
     print("Building locations prepared dataset")
     master_df = None
 
+    # Identify most recent date that a snapshot has been taken of ASC-WDS data
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
         last_processed_date = f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
+    # Pull new data since last snapshot
     complete_ascwds_workplace_df = get_ascwds_workplace_df(workplace_source, since_date=last_processed_date)
     complete_cqc_location_df = get_cqc_location_df(cqc_location_source, since_date=last_processed_date)
     complete_cqc_provider_df = get_cqc_provider_df(cqc_provider_source, since_date=last_processed_date)
 
+    # For each import date in the ASC-WDS df, get the closest previous date in each of the CQC dfs and turn these into a 2D array
+    # This is used to cycle through the dataframe by snapshot date
     date_matrix = generate_closest_date_matrix(
         complete_ascwds_workplace_df,
         complete_cqc_location_df,
         complete_cqc_provider_df,
     )
 
+    # For each import date, clean and purge data for that import date, and add into master_df, ready for export
     for snapshot_date_row in date_matrix:
-        ascwds_workplace_df = complete_ascwds_workplace_df.filter(
+        ascwds_workplace_df = complete_ascwds_workplace_df.filter(              # Create df for each date asc df was updated
             F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
-        ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
+        ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)             # Remove workplaces that are out of date
         ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
 
+        # Clean dates in CQC dfs
         cqc_locations_df = complete_cqc_location_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_location_date"]
         )
@@ -49,15 +55,18 @@ def main(
         cqc_providers_df = utils.format_import_date(cqc_providers_df)
         cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
 
+        # Join dataframes in preapartion for output
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(ascwds_workplace_df, "locationid", "full")
 
+        # Add snapshot data to df
         output_df = output_df.withColumn("snapshot_date", F.lit(snapshot_date_row["snapshot_date"]))
         output_df = output_df.withColumn("snapshot_year", F.col("snapshot_date").substr(1, 4))
         output_df = output_df.withColumn("snapshot_month", F.col("snapshot_date").substr(5, 2))
         output_df = output_df.withColumn("snapshot_day", F.col("snapshot_date").substr(7, 2))
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
+        # Select columns for output
         output_df = output_df.select(
             "snapshot_date",
             "snapshot_year",
@@ -87,7 +96,7 @@ def main(
             "local_authority",
             "cqc_sector",
         )
-
+        # Export parquet file to specified destination
         if destination:
             print("Exporting snapshot {} as parquet to {}".format(snapshot_date_row["snapshot_date"], destination))
             utils.write_to_parquet(
@@ -264,6 +273,7 @@ def purge_workplaces(input_df):
 if __name__ == "__main__":
     print("Spark job 'cqc coverage based on login date purge' starting...")
     print(f"Job parameters: {sys.argv}")
+    # Get parameters using Glue
     (workplace_source, cqc_location_source, cqc_provider_source, destination,) = utils.collect_arguments(
         ("--workplace_source", "Source s3 directory for ASCWDS workplace dataset"),
         ("--cqc_location_source", "Source s3 directory for CQC locations api dataset"),
