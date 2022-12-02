@@ -5,7 +5,7 @@ import pyspark.sql.functions as F
 
 from utils import utils
 
-# 
+#
 def main(
     workplace_source,
     cqc_location_source,
@@ -35,12 +35,13 @@ def main(
 
     # For each import date, clean and purge data for that import date, and add into master_df, ready for export
     for snapshot_date_row in date_matrix:
-        ascwds_workplace_df = complete_ascwds_workplace_df.filter(              # Create df for each date asc df was updated
+        ascwds_workplace_df = complete_ascwds_workplace_df.filter(  # Create df for each date asc df was updated
             F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
-        ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)             # Remove workplaces that are out of date
+        ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)  # Remove workplaces that are out of date
         ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
+        ascwds_workplace_df = ascwds_workplace_df.withColumn("in_ASC-WDS", True)
 
         # Clean dates in CQC dfs
         cqc_locations_df = complete_cqc_location_df.filter(
@@ -57,7 +58,7 @@ def main(
 
         # Join dataframes in preapartion for output
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
-        output_df = output_df.join(ascwds_workplace_df, "locationid", "full")
+        output_df = output_df.join(ascwds_workplace_df, "locationid", "left")
 
         # Add snapshot data to df
         output_df = output_df.withColumn("snapshot_date", F.lit(snapshot_date_row["snapshot_date"]))
@@ -95,7 +96,15 @@ def main(
             "constituency",
             "local_authority",
             "cqc_sector",
+            "in_ASC-WDS",
         )
+
+        # Create coverage summary tables
+        region_coverage = calculate_coverage(output_df, "region")
+        local_authority_coverage = calculate_coverage(output_df, "local_authority")
+
+        # save summary tables and new cqc list to s3 ready for download
+
         # Export parquet file to specified destination
         if destination:
             print("Exporting snapshot {} as parquet to {}".format(snapshot_date_row["snapshot_date"], destination))
@@ -268,6 +277,18 @@ def purge_workplaces(input_df):
     input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
 
     return input_df
+
+
+# Takes df and string of column name (e.g. "region") by which to summarize coverage
+# Returns grouped data object with proportion of locations as decimal which are in ASC-WDS for each unique value in given column
+def calculate_coverage(df, by_variable):
+    coverage = (
+        df.select("locationid", "region", "local_authority", "in_ASC-WDS")
+        .groupBy(by_variable)
+        .agg(F.count("locationid").alias("total_locations"), F.count("in_ASC-WDS").alias("total_locations_in_ASC-WDS"))
+        .withColumn(f"{by_variable}", (F.col("total_locations_in_ASC-WDS") / F.col("total_locations")))
+    )
+    return coverage
 
 
 if __name__ == "__main__":
