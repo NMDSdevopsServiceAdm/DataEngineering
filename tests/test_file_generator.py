@@ -1112,3 +1112,23 @@ def generate_worker_import_dates(output_destination):
         worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return worker_df
+
+def generate_cqc_covarage_to_summarise_parquet(output_destination):
+    spark = utils.get_spark()
+    columns = ["locationid", "region", "local_authority", "in_ASC-WDS"]
+
+    rows = [
+        ("1-000000001", "North East", "Durham", True),
+        ("1-000000002", "North East", "Durham", None),
+        ("1-000000003", "London", "Barnet", True),
+        ("1-000000004", "London", "Camden", True),
+        ("1-000000005", "London", "Camden", None),
+        ("1-000000006", "Eastern", "Bedford", True),
+    ]
+
+    df = spark.createDataFrame(rows, columns)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
