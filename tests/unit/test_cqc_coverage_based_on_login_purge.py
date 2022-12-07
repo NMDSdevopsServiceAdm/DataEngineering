@@ -1,3 +1,5 @@
+"""
+
 import unittest
 import shutil
 from datetime import date
@@ -51,27 +53,10 @@ class PrepareLocationsTests(unittest.TestCase):
         except OSError:
             pass  # Ignore dir does not exist
 
-    def test_calculate_coverage(self):
-        coverage = cqc_coverage_based_on_login_purge.calculate_coverage(
-            self.coverage_df, "region"
-        )
-        # check column names
-        self.assertEqual(coverage.columns[0], "region")
-        self.assertEqual(coverage.columns[1], "total_locations")
-        self.assertEqual(coverage.columns[2], "total_locations_in_ASC-WDS")
-        self.assertEqual(coverage.columns[3], "percentage_coverage_by_region")
-        # check counts
-        rows = coverage.collect()
-        self.assertEqual(rows[0]["total_locations"], 2)  # 2 locations in North East
-        self.assertEqual(
-            rows[0]["total_locations_in_ASC-WDS"], 1
-        )  # 1 location in North East in ASC-WDS
 
-        # check coverage calculations
-        self.assertEqual(
-            rows[0]["percentage_coverage_by_region"], 0.5
-        )  # 50% of locations in the North East are in ASC-WDS
 
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
+
+"""
