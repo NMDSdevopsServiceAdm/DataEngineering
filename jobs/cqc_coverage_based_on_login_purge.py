@@ -248,7 +248,8 @@ def purge_workplaces(input_df):
 
     # Use most recent of mupdate or lastloggedin for purge
     input_df = input_df.withColumn(
-        "max_mupddate_and_lastloggedin", F.greatest(F.col("mupddate"), F.col("lastloggedin"))
+        "max_mupddate_and_lastloggedin",
+        F.greatest(F.col("mupddate"), F.col("lastloggedin")),
     )
 
     # if the org is a parent, use the max mupddate for all locations at the org

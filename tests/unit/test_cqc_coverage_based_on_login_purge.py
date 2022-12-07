@@ -30,11 +30,15 @@ class PrepareLocationsTests(unittest.TestCase):
     TEST_CQC_COVERAGE_FILE = "tests/test_data/domain=cqc/dataset=coverage"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_prepare_locations"
+        ).getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         self.cqc_loc_df = generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
-        self.coverage_df = generate_cqc_coverage_to_summarise_parquet(self.TEST_CQC_COVERAGE_FILE)
+        self.coverage_df = generate_cqc_coverage_to_summarise_parquet(
+            self.TEST_CQC_COVERAGE_FILE
+        )
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -48,7 +52,9 @@ class PrepareLocationsTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_calculate_coverage(self):
-        coverage = cqc_coverage_based_on_login_purge.calculate_coverage(self.coverage_df, "region")
+        coverage = cqc_coverage_based_on_login_purge.calculate_coverage(
+            self.coverage_df, "region"
+        )
         # check column names
         self.assertEqual(coverage.columns[0], "region")
         self.assertEqual(coverage.columns[1], "total_locations")
@@ -57,7 +63,9 @@ class PrepareLocationsTests(unittest.TestCase):
         # check counts
         rows = coverage.collect()
         self.assertEqual(rows[0]["total_locations"], 2)  # 2 locations in North East
-        self.assertEqual(rows[0]["total_locations_in_ASC-WDS"], 1)  # 1 location in North East in ASC-WDS
+        self.assertEqual(
+            rows[0]["total_locations_in_ASC-WDS"], 1
+        )  # 1 location in North East in ASC-WDS
 
         # check coverage calculations
         self.assertEqual(
