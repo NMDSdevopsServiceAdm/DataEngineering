@@ -99,12 +99,6 @@ def main(
             "in_ASC-WDS",
         )
 
-        # Create coverage summary tables
-        region_coverage = calculate_coverage(output_df, "region")
-        local_authority_coverage = calculate_coverage(output_df, "local_authority")
-
-        # save summary tables and new cqc list to s3 ready for download
-
         # Export parquet file to specified destination
         if destination:
             print("Exporting snapshot {} as parquet to {}".format(snapshot_date_row["snapshot_date"], destination))
@@ -277,20 +271,6 @@ def purge_workplaces(input_df):
     input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
 
     return input_df
-
-
-# Takes df and string of column name (e.g. "region") by which to summarize coverage
-# Returns grouped data object with proportion of locations as decimal which are in ASC-WDS for each unique value in given column
-def calculate_coverage(df, by_variable):
-    coverage = (
-        df.select("locationid", "region", "local_authority", "in_ASC-WDS")
-        .groupBy(by_variable)
-        .agg(F.count("locationid").alias("total_locations"), F.count("in_ASC-WDS").alias("total_locations_in_ASC-WDS"))
-        .withColumn(
-            f"percentage_coverage_by_{by_variable}", (F.col("total_locations_in_ASC-WDS") / F.col("total_locations"))
-        )
-    )
-    return coverage
 
 
 if __name__ == "__main__":

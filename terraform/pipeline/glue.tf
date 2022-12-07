@@ -79,6 +79,23 @@ module "prepare_locations_job" {
   }
 }
 
+module "cqc_coverage_based_on_login_purge_job" {
+  source            = "../modules/glue-job"
+  script_name       = "cqc_coverage_based_on_login_purge.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  worker_type       = "G.2X"
+  number_of_workers = 6
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
+    "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=cqc_coverage/version=1.0.0/"
+  }
+}
+
 module "worker_tracking_job" {
   source          = "../modules/glue-job"
   script_name     = "worker_tracking.py"

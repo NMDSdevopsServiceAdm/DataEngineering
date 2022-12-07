@@ -17,7 +17,7 @@ from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
     generate_cqc_providers_file,
-    generate_cqc_covarage_to_summarise_parquet,
+    generate_cqc_coverage_to_summarise_parquet,
 )
 
 
@@ -34,7 +34,7 @@ class PrepareLocationsTests(unittest.TestCase):
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         self.cqc_loc_df = generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
-        coverage_df = generate_cqc_covarage_to_summarise_parquet(self.TEST_CQC_COVERAGE_FILE)
+        self.coverage_df = generate_cqc_coverage_to_summarise_parquet(self.TEST_CQC_COVERAGE_FILE)
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -48,16 +48,21 @@ class PrepareLocationsTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_calculate_coverage(self):
-        coverage = cqc_coverage_based_on_login_purge.calculate_coverage(self.TEST_CQC_LOCATION_FILE, "region")
+        coverage = cqc_coverage_based_on_login_purge.calculate_coverage(self.coverage_df, "region")
         # check column names
         self.assertEqual(coverage.columns[0], "region")
         self.assertEqual(coverage.columns[1], "total_locations")
         self.assertEqual(coverage.columns[2], "total_locations_in_ASC-WDS")
         self.assertEqual(coverage.columns[3], "percentage_coverage_by_region")
         # check counts
-        self.assertEqual(coverage[2, 1], 2)
+        rows = coverage.collect()
+        self.assertEqual(rows[0]["total_locations"], 2)  # 2 locations in North East
+        self.assertEqual(rows[0]["total_locations_in_ASC-WDS"], 1)  # 1 location in North East in ASC-WDS
+
         # check coverage calculations
-        self.assertEqual(coverage[2, 3], 0.5)
+        self.assertEqual(
+            rows[0]["percentage_coverage_by_region"], 0.5
+        )  # 50% of locations in the North East are in ASC-WDS
 
 
 if __name__ == "__main__":
