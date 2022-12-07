@@ -1112,5 +1112,3 @@ def generate_worker_import_dates(output_destination):
         worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return worker_df
-
-
