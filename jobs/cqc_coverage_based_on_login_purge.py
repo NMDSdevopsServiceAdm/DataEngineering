@@ -286,7 +286,9 @@ def calculate_coverage(df, by_variable):
         df.select("locationid", "region", "local_authority", "in_ASC-WDS")
         .groupBy(by_variable)
         .agg(F.count("locationid").alias("total_locations"), F.count("in_ASC-WDS").alias("total_locations_in_ASC-WDS"))
-        .withColumn(f"{by_variable}", (F.col("total_locations_in_ASC-WDS") / F.col("total_locations")))
+        .withColumn(
+            f"percentage_coverage_by_{by_variable}", (F.col("total_locations_in_ASC-WDS") / F.col("total_locations"))
+        )
     )
     return coverage
 
