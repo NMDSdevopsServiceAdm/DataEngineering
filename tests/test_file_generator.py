@@ -150,9 +150,9 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     # fmt: off
     rows = [
         ("E01000001 : Area name 001A", "876", "767", "608", "18", "141", "15", "74", "4", "16"),
-        ("E01000002 : Area name 001B","830","763","630","13","120","16","45","2","4"),
-        ("E01000003 : Area name 001C","817","678","533","26","119","22","84","20","13"),
-        ("E01000005 : Area name 001E","467","311","222","11","78","23","77","37","19"),
+        ("E01000002 : Area name 001B", "830", "763", "630", "13", "120", "16", "45", "2", "4"),
+        ("E01000003 : Area name 001C", "817", "678", "533", "26", "119", "22", "84", "20", "13"),
+        ("E01000005 : Area name 001E", "467", "311", "222", "11", "78", "23", "77", "37", "19"),
     ]
     # fmt: on
 
@@ -360,7 +360,7 @@ def generate_ons_denormalised_data(output_destination):
         StructField("import_date", StringType(), False),
     ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",),("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
+        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",), ("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
         ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
         ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501")
     ]
@@ -643,14 +643,14 @@ def generate_version_1_ascwds_worker_file(output_destination):
     # fmt:off
     rows = [
         (
-        "855823", "12345", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
-        "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101", "2022", "01", "01",
-        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
+            "855823", "12345", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
+            "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20220101", "2022", "01", "01",
+            datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         ),
         (
-        "855819", "34567", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None, 
-        "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101", "2022", "01", "01",
-        datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
+            "855819", "34567", "1", "2017-06-15", "10", "0", "0", "0", "1", "1", "1", "1", "2009", "0", "1", "2020", "3", None,
+            "1", "2013", "30.3", "19.0", "0.5", "190", "8.5", "26.5", "1", "250", "5200", "100.5", "20210101", "2022", "01", "01",
+            datetime(2018, 2, 3), "h346736", datetime(2020, 4, 1), datetime(2019, 1, 1), "yes", "no"
         )
     ]
     # fmt:on
@@ -713,25 +713,25 @@ def generate_location_with_ons_parquet(output_destination):
 
     # fmt:off
     rows = [
-        ( 
+        (
             "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A"}, {"year_2011": "City of London 001"},
             "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210101", "20220102", "2022", "01", "02",
         ),
-        ( 
-            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A" }, {"year_2011": "City of London 001"},
-            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210101", "20200506", "2020", "05", "06",
+        (
+            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A"}, {"year_2011": "City of London 001"},
+            "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210101", "20200506", "2020", "05", "06",
         ),
-        ( 
-            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A" }, {"year_2011": "City of London 001"},
-            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210101", "20220202", "2022", "02", "02",
+        (
+            "12345", "AB0 7CD", "South West", "London", "England", {"year_2011": "Tendring 018A"}, {"year_2011": "City of London 001"},
+            "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210101", "20220202", "2022", "02", "02",
         ),
-        ( 
-            "10101", "EF0 7GH", "South East", "London", "England", {"year_2011": "Tendring 128A" }, {"year_2011": "City of London 003"},
-            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210103", "20210203", "2021", "02", "03",
+        (
+            "10101", "EF0 7GH", "South East", "London", "England", {"year_2011": "Tendring 128A"}, {"year_2011": "City of London 003"},
+            "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210103", "20210203", "2021", "02", "03",
         ),
-        ( 
+        (
             "10000", "EF0 7GH", "South East", "London", "England", {"year_2011": "Tendring 128A"}, {"year_2011": "City of London 003"},
-            "NHS Barnsley CCG", { "year_2011": "B1" }, "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
+            "NHS Barnsley CCG", {"year_2011": "B1"}, "Kensington and Chelsea", "20210103", "20210104", "2021", "01", "04",
         ),
     ]
     # fmt:on
@@ -747,7 +747,7 @@ def generate_location_with_ons_parquet(output_destination):
 def generate_location_features_file_parquet(output_destination=None):
     spark = utils.get_spark()
     # fmt: off
-    feature_columns = [ "locationid", "job_count", "carehome", "region", "snapshot_year", "snapshot_month", "snapshot_day", "snapshot_date" ]
+    feature_columns = ["locationid", "job_count", "carehome", "region", "snapshot_year", "snapshot_month", "snapshot_day", "snapshot_date"]
 
     feature_rows = [
         ("1-000000001", 10, "Y", "South West", "2022", "02", "28", "2022-03-29"),
