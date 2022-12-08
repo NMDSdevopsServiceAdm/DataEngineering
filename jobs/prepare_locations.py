@@ -24,10 +24,18 @@ def main(
 
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
-        last_processed_date = f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
-    complete_ascwds_workplace_df = get_ascwds_workplace_df(workplace_source, since_date=last_processed_date)
-    complete_cqc_location_df = get_cqc_location_df(cqc_location_source, since_date=last_processed_date)
-    complete_cqc_provider_df = get_cqc_provider_df(cqc_provider_source, since_date=last_processed_date)
+        last_processed_date = (
+            f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
+        )
+    complete_ascwds_workplace_df = get_ascwds_workplace_df(
+        workplace_source, since_date=last_processed_date
+    )
+    complete_cqc_location_df = get_cqc_location_df(
+        cqc_location_source, since_date=last_processed_date
+    )
+    complete_cqc_provider_df = get_cqc_provider_df(
+        cqc_provider_source, since_date=last_processed_date
+    )
     complete_pir_df = get_pir_df(pir_source, since_date=last_processed_date)
 
     latest_ons_data = get_ons_df(ons_source)
@@ -45,21 +53,29 @@ def main(
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
-        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
+        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
+            "import_date", "ascwds_workplace_import_date"
+        )
 
         cqc_locations_df = complete_cqc_location_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_location_date"]
         )
         cqc_locations_df = utils.format_import_date(cqc_locations_df)
-        cqc_locations_df = cqc_locations_df.withColumnRenamed("import_date", "cqc_locations_import_date")
+        cqc_locations_df = cqc_locations_df.withColumnRenamed(
+            "import_date", "cqc_locations_import_date"
+        )
 
         cqc_providers_df = complete_cqc_provider_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_provider_date"]
         )
         cqc_providers_df = utils.format_import_date(cqc_providers_df)
-        cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
+        cqc_providers_df = cqc_providers_df.withColumnRenamed(
+            "import_date", "cqc_providers_import_date"
+        )
 
-        pir_df = complete_pir_df.filter(F.col("import_date") == snapshot_date_row["pir_date"])
+        pir_df = complete_pir_df.filter(
+            F.col("import_date") == snapshot_date_row["pir_date"]
+        )
         pir_df = utils.format_import_date(pir_df)
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
@@ -69,10 +85,18 @@ def main(
         output_df = add_geographical_data(output_df, latest_ons_data)
         output_df = calculate_jobcount(output_df)
 
-        output_df = output_df.withColumn("snapshot_date", F.lit(snapshot_date_row["snapshot_date"]))
-        output_df = output_df.withColumn("snapshot_year", F.col("snapshot_date").substr(1, 4))
-        output_df = output_df.withColumn("snapshot_month", F.col("snapshot_date").substr(5, 2))
-        output_df = output_df.withColumn("snapshot_day", F.col("snapshot_date").substr(7, 2))
+        output_df = output_df.withColumn(
+            "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
+        )
+        output_df = output_df.withColumn(
+            "snapshot_year", F.col("snapshot_date").substr(1, 4)
+        )
+        output_df = output_df.withColumn(
+            "snapshot_month", F.col("snapshot_date").substr(5, 2)
+        )
+        output_df = output_df.withColumn(
+            "snapshot_day", F.col("snapshot_date").substr(7, 2)
+        )
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
         output_df = output_df.select(
@@ -105,7 +129,11 @@ def main(
         )
 
         if destination:
-            print("Exporting snapshot {} as parquet to {}".format(snapshot_date_row["snapshot_date"], destination))
+            print(
+                "Exporting snapshot {} as parquet to {}".format(
+                    snapshot_date_row["snapshot_date"], destination
+                )
+            )
             utils.write_to_parquet(
                 output_df,
                 destination,
@@ -176,7 +204,11 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 
     cqc_df = cqc_df.withColumn(
         "region",
-        (F.when(cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber").otherwise(cqc_df.region)),
+        (
+            F.when(
+                cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
+            ).otherwise(cqc_df.region)
+        ),
     )
     cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
 
@@ -315,8 +347,12 @@ def get_ons_df(ons_source):
 
 
 def get_unique_import_dates(df):
-    distinct_ordered_import_date_df = df.select("import_date").distinct().orderBy("import_date")
-    distinct_ordered_import_date_list = [date.import_date for date in distinct_ordered_import_date_df.collect()]
+    distinct_ordered_import_date_df = (
+        df.select("import_date").distinct().orderBy("import_date")
+    )
+    distinct_ordered_import_date_list = [
+        date.import_date for date in distinct_ordered_import_date_df.collect()
+    ]
     return distinct_ordered_import_date_list
 
 
@@ -330,7 +366,9 @@ def get_date_closest_to_search_date(search_date, date_list):
     return closest_date
 
 
-def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
+def generate_closest_date_matrix(
+    dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir
+):
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
@@ -338,8 +376,12 @@ def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, datas
 
     date_matrix = []
     for date in unique_asc_dates:
-        closest_cqc_location_date = get_date_closest_to_search_date(date, unique_cqc_location_dates)
-        closest_cqc_provider_date = get_date_closest_to_search_date(date, unique_cqc_provider_dates)
+        closest_cqc_location_date = get_date_closest_to_search_date(
+            date, unique_cqc_location_dates
+        )
+        closest_cqc_provider_date = get_date_closest_to_search_date(
+            date, unique_cqc_provider_dates
+        )
         closest_pir_date = get_date_closest_to_search_date(date, unique_pir_dates)
         date_matrix.append(
             {
@@ -358,7 +400,9 @@ def add_geographical_data(locations_df, ons_df):
     locations_df = locations_df.withColumn(
         "postal_code_ws_removed", F.regexp_replace(locations_df.postal_code, " ", "")
     )
-    ons_df = ons_df.withColumn("ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", ""))
+    ons_df = ons_df.withColumn(
+        "ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", "")
+    )
     locations_df = locations_df.join(
         ons_df,
         F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.ons_postcode),
@@ -378,9 +422,13 @@ def clean(input_df):
     input_df = input_df.replace("0", None).replace("-1", None)
 
     # Cast strings to integers
-    input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
+    input_df = input_df.withColumn(
+        "total_staff", input_df["total_staff"].cast(IntegerType())
+    )
 
-    input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
+    input_df = input_df.withColumn(
+        "worker_record_count", input_df["worker_record_count"].cast(IntegerType())
+    )
 
     return input_df
 
@@ -390,7 +438,9 @@ def purge_workplaces(input_df):
     print("Purging ASCWDS accounts...")
 
     # Convert import_date to date field and remove 2 years
-    input_df = input_df.withColumn("purge_date", F.add_months(F.col("import_date"), -24))
+    input_df = input_df.withColumn(
+        "purge_date", F.add_months(F.col("import_date"), -24)
+    )
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
@@ -401,7 +451,9 @@ def purge_workplaces(input_df):
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge",
-        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate),
+        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(
+            input_df.mupddate
+        ),
     )
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
@@ -426,7 +478,9 @@ def add_cqc_sector(input_df):
 
     input_df = input_df.withColumn(
         "cqc_sector",
-        F.when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority"),
+        F.when(input_df.cqc_sector == "false", "Independent").otherwise(
+            "Local authority"
+        ),
     )
 
     return input_df
@@ -456,8 +510,14 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
             (
                 F.col("job_count").isNull()
                 & (
-                    (F.col("total_staff").isNull() & F.col("worker_record_count").isNotNull())
-                    | (F.col("total_staff").isNotNull() & F.col("worker_record_count").isNull())
+                    (
+                        F.col("total_staff").isNull()
+                        & F.col("worker_record_count").isNotNull()
+                    )
+                    | (
+                        F.col("total_staff").isNotNull()
+                        & F.col("worker_record_count").isNull()
+                    )
                 )
             ),
             F.coalesce(input_df.total_staff, input_df.worker_record_count),
@@ -467,7 +527,9 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
 
 def calculate_jobcount_abs_difference_within_range(input_df):
     # Abs difference between total_staff & worker_record_count < 5 or < 10% take average:
-    input_df = input_df.withColumn("abs_difference", F.abs(input_df.total_staff - input_df.worker_record_count))
+    input_df = input_df.withColumn(
+        "abs_difference", F.abs(input_df.total_staff - input_df.worker_record_count)
+    )
 
     input_df = input_df.withColumn(
         "job_count",
@@ -476,7 +538,10 @@ def calculate_jobcount_abs_difference_within_range(input_df):
                 F.col("job_count").isNull()
                 & (
                     (F.col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (F.col("abs_difference") / F.col("total_staff") < MIN_PERCENTAGE_DIFFERENCE)
+                    | (
+                        F.col("abs_difference") / F.col("total_staff")
+                        < MIN_PERCENTAGE_DIFFERENCE
+                    )
                 )
             ),
             (F.col("total_staff") + F.col("worker_record_count")) / 2,
@@ -493,7 +558,10 @@ def calculate_jobcount_handle_tiny_values(input_df):
     return input_df.withColumn(
         "job_count",
         F.when(
-            (F.col("job_count").isNull() & ((F.col("total_staff") < 3) | (F.col("worker_record_count") < 3))),
+            (
+                F.col("job_count").isNull()
+                & ((F.col("total_staff") < 3) | (F.col("worker_record_count") < 3))
+            ),
             F.greatest(F.col("total_staff"), F.col("worker_record_count")),
         ).otherwise(F.col("job_count")),
     )
@@ -506,12 +574,17 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "bed_estimate_jobcount",
         F.when(
             (F.col("job_count").isNull() & (F.col("number_of_beds") > 0)),
-            (beds_to_jobcount_intercept + (F.col("number_of_beds") * beds_to_jobcount_coefficient)),
+            (
+                beds_to_jobcount_intercept
+                + (F.col("number_of_beds") * beds_to_jobcount_coefficient)
+            ),
         ).otherwise(None),
     )
 
     # Determine differences
-    input_df = input_df.withColumn("totalstaff_diff", F.abs(input_df.total_staff - input_df.bed_estimate_jobcount))
+    input_df = input_df.withColumn(
+        "totalstaff_diff", F.abs(input_df.total_staff - input_df.bed_estimate_jobcount)
+    )
     input_df = input_df.withColumn(
         "wkrrecs_diff",
         F.abs(input_df.worker_record_count - input_df.bed_estimate_jobcount),
@@ -536,7 +609,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 & (
                     (
                         (F.col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                        | (F.col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                        | (
+                            F.col("totalstaff_percentage_diff")
+                            < MIN_PERCENTAGE_DIFFERENCE
+                        )
                     )
                     & (
                         (F.col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)

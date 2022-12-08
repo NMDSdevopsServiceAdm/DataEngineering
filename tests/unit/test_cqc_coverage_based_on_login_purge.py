@@ -19,11 +19,15 @@ class PrepareLocationsTests(unittest.TestCase):
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/domain=ascwds/dataset=workplace"
     TEST_CQC_LOCATION_FILE = "tests/test_data/domain=cqc/dataset=location"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/domain=cqc/dataset=providers"
-    TEST_ASCWDS_WORKPLACE_STRUCTURE = "tests/test_data/domain=ascwds/tmp_workplace_structure"
+    TEST_ASCWDS_WORKPLACE_STRUCTURE = (
+        "tests/test_data/domain=ascwds/tmp_workplace_structure"
+    )
     DESTINATION = "tests/test_data/domain=data_engineering/dataset=locations_prepared/version=1.0.0"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_prepare_locations"
+        ).getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)

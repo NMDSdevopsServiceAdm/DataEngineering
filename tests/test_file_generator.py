@@ -159,7 +159,9 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
@@ -502,7 +504,9 @@ def generate_raw_cqc_care_directory_csv_file(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
@@ -524,10 +528,14 @@ def generate_cqc_care_directory_file(output_destination):
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA)
+    df = spark.createDataFrame(
+        rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA
+    )
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
+            output_destination
+        )
 
     return df
 
@@ -587,7 +595,9 @@ def generate_version_0_ascwds_worker_file(output_destination):
     df = df.withColumn("old_unused_column", F.lit("a"))
 
     if output_destination:
-        df.coalesce(1).write.partitionBy("version").mode("append").parquet(output_destination)
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
 
     return df, schema
 
@@ -661,12 +671,16 @@ def generate_version_1_ascwds_worker_file(output_destination):
     df = df.withColumn("unused_column", F.lit("d"))
 
     if output_destination:
-        df.coalesce(1).write.partitionBy("version").mode("append").parquet(output_destination)
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
+            output_destination
+        )
 
     return df, schema
 
 
-def generate_flexible_worker_file_hours_worked(emplstat, zerohours, averagehours, conthrs):
+def generate_flexible_worker_file_hours_worked(
+    emplstat, zerohours, averagehours, conthrs
+):
     spark = utils.get_spark()
     columns = [
         "emplstat",
@@ -761,13 +775,15 @@ def generate_location_features_file_parquet(output_destination=None):
         schema=feature_columns,
     )
     if output_destination:
-        df.write.mode("overwrite").partitionBy("snapshot_year", "snapshot_month", "snapshot_day").parquet(
-            output_destination
-        )
+        df.write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(output_destination)
     return df
 
 
-def generate_prepared_locations_file_parquet(output_destination=None, partitions=["2022", "03", "08"], append=False):
+def generate_prepared_locations_file_parquet(
+    output_destination=None, partitions=["2022", "03", "08"], append=False
+):
     spark = utils.get_spark()
     columns = [
         "locationid",
@@ -814,7 +830,9 @@ def generate_prepared_locations_file_parquet(output_destination=None, partitions
     else:
         mode = "overwrite"
     if output_destination:
-        df.write.mode(mode).partitionBy("snapshot_year", "snapshot_month", "snapshot_day").parquet(output_destination)
+        df.write.mode(mode).partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(output_destination)
 
     return df
 
@@ -992,7 +1010,9 @@ def generate_multiple_boolean_columns(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
+            output_destination
+        )
 
     return df
 
