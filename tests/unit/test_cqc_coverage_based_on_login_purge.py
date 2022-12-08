@@ -19,15 +19,11 @@ class PrepareLocationsTests(unittest.TestCase):
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/domain=ascwds/dataset=workplace"
     TEST_CQC_LOCATION_FILE = "tests/test_data/domain=cqc/dataset=location"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/domain=cqc/dataset=providers"
-    TEST_ASCWDS_WORKPLACE_STRUCTURE = (
-        "tests/test_data/domain=ascwds/tmp_workplace_structure"
-    )
+    TEST_ASCWDS_WORKPLACE_STRUCTURE = "tests/test_data/domain=ascwds/tmp_workplace_structure"
     DESTINATION = "tests/test_data/domain=data_engineering/dataset=locations_prepared/version=1.0.0"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_prepare_locations"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
@@ -44,6 +40,19 @@ class PrepareLocationsTests(unittest.TestCase):
             shutil.rmtree(self.DESTINATION)
         except OSError:
             pass  # Ignore dir does not exist
+
+    def test_add_ascwds_workplace_structure(self):
+        workplace_df = cqc_coverage_based_on_login_purge.add_ascwds_workplace_structure(
+            self.TEST_ASCWDS_WORKPLACE_STRUCTURE
+        )
+
+        self.assertEqual(workplace_df.count(), 4)
+
+        rows = workplace_df.collect()
+        self.assertEqual(rows[0]["ascwds_workplace_structure"], "Parent")
+        self.assertEqual(rows[1]["ascwds_workplace_structure"], "Subsidiary")
+        self.assertEqual(rows[2]["ascwds_workplace_structure"], "Single")
+        self.assertEqual(rows[3]["ascwds_workplace_structure"], "")
 
 
 if __name__ == "__main__":
