@@ -124,20 +124,13 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
         spark.read.option("basePath", workplace_source)
         .parquet(workplace_source)
         .select(
+            F.col("locationid"),
             F.col("establishmentid"),
-            F.col("establishmentname"),
-            F.col("nmdsid"),
-            F.col("mupddate"),
+            F.col("import_date"),
             F.col("orgid"),
+            F.col("mupddate"),
             F.col("isparent"),
             F.col("parentid"),
-            F.col("esttype"),
-            F.col("regtype"),
-            F.col("locationid"),
-            F.col("cqcpermission"),
-            F.col("mainstid"),
-            F.col("import_date"),
-            F.col("lastloggedin"),
         )
     )
 
@@ -150,11 +143,19 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
     return workplace_df
 
 
-# TO DO - add rules for Parent, Sub, Single
+# TO DO - test function
 def add_ascwds_workplace_structure(df):
     df = df.withColumn(
         "ascwds_workplace_structure",
-        True,
+        F.when(
+            # Subsidiary is not a parent but has a parent ID
+            df.isparent == "0" & df.parentid.isNotNull(),
+            "subsidiary",
+        )
+        # Parent is parent (ID not relevant)
+        .when(df.isparent == "1", "parent")
+        # Single is not a parent and has no parent ID
+        .when(df.isparent == "0" & df.parentid.isNull(), "single").otherwise(""),
     )
 
     return df
@@ -292,6 +293,14 @@ def purge_workplaces(input_df):
     input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
 
     return input_df
+
+
+def cqc_location_found_in_ascwds(df):
+    df = df.withColumn(
+        "location_in_ASCWDS", F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS")
+    )
+
+    return df
 
 
 if __name__ == "__main__":
