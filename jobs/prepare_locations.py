@@ -46,7 +46,7 @@ def main(
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
 
         # purge using coverage rules
-        # ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
+        ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
         # Add in coverage column
 
         """
@@ -416,7 +416,6 @@ def clean(input_df):
     return input_df
 
 
-"""
 def create_coverage_df(input_df):
     # Remove all locations that haven't been update for two years
     print("Purging ASCWDS accounts...")
@@ -450,7 +449,6 @@ def create_coverage_df(input_df):
     input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
 
     return input_df
-"""
 
 
 def purge_workplaces(input_df):
