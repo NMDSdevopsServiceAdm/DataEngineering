@@ -45,22 +45,16 @@ def main(
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
 
-        # purge using coverage rules
         ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
-        # Add in coverage column
 
-        """
-        def cqc_location_found_in_ascwds(df):
-            df = df.withColumn(
-                "location_in_ASCWDS",
-                F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS"),
-                )
-
-            return df
-        
-        """
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
-        ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
+        # make this into a function and test v
+        ascwds_workplace_with_coverage_df = ascwds_coverage_df.join(
+            ascwds_workplace_df, ["locationid", "establishmentid", "import_date"], "left"
+        )
+        ascwds_workplace_with_coverage_df = ascwds_workplace_with_coverage_df.withColumnRenamed(
+            "import_date", "ascwds_workplace_import_date"
+        )
 
         cqc_locations_df = complete_cqc_location_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_location_date"]
@@ -79,7 +73,19 @@ def main(
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
-        output_df = output_df.join(ascwds_workplace_df, "locationid", "full")
+        output_df = output_df.join(ascwds_workplace_with_coverage_df, "locationid", "full")
+
+        """
+        # add column if in ascwds
+        def cqc_location_found_in_ascwds(df):
+            df = df.withColumn(
+                "location_in_ASCWDS",
+                F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS"),
+                )
+
+            return df
+        
+        """
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
         output_df = calculate_jobcount(output_df)
