@@ -446,7 +446,9 @@ def create_coverage_df(input_df):
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
-    input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
+    input_df = input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
+
+    input_df.show()
 
     return input_df
 
@@ -473,7 +475,7 @@ def purge_workplaces(input_df):
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
     input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
 
-    input_df.drop("isparent", "mupddate")
+    input_df = input_df.drop("isparent", "mupddate")
 
     return input_df
 
