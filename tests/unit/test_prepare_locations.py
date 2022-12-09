@@ -130,6 +130,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
         self.assertEqual(workplace_df.columns[4], "import_date")
         self.assertEqual(workplace_df.columns[8], "parentid")
+        self.assertEqual(workplace_df.columns[9], "lastloggedin")
         self.assertEqual(workplace_df.count(), 10)
 
     def test_get_cqc_location_df(self):

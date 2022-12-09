@@ -165,6 +165,7 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
             F.col("mupddate"),
             F.col("isparent"),
             F.col("parentid"),
+            F.col("lastloggedin"),
         )
     )
 
