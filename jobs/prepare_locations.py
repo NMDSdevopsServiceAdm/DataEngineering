@@ -44,6 +44,21 @@ def main(
             F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
+
+        # purge using coverage rules
+        # ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
+        # Add in coverage column
+
+        """
+        def cqc_location_found_in_ascwds(df):
+            df = df.withColumn(
+                "location_in_ASCWDS",
+                F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS"),
+                )
+
+            return df
+        
+        """
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
         ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed("import_date", "ascwds_workplace_import_date")
 
@@ -149,6 +164,7 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
             F.col("orgid"),
             F.col("mupddate"),
             F.col("isparent"),
+            F.col("parentid"),
         )
     )
 
@@ -397,6 +413,43 @@ def clean(input_df):
     input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
 
     return input_df
+
+
+"""
+def create_coverage_df(input_df):
+    # Remove all locations that haven't been update for two years
+    print("Purging ASCWDS accounts...")
+
+    # Convert import_date to date field and remove 2 years
+    input_df = input_df.withColumn("purge_date", F.add_months(F.col("import_date"), -24))
+
+    # Use most recent of mupdate or lastloggedin for purge
+    input_df = input_df.withColumn(
+        "max_mupddate_and_lastloggedin",
+        F.greatest(F.col("mupddate"), F.col("lastloggedin")),
+    )
+
+    # if the org is a parent, use the max mupddate for all locations at the org
+    org_purge_df = (
+        input_df.select("locationid", "orgid", "max_mupddate_and_lastloggedin", "import_date")
+        .groupBy("orgid", "import_date")
+        .agg(F.max("max_mupddate_and_lastloggedin").alias("max_mupddate_and_lastloggedin_org"))
+    )
+    input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
+    input_df = input_df.withColumn(
+        "date_for_purge",
+        F.when((input_df.isparent == "1"), input_df.max_mupddate_and_lastloggedin_org).otherwise(
+            input_df.max_mupddate_and_lastloggedin
+        ),
+    )
+
+    # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
+    input_df = input_df.filter(input_df.purge_date < input_df.date_for_purge)
+
+    input_df.drop("isparent", "mupddate", "lastloggedin", "max_mupddate_and_lastloggedin")
+
+    return input_df
+"""
 
 
 def purge_workplaces(input_df):
