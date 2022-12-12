@@ -48,7 +48,7 @@ def main(
         ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
 
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
-        # make this into a function and test v
+        # TODO make this into a function and test v
         ascwds_workplace_with_coverage_df = ascwds_coverage_df.join(
             ascwds_workplace_df, ["locationid", "establishmentid", "import_date"], "left"
         )
@@ -76,7 +76,7 @@ def main(
         output_df = output_df.join(ascwds_workplace_with_coverage_df, "locationid", "full")
 
         """
-        # add column if in ascwds
+        # TODO add column if in ascwds
         def cqc_location_found_in_ascwds(df):
             df = df.withColumn(
                 "location_in_ASCWDS",
