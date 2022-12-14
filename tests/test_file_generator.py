@@ -159,9 +159,7 @@ def generate_ethnicity_census_lsoa_csv(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
-            output_destination
-        )
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
 
     return df
 
@@ -405,250 +403,30 @@ def generate_ascwds_workplace_file(output_destination):
         "parentid",
         "lastloggedin",
     ]
-
+    # fmt: off
     rows = [
-        (
-            "1-000000001",
-            "101",
-            14,
-            16,
-            "20200101",
-            "1",
-            date(2021, 2, 1),
-            0,
-            "201",
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000002",
-            "102",
-            76,
-            65,
-            "20200101",
-            "1",
-            date(2021, 4, 1),
-            1,
-            None,
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000003",
-            "103",
-            34,
-            34,
-            "20200101",
-            "2",
-            date(2021, 3, 1),
-            0,
-            "203",
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000004",
-            "104",
-            234,
-            265,
-            "20190101",
-            "2",
-            date(2021, 4, 1),
-            0,
-            None,
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000005",
-            "105",
-            62,
-            65,
-            "20190101",
-            "3",
-            date(2021, 10, 1),
-            0,
-            None,
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000006",
-            "106",
-            77,
-            77,
-            "20190101",
-            "3",
-            date(2020, 3, 1),
-            1,
-            None,
-            date(2021, 2, 1),
-        ),
-        (
-            "1-000000007",
-            "107",
-            51,
-            42,
-            "20190101",
-            "3",
-            date(2021, 5, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000008",
-            "108",
-            36,
-            34,
-            "20190101",
-            "4",
-            date(2021, 7, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000009",
-            "109",
-            34,
-            32,
-            "20190101",
-            "5",
-            date(2021, 12, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-0000000010",
-            "110",
-            14,
-            20,
-            "20190101",
-            "6",
-            date(2021, 3, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000001",
-            "101",
-            14,
-            16,
-            "20220101",
-            "1",
-            date(2021, 2, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000002",
-            "102",
-            76,
-            65,
-            "20220101",
-            "1",
-            date(2021, 4, 1),
-            1,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000003",
-            "103",
-            34,
-            34,
-            "20220101",
-            "2",
-            date(2021, 3, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000004",
-            "104",
-            234,
-            265,
-            "20220101",
-            "2",
-            date(2021, 4, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000005",
-            "105",
-            62,
-            65,
-            "20210101",
-            "3",
-            date(2021, 10, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000006",
-            "106",
-            77,
-            77,
-            "20210101",
-            "3",
-            date(2020, 3, 1),
-            1,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000007",
-            "107",
-            51,
-            42,
-            "20210101",
-            "3",
-            date(2021, 5, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000008",
-            "108",
-            36,
-            34,
-            "20210101",
-            "4",
-            date(2021, 7, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-000000009",
-            "109",
-            34,
-            32,
-            "20210101",
-            "5",
-            date(2021, 12, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
-        (
-            "1-0000000010",
-            "110",
-            14,
-            20,
-            "20210101",
-            "6",
-            date(2021, 3, 1),
-            0,
-            None,
-            date(2021, 5, 1),
-        ),
+        ("1-000000001","101",14,16,"20200101","1",date(2021, 2, 1),0,"201",date(2021, 2, 1),),
+        ("1-000000002","102",76,65,"20200101","1",date(2021, 4, 1),1,None,date(2021, 2, 1),),
+        ("1-000000003","103",34,34,"20200101","2",date(2021, 3, 1),0,"203",date(2021, 2, 1),),
+        ("1-000000004","104",234,265,"20190101","2",date(2021, 4, 1),0,None,date(2021, 2, 1),),
+        ("1-000000005","105",62,65,"20190101","3",date(2021, 10, 1),0,None,date(2021, 2, 1),),
+        ("1-000000006","106",77,77,"20190101","3",date(2020, 3, 1),1,None,date(2021, 2, 1),),
+        ("1-000000007","107",51,42,"20190101","3",date(2021, 5, 1),0,None,date(2021, 5, 1),),
+        ("1-000000008","108",36,34,"20190101","4",date(2021, 7, 1),0,None,date(2021, 5, 1),),
+        ("1-000000009","109",34,32,"20190101","5",date(2021, 12, 1),0,None,date(2021, 5, 1),),
+        ("1-0000000010","110",14,20,"20190101","6",date(2021, 3, 1),0,None,date(2021, 5, 1),),
+        ("1-000000001","101",14,16,"20220101","1",date(2021, 2, 1),0,None,date(2021, 5, 1),),
+        ("1-000000002","102",76,65,"20220101","1",date(2021, 4, 1),1,None,date(2021, 5, 1),),
+        ("1-000000003","103",34,34,"20220101","2",date(2021, 3, 1),0,None,date(2021, 5, 1),),
+        ("1-000000004","104",234,265,"20220101","2",date(2021, 4, 1),0,None,date(2021, 5, 1),),
+        ("1-000000005","105",62,65,"20210101","3",date(2021, 10, 1),0,None,date(2021, 5, 1),),
+        ("1-000000006","106",77,77,"20210101","3",date(2020, 3, 1),1,None,date(2021, 5, 1),),
+        ("1-000000007","107",51,42,"20210101","3",date(2021, 5, 1),0,None,date(2021, 5, 1),),
+        ("1-000000008","108",36,34,"20210101","4",date(2021, 7, 1),0,None,date(2021, 5, 1),),
+        ("1-000000009","109",34,32,"20210101","5",date(2021, 12, 1),0,None,date(2021, 5, 1),),
+        ("1-0000000010","110",14,20,"20210101","6",date(2021, 3, 1),0,None,date(2021, 5, 1),),
     ]
-
+    # fmt: on
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
@@ -726,9 +504,7 @@ def generate_raw_cqc_care_directory_csv_file(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
-            output_destination
-        )
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
 
     return df
 
@@ -750,14 +526,10 @@ def generate_cqc_care_directory_file(output_destination):
     ]
     # fmt: on
 
-    df = spark.createDataFrame(
-        rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA
-    )
+    df = spark.createDataFrame(rows, schema=cqc_care_directory_schema.CQC_CARE_DIRECTORY_SCHEMA)
 
     if output_destination:
-        df.coalesce(1).write.option("header", True).mode("overwrite").csv(
-            output_destination
-        )
+        df.coalesce(1).write.option("header", True).mode("overwrite").csv(output_destination)
 
     return df
 
@@ -817,9 +589,7 @@ def generate_version_0_ascwds_worker_file(output_destination):
     df = df.withColumn("old_unused_column", F.lit("a"))
 
     if output_destination:
-        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
-            output_destination
-        )
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(output_destination)
 
     return df, schema
 
@@ -893,16 +663,12 @@ def generate_version_1_ascwds_worker_file(output_destination):
     df = df.withColumn("unused_column", F.lit("d"))
 
     if output_destination:
-        df.coalesce(1).write.partitionBy("version").mode("append").parquet(
-            output_destination
-        )
+        df.coalesce(1).write.partitionBy("version").mode("append").parquet(output_destination)
 
     return df, schema
 
 
-def generate_flexible_worker_file_hours_worked(
-    emplstat, zerohours, averagehours, conthrs
-):
+def generate_flexible_worker_file_hours_worked(emplstat, zerohours, averagehours, conthrs):
     spark = utils.get_spark()
     columns = [
         "emplstat",
@@ -997,15 +763,13 @@ def generate_location_features_file_parquet(output_destination=None):
         schema=feature_columns,
     )
     if output_destination:
-        df.write.mode("overwrite").partitionBy(
-            "snapshot_year", "snapshot_month", "snapshot_day"
-        ).parquet(output_destination)
+        df.write.mode("overwrite").partitionBy("snapshot_year", "snapshot_month", "snapshot_day").parquet(
+            output_destination
+        )
     return df
 
 
-def generate_prepared_locations_file_parquet(
-    output_destination=None, partitions=["2022", "03", "08"], append=False
-):
+def generate_prepared_locations_file_parquet(output_destination=None, partitions=["2022", "03", "08"], append=False):
     spark = utils.get_spark()
     columns = [
         "locationid",
@@ -1052,9 +816,7 @@ def generate_prepared_locations_file_parquet(
     else:
         mode = "overwrite"
     if output_destination:
-        df.write.mode(mode).partitionBy(
-            "snapshot_year", "snapshot_month", "snapshot_day"
-        ).parquet(output_destination)
+        df.write.mode(mode).partitionBy("snapshot_year", "snapshot_month", "snapshot_day").parquet(output_destination)
 
     return df
 
@@ -1232,9 +994,7 @@ def generate_multiple_boolean_columns(output_destination):
     df = spark.createDataFrame(rows, columns)
 
     if output_destination:
-        df.coalesce(1).write.mode("overwrite").option("header", True).csv(
-            output_destination
-        )
+        df.coalesce(1).write.mode("overwrite").option("header", True).csv(output_destination)
 
     return df
 
