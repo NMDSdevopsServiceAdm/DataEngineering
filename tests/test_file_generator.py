@@ -1336,3 +1336,23 @@ def generate_acswds_workplace_structure_file(output_destination):
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
+
+
+def generate_acswds_workplace_structure_file(output_destination):
+    spark = utils.get_spark()
+    ascwds_schema = StructType(
+        fields=[
+            StructField("locationid", StringType(), True),
+            StructField("establishmentid", StringType(), True),
+        ]
+    )
+    rows = [
+        ("1", None),
+        ("2", "5"),
+    ]
+    df = spark.createDataFrame(data=rows, schema=ascwds_schema)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df

@@ -536,6 +536,31 @@ class PrepareLocationsTests(unittest.TestCase):
 
         self.assertEqual(df.columns, ["locationid", "establishmentid", "import_date"])
 
+    def test_add_column_if_locationid_is_in_ascwds(self):
+        spark = utils.get_spark()
+        ascwds_schema = StructType(
+            fields=[
+                StructField("locationid", StringType(), True),
+                StructField("establishmentid", StringType(), True),
+            ]
+        )
+        rows = [
+            ("1", None),
+            ("2", "5"),
+        ]
+        df = spark.createDataFrame(data=rows, schema=ascwds_schema)
+
+        df = prepare_locations.add_column_if_locationid_is_in_ascwds(df)
+
+        self.assertEqual(df.count(), 2)
+
+        df_collected = df.collect()
+
+        self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], "Not in ASC-WDS")
+        self.assertEqual(df_collected[1]["cqc_coverage_in_ascwds"], "In ASC-WDS")
+
+        self.assertEqual(df.columns, ["locationid", "establishmentid", "cqc_coverage_in_ascwds"])
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

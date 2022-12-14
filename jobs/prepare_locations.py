@@ -48,7 +48,7 @@ def main(
         ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
 
         ascwds_workplace_df = purge_workplaces(ascwds_workplace_df)
-        # TODO make this into a function and test v
+
         ascwds_workplace_with_coverage_df = ascwds_coverage_df.join(
             ascwds_workplace_df, ["locationid", "establishmentid", "import_date"], "left"
         )
@@ -75,20 +75,11 @@ def main(
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(ascwds_workplace_with_coverage_df, "locationid", "full")
 
-        """
-        # TODO add column if in ascwds
-        def cqc_location_found_in_ascwds(df):
-            df = df.withColumn(
-                "location_in_ASCWDS",
-                F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS"),
-                )
-
-            return df
-        
-        """
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
         output_df = calculate_jobcount(output_df)
+
+        output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
         output_df = output_df.withColumn("snapshot_date", F.lit(snapshot_date_row["snapshot_date"]))
         output_df = output_df.withColumn("snapshot_year", F.col("snapshot_date").substr(1, 4))
@@ -679,6 +670,15 @@ def calculate_jobcount(input_df):
     input_df = calculate_jobcount_estimate_from_beds(input_df)
 
     return input_df
+
+
+def add_column_if_locationid_is_in_ascwds(df):
+    df = df.withColumn(
+        "cqc_coverage_in_ascwds",
+        F.when(df.establishmentid.isNull(), "Not in ASC-WDS").otherwise("In ASC-WDS"),
+    )
+
+    return df
 
 
 if __name__ == "__main__":
