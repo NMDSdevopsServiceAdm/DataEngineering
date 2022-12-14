@@ -44,7 +44,9 @@ class PrepareLocationsTests(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_prepare_locations"
+        ).getOrCreate()
         generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
         self.cqc_loc_df = generate_cqc_locations_file(self.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(self.TEST_CQC_PROVIDERS_FILE)
@@ -123,7 +125,9 @@ class PrepareLocationsTests(unittest.TestCase):
         )
 
     def test_get_ascwds_workplace_df(self):
-        workplace_df = prepare_locations.get_ascwds_workplace_df(self.TEST_ASCWDS_WORKPLACE_FILE, "20200101")
+        workplace_df = prepare_locations.get_ascwds_workplace_df(
+            self.TEST_ASCWDS_WORKPLACE_FILE, "20200101"
+        )
 
         self.assertEqual(workplace_df.columns[0], "locationid")
         self.assertEqual(workplace_df.columns[1], "establishmentid")
@@ -135,7 +139,9 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(workplace_df.count(), 10)
 
     def test_get_cqc_location_df(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE, "20200101")
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE, "20200101"
+        )
 
         self.assertEqual(cqc_location_df.columns[0], "locationid")
         self.assertEqual(cqc_location_df.columns[1], "providerid")
@@ -143,7 +149,9 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_location_df.count(), 14)
 
     def test_get_cqc_provider_df(self):
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(self.TEST_CQC_PROVIDERS_FILE, "20210105")
+        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+            self.TEST_CQC_PROVIDERS_FILE, "20210105"
+        )
 
         self.assertEqual(cqc_provider_df.columns[0], "providerid")
         self.assertEqual(cqc_provider_df.columns[1], "provider_name")
@@ -195,7 +203,9 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         test_date = date(2022, 3, 12)
 
-        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        result = prepare_locations.get_date_closest_to_search_date(
+            test_date, date_search_list
+        )
         self.assertEqual(result, date(2022, 2, 11))
 
     def test_get_date_closest_to_search_date_returns_None_if_no_historical_dates_available(
@@ -210,18 +220,24 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         test_date = date(2019, 1, 1)
 
-        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        result = prepare_locations.get_date_closest_to_search_date(
+            test_date, date_search_list
+        )
         self.assertEqual(result, None)
 
     def test_get_date_closest_to_search_date_with_single_valid_date_returns_date(self):
         date_search_list = [date(2020, 3, 31)]
         test_date = date(2022, 5, 1)
 
-        result = prepare_locations.get_date_closest_to_search_date(test_date, date_search_list)
+        result = prepare_locations.get_date_closest_to_search_date(
+            test_date, date_search_list
+        )
         self.assertEqual(result, date(2020, 3, 31))
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE, "20210101")
+        cqc_location_df = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE, "20210101"
+        )
 
         result = prepare_locations.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
@@ -276,7 +292,9 @@ class PrepareLocationsTests(unittest.TestCase):
             #  date(2020, 3, 30)
         )
 
-        result = prepare_locations.generate_closest_date_matrix(workplace_df, cqc_location_df, cqc_provider_df, pir_df)
+        result = prepare_locations.generate_closest_date_matrix(
+            workplace_df, cqc_location_df, cqc_provider_df, pir_df
+        )
 
         self.assertIsNotNone(result)
         # fmt: off
@@ -475,16 +493,24 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(jobcount_df_list[11]["job_count"], 90.0)
 
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
-        cqc_locations = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE)
+        cqc_locations = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE
+        )
 
-        yorks_and_the_humber_count = cqc_locations.filter(cqc_locations.region == "Yorkshire and The Humber").count()
-        yorks_and_humberside_count = cqc_locations.filter(cqc_locations.region == "Yorkshire & Humberside").count()
+        yorks_and_the_humber_count = cqc_locations.filter(
+            cqc_locations.region == "Yorkshire and The Humber"
+        ).count()
+        yorks_and_humberside_count = cqc_locations.filter(
+            cqc_locations.region == "Yorkshire & Humberside"
+        ).count()
 
         self.assertEqual(yorks_and_humberside_count, 0)
         self.assertEqual(yorks_and_the_humber_count, 5)
 
     def test_get_cqc_location_df_convert_dormancy_to_a_bool(self):
-        cqc_locations = prepare_locations.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE)
+        cqc_locations = prepare_locations.get_cqc_location_df(
+            self.TEST_CQC_LOCATION_FILE
+        )
 
         dormancy_data_type = cqc_locations.schema["dormancy"].dataType
 
@@ -508,18 +534,82 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         rows = [
             ("1", "1", "1", date(2023, 3, 19), "1", date(2018, 9, 5), date(2018, 9, 5)),
-            ("2", "2", "1", date(2023, 3, 19), "0", date(2019, 7, 10), date(2019, 7, 10)),
-            ("3", "3", "1", date(2023, 3, 19), "1", date(2020, 5, 15), date(2020, 5, 15)),
-            ("4", "4", "1", date(2023, 3, 19), "0", date(2021, 3, 20), date(2021, 3, 20)),
-            ("5", "5", "1", date(2023, 3, 19), "1", date(2022, 1, 25), date(2022, 1, 25)),
-            ("6", "6", "2", date(2023, 3, 19), "1", date(2021, 3, 18), date(2021, 3, 18)),
-            ("7", "7", "3", date(2023, 3, 19), "1", date(2021, 3, 19), date(2021, 3, 19)),
-            ("8", "8", "4", date(2023, 3, 19), "1", date(2021, 3, 20), date(2021, 3, 20)),
+            (
+                "2",
+                "2",
+                "1",
+                date(2023, 3, 19),
+                "0",
+                date(2019, 7, 10),
+                date(2019, 7, 10),
+            ),
+            (
+                "3",
+                "3",
+                "1",
+                date(2023, 3, 19),
+                "1",
+                date(2020, 5, 15),
+                date(2020, 5, 15),
+            ),
+            (
+                "4",
+                "4",
+                "1",
+                date(2023, 3, 19),
+                "0",
+                date(2021, 3, 20),
+                date(2021, 3, 20),
+            ),
+            (
+                "5",
+                "5",
+                "1",
+                date(2023, 3, 19),
+                "1",
+                date(2022, 1, 25),
+                date(2022, 1, 25),
+            ),
+            (
+                "6",
+                "6",
+                "2",
+                date(2023, 3, 19),
+                "1",
+                date(2021, 3, 18),
+                date(2021, 3, 18),
+            ),
+            (
+                "7",
+                "7",
+                "3",
+                date(2023, 3, 19),
+                "1",
+                date(2021, 3, 19),
+                date(2021, 3, 19),
+            ),
+            (
+                "8",
+                "8",
+                "4",
+                date(2023, 3, 19),
+                "1",
+                date(2021, 3, 20),
+                date(2021, 3, 20),
+            ),
             ("9", "9", "5", date(2010, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
             ("9", "9", "5", date(2011, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
             ("9", "9", "5", date(2012, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
             ("9", "9", "5", date(2013, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
-            ("10", "10", "6", date(2023, 3, 19), "1", date(2021, 3, 19), date(2022, 3, 19)),
+            (
+                "10",
+                "10",
+                "6",
+                date(2023, 3, 19),
+                "1",
+                date(2021, 3, 19),
+                date(2022, 3, 19),
+            ),
         ]
 
         df = spark.createDataFrame(rows, columns)
@@ -559,7 +649,9 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], "Not in ASC-WDS")
         self.assertEqual(df_collected[1]["cqc_coverage_in_ascwds"], "In ASC-WDS")
 
-        self.assertEqual(df.columns, ["locationid", "establishmentid", "cqc_coverage_in_ascwds"])
+        self.assertEqual(
+            df.columns, ["locationid", "establishmentid", "cqc_coverage_in_ascwds"]
+        )
 
 
 if __name__ == "__main__":
