@@ -53,7 +53,9 @@ def main(
         )
         ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
         ascwds_workplace_df = utils.format_date_fields(
-            ascwds_workplace_df, raw_date_format="dd/MM/yyyy"
+            ascwds_workplace_df,
+            raw_date_format="dd/MM/yyyy",
+            date_column_identifier="lastloggedin",
         )
 
         ascwds_coverage_df = create_coverage_df(ascwds_workplace_df)
