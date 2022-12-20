@@ -14,6 +14,7 @@ from pyspark.sql.types import (
 )
 
 from jobs import prepare_locations
+from utils import utils
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
@@ -97,6 +98,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "provider_name",
                 "orgid",
                 "establishmentid",
+                "cqc_coverage_in_ascwds",
                 "registration_status",
                 "registration_date",
                 "deregistration_date",
@@ -123,6 +125,10 @@ class PrepareLocationsTests(unittest.TestCase):
             ],
         )
 
+        df_collected = output_df.collect()
+
+        self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], 1)
+
     def test_get_ascwds_workplace_df(self):
         workplace_df = prepare_locations.get_ascwds_workplace_df(
             self.TEST_ASCWDS_WORKPLACE_FILE, "20200101"
@@ -133,6 +139,8 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(workplace_df.columns[2], "total_staff")
         self.assertEqual(workplace_df.columns[3], "worker_record_count")
         self.assertEqual(workplace_df.columns[4], "import_date")
+        self.assertEqual(workplace_df.columns[8], "parentid")
+        self.assertEqual(workplace_df.columns[9], "lastloggedin")
         self.assertEqual(workplace_df.count(), 10)
 
     def test_get_cqc_location_df(self):
@@ -516,6 +524,77 @@ class PrepareLocationsTests(unittest.TestCase):
         dormancy_count = cqc_locations.filter(cqc_locations.dormancy).count()
 
         self.assertEqual(dormancy_count, 5)
+
+    def test_create_coverage_df(self):
+        spark = utils.get_spark()
+
+        columns = [
+            "locationid",
+            "establishmentid",
+            "orgid",
+            "import_date",
+            "isparent",
+            "mupddate",
+            "lastloggedin",
+        ]
+        # fmt: off
+        rows = [
+            ("1", "1", "1", date(2023, 3, 19), "1", date(2018, 9, 5), date(2018, 9, 5)),
+            ("2", "2", "1", date(2023, 3, 19), "0", date(2019, 7, 10), date(2019, 7, 10)),
+            ("3", "3", "1", date(2023, 3, 19), "1", date(2020, 5, 15), date(2020, 5, 15)),
+            ("4", "4", "1", date(2023, 3, 19), "0", date(2021, 3, 20), date(2021, 3, 20)),
+            ("5", "5", "1", date(2023, 3, 19), "1", date(2022, 1, 25), date(2022, 1, 25)),
+            ("6", "6", "2", date(2023, 3, 19), "1", date(2021, 3, 18), date(2021, 3, 18)),
+            ("7", "7", "3", date(2023, 3, 19), "1", date(2021, 3, 19), date(2021, 3, 19)),
+            ("8", "8", "4", date(2023, 3, 19), "1", date(2021, 3, 20), date(2021, 3, 20)),
+            ("9", "9", "5", date(2010, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
+            ("9", "9", "5", date(2011, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
+            ("9", "9", "5", date(2012, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
+            ("9", "9", "5", date(2013, 1, 1), "0", date(2010, 1, 1), date(2010, 1, 1)),
+            ("10", "10", "6", date(2023, 3, 19), "1", date(2021, 3, 19), date(2022, 3, 19),),
+        ]
+        # fmt: on
+
+        df = spark.createDataFrame(rows, columns)
+
+        df = prepare_locations.create_coverage_df(df)
+
+        self.assertEqual(df.count(), 8)
+
+        # asserts equivalent items are present in both sequences
+        self.assertCountEqual(
+            df.select("locationid").rdd.flatMap(lambda x: x).collect(),
+            ["1", "3", "4", "5", "8", "9", "9", "10"],
+        )
+
+        self.assertEqual(df.columns, ["locationid", "establishmentid", "import_date"])
+
+    def test_add_column_if_locationid_is_in_ascwds(self):
+        spark = utils.get_spark()
+        ascwds_schema = StructType(
+            fields=[
+                StructField("locationid", StringType(), True),
+                StructField("establishmentid", StringType(), True),
+            ]
+        )
+        rows = [
+            ("1", None),
+            ("2", "5"),
+        ]
+        df = spark.createDataFrame(data=rows, schema=ascwds_schema)
+
+        df = prepare_locations.add_column_if_locationid_is_in_ascwds(df)
+
+        self.assertEqual(df.count(), 2)
+
+        df_collected = df.collect()
+
+        self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], 0)
+        self.assertEqual(df_collected[1]["cqc_coverage_in_ascwds"], 1)
+
+        self.assertEqual(
+            df.columns, ["locationid", "establishmentid", "cqc_coverage_in_ascwds"]
+        )
 
 
 if __name__ == "__main__":
