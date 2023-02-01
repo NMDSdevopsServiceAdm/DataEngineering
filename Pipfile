@@ -17,7 +17,7 @@ spark = "*"
 [dev-packages]
 pylint = "2.11.1"
 autopep8 = "1.6.0"
-black = "*"
+black = "22.12.0"
 flake8 = "*"
 dbldatagen = {git = "git+https://github.com/databrickslabs/dbldatagen", editable = true, ref = "v.0.2.0-rc1-master"}
 numpy = "1.22.4"
