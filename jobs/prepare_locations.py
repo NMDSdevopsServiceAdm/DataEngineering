@@ -6,8 +6,32 @@ from pyspark.sql.types import IntegerType
 
 from utils import utils
 
-MIN_ABSOLUTE_DIFFERENCE = 5
-MIN_PERCENTAGE_DIFFERENCE = 0.1
+LAST_PROCESSED_DATE_INDEX_ZERO = 0
+LAST_PROCESSED_DATE_INDEX_ONE = 1
+LAST_PROCESSED_DATE_INDEX_TWO = 2
+
+START_OF_YEAR_SUBSTRING = 1
+LENGTH_OF_YEAR_SUBSTRING = 4
+START_OF_MONTH_SUBSTRING = 5
+LENGTH_OF_MONTH_SUBSTRING = 2
+START_OF_DAY_SUBSTRING = 7
+LENGTH_OF_DAY_SUBSTRING = 2
+
+MONTHS_BETWEEN_IMPORT_DATE_AND_PURGE_DATE = -24
+
+MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT = 5
+MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT = 0.1
+
+MIN_TOTAL_STAFF_VALUE_PERMITTED = 3
+MIN_WORKER_RECORD_COUNT_PERMITTED = 3
+
+BEDS_IN_WORKPLACE_THRESHOLD = 0
+
+BEDS_TO_JOB_COUNT_INTERCEPT = 8.40975704621392
+BEDS_TO_JOB_COUNT_COEFFICIENT = 1.0010753137758377001
+
+LOCATIONID_IS_IN_ASCWDS = 1
+LOCATIONID_IS_NOT_IN_ASCWDS = 0
 
 
 def main(
@@ -24,9 +48,7 @@ def main(
 
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
-        last_processed_date = (
-            f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
-        )
+        last_processed_date = f"{last_processed_date[LAST_PROCESSED_DATE_INDEX_ZERO]}{last_processed_date[LAST_PROCESSED_DATE_INDEX_ONE]}{last_processed_date[LAST_PROCESSED_DATE_INDEX_TWO]}"
     complete_ascwds_workplace_df = get_ascwds_workplace_df(
         workplace_source, since_date=last_processed_date
     )
@@ -110,13 +132,22 @@ def main(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
         output_df = output_df.withColumn(
-            "snapshot_year", F.col("snapshot_date").substr(1, 4)
+            "snapshot_year",
+            F.col("snapshot_date").substr(
+                START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+            ),
         )
         output_df = output_df.withColumn(
-            "snapshot_month", F.col("snapshot_date").substr(5, 2)
+            "snapshot_month",
+            F.col("snapshot_date").substr(
+                START_OF_MONTH_SUBSTRING, LENGTH_OF_MONTH_SUBSTRING
+            ),
         )
         output_df = output_df.withColumn(
-            "snapshot_day", F.col("snapshot_date").substr(7, 2)
+            "snapshot_day",
+            F.col("snapshot_date").substr(
+                START_OF_YEAR_SUBSTRING, LENGTH_OF_MONTH_SUBSTRING
+            ),
         )
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
@@ -479,7 +510,8 @@ def create_coverage_df(input_df):
 
     # Convert import_date to date field and remove 2 years
     input_df = input_df.withColumn(
-        "purge_date", F.add_months(F.col("import_date"), -24)
+        "purge_date",
+        F.add_months(F.col("import_date"), MONTHS_BETWEEN_IMPORT_DATE_AND_PURGE_DATE),
     )
 
     # Use most recent of mupdate or lastloggedin for purge
@@ -522,7 +554,8 @@ def purge_workplaces(input_df):
 
     # Convert import_date to date field and remove 2 years
     input_df = input_df.withColumn(
-        "purge_date", F.add_months(F.col("import_date"), -24)
+        "purge_date",
+        F.add_months(F.col("import_date"), MONTHS_BETWEEN_IMPORT_DATE_AND_PURGE_DATE),
     )
 
     # if the org is a parent, use the max mupddate for all locations at the org
@@ -620,10 +653,13 @@ def calculate_jobcount_abs_difference_within_range(input_df):
             (
                 F.col("job_count").isNull()
                 & (
-                    (F.col("abs_difference") < MIN_ABSOLUTE_DIFFERENCE)
+                    (
+                        F.col("abs_difference")
+                        < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                    )
                     | (
                         F.col("abs_difference") / F.col("total_staff")
-                        < MIN_PERCENTAGE_DIFFERENCE
+                        < MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
                     )
                 )
             ),
@@ -643,7 +679,10 @@ def calculate_jobcount_handle_tiny_values(input_df):
         F.when(
             (
                 F.col("job_count").isNull()
-                & ((F.col("total_staff") < 3) | (F.col("worker_record_count") < 3))
+                & (
+                    (F.col("total_staff") < MIN_TOTAL_STAFF_VALUE_PERMITTED)
+                    | (F.col("worker_record_count") < MIN_WORKER_RECORD_COUNT_PERMITTED)
+                )
             ),
             F.greatest(F.col("total_staff"), F.col("worker_record_count")),
         ).otherwise(F.col("job_count")),
@@ -651,15 +690,17 @@ def calculate_jobcount_handle_tiny_values(input_df):
 
 
 def calculate_jobcount_estimate_from_beds(input_df):
-    beds_to_jobcount_intercept = 8.40975704621392
-    beds_to_jobcount_coefficient = 1.0010753137758377001
+
     input_df = input_df.withColumn(
         "bed_estimate_jobcount",
         F.when(
-            (F.col("job_count").isNull() & (F.col("number_of_beds") > 0)),
             (
-                beds_to_jobcount_intercept
-                + (F.col("number_of_beds") * beds_to_jobcount_coefficient)
+                F.col("job_count").isNull()
+                & (F.col("number_of_beds") > BEDS_IN_WORKPLACE_THRESHOLD)
+            ),
+            (
+                BEDS_TO_JOB_COUNT_INTERCEPT
+                + (F.col("number_of_beds") * BEDS_TO_JOB_COUNT_COEFFICIENT)
             ),
         ).otherwise(None),
     )
@@ -691,15 +732,24 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 & F.col("bed_estimate_jobcount").isNotNull()
                 & (
                     (
-                        (F.col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
+                        (
+                            F.col("totalstaff_diff")
+                            < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                        )
                         | (
                             F.col("totalstaff_percentage_diff")
-                            < MIN_PERCENTAGE_DIFFERENCE
+                            < MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
                         )
                     )
                     & (
-                        (F.col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                        | (F.col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                        (
+                            F.col("wkrrecs_diff")
+                            < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                        )
+                        | (
+                            F.col("wkrrecs_percentage_diff")
+                            < MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                        )
                     )
                 )
             ),
@@ -715,8 +765,14 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 F.col("job_count").isNull()
                 & F.col("bed_estimate_jobcount").isNotNull()
                 & (
-                    (F.col("totalstaff_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (F.col("totalstaff_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                    (
+                        F.col("totalstaff_diff")
+                        < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                    )
+                    | (
+                        F.col("totalstaff_percentage_diff")
+                        < MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                    )
                 )
             ),
             F.col("total_staff"),
@@ -731,8 +787,14 @@ def calculate_jobcount_estimate_from_beds(input_df):
                 F.col("job_count").isNull()
                 & F.col("bed_estimate_jobcount").isNotNull()
                 & (
-                    (F.col("wkrrecs_diff") < MIN_ABSOLUTE_DIFFERENCE)
-                    | (F.col("wkrrecs_percentage_diff") < MIN_PERCENTAGE_DIFFERENCE)
+                    (
+                        F.col("wkrrecs_diff")
+                        < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                    )
+                    | (
+                        F.col("wkrrecs_percentage_diff")
+                        < MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+                    )
                 )
             ),
             F.col("worker_record_count"),
@@ -771,7 +833,9 @@ def calculate_jobcount(input_df):
 def add_column_if_locationid_is_in_ascwds(df):
     df = df.withColumn(
         "cqc_coverage_in_ascwds",
-        F.when(df.establishmentid.isNull(), 0).otherwise(1),
+        F.when(df.establishmentid.isNull(), LOCATIONID_IS_NOT_IN_ASCWDS).otherwise(
+            LOCATIONID_IS_IN_ASCWDS
+        ),
     )
 
     return df
