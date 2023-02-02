@@ -5,6 +5,8 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 
 from utils import utils
+from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
+
 
 LAST_PROCESSED_DATE_INDEX_ZERO = 0
 LAST_PROCESSED_DATE_INDEX_ONE = 1
@@ -398,20 +400,20 @@ def get_ons_df(ons_source):
     ons_df = spark.read.option("basePath", ons_source).parquet(ons_source)
     ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
     ons_df = ons_df.select(
-        ons_df.pcd.alias("ons_postcode"),
-        ons_df.rgn.alias("ons_region"),
-        ons_df.nhser.alias("nhs_england_region"),
-        ons_df.ctry.alias("country"),
-        ons_df.lsoa.alias("lsoa"),
-        ons_df.msoa.alias("msoa"),
-        ons_df.ccg.alias("clinical_commisioning_group"),
-        ons_df.ru_ind.alias("rural_urban_indicator"),
+        ons_df.pcd.alias(OnsPostcodeDataAliases.ons_postcode),
+        ons_df.rgn.alias(OnsPostcodeDataAliases.region_alias),
+        ons_df.nhser.alias(OnsPostcodeDataAliases.nhs_england_region_alias),
+        ons_df.ctry.alias(OnsPostcodeDataAliases.country_alias),
+        ons_df.lsoa.alias(OnsPostcodeDataAliases.lsoa_alias),
+        ons_df.msoa.alias(OnsPostcodeDataAliases.msoa_alias),
+        ons_df.ccg.alias(OnsPostcodeDataAliases.ccg_alias),
+        ons_df.ru_ind.alias(OnsPostcodeDataAliases.rural_urban_indicator_alias),
         ons_df.stp,
         ons_df.oslaua,
         ons_df.year,
         ons_df.month,
         ons_df.day,
-        ons_df.import_date.alias("ons_import_date"),
+        ons_df.import_date.alias(OnsPostcodeDataAliases.import_date_alias),
     )
 
     return ons_df
