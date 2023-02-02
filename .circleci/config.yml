@@ -103,29 +103,6 @@ jobs:
             - terraform/pipeline/.*
             - .
 
-  terraform-plan-dev:
-    working_directory: /tmp/project
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: terraform plan
-          command: |
-            cd terraform/pipeline
-            terraform init -input=false
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new "DEV-${CIRCLE_BRANCH}"
-            terraform plan -out tfapply
-      - store_artifacts:
-          path: terraform/pipeline/tfapply
-      - persist_to_workspace:
-          root: .
-          paths:
-            - terraform/pipeline/tfapply
-            - terraform/pipeline/.*
-            - .
-
   terraform-apply:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
@@ -240,12 +217,12 @@ workflows:
           filters:
             branches:
               ignore: main
-      - terraform-plan-dev:
+      - terraform-plan:
           requires:
             - test
       - terraform-apply:
           requires:
-            - terraform-plan-dev
+            - terraform-plan
       - deploy-dependencies:
           requires:
             - terraform-apply
