@@ -19,6 +19,21 @@ module "csv_to_parquet_job" {
   }
 }
 
+module "spss_csv_to_parquet_job" {
+  source          = "../modules/glue-job"
+  script_name     = "spss_csv_to_parquet.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.skillsforcare_bucket
+  glue_version    = "2.0"
+
+  job_parameters = {
+    "--source"      = "${module.skillsforcare_bucket.bucket_uri}/spss_job_estimates_csv/CQC IND job counts merged 2013-2022.csv"
+    "--destination" = "${module.skillsforcare_bucket.bucket_uri}/spss_job_estimates_parquets"
+  }
+}
+
+
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ascwds_dataset.py"

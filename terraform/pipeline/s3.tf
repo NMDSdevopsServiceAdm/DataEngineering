@@ -9,3 +9,8 @@ module "datasets_bucket" {
   bucket_name             = "${local.workspace_prefix}-datasets"
   empty_bucket_on_destroy = local.is_development_environment
 }
+
+module "skillsforcare_bucket" {
+  source                  = "../modules/s3-bucket"
+  bucket_name             = "skillsforcare"
+}

@@ -1,13 +1,14 @@
 import sys
 import argparse
 
+from schemas.spss_job_estimates_schema import SPSS_JOBS_ESTIMATES
 from utils import utils
 
 DEFAULT_DELIMITER = ","
 
 
-def main(source, destination, delimiter):
-    df = utils.read_csv(source, delimiter)
+def main(source, destination):
+    df = utils.read_csv_with_defined_schema(source, SPSS_JOBS_ESTIMATES)
     utils.write_to_parquet(df, destination, False)
 
 
@@ -20,12 +21,6 @@ def collect_arguments():
         "--destination",
         help="A destination directory for outputting parquet files",
         required=True,
-    )
-    parser.add_argument(
-        "--delimiter",
-        help="Specify a custom field delimiter",
-        required=False,
-        default=",",
     )
 
     args, _ = parser.parse_known_args()
@@ -41,6 +36,6 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     source, destination, delimiter = collect_arguments()
-    main(source, destination, delimiter)
+    main(source, destination)
 
     print("Spark job 'csv_to_parquet' done")
