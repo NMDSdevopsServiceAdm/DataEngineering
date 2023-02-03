@@ -28,8 +28,8 @@ module "spss_csv_to_parquet_job" {
   glue_version    = "2.0"
 
   job_parameters = {
-    "--source"      = "${module.skillsforcare_bucket.bucket_uri}/spss_job_estimates_csv/CQC IND job counts merged 2013-2022.csv"
-    "--destination" = "${module.skillsforcare_bucket.bucket_uri}/spss_job_estimates_parquets"
+    "--source"      = ""
+    "--destination" = ""
   }
 }
 
