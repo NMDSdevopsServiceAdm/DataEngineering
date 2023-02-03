@@ -2,6 +2,9 @@
 .vscode/*
 *.code-workspace
 
+# ------ pycharm ------ #
+.idea
+
 # Local History for Visual Studio Code
 .history/
 
@@ -56,6 +59,7 @@ terraform.tfvars
 .python-version
 *.pyc
 .DS_Store
+Pipfile.lock
 
 # ------ lambda artefacts ---- #
 lambdas/**.zip
