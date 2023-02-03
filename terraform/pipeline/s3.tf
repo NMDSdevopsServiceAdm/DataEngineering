@@ -11,6 +11,6 @@ module "datasets_bucket" {
 }
 
 module "skillsforcare_bucket" {
-  source                  = "../modules/s3-bucket"
-  bucket_name             = "skillsforcare"
+  source      = "../modules/s3-bucket"
+  bucket_name = "skillsforcare"
 }
