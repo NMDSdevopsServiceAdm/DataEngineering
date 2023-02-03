@@ -4,8 +4,6 @@ import argparse
 from schemas.spss_job_estimates_schema import SPSS_JOBS_ESTIMATES
 from utils import utils
 
-DEFAULT_DELIMITER = ","
-
 
 def main(source, destination):
     df = utils.read_csv_with_defined_schema(source, SPSS_JOBS_ESTIMATES)
@@ -25,17 +23,14 @@ def collect_arguments():
 
     args, _ = parser.parse_known_args()
 
-    if args.delimiter:
-        print(f"Utilising custom delimiter '{args.delimiter}'")
-
-    return args.source, args.destination, args.delimiter
+    return args.source, args.destination
 
 
 if __name__ == "__main__":
     print("Spark job 'csv_to_parquet' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    source, destination, delimiter = collect_arguments()
+    source, destination = collect_arguments()
     main(source, destination)
 
     print("Spark job 'csv_to_parquet' done")
