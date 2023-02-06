@@ -3,8 +3,7 @@ from pyspark.sql.types import (
     StructType,
     StringType,
     FloatType,
-    IntegerType,
-    DateType,
+    IntegerType
 )
 
 SPSS_JOBS_ESTIMATES = StructType(
@@ -19,7 +18,7 @@ SPSS_JOBS_ESTIMATES = StructType(
         StructField("jr28work", FloatType(), False),
         StructField("Data_Used", IntegerType(), True),
         StructField("All_jobs", FloatType(), True),
-        StructField("Snapshot_date", DateType(), True),
+        StructField("Snapshot_date", StringType(), True),
         StructField("Local_authority", StringType(), False),
         StructField("Region", StringType(), False),
         StructField("Main_service", StringType(), False),
