@@ -3,7 +3,7 @@ from pyspark.sql.types import (
     StructType,
     StringType,
     FloatType,
-    IntegerType
+    IntegerType,
 )
 
 SPSS_JOBS_ESTIMATES = StructType(
