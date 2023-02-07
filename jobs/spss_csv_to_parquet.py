@@ -16,7 +16,7 @@ def main(source, destination):
         raw_date_format="yyyy/MM/dd",
         date_column_identifier="snapshot_date_formatted",
     )
-    utils.write_to_parquet(df, destination, False)
+    utils.write_to_parquet(df_with_formatted_date, destination, False)
 
 
 def collect_arguments():
