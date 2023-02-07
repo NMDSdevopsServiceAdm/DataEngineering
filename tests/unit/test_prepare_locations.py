@@ -22,13 +22,18 @@ from tests.test_file_generator import (
     generate_ons_denormalised_data,
     generate_pir_file,
 )
-from utils.prepare_locations_utils.job_calculator import calculate_jobcount_estimate_from_beds
-from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import \
-    calculate_jobcount_handle_tiny_values
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import \
-    calculate_jobcount_abs_difference_within_range
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import \
-    calculate_jobcount_totalstaff_equal_wkrrecs
+from utils.prepare_locations_utils.job_calculator import (
+    calculate_jobcount_estimate_from_beds,
+)
+from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import (
+    calculate_jobcount_handle_tiny_values,
+)
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import (
+    calculate_jobcount_abs_difference_within_range,
+)
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import (
+    calculate_jobcount_totalstaff_equal_wkrrecs,
+)
 
 
 class PrepareLocationsTests(unittest.TestCase):

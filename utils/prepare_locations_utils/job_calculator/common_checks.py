@@ -15,6 +15,6 @@ def selected_column_is_null(col_name: str):
 
 
 def column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
-        col_name: str, min_abs_diff: float
+    col_name: str, min_abs_diff: float
 ) -> bool:
     return F.col(col_name) < min_abs_diff
