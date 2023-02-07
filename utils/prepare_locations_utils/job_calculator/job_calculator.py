@@ -21,7 +21,6 @@ from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff
 def calculate_jobcount(input_df):
     print("Calculating job_count...")
 
-    # Add null/empty job_count column
     input_df = input_df.withColumn("job_count", F.lit(None).cast(IntegerType()))
 
     input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
