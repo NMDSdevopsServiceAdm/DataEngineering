@@ -679,11 +679,11 @@ def calculate_jobcount_abs_difference_within_range(input_df):
                     )
                 )
             ),
-            F.col("calculated_average"),
+            (F.col("total_staff") + F.col("worker_record_count")) / 2,
         ).otherwise(F.col("job_count")),
     )
 
-    input_df = input_df.drop("abs_difference", "calculated_average")
+    input_df = input_df.drop("abs_difference")
 
     return input_df
 
