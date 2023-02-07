@@ -5,13 +5,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 
 from utils import utils
-from utils.prepare_locations_utils.job_estimate_calculator import (
-    calculate_jobcount_estimate_from_beds,
-    calculate_jobcount_totalstaff_equal_wkrrecs,
-    calculate_jobcount_coalesce_totalstaff_wkrrecs,
-    calculate_jobcount_abs_difference_within_range,
-    calculate_jobcount_handle_tiny_values,
-)
+from utils.prepare_locations_utils.job_calculator import calculate_jobcount
 from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
 
 LAST_PROCESSED_DATE_INDEX_ZERO = 0
@@ -609,19 +603,7 @@ def add_cqc_sector(input_df):
     return input_df
 
 
-def calculate_jobcount(input_df):
-    print("Calculating job_count...")
 
-    # Add null/empty job_count column
-    input_df = input_df.withColumn("job_count", F.lit(None).cast(IntegerType()))
-
-    input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
-    input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
-    input_df = calculate_jobcount_abs_difference_within_range(input_df)
-    input_df = calculate_jobcount_handle_tiny_values(input_df)
-    input_df = calculate_jobcount_estimate_from_beds(input_df)
-
-    return input_df
 
 
 def add_column_if_locationid_is_in_ascwds(df):
