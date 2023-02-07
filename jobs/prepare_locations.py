@@ -659,9 +659,6 @@ def calculate_jobcount_abs_difference_within_range(input_df):
     input_df = input_df.withColumn(
         "abs_difference", F.abs(input_df.total_staff - input_df.worker_record_count)
     )
-    input_df = calculate_row_level_average_from_multiple_columns(
-        input_df, [F.col("total_staff"), F.col("worker_record_count")]
-    )
 
     input_df = input_df.withColumn(
         "job_count",
