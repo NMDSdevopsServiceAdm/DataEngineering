@@ -443,7 +443,7 @@ class PrepareLocationsTests(unittest.TestCase):
         df = prepare_locations.calculate_row_level_average_from_multiple_columns(df)
 
         df = df.collect()
-        self.assertEqual(df[1]["calculated_average"], 1.5)
+        self.assertEqual(df[0]["calculated_average"], 1.5)
 
     def test_calculate_jobcount_abs_difference_within_range(self):
         rows = [
