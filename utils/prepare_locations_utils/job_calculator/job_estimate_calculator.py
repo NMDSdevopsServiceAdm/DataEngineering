@@ -2,19 +2,7 @@ import pyspark.sql
 from pyspark.sql import functions as F
 
 from utils.prepare_locations_utils.job_calculator.common_checks import job_count_from_ascwds_is_not_populated
-
-BEDS_IN_WORKPLACE_THRESHOLD = 0
-
-BEDS_TO_JOB_COUNT_INTERCEPT = 8.40975704621392
-BEDS_TO_JOB_COUNT_COEFFICIENT = 1.0010753137758377001
-MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT = 5
-MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT = 0.1
-
-MIN_TOTAL_STAFF_VALUE_PERMITTED = 3
-MIN_WORKER_RECORD_COUNT_PERMITTED = 3
-
-
-
+from utils.prepare_locations_utils.job_calculator.calculation_constants import JobCalculationConstants as job_calc_const
 
 
 def number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
@@ -24,8 +12,8 @@ def number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
 
 
 def calculate_jobcount_estimate_based_on_bed_to_staff_calculation_formula():
-    return BEDS_TO_JOB_COUNT_INTERCEPT + (
-            F.col("number_of_beds") * BEDS_TO_JOB_COUNT_COEFFICIENT
+    return job_calc_const.BEDS_TO_JOB_COUNT_INTERCEPT + (
+            F.col("number_of_beds") * job_calc_const.BEDS_TO_JOB_COUNT_COEFFICIENT
     )
 
 
@@ -59,7 +47,7 @@ def bed_estimated_job_count_is_populated(col_name: str) -> pyspark.sql.Column:
 def difference_between_total_staff_and_worker_record_is_less_than_abs_diff() -> bool:
     return (
             F.col("totalstaff_diff")
-            < MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+            < job_calc_const.MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
     )
 
 
@@ -82,7 +70,7 @@ def calculate_jobcount_estimate_from_beds(input_df):
             (
                     job_count_from_ascwds_is_not_populated("job_count")
                     & number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
-                col_name="number_of_beds", threshold=BEDS_IN_WORKPLACE_THRESHOLD
+                col_name="number_of_beds", threshold=job_calc_const.BEDS_IN_WORKPLACE_THRESHOLD
             )
             ),
             (calculate_jobcount_estimate_based_on_bed_to_staff_calculation_formula()),
@@ -171,12 +159,12 @@ def worker_recs_diff_or_worker_records_percentage_diff_within_tolerated_range():
     return (
         column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
             col_name="wkrrecs_diff",
-            min_abs_diff=MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+            min_abs_diff=job_calc_const.MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
         )
     ) | (
         column_value_is_less_than_min_abs_pct_difference_between_total_staff_and_worker_record_count(
             col_name="wkrrecs_percentage_diff",
-            min_abs_diff_pct=MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+            min_abs_diff_pct=job_calc_const.MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
         )
     )
 
@@ -185,12 +173,12 @@ def total_staff_diff_or_total_staff_pct_diff_within_tolerated_range():
     return (
         column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
             col_name="totalstaff_diff",
-            min_abs_diff=MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+            min_abs_diff=job_calc_const.MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
         )
     ) | (
         column_value_is_less_than_min_abs_pct_difference_between_total_staff_and_worker_record_count(
             col_name="totalstaff_percentage_diff",
-            min_abs_diff_pct=MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+            min_abs_diff_pct=job_calc_const.MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
         )
     )
 
@@ -216,8 +204,8 @@ def select_the_bigger_value_between_total_staff_and_worker_rec_count():
 
 
 def total_staff_or_worker_record_count_less_than_permitted_minimum():
-    return ((F.col("total_staff") < MIN_TOTAL_STAFF_VALUE_PERMITTED)
-            | (F.col("worker_record_count") < MIN_WORKER_RECORD_COUNT_PERMITTED))
+    return ((F.col("total_staff") < job_calc_const.MIN_TOTAL_STAFF_VALUE_PERMITTED)
+            | (F.col("worker_record_count") < job_calc_const.MIN_WORKER_RECORD_COUNT_PERMITTED))
 
 
 def calculate_jobcount_abs_difference_within_range(input_df):
@@ -235,12 +223,12 @@ def calculate_jobcount_abs_difference_within_range(input_df):
 
                             column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
                                 col_name='abs_difference',
-                                min_abs_diff=MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT)
+                                min_abs_diff=job_calc_const.MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT)
 
                             |
                             mean_abs_difference_less_than_min_pct_difference(abs_dff_col='abs_difference',
                                                                              comparison_col='total_staff',
-                                                                             min_diff_val=MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT)
+                                                                             min_diff_val=job_calc_const.MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT)
 
                     )
             ),
@@ -284,7 +272,7 @@ def select_the_non_null_value_of_total_staff_and_worker_record_count(input_df):
     return F.coalesce(input_df.total_staff, input_df.worker_record_count)
 
 
-def selected_column_is_not_null(col_name:str):
+def selected_column_is_not_null(col_name: str):
     return F.col(col_name).isNotNull()
 
 
@@ -308,7 +296,7 @@ def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
     )
 
 
-def two_cols_are_equal_and_not_null(first_col:str, second_col: str):
+def two_cols_are_equal_and_not_null(first_col: str, second_col: str):
     return ((F.col(first_col) == F.col(second_col))
             & F.col(second_col).isNotNull()
             & F.col(first_col).isNotNull()
