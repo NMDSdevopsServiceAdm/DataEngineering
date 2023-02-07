@@ -22,7 +22,13 @@ from tests.test_file_generator import (
     generate_ons_denormalised_data,
     generate_pir_file,
 )
-from utils.prepare_locations_utils.job_calculator import job_estimate_calculator
+from utils.prepare_locations_utils.job_calculator import calculate_jobcount_estimate_from_beds
+from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import \
+    calculate_jobcount_handle_tiny_values
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import \
+    calculate_jobcount_abs_difference_within_range
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import \
+    calculate_jobcount_totalstaff_equal_wkrrecs
 
 
 class PrepareLocationsTests(unittest.TestCase):
@@ -409,7 +415,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = job_estimate_calculator.calculate_jobcount_totalstaff_equal_wkrrecs(df)
+        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -422,7 +428,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = job_estimate_calculator.calculate_jobcount_abs_difference_within_range(df)
+        df = calculate_jobcount_abs_difference_within_range(df)
         self.assertEqual(df.count(), 2)
 
         df = df.collect()
@@ -435,7 +441,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = job_estimate_calculator.calculate_jobcount_handle_tiny_values(df)
+        df = calculate_jobcount_handle_tiny_values(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
