@@ -1,6 +1,8 @@
 import pyspark.sql
 from pyspark.sql import functions as F
 
+from utils.prepare_locations_utils.job_calculator.common_checks import job_count_from_ascwds_is_not_populated
+
 BEDS_IN_WORKPLACE_THRESHOLD = 0
 
 BEDS_TO_JOB_COUNT_INTERCEPT = 8.40975704621392
@@ -12,8 +14,7 @@ MIN_TOTAL_STAFF_VALUE_PERMITTED = 3
 MIN_WORKER_RECORD_COUNT_PERMITTED = 3
 
 
-def job_count_from_ascwds_is_not_populated(col_name: str) -> pyspark.sql.Column:
-    return F.col(col_name).isNull()
+
 
 
 def number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
