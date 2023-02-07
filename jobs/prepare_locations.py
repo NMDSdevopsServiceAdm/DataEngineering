@@ -5,7 +5,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 
 from utils import utils
-from utils.prepare_locations_utils.job_calculator import calculate_jobcount
+from utils.prepare_locations_utils.job_calculator.job_calculator import calculate_jobcount
 from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
 
 LAST_PROCESSED_DATE_INDEX_ZERO = 0

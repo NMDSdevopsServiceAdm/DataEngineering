@@ -22,7 +22,7 @@ from tests.test_file_generator import (
     generate_ons_denormalised_data,
     generate_pir_file,
 )
-from utils.prepare_locations_utils import job_estimate_calculator
+from utils.prepare_locations_utils.job_calculator import job_estimate_calculator
 
 
 class PrepareLocationsTests(unittest.TestCase):
