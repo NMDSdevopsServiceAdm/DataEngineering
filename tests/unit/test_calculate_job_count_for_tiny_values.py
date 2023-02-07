@@ -2,10 +2,17 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    IntegerType,
+    DoubleType,
+)
 
-from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import \
-    calculate_jobcount_handle_tiny_values
+from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import (
+    calculate_jobcount_handle_tiny_values,
+)
 
 
 class TestJobCountTinyValues(unittest.TestCase):

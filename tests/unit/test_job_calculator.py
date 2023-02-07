@@ -3,14 +3,14 @@ import warnings
 
 from pyspark.sql import SparkSession
 
-from utils.prepare_locations_utils.job_calculator.job_calculator import calculate_jobcount
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    calculate_jobcount,
+)
 
 
 class TestJobCalculator(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_job_calculator"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_job_calculator").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 

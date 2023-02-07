@@ -435,8 +435,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[0]["job_count"], 11)
         self.assertEqual(df[1]["job_count"], 104.5)
 
-
-
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
         cqc_locations = prepare_locations.get_cqc_location_df(
             self.TEST_CQC_LOCATION_FILE
