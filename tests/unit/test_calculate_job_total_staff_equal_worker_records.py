@@ -10,8 +10,9 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import \
-    calculate_jobcount_totalstaff_equal_wkrrecs
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import (
+    calculate_jobcount_totalstaff_equal_wkrrecs,
+)
 
 
 class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):

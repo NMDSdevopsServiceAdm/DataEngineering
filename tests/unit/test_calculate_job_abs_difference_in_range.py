@@ -10,8 +10,9 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import \
-    calculate_jobcount_abs_difference_within_range
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import (
+    calculate_jobcount_abs_difference_within_range,
+)
 
 
 class TestJobCountAbsDiffInRange(unittest.TestCase):

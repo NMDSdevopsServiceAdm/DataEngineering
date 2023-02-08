@@ -11,9 +11,12 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.common_checks import \
-    column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count, selected_column_is_null, \
-    selected_column_is_not_null, job_count_from_ascwds_is_not_populated
+from utils.prepare_locations_utils.job_calculator.common_checks import (
+    column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count,
+    selected_column_is_null,
+    selected_column_is_not_null,
+    job_count_from_ascwds_is_not_populated,
+)
 
 
 # noinspection PyTypeChecker
@@ -36,13 +39,14 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_job_count_from_ascwds_is_not_populated(self):
-        rows = [
-            ("1-000000001", 2, 2, 3, None),
-            ("1-000000002", 2, 2, 3, 1.5)
-        ]
+        rows = [("1-000000001", 2, 2, 3, None), ("1-000000002", 2, 2, 3, 1.5)]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
-        result = df.withColumn('result', F.when(
-            (job_count_from_ascwds_is_not_populated('job_count')), True).otherwise(False))
+        result = df.withColumn(
+            "result",
+            F.when(
+                (job_count_from_ascwds_is_not_populated("job_count")), True
+            ).otherwise(False),
+        )
 
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], True)
@@ -50,13 +54,12 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
 
     def test_selected_column_is_null(self):
 
-        rows = [
-            ("1-000000001", None, 2, 3, 1.5),
-            ("1-000000002", 2, 2, 3, 1.5)
-        ]
+        rows = [("1-000000001", None, 2, 3, 1.5), ("1-000000002", 2, 2, 3, 1.5)]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
-        result = df.withColumn('result', F.when(
-            (selected_column_is_null('total_staff')), True).otherwise(False))
+        result = df.withColumn(
+            "result",
+            F.when((selected_column_is_null("total_staff")), True).otherwise(False),
+        )
 
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], True)
@@ -64,48 +67,57 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
 
     def test_selected_column_is_not_null(self):
 
-        rows = [
-            ("1-000000001", None, 2, 3, 1.5),
-            ("1-000000002", 2, 2, 3, 1.5)
-        ]
+        rows = [("1-000000001", None, 2, 3, 1.5), ("1-000000002", 2, 2, 3, 1.5)]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
-        result = df.withColumn('result', F.when(
-            (selected_column_is_not_null('total_staff')), True).otherwise(False))
+        result = df.withColumn(
+            "result",
+            F.when((selected_column_is_not_null("total_staff")), True).otherwise(False),
+        )
 
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], False)
         self.assertEqual(result_df[1]["result"], True)
 
-    def test_column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count_resolves_to_true(self):
-        rows = [
-            ("1-000000001", 1, 2, None, 1.5)
-
-        ]
+    def test_column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count_resolves_to_true(
+        self,
+    ):
+        rows = [("1-000000001", 1, 2, None, 1.5)]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
         min_diff_val = 3
 
-        result = df.withColumn('result', F.when(
-            (column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count
-             ('job_count', min_diff_val)), True).otherwise(False))
+        result = df.withColumn(
+            "result",
+            F.when(
+                (
+                    column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
+                        "job_count", min_diff_val
+                    )
+                ),
+                True,
+            ).otherwise(False),
+        )
 
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], True)
 
-    def test_column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count_resolves_to_false(self):
-        rows = [
-            ("1-000000001", 1, 2, None, 3.0)
-
-        ]
+    def test_column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count_resolves_to_false(
+        self,
+    ):
+        rows = [("1-000000001", 1, 2, None, 3.0)]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
         min_diff_val = 3
 
-        result = df.withColumn('result', F.when(
-            (column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count
-             ('job_count', min_diff_val)), True).otherwise(False))
+        result = df.withColumn(
+            "result",
+            F.when(
+                (
+                    column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
+                        "job_count", min_diff_val
+                    )
+                ),
+                True,
+            ).otherwise(False),
+        )
 
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], False)
-
-
-
-

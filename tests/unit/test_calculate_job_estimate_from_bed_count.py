@@ -10,8 +10,9 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_estimate_from_beds import \
-    calculate_jobcount_estimate_from_beds
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_estimate_from_beds import (
+    calculate_jobcount_estimate_from_beds,
+)
 
 
 class TestCalculateJobCountBedEstimate(unittest.TestCase):

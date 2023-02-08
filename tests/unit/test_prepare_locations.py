@@ -402,8 +402,6 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[3]["cqc_sector"], "Independent")
         self.assertEqual(df[4]["cqc_sector"], "Independent")
 
-
-
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
         cqc_locations = prepare_locations.get_cqc_location_df(
             self.TEST_CQC_LOCATION_FILE

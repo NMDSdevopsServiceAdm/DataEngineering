@@ -10,8 +10,9 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_coalesce_totalstaff_wkrrecs import \
-    calculate_jobcount_coalesce_totalstaff_wkrrecs
+from utils.prepare_locations_utils.job_calculator.calculate_jobcount_coalesce_totalstaff_wkrrecs import (
+    calculate_jobcount_coalesce_totalstaff_wkrrecs,
+)
 
 
 class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
