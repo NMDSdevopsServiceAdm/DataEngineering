@@ -174,6 +174,7 @@ def main(
             "services_offered",
             "people_directly_employed",
             "job_count",
+            "job_count_source",
             "region",
             "postal_code",
             "constituency",
@@ -189,8 +190,6 @@ def main(
             "rural_urban_indicator",
             "oslaua",
         )
-
-        output_df.show()
 
         if destination:
             print(
