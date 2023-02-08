@@ -12,7 +12,6 @@ from pyspark.sql.types import (
     StructType,
     BooleanType,
 )
-import pyspark.sql.functions as F
 
 from jobs import prepare_locations
 from utils import utils
