@@ -191,8 +191,6 @@ def main(
             "oslaua",
         )
 
-        output_df.show()
-
         if destination:
             print(
                 "Exporting snapshot {} as parquet to {}".format(
