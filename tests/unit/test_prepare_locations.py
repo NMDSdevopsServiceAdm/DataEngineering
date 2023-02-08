@@ -23,13 +23,6 @@ from tests.test_file_generator import (
     generate_pir_file,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import (
-    calculate_jobcount_abs_difference_within_range,
-)
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import (
-    calculate_jobcount_totalstaff_equal_wkrrecs,
-)
-
 
 class PrepareLocationsTests(unittest.TestCase):
 
@@ -409,31 +402,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[3]["cqc_sector"], "Independent")
         self.assertEqual(df[4]["cqc_sector"], "Independent")
 
-    def test_calculate_jobcount_totalstaff_equal_wkrrecs(self):
-        rows = [
-            ("1-000000001", 20, 20, 25, None),
-        ]
-        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
-        self.assertEqual(df.count(), 1)
-
-        df = df.collect()
-        self.assertEqual(df[0]["job_count"], 20)
-
-    def test_calculate_jobcount_abs_difference_within_range(self):
-        rows = [
-            ("1-000000008", 10, 12, 15, None),
-            ("1-000000001", 100, 109, 80, None),
-        ]
-        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
-
-        df = calculate_jobcount_abs_difference_within_range(df)
-        self.assertEqual(df.count(), 2)
-
-        df = df.collect()
-        self.assertEqual(df[0]["job_count"], 11)
-        self.assertEqual(df[1]["job_count"], 104.5)
 
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
         cqc_locations = prepare_locations.get_cqc_location_df(
