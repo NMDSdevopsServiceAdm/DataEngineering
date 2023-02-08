@@ -174,6 +174,7 @@ def main(
             "services_offered",
             "people_directly_employed",
             "job_count",
+            "job_count_source",
             "region",
             "postal_code",
             "constituency",
