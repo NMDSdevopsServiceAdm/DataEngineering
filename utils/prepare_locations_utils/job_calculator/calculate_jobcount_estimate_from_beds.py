@@ -106,14 +106,6 @@ def total_staff_diff_or_total_staff_pct_diff_within_tolerated_range():
     )
 
 
-def two_cols_are_equal_and_not_null(first_col: str, second_col: str):
-    return (
-        (F.col(first_col) == F.col(second_col))
-        & F.col(second_col).isNotNull()
-        & F.col(first_col).isNotNull()
-    )
-
-
 def calculate_jobcount_estimate_from_beds(input_df):
     input_df = input_df.withColumn(
         "bed_estimate_jobcount",
