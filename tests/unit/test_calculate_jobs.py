@@ -47,14 +47,43 @@ class TestJobCalculator(unittest.TestCase):
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
+        self.assertEqual(
+            jobcount_df_list[0]["job_count_source"], "coalesce_total_staff_wkrrecs"
+        )
+
         self.assertEqual(jobcount_df_list[1]["job_count"], 500.0)
+        self.assertEqual(jobcount_df_list[1]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[2]["job_count"], 100.0)
+        self.assertEqual(
+            jobcount_df_list[2]["job_count_source"], "coalesce_total_staff_wkrrecs"
+        )
+
         self.assertEqual(jobcount_df_list[3]["job_count"], 10.0)
+        self.assertEqual(
+            jobcount_df_list[3]["job_count_source"], "coalesce_total_staff_wkrrecs"
+        )
+
         self.assertEqual(jobcount_df_list[4]["job_count"], None)
+        self.assertEqual(jobcount_df_list[4]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[5]["job_count"], None)
+        self.assertEqual(jobcount_df_list[5]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[6]["job_count"], None)
+        self.assertEqual(jobcount_df_list[6]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[7]["job_count"], 11.0)
+        self.assertEqual(jobcount_df_list[7]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[8]["job_count"], 23.0)
+        self.assertEqual(jobcount_df_list[8]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[9]["job_count"], 96.0)
+        self.assertEqual(jobcount_df_list[9]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[10]["job_count"], 102.0)
+        self.assertEqual(jobcount_df_list[10]["job_count_source"], None)
+
         self.assertEqual(jobcount_df_list[11]["job_count"], 90.0)
+        self.assertEqual(jobcount_df_list[11]["job_count_source"], None)

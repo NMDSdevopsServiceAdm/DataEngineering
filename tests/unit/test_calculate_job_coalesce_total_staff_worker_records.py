@@ -23,6 +23,7 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
             StructField("worker_record_count", IntegerType(), True),
             StructField("number_of_beds", IntegerType(), True),
             StructField("job_count", DoubleType(), True),
+            StructField("job_count_source", DoubleType(), True),
         ]
     )
 
@@ -35,16 +36,15 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
 
     def test_calculate_jobcount_coalesce_totalstaff_wkrrecs(self):
         rows = [
-            ("1-000000001", None, 20, 25, None),
-            ("1-000000002", 30, None, 25, None),
-            ("1-000000002", 35, 40, 25, None),
+            ("1-000000001", None, 20, 25, None, None),
+            ("1-000000002", 30, None, 25, None, None),
+            ("1-000000002", 35, 40, 25, None, None),
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_coalesce_totalstaff_wkrrecs(df)
         self.assertEqual(df.count(), 3)
-
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 20)
-        self.assertEqual(df[1]["job_count"], 30)
-        self.assertEqual(df[2]["job_count"], None)
+        self.assertEqual(df[0]["job_count"], 20, "coalesce_total_staff_wkrrecs")
+        self.assertEqual(df[1]["job_count"], 30, "coalesce_total_staff_wkrrecs")
+        self.assertEqual(df[2]["job_count"], None, None)
