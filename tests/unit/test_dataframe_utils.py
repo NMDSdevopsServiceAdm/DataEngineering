@@ -84,7 +84,7 @@ class TestGroup(unittest.TestCase):
         self.assertEqual(df_with_snapshot_substring_column.columns[1], "snapshot_date")
         self.assertEqual(df_with_snapshot_substring_column.columns[2], "snapshot_year")
 
-    def test_returns_dataframe_with_additional_column_of_string_type(self):
+    def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_of_string_type(self):
         dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
         row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230101")
 
@@ -97,16 +97,32 @@ class TestGroup(unittest.TestCase):
 
         self.assertIsInstance(df_with_snapshot_substring_column_list[0]["snapshot_year"], str)
 
+    def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_for_for_snapshot_year_when_year_substring_is_requested(
+        self,
+    ):
+        dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230101")
+        snapshot_year = "2023"
+
+        df = self.spark.createDataFrame(row_data, dataframe_utils_data_schema)
+
+        df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
+            df, "snapshot_year", START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+        )
+        df_with_snapshot_substring_column_list = df_with_snapshot_substring_column.collect()
+
+        self.assertEqual(df_with_snapshot_substring_column_list[0]["snapshot_year"], snapshot_year)
+
     @unittest.skip("finish this test")
-    def test_returns_dataframe_with_additional_column_for_for_snapshot_year_when_year_substring_is_requested(self):
+    def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_for_for_snapshot_month_when_month_substring_is_requested(
+        self,
+    ):
         pass
 
     @unittest.skip("finish this test")
-    def test_returns_dataframe_with_additional_column_for_for_snapshot_month_when_month_substring_is_requested(self):
-        pass
-
-    @unittest.skip("finish this test")
-    def test_returns_dataframe_with_additional_column_for_for_snapshot_day_when_day_substring_is_requested(self):
+    def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_for_for_snapshot_day_when_day_substring_is_requested(
+        self,
+    ):
         pass
 
 
