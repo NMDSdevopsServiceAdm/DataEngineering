@@ -45,6 +45,11 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         df = calculate_jobcount_coalesce_totalstaff_wkrrecs(df)
         self.assertEqual(df.count(), 3)
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 20, "coalesce_total_staff_wkrrecs")
-        self.assertEqual(df[1]["job_count"], 30, "coalesce_total_staff_wkrrecs")
-        self.assertEqual(df[2]["job_count"], None, None)
+        self.assertEqual(df[0]["job_count"], 20)
+        self.assertEqual(df[0]["job_count_source"], "coalesce_total_staff_wkrrecs")
+
+        self.assertEqual(df[1]["job_count"], 30)
+        self.assertEqual(df[1]["job_count_source"], "coalesce_total_staff_wkrrecs")
+
+        self.assertEqual(df[2]["job_count"], None)
+        self.assertEqual(df[2]["job_count_source"], None)
