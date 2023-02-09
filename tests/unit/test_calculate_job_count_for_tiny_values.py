@@ -23,6 +23,7 @@ class TestJobCountTinyValues(unittest.TestCase):
             StructField("worker_record_count", IntegerType(), True),
             StructField("number_of_beds", IntegerType(), True),
             StructField("job_count", DoubleType(), True),
+            StructField("job_count_source", StringType(), True),
         ]
     )
 
@@ -35,12 +36,18 @@ class TestJobCountTinyValues(unittest.TestCase):
 
     def test_calculate_jobcount_handle_tiny_values(self):
         rows = [
-            ("1-000000008", 2, 53, 26, None),
+            ("1-000000008", 2, 53, 26, None, None),
+            ("1-000000008", 55, 53, 26, None, None),
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_handle_tiny_values(df)
-        self.assertEqual(df.count(), 1)
+        self.assertEqual(df.count(), 2)
 
         df = df.collect()
+
         self.assertEqual(df[0]["job_count"], 53)
+        self.assertEqual(df[0]["job_count_source"], "Tiny Values")
+
+        self.assertEqual(df[1]["job_count"], None)
+        self.assertEqual(df[1]["job_count_source"], None)
