@@ -26,9 +26,9 @@ class PathsForTestData:
     DESTINATION = "tests/test_data/domain=data_engineering/dataset=locations_prepared/version=1.0.0"
 
 
-class HelperForJobRuleTests:
+class HelperForDataFrameTests:
     @staticmethod
-    def get_test_job_schema() -> StructType:
+    def get_test_df_schema() -> StructType:
         return StructType(
             [
                 StructField("locationid", StringType(), False),
@@ -50,7 +50,7 @@ class HelperForJobRuleTests:
 
 class TestGroup(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_prepare_locations").getOrCreate()
+        self.spark = SparkSession.builder.appName("test_dataframe_utils").getOrCreate()
         generate_ascwds_workplace_file(PathsForTestData.TEST_ASCWDS_WORKPLACE_FILE)
         self.cqc_loc_df = generate_cqc_locations_file(PathsForTestData.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(PathsForTestData.TEST_CQC_PROVIDERS_FILE)
@@ -71,7 +71,23 @@ class TestGroup(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     @unittest.skip("finish this test")
-    def test_returns_0_when_worker_record_count_is_0_and_total_staff_is_0(self):
+    def test_returns_dataframe_with_additional_column(self):
+        pass
+
+    @unittest.skip("finish this test")
+    def test_returns_dataframe_with_additional_column_of_string_type(self):
+        pass
+
+    @unittest.skip("finish this test")
+    def test_returns_dataframe_with_additional_column_for_for_snapshot_year_when_year_substring_is_requested(self):
+        pass
+
+    @unittest.skip("finish this test")
+    def test_returns_dataframe_with_additional_column_for_for_snapshot_month_when_month_substring_is_requested(self):
+        pass
+
+    @unittest.skip("finish this test")
+    def test_returns_dataframe_with_additional_column_for_for_snapshot_day_when_day_substring_is_requested(self):
         pass
 
 
