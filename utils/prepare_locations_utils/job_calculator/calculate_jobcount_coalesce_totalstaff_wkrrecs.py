@@ -7,22 +7,22 @@ from utils.prepare_locations_utils.job_calculator.common_checks import (
 import pyspark.sql.functions as F
 
 
-def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
+def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df, rule_name: str):
     df_with_temp_count = input_df.withColumn(
         "job_count_temp",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
-                & (
-                    (
-                        selected_column_is_null(col_name="total_staff")
-                        & selected_column_is_not_null(col_name="worker_record_count")
+                    job_count_from_ascwds_is_not_populated("job_count")
+                    & (
+                            (
+                                    selected_column_is_null(col_name="total_staff")
+                                    & selected_column_is_not_null(col_name="worker_record_count")
+                            )
+                            | (
+                                    selected_column_is_not_null(col_name="total_staff")
+                                    & selected_column_is_null(col_name="worker_record_count")
+                            )
                     )
-                    | (
-                        selected_column_is_not_null(col_name="total_staff")
-                        & selected_column_is_null(col_name="worker_record_count")
-                    )
-                )
             ),
             select_the_non_null_value_of_total_staff_and_worker_record_count(input_df),
         ),
@@ -30,7 +30,7 @@ def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
 
     df_with_populated_job_count_source = df_with_temp_count.withColumn(
         "job_count_source",
-        F.when(F.col("job_count_temp").isNotNull(), "coalesce_total_staff_wkrrecs"),
+        F.when(F.col("job_count_temp").isNotNull(),rule_name),
     )
 
     df_with_job_count_populated = df_with_populated_job_count_source.withColumn(

@@ -48,7 +48,7 @@ class TestJobCalculator(unittest.TestCase):
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
         self.assertEqual(
-            jobcount_df_list[0]["job_count_source"], "coalesce_total_staff_wkrrecs"
+            jobcount_df_list[0]["job_count_source"], "coalesce totalstaff worker records"
         )
 
         self.assertEqual(jobcount_df_list[1]["job_count"], 500.0)
@@ -56,12 +56,12 @@ class TestJobCalculator(unittest.TestCase):
 
         self.assertEqual(jobcount_df_list[2]["job_count"], 100.0)
         self.assertEqual(
-            jobcount_df_list[2]["job_count_source"], "coalesce_total_staff_wkrrecs"
+            jobcount_df_list[2]["job_count_source"], "coalesce totalstaff worker records"
         )
 
         self.assertEqual(jobcount_df_list[3]["job_count"], 10.0)
         self.assertEqual(
-            jobcount_df_list[3]["job_count_source"], "coalesce_total_staff_wkrrecs"
+            jobcount_df_list[3]["job_count_source"], "coalesce totalstaff worker records"
         )
 
         self.assertEqual(jobcount_df_list[4]["job_count"], None)

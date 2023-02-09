@@ -40,16 +40,18 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
             ("1-000000002", 30, None, 25, None, None),
             ("1-000000002", 35, 40, 25, None, None),
         ]
+
+        rule_name = "coalesce totalstaff worker records"
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_coalesce_totalstaff_wkrrecs(df)
+        df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df=df, rule_name=rule_name)
         self.assertEqual(df.count(), 3)
         df = df.collect()
         self.assertEqual(df[0]["job_count"], 20)
-        self.assertEqual(df[0]["job_count_source"], "coalesce_total_staff_wkrrecs")
+        self.assertEqual(df[0]["job_count_source"], rule_name)
 
         self.assertEqual(df[1]["job_count"], 30)
-        self.assertEqual(df[1]["job_count_source"], "coalesce_total_staff_wkrrecs")
+        self.assertEqual(df[1]["job_count_source"], rule_name)
 
         self.assertEqual(df[2]["job_count"], None)
         self.assertEqual(df[2]["job_count_source"], None)

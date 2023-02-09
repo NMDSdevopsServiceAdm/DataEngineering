@@ -25,7 +25,7 @@ def calculate_jobcount(input_df):
     input_df = input_df.withColumn("job_count_source", F.lit(None).cast(StringType()))
 
     input_df = calculate_jobcount_totalstaff_equal_wkrrecs(input_df)
-    input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
+    input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df=input_df, rule_name='coalesce totalstaff worker records')
     input_df = calculate_jobcount_abs_difference_within_range(input_df)
     input_df = calculate_jobcount_handle_tiny_values(input_df)
     input_df = calculate_jobcount_estimate_from_beds(input_df)
