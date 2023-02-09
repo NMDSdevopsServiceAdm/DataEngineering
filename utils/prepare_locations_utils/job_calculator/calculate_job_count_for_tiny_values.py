@@ -7,6 +7,7 @@ from utils.prepare_locations_utils.job_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
 )
 
+
 def total_staff_or_worker_record_count_less_than_permitted_minimum():
     return (
         F.col("total_staff") < JobCalculationConstants().MIN_TOTAL_STAFF_VALUE_PERMITTED
