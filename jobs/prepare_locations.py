@@ -9,17 +9,15 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     calculate_jobcount,
 )
 from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
+from utils.prepare_locations_utils.dataframe_utils import (
+    add_three_columns_with_snapshot_date_substrings,
+)
+
 
 LAST_PROCESSED_DATE_INDEX_ZERO = 0
 LAST_PROCESSED_DATE_INDEX_ONE = 1
 LAST_PROCESSED_DATE_INDEX_TWO = 2
 
-START_OF_YEAR_SUBSTRING = 1
-LENGTH_OF_YEAR_SUBSTRING = 4
-START_OF_MONTH_SUBSTRING = 5
-LENGTH_OF_MONTH_SUBSTRING = 2
-START_OF_DAY_SUBSTRING = 7
-LENGTH_OF_DAY_SUBSTRING = 2
 
 MONTHS_BETWEEN_IMPORT_DATE_AND_PURGE_DATE = -24
 
@@ -126,24 +124,9 @@ def main(
         output_df = output_df.withColumn(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
-        output_df = output_df.withColumn(
-            "snapshot_year",
-            F.col("snapshot_date").substr(
-                START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
-            ),
-        )
-        output_df = output_df.withColumn(
-            "snapshot_month",
-            F.col("snapshot_date").substr(
-                START_OF_MONTH_SUBSTRING, LENGTH_OF_MONTH_SUBSTRING
-            ),
-        )
-        output_df = output_df.withColumn(
-            "snapshot_day",
-            F.col("snapshot_date").substr(
-                START_OF_YEAR_SUBSTRING, LENGTH_OF_MONTH_SUBSTRING
-            ),
-        )
+
+        output_df = add_three_columns_with_snapshot_date_substrings(output_df)
+
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
 
         output_df = output_df.select(
