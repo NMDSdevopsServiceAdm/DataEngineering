@@ -8,15 +8,7 @@ from pyspark.sql.types import StructType, StringType, IntegerType, StructField
 
 from utils.prepare_locations_utils.dataframe_utils import (
     add_column_with_snaphot_date_substring,
-    START_OF_YEAR_SUBSTRING,
-    LENGTH_OF_YEAR_SUBSTRING,
-    START_OF_MONTH_SUBSTRING,
-    LENGTH_OF_MONTH_SUBSTRING,
-    START_OF_DAY_SUBSTRING,
-    LENGTH_OF_DAY_SUBSTRING,
-    SNAPSHOT_DAY_COLUMN_NAME,
-    SNAPSHOT_MONTH_COLUMN_NAME,
-    SNAPSHOT_YEAR_COLUMN_NAME,
+    SnapshotConstants,
 )
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
@@ -59,9 +51,7 @@ class TestGroup(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_dataframe_utils").getOrCreate()
         generate_ascwds_workplace_file(PathsForTestData.TEST_ASCWDS_WORKPLACE_FILE)
-        self.cqc_loc_df = generate_cqc_locations_file(
-            PathsForTestData.TEST_CQC_LOCATION_FILE
-        )
+        self.cqc_loc_df = generate_cqc_locations_file(PathsForTestData.TEST_CQC_LOCATION_FILE)
         generate_cqc_providers_file(PathsForTestData.TEST_CQC_PROVIDERS_FILE)
         generate_pir_file(PathsForTestData.TEST_PIR_FILE)
         self.ons_df = generate_ons_denormalised_data(PathsForTestData.TEST_ONS_FILE)
@@ -83,56 +73,46 @@ class TestGroup(unittest.TestCase):
         self,
     ):
         dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
-        row_data = HelperForDataFrameTests.get_row_of_test_data(
-            location_id="1-000000001", snapshot_date="20230121"
-        )
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230121")
 
         df = self.spark.createDataFrame(row_data, dataframe_utils_data_schema)
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
 
         self.assertEqual(df_with_snapshot_substring_column.columns[0], "locationid")
         self.assertEqual(df_with_snapshot_substring_column.columns[1], "snapshot_date")
-        self.assertEqual(
-            df_with_snapshot_substring_column.columns[2], SNAPSHOT_YEAR_COLUMN_NAME
-        )
+        self.assertEqual(df_with_snapshot_substring_column.columns[2], SnapshotConstants.snapshot_year_column_name)
 
     def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_of_string_type(
         self,
     ):
         dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
-        row_data = HelperForDataFrameTests.get_row_of_test_data(
-            location_id="1-000000001", snapshot_date="20230121"
-        )
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230121")
 
         df = self.spark.createDataFrame(row_data, dataframe_utils_data_schema)
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
-        df_with_snapshot_substring_column_list = (
-            df_with_snapshot_substring_column.collect()
-        )
+        df_with_snapshot_substring_column_list = df_with_snapshot_substring_column.collect()
 
         self.assertIsInstance(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_YEAR_COLUMN_NAME], str
+            df_with_snapshot_substring_column_list[0][SnapshotConstants.snapshot_year_column_name], str
         )
 
     def test_add_column_with_snapshot_date_substring_returns_correct_values_for_year_month_and_day(
         self,
     ):
         dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
-        row_data = HelperForDataFrameTests.get_row_of_test_data(
-            location_id="1-000000001", snapshot_date="20230121"
-        )
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230121")
         snapshot_year = "2023"
         snapshot_month = "01"
         snapshot_day = "21"
@@ -141,37 +121,35 @@ class TestGroup(unittest.TestCase):
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df_with_snapshot_substring_column,
-            SNAPSHOT_MONTH_COLUMN_NAME,
-            START_OF_MONTH_SUBSTRING,
-            LENGTH_OF_MONTH_SUBSTRING,
+            SnapshotConstants.snapshot_month_column_name,
+            SnapshotConstants.start_of_month_substring,
+            SnapshotConstants.length_of_month_substring,
         )
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df_with_snapshot_substring_column,
-            SNAPSHOT_DAY_COLUMN_NAME,
-            START_OF_DAY_SUBSTRING,
-            LENGTH_OF_DAY_SUBSTRING,
+            SnapshotConstants.snapshot_day_column_name,
+            SnapshotConstants.start_of_day_substring,
+            SnapshotConstants.length_of_day_substring,
         )
 
-        df_with_snapshot_substring_column_list = (
-            df_with_snapshot_substring_column.collect()
-        )
+        df_with_snapshot_substring_column_list = df_with_snapshot_substring_column.collect()
 
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_YEAR_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][SnapshotConstants.snapshot_year_column_name],
             snapshot_year,
         )
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_MONTH_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][SnapshotConstants.snapshot_month_column_name],
             snapshot_month,
         )
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_DAY_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][SnapshotConstants.snapshot_day_column_name],
             snapshot_day,
         )
 
