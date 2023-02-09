@@ -84,9 +84,18 @@ class TestGroup(unittest.TestCase):
         self.assertEqual(df_with_snapshot_substring_column.columns[1], "snapshot_date")
         self.assertEqual(df_with_snapshot_substring_column.columns[2], "snapshot_year")
 
-    @unittest.skip("finish this test")
     def test_returns_dataframe_with_additional_column_of_string_type(self):
-        pass
+        dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230101")
+
+        df = self.spark.createDataFrame(row_data, dataframe_utils_data_schema)
+
+        df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
+            df, "snapshot_year", START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+        )
+        df_with_snapshot_substring_column_list = df_with_snapshot_substring_column.collect()
+
+        self.assertIsInstance(df_with_snapshot_substring_column_list[0]["snapshot_year"], str)
 
     @unittest.skip("finish this test")
     def test_returns_dataframe_with_additional_column_for_for_snapshot_year_when_year_substring_is_requested(self):
