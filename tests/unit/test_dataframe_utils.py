@@ -32,9 +32,7 @@ class HelperForDataFrameTests:
         return StructType(
             [
                 StructField("locationid", StringType(), False),
-                StructField("total_staff", IntegerType(), True),
-                StructField("worker_record_count", IntegerType(), True),
-                StructField("number_of_beds", IntegerType(), True),
+                StructField("snapshot_date", StringType(), True),
             ]
         )
 
