@@ -39,11 +39,9 @@ class HelperForDataFrameTests:
     @staticmethod
     def get_row_of_test_data(
         location_id: str,
-        worker_record_count: int,
-        total_staff: int,
-        number_of_beds: int,
-    ) -> list[tuple[str, int, int, int]]:
-        return [(location_id, worker_record_count, total_staff, number_of_beds)]
+        snapshot_date: str,
+    ) -> list[tuple[str, str]]:
+        return [(location_id, snapshot_date)]
 
 
 class TestGroup(unittest.TestCase):
