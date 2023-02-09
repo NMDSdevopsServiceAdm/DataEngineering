@@ -1,7 +1,7 @@
 import shutil
 import unittest
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, IntegerType, StructField
@@ -152,6 +152,23 @@ class TestGroup(unittest.TestCase):
             df_with_snapshot_substring_column_list[0][SnapshotConstants.snapshot_day_column_name],
             snapshot_day,
         )
+
+    def test_SnapshotConstants_has_all_required_attributes(
+        self,
+    ):
+        snapshot_constants = SnapshotConstants()
+        expected_result = {
+            "snapshot_year_column_name": "snapshot_year",
+            "start_of_year_substring": 1,
+            "length_of_year_substring": 4,
+            "snapshot_month_column_name": "snapshot_month",
+            "start_of_month_substring": 5,
+            "length_of_month_substring": 2,
+            "snapshot_day_column_name": "snapshot_day",
+            "start_of_day_substring": 7,
+            "length_of_day_substring": 2,
+        }
+        self.assertEqual(asdict(snapshot_constants), expected_result)
 
 
 if __name__ == "__main__":
