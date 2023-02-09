@@ -11,7 +11,25 @@ START_OF_DAY_SUBSTRING = 7
 LENGTH_OF_DAY_SUBSTRING = 2
 
 
-def add_column_with_snaphot_date_substring(df, column_name, start_of_substring, length_of_substring):
+def add_three_columns_with_snapshot_date_substrings(df):
+    df = add_column_with_snaphot_date_substring(
+        df, SNAPSHOT_YEAR_COLUMN_NAME, START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+    )
+    df = add_column_with_snaphot_date_substring(
+        df,
+        SNAPSHOT_MONTH_COLUMN_NAME,
+        START_OF_MONTH_SUBSTRING,
+        LENGTH_OF_MONTH_SUBSTRING,
+    )
+    df = add_column_with_snaphot_date_substring(
+        df, SNAPSHOT_DAY_COLUMN_NAME, START_OF_DAY_SUBSTRING, LENGTH_OF_DAY_SUBSTRING
+    )
+    return df
+
+
+def add_column_with_snaphot_date_substring(
+    df, column_name, start_of_substring, length_of_substring
+):
     df_with_snapshot_date_substring_column = df.withColumn(
         column_name,
         F.col("snapshot_date").substr(start_of_substring, length_of_substring),
