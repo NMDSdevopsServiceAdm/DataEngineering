@@ -1,10 +1,15 @@
 from utils.prepare_locations_utils.job_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
 )
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_estimate_from_beds import (
-    two_cols_are_equal_and_not_null,
-)
 import pyspark.sql.functions as F
+
+
+def two_cols_are_equal_and_not_null(first_col: str, second_col: str):
+    return (
+        (F.col(first_col) == F.col(second_col))
+        & F.col(second_col).isNotNull()
+        & F.col(first_col).isNotNull()
+    )
 
 
 def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
