@@ -44,7 +44,6 @@ class TestJobCalculator(unittest.TestCase):
         df = self.spark.createDataFrame(rows, columns)
 
         jobcount_df = calculate_jobcount(df)
-        jobcount_df.show()
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
