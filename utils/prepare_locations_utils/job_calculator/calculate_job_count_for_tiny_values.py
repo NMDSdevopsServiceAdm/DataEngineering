@@ -36,7 +36,7 @@ def calculate_jobcount_handle_tiny_values(input_df):
     )
 
     input_df_with_job_source = input_df_with_job_count_temp.withColumn(
-        "job_count_source", F.when((F.col("job_temp").isNotNull()), "Tiny Values")
+        "job_count_source", F.when((F.col("job_temp").isNotNull()), "tiny_values")
     )
 
     input_df_with_job_count_pop = input_df_with_job_source.withColumn(

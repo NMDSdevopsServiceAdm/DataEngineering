@@ -47,7 +47,7 @@ class TestJobCountTinyValues(unittest.TestCase):
         df = df.collect()
 
         self.assertEqual(df[0]["job_count"], 53)
-        self.assertEqual(df[0]["job_count_source"], "Tiny Values")
+        self.assertEqual(df[0]["job_count_source"], "tiny_values")
 
         self.assertEqual(df[1]["job_count"], None)
         self.assertEqual(df[1]["job_count_source"], None)
