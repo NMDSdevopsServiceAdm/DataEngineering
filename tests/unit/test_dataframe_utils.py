@@ -6,7 +6,11 @@ from dataclasses import dataclass
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, IntegerType, StructField
 
-from utils.prepare_locations_utils import dataframe_utils
+from utils.prepare_locations_utils.dataframe_utils import (
+    add_column_with_snaphot_date_substring,
+    START_OF_YEAR_SUBSTRING,
+    LENGTH_OF_YEAR_SUBSTRING,
+)
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
     generate_cqc_locations_file,
@@ -66,9 +70,19 @@ class TestGroup(unittest.TestCase):
         except OSError:
             pass  # Ignore dir does not exist
 
-    @unittest.skip("finish this test")
-    def test_returns_dataframe_with_additional_column(self):
-        pass
+    def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column(self):
+        dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
+        row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230101")
+
+        df = self.spark.createDataFrame(row_data, dataframe_utils_data_schema)
+
+        df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
+            df, "snapshot_year", START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+        )
+
+        self.assertEqual(df_with_snapshot_substring_column.columns[0], "locationid")
+        self.assertEqual(df_with_snapshot_substring_column.columns[1], "snapshot_date")
+        self.assertEqual(df_with_snapshot_substring_column.columns[2], "snapshot_year")
 
     @unittest.skip("finish this test")
     def test_returns_dataframe_with_additional_column_of_string_type(self):
