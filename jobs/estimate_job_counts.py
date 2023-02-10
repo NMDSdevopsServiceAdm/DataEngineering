@@ -9,6 +9,11 @@ from pyspark.sql import Window
 
 from utils import utils
 
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
+)
+
+
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"
 NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
@@ -42,6 +47,8 @@ def main(
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
+
+    # load locations_prepared df
     locations_df = (
         spark.read.parquet(prepared_locations_source)
         .select(
@@ -56,6 +63,7 @@ def main(
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
 
+    # loads model features
     features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = populate_last_known_job_count(locations_df)
@@ -66,6 +74,7 @@ def main(
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
+    # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes with historical model
@@ -167,6 +176,11 @@ def populate_estimate_jobs_when_job_count_known(df):
     )
 
     return df
+
+    # adds in a previously submitted ASCWDS figure and preforms checks:
+    # checks to see if current.locationid is exactly equal to previous.locationid AND
+    # current snapshot_date is equal to or greater than previous.snapshot_date AND
+    # previouus job count is not null. if all pass join.
 
 
 def populate_last_known_job_count(df):
