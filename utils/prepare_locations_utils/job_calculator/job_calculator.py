@@ -18,7 +18,9 @@ from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff
 )
 
 
-def calculate_jobcount(input_df):
+def calculate_jobcount(input_df, column_name):
+    source_column_name = column_name + "_source"
+
     print("Calculating job_count...")
 
     input_df = input_df.withColumn(column_name, F.lit(None).cast(IntegerType()))
