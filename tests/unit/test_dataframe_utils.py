@@ -117,7 +117,7 @@ class TestGroup(unittest.TestCase):
     ):
         dataframe_utils_data_schema = HelperForDataFrameTests.get_test_df_schema()
         row_data = HelperForDataFrameTests.get_row_of_test_data(location_id="1-000000001", snapshot_date="20230121")
-        snapshot_year = "2023"  # test
+        snapshot_year = "2023"
         snapshot_month = "01"
         snapshot_day = "21"
 
