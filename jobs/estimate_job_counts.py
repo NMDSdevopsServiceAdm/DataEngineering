@@ -23,6 +23,7 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 LOCATION_ID = "locationid"
 LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT = "estimate_job_count"
+ESTIMATE_JOB_COUNT_SOURCE = ESTIMATE_JOB_COUNT + "_source"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PEOPLE_DIRECTLY_EMPLOYED = "people_directly_employed"
 NUMBER_OF_BEDS = "number_of_beds"
@@ -76,6 +77,9 @@ def main(
 
     # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "ascwds_job_count", ESTIMATE_JOB_COUNT_SOURCE
+    )
 
     # Care homes with historical model
     latest_care_home_model_version = max(
@@ -129,7 +133,16 @@ def main(
 
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df,
+        "ascwds_non_res_historical_projected_forward",
+        ESTIMATE_JOB_COUNT_SOURCE,
+    )
+
     locations_df = model_non_res_default(locations_df)
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "overall_non_res_average", ESTIMATE_JOB_COUNT_SOURCE
+    )
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -177,7 +190,7 @@ def populate_estimate_jobs_when_job_count_known(df):
 
     return df
 
-    # adds in a previously submitted ASCWDS figure and preforms checks:
+    # adds in a previously submitted ASCWDS figure and performs checks:
     # checks to see if current.locationid is exactly equal to previous.locationid AND
     # current snapshot_date is equal to or greater than previous.snapshot_date AND
     # previouus job count is not null. if all pass join
@@ -192,7 +205,6 @@ def populate_last_known_job_count(df):
         & (F.col("previous.job_count").isNotNull()),
         "leftouter",
     )
-
     locationAndSnapshotPartition = Window.partitionBy(
         "current.locationid", "current.snapshot_date"
     )
