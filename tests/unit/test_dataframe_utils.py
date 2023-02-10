@@ -1,22 +1,14 @@
 import shutil
 import unittest
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, IntegerType, StructField
 
 from utils.prepare_locations_utils.dataframe_utils import (
     add_column_with_snaphot_date_substring,
-    START_OF_YEAR_SUBSTRING,
-    LENGTH_OF_YEAR_SUBSTRING,
-    START_OF_MONTH_SUBSTRING,
-    LENGTH_OF_MONTH_SUBSTRING,
-    START_OF_DAY_SUBSTRING,
-    LENGTH_OF_DAY_SUBSTRING,
-    SNAPSHOT_DAY_COLUMN_NAME,
-    SNAPSHOT_MONTH_COLUMN_NAME,
-    SNAPSHOT_YEAR_COLUMN_NAME,
+    SnapshotConstants,
 )
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
@@ -91,15 +83,16 @@ class TestGroup(unittest.TestCase):
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
 
         self.assertEqual(df_with_snapshot_substring_column.columns[0], "locationid")
         self.assertEqual(df_with_snapshot_substring_column.columns[1], "snapshot_date")
         self.assertEqual(
-            df_with_snapshot_substring_column.columns[2], SNAPSHOT_YEAR_COLUMN_NAME
+            df_with_snapshot_substring_column.columns[2],
+            SnapshotConstants.snapshot_year_column_name,
         )
 
     def test_add_column_with_snapshot_date_substring_returns_dataframe_with_additional_column_of_string_type(
@@ -114,16 +107,19 @@ class TestGroup(unittest.TestCase):
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
         df_with_snapshot_substring_column_list = (
             df_with_snapshot_substring_column.collect()
         )
 
         self.assertIsInstance(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_YEAR_COLUMN_NAME], str
+            df_with_snapshot_substring_column_list[0][
+                SnapshotConstants.snapshot_year_column_name
+            ],
+            str,
         )
 
     def test_add_column_with_snapshot_date_substring_returns_correct_values_for_year_month_and_day(
@@ -141,21 +137,21 @@ class TestGroup(unittest.TestCase):
 
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df,
-            SNAPSHOT_YEAR_COLUMN_NAME,
-            START_OF_YEAR_SUBSTRING,
-            LENGTH_OF_YEAR_SUBSTRING,
+            SnapshotConstants.snapshot_year_column_name,
+            SnapshotConstants.start_of_year_substring,
+            SnapshotConstants.length_of_year_substring,
         )
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df_with_snapshot_substring_column,
-            SNAPSHOT_MONTH_COLUMN_NAME,
-            START_OF_MONTH_SUBSTRING,
-            LENGTH_OF_MONTH_SUBSTRING,
+            SnapshotConstants.snapshot_month_column_name,
+            SnapshotConstants.start_of_month_substring,
+            SnapshotConstants.length_of_month_substring,
         )
         df_with_snapshot_substring_column = add_column_with_snaphot_date_substring(
             df_with_snapshot_substring_column,
-            SNAPSHOT_DAY_COLUMN_NAME,
-            START_OF_DAY_SUBSTRING,
-            LENGTH_OF_DAY_SUBSTRING,
+            SnapshotConstants.snapshot_day_column_name,
+            SnapshotConstants.start_of_day_substring,
+            SnapshotConstants.length_of_day_substring,
         )
 
         df_with_snapshot_substring_column_list = (
@@ -163,17 +159,40 @@ class TestGroup(unittest.TestCase):
         )
 
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_YEAR_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][
+                SnapshotConstants.snapshot_year_column_name
+            ],
             snapshot_year,
         )
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_MONTH_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][
+                SnapshotConstants.snapshot_month_column_name
+            ],
             snapshot_month,
         )
         self.assertEqual(
-            df_with_snapshot_substring_column_list[0][SNAPSHOT_DAY_COLUMN_NAME],
+            df_with_snapshot_substring_column_list[0][
+                SnapshotConstants.snapshot_day_column_name
+            ],
             snapshot_day,
         )
+
+    def test_SnapshotConstants_has_all_required_attributes(
+        self,
+    ):
+        snapshot_constants = SnapshotConstants()
+        expected_result = {
+            "snapshot_year_column_name": "snapshot_year",
+            "start_of_year_substring": 1,
+            "length_of_year_substring": 4,
+            "snapshot_month_column_name": "snapshot_month",
+            "start_of_month_substring": 5,
+            "length_of_month_substring": 2,
+            "snapshot_day_column_name": "snapshot_day",
+            "start_of_day_substring": 7,
+            "length_of_day_substring": 2,
+        }
+        self.assertEqual(asdict(snapshot_constants), expected_result)
 
 
 if __name__ == "__main__":

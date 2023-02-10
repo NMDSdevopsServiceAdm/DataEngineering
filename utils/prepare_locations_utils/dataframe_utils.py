@@ -1,28 +1,38 @@
 import pyspark.sql.functions as F
+from dataclasses import dataclass
 
-SNAPSHOT_YEAR_COLUMN_NAME = "snapshot_year"
-START_OF_YEAR_SUBSTRING = 1
-LENGTH_OF_YEAR_SUBSTRING = 4
-SNAPSHOT_MONTH_COLUMN_NAME = "snapshot_month"
-START_OF_MONTH_SUBSTRING = 5
-LENGTH_OF_MONTH_SUBSTRING = 2
-SNAPSHOT_DAY_COLUMN_NAME = "snapshot_day"
-START_OF_DAY_SUBSTRING = 7
-LENGTH_OF_DAY_SUBSTRING = 2
+
+@dataclass
+class SnapshotConstants:
+    snapshot_year_column_name: str = "snapshot_year"
+    start_of_year_substring: int = 1
+    length_of_year_substring: int = 4
+    snapshot_month_column_name: str = "snapshot_month"
+    start_of_month_substring: int = 5
+    length_of_month_substring: int = 2
+    snapshot_day_column_name: str = "snapshot_day"
+    start_of_day_substring: int = 7
+    length_of_day_substring: int = 2
 
 
 def add_three_columns_with_snapshot_date_substrings(df):
     df = add_column_with_snaphot_date_substring(
-        df, SNAPSHOT_YEAR_COLUMN_NAME, START_OF_YEAR_SUBSTRING, LENGTH_OF_YEAR_SUBSTRING
+        df,
+        SnapshotConstants.snapshot_year_column_name,
+        SnapshotConstants.start_of_year_substring,
+        SnapshotConstants.length_of_year_substring,
     )
     df = add_column_with_snaphot_date_substring(
         df,
-        SNAPSHOT_MONTH_COLUMN_NAME,
-        START_OF_MONTH_SUBSTRING,
-        LENGTH_OF_MONTH_SUBSTRING,
+        SnapshotConstants.snapshot_month_column_name,
+        SnapshotConstants.start_of_month_substring,
+        SnapshotConstants.length_of_month_substring,
     )
     df = add_column_with_snaphot_date_substring(
-        df, SNAPSHOT_DAY_COLUMN_NAME, START_OF_DAY_SUBSTRING, LENGTH_OF_DAY_SUBSTRING
+        df,
+        SnapshotConstants.snapshot_day_column_name,
+        SnapshotConstants.start_of_day_substring,
+        SnapshotConstants.length_of_day_substring,
     )
     return df
 
