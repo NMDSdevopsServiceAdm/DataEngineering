@@ -2,7 +2,7 @@ from datetime import date
 import sys
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, StringType
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
@@ -71,6 +71,9 @@ def main(
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
+    )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
@@ -78,7 +81,7 @@ def main(
     # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "ascwds_job_count", ESTIMATE_JOB_COUNT_SOURCE
+        locations_df, "ascwds_job_count", ESTIMATE_JOB_COUNT
     )
 
     # Care homes with historical model
@@ -136,12 +139,12 @@ def main(
     locations_df = update_dataframe_with_identifying_rule(
         locations_df,
         "ascwds_non_res_historical_projected_forward",
-        ESTIMATE_JOB_COUNT_SOURCE,
+        ESTIMATE_JOB_COUNT,
     )
 
     locations_df = model_non_res_default(locations_df)
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "overall_non_res_average", ESTIMATE_JOB_COUNT_SOURCE
+        locations_df, "overall_non_res_average", ESTIMATE_JOB_COUNT
     )
 
     today = date.today()
