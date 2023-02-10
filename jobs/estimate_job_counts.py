@@ -180,7 +180,7 @@ def populate_estimate_jobs_when_job_count_known(df):
     # adds in a previously submitted ASCWDS figure and preforms checks:
     # checks to see if current.locationid is exactly equal to previous.locationid AND
     # current snapshot_date is equal to or greater than previous.snapshot_date AND
-    # previouus job count is not null. if all pass join.
+    # previouus job count is not null. if all pass join
 
 
 def populate_last_known_job_count(df):
