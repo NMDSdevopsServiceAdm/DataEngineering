@@ -37,7 +37,9 @@ def add_three_columns_with_snapshot_date_substrings(df):
     return df
 
 
-def add_column_with_snaphot_date_substring(df, column_name, start_of_substring, length_of_substring):
+def add_column_with_snaphot_date_substring(
+    df, column_name, start_of_substring, length_of_substring
+):
     df_with_snapshot_date_substring_column = df.withColumn(
         column_name,
         F.col("snapshot_date").substr(start_of_substring, length_of_substring),
