@@ -138,7 +138,7 @@ def main(
     )
     locations_df = update_dataframe_with_identifying_rule(
         locations_df,
-        "model_non_residential_with_pir",
+        "model_non_res_with_pir",
         ESTIMATE_JOB_COUNT,
     )
 
@@ -146,13 +146,13 @@ def main(
     locations_df = model_non_res_historical(locations_df)
     locations_df = update_dataframe_with_identifying_rule(
         locations_df,
-        "ascwds_non_res_historical_projected_forward",
+        "model_non_res_ascwds_projected_forward",
         ESTIMATE_JOB_COUNT,
     )
 
     locations_df = model_non_res_default(locations_df)
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "overall_non_res_average", ESTIMATE_JOB_COUNT
+        locations_df, "model_non_res_average", ESTIMATE_JOB_COUNT
     )
 
     today = date.today()
