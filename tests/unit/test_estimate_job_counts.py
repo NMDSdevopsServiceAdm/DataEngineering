@@ -14,7 +14,9 @@ from jobs import estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
-    CAREHOME_MODEL = "tests/test_models/care_home_jobs_prediction/"
+    CAREHOME_MODEL = (
+        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
+    )
     NON_RES_WITH_PIR_MODEL = (
         "tests/test_models/non_residential_with_pir_jobs_prediction/"
     )
