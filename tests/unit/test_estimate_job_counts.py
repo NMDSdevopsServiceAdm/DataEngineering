@@ -14,9 +14,7 @@ from jobs import estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
-    CAREHOME_WITH_HISTORICAL_MODEL = (
-        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
-    )
+    CAREHOME_MODEL = "tests/test_models/care_home_jobs_prediction/"
     NON_RES_WITH_PIR_MODEL = (
         "tests/test_models/non_residential_with_pir_jobs_prediction/"
     )
@@ -56,7 +54,7 @@ class EstimateJobCountTests(unittest.TestCase):
             self.PREPARED_LOCATIONS_DIR,
             self.LOCATIONS_FEATURES_DIR,
             self.DESTINATION,
-            self.CAREHOME_WITH_HISTORICAL_MODEL,
+            self.CAREHOME_MODEL,
             self.NON_RES_WITH_PIR_MODEL,
             self.METRICS_DESTINATION,
             job_run_id="abc1234",
@@ -298,22 +296,22 @@ class EstimateJobCountTests(unittest.TestCase):
         # fmt: on
         return self.spark.createDataFrame(rows, columns)
 
-    def test_model_care_home_with_historical_returns_all_locations(self):
+    def test_model_care_homes_returns_all_locations(self):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df, _ = job.model_care_home_with_historical(
-            locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
+        df, _ = job.model_care_homes(
+            locations_df, features_df, f"{self.CAREHOME_MODEL}1.0.0"
         )
 
         self.assertEqual(df.count(), 5)
 
-    def test_model_care_home_with_historical_estimates_jobs_for_care_homes_only(self):
+    def test_model_care_homes_estimates_jobs_for_care_homes_only(self):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()
 
-        df, _ = job.model_care_home_with_historical(
-            locations_df, features_df, f"{self.CAREHOME_WITH_HISTORICAL_MODEL}1.0.0"
+        df, _ = job.model_care_homes(
+            locations_df, features_df, f"{self.CAREHOME_MODEL}1.0.0"
         )
         expected_location_with_prediction = df.where(
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")

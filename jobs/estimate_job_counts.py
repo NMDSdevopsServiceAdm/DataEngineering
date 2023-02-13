@@ -84,17 +84,17 @@ def main(
         locations_df, "ascwds_job_count", ESTIMATE_JOB_COUNT
     )
 
-    # Care homes with historical model
+    # Care homes model
     latest_care_home_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df, care_home_metrics_info = model_care_home_with_historical(
+    locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
     )
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_home_with_historical", ESTIMATE_JOB_COUNT
+        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
     )
 
     care_home_model_name = utils.get_model_name(care_home_model_directory)
@@ -135,6 +135,11 @@ def main(
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
+    )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df,
+        "model_non_residential_with_pir",
+        ESTIMATE_JOB_COUNT,
     )
 
     # Non-res & no PIR data models
@@ -296,7 +301,7 @@ def insert_predictions_into_locations(locations_df, predictions_df):
     return locations_df
 
 
-def model_care_home_with_historical(locations_df, features_df, model_path):
+def model_care_homes(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
     features_df = features_df.where("carehome = 'Y'")
     features_df = features_df.where("ons_region is not null")
