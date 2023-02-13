@@ -93,6 +93,9 @@ def main(
         features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
     )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "model_care_home_with_historical", ESTIMATE_JOB_COUNT
+    )
 
     care_home_model_name = utils.get_model_name(care_home_model_directory)
     write_metrics_df(
@@ -295,7 +298,6 @@ def insert_predictions_into_locations(locations_df, predictions_df):
 
 def model_care_home_with_historical(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
-
     features_df = features_df.where("carehome = 'Y'")
     features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("number_of_beds is not null")
@@ -310,11 +312,9 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
         "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
     }
-
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
-
     return locations_df, metrics_info
 
 
