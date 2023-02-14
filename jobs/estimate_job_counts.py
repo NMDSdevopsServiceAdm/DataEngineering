@@ -80,9 +80,6 @@ def main(
 
     # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "ascwds_job_count", ESTIMATE_JOB_COUNT
-    )
 
     # Care homes model
     latest_care_home_model_version = max(
@@ -92,9 +89,6 @@ def main(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
-    )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
     )
 
     care_home_model_name = utils.get_model_name(care_home_model_directory)
@@ -136,24 +130,11 @@ def main(
         job_run_id=job_run_id,
         job_name=job_name,
     )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df,
-        "model_non_res_with_pir",
-        ESTIMATE_JOB_COUNT,
-    )
 
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df,
-        "model_non_res_ascwds_projected_forward",
-        ESTIMATE_JOB_COUNT,
-    )
 
     locations_df = model_non_res_default(locations_df)
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_non_res_average", ESTIMATE_JOB_COUNT
-    )
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -197,6 +178,10 @@ def populate_estimate_jobs_when_job_count_known(df):
             (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col("job_count").isNotNull())),
             F.col("job_count"),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
+    )
+
+    df = update_dataframe_with_identifying_rule(
+        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
     )
 
     return df
@@ -254,6 +239,11 @@ def model_non_res_historical(df):
             F.col(LAST_KNOWN_JOB_COUNT) * 1.03,
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
+    df = update_dataframe_with_identifying_rule(
+        df,
+        "model_non_res_ascwds_projected_forward",
+        ESTIMATE_JOB_COUNT,
+    )
 
     return df
 
@@ -273,6 +263,9 @@ def model_non_res_default(df):
             ),
             54.09,
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
+    )
+    df = update_dataframe_with_identifying_rule(
+        df, "model_non_res_average", ESTIMATE_JOB_COUNT
     )
 
     return df
@@ -320,6 +313,11 @@ def model_care_homes(locations_df, features_df, model_path):
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
     )
+
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
+    )
+
     return locations_df, metrics_info
 
 
@@ -347,6 +345,11 @@ def model_non_residential_with_pir(locations_df, features_df, model_path):
 
     locations_df = insert_predictions_into_locations(
         locations_df, non_residential_with_pir_predictions
+    )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df,
+        "model_non_res_with_pir",
+        ESTIMATE_JOB_COUNT,
     )
 
     return locations_df, metrics_info
