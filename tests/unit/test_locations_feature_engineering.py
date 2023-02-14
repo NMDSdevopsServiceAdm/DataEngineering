@@ -70,9 +70,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         rows = df.collect()
 
-        row_1 = next(row for row in rows if row.locationid == "1-1783948")
-        row_2 = next(row for row in rows if row.locationid == "1-108950835")
-        row_3 = next(row for row in rows if row.locationid == "1-1060912125")
+        row_1 = next(row for row in rows if row.locationid == "1-000000001")
+        row_2 = next(row for row in rows if row.locationid == "1-10894414510")
+        row_3 = next(row for row in rows if row.locationid == "1-108950835")
 
         self.assertIsNotNone(row_1.care_home_features)
         self.assertIsNotNone(row_2.care_home_features)
@@ -84,7 +84,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         rows = df.collect()
 
-        row_1 = next(row for row in rows if row.locationid == "1-348374832")
+        row_1 = next(row for row in rows if row.locationid == "1-1783948")
         row_2 = next(row for row in rows if row.locationid == "1-10235302415")
         row_3 = next(row for row in rows if row.locationid == "1-108369587")
 
@@ -94,11 +94,10 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
     def test_main_feature_columns_are_null_if_non_residential_and_no_pir(self):
         df = locations_feature_engineering.main(self.PREPARED_LOCATIONS_TEST_DATA)
-
         rows = df.collect()
 
-        row_1 = next(row for row in rows if row.locationid == "1-10894414510")
-        row_2 = next(row for row in rows if row.locationid == "1-108387554")
+        row_1 = next(row for row in rows if row.locationid == "1-10478686")
+        row_2 = next(row for row in rows if row.locationid == "1-348374832")
 
         self.assertIsNone(row_1.non_residential_inc_pir_features)
         self.assertIsNone(row_1.care_home_features)
@@ -161,17 +160,17 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         for column in expected_service_columns:
             self.assertIn(column, df.columns)
-
+        df.show()
         rows = df.select(expected_service_columns).collect()
 
-        self.assertEqual(rows[0].service_12, 1)
-        self.assertEqual(rows[0].service_23, 1)
+        self.assertEqual(rows[0].service_5, 1)
+        self.assertEqual(rows[0].service_1, 0)
         self.assertEqual(rows[0].service_8, 0)
-        self.assertEqual(rows[0].service_27, 0)
 
-        self.assertEqual(rows[8].service_8, 1)
-        self.assertEqual(rows[8].service_12, 0)
-        self.assertEqual(rows[8].service_23, 0)
+        self.assertEqual(rows[3].service_20, 1)
+        self.assertEqual(rows[3].service_22, 1)
+        self.assertEqual(rows[3].service_27, 1)
+        self.assertEqual(rows[3].service_5, 0)
 
     def test_explode_column_creates_a_column_for_each_category_in_dictionary(self):
         rural_ind_dict = feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP

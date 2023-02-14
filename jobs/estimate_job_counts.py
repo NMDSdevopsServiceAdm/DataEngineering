@@ -2,12 +2,17 @@ from datetime import date
 import sys
 
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, StringType
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
 
 from utils import utils
+
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
+)
+
 
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"
@@ -18,6 +23,7 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 LOCATION_ID = "locationid"
 LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT = "estimate_job_count"
+ESTIMATE_JOB_COUNT_SOURCE = ESTIMATE_JOB_COUNT + "_source"
 PRIMARY_SERVICE_TYPE = "primary_service_type"
 PEOPLE_DIRECTLY_EMPLOYED = "people_directly_employed"
 NUMBER_OF_BEDS = "number_of_beds"
@@ -43,6 +49,8 @@ def main(
 ):
     spark = utils.get_spark()
     print("Estimating job counts")
+
+    # load locations_prepared df
     locations_df = (
         spark.read.parquet(prepared_locations_source)
         .select(
@@ -57,24 +65,29 @@ def main(
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
-    locations_df.show()
+
+    # loads model features
     features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
+    )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     locations_df = determine_ascwds_primary_service_type(locations_df)
 
+    # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
-    # Care homes with historical model
+    # Care homes model
     latest_care_home_model_version = max(
         utils.get_s3_sub_folders_for_path(care_home_model_directory)
     )
-    locations_df, care_home_metrics_info = model_care_home_with_historical(
+    locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
         features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
@@ -122,6 +135,7 @@ def main(
 
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
+
     locations_df = model_non_res_default(locations_df)
 
     today = date.today()
@@ -168,7 +182,16 @@ def populate_estimate_jobs_when_job_count_known(df):
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
+    df = update_dataframe_with_identifying_rule(
+        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
+    )
+
     return df
+
+    # adds in a previously submitted ASCWDS figure and performs checks:
+    # checks to see if current.locationid is exactly equal to previous.locationid AND
+    # current snapshot_date is equal to or greater than previous.snapshot_date AND
+    # previouus job count is not null. if all pass join
 
 
 def populate_last_known_job_count(df):
@@ -180,7 +203,6 @@ def populate_last_known_job_count(df):
         & (F.col("previous.job_count").isNotNull()),
         "leftouter",
     )
-
     locationAndSnapshotPartition = Window.partitionBy(
         "current.locationid", "current.snapshot_date"
     )
@@ -219,6 +241,11 @@ def model_non_res_historical(df):
             F.col(LAST_KNOWN_JOB_COUNT) * 1.03,
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
+    df = update_dataframe_with_identifying_rule(
+        df,
+        "model_non_res_ascwds_projected_forward",
+        ESTIMATE_JOB_COUNT,
+    )
 
     return df
 
@@ -238,6 +265,9 @@ def model_non_res_default(df):
             ),
             54.09,
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
+    )
+    df = update_dataframe_with_identifying_rule(
+        df, "model_non_res_average", ESTIMATE_JOB_COUNT
     )
 
     return df
@@ -266,9 +296,8 @@ def insert_predictions_into_locations(locations_df, predictions_df):
     return locations_df
 
 
-def model_care_home_with_historical(locations_df, features_df, model_path):
+def model_care_homes(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
-
     features_df = features_df.where("carehome = 'Y'")
     features_df = features_df.where("ons_region is not null")
     features_df = features_df.where("number_of_beds is not null")
@@ -283,9 +312,12 @@ def model_care_home_with_historical(locations_df, features_df, model_path):
         "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
     }
-
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions
+    )
+
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
     )
 
     return locations_df, metrics_info
@@ -315,6 +347,11 @@ def model_non_residential_with_pir(locations_df, features_df, model_path):
 
     locations_df = insert_predictions_into_locations(
         locations_df, non_residential_with_pir_predictions
+    )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df,
+        "model_non_res_with_pir",
+        ESTIMATE_JOB_COUNT,
     )
 
     return locations_df, metrics_info
