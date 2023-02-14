@@ -26,6 +26,7 @@ LOCATION_TYPE = "location_type"
 LOCAL_AUTHORITY = "local_authority"
 SERVICES_OFFERED = "services_offered"
 JOB_COUNT = "job_count"
+JOB_COUNT_SOURCE = "job_count_source"
 ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
 SNAPSHOT_DATE = "snapshot_date"
 
@@ -51,11 +52,12 @@ def main(
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
             JOB_COUNT,
+            JOB_COUNT_SOURCE,
             LOCAL_AUTHORITY,
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
-
+    locations_df.show()
     features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = populate_last_known_job_count(locations_df)
