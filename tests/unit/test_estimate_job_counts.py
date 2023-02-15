@@ -208,6 +208,36 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df[0].last_known_job_count, 4)
         self.assertEqual(df[1].last_known_job_count, 5)
 
+    def test_model_non_res_historical(self):
+        columns = [
+            "locationid",
+            "primary_service_type",
+            "last_known_job_count",
+            "estimate_job_count",
+            "estimate_job_count_source",
+        ]
+        rows = [
+            ("1-000000001", "non-residential", 10, None, None),
+            ("1-000000002", "Care home with nursing", 10, None, None),
+            ("1-000000003", "non-residential", 20, None, None),
+            ("1-000000004", "non-residential", 10, 10, "already_populated"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = job.model_non_res_historical(df)
+        self.assertEqual(df.count(), 4)
+
+        df = df.collect()
+        self.assertEqual(df[0]["estimate_job_count"], 10.3)
+        self.assertEqual(
+            df[0]["estimate_job_count_source"], "model_non_res_ascwds_projected_forward"
+        )
+        self.assertEqual(df[1]["estimate_job_count"], None)
+        self.assertEqual(df[1]["estimate_job_count_source"], None)
+        self.assertEqual(df[2]["estimate_job_count"], 20.6)
+        self.assertEqual(df[3]["estimate_job_count"], 10)
+        self.assertEqual(df[3]["estimate_job_count_source"], "already_populated")
+
     def test_model_non_res_default(self):
         columns = [
             "locationid",
