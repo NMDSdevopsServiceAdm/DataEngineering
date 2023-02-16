@@ -66,3 +66,26 @@ class TestModelCareHome(unittest.TestCase):
         )
 
         self.assertEqual(df.count(), 5)
+
+    def test_model_care_homes_estimates_jobs_for_care_homes_only(self):
+        locations_df = self.generate_locations_df()
+        features_df = self.generate_features_df()
+
+        df, _ = model_care_homes(
+            locations_df, features_df, f"{self.CAREHOME_MODEL}1.0.0"
+        )
+        expected_location_with_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000002"
+        ).collect()[0]
+
+        self.assertIsNotNone(expected_location_with_prediction.estimate_job_count)
+        self.assertIsNotNone(
+            expected_location_with_prediction.estimate_job_count_source
+        )
+        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+        self.assertIsNone(
+            expected_location_without_prediction.estimate_job_count_source
+        )
