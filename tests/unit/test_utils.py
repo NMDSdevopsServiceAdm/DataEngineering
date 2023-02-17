@@ -411,7 +411,6 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(df.columns[1], "integer_field")
         self.assertEqual(df.columns[2], "float_field")
         self.assertEqual(df.columns[3], "missing_field")
-        df.show()
 
     def test_read_csv_with_defined_schema_with_extra_column_in_csv(self):
         schema = StructType(
@@ -445,7 +444,6 @@ class UtilsTests(unittest.TestCase):
         df = utils.read_csv_with_defined_schema(
             self.example_csv_for_schema_tests, schema
         )
-        df.show()
 
         row_one = df.collect()[0]
         assert isinstance(row_one.string_field, type(None))
