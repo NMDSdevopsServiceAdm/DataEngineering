@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from utils.estimate_job_count.models.model_non_res_with_pir import (
+from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
 from pyspark.sql import SparkSession

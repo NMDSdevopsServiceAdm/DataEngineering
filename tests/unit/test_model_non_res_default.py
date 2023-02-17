@@ -2,7 +2,7 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
-from utils.estimate_job_count.models.model_non_res_default import model_non_res_default
+from utils.estimate_job_count.models.non_res_default import model_non_res_default
 
 
 class TestModelNonResDefault(unittest.TestCase):

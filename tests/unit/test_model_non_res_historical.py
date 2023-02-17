@@ -4,7 +4,7 @@ import warnings
 from pyspark.sql import SparkSession
 
 from tests.test_helpers import remove_file_path
-from utils.estimate_job_count.models.model_non_res_historical import (
+from utils.estimate_job_count.models.non_res_historical import (
     model_non_res_historical,
 )
 

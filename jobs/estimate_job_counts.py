@@ -21,13 +21,13 @@ from utils.estimate_job_count.column_names import (
     PRIMARY_SERVICE_TYPE,
     LAST_KNOWN_JOB_COUNT,
 )
-from utils.estimate_job_count.models.care_homes import model_care_homes
-from utils.estimate_job_count.models.model_non_res_default import model_non_res_default
+from utils.estimate_job_count.care_homes import model_care_homes
+from utils.estimate_job_count.models.non_res_default import model_non_res_default
 
-from utils.estimate_job_count.models.model_non_res_historical import (
+from utils.estimate_job_count.models.non_res_historical import (
     model_non_res_historical,
 )
-from utils.estimate_job_count.models.model_non_res_with_pir import (
+from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
 

@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 
-from utils.estimate_job_count.models.r2_metric import generate_r2_metric
+from utils.estimate_job_count.r2_metric import generate_r2_metric
 import unittest
 import warnings
 

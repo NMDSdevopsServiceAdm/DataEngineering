@@ -3,7 +3,7 @@ import warnings
 from pyspark.ml.linalg import Vectors
 from pyspark.sql import SparkSession
 
-from utils.estimate_job_count.models.insert_predictions_into_locations import (
+from utils.estimate_job_count.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
 import unittest
