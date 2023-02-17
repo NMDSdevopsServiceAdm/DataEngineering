@@ -37,7 +37,12 @@ class TestSpssJobEstimatesSchema(unittest.TestCase):
             {"name": "jr28work", "type": "float", "nullable": False, "metadata": {}},
             {"name": "Data_Used", "type": "integer", "nullable": True, "metadata": {}},
             {"name": "All_jobs", "type": "float", "nullable": True, "metadata": {}},
-            {"name": "Snapshot_date", "type": "string", "nullable": True, "metadata": {}},
+            {
+                "name": "Snapshot_date",
+                "type": "string",
+                "nullable": True,
+                "metadata": {},
+            },
             {
                 "name": "Local_authority",
                 "type": "string",
