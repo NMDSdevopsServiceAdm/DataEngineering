@@ -3,16 +3,37 @@ import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.ml.regression import GBTRegressionModel
-from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import Window
 
 from utils import utils
+from utils.estimate_job_count.column_names import (
+    LOCATION_ID,
+    SERVICES_OFFERED,
+    PEOPLE_DIRECTLY_EMPLOYED,
+    NUMBER_OF_BEDS,
+    SNAPSHOT_DATE,
+    JOB_COUNT,
+    JOB_COUNT_SOURCE,
+    LOCAL_AUTHORITY,
+    REGISTRATION_STATUS,
+    ESTIMATE_JOB_COUNT,
+    ESTIMATE_JOB_COUNT_SOURCE,
+    PRIMARY_SERVICE_TYPE,
+    LAST_KNOWN_JOB_COUNT,
+)
+from utils.estimate_job_count.models.care_homes import model_care_homes
+from utils.estimate_job_count.models.non_res_default import model_non_res_default
+
+from utils.estimate_job_count.models.non_res_historical import (
+    model_non_res_historical,
+)
+from utils.estimate_job_count.models.non_res_with_pir import (
+    model_non_residential_with_pir,
+)
 
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
-
 
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"
@@ -20,21 +41,6 @@ NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
 NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 # Column names
-LOCATION_ID = "locationid"
-LAST_KNOWN_JOB_COUNT = "last_known_job_count"
-ESTIMATE_JOB_COUNT = "estimate_job_count"
-ESTIMATE_JOB_COUNT_SOURCE = ESTIMATE_JOB_COUNT + "_source"
-PRIMARY_SERVICE_TYPE = "primary_service_type"
-PEOPLE_DIRECTLY_EMPLOYED = "people_directly_employed"
-NUMBER_OF_BEDS = "number_of_beds"
-REGISTRATION_STATUS = "registration_status"
-LOCATION_TYPE = "location_type"
-LOCAL_AUTHORITY = "local_authority"
-SERVICES_OFFERED = "services_offered"
-JOB_COUNT = "job_count"
-JOB_COUNT_SOURCE = "job_count_source"
-ASCWDS_IMPORT_DATE = "ascwds_workplace_import_date"
-SNAPSHOT_DATE = "snapshot_date"
 
 
 def main(
@@ -223,149 +229,6 @@ def populate_last_known_job_count(df):
     )
 
     return df
-
-
-def model_non_res_historical(df):
-    """
-    Non-res : Historical :  : 2021 jobs = Last known value *1.03
-    """
-    # TODO: remove magic number 1.03
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                & F.col(LAST_KNOWN_JOB_COUNT).isNotNull()
-            ),
-            F.col(LAST_KNOWN_JOB_COUNT) * 1.03,
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-    df = update_dataframe_with_identifying_rule(
-        df,
-        "model_non_res_ascwds_projected_forward",
-        ESTIMATE_JOB_COUNT,
-    )
-
-    return df
-
-
-def model_non_res_default(df):
-    """
-    Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
-    """
-    # TODO: remove magic number 54.09
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-            ),
-            54.09,
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-    df = update_dataframe_with_identifying_rule(
-        df, "model_non_res_average", ESTIMATE_JOB_COUNT
-    )
-
-    return df
-
-
-def insert_predictions_into_locations(locations_df, predictions_df):
-    locations_with_predictions = locations_df.join(
-        predictions_df,
-        (locations_df["locationid"] == predictions_df["locationid"])
-        & (locations_df["snapshot_date"] == predictions_df["snapshot_date"]),
-        "left",
-    )
-
-    locations_with_predictions = locations_with_predictions.select(
-        locations_df["*"], predictions_df["prediction"]
-    )
-
-    locations_with_predictions = locations_with_predictions.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
-        ).otherwise(F.col("prediction")),
-    )
-
-    locations_df = locations_with_predictions.drop(F.col("prediction"))
-    return locations_df
-
-
-def model_care_homes(locations_df, features_df, model_path):
-    gbt_trained_model = GBTRegressionModel.load(model_path)
-    features_df = features_df.where("carehome = 'Y'")
-    features_df = features_df.where("ons_region is not null")
-    features_df = features_df.where("number_of_beds is not null")
-
-    features_df = features_df.withColumnRenamed("care_home_features", "features")
-
-    care_home_predictions = gbt_trained_model.transform(features_df)
-
-    non_null_job_count_df = care_home_predictions.where("job_count is not null")
-
-    metrics_info = {
-        "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
-        "data_percentage": (features_df.count() / locations_df.count()) * 100,
-    }
-    locations_df = insert_predictions_into_locations(
-        locations_df, care_home_predictions
-    )
-
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
-    )
-
-    return locations_df, metrics_info
-
-
-def model_non_residential_with_pir(locations_df, features_df, model_path):
-    gbt_trained_model = GBTRegressionModel.load(model_path)
-
-    features_df = features_df.where("carehome = 'N'")
-    features_df = features_df.where("ons_region is not null")
-    features_df = features_df.where("people_directly_employed > 0")
-
-    features_df = features_df.withColumnRenamed(
-        "non_residential_inc_pir_features", "features"
-    )
-
-    non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
-
-    non_null_job_count_df = non_residential_with_pir_predictions.where(
-        "job_count is not null"
-    )
-
-    metrics_info = {
-        "r2": generate_r2_metric(non_null_job_count_df, "prediction", "job_count"),
-        "data_percentage": (features_df.count() / locations_df.count()) * 100,
-    }
-
-    locations_df = insert_predictions_into_locations(
-        locations_df, non_residential_with_pir_predictions
-    )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df,
-        "model_non_res_with_pir",
-        ESTIMATE_JOB_COUNT,
-    )
-
-    return locations_df, metrics_info
-
-
-def generate_r2_metric(df, prediction, label):
-    model_evaluator = RegressionEvaluator(
-        predictionCol=prediction, labelCol=label, metricName="r2"
-    )
-
-    r2 = model_evaluator.evaluate(df)
-    print("Calculating R Squared (R2) = %g" % r2)
-
-    return r2
 
 
 def write_metrics_df(
