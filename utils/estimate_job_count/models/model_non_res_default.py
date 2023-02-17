@@ -1,5 +1,10 @@
-from utils.estimate_job_count.column_names import ESTIMATE_JOB_COUNT, PRIMARY_SERVICE_TYPE
-from utils.prepare_locations_utils.job_calculator.job_calculator import update_dataframe_with_identifying_rule
+from utils.estimate_job_count.column_names import (
+    ESTIMATE_JOB_COUNT,
+    PRIMARY_SERVICE_TYPE,
+)
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
+)
 
 import pyspark.sql.functions as F
 
@@ -14,8 +19,8 @@ def model_non_res_default(df):
         ESTIMATE_JOB_COUNT,
         F.when(
             (
-                    F.col(ESTIMATE_JOB_COUNT).isNull()
-                    & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
+                F.col(ESTIMATE_JOB_COUNT).isNull()
+                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
             ),
             54.09,
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),

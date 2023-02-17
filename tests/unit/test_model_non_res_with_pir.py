@@ -1,7 +1,9 @@
 import unittest
 import warnings
 
-from utils.estimate_job_count.models.model_non_res_with_pir import model_non_residential_with_pir
+from utils.estimate_job_count.models.model_non_res_with_pir import (
+    model_non_residential_with_pir,
+)
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
@@ -64,7 +66,7 @@ class TestModelNonResWithPir(unittest.TestCase):
         )
 
     def test_model_non_residential_with_pir_estimates_jobs_for_non_res_with_pir_only(
-            self,
+        self,
     ):
         locations_df = self.generate_locations_df()
         features_df = self.generate_features_df()

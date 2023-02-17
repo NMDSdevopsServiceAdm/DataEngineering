@@ -30,7 +30,9 @@ from utils.estimate_job_count.models.model_non_res_default import model_non_res_
 from utils.estimate_job_count.models.model_non_res_historical import (
     model_non_res_historical,
 )
-from utils.estimate_job_count.models.model_non_res_with_pir import model_non_residential_with_pir
+from utils.estimate_job_count.models.model_non_res_with_pir import (
+    model_non_residential_with_pir,
+)
 from utils.estimate_job_count.models.r2_metric import generate_r2_metric
 
 from utils.prepare_locations_utils.job_calculator.job_calculator import (

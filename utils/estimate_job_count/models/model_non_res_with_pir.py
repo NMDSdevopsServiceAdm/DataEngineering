@@ -1,9 +1,13 @@
 from pyspark.ml.regression import GBTRegressionModel
 
 from utils.estimate_job_count.column_names import ESTIMATE_JOB_COUNT
-from utils.estimate_job_count.models.insert_predictions_into_locations import insert_predictions_into_locations
+from utils.estimate_job_count.models.insert_predictions_into_locations import (
+    insert_predictions_into_locations,
+)
 from utils.estimate_job_count.models.r2_metric import generate_r2_metric
-from utils.prepare_locations_utils.job_calculator.job_calculator import update_dataframe_with_identifying_rule
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
+)
 
 
 def model_non_residential_with_pir(locations_df, features_df, model_path):

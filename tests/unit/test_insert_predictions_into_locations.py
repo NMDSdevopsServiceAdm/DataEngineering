@@ -3,12 +3,13 @@ import warnings
 from pyspark.ml.linalg import Vectors
 from pyspark.sql import SparkSession
 
-from utils.estimate_job_count.models.insert_predictions_into_locations import insert_predictions_into_locations
+from utils.estimate_job_count.models.insert_predictions_into_locations import (
+    insert_predictions_into_locations,
+)
 import unittest
 
 
 class TestModelNonResWithPir(unittest.TestCase):
-
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
@@ -59,6 +60,7 @@ class TestModelNonResWithPir(unittest.TestCase):
             feature_rows,
             schema=feature_columns,
         )
+
     def generate_predictions_df(self):
         # fmt: off
         columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction"]
@@ -73,7 +75,6 @@ class TestModelNonResWithPir(unittest.TestCase):
             schema=columns,
         )
 
-
     def test_insert_predictions_into_locations_doesnt_remove_existing_estimates(self):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
@@ -85,9 +86,8 @@ class TestModelNonResWithPir(unittest.TestCase):
         ).collect()[0]
         self.assertEqual(expected_location_with_prediction.estimate_job_count, 10)
 
-
     def test_insert_predictions_into_locations_does_so_when_locationid_matches(
-            self,
+        self,
     ):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
@@ -103,9 +103,8 @@ class TestModelNonResWithPir(unittest.TestCase):
         self.assertEqual(expected_location_with_prediction.estimate_job_count, 56.89)
         self.assertIsNone(expected_location_without_prediction.estimate_job_count)
 
-
     def test_insert_predictions_into_locations_only_inserts_for_matching_snapshots(
-            self,
+        self,
     ):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
@@ -117,9 +116,8 @@ class TestModelNonResWithPir(unittest.TestCase):
         ).collect()[0]
         self.assertIsNone(expected_location_without_prediction.estimate_job_count)
 
-
     def test_insert_predictions_into_locations_removes_all_columns_from_predictions_df(
-            self,
+        self,
     ):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()

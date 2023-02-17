@@ -6,7 +6,6 @@ import warnings
 
 
 class TestGenerateR2Metric(unittest.TestCase):
-
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
@@ -27,6 +26,7 @@ class TestGenerateR2Metric(unittest.TestCase):
             rows,
             schema=columns,
         )
+
     def test_generate_r2_metric(self):
         df = self.generate_predictions_df()
         r2 = generate_r2_metric(df, "prediction", "job_count")
