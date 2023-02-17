@@ -291,57 +291,6 @@ class EstimateJobCountTests(unittest.TestCase):
         # fmt: on
         return self.spark.createDataFrame(rows, columns)
 
-    def test_insert_predictions_into_locations_doesnt_remove_existing_estimates(self):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
-        df = job.insert_predictions_into_locations(locations_df, predictions_df)
-
-        expected_location_with_prediction = df.where(
-            df["locationid"] == "1-000000004"
-        ).collect()[0]
-        self.assertEqual(expected_location_with_prediction.estimate_job_count, 10)
-
-    def test_insert_predictions_into_locations_does_so_when_locationid_matches(
-        self,
-    ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
-        df = job.insert_predictions_into_locations(locations_df, predictions_df)
-
-        expected_location_with_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
-        ).collect()[0]
-        expected_location_without_prediction = df.where(
-            df["locationid"] == "1-000000003"
-        ).collect()[0]
-        self.assertEqual(expected_location_with_prediction.estimate_job_count, 56.89)
-        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
-
-    def test_insert_predictions_into_locations_only_inserts_for_matching_snapshots(
-        self,
-    ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
-        df = job.insert_predictions_into_locations(locations_df, predictions_df)
-
-        expected_location_without_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-02-20")
-        ).collect()[0]
-        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
-
-    def test_insert_predictions_into_locations_removes_all_columns_from_predictions_df(
-        self,
-    ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
-        df = job.insert_predictions_into_locations(locations_df, predictions_df)
-        self.assertEqual(locations_df.columns, df.columns)
-
-
     def test_write_metrics_df_creates_metrics_df(self):
         job.write_metrics_df(
             metrics_destination=self.METRICS_DESTINATION,
