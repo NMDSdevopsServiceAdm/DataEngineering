@@ -11,6 +11,7 @@ class TestModelCareHome(unittest.TestCase):
     CAREHOME_MODEL = (
         "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
     )
+
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
@@ -43,12 +44,17 @@ class TestModelCareHome(unittest.TestCase):
 
     def generate_features_df(self):
         # fmt: off
-        feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
+        feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region",
+                           "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features",
+                           "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
 
         feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29", Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
-            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None, Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021", "05", "05"),
+            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29",
+             Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
+            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None,
+             Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
+            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021",
+             "05", "05"),
             ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, None, "2021", "05", "05"),
         ]
         # fmt: on

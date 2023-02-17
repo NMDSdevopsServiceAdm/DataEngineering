@@ -26,6 +26,7 @@ from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
+from utils.estimate_job_count.models.model_non_res_default import model_non_res_default
 from utils.estimate_job_count.models.model_non_res_historical import (
     model_non_res_historical,
 )
@@ -227,29 +228,6 @@ def populate_last_known_job_count(df):
     df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
     df = df.select(
         [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
-    )
-
-    return df
-
-
-def model_non_res_default(df):
-    """
-    Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
-    """
-    # TODO: remove magic number 54.09
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-            ),
-            54.09,
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-    df = update_dataframe_with_identifying_rule(
-        df, "model_non_res_average", ESTIMATE_JOB_COUNT
     )
 
     return df
