@@ -452,30 +452,6 @@ class UtilsTests(unittest.TestCase):
         assert isinstance(row_one.integer_field, str)
         assert isinstance(row_one.float_field, float)
 
-    def test_read_csv_with_defined_schema_imports_dates_as_datetype(self):
-        schema = StructType(
-            [
-                StructField("string_field", StringType(), False),
-                StructField("integer_field", IntegerType(), False),
-                StructField("float_field", FloatType(), False),
-                StructField("date_field_formatted", DateType(), False),
-                StructField("date_field_unformatted", DateType(), False),
-            ]
-        )
-
-        df = utils.read_csv_with_defined_schema(
-            self.example_csv_for_schema_tests_with_datetype, schema
-        )
-        df.show()
-
-        row_one = df.collect()[0]
-
-    # assert isinstance(row_one.string_field, type(None))
-    # assert isinstance(row_one.integer_field, str)
-    # assert isinstance(row_one.float_field, float)
-    # assert isinstance(row_one.date_field_formatted, str)
-    # assert isinstance(row_one.float_field, type(None))
-
     def test_read_with_custom_delimiter(self):
         df = utils.read_csv(self.test_csv_custom_delim_path, "|")
 

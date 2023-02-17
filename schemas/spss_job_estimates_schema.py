@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     IntegerType,
 )
 
+
 SPSS_JOBS_ESTIMATES = StructType(
     fields=[
         StructField("LOCATIONID", StringType(), True),
