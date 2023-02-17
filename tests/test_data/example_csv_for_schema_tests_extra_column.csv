@@ -1,0 +1,2 @@
+string_field,integer_field,float_field,extra_col
+hello_world,12,3.456,extra_data
