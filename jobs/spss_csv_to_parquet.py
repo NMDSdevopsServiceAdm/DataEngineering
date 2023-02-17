@@ -42,4 +42,4 @@ if __name__ == "__main__":
     source, destination = collect_arguments()
     main(source, destination)
 
-    print("Spark job 'csv_to_parquet' done")
+    print("Spark job 'spss_csv_to_parquet' done")
