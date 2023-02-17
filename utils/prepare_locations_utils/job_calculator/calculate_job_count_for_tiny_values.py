@@ -10,10 +10,10 @@ from utils.prepare_locations_utils.job_calculator.common_checks import (
 
 def total_staff_or_worker_record_count_less_than_permitted_minimum():
     return (
-        F.col("total_staff") < JobCalculationConstants().MIN_TOTAL_STAFF_VALUE_PERMITTED
+        F.col("total_staff") < JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
     ) | (
         F.col("worker_record_count")
-        < JobCalculationConstants().MIN_WORKER_RECORD_COUNT_PERMITTED
+        < JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
     )
 
 
