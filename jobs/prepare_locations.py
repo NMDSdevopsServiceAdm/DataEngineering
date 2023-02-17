@@ -264,6 +264,11 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
     cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
     cqc_df = map_illegitimate_postcodes(cqc_df)
 
+    cqc_df = utils.format_date_fields(
+        cqc_df,
+        raw_date_format="yyyy-MM-dd",
+        date_column_identifier="registration_date",
+    )
     return cqc_df
 
 

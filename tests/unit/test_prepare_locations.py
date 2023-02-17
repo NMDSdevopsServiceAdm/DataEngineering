@@ -154,6 +154,10 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_location_df.columns[16], "import_date")
         self.assertEqual(cqc_location_df.count(), 14)
 
+        rows = cqc_location_df.collect()
+        self.assertEqual(rows[12]["registration_date"], date(2011, 2, 15))
+        self.assertEqual(rows[12]["deregistration_date"], date(2015, 1, 1))
+
     def test_get_cqc_provider_df(self):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(
             self.TEST_CQC_PROVIDERS_FILE, "20210105"
