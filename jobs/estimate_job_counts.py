@@ -3,7 +3,6 @@ import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import Window
 
 from utils import utils
@@ -23,9 +22,6 @@ from utils.estimate_job_count.column_names import (
     LAST_KNOWN_JOB_COUNT,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
-from utils.estimate_job_count.models.insert_predictions_into_locations import (
-    insert_predictions_into_locations,
-)
 from utils.estimate_job_count.models.model_non_res_default import model_non_res_default
 from utils.estimate_job_count.models.model_non_res_historical import (
     model_non_res_historical,
@@ -33,12 +29,10 @@ from utils.estimate_job_count.models.model_non_res_historical import (
 from utils.estimate_job_count.models.model_non_res_with_pir import (
     model_non_residential_with_pir,
 )
-from utils.estimate_job_count.models.r2_metric import generate_r2_metric
 
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
-
 
 # Constant values
 NURSING_HOME_IDENTIFIER = "Care home with nursing"
