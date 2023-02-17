@@ -23,6 +23,7 @@ from utils.estimate_job_count.column_names import (
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.model_non_res_default import model_non_res_default
+
 from utils.estimate_job_count.models.model_non_res_historical import (
     model_non_res_historical,
 )
