@@ -4,7 +4,7 @@ import warnings
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
-from utils.estimate_job_count.care_homes import model_care_homes
+from utils.estimate_job_count.models.care_homes import model_care_homes
 
 
 class TestModelCareHome(unittest.TestCase):
