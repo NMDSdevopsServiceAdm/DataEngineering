@@ -61,8 +61,6 @@ class TestJobCalculator(unittest.TestCase):
             df, "total_staff", "worker_record_count", "job_count"
         )
 
-        jobcount_df.show()
-
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], None)
@@ -96,7 +94,8 @@ class TestJobCalculator(unittest.TestCase):
 
         self.assertEqual(jobcount_df_list[7]["job_count"], 11.0)
         self.assertEqual(
-            jobcount_df_list[7]["job_count_source"], "abs_difference_within_range"
+            jobcount_df_list[7]["job_count_source"],
+            "average_of_total_staff_and_worker_records_as_both_similar",
         )
 
         self.assertEqual(jobcount_df_list[8]["job_count"], 23.0)
@@ -123,7 +122,6 @@ class TestJobCalculator(unittest.TestCase):
             df, "total_staff", "worker_record_count", "job_count"
         )
 
-        jobcount_df.show()
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], None)
@@ -212,4 +210,30 @@ class TestJobCalculator(unittest.TestCase):
         self.assertEqual(
             jobcount_df_list[0]["job_count_source"],
             "total_staff_only_permitted_value",
+        )
+
+    def test_calculate_jobcount_abs_difference_within_range(self):
+        rows = [
+            ("1-000000001", 10, 12, 15),
+            ("1-000000002", 100, 109, 80),
+        ]
+        df = self.spark.createDataFrame(
+            data=rows, schema=self.calculate_job_count_schema
+        )
+
+        jobcount_df = calculate_jobcount(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
+
+        jobcount_df_list = jobcount_df.collect()
+
+        self.assertEqual(jobcount_df_list[0]["job_count"], 11.0)
+        self.assertEqual(
+            jobcount_df_list[0]["job_count_source"],
+            "average_of_total_staff_and_worker_records_as_both_similar",
+        )
+        self.assertEqual(jobcount_df_list[1]["job_count"], 104.5)
+        self.assertEqual(
+            jobcount_df_list[1]["job_count_source"],
+            "average_of_total_staff_and_worker_records_as_both_similar",
         )

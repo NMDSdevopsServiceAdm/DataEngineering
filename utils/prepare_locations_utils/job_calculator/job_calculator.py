@@ -51,9 +51,13 @@ def calculate_jobcount(
         input_df, "total_staff_only_permitted_value", output_column_name
     )
 
-    input_df = calculate_jobcount_abs_difference_within_range(input_df)
+    input_df = calculate_jobcount_abs_difference_within_range(
+        input_df, total_staff_column, worker_records_column, output_column_name
+    )
     input_df = update_dataframe_with_identifying_rule(
-        input_df, "abs_difference_within_range", output_column_name
+        input_df,
+        "average_of_total_staff_and_worker_records_as_both_similar",
+        output_column_name,
     )
 
     input_df = calculate_jobcount_estimate_from_beds(input_df)
