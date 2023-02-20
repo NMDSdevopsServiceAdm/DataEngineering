@@ -20,7 +20,13 @@ def selected_column_is_null(col_name: str):
 
 
 def selected_ascwds_job_count_is_at_least_the_min_permitted(col_name: str):
-    return F.col(col_name) >= JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
+    return F.col(col_name).isNotNull() & (
+        F.col(col_name) >= JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
+    )
+
+
+def selected_ascwds_job_count_is_below_the_min_permitted(col_name: str):
+    return F.col(col_name) < JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
 
 
 def column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
