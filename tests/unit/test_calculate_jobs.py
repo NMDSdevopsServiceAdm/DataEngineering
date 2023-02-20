@@ -32,6 +32,8 @@ class TestJobCalculator(unittest.TestCase):
     def test_calculate_jobcount(self):
         rows = [
             ("1-000000001", 0, None, 0),  # Both 0: Return 0
+            # Both 500: Return 500
+            ("1-000000002", 500, 500, 490),
             # Only know worker_record_count: Return worker_record_count (100)
             ("1-000000003", None, 100, 10),
             # Only know total_staff: Return totalstaf (10)
@@ -55,9 +57,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
 
         jobcount_df.show()
 
@@ -79,9 +79,7 @@ class TestJobCalculator(unittest.TestCase):
         )
 
         self.assertEqual(jobcount_df_list[3]["job_count"], 10.0)
-        self.assertEqual(
-            jobcount_df_list[3]["job_count_source"], "total_staff_only_permitted_value"
-        )
+        self.assertEqual(jobcount_df_list[3]["job_count_source"], "total_staff_only_permitted_value")
 
         self.assertEqual(jobcount_df_list[4]["job_count"], None)
         self.assertEqual(jobcount_df_list[4]["job_count_source"], None)
@@ -93,14 +91,10 @@ class TestJobCalculator(unittest.TestCase):
         self.assertEqual(jobcount_df_list[6]["job_count_source"], None)
 
         self.assertEqual(jobcount_df_list[7]["job_count"], 11.0)
-        self.assertEqual(
-            jobcount_df_list[7]["job_count_source"], "abs_difference_within_range"
-        )
+        self.assertEqual(jobcount_df_list[7]["job_count_source"], "abs_difference_within_range")
 
         self.assertEqual(jobcount_df_list[8]["job_count"], 23.0)
-        self.assertEqual(
-            jobcount_df_list[8]["job_count_source"], "total_staff_only_permitted_value"
-        )
+        self.assertEqual(jobcount_df_list[8]["job_count_source"], "total_staff_only_permitted_value")
 
         self.assertEqual(jobcount_df_list[9]["job_count"], 96.0)
         self.assertEqual(jobcount_df_list[9]["job_count_source"], "estimate_from_beds")
@@ -117,9 +111,9 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
+
+        jobcount_df.show()
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], None)
@@ -131,9 +125,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], None)
@@ -145,9 +137,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], None)
@@ -161,9 +151,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 50.0)
@@ -180,9 +168,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 5.0)
@@ -199,9 +185,7 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
 
-        jobcount_df = calculate_jobcount(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
+        jobcount_df = calculate_jobcount(df, "total_staff", "worker_record_count", "job_count")
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 50.0)

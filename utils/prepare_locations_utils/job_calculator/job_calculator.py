@@ -4,7 +4,7 @@ from pyspark.sql.types import IntegerType, StringType
 from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import (
     calculate_jobcount_abs_difference_within_range,
 )
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_coalesce_totalstaff_wkrrecs import (
+from utils.prepare_locations_utils.job_calculator.calculate_job_count_return_only_permitted_value import (
     calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted,
 )
 from utils.prepare_locations_utils.job_calculator.calculate_jobcount_estimate_from_beds import (
