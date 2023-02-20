@@ -19,7 +19,7 @@ def selected_column_is_null(col_name: str):
     return F.col(col_name).isNull()
 
 
-def selected_ascwds_job_count_is_greater_than_min_permitted(col_name: str):
+def selected_ascwds_job_count_is_at_least_the_min_permitted(col_name: str):
     return F.col(col_name) >= JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED
 
 
