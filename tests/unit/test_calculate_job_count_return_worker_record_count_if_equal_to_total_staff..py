@@ -10,7 +10,7 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.prepare_locations_utils.job_calculator.calculate_jobcount_total_staff_equal_worker_records import (
+from utils.prepare_locations_utils.job_calculator.calculate_job_count_return_worker_record_count_if_equal_to_total_staff import (
     calculate_jobcount_totalstaff_equal_wkrrecs,
 )
 
@@ -39,7 +39,9 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
+        df = calculate_jobcount_totalstaff_equal_wkrrecs(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -51,7 +53,9 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
+        df = calculate_jobcount_totalstaff_equal_wkrrecs(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -65,7 +69,9 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
+        df = calculate_jobcount_totalstaff_equal_wkrrecs(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -79,7 +85,9 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(df)
+        df = calculate_jobcount_totalstaff_equal_wkrrecs(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
         self.assertEqual(df.count(), 1)
 
         df = df.collect()

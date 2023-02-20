@@ -12,17 +12,18 @@ def two_cols_are_equal_and_not_null(first_col: str, second_col: str):
     )
 
 
-def calculate_jobcount_totalstaff_equal_wkrrecs(input_df):
-    # total_staff = wkrrrecs: Take total_staff
+def calculate_jobcount_totalstaff_equal_wkrrecs(
+    input_df, total_staff_column, worker_records_column, output_column_name
+):
     return input_df.withColumn(
-        "job_count",
+        output_column_name,
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
+                job_count_from_ascwds_is_not_populated(output_column_name)
                 & two_cols_are_equal_and_not_null(
-                    first_col="worker_record_count", second_col="total_staff"
+                    total_staff_column, worker_records_column
                 )
             ),
-            F.col("total_staff"),
-        ).otherwise(F.col("job_count")),
+            worker_records_column,
+        ).otherwise(output_column_name),
     )
