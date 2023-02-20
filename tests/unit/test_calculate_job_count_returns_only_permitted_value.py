@@ -39,9 +39,9 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         rows = [
             ("1-000000001", None, 20, 25, None),
             ("1-000000002", 30, None, 25, None),
-            ("1-000000001", 1, 20, 25, None),
-            ("1-000000002", 30, 1, 25, None),
-            ("1-000000002", 35, 40, 25, None),
+            ("1-000000003", 1, 20, 25, None),
+            ("1-000000004", 30, 1, 25, None),
+            ("1-000000005", 35, 40, 25, None),
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
@@ -51,10 +51,11 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         self.assertEqual(df.count(), 5)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 20)
-        self.assertEqual(df[1]["job_count"], None)
-        self.assertEqual(df[2]["job_count"], 20)
-        self.assertEqual(df[3]["job_count"], None)
+
+        self.assertEqual(df[0]["job_count"], None)
+        self.assertEqual(df[1]["job_count"], 30)
+        self.assertEqual(df[2]["job_count"], None)
+        self.assertEqual(df[3]["job_count"], 30)
         self.assertEqual(df[4]["job_count"], None)
 
     def test_calculate_job_count_returns_worker_records_when_total_staff_below_permitted(
@@ -63,20 +64,20 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         rows = [
             ("1-000000001", None, 20, 25, None),
             ("1-000000002", 30, None, 25, None),
-            ("1-000000001", 1, 20, 25, None),
-            ("1-000000002", 30, 1, 25, None),
-            ("1-000000002", 35, 40, 25, None),
+            ("1-000000003", 1, 20, 25, None),
+            ("1-000000004", 30, 1, 25, None),
+            ("1-000000005", 35, 40, 25, None),
         ]
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
-            df, "total_staff", "worker_record_count", "job_count"
+            df, "worker_record_count", "total_staff", "job_count"
         )
         self.assertEqual(df.count(), 5)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], None)
-        self.assertEqual(df[1]["job_count"], 30)
-        self.assertEqual(df[2]["job_count"], None)
-        self.assertEqual(df[3]["job_count"], 30)
+        self.assertEqual(df[0]["job_count"], 20)
+        self.assertEqual(df[1]["job_count"], None)
+        self.assertEqual(df[2]["job_count"], 20)
+        self.assertEqual(df[3]["job_count"], None)
         self.assertEqual(df[4]["job_count"], None)
