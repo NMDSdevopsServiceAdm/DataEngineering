@@ -58,12 +58,13 @@ class TestJobCalculator(unittest.TestCase):
         jobcount_df = calculate_jobcount(
             df, "total_staff", "worker_record_count", "job_count"
         )
+
+        jobcount_df.show()
+
         jobcount_df_list = jobcount_df.collect()
 
-        self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
-        self.assertEqual(
-            jobcount_df_list[0]["job_count_source"], "coalesce_total_staff_wkrrecs"
-        )
+        self.assertEqual(jobcount_df_list[0]["job_count"], None)
+        self.assertEqual(jobcount_df_list[0]["job_count_source"], None)
 
         self.assertEqual(jobcount_df_list[1]["job_count"], 500.0)
         self.assertEqual(
@@ -73,12 +74,13 @@ class TestJobCalculator(unittest.TestCase):
 
         self.assertEqual(jobcount_df_list[2]["job_count"], 100.0)
         self.assertEqual(
-            jobcount_df_list[2]["job_count_source"], "coalesce_total_staff_wkrrecs"
+            jobcount_df_list[2]["job_count_source"],
+            "worker_records_only_permitted_value",
         )
 
         self.assertEqual(jobcount_df_list[3]["job_count"], 10.0)
         self.assertEqual(
-            jobcount_df_list[3]["job_count_source"], "coalesce_total_staff_wkrrecs"
+            jobcount_df_list[3]["job_count_source"], "total_staff_only_permitted_value"
         )
 
         self.assertEqual(jobcount_df_list[4]["job_count"], None)
@@ -96,7 +98,9 @@ class TestJobCalculator(unittest.TestCase):
         )
 
         self.assertEqual(jobcount_df_list[8]["job_count"], 23.0)
-        self.assertEqual(jobcount_df_list[8]["job_count_source"], "handle_tiny_values")
+        self.assertEqual(
+            jobcount_df_list[8]["job_count_source"], "total_staff_only_permitted_value"
+        )
 
         self.assertEqual(jobcount_df_list[9]["job_count"], 96.0)
         self.assertEqual(jobcount_df_list[9]["job_count_source"], "estimate_from_beds")
@@ -166,4 +170,42 @@ class TestJobCalculator(unittest.TestCase):
         self.assertEqual(
             jobcount_df_list[0]["job_count_source"],
             "worker_records_equal_to_total_staff",
+        )
+
+    def test_calculate_jobcount_select_none_null_value_which_is_at_least_minimum_job_count_permitted(
+        self,
+    ):
+        rows = [
+            ("1-000000001", 2, 5, 0),
+        ]
+        df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
+
+        jobcount_df = calculate_jobcount(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
+        jobcount_df_list = jobcount_df.collect()
+
+        self.assertEqual(jobcount_df_list[0]["job_count"], 5.0)
+        self.assertEqual(
+            jobcount_df_list[0]["job_count_source"],
+            "worker_records_only_permitted_value",
+        )
+
+    def test_calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
+        self,
+    ):
+        rows = [
+            ("1-000000001", 50, None, 0),
+        ]
+        df = self.spark.createDataFrame(rows, schema=self.calculate_job_count_schema)
+
+        jobcount_df = calculate_jobcount(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
+        jobcount_df_list = jobcount_df.collect()
+
+        self.assertEqual(jobcount_df_list[0]["job_count"], 50.0)
+        self.assertEqual(
+            jobcount_df_list[0]["job_count_source"],
+            "total_staff_only_permitted_value",
         )

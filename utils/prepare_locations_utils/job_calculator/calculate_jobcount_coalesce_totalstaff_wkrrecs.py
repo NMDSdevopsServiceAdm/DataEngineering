@@ -1,34 +1,30 @@
 from utils.prepare_locations_utils.job_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
     selected_column_is_null,
-    selected_column_is_not_null,
+    selected_ascwds_job_count_is_at_least_the_min_permitted,
+    selected_ascwds_job_count_is_below_the_min_permitted,
 )
-
 import pyspark.sql.functions as F
 
 
-def calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df):
-    # Either worker_record_count or total_staff is null: return first not null
+def calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
+    input_df, permitted_column: str, non_permitted_column: str, output_column_name
+):
     return input_df.withColumn(
-        "job_count",
+        output_column_name,
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
+                job_count_from_ascwds_is_not_populated(output_column_name)
+                & selected_ascwds_job_count_is_at_least_the_min_permitted(
+                    permitted_column
+                )
                 & (
-                    (
-                        selected_column_is_null(col_name="total_staff")
-                        & selected_column_is_not_null(col_name="worker_record_count")
-                    )
-                    | (
-                        selected_column_is_not_null(col_name="total_staff")
-                        & selected_column_is_null(col_name="worker_record_count")
+                    selected_column_is_null(non_permitted_column)
+                    | selected_ascwds_job_count_is_below_the_min_permitted(
+                        non_permitted_column
                     )
                 )
             ),
-            select_the_non_null_value_of_total_staff_and_worker_record_count(input_df),
-        ).otherwise(F.coalesce(F.col("job_count"))),
+            F.col(permitted_column),
+        ).otherwise(F.col(output_column_name)),
     )
-
-
-def select_the_non_null_value_of_total_staff_and_worker_record_count(input_df):
-    return F.coalesce(input_df.total_staff, input_df.worker_record_count)

@@ -8,7 +8,7 @@ from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_differe
     calculate_jobcount_abs_difference_within_range,
 )
 from utils.prepare_locations_utils.job_calculator.calculate_jobcount_coalesce_totalstaff_wkrrecs import (
-    calculate_jobcount_coalesce_totalstaff_wkrrecs,
+    calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted,
 )
 from utils.prepare_locations_utils.job_calculator.calculate_jobcount_estimate_from_beds import (
     calculate_jobcount_estimate_from_beds,
@@ -40,19 +40,23 @@ def calculate_jobcount(
         input_df, "worker_records_equal_to_total_staff", output_column_name
     )
 
-    input_df = calculate_jobcount_coalesce_totalstaff_wkrrecs(input_df)
+    input_df = calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
+        input_df, worker_records_column, total_staff_column, output_column_name
+    )
     input_df = update_dataframe_with_identifying_rule(
-        input_df, "coalesce_total_staff_wkrrecs", output_column_name
+        input_df, "worker_records_only_permitted_value", output_column_name
+    )
+
+    input_df = calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
+        input_df, total_staff_column, worker_records_column, output_column_name
+    )
+    input_df = update_dataframe_with_identifying_rule(
+        input_df, "total_staff_only_permitted_value", output_column_name
     )
 
     input_df = calculate_jobcount_abs_difference_within_range(input_df)
     input_df = update_dataframe_with_identifying_rule(
         input_df, "abs_difference_within_range", output_column_name
-    )
-
-    input_df = calculate_jobcount_handle_tiny_values(input_df)
-    input_df = update_dataframe_with_identifying_rule(
-        input_df, "handle_tiny_values", output_column_name
     )
 
     input_df = calculate_jobcount_estimate_from_beds(input_df)
