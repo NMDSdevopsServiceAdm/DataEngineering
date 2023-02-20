@@ -1,9 +1,6 @@
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
 
-from utils.prepare_locations_utils.job_calculator.calculate_job_count_for_tiny_values import (
-    calculate_jobcount_handle_tiny_values,
-)
 from utils.prepare_locations_utils.job_calculator.calculate_jobcount_abs_difference_within_range import (
     calculate_jobcount_abs_difference_within_range,
 )
