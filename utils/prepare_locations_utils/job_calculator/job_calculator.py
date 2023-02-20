@@ -19,7 +19,10 @@ from utils.prepare_locations_utils.job_calculator.calculate_job_count_return_wor
 
 
 def calculate_jobcount(
-    input_df, total_staff_column, worker_records_column, output_column_name
+    input_df,
+    total_staff_column: str,
+    worker_records_column: str,
+    output_column_name: str,
 ):
     source_output_column_name = output_column_name + "_source"
 

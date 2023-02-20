@@ -13,7 +13,7 @@ def two_cols_are_equal_and_not_null(first_col: str, second_col: str):
 
 
 def calculate_jobcount_totalstaff_equal_wkrrecs(
-    input_df, total_staff_column, worker_records_column, output_column_name
+    input_df, total_staff_column: str, worker_records_column: str, output_column_name
 ):
     return input_df.withColumn(
         output_column_name,
@@ -24,6 +24,6 @@ def calculate_jobcount_totalstaff_equal_wkrrecs(
                     total_staff_column, worker_records_column
                 )
             ),
-            worker_records_column,
-        ).otherwise(output_column_name),
+            F.col(worker_records_column),
+        ).otherwise(F.col(output_column_name)),
     )

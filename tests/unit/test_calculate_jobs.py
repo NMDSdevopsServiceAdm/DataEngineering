@@ -43,7 +43,9 @@ class TestJobCalculator(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        jobcount_df = calculate_jobcount(df, "job_count")
+        jobcount_df = calculate_jobcount(
+            df, "total_staff", "worker_record_count", "job_count"
+        )
         jobcount_df_list = jobcount_df.collect()
 
         self.assertEqual(jobcount_df_list[0]["job_count"], 0.0)
@@ -53,7 +55,8 @@ class TestJobCalculator(unittest.TestCase):
 
         self.assertEqual(jobcount_df_list[1]["job_count"], 500.0)
         self.assertEqual(
-            jobcount_df_list[1]["job_count_source"], "totalstaff_equal_wkrrecs"
+            jobcount_df_list[1]["job_count_source"],
+            "worker_records_equal_to_total_staff",
         )
 
         self.assertEqual(jobcount_df_list[2]["job_count"], 100.0)
