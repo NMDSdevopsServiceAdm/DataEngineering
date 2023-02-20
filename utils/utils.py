@@ -9,7 +9,6 @@ from pyspark.sql.utils import AnalysisException
 
 import boto3
 
-
 TWO_MB = 2000000
 
 
@@ -90,7 +89,6 @@ def generate_s3_main_datasets_dir_date_path(domain, dataset, date):
 
 
 def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
-
     if append:
         df.write.mode("append").partitionBy(*partitionKeys).parquet(output_dir)
     else:
@@ -103,6 +101,16 @@ def read_csv(source, delimiter=","):
     ).getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
+
+    return df
+
+
+def read_csv_with_defined_schema(source, schema):
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_spss_csv_to_parquet"
+    ).getOrCreate()
+
+    df = spark.read.schema(schema).option("header", "true").csv(source)
 
     return df
 
