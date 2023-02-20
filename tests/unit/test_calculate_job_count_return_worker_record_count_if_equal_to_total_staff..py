@@ -33,7 +33,9 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    def test_calculate_jobcount_totalstaff_equal_wkrrecs_when_greater_than_zero(self):
+    def test_calculate_job_count_returns_worker_record_count_when_equal_to_total_staff_and_greater_than_min_permitted(
+        self,
+    ):
         rows = [
             ("1-000000001", 20, 20, 25, None),
         ]
@@ -46,20 +48,6 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
 
         df = df.collect()
         self.assertEqual(df[0]["job_count"], 20)
-
-    def test_calculate_jobcount_totalstaff_equal_wkrrecs_when_both_are_zero(self):
-        rows = [
-            ("1-000000001", 0, 0, 25, None),
-        ]
-        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
-
-        df = calculate_jobcount_totalstaff_equal_wkrrecs(
-            df, "total_staff", "worker_record_count", "job_count"
-        )
-        self.assertEqual(df.count(), 1)
-
-        df = df.collect()
-        self.assertEqual(df[0]["job_count"], 0)
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs_when_both_are_below_min_cutoff(
         self,
@@ -75,7 +63,7 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 1)
+        self.assertEqual(df[0]["job_count"], None)
 
     def test_calculate_jobcount_totalstaff_equal_wkrrecs_returns_none_when_not_equal(
         self,
