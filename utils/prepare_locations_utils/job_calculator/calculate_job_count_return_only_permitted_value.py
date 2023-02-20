@@ -1,10 +1,11 @@
+import pyspark.sql.functions as F
+
 from utils.prepare_locations_utils.job_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
     selected_column_is_null,
     selected_ascwds_job_count_is_at_least_the_min_permitted,
     selected_ascwds_job_count_is_below_the_min_permitted,
 )
-import pyspark.sql.functions as F
 
 
 def calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(

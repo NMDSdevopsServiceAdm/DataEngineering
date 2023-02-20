@@ -1,20 +1,17 @@
+import pyspark.sql.functions as F
+
 from utils.prepare_locations_utils.job_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
+    selected_ascwds_job_count_is_at_least_the_min_permitted,
 )
-from utils.prepare_locations_utils.job_calculator.calculation_constants import (
-    JobCalculationConstants,
-)
-import pyspark.sql.functions as F
 
 
 def two_cols_are_equal_and_at_least_minimum_job_count_permitted(
     first_col: str, second_col: str
 ):
     return (
-        (F.col(first_col) == F.col(second_col))
-        & F.col(first_col).isNotNull()
-        & (F.col(first_col) >= JobCalculationConstants().MIN_ASCWDS_JOB_COUNT_PERMITTED)
-    )
+        F.col(first_col) == F.col(second_col)
+    ) & selected_ascwds_job_count_is_at_least_the_min_permitted(first_col)
 
 
 def calculate_jobcount_totalstaff_equal_wkrrecs(
