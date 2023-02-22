@@ -14,8 +14,7 @@ class TestCalculateJobConstants(unittest.TestCase):
             "BEDS_TO_JOB_COUNT_COEFFICIENT": 1.0010753137758377,
             "MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT": 5,
             "MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT": 0.1,
-            "MIN_TOTAL_STAFF_VALUE_PERMITTED": 3,
-            "MIN_WORKER_RECORD_COUNT_PERMITTED": 3,
+            "MIN_ASCWDS_JOB_COUNT_PERMITTED": 3,
         }
 
         self.assertEqual(expected_values, asdict(JobCalculationConstants()))

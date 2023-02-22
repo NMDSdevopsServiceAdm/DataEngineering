@@ -15,6 +15,8 @@ from utils.prepare_locations_utils.job_calculator.common_checks import (
     column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count,
     selected_column_is_null,
     selected_column_is_not_null,
+    selected_ascwds_job_count_is_at_least_the_min_permitted,
+    selected_ascwds_job_count_is_below_the_min_permitted,
     job_count_from_ascwds_is_not_populated,
 )
 
@@ -77,6 +79,95 @@ class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
         result_df = result.collect()
         self.assertEqual(result_df[0]["result"], False)
         self.assertEqual(result_df[1]["result"], True)
+
+    def test_selected_ascwds_job_count_is_at_least_the_min_permitted_when_true(self):
+
+        rows = [("1-000000001", 3, 2, 3, 1.5)]
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        result = df.withColumn(
+            "result",
+            F.when(
+                (
+                    selected_ascwds_job_count_is_at_least_the_min_permitted(
+                        "total_staff"
+                    )
+                ),
+                True,
+            ).otherwise(False),
+        )
+
+        result_df = result.collect()
+        self.assertEqual(result_df[0]["result"], True)
+
+    def test_selected_ascwds_job_count_is_at_least_the_min_permitted_when_false(self):
+
+        rows = [("1-000000001", 2, 3, 3, 1.5)]
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        result = df.withColumn(
+            "result",
+            F.when(
+                (
+                    selected_ascwds_job_count_is_at_least_the_min_permitted(
+                        "total_staff"
+                    )
+                ),
+                True,
+            ).otherwise(False),
+        )
+
+        result_df = result.collect()
+        self.assertEqual(result_df[0]["result"], False)
+
+    def test_selected_ascwds_job_count_is_below_the_least_min_permitted_when_true(self):
+
+        rows = [("1-000000001", 2, 2, 3, 1.5)]
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        result = df.withColumn(
+            "result",
+            F.when(
+                (selected_ascwds_job_count_is_below_the_min_permitted("total_staff")),
+                True,
+            ).otherwise(False),
+        )
+
+        result_df = result.collect()
+        self.assertEqual(result_df[0]["result"], True)
+
+    def test_selected_ascwds_job_count_is_below_the_least_min_permitted_when_false(
+        self,
+    ):
+
+        rows = [("1-000000001", 3, 3, 3, 1.5)]
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        result = df.withColumn(
+            "result",
+            F.when(
+                (selected_ascwds_job_count_is_below_the_min_permitted("total_staff")),
+                True,
+            ).otherwise(False),
+        )
+
+        result_df = result.collect()
+        self.assertEqual(result_df[0]["result"], False)
+
+    def test_selected_ascwds_job_count_returns_false_when_null(self):
+
+        rows = [("1-000000002", None, 2, 3, 1.5)]
+        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        result = df.withColumn(
+            "result",
+            F.when(
+                (
+                    selected_ascwds_job_count_is_at_least_the_min_permitted(
+                        "total_staff"
+                    )
+                ),
+                True,
+            ).otherwise(False),
+        )
+
+        result_df = result.collect()
+        self.assertEqual(result_df[0]["result"], False)
 
     def test_column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count_resolves_to_true(
         self,
