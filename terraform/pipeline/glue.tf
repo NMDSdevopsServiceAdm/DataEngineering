@@ -82,7 +82,7 @@ module "prepare_locations_job" {
   number_of_workers = 6
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-
+  glue_version      = "2.0"
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
