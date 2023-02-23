@@ -13,7 +13,7 @@ import pyspark.sql.functions as F
 MEAN_NON_RESIDENTIAL_JOBS = 54.09
 
 
-def model_non_res_default(df: pyspark.sql.DataFrame)-> pyspark.sql.DataFrame:
+def model_non_res_default(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     """
     Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
     """
@@ -33,11 +33,9 @@ def model_non_res_default(df: pyspark.sql.DataFrame)-> pyspark.sql.DataFrame:
     df = df.withColumn(
         "non_res_default_model",
         F.when(
-            (
-                    F.col(PRIMARY_SERVICE_TYPE) == "non-residential"
-            ),
+            (F.col(PRIMARY_SERVICE_TYPE) == "non-residential"),
             MEAN_NON_RESIDENTIAL_JOBS,
-        )
+        ),
     )
 
     df = update_dataframe_with_identifying_rule(

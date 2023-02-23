@@ -32,11 +32,12 @@ def model_non_res_historical(df):
         "model_non_res_historical",
         F.when(
             (
-                    (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-                    & F.col(LAST_KNOWN_JOB_COUNT).isNotNull()
+                (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
+                & F.col(LAST_KNOWN_JOB_COUNT).isNotNull()
             ),
-            F.col(LAST_KNOWN_JOB_COUNT) * PROJECTION_RATIO))
-
+            F.col(LAST_KNOWN_JOB_COUNT) * PROJECTION_RATIO,
+        ),
+    )
 
     df = update_dataframe_with_identifying_rule(
         df,
