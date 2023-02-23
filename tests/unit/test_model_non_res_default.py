@@ -33,9 +33,17 @@ class TestModelNonResDefault(unittest.TestCase):
 
         df = df.collect()
         self.assertEqual(df[0]["estimate_job_count"], 54.09)
+        self.assertEqual(df[0]["non_res_default_model"], 54.09)
         self.assertEqual(df[0]["estimate_job_count_source"], "model_non_res_average")
+
         self.assertEqual(df[1]["estimate_job_count"], None)
+        self.assertEqual(df[1]["non_res_default_model"], None)
         self.assertEqual(df[1]["estimate_job_count_source"], None)
+
         self.assertEqual(df[2]["estimate_job_count"], 54.09)
+        self.assertEqual(df[2]["non_res_default_model"], 54.09)
+        self.assertEqual(df[2]["estimate_job_count_source"], "model_non_res_average")
+
         self.assertEqual(df[3]["estimate_job_count"], 10)
+        self.assertEqual(df[3]["non_res_default_model"], 54.09)
         self.assertEqual(df[3]["estimate_job_count_source"], "already_populated")
