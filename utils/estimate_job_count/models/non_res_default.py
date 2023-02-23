@@ -1,3 +1,5 @@
+import pyspark.sql
+
 from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
@@ -9,7 +11,7 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 import pyspark.sql.functions as F
 
 
-def model_non_res_default(df):
+def model_non_res_default(df: pyspark.sql.DataFrame)-> pyspark.sql.DataFrame:
     """
     Non-res : Not Historical : Not PIR : 2021 jobs = mean of known 2021 non-res jobs (54.09)
     """
