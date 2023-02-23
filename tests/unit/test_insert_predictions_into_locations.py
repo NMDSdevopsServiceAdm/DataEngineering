@@ -63,7 +63,8 @@ class TestModelNonResWithPir(unittest.TestCase):
 
     def generate_predictions_df(self):
         # fmt: off
-        columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction"]
+        columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds",
+                   "snapshot_date", "prediction"]
 
         rows = [
             ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
@@ -79,7 +80,9 @@ class TestModelNonResWithPir(unittest.TestCase):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
 
-        df = insert_predictions_into_locations(locations_df, predictions_df)
+        df = insert_predictions_into_locations(
+            locations_df, predictions_df, "care_home_model_estimate,"
+        )
 
         expected_location_with_prediction = df.where(
             df["locationid"] == "1-000000004"
@@ -92,7 +95,9 @@ class TestModelNonResWithPir(unittest.TestCase):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
 
-        df = insert_predictions_into_locations(locations_df, predictions_df)
+        df = insert_predictions_into_locations(
+            locations_df, predictions_df, "care_home_model_estimate"
+        )
 
         expected_location_with_prediction = df.where(
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
@@ -109,18 +114,43 @@ class TestModelNonResWithPir(unittest.TestCase):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
 
-        df = insert_predictions_into_locations(locations_df, predictions_df)
+        df = insert_predictions_into_locations(
+            locations_df, predictions_df, "care_home_model_estimate"
+        )
 
         expected_location_without_prediction = df.where(
             (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-02-20")
         ).collect()[0]
         self.assertIsNone(expected_location_without_prediction.estimate_job_count)
 
-    def test_insert_predictions_into_locations_removes_all_columns_from_predictions_df(
+    def test_insert_predictions_into_locations_adds_extra_column(self):
+        locations_df = self.generate_locations_df()
+        predictions_df = self.generate_predictions_df()
+
+        df = insert_predictions_into_locations(
+            locations_df, predictions_df, "care_home_model_estimate"
+        )
+        assert "care_home_model_estimate" in df.columns
+
+    def test_insert_model_column_name_into_locations_does_so_when_locationid_matches(
         self,
     ):
         locations_df = self.generate_locations_df()
         predictions_df = self.generate_predictions_df()
 
-        df = insert_predictions_into_locations(locations_df, predictions_df)
-        self.assertEqual(locations_df.columns, df.columns)
+        model_column_name = "care_home_model_estimate"
+
+        df = insert_predictions_into_locations(
+            locations_df, predictions_df, model_column_name
+        )
+
+        expected_location_with_prediction = df.where(
+            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+        ).collect()[0]
+        expected_location_without_prediction = df.where(
+            df["locationid"] == "1-000000003"
+        ).collect()[0]
+        self.assertEqual(
+            expected_location_with_prediction.care_home_model_estimate, 56.89
+        )
+        self.assertIsNone(expected_location_without_prediction.care_home_model_estimate)
