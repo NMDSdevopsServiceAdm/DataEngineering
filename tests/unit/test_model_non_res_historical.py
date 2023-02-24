@@ -58,8 +58,15 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(
             df[0]["estimate_job_count_source"], "model_non_res_ascwds_projected_forward"
         )
+        self.assertEqual(df[0]["model_non_res_historical"], 10.3)
         self.assertEqual(df[1]["estimate_job_count"], None)
         self.assertEqual(df[1]["estimate_job_count_source"], None)
+        self.assertEqual(df[1]["model_non_res_historical"], None)
         self.assertEqual(df[2]["estimate_job_count"], 20.6)
+        self.assertEqual(
+            df[2]["estimate_job_count_source"], "model_non_res_ascwds_projected_forward"
+        )
+        self.assertEqual(df[2]["model_non_res_historical"], 20.6)
         self.assertEqual(df[3]["estimate_job_count"], 10)
         self.assertEqual(df[3]["estimate_job_count_source"], "already_populated")
+        self.assertEqual(df[3]["model_non_res_historical"], 10.3)

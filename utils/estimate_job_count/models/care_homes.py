@@ -26,7 +26,7 @@ def model_care_homes(locations_df, features_df, model_path):
         "data_percentage": (features_df.count() / locations_df.count()) * 100,
     }
     locations_df = insert_predictions_into_locations(
-        locations_df, care_home_predictions
+        locations_df, care_home_predictions, "care_home_model"
     )
 
     locations_df = update_dataframe_with_identifying_rule(
