@@ -24,30 +24,54 @@ class TestModelNonResDefault(unittest.TestCase):
             "estimate_job_count",
             "estimate_job_count_source",
         ]
+        # fmt: off
         rows = [
-            ("1-000000001", "2023-01-01", "non-residential", None, None),
-            ("1-000000002", "2023-01-01", "Care home with nursing", None, None),
-            ("1-000000003", "2023-01-01", "non-residential", None, None),
-            ("1-000000004", "2023-01-01", "non-residential", 10, "already_populated"),
+            ("1-000000001", "2023-01-01", 15, "Care home with nursing", None, None),
+            ("1-000000002", "2023-01-01", 5, "non-residential", None, None),
+            ("1-000000003", "2023-01-01", 5, "non-residential", None, None),
+            ("1-000000004", "2023-02-10", 20, "non-residential", None, None),
+            ("1-000000005", "2023-03-20", 30, "non-residential", 30, "already_populated",),
+            ("1-000000006", "2023-04-30", 40, "non-residential", None, None,),
         ]
+        # fmt: on
         df = self.spark.createDataFrame(rows, columns)
 
         df = model_non_res_rolling_three_month_average(df)
-        self.assertEqual(df.count(), 4)
+        self.assertEqual(df.count(), 6)
 
         df = df.collect()
-        # self.assertEqual(df[0]["estimate_job_count"], 54.09)
-        # self.assertEqual(df[0]["non_res_default_model"], 54.09)
-        # self.assertEqual(df[0]["estimate_job_count_source"], "model_non_res_average")
+        self.assertEqual(df[0]["estimate_job_count"], None)
+        self.assertEqual(df[0]["model_non_res_rolling_three_month_average"], None)
+        self.assertEqual(df[0]["estimate_job_count_source"], None)
 
-        # self.assertEqual(df[1]["estimate_job_count"], None)
-        # self.assertEqual(df[1]["non_res_default_model"], None)
-        # self.assertEqual(df[1]["estimate_job_count_source"], None)
+        self.assertEqual(df[1]["estimate_job_count"], 5.0)
+        self.assertEqual(df[1]["model_non_res_rolling_three_month_average"], 5.0)
+        self.assertEqual(
+            df[1]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
 
-        # self.assertEqual(df[2]["estimate_job_count"], 54.09)
-        # self.assertEqual(df[2]["non_res_default_model"], 54.09)
-        # self.assertEqual(df[2]["estimate_job_count_source"], "model_non_res_average")
+        self.assertEqual(df[2]["estimate_job_count"], 5.0)
+        self.assertEqual(df[2]["model_non_res_rolling_three_month_average"], 5.0)
+        self.assertEqual(
+            df[2]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
 
-        # self.assertEqual(df[3]["estimate_job_count"], 10)
-        # self.assertEqual(df[3]["non_res_default_model"], 54.09)
-        # self.assertEqual(df[3]["estimate_job_count_source"], "already_populated")
+        self.assertEqual(df[3]["estimate_job_count"], 10.0)
+        self.assertEqual(df[3]["model_non_res_rolling_three_month_average"], 10.0)
+        self.assertEqual(
+            df[3]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
+
+        self.assertEqual(df[4]["estimate_job_count"], 30.0)
+        self.assertEqual(df[4]["model_non_res_rolling_three_month_average"], 15.0)
+        self.assertEqual(df[4]["estimate_job_count_source"], "already_populated")
+
+        self.assertEqual(df[5]["estimate_job_count"], 30.0)
+        self.assertEqual(df[5]["model_non_res_rolling_three_month_average"], 30.0)
+        self.assertEqual(
+            df[5]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
