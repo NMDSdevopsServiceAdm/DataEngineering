@@ -28,7 +28,9 @@ def model_non_res_rolling_three_month_average(
         "model_non_res_rolling_three_month_average",
         F.when(
             (F.col(PRIMARY_SERVICE_TYPE) == "non-residential"),
-            rolling_average("job_count", "snapshot_date_unix_conv", 90),
+            rolling_average(
+                "job_count", "primary_service_type", "snapshot_date_unix_conv", 90
+            ),
         ),
     )
 
@@ -47,8 +49,6 @@ def model_non_res_rolling_three_month_average(
         df, "model_non_res_rolling_three_month_average", ESTIMATE_JOB_COUNT
     )
 
-    df.show()
-
     return df.drop("snapshot_date_unix_conv")
 
 
@@ -62,15 +62,21 @@ def convert_date_to_unix_timestamp(
     return df
 
 
-def time_period_in_days(unix_date_col: str, number_of_days: int):
-    return Window.orderBy(F.col(unix_date_col).cast("long")).rangeBetween(
-        -convert_days_to_unix_time(number_of_days), 0
+def partition_and_time_period(
+    partition_col: str, unix_date_col: str, number_of_days: int
+):
+    return (
+        Window.partitionBy(F.col(partition_col))
+        .orderBy(F.col(unix_date_col).cast("long"))
+        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
 
 
-def rolling_average(col_to_average: str, unix_date_col: str, number_of_days: int):
+def rolling_average(
+    col_to_average: str, partition_col: str, unix_date_col: str, number_of_days: int
+):
     return F.avg(col_to_average).over(
-        time_period_in_days(unix_date_col, number_of_days)
+        partition_and_time_period(partition_col, unix_date_col, number_of_days)
     )
 
 
