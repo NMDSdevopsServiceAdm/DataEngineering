@@ -48,20 +48,20 @@ class TestModelNonResDefault(unittest.TestCase):
         self.spark = SparkSession.builder.appName(
             "test_estimate_2021_jobs"
         ).getOrCreate()
+        self.non_res_model_df = model_non_res_rolling_average(
+            self.spark.createDataFrame(self.rows, schema=self.column_schema)
+        )
+
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_model_non_res_row_count_unchanged(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        self.assertEqual(df.count(), self.rows.count())
+        self.assertEqual(self.non_res_model_df.count(), len(self.rows))
 
     def test_model_non_res_rolling_average_returns_none_if_not_non_res(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        df = df.orderBy("locationid").collect()
+        df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[0]["estimate_job_count"], None)
         self.assertEqual(df[0]["model_non_res_rolling_average"], None)
         self.assertEqual(df[0]["estimate_job_count_source"], None)
@@ -69,10 +69,8 @@ class TestModelNonResDefault(unittest.TestCase):
     def test_model_non_res_rolling_average_returns_average_when_job_count_populated_and_estimate_is_none(
         self,
     ):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        df = df.orderBy("locationid").collect()
+        df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[1]["estimate_job_count"], 5.0)
         self.assertEqual(df[1]["model_non_res_rolling_average"], 5.0)
         self.assertEqual(
@@ -104,19 +102,15 @@ class TestModelNonResDefault(unittest.TestCase):
     def test_model_non_res_rolling_average_returns_average_when_job_count_populated_but_doesnt_replace_estimate(
         self,
     ):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        df = df.orderBy("locationid").collect()
+        df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[4]["estimate_job_count"], 30.0)
         self.assertEqual(df[4]["model_non_res_rolling_average"], 15.0)
         self.assertEqual(df[4]["estimate_job_count_source"], "already_populated")
 
     def test_model_non_res_rolling_average_returns_average_when_job_count_is_none(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        df = df.orderBy("locationid").collect()
+        df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[6]["estimate_job_count"], 5.0)
         self.assertEqual(df[6]["model_non_res_rolling_average"], 5.0)
         self.assertEqual(
@@ -134,10 +128,8 @@ class TestModelNonResDefault(unittest.TestCase):
     def test_model_non_res_rolling_average_returns_average_when_job_count_is_none_but_doesnt_replace_estimate(
         self,
     ):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = model_non_res_rolling_average(df)
 
-        df = df.orderBy("locationid").collect()
+        df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[8]["estimate_job_count"], 30.0)
         self.assertEqual(df[8]["model_non_res_rolling_average"], 15.0)
         self.assertEqual(df[8]["estimate_job_count_source"], "already_populated")
