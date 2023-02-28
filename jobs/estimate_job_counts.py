@@ -22,8 +22,8 @@ from utils.estimate_job_count.column_names import (
     LAST_KNOWN_JOB_COUNT,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
-from utils.estimate_job_count.models.non_res_rolling_three_month_average import (
-    model_non_res_rolling_three_month_average,
+from utils.estimate_job_count.models.non_res_rolling_average import (
+    model_non_res_rolling_average,
 )
 
 from utils.estimate_job_count.models.non_res_historical import (
@@ -144,7 +144,7 @@ def main(
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
 
-    locations_df = model_non_res_rolling_three_month_average(locations_df)
+    locations_df = model_non_res_rolling_average(locations_df)
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))

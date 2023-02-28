@@ -17,7 +17,7 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 )
 
 
-def model_non_res_rolling_three_month_average(
+def model_non_res_rolling_average(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
@@ -25,7 +25,7 @@ def model_non_res_rolling_three_month_average(
     non_res_rolling_average_df = create_non_res_rolling_average_column(df)
 
     df = insert_predictions_into_locations(
-        df, non_res_rolling_average_df, "model_non_res_rolling_three_month_average"
+        df, non_res_rolling_average_df, "model_non_res_rolling_average"
     )
 
     df = df.withColumn(
@@ -35,12 +35,12 @@ def model_non_res_rolling_three_month_average(
                 F.col(ESTIMATE_JOB_COUNT).isNull()
                 & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
             ),
-            F.col("model_non_res_rolling_three_month_average"),
+            F.col("model_non_res_rolling_average"),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
     df = update_dataframe_with_identifying_rule(
-        df, "model_non_res_rolling_three_month_average", ESTIMATE_JOB_COUNT
+        df, "model_non_res_rolling_average", ESTIMATE_JOB_COUNT
     )
 
     return df.drop("snapshot_date_unix_conv")
