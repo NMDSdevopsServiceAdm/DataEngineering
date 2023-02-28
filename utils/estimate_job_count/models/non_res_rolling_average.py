@@ -51,8 +51,8 @@ def model_non_res_rolling_average(
 
 
 def convert_date_to_unix_timestamp(
-    df, date_col: str, date_format: str, new_col_name: str
-):
+    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
+) -> pyspark.sql.DataFrame:
     df = df.withColumn(
         new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
     )
@@ -76,7 +76,9 @@ def convert_days_to_unix_time(days: int):
     return days * 86400
 
 
-def create_non_res_rolling_average_column(df, number_of_days: int):
+def create_non_res_rolling_average_column(
+    df: pyspark.sql.DataFrame, number_of_days: int
+) -> pyspark.sql.DataFrame:
     non_res_rolling_average_df = df.filter(
         F.col(PRIMARY_SERVICE_TYPE) == "non-residential"
     ).select(LOCATION_ID, SNAPSHOT_DATE, JOB_COUNT)
