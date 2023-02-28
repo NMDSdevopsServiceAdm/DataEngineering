@@ -23,7 +23,6 @@ def model_non_res_rolling_average(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
-    # Non-res : Not Historical : Not PIR : rolling average of job_count based on snapshot_date
     non_res_rolling_average_df = create_non_res_rolling_average_column(
         df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
     )
