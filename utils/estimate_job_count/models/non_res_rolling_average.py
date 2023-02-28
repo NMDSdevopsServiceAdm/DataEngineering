@@ -16,13 +16,17 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
+ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 90
+
 
 def model_non_res_rolling_average(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
-    # Non-res : Not Historical : Not PIR : rolling 3 month average of job_count based on snapshot_date
-    non_res_rolling_average_df = create_non_res_rolling_average_column(df)
+    # Non-res : Not Historical : Not PIR : rolling average of job_count based on snapshot_date
+    non_res_rolling_average_df = create_non_res_rolling_average_column(
+        df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
+    )
 
     df = insert_predictions_into_locations(
         df, non_res_rolling_average_df, "model_non_res_rolling_average"
@@ -72,7 +76,7 @@ def convert_days_to_unix_time(days: int):
     return days * 86400
 
 
-def create_non_res_rolling_average_column(df):
+def create_non_res_rolling_average_column(df, number_of_days: int):
     non_res_rolling_average_df = df.filter(
         F.col(PRIMARY_SERVICE_TYPE) == "non-residential"
     ).select(LOCATION_ID, SNAPSHOT_DATE, JOB_COUNT)
@@ -86,7 +90,7 @@ def create_non_res_rolling_average_column(df):
 
     non_res_rolling_average_df = non_res_rolling_average_df.withColumn(
         "prediction",
-        rolling_average(JOB_COUNT, "snapshot_date_unix_conv", 90),
+        rolling_average(JOB_COUNT, "snapshot_date_unix_conv", number_of_days),
     )
 
     return non_res_rolling_average_df
