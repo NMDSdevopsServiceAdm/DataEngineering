@@ -55,7 +55,7 @@ class TestModelNonResDefault(unittest.TestCase):
         df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
         df = model_non_res_rolling_average(df)
 
-        self.assertEqual(df.count(), 9)
+        self.assertEqual(df.count(), self.rows.count())
 
     def test_model_non_res_rolling_average_returns_none_if_not_non_res(self):
         df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
