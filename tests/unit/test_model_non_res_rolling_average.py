@@ -29,8 +29,8 @@ class TestModelNonResDefault(unittest.TestCase):
     # fmt: off
     rows = [
         ("1-000000001", "2023-01-01", 15, "Care home with nursing", None, None),
-        ("1-000000002", "2023-01-01", 5, "non-residential", None, None),
-        ("1-000000003", "2023-01-01", 5, "non-residential", None, None),
+        ("1-000000002", "2023-01-01", 4, "non-residential", None, None),
+        ("1-000000003", "2023-01-01", 6, "non-residential", None, None),
         ("1-000000004", "2023-02-10", 20, "non-residential", None, None),
         ("1-000000005", "2023-03-20", 30, "non-residential", 30.0, "already_populated",),
         ("1-000000006", "2023-04-30", 40, "non-residential", None, None,),
