@@ -162,3 +162,15 @@ class TestModelNonResDefault(unittest.TestCase):
         )
 
         self.assertEqual(df.count(), 8)
+
+    def test_create_non_res_rolling_average_column_calculates_prediction_column(self):
+        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
+        df = create_non_res_rolling_average_column(
+            df, ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
+        )
+
+        df = df.orderBy("locationid").collect()
+        self.assertEqual(df[0]["prediction"], 5.0)
+        self.assertEqual(df[2]["prediction"], 10.0)
+        self.assertEqual(df[4]["prediction"], 30.0)
+        self.assertEqual(df[6]["prediction"], 10.0)
