@@ -32,12 +32,15 @@ class TestModelNonResDefault(unittest.TestCase):
             ("1-000000004", "2023-02-10", 20, "non-residential", None, None),
             ("1-000000005", "2023-03-20", 30, "non-residential", 30, "already_populated",),
             ("1-000000006", "2023-04-30", 40, "non-residential", None, None,),
+            ("1-000000007", "2023-01-01", None, "non-residential", None, None,),
+            ("1-000000008", "2023-02-10", 0, "non-residential", None, None,),
+            ("1-000000009", "2023-03-20", 0, "non-residential", 30, "already_populated",),
         ]
         # fmt: on
         df = self.spark.createDataFrame(rows, columns)
 
         df = model_non_res_rolling_three_month_average(df)
-        self.assertEqual(df.count(), 6)
+        self.assertEqual(df.count(), 9)
 
         df = df.orderBy("locationid").collect()
         self.assertEqual(df[0]["estimate_job_count"], None)
@@ -75,3 +78,21 @@ class TestModelNonResDefault(unittest.TestCase):
             df[5]["estimate_job_count_source"],
             "model_non_res_rolling_three_month_average",
         )
+
+        self.assertEqual(df[6]["estimate_job_count"], 5.0)
+        self.assertEqual(df[6]["model_non_res_rolling_three_month_average"], 5.0)
+        self.assertEqual(
+            df[6]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
+
+        self.assertEqual(df[7]["estimate_job_count"], 10.0)
+        self.assertEqual(df[7]["model_non_res_rolling_three_month_average"], 10.0)
+        self.assertEqual(
+            df[7]["estimate_job_count_source"],
+            "model_non_res_rolling_three_month_average",
+        )
+
+        self.assertEqual(df[8]["estimate_job_count"], 30.0)
+        self.assertEqual(df[8]["model_non_res_rolling_three_month_average"], 15.0)
+        self.assertEqual(df[8]["estimate_job_count_source"], "already_populated")
