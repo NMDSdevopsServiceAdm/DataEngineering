@@ -39,7 +39,7 @@ class TestModelNonResDefault(unittest.TestCase):
         df = model_non_res_rolling_three_month_average(df)
         self.assertEqual(df.count(), 6)
 
-        df = df.collect()
+        df = df.orderBy("locationid").collect()
         self.assertEqual(df[0]["estimate_job_count"], None)
         self.assertEqual(df[0]["model_non_res_rolling_three_month_average"], None)
         self.assertEqual(df[0]["estimate_job_count_source"], None)
