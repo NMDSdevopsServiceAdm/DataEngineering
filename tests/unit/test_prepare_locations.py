@@ -4,6 +4,7 @@ from datetime import date
 import warnings
 
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
 from pyspark.sql.types import (
     DoubleType,
     IntegerType,
@@ -77,7 +78,7 @@ class PrepareLocationsTests(unittest.TestCase):
         )
 
         self.assertIsNotNone(output_df)
-        self.assertEqual(output_df.count(), 35)
+        self.assertEqual(output_df.count(), 28)
         self.assertEqual(
             output_df.columns,
             [
