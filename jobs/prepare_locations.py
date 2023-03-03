@@ -112,7 +112,7 @@ def main(
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
         output_df = output_df.join(
-            ascwds_workplace_with_coverage_df, "locationid", "full"
+            ascwds_workplace_with_coverage_df, "locationid", "left"
         )
 
         output_df = output_df.join(pir_df, "locationid", "left")
