@@ -417,11 +417,12 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000003", "The Royal Borough of Skills for Care"),
             ("1-000000004", "Not actually a borough"),
             ("1-000000005", "The Council of St Monica Trust"),
+            ("1-000000006", ""),
         ]
         df = self.spark.createDataFrame(rows, columns)
 
         df = prepare_locations.add_cqc_sector(df)
-        self.assertEqual(df.count(), 5)
+        self.assertEqual(df.count(), 6)
 
         df = df.collect()
         self.assertEqual(df[0]["cqc_sector"], "Local authority")
@@ -429,6 +430,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[2]["cqc_sector"], "Local authority")
         self.assertEqual(df[3]["cqc_sector"], "Independent")
         self.assertEqual(df[4]["cqc_sector"], "Independent")
+        self.assertEqual(df[5]["cqc_sector"], "Independent")
 
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
         cqc_locations = prepare_locations.get_cqc_location_df(
