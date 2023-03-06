@@ -2,6 +2,7 @@ import builtins
 import sys
 
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
 from utils import utils
@@ -265,6 +266,7 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
     cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
+    cqc_df = filter_out_locations_with_no_providerid(cqc_df)
     cqc_df = map_illegitimate_postcodes(cqc_df)
 
     cqc_df = utils.format_date_fields(
@@ -282,6 +284,10 @@ def filter_out_import_dates_older_than(df, date):
     if date is None:
         return df
     return df.filter(F.col("import_date") > date)
+
+
+def filter_out_locations_with_no_providerid(df: DataFrame) -> DataFrame:
+    return df.where(F.col("providerid").isNotNull())
 
 
 def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):

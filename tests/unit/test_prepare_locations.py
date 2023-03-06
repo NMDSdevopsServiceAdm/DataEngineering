@@ -529,6 +529,32 @@ class PrepareLocationsTests(unittest.TestCase):
             df.columns, ["locationid", "establishmentid", "cqc_coverage_in_ascwds"]
         )
 
+    def test_filter_out_locations_with_no_providerid_removes_cases_with_no_provider_id(
+        self,
+    ):
+        spark = utils.get_spark()
+        cqc_locations_schema = StructType(
+            fields=[
+                StructField("locationid", StringType(), True),
+                StructField("providerid", StringType(), True),
+            ]
+        )
+        rows = [
+            ("1", None),
+            ("2", "5"),
+        ]
+        df = spark.createDataFrame(data=rows, schema=cqc_locations_schema)
+
+        df = prepare_locations.filter_out_locations_with_no_providerid(df)
+
+        self.assertEqual(df.count(), 1)
+
+        df_collected = df.collect()
+
+        self.assertEqual(df_collected[0]["providerid"], "5")
+
+        self.assertEqual(df.columns, ["locationid", "providerid"])
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
