@@ -89,32 +89,6 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertIsNotNone(day_partition)
         self.assertEqual(day_partition.groups()[0], "29")
 
-    def test_determine_ascwds_primary_service_type(self):
-        columns = ["locationid", "services_offered"]
-        rows = [
-            (
-                "1-000000001",
-                [
-                    "Care home service with nursing",
-                    "Care home service without nursing",
-                    "Fake service",
-                ],
-            ),
-            ("1-000000002", ["Care home service without nursing", "Fake service"]),
-            ("1-000000003", ["Fake service"]),
-            ("1-000000003", []),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.determine_ascwds_primary_service_type(df)
-        self.assertEqual(df.count(), 4)
-
-        df = df.collect()
-        self.assertEqual(df[0]["primary_service_type"], "Care home with nursing")
-        self.assertEqual(df[1]["primary_service_type"], "Care home without nursing")
-        self.assertEqual(df[2]["primary_service_type"], "non-residential")
-        self.assertEqual(df[3]["primary_service_type"], "non-residential")
-
     def test_populate_known_jobs_use_job_count_from_current_snapshot(self):
         columns = [
             "locationid",

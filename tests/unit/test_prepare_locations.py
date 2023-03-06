@@ -107,6 +107,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "dormancy",
                 "number_of_beds",
                 "services_offered",
+                "primary_service_type",
                 "people_directly_employed",
                 "job_count",
                 "job_count_source",
@@ -153,11 +154,32 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_location_df.columns[0], "locationid")
         self.assertEqual(cqc_location_df.columns[1], "providerid")
         self.assertEqual(cqc_location_df.columns[16], "import_date")
+        self.assertEqual(cqc_location_df.columns[17], "primary_service_type")
         self.assertEqual(cqc_location_df.count(), 14)
 
         rows = cqc_location_df.collect()
         self.assertEqual(rows[12]["registration_date"], date(2011, 2, 15))
         self.assertEqual(rows[12]["deregistration_date"], date(2015, 1, 1))
+
+    def test_determine_ascwds_primary_service_type(self):
+        columns = ["locationid", "services_offered"]
+        # fmt: off
+        rows = [
+            ("1-000000001", ["Care home service with nursing", "Care home service without nursing", "Fake service",]),
+            ("1-000000002", ["Care home service without nursing", "Fake service"]),
+            ("1-000000003", ["Fake service"]),
+            ("1-000000004", []),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = prepare_locations.allocate_primary_service_type(df)
+        self.assertEqual(df.count(), 4)
+
+        df = df.collect()
+        self.assertEqual(df[0]["primary_service_type"], "Care home with nursing")
+        self.assertEqual(df[1]["primary_service_type"], "Care home without nursing")
+        self.assertEqual(df[2]["primary_service_type"], "non-residential")
+        self.assertEqual(df[3]["primary_service_type"], "non-residential")
 
     def test_get_cqc_provider_df(self):
         cqc_provider_df = prepare_locations.get_cqc_provider_df(

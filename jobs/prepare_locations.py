@@ -18,8 +18,11 @@ LAST_PROCESSED_DATE_INDEX_ZERO = 0
 LAST_PROCESSED_DATE_INDEX_ONE = 1
 LAST_PROCESSED_DATE_INDEX_TWO = 2
 
-
 MONTHS_BETWEEN_IMPORT_DATE_AND_PURGE_DATE = -24
+
+NURSING_HOME_IDENTIFIER = "Care home with nursing"
+NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
+NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 LOCATIONID_IS_IN_ASCWDS = 1
 LOCATIONID_IS_NOT_IN_ASCWDS = 0
@@ -154,6 +157,7 @@ def main(
             "dormancy",
             "number_of_beds",
             "services_offered",
+            "primary_service_type",
             "people_directly_employed",
             "job_count",
             "job_count_source",
@@ -268,6 +272,9 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
         raw_date_format="yyyy-MM-dd",
         date_column_identifier="registration_date",
     )
+
+    cqc_df = allocate_primary_service_type(cqc_df)
+
     return cqc_df
 
 
@@ -321,6 +328,25 @@ def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):
     }
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return cqc_loc_df.withColumn("postal_code", map_func(F.col(column)))
+
+
+def allocate_primary_service_type(input_df):
+    return input_df.withColumn(
+        "primary_service_type",
+        F.when(
+            F.array_contains(
+                input_df["services_offered"], "Care home service with nursing"
+            ),
+            NURSING_HOME_IDENTIFIER,
+        )
+        .when(
+            F.array_contains(
+                input_df["services_offered"], "Care home service without nursing"
+            ),
+            NONE_NURSING_HOME_IDENTIFIER,
+        )
+        .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
+    )
 
 
 def get_cqc_provider_df(cqc_provider_source, since_date=None):

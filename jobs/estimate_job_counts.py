@@ -37,13 +37,6 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
-# Constant values
-NURSING_HOME_IDENTIFIER = "Care home with nursing"
-NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
-NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
-
-# Column names
-
 
 def main(
     prepared_locations_source,
@@ -64,6 +57,7 @@ def main(
         .select(
             LOCATION_ID,
             SERVICES_OFFERED,
+            PRIMARY_SERVICE_TYPE,
             PEOPLE_DIRECTLY_EMPLOYED,
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
@@ -85,8 +79,6 @@ def main(
         ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
     )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
-
-    locations_df = determine_ascwds_primary_service_type(locations_df)
 
     # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
@@ -159,25 +151,6 @@ def main(
         destination,
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
-    )
-
-
-def determine_ascwds_primary_service_type(input_df):
-    return input_df.withColumn(
-        PRIMARY_SERVICE_TYPE,
-        F.when(
-            F.array_contains(
-                input_df[SERVICES_OFFERED], "Care home service with nursing"
-            ),
-            NURSING_HOME_IDENTIFIER,
-        )
-        .when(
-            F.array_contains(
-                input_df[SERVICES_OFFERED], "Care home service without nursing"
-            ),
-            NONE_NURSING_HOME_IDENTIFIER,
-        )
-        .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
     )
 
 
