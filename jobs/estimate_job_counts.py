@@ -20,6 +20,7 @@ from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT_SOURCE,
     PRIMARY_SERVICE_TYPE,
     LAST_KNOWN_JOB_COUNT,
+    CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.non_res_rolling_average import (
@@ -64,6 +65,7 @@ def main(
             JOB_COUNT,
             JOB_COUNT_SOURCE,
             LOCAL_AUTHORITY,
+            CQC_SECTOR,
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
@@ -72,21 +74,15 @@ def main(
     features_df = spark.read.parquet(prepared_locations_features)
 
     locations_df = populate_last_known_job_count(locations_df)
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
-    )
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
-    )
+    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType()))
+    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType()))
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
-    latest_care_home_model_version = max(
-        utils.get_s3_sub_folders_for_path(care_home_model_directory)
-    )
+    latest_care_home_model_version = max(utils.get_s3_sub_folders_for_path(care_home_model_directory))
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
         features_df,
@@ -106,22 +102,15 @@ def main(
     )
 
     # Non-res with PIR data model
-    latest_non_res_with_pir_model_version = max(
-        utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
-    )
+    latest_non_res_with_pir_model_version = max(utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory))
 
-    (
-        locations_df,
-        non_residential_with_pir_metrics_info,
-    ) = model_non_residential_with_pir(
+    (locations_df, non_residential_with_pir_metrics_info,) = model_non_residential_with_pir(
         locations_df,
         features_df,
         f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
     )
 
-    non_residential_with_pir_model_name = utils.get_model_name(
-        non_res_with_pir_model_directory
-    )
+    non_residential_with_pir_model_name = utils.get_model_name(non_res_with_pir_model_directory)
     write_metrics_df(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
@@ -163,9 +152,7 @@ def populate_estimate_jobs_when_job_count_known(df):
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
-    df = update_dataframe_with_identifying_rule(
-        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
-    )
+    df = update_dataframe_with_identifying_rule(df, "ascwds_job_count", ESTIMATE_JOB_COUNT)
 
     return df
 
@@ -184,9 +171,7 @@ def populate_last_known_job_count(df):
         & (F.col("previous.job_count").isNotNull()),
         "leftouter",
     )
-    locationAndSnapshotPartition = Window.partitionBy(
-        "current.locationid", "current.snapshot_date"
-    )
+    locationAndSnapshotPartition = Window.partitionBy("current.locationid", "current.snapshot_date")
     df = df.withColumn(
         "max_date_with_job_count",
         F.max("previous.snapshot_date").over(locationAndSnapshotPartition),
@@ -199,9 +184,7 @@ def populate_last_known_job_count(df):
     df = df.drop("max_date_with_job_count")
 
     df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
-    df = df.select(
-        [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
-    )
+    df = df.select([f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT])
 
     return df
 
