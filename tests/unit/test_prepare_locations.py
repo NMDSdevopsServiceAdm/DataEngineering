@@ -511,7 +511,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self,
     ):
         spark = utils.get_spark()
-        ascwds_schema = StructType(
+        cqc_locations_schema = StructType(
             fields=[
                 StructField("locationid", StringType(), True),
                 StructField("providerid", StringType(), True),
@@ -521,7 +521,7 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1", None),
             ("2", "5"),
         ]
-        df = spark.createDataFrame(data=rows, schema=ascwds_schema)
+        df = spark.createDataFrame(data=rows, schema=cqc_locations_schema)
 
         df = prepare_locations.filter_out_locations_with_no_providerid(df)
 
