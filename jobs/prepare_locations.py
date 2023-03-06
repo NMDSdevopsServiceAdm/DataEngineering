@@ -2,6 +2,7 @@ import builtins
 import sys
 
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
 from utils import utils
@@ -39,15 +40,9 @@ def main(
     last_processed_date = utils.get_max_snapshot_partitions(destination)
     if last_processed_date is not None:
         last_processed_date = f"{last_processed_date[LAST_PROCESSED_DATE_INDEX_ZERO]}{last_processed_date[LAST_PROCESSED_DATE_INDEX_ONE]}{last_processed_date[LAST_PROCESSED_DATE_INDEX_TWO]}"
-    complete_ascwds_workplace_df = get_ascwds_workplace_df(
-        workplace_source, since_date=last_processed_date
-    )
-    complete_cqc_location_df = get_cqc_location_df(
-        cqc_location_source, since_date=last_processed_date
-    )
-    complete_cqc_provider_df = get_cqc_provider_df(
-        cqc_provider_source, since_date=last_processed_date
-    )
+    complete_ascwds_workplace_df = get_ascwds_workplace_df(workplace_source, since_date=last_processed_date)
+    complete_cqc_location_df = get_cqc_location_df(cqc_location_source, since_date=last_processed_date)
+    complete_cqc_provider_df = get_cqc_provider_df(cqc_provider_source, since_date=last_processed_date)
     complete_pir_df = get_pir_df(pir_source, since_date=last_processed_date)
 
     latest_ons_data = get_ons_df(ons_source)
@@ -79,50 +74,36 @@ def main(
             ["locationid", "establishmentid", "import_date"],
             "left",
         )
-        ascwds_workplace_with_coverage_df = (
-            ascwds_workplace_with_coverage_df.withColumnRenamed(
-                "import_date", "ascwds_workplace_import_date"
-            )
+        ascwds_workplace_with_coverage_df = ascwds_workplace_with_coverage_df.withColumnRenamed(
+            "import_date", "ascwds_workplace_import_date"
         )
 
         cqc_locations_df = complete_cqc_location_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_location_date"]
         )
         cqc_locations_df = utils.format_import_date(cqc_locations_df)
-        cqc_locations_df = cqc_locations_df.withColumnRenamed(
-            "import_date", "cqc_locations_import_date"
-        )
+        cqc_locations_df = cqc_locations_df.withColumnRenamed("import_date", "cqc_locations_import_date")
 
         cqc_providers_df = complete_cqc_provider_df.filter(
             F.col("import_date") == snapshot_date_row["cqc_provider_date"]
         )
         cqc_providers_df = utils.format_import_date(cqc_providers_df)
-        cqc_providers_df = cqc_providers_df.withColumnRenamed(
-            "import_date", "cqc_providers_import_date"
-        )
+        cqc_providers_df = cqc_providers_df.withColumnRenamed("import_date", "cqc_providers_import_date")
 
-        pir_df = complete_pir_df.filter(
-            F.col("import_date") == snapshot_date_row["pir_date"]
-        )
+        pir_df = complete_pir_df.filter(F.col("import_date") == snapshot_date_row["pir_date"])
         pir_df = utils.format_import_date(pir_df)
         pir_df = pir_df.withColumnRenamed("import_date", "cqc_pir_import_date")
 
         output_df = cqc_locations_df.join(cqc_providers_df, "providerid", "left")
-        output_df = output_df.join(
-            ascwds_workplace_with_coverage_df, "locationid", "left"
-        )
+        output_df = output_df.join(ascwds_workplace_with_coverage_df, "locationid", "left")
 
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
-        output_df = calculate_jobcount(
-            output_df, "total_staff", "worker_record_count", "job_count"
-        )
+        output_df = calculate_jobcount(output_df, "total_staff", "worker_record_count", "job_count")
 
         output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
-        output_df = output_df.withColumn(
-            "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
-        )
+        output_df = output_df.withColumn("snapshot_date", F.lit(snapshot_date_row["snapshot_date"]))
 
         output_df = add_three_columns_with_snapshot_date_substrings(output_df)
 
@@ -174,11 +155,7 @@ def main(
         )
 
         if destination:
-            print(
-                "Exporting snapshot {} as parquet to {}".format(
-                    snapshot_date_row["snapshot_date"], destination
-                )
-            )
+            print("Exporting snapshot {} as parquet to {}".format(snapshot_date_row["snapshot_date"], destination))
             utils.write_to_parquet(
                 output_df,
                 destination,
@@ -251,16 +228,13 @@ def get_cqc_location_df(cqc_location_source, since_date=None):
 
     cqc_df = cqc_df.withColumn(
         "region",
-        (
-            F.when(
-                cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber"
-            ).otherwise(cqc_df.region)
-        ),
+        (F.when(cqc_df.region == "Yorkshire & Humberside", "Yorkshire and The Humber").otherwise(cqc_df.region)),
     )
     cqc_df = cqc_df.withColumn("dormancy", cqc_df.dormancy == "Y")
 
     cqc_df = cqc_df.filter("location_type=='Social Care Org'")
     cqc_df = filter_out_import_dates_older_than(cqc_df, since_date)
+    cqc_df = filter_out_locations_with_no_providerid(cqc_df)
     cqc_df = map_illegitimate_postcodes(cqc_df)
 
     cqc_df = utils.format_date_fields(
@@ -275,6 +249,10 @@ def filter_out_import_dates_older_than(df, date):
     if date is None:
         return df
     return df.filter(F.col("import_date") > date)
+
+
+def filter_out_locations_with_no_providerid(df: DataFrame) -> DataFrame:
+    return df.where(F.col("providerid").isNotNull())
 
 
 def map_illegitimate_postcodes(cqc_loc_df, column="postal_code"):
@@ -399,12 +377,8 @@ def get_ons_df(ons_source):
 
 
 def get_unique_import_dates(df):
-    distinct_ordered_import_date_df = (
-        df.select("import_date").distinct().orderBy("import_date")
-    )
-    distinct_ordered_import_date_list = [
-        date.import_date for date in distinct_ordered_import_date_df.collect()
-    ]
+    distinct_ordered_import_date_df = df.select("import_date").distinct().orderBy("import_date")
+    distinct_ordered_import_date_list = [date.import_date for date in distinct_ordered_import_date_df.collect()]
     return distinct_ordered_import_date_list
 
 
@@ -418,9 +392,7 @@ def get_date_closest_to_search_date(search_date, date_list):
     return closest_date
 
 
-def generate_closest_date_matrix(
-    dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir
-):
+def generate_closest_date_matrix(dataset_workplace, dataset_locations_api, dataset_providers_api, dataset_pir):
     unique_asc_dates = get_unique_import_dates(dataset_workplace)
     unique_cqc_location_dates = get_unique_import_dates(dataset_locations_api)
     unique_cqc_provider_dates = get_unique_import_dates(dataset_providers_api)
@@ -428,12 +400,8 @@ def generate_closest_date_matrix(
 
     date_matrix = []
     for date in unique_asc_dates:
-        closest_cqc_location_date = get_date_closest_to_search_date(
-            date, unique_cqc_location_dates
-        )
-        closest_cqc_provider_date = get_date_closest_to_search_date(
-            date, unique_cqc_provider_dates
-        )
+        closest_cqc_location_date = get_date_closest_to_search_date(date, unique_cqc_location_dates)
+        closest_cqc_provider_date = get_date_closest_to_search_date(date, unique_cqc_provider_dates)
         closest_pir_date = get_date_closest_to_search_date(date, unique_pir_dates)
         date_matrix.append(
             {
@@ -452,9 +420,7 @@ def add_geographical_data(locations_df, ons_df):
     locations_df = locations_df.withColumn(
         "postal_code_ws_removed", F.regexp_replace(locations_df.postal_code, " ", "")
     )
-    ons_df = ons_df.withColumn(
-        "ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", "")
-    )
+    ons_df = ons_df.withColumn("ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", ""))
     locations_df = locations_df.join(
         ons_df,
         F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.ons_postcode),
@@ -474,13 +440,9 @@ def clean(input_df):
     input_df = input_df.replace("0", None).replace("-1", None)
 
     # Cast strings to integers
-    input_df = input_df.withColumn(
-        "total_staff", input_df["total_staff"].cast(IntegerType())
-    )
+    input_df = input_df.withColumn("total_staff", input_df["total_staff"].cast(IntegerType()))
 
-    input_df = input_df.withColumn(
-        "worker_record_count", input_df["worker_record_count"].cast(IntegerType())
-    )
+    input_df = input_df.withColumn("worker_record_count", input_df["worker_record_count"].cast(IntegerType()))
 
     return input_df
 
@@ -503,22 +465,16 @@ def create_coverage_df(input_df):
 
     # if the org is a parent, use the max mupddate for all locations at the org
     org_purge_df = (
-        input_df.select(
-            "locationid", "orgid", "max_mupddate_and_lastloggedin", "import_date"
-        )
+        input_df.select("locationid", "orgid", "max_mupddate_and_lastloggedin", "import_date")
         .groupBy("orgid", "import_date")
-        .agg(
-            F.max("max_mupddate_and_lastloggedin").alias(
-                "max_mupddate_and_lastloggedin_org"
-            )
-        )
+        .agg(F.max("max_mupddate_and_lastloggedin").alias("max_mupddate_and_lastloggedin_org"))
     )
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge",
-        F.when(
-            (input_df.isparent == "1"), input_df.max_mupddate_and_lastloggedin_org
-        ).otherwise(input_df.max_mupddate_and_lastloggedin),
+        F.when((input_df.isparent == "1"), input_df.max_mupddate_and_lastloggedin_org).otherwise(
+            input_df.max_mupddate_and_lastloggedin
+        ),
     )
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
@@ -548,9 +504,7 @@ def purge_workplaces(input_df):
     input_df = input_df.join(org_purge_df, ["orgid", "import_date"], "left")
     input_df = input_df.withColumn(
         "date_for_purge",
-        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(
-            input_df.mupddate
-        ),
+        F.when((input_df.isparent == "1"), input_df.mupddate_org).otherwise(input_df.mupddate),
     )
 
     # Remove ASCWDS accounts which haven't been updated in the 2 years prior to importing
@@ -575,9 +529,7 @@ def add_cqc_sector(input_df):
 
     input_df = input_df.withColumn(
         "cqc_sector",
-        F.when(input_df.cqc_sector == "false", "Independent").otherwise(
-            "Local authority"
-        ),
+        F.when(input_df.cqc_sector == "false", "Independent").otherwise("Local authority"),
     )
 
     return input_df
@@ -586,9 +538,7 @@ def add_cqc_sector(input_df):
 def add_column_if_locationid_is_in_ascwds(df):
     df = df.withColumn(
         "cqc_coverage_in_ascwds",
-        F.when(df.establishmentid.isNull(), LOCATIONID_IS_NOT_IN_ASCWDS).otherwise(
-            LOCATIONID_IS_IN_ASCWDS
-        ),
+        F.when(df.establishmentid.isNull(), LOCATIONID_IS_NOT_IN_ASCWDS).otherwise(LOCATIONID_IS_IN_ASCWDS),
     )
 
     return df
