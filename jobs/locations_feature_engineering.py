@@ -1,75 +1,113 @@
 import argparse
 import re
 import sys
+from dataclasses import dataclass
+from typing import List, Dict, Tuple, Set
 
+import pyspark
 import pyspark.sql.functions as F
 from pyspark.ml.feature import VectorAssembler
 
-from utils import utils, feature_engineering_dictionaries
+from utils import utils
+from utils.feature_engineering_dictionaries import (
+    SERVICES_LOOKUP,
+    RURAL_URBAN_INDICATOR_LOOKUP,
+)
+
+
+@dataclass
+class ColNamesFromPrepareLocations:
+    ons_region: str = "ons_region"
+    services_offered: str = "services_offered"
+    cqc_sector: str = "cqc_sector"
+    rural_urban_indicator: str = "rural_urban_indicator.year_2011"
+    number_of_beds: str = "number_of_beds"
+    people_directly_employed: str = "people_directly_employed"
+    carehome: str = "carehome"
+    snapshot_date: str = "snapshot_date"
+
+
+@dataclass
+class NewColNames:
+    service_count: str = "service_count"
+    date_diff: str = "date_diff"
+    rui_indicator: str = "rui_2011"
+
+
+@dataclass
+class FeatureNames:
+    care_home: str = "features"
 
 
 def main(prepared_locations_source, destination=None):
     spark = utils.get_spark()
 
+    features_from_prepare_locations = ColNamesFromPrepareLocations()
+    new_cols_for_features = NewColNames()
+    services_dict = SERVICES_LOOKUP
+    rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
+
     locations_df = spark.read.option("basePath", prepared_locations_source).parquet(
         prepared_locations_source
     )
-    max_snapshot = utils.get_max_snapshot_partitions(destination)
-    locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
 
-    locations_df = locations_df.withColumn(
-        "service_count", F.size(locations_df.services_offered)
+    filtered_loc_data = filter_locations_df_for_independent_care_home_data(
+        df=locations_df,
+        carehome_col_name=features_from_prepare_locations.carehome,
+        cqc_col_name=features_from_prepare_locations.cqc_sector,
     )
-
-    locations_df = days_diff_from_latest_snapshot(locations_df)
-    locations_df = explode_array_column_using_dictionary(
-        locations_df,
-        "services_offered",
-        feature_engineering_dictionaries.SERVICES_LOOKUP,
+    data_with_service_count = add_service_count_to_data(
+        df=filtered_loc_data,
+        new_col_name=new_cols_for_features.service_count,
+        col_to_check=features_from_prepare_locations.services_offered,
     )
-    locations_df = explode_string_column_using_dictionary(
-        locations_df,
-        "rural_urban_indicator.year_2011",
-        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP,
+    service_keys = list(services_dict.keys())
+    data_with_expanded_services = column_expansion_with_dict(
+        df=data_with_service_count,
+        col_name=features_from_prepare_locations.services_offered,
+        lookup_dict=services_dict,
     )
-
-    locations_df, regions = explode_column(locations_df, "ons_region")
-    locations_df, local_authorities = explode_column(locations_df, "local_authority")
-    locations_df, cqc_sectors = explode_column(locations_df, "cqc_sector")
-
-    care_home_feature_list = define_care_home_features_list(
-        regions, local_authorities, cqc_sectors
-    )
-    non_residential_inc_pir_feature_list = define_non_res_inc_pir_features_list(
-        regions, local_authorities, cqc_sectors
-    )
-    care_homes_df = locations_df.where(locations_df.carehome == "Y")
-    care_homes_with_features_df = vectorize_features(
-        care_homes_df, care_home_feature_list, "care_home_features"
+    rui_indicators = list(rural_urban_indicator_dict.keys())
+    data_with_rui = add_rui_data_data_frame(
+        df=data_with_expanded_services,
+        new_rui_col_name=new_cols_for_features.rui_indicator,
+        col_to_check=features_from_prepare_locations.rural_urban_indicator,
+        lookup_dict=rural_urban_indicator_dict,
     )
 
-    non_residential_with_pir_df = locations_df.where(
-        (locations_df.carehome == "N") & (locations_df.people_directly_employed > 0)
-    )
-    non_residential_with_pir_and_features_df = vectorize_features(
-        non_residential_with_pir_df,
-        non_residential_inc_pir_feature_list,
-        "non_residential_inc_pir_features",
+    distinct_regions = get_list_of_distinct_ons_regions(
+        df=data_with_rui,
+        col_name=features_from_prepare_locations.ons_region,
     )
 
-    non_residential_without_pir_df = locations_df.where(
-        (locations_df.carehome == "N")
-        & (
-            (locations_df.people_directly_employed == 0)
-            | locations_df.people_directly_employed.isNull()
-        )
+    data_with_region_cols, regions = explode_column_from_distinct_values(
+        df=data_with_rui,
+        column_name=features_from_prepare_locations.ons_region,
+        col_prefix="ons_",
+        col_list_set=set(distinct_regions),
     )
 
-    locations_df = care_homes_with_features_df.unionByName(
-        non_residential_with_pir_and_features_df, allowMissingColumns=True
-    ).unionByName(non_residential_without_pir_df, allowMissingColumns=True)
+    data_with_date_diff = add_date_diff_into_df(
+        df=data_with_region_cols,
+        new_col_name=new_cols_for_features.date_diff,
+        snapshot_date_col=features_from_prepare_locations.snapshot_date,
+    )
 
-    locations_df = locations_df.select(
+    list_for_vectorisation: list[str] = sorted(
+        [
+            new_cols_for_features.service_count,
+            features_from_prepare_locations.number_of_beds,
+            new_cols_for_features.date_diff,
+        ]
+        + service_keys
+        + regions
+        + rui_indicators
+    )
+
+    vectorised_dataframe = vectorise_dataframe(
+        df=data_with_date_diff, list_for_vectorisation=list_for_vectorisation
+    )
+    features_df = vectorised_dataframe.select(
         "locationid",
         "snapshot_date",
         "ons_region",
@@ -79,141 +117,113 @@ def main(prepared_locations_source, destination=None):
         "snapshot_month",
         "snapshot_day",
         "carehome",
-        "care_home_features",
-        "non_residential_inc_pir_features",
+        "features",
         "job_count",
     )
+
+    print("distinct_regions")
+    print(distinct_regions)
+    print("number_of_features:")
+    print(len(list_for_vectorisation))
+    print(f"length of feature df: {vectorised_dataframe.count()}")
 
     if destination:
         print(f"Exporting as parquet to {destination}")
         utils.write_to_parquet(
-            locations_df,
+            features_df,
             destination,
             append=True,
             partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
         )
-    return locations_df
+    return features_df
 
 
-def filter_records_since_snapshot_date(locations_df, max_snapshot):
-    if not max_snapshot:
-        return locations_df
-    max_snapshot_date = f"{max_snapshot[0]}{max_snapshot[1]:0>2}{max_snapshot[2]:0>2}"
-    print(f"max snapshot previously processed: {max_snapshot_date}")
-    locations_df = locations_df.withColumn(
-        "snapshot_full_date",
-        F.concat(
-            locations_df.snapshot_year.cast("string"),
-            F.lpad(locations_df.snapshot_month.cast("string"), 2, "0"),
-            F.lpad(locations_df.snapshot_day.cast("string"), 2, "0"),
-        ),
-    )
-    locations_df = locations_df.where(
-        locations_df["snapshot_full_date"] > max_snapshot_date
-    )
-    locations_df.drop("snapshot_full_date")
-    return locations_df
+def vectorise_dataframe(
+    df: pyspark.sql.DataFrame, list_for_vectorisation: List[str]
+) -> pyspark.sql.DataFrame:
+    loc_df = VectorAssembler(
+        inputCols=list_for_vectorisation, outputCol="features", handleInvalid="skip"
+    ).transform(df)
+    return loc_df
 
 
-def format_column_name(column):
-    non_lower_alpha = re.compile("[^a-z_]")
-    formatted_column_name = column.replace(" ", "_").lower()
-    return re.sub(non_lower_alpha, "", formatted_column_name)
+def get_list_of_distinct_ons_regions(
+    df: pyspark.sql.DataFrame, col_name: str
+) -> List[str]:
+    distinct_regions = df.select(col_name).distinct().dropna().collect()
+    dis_regions_list = [str(row.ons_region) for row in distinct_regions]
+    return dis_regions_list
 
 
-def explode_column(locations_df, column_name):
-    distinct_category_rows = locations_df.select(column_name).distinct().collect()
-    categories = []
-    for row in distinct_category_rows:
-        if row[column_name]:
-            formatted_column_name = format_column_name(row[column_name])
-
-            locations_df = locations_df.withColumn(
-                formatted_column_name,
-                F.when(locations_df[column_name] == row[column_name], 1).otherwise(0),
-            )
-        else:
-            formatted_column_name = "unspecified"
-
-            locations_df = locations_df.withColumn(
-                formatted_column_name,
-                F.when(locations_df[column_name].isNull(), 1).otherwise(0),
-            )
-
-        categories.append(formatted_column_name)
-
-    return locations_df, categories
-
-
-def explode_array_column_using_dictionary(locations_df, column_name, dictionary):
-    for name, description in dictionary.items():
-
-        locations_df = locations_df.withColumn(
-            name,
-            F.when(
-                F.array_contains(locations_df[column_name], description), 1
-            ).otherwise(0),
+def column_expansion_with_dict(
+    df: pyspark.sql.DataFrame, col_name: str, lookup_dict: Dict[str, str]
+) -> pyspark.sql.DataFrame:
+    for key in lookup_dict.keys():
+        df = df.withColumn(
+            f"{key}",
+            F.array_contains(df[f"{col_name}"], lookup_dict[key]).cast("integer"),
         )
-    return locations_df
+    return df
 
 
-def explode_string_column_using_dictionary(locations_df, column_name, dictionary):
-    for name, description in dictionary.items():
+def add_rui_data_data_frame(
+    df: pyspark.sql.DataFrame,
+    new_rui_col_name: str,
+    col_to_check: str,
+    lookup_dict: Dict[str, str],
+) -> pyspark.sql.DataFrame:
+    df = df.withColumn(new_rui_col_name, F.col(col_to_check))
 
-        locations_df = locations_df.withColumn(
-            name,
-            F.when(locations_df[column_name] == description, 1).otherwise(0),
+    for key in lookup_dict.keys():
+        df = df.withColumn(
+            key, (F.col(new_rui_col_name) == lookup_dict[key]).cast("integer")
         )
-    return locations_df
+    return df
 
 
-def define_care_home_features_list(regions, local_authorites, cqc_sectors):
-    services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
-    rural_urban_indicators = list(
-        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
+def add_service_count_to_data(
+    df: pyspark.sql.DataFrame, new_col_name: str, col_to_check: str
+) -> pyspark.sql.DataFrame:
+    return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
+
+
+def filter_locations_df_for_independent_care_home_data(
+    df: pyspark.sql.DataFrame, carehome_col_name: str, cqc_col_name: str
+) -> pyspark.sql.DataFrame:
+    care_home_data = df.filter(F.col(carehome_col_name) == "Y")
+    independent_care_home_data = care_home_data.filter(
+        F.col(cqc_col_name) == "Independent"
     )
-    features = ["service_count", "number_of_beds", "date_diff"]
-    return (
-        features
-        + regions
-        + cqc_sectors
-        + rural_urban_indicators
-        + local_authorites
-        + services
+    return independent_care_home_data
+
+
+def format_strings(string: str) -> str:
+    no_space = string.replace(" ", "_").lower()
+    return re.sub("[^a-z_]", "", no_space)
+
+
+def explode_column_from_distinct_values(
+    df: pyspark.sql.DataFrame, column_name: str, col_prefix: str, col_list_set: Set[str]
+) -> Tuple[pyspark.sql.DataFrame, List[str]]:
+    col_names = []
+
+    for col in col_list_set:
+        clean = col_prefix + format_strings(col)
+        col_names.append(clean)
+
+        df = df.withColumn(f"{clean}", (F.col(f"{column_name}") == col).cast("integer"))
+    return df, col_names
+
+
+def add_date_diff_into_df(
+    df: pyspark.sql.DataFrame, new_col_name: str, snapshot_date_col: str
+) -> pyspark.sql.DataFrame:
+    max_d = df.agg(F.max(snapshot_date_col)).first()[0]
+
+    loc_df = df.withColumn(
+        new_col_name, F.datediff(F.lit(max_d), F.col(snapshot_date_col))
     )
-
-
-def define_non_res_inc_pir_features_list(regions, local_authorites, cqc_sectors):
-    services = list(feature_engineering_dictionaries.SERVICES_LOOKUP.keys())
-    rural_urban_indicators = list(
-        feature_engineering_dictionaries.RURAL_URBAN_INDICATOR_LOOKUP.keys()
-    )
-    features = ["service_count", "people_directly_employed", "date_diff"]
-    return (
-        features
-        + regions
-        + cqc_sectors
-        + rural_urban_indicators
-        + local_authorites
-        + services
-    )
-
-
-def vectorize_features(locations_df, feature_list, column_name):
-    feature_list.sort()
-    vectorized_df = VectorAssembler(
-        inputCols=feature_list, outputCol=column_name, handleInvalid="skip"
-    ).transform(locations_df)
-    return vectorized_df
-
-
-def days_diff_from_latest_snapshot(locations_df):
-    max_snapshot_date = utils.get_max_snapshot_date(locations_df)
-    locations_df = locations_df.withColumn(
-        "date_diff", F.datediff(F.lit(max_snapshot_date), locations_df.snapshot_date)
-    )
-
-    return locations_df
+    return loc_df
 
 
 def collect_arguments():
