@@ -37,6 +37,7 @@ from utils.estimate_job_count.models.non_res_with_pir import (
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
+from utils.estimate_job_count.filter_locations_prepared_dataset import filter_to_only_cqc_independent_sector_data
 
 
 def main(
@@ -69,6 +70,8 @@ def main(
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
+
+    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
     # loads model features
     features_df = spark.read.parquet(prepared_locations_features)
