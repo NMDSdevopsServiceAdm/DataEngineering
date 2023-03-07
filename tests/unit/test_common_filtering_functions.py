@@ -8,7 +8,7 @@ from pyspark.sql.types import (
     StringType,
 )
 
-from utils.estimate_job_count.filter_locations_prepared_dataset import (
+from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
 )
 
