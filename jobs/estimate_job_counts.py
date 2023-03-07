@@ -20,6 +20,7 @@ from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT_SOURCE,
     PRIMARY_SERVICE_TYPE,
     LAST_KNOWN_JOB_COUNT,
+    CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.non_res_rolling_average import (
@@ -35,6 +36,9 @@ from utils.estimate_job_count.models.non_res_with_pir import (
 
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
+)
+from utils.estimate_job_count.common_filtering_functions import (
+    filter_to_only_cqc_independent_sector_data,
 )
 
 
@@ -64,9 +68,12 @@ def main(
             JOB_COUNT,
             JOB_COUNT_SOURCE,
             LOCAL_AUTHORITY,
+            CQC_SECTOR,
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
+
+    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
     # loads model features
     features_df = spark.read.parquet(prepared_locations_features)
