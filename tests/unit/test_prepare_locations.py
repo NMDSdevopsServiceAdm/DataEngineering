@@ -165,7 +165,7 @@ class PrepareLocationsTests(unittest.TestCase):
         columns = ["locationid", "services_offered"]
         # fmt: off
         rows = [
-            ("1-000000001", ["Care home service with nursing", "Care home service without nursing", "Fake service",]),
+            ("1-000000001", ["Care home service with nursing", "Care home service without nursing", "Fake service"]),
             ("1-000000002", ["Care home service without nursing", "Fake service"]),
             ("1-000000003", ["Fake service"]),
             ("1-000000004", []),

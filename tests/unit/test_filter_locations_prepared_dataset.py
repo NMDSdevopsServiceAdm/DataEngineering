@@ -32,8 +32,8 @@ class TestFilterLocationsPrepared(unittest.TestCase):
         self,
     ):
         rows = [
-            ("1-000000001", "independent"),
-            ("1-000000002", "local authority"),
+            ("1-000000001", "Independent"),
+            ("1-000000002", "Local authority"),
             ("1-000000003", ""),
         ]
         df = self.spark.createDataFrame(
