@@ -22,17 +22,23 @@ class TestFilterLocationsPrepared(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_filter_locations_prepared").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_filter_locations_prepared"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    def test_filter_to_only_cqc_independent_sector_data_returns_only_independent_sector_rows(self):
+    def test_filter_to_only_cqc_independent_sector_data_returns_only_independent_sector_rows(
+        self,
+    ):
         rows = [
             ("1-000000001", "independent"),
             ("1-000000002", "local authority"),
             ("1-000000003", ""),
         ]
-        df = self.spark.createDataFrame(rows, schema=self.filter_locations_prepared_schema)
+        df = self.spark.createDataFrame(
+            rows, schema=self.filter_locations_prepared_schema
+        )
 
         filtered_df = filter_to_only_cqc_independent_sector_data(df)
 
