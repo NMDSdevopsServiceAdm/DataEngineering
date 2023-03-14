@@ -112,14 +112,28 @@ module "worker_tracking_job" {
 
 module "locations_feature_engineering_job" {
   source          = "../modules/glue-job"
-  script_name     = "locations_feature_engineering.py"
+  script_name     = "locations_care_home_feature_engineering.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=2.0.0/"
+  }
+}
+
+
+module "locations_non_res_feature_engineering_job" {
+  source          = "../modules/glue-job"
+  script_name     = "locations_non_res_feature_engineering.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=2.0.0/"
   }
 }
 
