@@ -37,16 +37,28 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Run feature engineering job",
+                  "StartAt": "Run care home feature engineering job",
                   "States": {
-                    "Run feature engineering job": {
+                    "Run care home feature engineering job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${locations_feature_engineering_job_name}",
+                        "JobName": "${locations_care_home_feature_engineering_job_name}",
                         "Arguments": {
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/version=1.0.0/"
+                        }
+                      },
+                      "Next": "Run non res feature engineering job"
+                    },
+                    "Run non res feature engineering job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${locations_non_res_feature_engineering_job_name}",
+                        "Arguments": {
+                          "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/version=1.0.0/"
                         }
                       },
                       "Next": "Run estimate job counts job"
