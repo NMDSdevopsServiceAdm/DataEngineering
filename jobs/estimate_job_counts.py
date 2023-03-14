@@ -44,10 +44,11 @@ from utils.estimate_job_count.common_filtering_functions import (
 
 def main(
     prepared_locations_source,
-    prepared_locations_features,
+    carehome_features_source,
+    nonres_features_source,
     destination,
     care_home_model_directory,
-    non_res_with_pir_model_directory,
+    non_res_model_directory,
     metrics_destination,
     job_run_id,
     job_name,
@@ -76,7 +77,7 @@ def main(
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
     # loads model features
-    features_df = spark.read.parquet(prepared_locations_features)
+    carehome_features_df = spark.read.parquet(carehome_features_source)
 
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
@@ -96,7 +97,7 @@ def main(
     )
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
-        features_df,
+        carehome_features_df,
         f"{care_home_model_directory}{latest_care_home_model_version}/",
     )
 
@@ -114,7 +115,7 @@ def main(
 
     # Non-res with PIR data model
     latest_non_res_with_pir_model_version = max(
-        utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
+        utils.get_s3_sub_folders_for_path(non_res_model_directory)
     )
 
     (
@@ -122,13 +123,11 @@ def main(
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
         locations_df,
-        features_df,
-        f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
+        nonres_features_source,
+        f"{non_res_model_directory}{latest_non_res_with_pir_model_version}/",
     )
 
-    non_residential_with_pir_model_name = utils.get_model_name(
-        non_res_with_pir_model_directory
-    )
+    non_residential_with_pir_model_name = utils.get_model_name(non_res_model_directory)
     write_metrics_df(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
@@ -262,7 +261,8 @@ if __name__ == "__main__":
 
     (
         prepared_locations_source,
-        prepared_locations_features,
+        carehome_features_source,
+        nonres_features_source,
         destination,
         care_home_model_directory,
         non_res_with_pir_model_directory,
@@ -272,8 +272,12 @@ if __name__ == "__main__":
     ) = utils.collect_arguments(
         ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
         (
-            "--prepared_locations_features",
-            "Source s3 directory for prepared_locations ML features",
+            "--carehome_features_source",
+            "Source s3 directory for prepared_locations ML features for care homes",
+        ),
+        (
+            "--nonres_features_source",
+            "Source s3 directory for prepared_locations ML features for non res care homes",
         ),
         (
             "--destination",
@@ -294,7 +298,8 @@ if __name__ == "__main__":
 
     main(
         prepared_locations_source,
-        prepared_locations_features,
+        carehome_features_source,
+        nonres_features_source,
         destination,
         care_home_model_directory,
         non_res_with_pir_model_directory,
