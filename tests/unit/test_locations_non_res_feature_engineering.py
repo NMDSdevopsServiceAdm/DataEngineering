@@ -76,10 +76,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_main_produces_dataframe_with_features(self):
         result = locations_non_res_feature_engineering.main(
             self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
-        )
+        ).orderBy(F.col("locationid"))
 
+        self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
         expected_features = SparseVector(
-            46, {0: 100.0, 3: 1.0, 13: 1.0, 15: 17.0, 18: 1.0, 19: 1.0, 45: 2.0}
+            46, [0, 3, 13, 15, 18, 19, 45], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
         )
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
