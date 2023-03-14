@@ -6,8 +6,8 @@ import warnings
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-from jobs import locations_feature_engineering
-from jobs.locations_feature_engineering import (
+from jobs import locations_care_home_feature_engineering
+from jobs.locations_care_home_feature_engineering import (
     explode_column_from_distinct_values,
     format_strings,
     filter_locations_df_for_independent_care_home_data,
@@ -74,7 +74,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
     def test_main_produces_dataframe_with_features(self):
-        result = locations_feature_engineering.main(
+        result = locations_care_home_feature_engineering.main(
             self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
         )
 
@@ -88,7 +88,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
 
-        result = locations_feature_engineering.main(
+        result = locations_care_home_feature_engineering.main(
             self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
         )
 
