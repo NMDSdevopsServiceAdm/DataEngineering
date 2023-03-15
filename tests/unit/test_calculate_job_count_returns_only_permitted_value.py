@@ -22,7 +22,7 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
             StructField("total_staff", IntegerType(), True),
             StructField("worker_record_count", IntegerType(), True),
             StructField("number_of_beds", IntegerType(), True),
-            StructField("job_count", DoubleType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
         ]
     )
 
@@ -46,17 +46,17 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
-            df, "total_staff", "worker_record_count", "job_count"
+            df, "total_staff", "worker_record_count", "job_count_unfiltered"
         )
         self.assertEqual(df.count(), 5)
 
         df = df.collect()
 
-        self.assertEqual(df[0]["job_count"], None)
-        self.assertEqual(df[1]["job_count"], 30)
-        self.assertEqual(df[2]["job_count"], None)
-        self.assertEqual(df[3]["job_count"], 30)
-        self.assertEqual(df[4]["job_count"], None)
+        self.assertEqual(df[0]["job_count_unfiltered"], None)
+        self.assertEqual(df[1]["job_count_unfiltered"], 30)
+        self.assertEqual(df[2]["job_count_unfiltered"], None)
+        self.assertEqual(df[3]["job_count_unfiltered"], 30)
+        self.assertEqual(df[4]["job_count_unfiltered"], None)
 
     def test_calculate_job_count_returns_worker_records_when_total_staff_below_permitted(
         self,
@@ -71,13 +71,13 @@ class TestJobCountCoalesceWorkerRecords(unittest.TestCase):
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_permitted(
-            df, "worker_record_count", "total_staff", "job_count"
+            df, "worker_record_count", "total_staff", "job_count_unfiltered"
         )
         self.assertEqual(df.count(), 5)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 20)
-        self.assertEqual(df[1]["job_count"], None)
-        self.assertEqual(df[2]["job_count"], 20)
-        self.assertEqual(df[3]["job_count"], None)
-        self.assertEqual(df[4]["job_count"], None)
+        self.assertEqual(df[0]["job_count_unfiltered"], 20)
+        self.assertEqual(df[1]["job_count_unfiltered"], None)
+        self.assertEqual(df[2]["job_count_unfiltered"], 20)
+        self.assertEqual(df[3]["job_count_unfiltered"], None)
+        self.assertEqual(df[4]["job_count_unfiltered"], None)

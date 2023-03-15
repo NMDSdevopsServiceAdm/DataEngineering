@@ -22,7 +22,7 @@ class TestJobCountAbsDiffInRange(unittest.TestCase):
             StructField("total_staff", IntegerType(), True),
             StructField("worker_record_count", IntegerType(), True),
             StructField("number_of_beds", IntegerType(), True),
-            StructField("job_count", DoubleType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
         ]
     )
 
@@ -42,11 +42,11 @@ class TestJobCountAbsDiffInRange(unittest.TestCase):
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = calculate_jobcount_abs_difference_within_range(
-            df, "total_staff", "worker_record_count", "job_count"
+            df, "total_staff", "worker_record_count", "job_count_unfiltered"
         )
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 11)
-        self.assertEqual(df[1]["job_count"], 104.5)
-        self.assertEqual(df[2]["job_count"], None)
+        self.assertEqual(df[0]["job_count_unfiltered"], 11)
+        self.assertEqual(df[1]["job_count_unfiltered"], 104.5)
+        self.assertEqual(df[2]["job_count_unfiltered"], None)

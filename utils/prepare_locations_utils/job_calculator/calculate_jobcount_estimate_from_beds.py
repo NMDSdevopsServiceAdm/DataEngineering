@@ -71,7 +71,7 @@ def populate_job_count_with_total_staff_value():
 
 
 def populate_job_count_column_with_job_count_data():
-    return F.col("job_count")
+    return F.col("job_count_unfiltered")
 
 
 def populate_job_count_with_average_of_total_staff_and_worker_record_count():
@@ -111,7 +111,7 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "bed_estimate_jobcount",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
+                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
                 & number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
                     col_name="number_of_beds",
                     threshold=job_calc_const.BEDS_IN_WORKPLACE_THRESHOLD,
@@ -127,10 +127,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
     # Bounding predictions to certain locations with differences in range
     # if total_staff and worker_record_count within 10% or < 5: return avg(total_staff + wkrrds)
     input_df = input_df.withColumn(
-        "job_count",
+        "job_count_unfiltered",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
+                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
                 & bed_estimated_job_count_is_populated("bed_estimate_jobcount")
                 & (
                     total_staff_diff_or_total_staff_pct_diff_within_tolerated_range()
@@ -143,10 +143,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
 
     # if total_staff within 10% or < 5: return total_staff
     input_df = input_df.withColumn(
-        "job_count",
+        "job_count_unfiltered",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count")
+                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
                 & bed_estimated_job_count_is_populated("bed_estimate_jobcount")
                 & (total_staff_diff_or_total_staff_pct_diff_within_tolerated_range())
             ),
@@ -156,10 +156,10 @@ def calculate_jobcount_estimate_from_beds(input_df):
 
     # if worker_record_count within 10% or < 5: return worker_record_count
     input_df = input_df.withColumn(
-        "job_count",
+        "job_count_unfiltered",
         F.when(
             (
-                F.col("job_count").isNull()
+                F.col("job_count_unfiltered").isNull()
                 & F.col("bed_estimate_jobcount").isNotNull()
                 & (
                     worker_recs_diff_or_worker_records_percentage_diff_within_tolerated_range()
