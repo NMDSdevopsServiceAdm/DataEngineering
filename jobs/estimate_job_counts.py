@@ -3,7 +3,7 @@ import sys
 
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql import Window
+from pyspark.sql import Window, SparkSession
 
 from utils import utils
 from utils.estimate_job_count.column_names import (
@@ -53,7 +53,7 @@ def main(
     job_run_id,
     job_name,
 ):
-    spark = utils.get_spark()
+    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_jobs").config("spark.sql.broadcastTimeout", 600).getOrCreate()
     print("Estimating job counts")
 
     # load locations_prepared df
@@ -78,6 +78,7 @@ def main(
 
     # loads model features
     carehome_features_df = spark.read.parquet(carehome_features_source)
+    non_res_features_df = spark.read.parquet(nonres_features_source)
 
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
@@ -92,7 +93,7 @@ def main(
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
-    locations_df_with_carehome_estimates, care_home_metrics_info = model_care_homes(
+    locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
         carehome_features_df,
         care_home_model_directory,
@@ -103,8 +104,8 @@ def main(
         metrics_destination,
         r2=care_home_metrics_info["r2"],
         data_percentage=care_home_metrics_info["data_percentage"],
-        model_version=care_home_model_name,
-        model_name=care_home_model_name,
+        model_version="2.0.0",
+        model_name="ZZZ_care_home_with_nursing_historical_jobs_prediction",
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
@@ -112,38 +113,29 @@ def main(
 
     # Non-res with PIR data model
     (
-        locations_df_with_non_res_pir,
+        locations_df,
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
         locations_df,
-        nonres_features_source,
+        non_res_features_df,
         non_res_model_directory,
     )
 
-    non_residential_with_pir_model_name = utils.get_model_name(non_res_model_directory)
     write_metrics_df(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
         data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
-        model_version=non_res_model_directory,
-        model_name=non_residential_with_pir_model_name,
+        model_version="2.0.0",
+        model_name="YYY_non_residential_with_pir_jobs_prediction",
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
     )
 
     # Non-res & no PIR data models
-    locations_df_with_non_res_historical = model_non_res_historical(locations_df)
+    locations_df = model_non_res_historical(locations_df)
 
-    locations_df_with_non_res_rolling_average = model_non_res_rolling_average(
-        locations_df
-    )
-
-    locations_df = (
-        locations_df_with_carehome_estimates.union(locations_df_with_non_res_pir)
-        .union(locations_df_with_non_res_historical)
-        .union(locations_df_with_non_res_rolling_average)
-    )
+    locations_df = model_non_res_rolling_average(locations_df)
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
