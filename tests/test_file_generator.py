@@ -803,7 +803,7 @@ def generate_prepared_locations_file_parquet(
         "carehome",
         "cqc_sector",
         "rural_urban_indicator",
-        "job_count_source",
+        "job_count_unfiltered_source",
     ]
 
     # fmt: off
