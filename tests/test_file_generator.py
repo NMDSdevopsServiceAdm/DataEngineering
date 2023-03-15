@@ -1127,7 +1127,6 @@ def generate_care_home_jobs_per_bed_filter(output_destination):
             StructField("snapshot_date", StringType(), False),
             StructField("registration_status", StringType(), True),
             StructField("carehome", StringType(), False),
-            StructField("snapshot_date", StringType(), False),
             StructField("number_of_beds", IntegerType(), True),
             StructField("job_count_unfiltered", IntegerType(), True),
         ]
