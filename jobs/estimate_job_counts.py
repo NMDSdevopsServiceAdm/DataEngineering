@@ -92,7 +92,7 @@ def main(
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
-    locations_df, care_home_metrics_info = model_care_homes(
+    locations_df_with_carehome_estimates, care_home_metrics_info = model_care_homes(
         locations_df,
         carehome_features_df,
         care_home_model_directory,
@@ -112,7 +112,7 @@ def main(
 
     # Non-res with PIR data model
     (
-        locations_df,
+        locations_df_with_non_res_pir,
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
         locations_df,
@@ -133,9 +133,17 @@ def main(
     )
 
     # Non-res & no PIR data models
-    locations_df = model_non_res_historical(locations_df)
+    locations_df_with_non_res_historical = model_non_res_historical(locations_df)
 
-    locations_df = model_non_res_rolling_average(locations_df)
+    locations_df_with_non_res_rolling_average = model_non_res_rolling_average(
+        locations_df
+    )
+
+    locations_df = (
+        locations_df_with_carehome_estimates.union(locations_df_with_non_res_pir)
+        .union(locations_df_with_non_res_historical)
+        .union(locations_df_with_non_res_rolling_average)
+    )
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
