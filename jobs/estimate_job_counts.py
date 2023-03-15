@@ -53,7 +53,11 @@ def main(
     job_run_id,
     job_name,
 ):
-    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_jobs").config("spark.sql.broadcastTimeout", 600).getOrCreate()
+    spark = (
+        SparkSession.builder.appName("sfc_data_engineering_estimate_jobs")
+        .config("spark.sql.broadcastTimeout", 600)
+        .getOrCreate()
+    )
     print("Estimating job counts")
 
     # load locations_prepared df
@@ -99,13 +103,13 @@ def main(
         care_home_model_directory,
     )
 
-    care_home_model_name = utils.get_model_name(care_home_model_directory)
+    care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
         r2=care_home_metrics_info["r2"],
         data_percentage=care_home_metrics_info["data_percentage"],
-        model_version="2.0.0",
-        model_name="ZZZ_care_home_with_nursing_historical_jobs_prediction",
+        model_version=care_home_model_info[-1],
+        model_name=care_home_model_directory[-2],
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
@@ -121,12 +125,13 @@ def main(
         non_res_model_directory,
     )
 
+    non_res_model_info = non_res_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
         data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
-        model_version="2.0.0",
-        model_name="YYY_non_residential_with_pir_jobs_prediction",
+        model_version=non_res_model_info[-1],
+        model_name=non_res_model_directory[-2],
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
