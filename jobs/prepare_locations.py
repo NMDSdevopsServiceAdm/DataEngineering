@@ -9,6 +9,9 @@ from utils import utils
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     calculate_jobcount,
 )
+from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
+    filter_job_count,
+)
 from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
 from utils.prepare_locations_utils.dataframe_utils import (
     add_three_columns_with_snapshot_date_substrings,
@@ -118,9 +121,11 @@ def main(
 
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
+
         output_df = calculate_jobcount(
-            output_df, "total_staff", "worker_record_count", "job_count"
+            output_df, "total_staff", "worker_record_count", "job_count_unfiltered"
         )
+        output_df = filter_job_count(output_df, "job_count_unfiltered", "job_count")
 
         output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
@@ -160,8 +165,9 @@ def main(
             "services_offered",
             "primary_service_type",
             "people_directly_employed",
+            "job_count_unfiltered",
+            "job_count_unfiltered_source",
             "job_count",
-            "job_count_source",
             "region",
             "postal_code",
             "constituency",
