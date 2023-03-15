@@ -72,7 +72,8 @@
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
                           "--prepared_locations_features": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/",
                           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/",
-                          "--care_home_model_directory": "${pipeline_resources_bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
+                          "--care_home_model_directory": "${pipeline_resources_bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/version=2.0.0",
+                          "--non_res_with_pir_model_directory": "${pipeline_resources_bucket_uri}/models/non_residential_with_pir_jobs_prediction/version=2.0.0"
                         }
                       },
                       "Next": "Run job role breakdown job"

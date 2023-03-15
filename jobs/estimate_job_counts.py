@@ -92,13 +92,10 @@ def main(
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
-    latest_care_home_model_version = max(
-        utils.get_s3_sub_folders_for_path(care_home_model_directory)
-    )
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
         carehome_features_df,
-        f"{care_home_model_directory}{latest_care_home_model_version}/",
+        care_home_model_directory,
     )
 
     care_home_model_name = utils.get_model_name(care_home_model_directory)
@@ -106,7 +103,7 @@ def main(
         metrics_destination,
         r2=care_home_metrics_info["r2"],
         data_percentage=care_home_metrics_info["data_percentage"],
-        model_version=latest_care_home_model_version,
+        model_version=care_home_model_name,
         model_name=care_home_model_name,
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
@@ -114,17 +111,13 @@ def main(
     )
 
     # Non-res with PIR data model
-    latest_non_res_with_pir_model_version = max(
-        utils.get_s3_sub_folders_for_path(non_res_model_directory)
-    )
-
     (
         locations_df,
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
         locations_df,
         nonres_features_source,
-        f"{non_res_model_directory}{latest_non_res_with_pir_model_version}/",
+        non_res_model_directory,
     )
 
     non_residential_with_pir_model_name = utils.get_model_name(non_res_model_directory)
@@ -132,7 +125,7 @@ def main(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
         data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
-        model_version=latest_non_res_with_pir_model_version,
+        model_version=non_res_model_directory,
         model_name=non_residential_with_pir_model_name,
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
