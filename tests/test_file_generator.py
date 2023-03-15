@@ -1116,3 +1116,75 @@ def generate_worker_import_dates(output_destination):
         worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return worker_df
+
+
+def generate_care_home_jobs_per_bed_filter(output_destination):
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("snapshot_date", StringType(), False),
+            StructField("registration_status", StringType(), True),
+            StructField("carehome", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("number_of_beds", IntegerType(), True),
+            StructField("job_count_unfiltered", IntegerType(), True),
+        ]
+    )
+
+    # fmt: off
+    rows = [
+        ("01", "2023-01-01", "Registered", "Y", 25, 1),
+        ("02", "2023-01-01", "Registered", "Y", 25, 2),
+        ("03", "2023-01-01", "Registered", "Y", 25, 3),
+        ("04", "2023-01-01", "Registered", "Y", 25, 4),
+        ("05", "2023-01-01", "Registered", "Y", 25, 5),
+        ("06", "2023-01-01", "Registered", "Y", 25, 6),
+        ("07", "2023-01-01", "Registered", "Y", 25, 7),
+        ("08", "2023-01-01", "Registered", "Y", 25, 8),
+        ("09", "2023-01-01", "Registered", "Y", 25, 9),
+        ("10", "2023-01-01", "Registered", "Y", 25, 10),
+        ("11", "2023-01-01", "Registered", "Y", 25, 11),
+        ("12", "2023-01-01", "Registered", "Y", 25, 12),
+        ("13", "2023-01-01", "Registered", "Y", 25, 13),
+        ("14", "2023-01-01", "Registered", "Y", 25, 14),
+        ("15", "2023-01-01", "Registered", "Y", 25, 15),
+        ("16", "2023-01-01", "Registered", "Y", 25, 16),
+        ("17", "2023-01-01", "Registered", "Y", 25, 17),
+        ("18", "2023-01-01", "Registered", "Y", 25, 18),
+        ("19", "2023-01-01", "Registered", "Y", 25, 19),
+        ("20", "2023-01-01", "Registered", "Y", 25, 20),
+        ("21", "2023-01-01", "Registered", "Y", 25, 21),
+        ("22", "2023-01-01", "Registered", "Y", 25, 22),
+        ("23", "2023-01-01", "Registered", "Y", 25, 23),
+        ("24", "2023-01-01", "Registered", "Y", 25, 24),
+        ("25", "2023-01-01", "Registered", "Y", 25, 25),
+        ("26", "2023-01-01", "Registered", "Y", 25, 26),
+        ("27", "2023-01-01", "Registered", "Y", 25, 27),
+        ("28", "2023-01-01", "Registered", "Y", 25, 28),
+        ("29", "2023-01-01", "Registered", "Y", 25, 29),
+        ("30", "2023-01-01", "Registered", "Y", 25, 30),
+        ("31", "2023-01-01", "Registered", "Y", 25, 31),
+        ("32", "2023-01-01", "Registered", "Y", 25, 32),
+        ("33", "2023-01-01", "Registered", "Y", 25, 33),
+        ("34", "2023-01-01", "Registered", "Y", 25, 34),
+        ("35", "2023-01-01", "Registered", "Y", 25, 35),
+        ("36", "2023-01-01", "Registered", "Y", 25, 36),
+        ("37", "2023-01-01", "Registered", "Y", 25, 37),
+        ("38", "2023-01-01", "Registered", "Y", 25, 38),
+        ("39", "2023-01-01", "Registered", "Y", 25, 39),
+        ("40", "2023-01-01", "Registered", "Y", 25, 40),
+        ("41", "2023-01-01", "Registered", "Y", 25, 41),
+        ("42", "2023-01-01", "Registered", "Y", 25, 42),
+        ("43", "2023-01-01", "Registered", "Y", 25, None),
+        ("44", "2023-01-01", "Registered", "Y", None, 44),
+        ("45", "2023-01-01", "Deregistered", "Y", 25, 45),
+        ("46", "2023-01-01", "Registered", "N", None, 46),
+    ]
+    df = spark.createDataFrame(rows, schema=schema)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
