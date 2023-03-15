@@ -249,7 +249,7 @@ def calculate_percentile(
 ) -> DoubleType:
 
     return df.agg(
-        F.expr("percentile(" + col_name + ", array(" + percentile_value + "))")[0]
+        F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[0]
     ).collect()[0][0]
 
 
