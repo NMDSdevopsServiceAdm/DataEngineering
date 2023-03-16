@@ -125,7 +125,7 @@ def main(
         output_df = calculate_jobcount(
             output_df, "total_staff", "worker_record_count", "job_count_unfiltered"
         )
-        output_df = filter_job_count(output_df, "job_count_unfiltered", "job_count")
+        # output_df = filter_job_count(output_df, "job_count_unfiltered", "job_count")
 
         output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
@@ -167,7 +167,7 @@ def main(
             "people_directly_employed",
             "job_count_unfiltered",
             "job_count_unfiltered_source",
-            "job_count",
+            # "job_count",
             "region",
             "postal_code",
             "constituency",
