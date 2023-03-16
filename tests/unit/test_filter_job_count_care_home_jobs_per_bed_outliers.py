@@ -2,10 +2,15 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    DoubleType,
+)
 
-from utils.prepare_locations_utils.filter_job_count.care_home_jobs_per_bed_ratio_outliers import (
-    care_home_jobs_per_bed_ratio_outliers,
-    select_relevant_data,
+from utils.prepare_locations_utils.filter_job_count import (
+    care_home_jobs_per_bed_ratio_outliers as job,
 )
 from tests.test_file_generator import generate_care_home_jobs_per_bed_filter_df
 
@@ -14,7 +19,7 @@ class EstimateJobCountTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_filter_job_count").getOrCreate()
         self.prepared_locations_input_data = generate_care_home_jobs_per_bed_filter_df()
-        self.filtered_output_df = care_home_jobs_per_bed_ratio_outliers(
+        self.filtered_output_df = job.care_home_jobs_per_bed_ratio_outliers(
             self.prepared_locations_input_data, "job_count_unfiltered", "job_count"
         )
 
@@ -28,7 +33,7 @@ class EstimateJobCountTests(unittest.TestCase):
 
     def test_relevant_date_selected(self):
 
-        df = select_relevant_data(
+        df = job.select_relevant_data(
             self.prepared_locations_input_data, "job_count_unfiltered"
         )
         self.assertEqual(df.count(), 42)
@@ -81,14 +86,78 @@ class EstimateJobCountTests(unittest.TestCase):
 
         pass
 
-    def test_add_job_counts_without_filtering_to_data_outside_of_this_filter(self):
+    def test_add_job_counts_without_filtering_duplicates_data_in_column(self):
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("original_column", StringType(), True),
+            ]
+        )
+        # fmt: off
+        rows = [("1-000000002", 123), ("1-000000003", None), ]
+        # fmt: on
+        df = self.spark.createDataFrame(rows, schema)
 
-        pass
+        df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(
+            df, "original_column", "new_column"
+        )
+        df = df.collect()
+        self.assertEqual(df[0]["original_column"], df[0]["new_column"])
+        self.assertEqual(df[1]["original_column"], df[1]["new_column"])
 
-    def test_combine_dataframes(self):
+    def test_combine_dataframes_keeps_all_rows_of_data(self):
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("other_col", StringType(), True),
+            ]
+        )
+        # fmt: off
+        rows_1 = [("1-000000001", "data"), ]
+        rows_2 = [("1-000000002", "data"), ("1-000000003", "data"), ]
+        # fmt: on
+        df_1 = self.spark.createDataFrame(rows_1, schema)
+        df_2 = self.spark.createDataFrame(rows_2, schema)
 
-        pass
+        df = job.combine_dataframes(df_1, df_2)
+        self.assertEqual(df.count(), (df_1.count() + df_2.count()))
+
+    def test_combine_dataframes_have_matching_column_names(self):
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("other_col", StringType(), True),
+            ]
+        )
+        # fmt: off
+        rows_1 = [("1-000000001", "data"), ]
+        rows_2 = [("1-000000002", "data"), ("1-000000003", "data"), ]
+        # fmt: on
+        df_1 = self.spark.createDataFrame(rows_1, schema)
+        df_2 = self.spark.createDataFrame(rows_2, schema)
+
+        df = job.combine_dataframes(df_1, df_2)
+
+        self.assertEqual(df_1.columns, df_2.columns)
+        self.assertEqual(df.columns, df_1.columns)
 
     def test_round_figures_in_column(self):
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("column_with_decimals", DoubleType(), True),
+            ]
+        )
 
-        pass
+        rows = [
+            ("1-000000001", 0.1234567890),
+        ]
+        df = self.spark.createDataFrame(rows, schema)
+
+        df_3dp = job.round_figures_in_column(df, "column_with_decimals", 3)
+        df_3dp = df_3dp.collect()
+        self.assertEqual(df_3dp[0]["column_with_decimals"], 0.123)
+
+        df_6dp = job.round_figures_in_column(df, "column_with_decimals", 6)
+        df_6dp = df_6dp.collect()
+        self.assertEqual(df_6dp[0]["column_with_decimals"], 0.123457)
