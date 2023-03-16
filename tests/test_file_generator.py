@@ -1118,7 +1118,7 @@ def generate_worker_import_dates(output_destination):
     return worker_df
 
 
-def generate_care_home_jobs_per_bed_filter(output_destination):
+def generate_care_home_jobs_per_bed_filter_df():
     spark = utils.get_spark()
 
     schema = StructType(
@@ -1182,8 +1182,5 @@ def generate_care_home_jobs_per_bed_filter(output_destination):
         ("46", "2023-01-01", "Registered", "N", None, 46),
     ]
     df = spark.createDataFrame(rows, schema=schema)
-
-    if output_destination:
-        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return df
