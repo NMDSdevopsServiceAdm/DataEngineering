@@ -9,7 +9,7 @@ from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
 from tests.test_file_generator import generate_care_home_jobs_per_bed_filter_df
 
 
-class EstimateJobCountTests(unittest.TestCase):
+class FilterJobCountTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_filter_job_count").getOrCreate()
         self.prepared_locations_input_data = generate_care_home_jobs_per_bed_filter_df()
