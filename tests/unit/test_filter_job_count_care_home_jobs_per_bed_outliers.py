@@ -37,7 +37,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.select_relevant_data(
             self.prepared_locations_input_data, "job_count_unfiltered"
         )
-        self.assertEqual(df.count(), 42)
+        self.assertEqual(df.count(), 40)
 
     def test_select_data_not_in_subset_df(self):
         schema = StructType(

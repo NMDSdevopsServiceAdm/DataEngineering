@@ -1174,12 +1174,10 @@ def generate_care_home_jobs_per_bed_filter_df():
         ("38", "2023-01-01", "Registered", "Y", 25, 38),
         ("39", "2023-01-01", "Registered", "Y", 25, 39),
         ("40", "2023-01-01", "Registered", "Y", 25, 40),
-        ("41", "2023-01-01", "Registered", "Y", 25, 41),
-        ("42", "2023-01-01", "Registered", "Y", 25, 42),
-        ("43", "2023-01-01", "Registered", "Y", 25, None),
-        ("44", "2023-01-01", "Registered", "Y", None, 44),
-        ("45", "2023-01-01", "Deregistered", "Y", 25, 45),
-        ("46", "2023-01-01", "Registered", "N", None, 46),
+        ("41", "2023-01-01", "Registered", "Y", 25, None),
+        ("42", "2023-01-01", "Registered", "Y", None, 42),
+        ("43", "2023-01-01", "Deregistered", "Y", 25, 43),
+        ("44", "2023-01-01", "Registered", "N", None, 44),
     ]
     df = spark.createDataFrame(rows, schema=schema)
 
