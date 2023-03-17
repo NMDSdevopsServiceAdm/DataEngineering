@@ -61,13 +61,13 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
-                StructField("job_count_unfiltered", IntegerType(), True),
+                StructField("job_count_unfiltered", DoubleType(), True),
                 StructField("number_of_beds", IntegerType(), True),
             ]
         )
         # fmt: off
-        rows = [("1-000000001", 5, 100),
-                ("1-000000002", 2, 1), ]
+        rows = [("1-000000001", 5.0, 100),
+                ("1-000000002", 2.0, 1), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_jobs_per_bed_ratio(df, "job_count_unfiltered")
@@ -152,25 +152,41 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
-                StructField("number_of_beds_banded", StringType(), True),
-                StructField("jobs_per_bed_ratio", DoubleType(), True),
+                StructField("job_count_unfiltered", DoubleType(), True),
+                StructField("expected_jobs", DoubleType(), True),
             ]
         )
         # fmt: off
-        rows = [("1", "5-9 beds", 10.1357),
-                ("2", "5-9 beds", 10.3579),
-                ("3", "50+ beds", 88.132456789), ]
+        rows = [("1", 10.0, 8.76544),
+                ("2", 10.0, 10.0),
+                ("3", 10.0, 11.23456), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_job_count_residuals(df)
+        df = job.calculate_job_count_residuals(df, "job_count_unfiltered")
 
-        df = df.collect()
-        self.assertEqual(df[0]["avg_jobs_per_bed_ratio"], 10.2468)
-        self.assertEqual(df[1]["avg_jobs_per_bed_ratio"], 88.12346)
+        df = df.sort("locationid").collect()
+        self.assertEqual(df[0]["residual"], 1.23456)
+        self.assertEqual(df[1]["residual"], 0.0)
+        self.assertEqual(df[2]["residual"], -1.23456)
 
     def test_calculate_job_count_standardised_residual(self):
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("residual", DoubleType(), True),
+                StructField("expected_jobs", DoubleType(), True),
+            ]
+        )
+        # fmt: off
+        rows = [("1", 11.11111, 4.0),
+                ("2", 17.75, 25.0), ]
+        # fmt: on
+        df = self.spark.createDataFrame(rows, schema)
+        df = job.calculate_job_count_standardised_residual(df)
 
-        pass
+        df = df.sort("locationid").collect()
+        self.assertEqual(df[0]["standardised_residual"], 5.55556)
+        self.assertEqual(df[1]["standardised_residual"], 3.55)
 
     def test_calculate_standardised_residual_cutoffs(self):
 
