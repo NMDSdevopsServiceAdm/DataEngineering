@@ -66,7 +66,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ]
         )
         # fmt: off
-        rows = [("1-000000001", 5, 100), 
+        rows = [("1-000000001", 5, 100),
                 ("1-000000002", 2, 1), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
@@ -103,10 +103,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ]
         )
         # fmt: off
-        rows = [("1", "5-9 beds", 10.1357), ("2", "5-9 beds", 10.3579), ("3", "50+ beds", 88.132456789)]
+        rows = [("1", "5-9 beds", 10.1357), ("2", "5-9 beds", 10.3579), ("3", "50+ beds", 88.123456789)]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.create_banded_bed_count_column(df)
+        df = job.calculate_average_jobs_per_banded_bed_count(df)
 
         df = df.collect()
         self.assertEqual(df[0]["avg_jobs_per_bed_ratio"], 10.2468)
@@ -117,6 +117,38 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         pass
 
     def test_calculate_expected_jobs_based_on_number_of_beds(self):
+        expected_jobs_schema = StructType(
+            [
+                StructField("number_of_beds_banded", StringType(), True),
+                StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
+            ]
+        )
+        # fmt: off
+        expected_jobs_rows = [("5-9 beds", 10.11111),
+                              ("50+ beds", 80.0101), ]
+        # fmt: on
+        schema = StructType(
+            [
+                StructField("locationid", StringType(), True),
+                StructField("number_of_beds", IntegerType(), True),
+                StructField("number_of_beds_banded", StringType(), True),
+            ]
+        )
+        # fmt: off
+        rows = [("1", 7, "5-9 beds"),
+                ("2", 75, "50+ beds"), ]
+        # fmt: on
+        expected_jobs_df = self.spark.createDataFrame(
+            expected_jobs_rows, expected_jobs_schema
+        )
+        df = self.spark.createDataFrame(rows, schema)
+        df = job.calculate_expected_jobs_based_on_number_of_beds(df, expected_jobs_df)
+
+        df = df.collect()
+        self.assertEqual(df[0]["expected_jobs"], 70.77777)
+        self.assertEqual(df[1]["expected_jobs"], 6000.7575)
+
+    def test_calculate_job_count_residuals(self):
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
@@ -125,18 +157,16 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ]
         )
         # fmt: off
-        rows = [("1", "5-9 beds", 10.1357), ("2", "5-9 beds", 10.3579), ("3", "50+ beds"), 88.132456789]
+        rows = [("1", "5-9 beds", 10.1357),
+                ("2", "5-9 beds", 10.3579),
+                ("3", "50+ beds", 88.132456789), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.create_banded_bed_count_column(df)
+        df = job.calculate_job_count_residuals(df)
 
         df = df.collect()
         self.assertEqual(df[0]["avg_jobs_per_bed_ratio"], 10.2468)
         self.assertEqual(df[1]["avg_jobs_per_bed_ratio"], 88.12346)
-
-    def test_calculate_job_count_residuals(self):
-
-        pass
 
     def test_calculate_job_count_standardised_residual(self):
 
