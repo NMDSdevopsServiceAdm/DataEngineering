@@ -247,10 +247,17 @@ def calculate_standardised_residual_cutoffs(
 def calculate_percentile(
     df: pyspark.sql.DataFrame, col_name: str, percentile_value: float
 ) -> DoubleType:
+    df = df.agg(
+        F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[
+            0
+        ].alias("percentile")
+    )
 
-    return df.agg(
-        F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[0]
-    ).collect()[0][0]
+    df = round_figures_in_column(df, "percentile")
+
+    percentile = df.collect()[0][0]
+
+    return percentile
 
 
 def create_filtered_job_count_df(
