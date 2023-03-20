@@ -90,7 +90,11 @@ def select_relevant_data(
     output_df = input_df.where(F.col(column_name.registration_status) == "Registered")
     output_df = output_df.where(F.col(column_name.carehome) == "Y")
     output_df = output_df.where(F.col(column_name.number_of_beds) > 0)
-    output_df = output_df.where(F.col(column_to_filter) > 0)
+    output_df.show(2)
+    output_df = output_df.where(F.col(column_to_filter).isNotNull())
+    output_df.show(2)
+    output_df = output_df.where(F.col(column_to_filter) > 0.0)
+    output_df.show(2)
 
     return output_df
 
