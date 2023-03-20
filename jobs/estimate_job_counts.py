@@ -79,8 +79,6 @@ def main(
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
 
-    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-
     # loads model features
     carehome_features_df = spark.read.parquet(carehome_features_source)
     non_res_features_df = spark.read.parquet(nonres_features_source)
@@ -158,12 +156,6 @@ def main(
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
     )
-
-
-def filter_to_only_cqc_independent_sector_data(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
-    return df.where(df.cqc_sector == "Independent")
 
 
 def populate_estimate_jobs_when_job_count_known(
