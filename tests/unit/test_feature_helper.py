@@ -2,6 +2,8 @@ import datetime
 import unittest
 import warnings
 
+
+from pyspark.ml.linalg import DenseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
@@ -11,12 +13,11 @@ from utils.features.helper import (
     add_service_count_to_data,
     format_strings,
     explode_column_from_distinct_values,
+    vectorise_dataframe,
 )
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
-
-
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_locations_feature_engineering"
@@ -25,9 +26,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()
 
-
     def test_add_date_diff_into_df(self):
-
         df = self.spark.createDataFrame(
             [["01-10-2013"], ["01-10-2023"]], ["test_input"]
         )
@@ -180,3 +179,25 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(
             list_created_of_new_cols, ["ons_glasgow", "ons_leeds", "ons_london"]
         )
+
+    def test_vectorisation(self):
+        val_1 = "Glasgow"
+        val_2 = "London"
+        val_3 = "Leeds"
+
+        col_list = {val_1, val_2, val_3}
+
+        cols = ["locationid", "region"]
+        rows = [("1", val_1)]
+        df = self.spark.createDataFrame(rows, cols)
+
+        exploded_df, regions = explode_column_from_distinct_values(
+            df=df, column_name="region", col_prefix="ons_", col_list_set=col_list
+        )
+
+        result = vectorise_dataframe(df=exploded_df, list_for_vectorisation=regions)
+        rows = result.collect()
+        rows.sort()
+
+        expected = DenseVector([1.0, 0.0, 0.0])
+        self.assertEqual(rows[0].features, expected)

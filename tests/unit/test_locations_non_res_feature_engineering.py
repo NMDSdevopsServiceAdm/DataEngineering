@@ -7,7 +7,9 @@ from pyspark.ml.linalg import SparseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from jobs import locations_non_res_feature_engineering
-from jobs.locations_non_res_feature_engineering import filter_locations_df_for_independent_non_res_care_home_data
+from jobs.locations_non_res_feature_engineering import (
+    filter_locations_df_for_independent_non_res_care_home_data,
+)
 from tests.test_file_generator import (
     generate_prepared_locations_file_parquet,
 )
