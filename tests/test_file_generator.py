@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    DoubleType,
     TimestampType,
 )
 import pyspark.sql.functions as F
@@ -1128,7 +1129,7 @@ def generate_care_home_jobs_per_bed_filter_df():
             StructField("registration_status", StringType(), True),
             StructField("carehome", StringType(), True),
             StructField("number_of_beds", IntegerType(), True),
-            StructField("job_count_unfiltered", IntegerType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
         ]
     )
 
