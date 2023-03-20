@@ -38,57 +38,57 @@ class EstimateJobCountTests(unittest.TestCase):
         remove_file_path(self.DESTINATION)
         remove_file_path(self.METRICS_DESTINATION)
 
-    # @patch("utils.utils.get_s3_sub_folders_for_path")
-    # @patch("jobs.estimate_job_counts.date")
-    # def test_main_partitions_data_based_on_todays_date(
-    #     self, mock_date, mock_get_s3_folders
-    # ):
-    #     mock_get_s3_folders.return_value = ["1.0.0"]
-    #     mock_date.today.return_value = date(2022, 6, 29)
-    #     mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
-    #     generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_DIR)
-    #     features = self.generate_features_df()
-    #     features.write.mode("overwrite").partitionBy(
-    #         "snapshot_year", "snapshot_month", "snapshot_day"
-    #     ).parquet(self.LOCATIONS_FEATURES_DIR)
-    #
-    #     job.main(
-    #         self.PREPARED_LOCATIONS_DIR,
-    #         self.LOCATIONS_FEATURES_DIR,
-    #         self.LOCATIONS_FEATURES_DIR,
-    #         self.DESTINATION,
-    #         self.CAREHOME_MODEL,
-    #         self.NON_RES_WITH_PIR_MODEL,
-    #         self.METRICS_DESTINATION,
-    #         job_run_id="abc1234",
-    #         job_name="estimate_job_counts",
-    #     )
+    @patch("utils.utils.get_s3_sub_folders_for_path")
+    @patch("jobs.estimate_job_counts.date")
+    def test_main_partitions_data_based_on_todays_date(
+        self, mock_date, mock_get_s3_folders
+    ):
+        mock_get_s3_folders.return_value = ["1.0.0"]
+        mock_date.today.return_value = date(2022, 6, 29)
+        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
+        generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_DIR)
+        features = self.generate_features_df()
+        features.write.mode("overwrite").partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(self.LOCATIONS_FEATURES_DIR)
 
-    # first_partitions = os.listdir(self.DESTINATION)
-    # year_partition = next(
-    #     re.match("^run_year=([0-9]{4})$", path)
-    #     for path in first_partitions
-    #     if re.match("^run_year=([0-9]{4})$", path)
-    # )
-    #
-    # self.assertIsNotNone(year_partition)
-    # self.assertEqual(year_partition.groups()[0], "2022")
-    #
-    # second_partitions = os.listdir(f"{self.DESTINATION}/{year_partition.string}/")
-    # month_partition = next(
-    #     re.match("^run_month=([0-9]{2})$", path) for path in second_partitions
-    # )
-    # self.assertIsNotNone(month_partition)
-    # self.assertEqual(month_partition.groups()[0], "06")
-    #
-    # third_partitions = os.listdir(
-    #     f"{self.DESTINATION}/{year_partition.string}/{month_partition.string}/"
-    # )
-    # day_partition = next(
-    #     re.match("^run_day=([0-9]{2})$", path) for path in third_partitions
-    # )
-    # self.assertIsNotNone(day_partition)
-    # self.assertEqual(day_partition.groups()[0], "29")
+        job.main(
+            self.PREPARED_LOCATIONS_DIR,
+            self.LOCATIONS_FEATURES_DIR,
+            self.LOCATIONS_FEATURES_DIR,
+            self.DESTINATION,
+            self.CAREHOME_MODEL,
+            self.NON_RES_WITH_PIR_MODEL,
+            self.METRICS_DESTINATION,
+            job_run_id="abc1234",
+            job_name="estimate_job_counts",
+        )
+
+        first_partitions = os.listdir(self.DESTINATION)
+        year_partition = next(
+            re.match("^run_year=([0-9]{4})$", path)
+            for path in first_partitions
+            if re.match("^run_year=([0-9]{4})$", path)
+        )
+
+        self.assertIsNotNone(year_partition)
+        self.assertEqual(year_partition.groups()[0], "2022")
+
+        second_partitions = os.listdir(f"{self.DESTINATION}/{year_partition.string}/")
+        month_partition = next(
+            re.match("^run_month=([0-9]{2})$", path) for path in second_partitions
+        )
+        self.assertIsNotNone(month_partition)
+        self.assertEqual(month_partition.groups()[0], "06")
+
+        third_partitions = os.listdir(
+            f"{self.DESTINATION}/{year_partition.string}/{month_partition.string}/"
+        )
+        day_partition = next(
+            re.match("^run_day=([0-9]{2})$", path) for path in third_partitions
+        )
+        self.assertIsNotNone(day_partition)
+        self.assertEqual(day_partition.groups()[0], "29")
 
     def test_populate_known_jobs_use_job_count_from_current_snapshot(self):
         columns = [
