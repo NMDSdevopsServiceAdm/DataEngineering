@@ -2,7 +2,7 @@ import datetime
 import unittest
 import warnings
 
-
+from pyspark.ml.functions import vector_to_array
 from pyspark.ml.linalg import DenseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -196,8 +196,15 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
         result = vectorise_dataframe(df=exploded_df, list_for_vectorisation=regions)
-        rows = result.collect()
-        rows.sort()
 
-        expected = DenseVector([1.0, 0.0, 0.0])
-        self.assertEqual(rows[0].features, expected)
+        # vector to array is a feature of spark 3.0.0
+        rows = result.withColumn(
+            "features", vector_to_array(F.col("features"))
+        ).collect()
+
+        result = rows[0].features
+        result.sort()
+
+        expected_vector_list = [0.0, 0.0, 1.0]
+
+        self.assertEqual(expected_vector_list, result)
