@@ -111,7 +111,7 @@ class PrepareLocationsTests(unittest.TestCase):
                 "people_directly_employed",
                 "job_count_unfiltered",
                 "job_count_unfiltered_source",
-                "job_count",
+                # "job_count",
                 "region",
                 "postal_code",
                 "constituency",
