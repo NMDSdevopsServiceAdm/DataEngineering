@@ -22,7 +22,7 @@ class TestCalculateJobCountBedEstimate(unittest.TestCase):
             StructField("total_staff", IntegerType(), True),
             StructField("worker_record_count", IntegerType(), True),
             StructField("number_of_beds", IntegerType(), True),
-            StructField("job_count", DoubleType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
         ]
     )
 
