@@ -37,16 +37,28 @@
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Run feature engineering job",
+                  "StartAt": "Run care home feature engineering job",
                   "States": {
-                    "Run feature engineering job": {
+                    "Run care home feature engineering job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${locations_feature_engineering_job_name}",
+                        "JobName": "${locations_care_home_feature_engineering_job_name}",
                         "Arguments": {
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+                        }
+                      },
+                      "Next": "Run non res feature engineering job"
+                    },
+                    "Run non res feature engineering job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${locations_non_res_feature_engineering_job_name}",
+                        "Arguments": {
+                          "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
                         }
                       },
                       "Next": "Run estimate job counts job"
@@ -59,8 +71,9 @@
                         "Arguments": {
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
                           "--prepared_locations_features": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/",
-                          "--care_home_model_directory": "${pipeline_resources_bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/",
+                          "--care_home_model_directory": "${pipeline_resources_bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.0.0",
+                          "--non_res_with_pir_model_directory": "${pipeline_resources_bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0"
                         }
                       },
                       "Next": "Run job role breakdown job"
@@ -71,7 +84,7 @@
                       "Parameters": {
                         "JobName": "${job_role_breakdown_job_name}",
                         "Arguments": {
-                          "--job_estimates_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/",
+                          "--job_estimates_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/",
                           "--worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
                           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_role_breakdown/version=1.0.0/"
                         }
