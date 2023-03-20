@@ -46,7 +46,7 @@
                         "JobName": "${locations_care_home_feature_engineering_job_name}",
                         "Arguments": {
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/version=2.0.0/"
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
                         }
                       },
                       "Next": "Run non res feature engineering job"
@@ -58,7 +58,7 @@
                         "JobName": "${locations_non_res_feature_engineering_job_name}",
                         "Arguments": {
                           "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/version=2.0.0/"
+                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
                         }
                       },
                       "Next": "Run estimate job counts job"

@@ -119,7 +119,7 @@ module "locations_care_home_feature_engineering_job" {
 
   job_parameters = {
     "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
   }
 }
 
@@ -133,7 +133,7 @@ module "locations_non_res_feature_engineering_job" {
 
   job_parameters = {
     "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
   }
 }
 
@@ -175,8 +175,8 @@ module "estimate_job_counts_job" {
 
   job_parameters = {
     "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--carehome_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/version=2.0.0/"
-    "--nonres_features_source"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/version=2.0.0/"
+    "--carehome_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+    "--nonres_features_source"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
     "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
     "--care_home_model_directory"        = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.0.0"
     "--non_res_with_pir_model_directory" = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0"
