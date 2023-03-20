@@ -46,6 +46,6 @@ class TestCalculateJobCountBedEstimate(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], None)
-        self.assertEqual(df[1]["job_count"], 30)
-        self.assertEqual(df[2]["job_count"], 35)
+        self.assertEqual(df[0]["job_count_unfiltered"], None)
+        self.assertEqual(df[1]["job_count_unfiltered"], 30)
+        self.assertEqual(df[2]["job_count_unfiltered"], 35)
