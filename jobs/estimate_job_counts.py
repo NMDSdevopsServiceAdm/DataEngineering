@@ -1,6 +1,7 @@
 from datetime import date
 import sys
 
+import pyspark.sql
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql import Window, SparkSession
@@ -43,15 +44,15 @@ from utils.estimate_job_count.common_filtering_functions import (
 
 
 def main(
-    prepared_locations_source,
-    carehome_features_source,
-    nonres_features_source,
-    destination,
-    care_home_model_directory,
-    non_res_model_directory,
-    metrics_destination,
-    job_run_id,
-    job_name,
+        prepared_locations_source,
+        carehome_features_source,
+        nonres_features_source,
+        destination,
+        care_home_model_directory,
+        non_res_model_directory,
+        metrics_destination,
+        job_run_id,
+        job_name,
 ):
     spark = (
         SparkSession.builder.appName("sfc_data_engineering_estimate_jobs")
@@ -84,6 +85,7 @@ def main(
     carehome_features_df = spark.read.parquet(carehome_features_source)
     non_res_features_df = spark.read.parquet(nonres_features_source)
 
+    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
@@ -158,7 +160,11 @@ def main(
     )
 
 
-def populate_estimate_jobs_when_job_count_known(df):
+def filter_to_only_cqc_independent_sector_data(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    return df.where(df.cqc_sector == "Independent")
+
+
+def populate_estimate_jobs_when_job_count_known(df:pyspark.sql.DataFrame)-> pyspark.sql.DataFrame:
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
@@ -211,14 +217,14 @@ def populate_last_known_job_count(df):
 
 
 def write_metrics_df(
-    metrics_destination,
-    r2,
-    data_percentage,
-    model_name,
-    model_version,
-    latest_snapshot,
-    job_run_id,
-    job_name,
+        metrics_destination,
+        r2,
+        data_percentage,
+        model_name,
+        model_version,
+        latest_snapshot,
+        job_run_id,
+        job_name,
 ):
     spark = utils.get_spark()
     columns = [
