@@ -1,18 +1,23 @@
 import argparse
-import re
 import sys
 from dataclasses import dataclass
-from typing import List, Dict, Tuple, Set
 
-import numpy as np
 import pyspark
 import pyspark.sql.functions as F
-from pyspark.ml.feature import VectorAssembler
 
 from utils import utils
 from utils.feature_engineering_dictionaries import (
     SERVICES_LOOKUP,
     RURAL_URBAN_INDICATOR_LOOKUP,
+)
+from utils.features.helper import (
+    add_service_count_to_data,
+    column_expansion_with_dict,
+    add_rui_data_data_frame,
+    get_list_of_distinct_ons_regions,
+    explode_column_from_distinct_values,
+    add_date_diff_into_df,
+    vectorise_dataframe,
 )
 
 
@@ -171,55 +176,6 @@ def convert_col_to_integer_col(df, col_name):
     return df
 
 
-def vectorise_dataframe(
-    df: pyspark.sql.DataFrame, list_for_vectorisation: List[str]
-) -> pyspark.sql.DataFrame:
-    loc_df = VectorAssembler(
-        inputCols=list_for_vectorisation, outputCol="features", handleInvalid="skip"
-    ).transform(df)
-    return loc_df
-
-
-def get_list_of_distinct_ons_regions(
-    df: pyspark.sql.DataFrame, col_name: str
-) -> List[str]:
-    distinct_regions = df.select(col_name).distinct().dropna().collect()
-    dis_regions_list = [str(row.ons_region) for row in distinct_regions]
-    return dis_regions_list
-
-
-def column_expansion_with_dict(
-    df: pyspark.sql.DataFrame, col_name: str, lookup_dict: Dict[str, str]
-) -> pyspark.sql.DataFrame:
-    for key in lookup_dict.keys():
-        df = df.withColumn(
-            f"{key}",
-            F.array_contains(df[f"{col_name}"], lookup_dict[key]).cast("integer"),
-        )
-    return df
-
-
-def add_rui_data_data_frame(
-    df: pyspark.sql.DataFrame,
-    new_rui_col_name: str,
-    col_to_check: str,
-    lookup_dict: Dict[str, str],
-) -> pyspark.sql.DataFrame:
-    df = df.withColumn(new_rui_col_name, F.col(col_to_check))
-
-    for key in lookup_dict.keys():
-        df = df.withColumn(
-            key, (F.col(new_rui_col_name) == lookup_dict[key]).cast("integer")
-        )
-    return df
-
-
-def add_service_count_to_data(
-    df: pyspark.sql.DataFrame, new_col_name: str, col_to_check: str
-) -> pyspark.sql.DataFrame:
-    return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
-
-
 def filter_locations_df_for_independent_non_res_care_home_data(
     df: pyspark.sql.DataFrame, carehome_col_name: str, cqc_col_name: str
 ) -> pyspark.sql.DataFrame:
@@ -228,35 +184,6 @@ def filter_locations_df_for_independent_non_res_care_home_data(
         F.col(cqc_col_name) == "Independent"
     )
     return independent_care_home_data
-
-
-def format_strings(string: str) -> str:
-    no_space = string.replace(" ", "_").lower()
-    return re.sub("[^a-z_]", "", no_space)
-
-
-def explode_column_from_distinct_values(
-    df: pyspark.sql.DataFrame, column_name: str, col_prefix: str, col_list_set: Set[str]
-) -> Tuple[pyspark.sql.DataFrame, List[str]]:
-    col_names = []
-
-    for col in col_list_set:
-        clean = col_prefix + format_strings(col)
-        col_names.append(clean)
-
-        df = df.withColumn(f"{clean}", (F.col(f"{column_name}") == col).cast("integer"))
-    return df, col_names
-
-
-def add_date_diff_into_df(
-    df: pyspark.sql.DataFrame, new_col_name: str, snapshot_date_col: str
-) -> pyspark.sql.DataFrame:
-    max_d = df.agg(F.max(snapshot_date_col)).first()[0]
-
-    loc_df = df.withColumn(
-        new_col_name, F.datediff(F.lit(max_d), F.col(snapshot_date_col))
-    )
-    return loc_df
 
 
 def collect_arguments():
