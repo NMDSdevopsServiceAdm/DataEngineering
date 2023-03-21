@@ -118,7 +118,7 @@ module "locations_care_home_feature_engineering_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
     "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
   }
 }
@@ -132,7 +132,7 @@ module "locations_non_res_feature_engineering_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
     "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
   }
 }
@@ -166,6 +166,19 @@ module "job_role_breakdown_job" {
   }
 }
 
+module "prepare_locations_cleaned_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_locations_cleaned.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
+  }
+}
+
 module "estimate_job_counts_job" {
   source          = "../modules/glue-job"
   script_name     = "estimate_job_counts.py"
@@ -174,7 +187,7 @@ module "estimate_job_counts_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
     "--carehome_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
     "--nonres_features_source"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
     "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
