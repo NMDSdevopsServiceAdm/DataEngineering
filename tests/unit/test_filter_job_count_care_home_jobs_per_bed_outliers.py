@@ -21,7 +21,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.spark = SparkSession.builder.appName("test_filter_job_count").getOrCreate()
         self.estimate_job_count_input_data = generate_care_home_jobs_per_bed_filter_df()
         self.filtered_output_df = job.care_home_jobs_per_bed_ratio_outliers(
-            self.estimate_job_count_input_data, "job_count_unfiltered", "job_count"
+            self.estimate_job_count_input_data
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -318,7 +318,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
-                StructField("original_column", StringType(), True),
+                StructField("job_count_unfiltered", StringType(), True),
             ]
         )
         # fmt: off
@@ -328,8 +328,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
 
         df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(df)
         df = df.collect()
-        self.assertEqual(df[0]["original_column"], df[0]["new_column"])
-        self.assertEqual(df[1]["original_column"], df[1]["new_column"])
+        self.assertEqual(df[0]["job_count_unfiltered"], df[0]["job_count"])
+        self.assertEqual(df[1]["job_count_unfiltered"], df[1]["job_count"])
 
     def test_combine_dataframes_keeps_all_rows_of_data(self):
         schema = StructType(
