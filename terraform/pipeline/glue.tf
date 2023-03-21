@@ -118,8 +118,8 @@ module "locations_care_home_feature_engineering_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+    "--prepared_locations_source"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
+    "--prepared_locations_cleaned_destination"  = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
   }
 }
 
