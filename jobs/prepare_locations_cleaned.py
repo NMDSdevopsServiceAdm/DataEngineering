@@ -22,14 +22,12 @@ def main(
 
     locations_df = spark.read.parquet(prepared_locations_source)
 
-    locations_df = locations_df.where(F.col("cqc_sector") == "Independent")
-    locations_df = locations_df.where(F.col("registration_status") == "Registered")
+    locations_df = remove_unwanted_data(locations_df)
 
     locations_df = null_job_count_outliers(locations_df)
 
     locations_df = utils.create_partition_keys_based_on_todays_date(locations_df)
 
-    print("Completed estimated job counts")
     print(f"Exporting as parquet to {prepared_locations_cleaned_destination}")
 
     utils.write_to_parquet(
@@ -38,6 +36,12 @@ def main(
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
     )
+
+
+def remove_unwanted_data(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    df = df.where(F.col("cqc_sector") == "Independent")
+    df = df.where(F.col("registration_status") == "Registered")
+    return df
 
 
 if __name__ == "__main__":
