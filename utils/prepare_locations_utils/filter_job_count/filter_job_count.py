@@ -5,9 +5,9 @@ from utils.prepare_locations_utils.filter_job_count.care_home_jobs_per_bed_ratio
 )
 
 
-def filter_job_count(input_df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+def null_job_count_outliers(input_df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
 
-    print("Filtering job_count...")
+    print("Removing job_count outliers...")
 
     input_df = care_home_jobs_per_bed_ratio_outliers(input_df)
 
