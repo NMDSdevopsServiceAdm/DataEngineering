@@ -43,10 +43,14 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("other_col", StringType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1-000000001", "data"), ("1-000000002", "data"), ("1-000000003", "data"), ]
-        subset_rows = [("1-000000002", "data"), ]
-        # fmt: on
+        rows = [
+            ("1-000000001", "data"),
+            ("1-000000002", "data"),
+            ("1-000000003", "data"),
+        ]
+        subset_rows = [
+            ("1-000000002", "data"),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         subset_df = self.spark.createDataFrame(subset_rows, schema)
 
@@ -63,10 +67,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("number_of_beds", IntegerType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1-000000001", 5.0, 100),
-                ("1-000000002", 2.0, 1), ]
-        # fmt: on
+        rows = [
+            ("1-000000001", 5.0, 100),
+            ("1-000000002", 2.0, 1),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_jobs_per_bed_ratio(df)
 
@@ -81,9 +85,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("number_of_beds", IntegerType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", 5), ("2", 24), ("3", 500), ]
-        # fmt: on
+        rows = [
+            ("1", 5),
+            ("2", 24),
+            ("3", 500),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_banded_bed_count_column(df)
 
@@ -100,9 +106,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", "5-9 beds", 1.1357), ("2", "5-9 beds", 1.3579), ("3", "50+ beds", 1.123456789)]
-        # fmt: on
+        rows = [
+            ("1", "5-9 beds", 1.1357),
+            ("2", "5-9 beds", 1.3579),
+            ("3", "50+ beds", 1.123456789),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_jobs_per_banded_bed_count(df)
 
@@ -117,10 +125,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
-        # fmt: off
-        expected_jobs_rows = [("5-9 beds", 1.4),
-                              ("50+ beds", 1.28), ]
-        # fmt: on
+        expected_jobs_rows = [
+            ("5-9 beds", 1.4),
+            ("50+ beds", 1.28),
+        ]
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
@@ -129,11 +137,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("number_of_beds_banded", StringType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", 10, 16.0, "5-9 beds"),
-                ("2", 50, 80.0, "50+ beds"), 
-                ("3", 50, 10.0, "50+ beds"), ]
-        # fmt: on
+        rows = [
+            ("1", 10, 16.0, "5-9 beds"),
+            ("2", 50, 80.0, "50+ beds"),
+            ("3", 50, 10.0, "50+ beds"),
+        ]
         expected_jobs_df = self.spark.createDataFrame(
             expected_jobs_rows, expected_jobs_schema
         )
@@ -152,10 +160,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
-        # fmt: off
-        expected_jobs_rows = [("5-9 beds", 1.11111),
-                              ("50+ beds", 1.0101), ]
-        # fmt: on
+        expected_jobs_rows = [
+            ("5-9 beds", 1.11111),
+            ("50+ beds", 1.0101),
+        ]
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
@@ -163,10 +171,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("number_of_beds_banded", StringType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", 7, "5-9 beds"),
-                ("2", 75, "50+ beds"), ]
-        # fmt: on
+        rows = [
+            ("1", 7, "5-9 beds"),
+            ("2", 75, "50+ beds"),
+        ]
         expected_jobs_df = self.spark.createDataFrame(
             expected_jobs_rows, expected_jobs_schema
         )
@@ -185,11 +193,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("expected_jobs", DoubleType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", 10.0, 8.76544),
-                ("2", 10.0, 10.0),
-                ("3", 10.0, 11.23456), ]
-        # fmt: on
+        rows = [
+            ("1", 10.0, 8.76544),
+            ("2", 10.0, 10.0),
+            ("3", 10.0, 11.23456),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_job_count_residuals(df)
 
@@ -206,10 +214,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("expected_jobs", DoubleType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", 11.11111, 4.0),
-                ("2", 17.75, 25.0), ]
-        # fmt: on
+        rows = [
+            ("1", 11.11111, 4.0),
+            ("2", 17.75, 25.0),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_job_count_standardised_residual(df)
 
@@ -266,11 +274,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("standardised_residual", DoubleType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1", "2023-01-01", 1.0, 0.26545),
-                ("2", "2023-01-01", 2.0, -3.2545),
-                ("3", "2023-01-01", 3.0, 12.25423), ]
-        # fmt: on
+        rows = [
+            ("1", "2023-01-01", 1.0, 0.26545),
+            ("2", "2023-01-01", 2.0, -3.2545),
+            ("3", "2023-01-01", 3.0, 12.25423),
+        ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_filtered_job_count_df(df, -0.4, 10)
 
@@ -287,9 +295,9 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("job_count", DoubleType(), True),
             ]
         )
-        # fmt: off
-        filtered_rows = [("2", "2023-01-01", 2.0), ]
-        # fmt: on
+        filtered_rows = [
+            ("2", "2023-01-01", 2.0),
+        ]
         ch_schema = StructType(
             [
                 StructField("locationid", StringType(), True),
@@ -298,11 +306,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("job_count_unfiltered", DoubleType(), True),
             ]
         )
-        # fmt: off
-        ch_rows = [("2", "2022-01-01", 1, 2.0),
-                   ("2", "2023-01-01", 1, 2.0),
-                   ("3", "2023-01-01", 25, 30.0), ]
-        # fmt: on
+        ch_rows = [
+            ("2", "2022-01-01", 1, 2.0),
+            ("2", "2023-01-01", 1, 2.0),
+            ("3", "2023-01-01", 25, 30.0),
+        ]
         filtered_df = self.spark.createDataFrame(filtered_rows, filtered_schema)
         ch_df = self.spark.createDataFrame(ch_rows, ch_schema)
 
@@ -321,9 +329,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("job_count_unfiltered", StringType(), True),
             ]
         )
-        # fmt: off
-        rows = [("1-000000002", 123), ("1-000000003", None), ]
-        # fmt: on
+        rows = [
+            ("1-000000002", 123),
+            ("1-000000003", None),
+        ]
         df = self.spark.createDataFrame(rows, schema)
 
         df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(df)
@@ -338,10 +347,13 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("other_col", StringType(), True),
             ]
         )
-        # fmt: off
-        rows_1 = [("1-000000001", "data"), ]
-        rows_2 = [("1-000000002", "data"), ("1-000000003", "data"), ]
-        # fmt: on
+        rows_1 = [
+            ("1-000000001", "data"),
+        ]
+        rows_2 = [
+            ("1-000000002", "data"),
+            ("1-000000003", "data"),
+        ]
         df_1 = self.spark.createDataFrame(rows_1, schema)
         df_2 = self.spark.createDataFrame(rows_2, schema)
 
@@ -355,10 +367,14 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("other_col", StringType(), True),
             ]
         )
-        # fmt: off
-        rows_1 = [("1-000000001", "data"), ]
-        rows_2 = [("1-000000002", "data"), ("1-000000003", "data"), ]
-        # fmt: on
+        rows_1 = [
+            ("1-000000001", "data"),
+        ]
+        rows_2 = [
+            ("1-000000002", "data"),
+            ("1-000000003", "data"),
+        ]
+
         df_1 = self.spark.createDataFrame(rows_1, schema)
         df_2 = self.spark.createDataFrame(rows_2, schema)
 
