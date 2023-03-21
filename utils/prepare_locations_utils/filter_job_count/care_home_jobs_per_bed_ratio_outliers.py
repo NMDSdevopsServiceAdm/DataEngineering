@@ -85,9 +85,8 @@ def select_relevant_data(input_df: pyspark.sql.DataFrame) -> pyspark.sql.DataFra
     column_name = ColNames()
 
     output_df = input_df.where(
-        F.col(column_name.primary_service_type)
-        == "Care home service without nursing" | F.col(column_name.primary_service_type)
-        == "Care home service with nursing"
+        (F.col(column_name.primary_service_type) == "Care home service without nursing")
+        | (F.col(column_name.primary_service_type) == "Care home service with nursing")
     )
     output_df = output_df.where(
         F.col(column_name.number_of_beds).isNotNull()
