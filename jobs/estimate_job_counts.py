@@ -15,7 +15,6 @@ from utils.estimate_job_count.column_names import (
     SNAPSHOT_DATE,
     JOB_COUNT_UNFILTERED,
     JOB_COUNT_UNFILTERED_SOURCE,
-    JOB_COUNT,
     LOCAL_AUTHORITY,
     REGISTRATION_STATUS,
     ESTIMATE_JOB_COUNT,
@@ -28,16 +27,17 @@ from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.non_res_rolling_average import (
     model_non_res_rolling_average,
 )
-
 from utils.estimate_job_count.models.non_res_historical import (
     model_non_res_historical,
 )
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
-
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
+)
+from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
+    null_job_count_outliers,
 )
 from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
@@ -74,7 +74,6 @@ def main(
             SNAPSHOT_DATE,
             JOB_COUNT_UNFILTERED,
             JOB_COUNT_UNFILTERED_SOURCE,
-            JOB_COUNT,
             LOCAL_AUTHORITY,
             CQC_SECTOR,
         )
@@ -86,6 +85,7 @@ def main(
     non_res_features_df = spark.read.parquet(nonres_features_source)
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
+    locations_df = null_job_count_outliers(locations_df)
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
@@ -95,7 +95,6 @@ def main(
     )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
-    # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
@@ -176,11 +175,6 @@ def populate_estimate_jobs_when_job_count_known(
     )
 
     return df
-
-    # adds in a previously submitted ASCWDS figure and performs checks:
-    # checks to see if current.locationid is exactly equal to previous.locationid AND
-    # current snapshot_date is equal to or greater than previous.snapshot_date AND
-    # previouus job count is not null. if all pass join
 
 
 def populate_last_known_job_count(df):
