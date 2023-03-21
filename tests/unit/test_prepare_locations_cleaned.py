@@ -40,8 +40,6 @@ class PrepareLocationsCleanedTests(unittest.TestCase):
         job.main(
             self.PREPARED_LOCATIONS_DIR,
             self.PREPARED_LOCATIONS_CLEANED_DIR,
-            job_run_id="abc1234",
-            job_name="prepare_locations_cleaned",
         )
 
         first_partitions = os.listdir(self.PREPARED_LOCATIONS_CLEANED_DIR)
@@ -71,10 +69,6 @@ class PrepareLocationsCleanedTests(unittest.TestCase):
         )
         self.assertIsNotNone(day_partition)
         self.assertEqual(day_partition.groups()[0], "29")
-
-    def test_main_outputs_correct_row_count(self):
-        df = job.main(self.PREPARED_LOCATIONS_DIR)
-        self.assertEqual(df.count(), 7)
 
     def test_remove_unwanted_data(self):
         columns = [

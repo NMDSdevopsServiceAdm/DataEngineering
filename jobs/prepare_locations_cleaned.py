@@ -1,4 +1,5 @@
 import sys
+from datetime import date
 
 import pyspark.sql
 from pyspark.sql import SparkSession
@@ -9,9 +10,24 @@ from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
     null_job_count_outliers,
 )
 
+COLUMNS_TO_IMPORT = [
+    "locationid",
+    "snapshot_date",
+    "local_authority",
+    "services_offered",
+    "primary_service_type",
+    "cqc_sector",
+    "registration_status",
+    "number_of_beds",
+    "people_directly_employed",
+    "job_count_unfiltered_source",
+    "job_count_unfiltered",
+]
+
 
 def main(
-    prepared_locations_source: str, prepared_locations_cleaned_destination: str
+    prepared_locations_source: str,
+    prepared_locations_cleaned_destination: str,
 ) -> pyspark.sql.DataFrame:
     spark = (
         SparkSession.builder.appName("sfc_data_engineering_prepared_locations_cleaned")
@@ -20,13 +36,15 @@ def main(
     )
     print("Cleaning prepare_locations dataset...")
 
-    locations_df = spark.read.parquet(prepared_locations_source)
+    locations_df = spark.read.parquet(prepared_locations_source).select(
+        *COLUMNS_TO_IMPORT
+    )
 
     locations_df = remove_unwanted_data(locations_df)
 
     locations_df = null_job_count_outliers(locations_df)
 
-    locations_df = utils.create_partition_keys_based_on_todays_date(locations_df)
+    locations_df = create_partition_keys_based_on_todays_date(locations_df)
 
     print(f"Exporting as parquet to {prepared_locations_cleaned_destination}")
 
@@ -44,6 +62,14 @@ def remove_unwanted_data(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     return df
 
 
+def create_partition_keys_based_on_todays_date(df):
+    today = date.today()
+    df = df.withColumn("run_year", F.lit(today.year))
+    df = df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    df = df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+    return df
+
+
 if __name__ == "__main__":
     print("Spark job 'estimate_job_counts' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -51,8 +77,6 @@ if __name__ == "__main__":
     (
         prepared_locations_source,
         prepared_locations_cleaned_destination,
-        JOB_RUN_ID,
-        JOB_NAME,
     ) = utils.collect_arguments(
         (
             "--prepared_locations_source",
@@ -62,13 +86,9 @@ if __name__ == "__main__":
             "--prepared_locations_cleaned_destination",
             "A destination directory for outputting prepared_locations_cleaned, if not provided shall default to S3 todays date.",
         ),
-        ("--JOB_RUN_ID", "The Glue job run id"),
-        ("--JOB_NAME", "The Glue job name"),
     )
 
     main(
         prepared_locations_source,
         prepared_locations_cleaned_destination,
-        JOB_RUN_ID,
-        JOB_NAME,
     )
