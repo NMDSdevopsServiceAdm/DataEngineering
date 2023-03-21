@@ -21,7 +21,7 @@ class EstimateJobCountTests(unittest.TestCase):
         "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0"
     )
     METRICS_DESTINATION = "tests/test_data/tmp/data_engineering/model_metrics/"
-    PREPARED_LOCATIONS_DIR = "tests/test_data/tmp/prepared_locations/"
+    PREPARED_LOCATIONS_CLEANED_DIR = "tests/test_data/tmp/prepared_locations_cleaned/"
     LOCATIONS_FEATURES_DIR = "tests/test_data/tmp/location_features/"
     DESTINATION = "tests/test_data/tmp/estimated_job_counts/"
 
@@ -33,7 +33,7 @@ class EstimateJobCountTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def tearDown(self):
-        remove_file_path(self.PREPARED_LOCATIONS_DIR)
+        remove_file_path(self.PREPARED_LOCATIONS_CLEANED_DIR)
         remove_file_path(self.LOCATIONS_FEATURES_DIR)
         remove_file_path(self.DESTINATION)
         remove_file_path(self.METRICS_DESTINATION)
@@ -46,14 +46,14 @@ class EstimateJobCountTests(unittest.TestCase):
         mock_get_s3_folders.return_value = ["1.0.0"]
         mock_date.today.return_value = date(2022, 6, 29)
         mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
-        generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_DIR)
+        generate_prepared_locations_file_parquet(self.PREPARED_LOCATIONS_CLEANED_DIR)
         features = self.generate_features_df()
         features.write.mode("overwrite").partitionBy(
             "snapshot_year", "snapshot_month", "snapshot_day"
         ).parquet(self.LOCATIONS_FEATURES_DIR)
 
         job.main(
-            self.PREPARED_LOCATIONS_DIR,
+            self.PREPARED_LOCATIONS_CLEANED_DIR,
             self.LOCATIONS_FEATURES_DIR,
             self.LOCATIONS_FEATURES_DIR,
             self.DESTINATION,
