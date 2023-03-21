@@ -15,6 +15,7 @@ from utils.estimate_job_count.column_names import (
     SNAPSHOT_DATE,
     JOB_COUNT_UNFILTERED,
     JOB_COUNT_UNFILTERED_SOURCE,
+    JOB_COUNT,
     LOCAL_AUTHORITY,
     REGISTRATION_STATUS,
     ESTIMATE_JOB_COUNT,
@@ -36,16 +37,13 @@ from utils.estimate_job_count.models.non_res_with_pir import (
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
-from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
-    null_job_count_outliers,
-)
 from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
 )
 
 
 def main(
-    prepared_locations_source,
+    prepared_locations_cleaned_source,
     carehome_features_source,
     nonres_features_source,
     destination,
@@ -64,7 +62,7 @@ def main(
 
     # load locations_prepared df
     locations_df = (
-        spark.read.parquet(prepared_locations_source)
+        spark.read.parquet(prepared_locations_cleaned_source)
         .select(
             LOCATION_ID,
             SERVICES_OFFERED,
@@ -74,6 +72,7 @@ def main(
             SNAPSHOT_DATE,
             JOB_COUNT_UNFILTERED,
             JOB_COUNT_UNFILTERED_SOURCE,
+            JOB_COUNT,
             LOCAL_AUTHORITY,
             CQC_SECTOR,
         )
@@ -85,7 +84,6 @@ def main(
     non_res_features_df = spark.read.parquet(nonres_features_source)
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-    locations_df = null_job_count_outliers(locations_df)
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
@@ -165,8 +163,8 @@ def populate_estimate_jobs_when_job_count_known(
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
-            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col("job_count").isNotNull())),
-            F.col("job_count"),
+            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col(JOB_COUNT).isNotNull())),
+            F.col(JOB_COUNT),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
@@ -256,7 +254,7 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        prepared_locations_source,
+        prepared_locations_cleaned_source,
         carehome_features_source,
         nonres_features_source,
         destination,
@@ -266,7 +264,10 @@ if __name__ == "__main__":
         JOB_RUN_ID,
         JOB_NAME,
     ) = utils.collect_arguments(
-        ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
+        (
+            "--prepared_locations_cleaned_source",
+            "Source s3 directory for prepared_locations_cleaned",
+        ),
         (
             "--carehome_features_source",
             "Source s3 directory for prepared_locations ML features for care homes",
@@ -293,7 +294,7 @@ if __name__ == "__main__":
     )
 
     main(
-        prepared_locations_source,
+        prepared_locations_cleaned_source,
         carehome_features_source,
         nonres_features_source,
         destination,
