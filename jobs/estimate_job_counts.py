@@ -1,9 +1,10 @@
 from datetime import date
 import sys
 
+import pyspark.sql
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql import Window
+from pyspark.sql import Window, SparkSession
 
 from utils import utils
 from utils.estimate_job_count.column_names import (
@@ -45,15 +46,20 @@ from utils.estimate_job_count.common_filtering_functions import (
 
 def main(
     prepared_locations_source,
-    prepared_locations_features,
+    carehome_features_source,
+    nonres_features_source,
     destination,
     care_home_model_directory,
-    non_res_with_pir_model_directory,
+    non_res_model_directory,
     metrics_destination,
     job_run_id,
     job_name,
 ):
-    spark = utils.get_spark()
+    spark = (
+        SparkSession.builder.appName("sfc_data_engineering_estimate_jobs")
+        .config("spark.sql.broadcastTimeout", 600)
+        .getOrCreate()
+    )
     print("Estimating job counts")
 
     # load locations_prepared df
@@ -75,11 +81,11 @@ def main(
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
 
-    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-
     # loads model features
-    features_df = spark.read.parquet(prepared_locations_features)
+    carehome_features_df = spark.read.parquet(carehome_features_source)
+    non_res_features_df = spark.read.parquet(nonres_features_source)
 
+    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
     locations_df = populate_last_known_job_count(locations_df)
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
@@ -93,50 +99,41 @@ def main(
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
-    latest_care_home_model_version = max(
-        utils.get_s3_sub_folders_for_path(care_home_model_directory)
-    )
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
-        features_df,
-        f"{care_home_model_directory}{latest_care_home_model_version}/",
+        carehome_features_df,
+        care_home_model_directory,
     )
 
-    care_home_model_name = utils.get_model_name(care_home_model_directory)
+    care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
         r2=care_home_metrics_info["r2"],
         data_percentage=care_home_metrics_info["data_percentage"],
-        model_version=latest_care_home_model_version,
-        model_name=care_home_model_name,
+        model_version=care_home_model_info[-1],
+        model_name="care_home_with_nursing_historical_jobs_prediction",
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
     )
 
     # Non-res with PIR data model
-    latest_non_res_with_pir_model_version = max(
-        utils.get_s3_sub_folders_for_path(non_res_with_pir_model_directory)
-    )
-
     (
         locations_df,
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
         locations_df,
-        features_df,
-        f"{non_res_with_pir_model_directory}{latest_non_res_with_pir_model_version}/",
+        non_res_features_df,
+        non_res_model_directory,
     )
 
-    non_residential_with_pir_model_name = utils.get_model_name(
-        non_res_with_pir_model_directory
-    )
+    non_res_model_info = non_res_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
         r2=non_residential_with_pir_metrics_info["r2"],
         data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
-        model_version=latest_non_res_with_pir_model_version,
-        model_name=non_residential_with_pir_model_name,
+        model_version=non_res_model_info[-1],
+        model_name="non_residential_with_pir",
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
@@ -163,7 +160,9 @@ def main(
     )
 
 
-def populate_estimate_jobs_when_job_count_known(df):
+def populate_estimate_jobs_when_job_count_known(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
@@ -264,7 +263,8 @@ if __name__ == "__main__":
 
     (
         prepared_locations_source,
-        prepared_locations_features,
+        carehome_features_source,
+        nonres_features_source,
         destination,
         care_home_model_directory,
         non_res_with_pir_model_directory,
@@ -274,8 +274,12 @@ if __name__ == "__main__":
     ) = utils.collect_arguments(
         ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
         (
-            "--prepared_locations_features",
-            "Source s3 directory for prepared_locations ML features",
+            "--carehome_features_source",
+            "Source s3 directory for prepared_locations ML features for care homes",
+        ),
+        (
+            "--nonres_features_source",
+            "Source s3 directory for prepared_locations ML features for non res care homes",
         ),
         (
             "--destination",
@@ -296,7 +300,8 @@ if __name__ == "__main__":
 
     main(
         prepared_locations_source,
-        prepared_locations_features,
+        carehome_features_source,
+        nonres_features_source,
         destination,
         care_home_model_directory,
         non_res_with_pir_model_directory,

@@ -110,16 +110,30 @@ module "worker_tracking_job" {
 }
 
 
-module "locations_feature_engineering_job" {
+module "locations_care_home_feature_engineering_job" {
   source          = "../modules/glue-job"
-  script_name     = "locations_feature_engineering.py"
+  script_name     = "locations_care_home_feature_engineering.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+  }
+}
+
+
+module "locations_non_res_feature_engineering_job" {
+  source          = "../modules/glue-job"
+  script_name     = "locations_non_res_feature_engineering.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
   }
 }
 
@@ -146,7 +160,7 @@ module "job_role_breakdown_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--job_estimates_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
+    "--job_estimates_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
     "--worker_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_role_breakdown/version=1.0.0/"
   }
@@ -161,10 +175,11 @@ module "estimate_job_counts_job" {
 
   job_parameters = {
     "--prepared_locations_source"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--prepared_locations_features"      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/"
-    "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=1.0.0/"
-    "--care_home_model_directory"        = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/"
-    "--non_res_with_pir_model_directory" = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/"
+    "--carehome_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+    "--nonres_features_source"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
+    "--destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
+    "--care_home_model_directory"        = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.0.0"
+    "--non_res_with_pir_model_directory" = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0"
     "--metrics_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=model_metrics/"
   }
 }
