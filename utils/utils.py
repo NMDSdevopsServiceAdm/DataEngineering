@@ -2,7 +2,6 @@ import os
 import re
 import csv
 import argparse
-from datetime import date
 
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
@@ -214,14 +213,6 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     df = df.where(df[partition_keys[1]] == max_month)
     max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
     df = df.where(df[partition_keys[2]] == max_day)
-    return df
-
-
-def create_partition_keys_based_on_todays_date(df):
-    today = date.today()
-    df = df.withColumn("run_year", F.lit(today.year))
-    df = df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
-    df = df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
     return df
 
 
