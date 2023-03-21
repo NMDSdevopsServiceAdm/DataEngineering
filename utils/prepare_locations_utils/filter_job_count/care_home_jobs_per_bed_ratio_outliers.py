@@ -9,8 +9,8 @@ from dataclasses import dataclass
 class ColNames:
     locationid: str = "locationid"
     snapshot_date: str = "snapshot_date"
-    carehome: str = "carehome"
-    registration_status: str = "registration_status"
+    primary_service_type: str = "primary_service_type"
+    job_count_unfiltered: str = "job_count_unfiltered"
     number_of_beds: str = "number_of_beds"
     number_of_beds_banded: str = "number_of_beds_banded"
     jobs_per_bed_ratio: str = "jobs_per_bed_ratio"
@@ -18,6 +18,7 @@ class ColNames:
     expected_jobs: str = "expected_jobs"
     residual: str = "residual"
     standardised_residual: str = "standardised_residual"
+    job_count: str = "job_count"
 
 
 @dataclass
@@ -27,17 +28,17 @@ class NumericalValues:
 
 
 def care_home_jobs_per_bed_ratio_outliers(
-    input_df: pyspark.sql.DataFrame, column_to_filter: str, filtered_col_name: str
+    input_df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
     numerical_value = NumericalValues()
 
-    care_homes_df = select_relevant_data(input_df, column_to_filter)
+    care_homes_df = select_relevant_data(input_df)
     data_not_relevant_to_filter_df = select_data_not_in_subset_df(
         input_df, care_homes_df
     )
 
-    data_to_filter_df = calculate_jobs_per_bed_ratio(care_homes_df, column_to_filter)
+    data_to_filter_df = calculate_jobs_per_bed_ratio(care_homes_df)
 
     data_to_filter_df = create_banded_bed_count_column(data_to_filter_df)
 
@@ -46,7 +47,7 @@ def care_home_jobs_per_bed_ratio_outliers(
     )
 
     data_to_filter_df = calculate_standardised_residuals(
-        data_to_filter_df, expected_jobs_per_banded_bed_count_df, column_to_filter
+        data_to_filter_df, expected_jobs_per_banded_bed_count_df
     )
 
     (
@@ -61,8 +62,6 @@ def care_home_jobs_per_bed_ratio_outliers(
         data_to_filter_df,
         lower_standardised_residual_cutoff,
         upper_standardised_residual_cutoff,
-        column_to_filter,
-        filtered_col_name,
     )
 
     care_homes_with_filtered_col_df = join_filtered_col_into_care_home_df(
@@ -71,7 +70,7 @@ def care_home_jobs_per_bed_ratio_outliers(
 
     data_not_relevant_to_filter_df = (
         add_job_counts_without_filtering_to_data_outside_of_this_filter(
-            data_not_relevant_to_filter_df, column_to_filter, filtered_col_name
+            data_not_relevant_to_filter_df
         )
     )
 
@@ -82,16 +81,22 @@ def care_home_jobs_per_bed_ratio_outliers(
     return output_df
 
 
-def select_relevant_data(
-    input_df: pyspark.sql.DataFrame, column_to_filter: str
-) -> pyspark.sql.DataFrame:
+def select_relevant_data(input_df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
-    output_df = input_df.where(F.col(column_name.registration_status) == "Registered")
-    output_df = output_df.where(F.col(column_name.carehome) == "Y")
-    output_df = output_df.where(F.col(column_name.number_of_beds) > 0)
-    output_df = output_df.where(F.col(column_to_filter).isNotNull())
-    output_df = output_df.where(F.col(column_to_filter) > 0.0)
+    output_df = input_df.where(
+        F.col(column_name.primary_service_type)
+        == "Care home service without nursing" | F.col(column_name.primary_service_type)
+        == "Care home service with nursing"
+    )
+    output_df = output_df.where(
+        F.col(column_name.number_of_beds).isNotNull()
+        & (F.col(column_name.number_of_beds) > 0)
+    )
+    output_df = output_df.where(
+        F.col(column_name.job_count_unfiltered).isNotNull()
+        & (F.col(column_name.job_count_unfiltered) > 0.0)
+    )
 
     return output_df
 
@@ -106,13 +111,13 @@ def select_data_not_in_subset_df(
 
 
 def calculate_jobs_per_bed_ratio(
-    input_df: pyspark.sql.DataFrame, column_to_filter: str
+    input_df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
     input_df = input_df.withColumn(
         column_name.jobs_per_bed_ratio,
-        F.col(column_to_filter) / F.col(column_name.number_of_beds),
+        F.col(column_name.job_count_unfiltered) / F.col(column_name.number_of_beds),
     )
     input_df = round_figures_in_column(input_df, column_name.jobs_per_bed_ratio)
 
@@ -168,13 +173,12 @@ def calculate_average_jobs_per_banded_bed_count(
 def calculate_standardised_residuals(
     df: pyspark.sql.DataFrame,
     expected_jobs_per_banded_bed_count_df: pyspark.sql.DataFrame,
-    column_to_filter: str,
 ) -> pyspark.sql.DataFrame:
 
     df = calculate_expected_jobs_based_on_number_of_beds(
         df, expected_jobs_per_banded_bed_count_df
     )
-    df = calculate_job_count_residuals(df, column_to_filter)
+    df = calculate_job_count_residuals(df)
     df = calculate_job_count_standardised_residual(df)
 
     return df
@@ -199,14 +203,12 @@ def calculate_expected_jobs_based_on_number_of_beds(
     return df
 
 
-def calculate_job_count_residuals(
-    df: pyspark.sql.DataFrame, column_to_filter: str
-) -> pyspark.sql.DataFrame:
+def calculate_job_count_residuals(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
     df = df.withColumn(
         column_name.residual,
-        F.col(column_to_filter) - F.col(column_name.expected_jobs),
+        F.col(column_name.job_count_unfiltered) - F.col(column_name.expected_jobs),
     )
     df = round_figures_in_column(df, column_name.residual)
 
@@ -230,16 +232,16 @@ def calculate_job_count_standardised_residual(
 def calculate_standardised_residual_cutoffs(
     df: pyspark.sql.DataFrame, percentage_of_data_to_filter_out: float
 ) -> pyspark.sql.DataFrame:
-    standardised_residual = ColNames.standardised_residual
+    column_name = ColNames()
 
     lower_percentile = percentage_of_data_to_filter_out / 2
     upper_percentile = 1 - (percentage_of_data_to_filter_out / 2)
 
     standardised_residual_lower_cutoff = calculate_percentile(
-        df, standardised_residual, lower_percentile
+        df, column_name.standardised_residual, lower_percentile
     )
     standardised_residual_upper_cutoff = calculate_percentile(
-        df, standardised_residual, upper_percentile
+        df, column_name.standardised_residual, upper_percentile
     )
 
     return standardised_residual_lower_cutoff, standardised_residual_upper_cutoff
@@ -265,8 +267,6 @@ def create_filtered_job_count_df(
     df: pyspark.sql.DataFrame,
     lower_standardised_residual_cutoff: DoubleType,
     upper_standardised_residual_cutoff: DoubleType,
-    column_to_filter: str,
-    filtered_col_name: str,
 ) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
@@ -279,11 +279,11 @@ def create_filtered_job_count_df(
     )
 
     within_boundary_df = within_boundary_df.withColumn(
-        filtered_col_name, F.col(column_to_filter)
+        column_name.job_count, F.col(column_name.job_count_unfiltered)
     )
 
     output_df = within_boundary_df.select(
-        column_name.locationid, column_name.snapshot_date, filtered_col_name
+        column_name.locationid, column_name.snapshot_date, column_name.job_count
     )
 
     return output_df
@@ -292,19 +292,21 @@ def create_filtered_job_count_df(
 def join_filtered_col_into_care_home_df(
     df: pyspark.sql.DataFrame, df_with_filtered_column: pyspark.sql.DataFrame
 ) -> pyspark.sql.DataFrame:
-    locationid = ColNames.locationid
-    snapshot_date = ColNames.snapshot_date
+    column_name = ColNames()
 
-    return df.join(df_with_filtered_column, [locationid, snapshot_date], "left")
+    return df.join(
+        df_with_filtered_column,
+        [column_name.locationid, column_name.snapshot_date],
+        "left",
+    )
 
 
 def add_job_counts_without_filtering_to_data_outside_of_this_filter(
     df: pyspark.sql.DataFrame,
-    column_to_filter: str,
-    filtered_col_name: str,
 ) -> pyspark.sql.DataFrame:
+    column_name = ColNames()
 
-    return df.withColumn(filtered_col_name, F.col(column_to_filter))
+    return df.withColumn(column_name.job_count, F.col(column_name.job_count_unfiltered))
 
 
 def combine_dataframes(
