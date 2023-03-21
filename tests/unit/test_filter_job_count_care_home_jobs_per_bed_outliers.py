@@ -19,9 +19,9 @@ from tests.test_file_generator import generate_care_home_jobs_per_bed_filter_df
 class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_filter_job_count").getOrCreate()
-        self.prepared_locations_input_data = generate_care_home_jobs_per_bed_filter_df()
+        self.estimate_job_count_input_data = generate_care_home_jobs_per_bed_filter_df()
         self.filtered_output_df = job.care_home_jobs_per_bed_ratio_outliers(
-            self.prepared_locations_input_data, "job_count_unfiltered", "job_count"
+            self.estimate_job_count_input_data, "job_count_unfiltered", "job_count"
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -29,13 +29,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
 
         self.assertEqual(
-            self.prepared_locations_input_data.count(), self.filtered_output_df.count()
+            self.estimate_job_count_input_data.count(), self.filtered_output_df.count()
         )
 
     def test_relevant_data_selected(self):
-        df = job.select_relevant_data(
-            self.prepared_locations_input_data, "job_count_unfiltered"
-        )
+        df = job.select_relevant_data(self.estimate_job_count_input_data)
         self.assertEqual(df.count(), 40)
 
     def test_select_data_not_in_subset_df(self):
@@ -70,7 +68,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 ("1-000000002", 2.0, 1), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_jobs_per_bed_ratio(df, "job_count_unfiltered")
+        df = job.calculate_jobs_per_bed_ratio(df)
 
         df = df.collect()
         self.assertEqual(df[0]["jobs_per_bed_ratio"], 0.05)
@@ -140,9 +138,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             expected_jobs_rows, expected_jobs_schema
         )
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_standardised_residuals(
-            df, expected_jobs_df, "job_count_unfiltered"
-        )
+        df = job.calculate_standardised_residuals(df, expected_jobs_df)
         self.assertEqual(df.count(), 3)
         df = df.collect()
         self.assertEqual(df[0]["standardised_residual"], 0.53452)
@@ -195,7 +191,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 ("3", 10.0, 11.23456), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_job_count_residuals(df, "job_count_unfiltered")
+        df = job.calculate_job_count_residuals(df)
 
         df = df.sort("locationid").collect()
         self.assertEqual(df[0]["residual"], 1.23456)
@@ -276,9 +272,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 ("3", "2023-01-01", 3.0, 12.25423), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
-        df = job.create_filtered_job_count_df(
-            df, -0.4, 10, "job_count_unfiltered", "job_count"
-        )
+        df = job.create_filtered_job_count_df(df, -0.4, 10)
 
         self.assertEqual(df.count(), 1)
         df = df.collect()
@@ -332,9 +326,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
 
-        df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(
-            df, "original_column", "new_column"
-        )
+        df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(df)
         df = df.collect()
         self.assertEqual(df[0]["original_column"], df[0]["new_column"])
         self.assertEqual(df[1]["original_column"], df[1]["new_column"])
