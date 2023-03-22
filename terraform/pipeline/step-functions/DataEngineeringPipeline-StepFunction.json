@@ -81,11 +81,13 @@
                       "Parameters": {
                         "JobName": "${estimate_jobs_job_name}",
                         "Arguments": {
-                          "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/",
-                          "--prepared_locations_features": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features/version=1.0.0/",
+                          "--prepared_locations_cleaned_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/",
+                          "--carehome_features_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/",
+                          "--nonres_features_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/",
                           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/",
                           "--care_home_model_directory": "${pipeline_resources_bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.0.0",
-                          "--non_res_with_pir_model_directory": "${pipeline_resources_bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0"
+                          "--non_res_with_pir_model_directory": "${pipeline_resources_bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0",
+                          "--metrics_destination": "${pipeline_resources_bucket_uri}/models/metrics_destination/2.0.0"
                         }
                       },
                       "Next": "Run job role breakdown job"
@@ -115,7 +117,7 @@
                         "JobName": "${prepare_workers_job_name}",
                         "Arguments": {
                           "--worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                          "--workplace_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
+                          "--workplace_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/",
                           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_prepared/version=1.0.0/"
                         }
                       },
