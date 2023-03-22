@@ -13,6 +13,9 @@ from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
 COLUMNS_TO_IMPORT = [
     "locationid",
     "snapshot_date",
+    "snapshot_day",
+    "snapshot_month",
+    "snapshot_year",
     "local_authority",
     "ons_region",
     "rural_urban_indicator.year_2011 AS rui_2011",
