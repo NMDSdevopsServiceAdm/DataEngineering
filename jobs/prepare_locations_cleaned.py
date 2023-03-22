@@ -15,6 +15,7 @@ COLUMNS_TO_IMPORT = [
     "snapshot_date",
     "local_authority",
     "services_offered",
+    "carehome",
     "primary_service_type",
     "cqc_sector",
     "registration_status",
@@ -71,7 +72,7 @@ def create_partition_keys_based_on_todays_date(df):
 
 
 if __name__ == "__main__":
-    print("Spark job 'estimate_job_counts' starting...")
+    print("Spark job 'prepare_locations_cleaned' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
