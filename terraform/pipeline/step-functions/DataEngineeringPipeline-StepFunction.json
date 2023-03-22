@@ -115,7 +115,7 @@
                         "JobName": "${prepare_workers_job_name}",
                         "Arguments": {
                           "--worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                          "--workplace_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/",
+                          "--workplace_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
                           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_prepared/version=1.0.0/"
                         }
                       },
