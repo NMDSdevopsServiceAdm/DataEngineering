@@ -27,7 +27,7 @@ class ColNamesFromPrepareLocations:
     ons_region: str = "ons_region"
     services_offered: str = "services_offered"
     cqc_sector: str = "cqc_sector"
-    rural_urban_indicator: str = "rural_urban_indicator.year_2011"
+    rui_indicator: str = "rui_2011"
     people_directly_employed: str = "people_directly_employed"
     carehome: str = "carehome"
     snapshot_date: str = "snapshot_date"
@@ -37,7 +37,6 @@ class ColNamesFromPrepareLocations:
 class NewColNames:
     service_count: str = "service_count"
     date_diff: str = "date_diff"
-    rui_indicator: str = "rui_2011"
 
 
 @dataclass
@@ -84,8 +83,7 @@ def main(prepared_locations_source, destination=None):
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
-        new_rui_col_name=new_cols_for_features.rui_indicator,
-        col_to_check=features_from_prepare_locations.rural_urban_indicator,
+        rui_col_name=features_from_prepare_locations.rui_indicator,
         lookup_dict=rural_urban_indicator_dict,
     )
 

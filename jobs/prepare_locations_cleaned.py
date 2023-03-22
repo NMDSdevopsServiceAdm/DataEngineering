@@ -15,7 +15,7 @@ COLUMNS_TO_IMPORT = [
     "snapshot_date",
     "local_authority",
     "ons_region",
-    "rural_urban_indicator",
+    "rural_urban_indicator.year_2011 AS rui_2011",
     "services_offered",
     "carehome",
     "primary_service_type",
@@ -39,7 +39,7 @@ def main(
     )
     print("Cleaning prepare_locations dataset...")
 
-    locations_df = spark.read.parquet(prepared_locations_source).select(
+    locations_df = spark.read.parquet(prepared_locations_source).selectExpr(
         *COLUMNS_TO_IMPORT
     )
 

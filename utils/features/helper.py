@@ -56,15 +56,13 @@ def column_expansion_with_dict(
 
 def add_rui_data_data_frame(
     df: pyspark.sql.DataFrame,
-    new_rui_col_name: str,
-    col_to_check: str,
+    rui_col_name: str,
     lookup_dict: Dict[str, str],
 ) -> pyspark.sql.DataFrame:
-    df = df.withColumn(new_rui_col_name, F.col(col_to_check))
 
     for key in lookup_dict.keys():
         df = df.withColumn(
-            key, (F.col(new_rui_col_name) == lookup_dict[key]).cast("integer")
+            key, (F.col(rui_col_name) == lookup_dict[key]).cast("integer")
         )
     return df
 
