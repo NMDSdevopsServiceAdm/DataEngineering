@@ -14,6 +14,8 @@ COLUMNS_TO_IMPORT = [
     "locationid",
     "snapshot_date",
     "local_authority",
+    "ons_region",
+    "rural_urban_indicator",
     "services_offered",
     "carehome",
     "primary_service_type",
