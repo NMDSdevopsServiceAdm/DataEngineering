@@ -42,7 +42,9 @@ class TestCalcRollingAvg(unittest.TestCase):
     # fmt: on
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_calculate_rolling_average").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_calculate_rolling_average"
+        ).getOrCreate()
         df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
 
         self.rolling_avg_df = calculate_rolling_averages(
