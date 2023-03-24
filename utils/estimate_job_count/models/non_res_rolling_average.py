@@ -38,7 +38,6 @@ def model_non_res_rolling_average(
 ) -> DataFrame:
     df.show()
     non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
-    non_residential_df.show()
 
     df_all_dates = non_residential_df.withColumn(
         NonResRollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(non_residential_df.snapshot_date)
@@ -66,29 +65,31 @@ def model_non_res_rolling_average(
 
     df_with_rolling_average = df.join(rolling_avg, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
 
-    care_home_df = df_with_rolling_average.where(
-        df_with_rolling_average.primary_service_type != NonResRollingAverage.NON_RESIDENTIAL
-    )
-    non_residential_df = df_with_rolling_average.where(
-        df_with_rolling_average.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL
-    )
-    care_home_df = care_home_df.withColumn(NonResRollingAverage.MODEL_NAME, F.lit(None))
-    df_with_rolling_average = non_residential_df.union(care_home_df)
-
-    df_with_rolling_average = df_with_rolling_average.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == NonResRollingAverage.NON_RESIDENTIAL)
-            ),
-            F.col(NonResRollingAverage.MODEL_NAME),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
+    df_with_rolling_average = remove_rolling_average_from_care_home_rows(df_with_rolling_average)
+    df_with_rolling_average = fill_missing_estimate_job_counts(df_with_rolling_average)
 
     df_with_rolling_average = update_dataframe_with_identifying_rule(
         df_with_rolling_average, NonResRollingAverage.MODEL_NAME, ESTIMATE_JOB_COUNT
     )
-    df_with_rolling_average.show()
 
     return df_with_rolling_average
+
+
+def remove_rolling_average_from_care_home_rows(df: DataFrame) -> DataFrame:
+    care_home_df = df.where(df.primary_service_type != NonResRollingAverage.NON_RESIDENTIAL)
+    non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
+    care_home_df = care_home_df.withColumn(NonResRollingAverage.MODEL_NAME, F.lit(None))
+    df = non_residential_df.union(care_home_df)
+    return df
+
+
+def fill_missing_estimate_job_counts(df: DataFrame) -> DataFrame:
+    rows_to_fill_df = df.where(
+        (F.col(ESTIMATE_JOB_COUNT).isNull()) & (F.col(PRIMARY_SERVICE_TYPE) == NonResRollingAverage.NON_RESIDENTIAL)
+    )
+    rows_not_to_fill = df.where(
+        (F.col(ESTIMATE_JOB_COUNT).isNotNull()) | (F.col(PRIMARY_SERVICE_TYPE) != NonResRollingAverage.NON_RESIDENTIAL)
+    )
+    rows_to_fill_df = rows_to_fill_df.withColumn(ESTIMATE_JOB_COUNT, F.col(NonResRollingAverage.MODEL_NAME))
+    df = rows_to_fill_df.union(rows_not_to_fill)
+    return df
