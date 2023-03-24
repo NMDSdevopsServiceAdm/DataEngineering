@@ -51,9 +51,14 @@ def model_non_res_rolling_average(
 
 def add_non_residential_rolling_average_column(df: DataFrame) -> DataFrame:
     non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
-    df_all_dates = non_residential_df.withColumn(
-        NonResRollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(non_residential_df.snapshot_date)
-    )
+    rolling_averages_df = calculate_rolling_averages(non_residential_df)
+
+    df = df.join(rolling_averages_df, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
+    return df
+
+
+def calculate_rolling_averages(df: DataFrame) -> DataFrame:
+    df_all_dates = df.withColumn(NonResRollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(df.snapshot_date))
 
     df_all_dates = df_all_dates.orderBy(df_all_dates.snapshot_timestamp)
     df_all_dates.persist()
@@ -74,9 +79,7 @@ def add_non_residential_rolling_average_column(df: DataFrame) -> DataFrame:
             ),
         )
     ).drop(NonResRollingAverage.WINDOW)
-
-    df = df.join(rolling_avg, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
-    return df
+    return rolling_avg
 
 
 def remove_rolling_average_from_care_home_rows(df: DataFrame) -> DataFrame:
