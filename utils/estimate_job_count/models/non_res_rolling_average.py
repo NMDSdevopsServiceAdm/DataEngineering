@@ -1,6 +1,7 @@
 import pyspark.sql
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
+from pyspark.sql.types import DoubleType
 
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
@@ -21,18 +22,15 @@ def model_non_res_rolling_average(
     df: DataFrame,
 ) -> DataFrame:
 
-    locations_df_single_run = df
-    locations_df_single_run = locations_df_single_run.where(
-        locations_df_single_run.primary_service_type == "non-residential"
-    )
+    non_residential_df = df.where(df.primary_service_type == "non-residential")
 
-    df_all_dates = locations_df_single_run.withColumn(
-        "snapshot_timestamp", F.to_timestamp(locations_df_single_run.snapshot_date)
-    )
+    care_home_df = df.where(df.primary_service_type != "non-residential")
+    care_home_df = care_home_df.withColumn("model_non_res_rolling_average", F.lit(None).cast(DoubleType()))
+
+    df_all_dates = non_residential_df.withColumn("snapshot_timestamp", F.to_timestamp(non_residential_df.snapshot_date))
 
     df_all_dates = df_all_dates.orderBy(df_all_dates.snapshot_timestamp)
     df_all_dates.persist()
-    df_all_dates.show()
 
     rolling_avg_window = F.window(
         F.col("snapshot_timestamp"),
@@ -44,10 +42,16 @@ def model_non_res_rolling_average(
         df_all_dates.groupBy(rolling_avg_window)
         .agg(F.avg(F.col("job_count")).alias("model_non_res_rolling_average"))
         .withColumn("snapshot_date", F.date_sub(F.col("window.end").cast("date"), 1))
+    ).drop("window")
+
+    non_residential_df_with_rolling_average = non_residential_df.join(rolling_avg, "snapshot_date", how="left")
+    non_residential_df_with_rolling_average.show()
+    df_with_rolling_average = non_residential_df_with_rolling_average.union(care_home_df)
+    df_with_rolling_average.show()
+    df_with_rolling_average = update_dataframe_with_identifying_rule(
+        df_with_rolling_average, "model_non_res_rolling_average", ESTIMATE_JOB_COUNT
     )
-
-    df = locations_df_single_run.join(rolling_avg, "snapshot_date", how="left")
-
-    df = update_dataframe_with_identifying_rule(df, "model_non_res_rolling_average", ESTIMATE_JOB_COUNT)
-
-    return df.drop("snapshot_date_unix_conv")
+    df_with_rolling_average.show()
+    df_with_rolling_average = df_with_rolling_average.drop("snapshot_timestamp")
+    df_with_rolling_average.show()
+    return df_with_rolling_average
