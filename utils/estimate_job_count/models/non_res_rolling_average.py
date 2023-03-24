@@ -19,18 +19,20 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 
 @dataclass
 class NonResRollingAverage:
+    NON_RESIDENTIAL: str = "non-residential"
+    MODEL_NAME: str = "model_non_res_rolling_average"
+    LEFT_JOIN: str = "left"
+
+
+@dataclass
+class RollingAverage:
     ROLLING_AVERAGE_TIME_PERIOD: str = "91 days"
     ROLLING_AVERAGE_WINDOW_SLIDE: str = "1 days"
-
-    NON_RESIDENTIAL: str = "non-residential"
     SNAPSHOT_TIMESTAMP: str = "snapshot_timestamp"
     WINDOW: str = "window"
     WINDOW_END: str = "window.end"
-    MODEL_NAME: str = "model_non_res_rolling_average"
-
     DATE_TYPE: str = "date"
     DAYS: int = 1
-    LEFT_JOIN: str = "left"
 
 
 def model_non_res_rolling_average(
@@ -51,34 +53,32 @@ def model_non_res_rolling_average(
 
 def add_non_residential_rolling_average_column(df: DataFrame) -> DataFrame:
     non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
-    rolling_averages_df = calculate_rolling_averages(non_residential_df)
+    rolling_averages_df = calculate_rolling_averages(non_residential_df, NonResRollingAverage.MODEL_NAME)
 
     df = df.join(rolling_averages_df, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
     return df
 
 
-def calculate_rolling_averages(df: DataFrame) -> DataFrame:
-    df_all_dates = df.withColumn(NonResRollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(df.snapshot_date))
+def calculate_rolling_averages(df: DataFrame, model_name: str) -> DataFrame:
+    df_all_dates = df.withColumn(RollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(df.snapshot_date))
 
     df_all_dates = df_all_dates.orderBy(df_all_dates.snapshot_timestamp)
     df_all_dates.persist()
 
     rolling_avg_window = F.window(
-        F.col(NonResRollingAverage.SNAPSHOT_TIMESTAMP),
-        windowDuration=NonResRollingAverage.ROLLING_AVERAGE_TIME_PERIOD,
-        slideDuration=NonResRollingAverage.ROLLING_AVERAGE_WINDOW_SLIDE,
-    ).alias(NonResRollingAverage.WINDOW)
+        F.col(RollingAverage.SNAPSHOT_TIMESTAMP),
+        windowDuration=RollingAverage.ROLLING_AVERAGE_TIME_PERIOD,
+        slideDuration=RollingAverage.ROLLING_AVERAGE_WINDOW_SLIDE,
+    ).alias(RollingAverage.WINDOW)
 
     rolling_avg = (
         df_all_dates.groupBy(rolling_avg_window)
-        .agg(F.avg(F.col(JOB_COUNT)).alias(NonResRollingAverage.MODEL_NAME))
+        .agg(F.avg(F.col(JOB_COUNT)).alias(model_name))
         .withColumn(
             SNAPSHOT_DATE,
-            F.date_sub(
-                F.col(NonResRollingAverage.WINDOW_END).cast(NonResRollingAverage.DATE_TYPE), NonResRollingAverage.DAYS
-            ),
+            F.date_sub(F.col(RollingAverage.WINDOW_END).cast(RollingAverage.DATE_TYPE), RollingAverage.DAYS),
         )
-    ).drop(NonResRollingAverage.WINDOW)
+    ).drop(RollingAverage.WINDOW)
     return rolling_avg
 
 
