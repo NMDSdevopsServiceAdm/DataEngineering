@@ -8,9 +8,7 @@ from utils.estimate_job_count.column_names import (
 )
 
 
-def calculate_rolling_averages(
-    df: DataFrame, model_name: str, time_period: str, slide: str, days: int
-) -> DataFrame:
+def calculate_rolling_averages(df: DataFrame, model_name: str, time_period: str, slide: str, days: int) -> DataFrame:
 
     df_all_dates = df.withColumn("snapshot_timestamp", F.to_timestamp(df.snapshot_date))
 

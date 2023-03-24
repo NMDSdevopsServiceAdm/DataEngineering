@@ -1,7 +1,6 @@
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from dataclasses import dataclass
-from typing import Dict
 
 
 from utils.estimate_job_count.column_names import (
