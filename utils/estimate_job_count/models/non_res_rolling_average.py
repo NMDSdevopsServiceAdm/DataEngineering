@@ -1,7 +1,8 @@
-import pyspark.sql
+# import pyspark.sql
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
-from pyspark.sql.types import DoubleType
+
+# from pyspark.sql.types import DoubleType
 
 from utils.estimate_job_count.column_names import (
     SNAPSHOT_DATE,
@@ -13,8 +14,6 @@ from utils.estimate_job_count.column_names import (
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
-
-ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 90
 
 
 def model_non_res_rolling_average(
@@ -44,7 +43,12 @@ def model_non_res_rolling_average(
     # will need to remove care home df throughout i think
     df_with_rolling_average = df.join(rolling_avg, SNAPSHOT_DATE, how="left")
 
-    df_with_rolling_average.show()
+    care_home_df = df_with_rolling_average.where(df_with_rolling_average.primary_service_type != "non-residential")
+    non_residential_df = df_with_rolling_average.where(
+        df_with_rolling_average.primary_service_type == "non-residential"
+    )
+    care_home_df = care_home_df.withColumn("model_non_res_rolling_average", F.lit(None))
+    df_with_rolling_average = non_residential_df.union(care_home_df)
 
     df_with_rolling_average = df_with_rolling_average.withColumn(
         ESTIMATE_JOB_COUNT,
