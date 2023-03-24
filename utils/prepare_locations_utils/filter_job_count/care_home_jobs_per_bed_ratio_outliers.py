@@ -1,6 +1,6 @@
 import pyspark.sql.functions as F
 import pyspark.sql
-from pyspark.sql.types import StringType, DoubleType
+from pyspark.sql.types import StringType
 from pyspark.ml.feature import Bucketizer
 from dataclasses import dataclass
 
@@ -129,25 +129,8 @@ def create_banded_bed_count_column(
         inputCol=column_name.number_of_beds,
         outputCol=column_name.number_of_beds_banded,
     )
-    set_bucket_names = {
-        0.0: "1-2 beds",
-        1.0: "3-4 beds",
-        2.0: "5-9 beds",
-        3.0: "10-14 beds",
-        4.0: "15-19 beds",
-        5.0: "20-24 beds",
-        6.0: "25-49 beds",
-        7.0: "50+ beds",
-    }
 
     input_df = set_banded_boundaries.setHandleInvalid("keep").transform(input_df)
-
-    udf_buckets = F.udf(lambda x: set_bucket_names[x], StringType())
-
-    input_df = input_df.withColumn(
-        column_name.number_of_beds_banded,
-        udf_buckets(column_name.number_of_beds_banded),
-    )
 
     return input_df
 

@@ -92,24 +92,25 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_banded_bed_count_column(df)
+        df.printSchema()
 
         df = df.collect()
-        self.assertEqual(df[0]["number_of_beds_banded"], "5-9 beds")
-        self.assertEqual(df[1]["number_of_beds_banded"], "20-24 beds")
-        self.assertEqual(df[2]["number_of_beds_banded"], "50+ beds")
+        self.assertEqual(df[0]["number_of_beds_banded"], 2.0)
+        self.assertEqual(df[1]["number_of_beds_banded"], 5.0)
+        self.assertEqual(df[2]["number_of_beds_banded"], 7.0)
 
     def test_calculate_average_jobs_per_banded_bed_count(self):
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
-                StructField("number_of_beds_banded", StringType(), True),
+                StructField("number_of_beds_banded", DoubleType(), True),
                 StructField("jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
         rows = [
-            ("1", "5-9 beds", 1.1357),
-            ("2", "5-9 beds", 1.3579),
-            ("3", "50+ beds", 1.123456789),
+            ("1", 0.0, 1.1357),
+            ("2", 0.0, 1.3579),
+            ("3", 1.0, 1.123456789),
         ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_jobs_per_banded_bed_count(df)
@@ -121,26 +122,26 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_calculate_standardised_residuals(self):
         expected_jobs_schema = StructType(
             [
-                StructField("number_of_beds_banded", StringType(), True),
+                StructField("number_of_beds_banded", DoubleType(), True),
                 StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
         expected_jobs_rows = [
-            ("5-9 beds", 1.4),
-            ("50+ beds", 1.28),
+            (0.0, 1.4),
+            (1.0, 1.28),
         ]
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
                 StructField("number_of_beds", IntegerType(), True),
                 StructField("job_count_unfiltered", DoubleType(), True),
-                StructField("number_of_beds_banded", StringType(), True),
+                StructField("number_of_beds_banded", DoubleType(), True),
             ]
         )
         rows = [
-            ("1", 10, 16.0, "5-9 beds"),
-            ("2", 50, 80.0, "50+ beds"),
-            ("3", 50, 10.0, "50+ beds"),
+            ("1", 10, 16.0, 0.0),
+            ("2", 50, 80.0, 1.0),
+            ("3", 50, 10.0, 1.0),
         ]
         expected_jobs_df = self.spark.createDataFrame(
             expected_jobs_rows, expected_jobs_schema
@@ -156,24 +157,24 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_calculate_expected_jobs_based_on_number_of_beds(self):
         expected_jobs_schema = StructType(
             [
-                StructField("number_of_beds_banded", StringType(), True),
+                StructField("number_of_beds_banded", DoubleType(), True),
                 StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
             ]
         )
         expected_jobs_rows = [
-            ("5-9 beds", 1.11111),
-            ("50+ beds", 1.0101),
+            (0.0, 1.11111),
+            (1.0, 1.0101),
         ]
         schema = StructType(
             [
                 StructField("locationid", StringType(), True),
                 StructField("number_of_beds", IntegerType(), True),
-                StructField("number_of_beds_banded", StringType(), True),
+                StructField("number_of_beds_banded", DoubleType(), True),
             ]
         )
         rows = [
-            ("1", 7, "5-9 beds"),
-            ("2", 75, "50+ beds"),
+            ("1", 7, 0.0),
+            ("2", 75, 1.0),
         ]
         expected_jobs_df = self.spark.createDataFrame(
             expected_jobs_rows, expected_jobs_schema
