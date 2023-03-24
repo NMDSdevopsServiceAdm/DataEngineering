@@ -41,7 +41,9 @@ class TestModelNonResDefault(unittest.TestCase):
     # fmt: on
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_estimate_2021_jobs").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_estimate_2021_jobs"
+        ).getOrCreate()
         self.non_res_model_df = model_non_res_rolling_average(
             self.spark.createDataFrame(self.rows, schema=self.column_schema)
         )
