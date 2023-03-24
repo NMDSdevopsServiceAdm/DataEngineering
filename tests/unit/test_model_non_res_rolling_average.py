@@ -12,10 +12,6 @@ from pyspark.sql.types import (
 
 from utils.estimate_job_count.models.non_res_rolling_average import (
     model_non_res_rolling_average,
-    # convert_date_to_unix_timestamp,
-    # convert_days_to_unix_time,
-    # create_non_res_rolling_average_column,
-    ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS,
 )
 
 
@@ -61,7 +57,7 @@ class TestModelNonResDefault(unittest.TestCase):
 
         df = self.non_res_model_df.orderBy("locationid").collect()
         self.assertEqual(df[0]["estimate_job_count"], None)
-        # self.assertEqual(df[0]["model_non_res_rolling_average"], None)
+        self.assertEqual(df[0]["model_non_res_rolling_average"], None)
         self.assertEqual(df[0]["estimate_job_count_source"], None)
 
     def test_model_non_res_rolling_average_returns_average_when_job_count_populated_and_estimate_is_none(
@@ -131,39 +127,3 @@ class TestModelNonResDefault(unittest.TestCase):
         self.assertEqual(df[8]["estimate_job_count"], 30.0)
         self.assertEqual(df[8]["model_non_res_rolling_average"], 15.0)
         self.assertEqual(df[8]["estimate_job_count_source"], "already_populated")
-
-
-"""
-    def test_convert_date_to_unix_timestamp(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = convert_date_to_unix_timestamp(
-            df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
-        )
-
-        df = df.orderBy("locationid").collect()
-        self.assertEqual(df[0]["snapshot_date_unix_conv"], 1672531200)
-
-    def test_convert_days_to_unix_time(self):
-        self.assertEqual(convert_days_to_unix_time(1), 86400)
-        self.assertEqual(convert_days_to_unix_time(90), 7776000)
-
-    def test_create_non_res_rolling_average_column_removes_care_home_column(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = create_non_res_rolling_average_column(
-            df, ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
-        )
-
-        self.assertEqual(df.count(), 8)
-
-    def test_create_non_res_rolling_average_column_calculates_prediction_column(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
-        df = create_non_res_rolling_average_column(
-            df, ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
-        )
-
-        df = df.orderBy("locationid").collect()
-        self.assertEqual(df[0]["prediction"], 5.0)
-        self.assertEqual(df[2]["prediction"], 10.0)
-        self.assertEqual(df[4]["prediction"], 30.0)
-        self.assertEqual(df[6]["prediction"], 10.0)
-"""
