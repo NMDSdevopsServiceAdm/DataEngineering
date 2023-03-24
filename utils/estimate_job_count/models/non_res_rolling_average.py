@@ -4,7 +4,6 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
 
 from utils.estimate_job_count.column_names import (
-    LOCATION_ID,
     SNAPSHOT_DATE,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
@@ -38,12 +37,12 @@ def model_non_res_rolling_average(
 
     rolling_avg = (
         df_all_dates.groupBy(rolling_avg_window)
-        .agg(F.avg(F.col("job_count")).alias("model_non_res_rolling_average"))
-        .withColumn("snapshot_date", F.date_sub(F.col("window.end").cast("date"), 1))
+        .agg(F.avg(F.col(JOB_COUNT)).alias("model_non_res_rolling_average"))
+        .withColumn(SNAPSHOT_DATE, F.date_sub(F.col("window.end").cast("date"), 1))
     ).drop("window")
     # it needs to join with the original data frame here and then we want to duplicate into estimate jobs where necessary, then add the column with the source
     # will need to remove care home df throughout i think
-    df_with_rolling_average = df.join(rolling_avg, "snapshot_date", how="left")
+    df_with_rolling_average = df.join(rolling_avg, SNAPSHOT_DATE, how="left")
 
     df_with_rolling_average.show()
 
