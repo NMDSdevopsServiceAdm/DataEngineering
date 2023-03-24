@@ -50,18 +50,15 @@ def care_home_jobs_per_bed_ratio_outliers(
         data_to_filter_df, expected_jobs_per_banded_bed_count_df
     )
 
-    (
-        lower_standardised_residual_cutoff,
-        upper_standardised_residual_cutoff,
-    ) = calculate_standardised_residual_cutoffs(
+    data_to_filter_df = calculate_standardised_residual_cutoffs(
         data_to_filter_df,
         numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
+        "lower_percentile",
+        "upper_percentile",
     )
 
     care_homes_within_standardised_residual_cutoff_df = create_filtered_job_count_df(
-        data_to_filter_df,
-        lower_standardised_residual_cutoff,
-        upper_standardised_residual_cutoff,
+        data_to_filter_df
     )
 
     care_homes_with_filtered_col_df = join_filtered_col_into_care_home_df(
@@ -229,52 +226,52 @@ def calculate_job_count_standardised_residual(
 
 
 def calculate_standardised_residual_cutoffs(
-    df: pyspark.sql.DataFrame, percentage_of_data_to_filter_out: float
+    df: pyspark.sql.DataFrame,
+    percentage_of_data_to_filter_out: float,
+    lower_percentile_name: str,
+    upper_percentile_name: str,
 ) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
     lower_percentile = percentage_of_data_to_filter_out / 2
     upper_percentile = 1 - (percentage_of_data_to_filter_out / 2)
 
-    standardised_residual_lower_cutoff = calculate_percentile(
-        df, column_name.standardised_residual, lower_percentile
+    df = calculate_percentile(
+        df, column_name.standardised_residual, lower_percentile, lower_percentile_name
     )
-    standardised_residual_upper_cutoff = calculate_percentile(
-        df, column_name.standardised_residual, upper_percentile
+    df = calculate_percentile(
+        df, column_name.standardised_residual, upper_percentile, upper_percentile_name
     )
 
-    return standardised_residual_lower_cutoff, standardised_residual_upper_cutoff
+    return df
 
 
 def calculate_percentile(
-    df: pyspark.sql.DataFrame, col_name: str, percentile_value: float
-) -> DoubleType:
-    df = df.agg(
+    df: pyspark.sql.DataFrame, col_name: str, percentile_value: float, alias: str
+) -> pyspark.sql.DataFrame:
+
+    df = df.withColumn("temp_col_for_joining", F.lit(0))
+    percentile_df = df.groupBy("temp_col_for_joining").agg(
         F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[
             0
-        ].alias("percentile")
+        ].alias(alias)
     )
 
-    df = round_figures_in_column(df, "percentile")
+    df = df.join(percentile_df, "temp_col_for_joining", "left").drop(
+        "temp_col_for_joining"
+    )
 
-    percentile = df.collect()[0][0]
-
-    return percentile
+    return df
 
 
 def create_filtered_job_count_df(
     df: pyspark.sql.DataFrame,
-    lower_standardised_residual_cutoff: DoubleType,
-    upper_standardised_residual_cutoff: DoubleType,
 ) -> pyspark.sql.DataFrame:
     column_name = ColNames()
 
     within_boundary_df = df.filter(
-        (F.col(column_name.standardised_residual) > lower_standardised_residual_cutoff)
-        & (
-            F.col(column_name.standardised_residual)
-            < upper_standardised_residual_cutoff
-        )
+        (F.col(column_name.standardised_residual) > F.col("lower_percentile"))
+        & (F.col(column_name.standardised_residual) < F.col("upper_percentile"))
     )
 
     within_boundary_df = within_boundary_df.withColumn(

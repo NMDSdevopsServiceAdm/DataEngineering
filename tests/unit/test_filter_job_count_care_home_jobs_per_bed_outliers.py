@@ -237,13 +237,13 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
 
-        (
-            standardised_residual_lower_cutoff,
-            standardised_residual_upper_cutoff,
-        ) = job.calculate_standardised_residual_cutoffs(df, 0.4)
+        df = job.calculate_standardised_residual_cutoffs(
+            df, 0.4, "lower_percentile", "upper_percentile"
+        )
 
-        self.assertEqual(standardised_residual_lower_cutoff, -3.45445)
-        self.assertEqual(standardised_residual_upper_cutoff, 6.93323)
+        df = df.collect()
+        self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
+        self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
 
     def test_calculate_percentile(self):
         schema = StructType(
@@ -257,13 +257,15 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
 
-        percentile_20 = job.calculate_percentile(df, "standardised_residual", 0.2)
-        percentile_50 = job.calculate_percentile(df, "standardised_residual", 0.5)
-        percentile_80 = job.calculate_percentile(df, "standardised_residual", 0.8)
-
-        self.assertEqual(percentile_20, -3.45445)
-        self.assertEqual(percentile_50, 0.54)
-        self.assertEqual(percentile_80, 6.93323)
+        df = job.calculate_percentile(
+            df, "standardised_residual", 0.2, "lower_percentile"
+        )
+        df = job.calculate_percentile(
+            df, "standardised_residual", 0.8, "upper_percentile"
+        )
+        df = df.collect()
+        self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
+        self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
 
     def test_create_filtered_job_count_df(self):
         schema = StructType(
