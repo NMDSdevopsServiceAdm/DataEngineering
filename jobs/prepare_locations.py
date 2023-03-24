@@ -118,20 +118,19 @@ def main(
 
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
+        output_df = calculate_jobcount(
+            output_df, "total_staff", "worker_record_count", "job_count_unfiltered"
+        )
+
+        output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
         output_df = output_df.withColumn(
             "snapshot_date", F.lit(snapshot_date_row["snapshot_date"])
         )
 
-        output_df = calculate_jobcount(
-            output_df, "total_staff", "worker_record_count", "job_count_unfiltered"
-        )
-
         output_df = add_three_columns_with_snapshot_date_substrings(output_df)
 
         output_df = utils.format_import_date(output_df, fieldname="snapshot_date")
-
-        output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
         output_df = output_df.select(
             "snapshot_date",
