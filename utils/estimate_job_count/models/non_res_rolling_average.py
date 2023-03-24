@@ -1,9 +1,11 @@
+import pyspark.sql
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from dataclasses import dataclass
 
 
 from utils.estimate_job_count.column_names import (
+    LOCATION_ID,
     SNAPSHOT_DATE,
     ESTIMATE_JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
