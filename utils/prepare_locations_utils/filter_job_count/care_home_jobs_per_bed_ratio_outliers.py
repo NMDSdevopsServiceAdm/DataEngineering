@@ -1,6 +1,5 @@
 import pyspark.sql.functions as F
 import pyspark.sql
-from pyspark.sql.types import StringType
 from pyspark.ml.feature import Bucketizer
 from dataclasses import dataclass
 
