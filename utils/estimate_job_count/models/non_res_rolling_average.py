@@ -36,9 +36,21 @@ class NonResRollingAverage:
 def model_non_res_rolling_average(
     df: DataFrame,
 ) -> DataFrame:
-    df.show()
-    non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
 
+    df_with_rolling_average = add_non_residential_rolling_average_column(df)
+
+    df_with_rolling_average = remove_rolling_average_from_care_home_rows(df_with_rolling_average)
+    df_with_rolling_average = fill_missing_estimate_job_counts(df_with_rolling_average)
+
+    df_with_rolling_average = update_dataframe_with_identifying_rule(
+        df_with_rolling_average, NonResRollingAverage.MODEL_NAME, ESTIMATE_JOB_COUNT
+    )
+
+    return df_with_rolling_average
+
+
+def add_non_residential_rolling_average_column(df: DataFrame) -> DataFrame:
+    non_residential_df = df.where(df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL)
     df_all_dates = non_residential_df.withColumn(
         NonResRollingAverage.SNAPSHOT_TIMESTAMP, F.to_timestamp(non_residential_df.snapshot_date)
     )
@@ -63,16 +75,8 @@ def model_non_res_rolling_average(
         )
     ).drop(NonResRollingAverage.WINDOW)
 
-    df_with_rolling_average = df.join(rolling_avg, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
-
-    df_with_rolling_average = remove_rolling_average_from_care_home_rows(df_with_rolling_average)
-    df_with_rolling_average = fill_missing_estimate_job_counts(df_with_rolling_average)
-
-    df_with_rolling_average = update_dataframe_with_identifying_rule(
-        df_with_rolling_average, NonResRollingAverage.MODEL_NAME, ESTIMATE_JOB_COUNT
-    )
-
-    return df_with_rolling_average
+    df = df.join(rolling_avg, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
+    return df
 
 
 def remove_rolling_average_from_care_home_rows(df: DataFrame) -> DataFrame:
