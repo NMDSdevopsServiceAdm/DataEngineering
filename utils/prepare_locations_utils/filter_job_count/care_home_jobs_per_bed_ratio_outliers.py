@@ -115,7 +115,6 @@ def calculate_jobs_per_bed_ratio(
         column_name.jobs_per_bed_ratio,
         F.col(column_name.job_count_unfiltered) / F.col(column_name.number_of_beds),
     )
-    input_df = round_figures_in_column(input_df, column_name.jobs_per_bed_ratio)
 
     return input_df
 
@@ -161,7 +160,6 @@ def calculate_average_jobs_per_banded_bed_count(
     output_df = input_df.groupBy(F.col(column_name.number_of_beds_banded)).agg(
         F.avg(column_name.jobs_per_bed_ratio).alias(column_name.avg_jobs_per_bed_ratio)
     )
-    output_df = round_figures_in_column(output_df, column_name.avg_jobs_per_bed_ratio)
 
     return output_df
 
@@ -194,7 +192,6 @@ def calculate_expected_jobs_based_on_number_of_beds(
         column_name.expected_jobs,
         F.col(column_name.number_of_beds) * F.col(column_name.avg_jobs_per_bed_ratio),
     )
-    df = round_figures_in_column(df, column_name.expected_jobs)
 
     return df
 
@@ -206,7 +203,6 @@ def calculate_job_count_residuals(df: pyspark.sql.DataFrame) -> pyspark.sql.Data
         column_name.residual,
         F.col(column_name.job_count_unfiltered) - F.col(column_name.expected_jobs),
     )
-    df = round_figures_in_column(df, column_name.residual)
 
     return df
 
@@ -220,7 +216,6 @@ def calculate_job_count_standardised_residual(
         column_name.standardised_residual,
         F.col(column_name.residual) / F.sqrt(F.col(column_name.expected_jobs)),
     )
-    df = round_figures_in_column(df, column_name.standardised_residual)
 
     return df
 
@@ -312,16 +307,3 @@ def combine_dataframes(
     output_df = first_df.unionByName(second_df)
 
     return output_df
-
-
-def round_figures_in_column(
-    input_df: pyspark.sql.DataFrame,
-    column_to_round: str,
-    decimal_places=NumericalValues.DECIMAL_PLACES_TO_ROUND_TO,
-) -> pyspark.sql.DataFrame:
-
-    input_df = input_df.withColumn(
-        column_to_round, F.round(F.col(column_to_round), decimal_places)
-    )
-
-    return input_df

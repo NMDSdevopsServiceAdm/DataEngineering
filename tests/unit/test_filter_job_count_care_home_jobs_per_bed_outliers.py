@@ -115,8 +115,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_average_jobs_per_banded_bed_count(df)
 
         df = df.collect()
-        self.assertEqual(df[0]["avg_jobs_per_bed_ratio"], 1.2468)
-        self.assertEqual(df[1]["avg_jobs_per_bed_ratio"], 1.12346)
+        self.assertAlmostEquals(df[0]["avg_jobs_per_bed_ratio"], 1.2468, places=3)
+        self.assertAlmostEquals(df[1]["avg_jobs_per_bed_ratio"], 1.12346, places=3)
 
     def test_calculate_standardised_residuals(self):
         expected_jobs_schema = StructType(
@@ -149,9 +149,9 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_standardised_residuals(df, expected_jobs_df)
         self.assertEqual(df.count(), 3)
         df = df.collect()
-        self.assertEqual(df[0]["standardised_residual"], 0.53452)
-        self.assertEqual(df[1]["standardised_residual"], 2.0)
-        self.assertEqual(df[2]["standardised_residual"], -6.75)
+        self.assertAlmostEquals(df[0]["standardised_residual"], 0.53452, places=2)
+        self.assertAlmostEquals(df[1]["standardised_residual"], 2.0, places=2)
+        self.assertAlmostEquals(df[2]["standardised_residual"], -6.75, places=2)
 
     def test_calculate_expected_jobs_based_on_number_of_beds(self):
         expected_jobs_schema = StructType(
@@ -182,8 +182,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_expected_jobs_based_on_number_of_beds(df, expected_jobs_df)
 
         df = df.collect()
-        self.assertEqual(df[0]["expected_jobs"], 7.77777)
-        self.assertEqual(df[1]["expected_jobs"], 75.7575)
+        self.assertAlmostEquals(df[0]["expected_jobs"], 7.77777, places=3)
+        self.assertAlmostEquals(df[1]["expected_jobs"], 75.7575, places=3)
 
     def test_calculate_job_count_residuals(self):
         schema = StructType(
@@ -202,9 +202,9 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_job_count_residuals(df)
 
         df = df.sort("locationid").collect()
-        self.assertEqual(df[0]["residual"], 1.23456)
-        self.assertEqual(df[1]["residual"], 0.0)
-        self.assertEqual(df[2]["residual"], -1.23456)
+        self.assertAlmostEquals(df[0]["residual"], 1.23456, places=3)
+        self.assertAlmostEquals(df[1]["residual"], 0.0, places=3)
+        self.assertAlmostEquals(df[2]["residual"], -1.23456, places=3)
 
     def test_calculate_job_count_standardised_residual(self):
         schema = StructType(
@@ -222,8 +222,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_job_count_standardised_residual(df)
 
         df = df.sort("locationid").collect()
-        self.assertEqual(df[0]["standardised_residual"], 5.55556)
-        self.assertEqual(df[1]["standardised_residual"], 3.55)
+        self.assertAlmostEquals(df[0]["standardised_residual"], 5.55556, places=2)
+        self.assertAlmostEquals(df[1]["standardised_residual"], 3.55, places=2)
 
     def test_calculate_standardised_residual_cutoffs(self):
         schema = StructType(
@@ -274,15 +274,17 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField("snapshot_date", StringType(), True),
                 StructField("job_count_unfiltered", DoubleType(), True),
                 StructField("standardised_residual", DoubleType(), True),
+                StructField("lower_percentile", DoubleType(), True),
+                StructField("upper_percentile", DoubleType(), True),
             ]
         )
         rows = [
-            ("1", "2023-01-01", 1.0, 0.26545),
-            ("2", "2023-01-01", 2.0, -3.2545),
-            ("3", "2023-01-01", 3.0, 12.25423),
+            ("1", "2023-01-01", 1.0, 0.26545, -1.2345, 1.2345),
+            ("2", "2023-01-01", 2.0, -3.2545, -1.2345, 1.2345),
+            ("3", "2023-01-01", 3.0, 12.25423, -1.2345, 1.2345),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.create_filtered_job_count_df(df, -0.4, 10)
+        df = job.create_filtered_job_count_df(df)
 
         self.assertEqual(df.count(), 1)
         df = df.collect()
@@ -384,27 +386,3 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
 
         self.assertEqual(df_1.columns, df_2.columns)
         self.assertEqual(df.columns, df_1.columns)
-
-    def test_round_figures_in_column(self):
-        schema = StructType(
-            [
-                StructField("locationid", StringType(), True),
-                StructField("column_with_decimals", DoubleType(), True),
-            ]
-        )
-
-        rows = [
-            ("1-000000001", 0.1234567890),
-            ("1-000000002", 0.9876543210),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-
-        df_3dp = job.round_figures_in_column(df, "column_with_decimals", 3)
-        df_3dp = df_3dp.collect()
-        self.assertEqual(df_3dp[0]["column_with_decimals"], 0.123)
-        self.assertEqual(df_3dp[1]["column_with_decimals"], 0.988)
-
-        df_6dp = job.round_figures_in_column(df, "column_with_decimals", 6)
-        df_6dp = df_6dp.collect()
-        self.assertEqual(df_6dp[0]["column_with_decimals"], 0.123457)
-        self.assertEqual(df_6dp[1]["column_with_decimals"], 0.987654)
