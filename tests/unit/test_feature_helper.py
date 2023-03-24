@@ -53,20 +53,17 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
     def test_add_rui_data_data_frame(self):
-        cols = ["location", "rural_urban_indicator"]
+        cols = ["location", "rui_2011"]
         rows = [
             (
                 "1-10894414510",
-                {
-                    "year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"
-                },
+                "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
             )
         ]
         df = self.spark.createDataFrame(rows, cols)
         result = add_rui_data_data_frame(
             df=df,
-            new_rui_col_name="rui_2011",
-            col_to_check="rural_urban_indicator.year_2011",
+            rui_col_name="rui_2011",
             lookup_dict={
                 "indicator_1": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"
             },

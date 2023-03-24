@@ -13,8 +13,9 @@ from utils.estimate_job_count.column_names import (
     PEOPLE_DIRECTLY_EMPLOYED,
     NUMBER_OF_BEDS,
     SNAPSHOT_DATE,
+    JOB_COUNT_UNFILTERED,
+    JOB_COUNT_UNFILTERED_SOURCE,
     JOB_COUNT,
-    JOB_COUNT_SOURCE,
     LOCAL_AUTHORITY,
     REGISTRATION_STATUS,
     ESTIMATE_JOB_COUNT,
@@ -27,14 +28,12 @@ from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.non_res_rolling_average import (
     model_non_res_rolling_average,
 )
-
 from utils.estimate_job_count.models.non_res_historical import (
     model_non_res_historical,
 )
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
-
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
@@ -44,7 +43,7 @@ from utils.estimate_job_count.common_filtering_functions import (
 
 
 def main(
-    prepared_locations_source,
+    prepared_locations_cleaned_source,
     carehome_features_source,
     nonres_features_source,
     destination,
@@ -63,7 +62,7 @@ def main(
 
     # load locations_prepared df
     locations_df = (
-        spark.read.parquet(prepared_locations_source)
+        spark.read.parquet(prepared_locations_cleaned_source)
         .select(
             LOCATION_ID,
             SERVICES_OFFERED,
@@ -71,8 +70,9 @@ def main(
             PEOPLE_DIRECTLY_EMPLOYED,
             NUMBER_OF_BEDS,
             SNAPSHOT_DATE,
+            JOB_COUNT_UNFILTERED,
+            JOB_COUNT_UNFILTERED_SOURCE,
             JOB_COUNT,
-            JOB_COUNT_SOURCE,
             LOCAL_AUTHORITY,
             CQC_SECTOR,
         )
@@ -93,7 +93,6 @@ def main(
     )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
-    # if job_count is populated, add that figure into estimate_job_count column
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     # Care homes model
@@ -164,8 +163,8 @@ def populate_estimate_jobs_when_job_count_known(
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
-            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col("job_count").isNotNull())),
-            F.col("job_count"),
+            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col(JOB_COUNT).isNotNull())),
+            F.col(JOB_COUNT),
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
@@ -174,11 +173,6 @@ def populate_estimate_jobs_when_job_count_known(
     )
 
     return df
-
-    # adds in a previously submitted ASCWDS figure and performs checks:
-    # checks to see if current.locationid is exactly equal to previous.locationid AND
-    # current snapshot_date is equal to or greater than previous.snapshot_date AND
-    # previouus job count is not null. if all pass join
 
 
 def populate_last_known_job_count(df):
@@ -260,7 +254,7 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        prepared_locations_source,
+        prepared_locations_cleaned_source,
         carehome_features_source,
         nonres_features_source,
         destination,
@@ -270,7 +264,10 @@ if __name__ == "__main__":
         JOB_RUN_ID,
         JOB_NAME,
     ) = utils.collect_arguments(
-        ("--prepared_locations_source", "Source s3 directory for prepared_locations"),
+        (
+            "--prepared_locations_cleaned_source",
+            "Source s3 directory for prepared_locations_cleaned",
+        ),
         (
             "--carehome_features_source",
             "Source s3 directory for prepared_locations ML features for care homes",
@@ -297,7 +294,7 @@ if __name__ == "__main__":
     )
 
     main(
-        prepared_locations_source,
+        prepared_locations_cleaned_source,
         carehome_features_source,
         nonres_features_source,
         destination,

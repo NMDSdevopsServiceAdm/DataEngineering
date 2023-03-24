@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    DoubleType,
     TimestampType,
 )
 import pyspark.sql.functions as F
@@ -795,6 +796,7 @@ def generate_prepared_locations_file_parquet(
         "services_offered",
         "primary_service_type",
         "people_directly_employed",
+        "job_count_unfiltered",
         "job_count",
         "local_authority",
         "snapshot_year",
@@ -802,31 +804,89 @@ def generate_prepared_locations_file_parquet(
         "snapshot_day",
         "carehome",
         "cqc_sector",
-        "rural_urban_indicator",
-        "job_count_source",
+        "rui_2011",
+        "job_count_unfiltered_source",
     ]
 
     # fmt: off
     rows = [
-        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_1"),
-        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_2"),
-        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3"),
-        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1"),
-        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1"),
-        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3"),
-        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_2"),
-        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3"),
-        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural town and fringe in a sparse setting"}, "rule_1"),
-        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_2"),
-        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1"),
-        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3"),
-        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1"),
-        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3"),
+        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_1"),
+        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_2"),
+        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_2"),
+        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Urban city and town", "rule_3"),
+        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural town and fringe in a sparse setting", "rule_1"),
+        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Urban city and town", "rule_2"),
+        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", "(England/Wales) Urban city and town", "rule_1"),
+        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", "(England/Wales) Urban city and town", "rule_3"),
+        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", "(England/Wales) Urban city and town", "rule_1"),
+        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Urban city and town", "rule_3"),
     ]
     # fmt: on
 
     df = spark.createDataFrame(rows, columns)
     df = df.withColumn("registration_status", F.lit("Registered"))
+
+    df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
+    if append:
+        mode = "append"
+    else:
+        mode = "overwrite"
+    if output_destination:
+        df.write.mode(mode).partitionBy(
+            "snapshot_year", "snapshot_month", "snapshot_day"
+        ).parquet(output_destination)
+
+    return df
+
+
+def generate_prepared_locations_preclean_file_parquet(
+    output_destination=None, partitions=["2022", "03", "08"], append=False
+):
+    spark = utils.get_spark()
+    columns = [
+        "locationid",
+        "snapshot_date",
+        "ons_region",
+        "number_of_beds",
+        "services_offered",
+        "primary_service_type",
+        "people_directly_employed",
+        "job_count_unfiltered",
+        "local_authority",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+        "carehome",
+        "cqc_sector",
+        "rural_urban_indicator",
+        "job_count_unfiltered_source",
+        "registration_status",
+    ]
+
+    # fmt: off
+    rows = [
+        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_1", "Registered"),
+        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_2", "Registered"),
+        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3", "Registered"),
+        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1", "Registered"),
+        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1", "Registered"),
+        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3", "Registered"),
+        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_2", "Registered"),
+        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Registered"),
+        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural town and fringe in a sparse setting"}, "rule_1", "Registered"),
+        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_2", "Registered"),
+        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1", "Registered"),
+        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Registered"),
+        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1", "Registered"),
+        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Deregistered"),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, columns)
 
     df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
     if append:
@@ -1116,3 +1176,68 @@ def generate_worker_import_dates(output_destination):
         worker_df.coalesce(1).write.mode("overwrite").parquet(output_destination)
 
     return worker_df
+
+
+def generate_care_home_jobs_per_bed_filter_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("snapshot_date", StringType(), True),
+            StructField("primary_service_type", StringType(), True),
+            StructField("number_of_beds", IntegerType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
+        ]
+    )
+
+    # fmt: off
+    rows = [
+        ("01", "2023-01-01", "Care home with nursing", 25, 1.0),
+        ("02", "2023-01-01", "Care home with nursing", 25, 2.0),
+        ("03", "2023-01-01", "Care home with nursing", 25, 3.0),
+        ("04", "2023-01-01", "Care home with nursing", 25, 4.0),
+        ("05", "2023-01-01", "Care home with nursing", 25, 5.0),
+        ("06", "2023-01-01", "Care home with nursing", 25, 6.0),
+        ("07", "2023-01-01", "Care home with nursing", 25, 7.0),
+        ("08", "2023-01-01", "Care home with nursing", 25, 8.0),
+        ("09", "2023-01-01", "Care home with nursing", 25, 9.0),
+        ("10", "2023-01-01", "Care home with nursing", 25, 10.0),
+        ("11", "2023-01-01", "Care home with nursing", 25, 11.0),
+        ("12", "2023-01-01", "Care home with nursing", 25, 12.0),
+        ("13", "2023-01-01", "Care home with nursing", 25, 13.0),
+        ("14", "2023-01-01", "Care home with nursing", 25, 14.0),
+        ("15", "2023-01-01", "Care home with nursing", 25, 15.0),
+        ("16", "2023-01-01", "Care home with nursing", 25, 16.0),
+        ("17", "2023-01-01", "Care home with nursing", 25, 17.0),
+        ("18", "2023-01-01", "Care home with nursing", 25, 18.0),
+        ("19", "2023-01-01", "Care home with nursing", 25, 19.0),
+        ("20", "2023-01-01", "Care home without nursing", 25, 20.0),
+        ("21", "2023-01-01", "Care home without nursing", 25, 21.0),
+        ("22", "2023-01-01", "Care home without nursing", 25, 22.0),
+        ("23", "2023-01-01", "Care home without nursing", 25, 23.0),
+        ("24", "2023-01-01", "Care home without nursing", 25, 24.0),
+        ("25", "2023-01-01", "Care home without nursing", 25, 25.0),
+        ("26", "2023-01-01", "Care home without nursing", 25, 26.0),
+        ("27", "2023-01-01", "Care home without nursing", 25, 27.0),
+        ("28", "2023-01-01", "Care home without nursing", 25, 28.0),
+        ("29", "2023-01-01", "Care home without nursing", 25, 29.0),
+        ("30", "2023-01-01", "Care home without nursing", 25, 30.0),
+        ("31", "2023-01-01", "Care home without nursing", 25, 31.0),
+        ("32", "2023-01-01", "Care home without nursing", 25, 32.0),
+        ("33", "2023-01-01", "Care home without nursing", 25, 33.0),
+        ("34", "2023-01-01", "Care home without nursing", 25, 34.0),
+        ("35", "2023-01-01", "Care home without nursing", 25, 35.0),
+        ("36", "2023-01-01", "Care home without nursing", 25, 36.0),
+        ("37", "2023-01-01", "Care home without nursing", 25, 37.0),
+        ("38", "2023-01-01", "Care home without nursing", 25, 38.0),
+        ("39", "2023-01-01", "Care home without nursing", 25, 39.0),
+        ("40", "2023-01-01", "Care home without nursing", 25, 40.0),
+        ("41", "2023-01-01", "Care home with nursing", 25, None),
+        ("42", "2023-01-01", "Care home with nursing", None, 42.0),
+        ("43", "2023-01-01", "Any other service", 25, 43.0),
+        ("44", "2023-01-01", "Any other service", None, 44.0),
+    ]
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
