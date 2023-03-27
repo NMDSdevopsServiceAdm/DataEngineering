@@ -1,97 +1,90 @@
-import pyspark.sql
-from pyspark.sql import Window
+from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
+from dataclasses import dataclass
+
 
 from utils.estimate_job_count.column_names import (
-    LOCATION_ID,
     SNAPSHOT_DATE,
-    JOB_COUNT,
     ESTIMATE_JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
 )
-from utils.estimate_job_count.insert_predictions_into_locations import (
-    insert_predictions_into_locations,
+
+from utils.estimate_job_count.calculate_rolling_average import (
+    calculate_rolling_averages,
 )
+
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
-ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 90
+
+@dataclass
+class NonResRollingAverage:
+    NON_RESIDENTIAL = "non-residential"
+    MODEL_NAME = "model_non_res_rolling_average"
+    LEFT_JOIN = "left"
+    ROLLING_AVERAGE_TIME_PERIOD = "90 days"
+    ROLLING_AVERAGE_WINDOW_SLIDE = "1 days"
+    DAYS: int = 1
 
 
 def model_non_res_rolling_average(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+    df: DataFrame,
+) -> DataFrame:
 
-    non_res_rolling_average_df = create_non_res_rolling_average_column(
-        df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
+    df_with_rolling_average = add_non_residential_rolling_average_column(df)
+
+    df_with_rolling_average = remove_rolling_average_from_care_home_rows(
+        df_with_rolling_average
+    )
+    df_with_rolling_average = fill_missing_estimate_job_counts(df_with_rolling_average)
+
+    df_with_rolling_average = update_dataframe_with_identifying_rule(
+        df_with_rolling_average, NonResRollingAverage.MODEL_NAME, ESTIMATE_JOB_COUNT
     )
 
-    df = insert_predictions_into_locations(
-        df, non_res_rolling_average_df, "model_non_res_rolling_average"
+    return df_with_rolling_average
+
+
+def add_non_residential_rolling_average_column(df: DataFrame) -> DataFrame:
+    non_residential_df = df.where(
+        df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL
+    )
+    rolling_averages_df = calculate_rolling_averages(
+        non_residential_df,
+        NonResRollingAverage.MODEL_NAME,
+        NonResRollingAverage.ROLLING_AVERAGE_TIME_PERIOD,
+        NonResRollingAverage.ROLLING_AVERAGE_WINDOW_SLIDE,
+        NonResRollingAverage.DAYS,
     )
 
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            (
-                F.col(ESTIMATE_JOB_COUNT).isNull()
-                & (F.col(PRIMARY_SERVICE_TYPE) == "non-residential")
-            ),
-            F.col("model_non_res_rolling_average"),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
-    )
-
-    df = update_dataframe_with_identifying_rule(
-        df, "model_non_res_rolling_average", ESTIMATE_JOB_COUNT
-    )
-
-    return df.drop("snapshot_date_unix_conv")
-
-
-def convert_date_to_unix_timestamp(
-    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
-) -> pyspark.sql.DataFrame:
-    df = df.withColumn(
-        new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
-    )
-
+    df = df.join(rolling_averages_df, SNAPSHOT_DATE, how=NonResRollingAverage.LEFT_JOIN)
     return df
 
 
-def rolling_average(col_to_average: str, unix_date_col: str, number_of_days: int):
-    return F.avg(col_to_average).over(
-        rolling_average_time_period(unix_date_col, number_of_days)
+def remove_rolling_average_from_care_home_rows(df: DataFrame) -> DataFrame:
+    care_home_df = df.where(
+        df.primary_service_type != NonResRollingAverage.NON_RESIDENTIAL
     )
-
-
-def rolling_average_time_period(unix_date_col: str, number_of_days: int):
-    return Window.orderBy(F.col(unix_date_col).cast("long")).rangeBetween(
-        -convert_days_to_unix_time(number_of_days), 0
+    non_residential_df = df.where(
+        df.primary_service_type == NonResRollingAverage.NON_RESIDENTIAL
     )
+    care_home_df = care_home_df.withColumn(NonResRollingAverage.MODEL_NAME, F.lit(None))
+    df = non_residential_df.union(care_home_df)
+    return df
 
 
-def convert_days_to_unix_time(days: int):
-    return days * 86400
-
-
-def create_non_res_rolling_average_column(
-    df: pyspark.sql.DataFrame, number_of_days: int
-) -> pyspark.sql.DataFrame:
-    non_res_rolling_average_df = df.filter(
-        F.col(PRIMARY_SERVICE_TYPE) == "non-residential"
-    ).select(LOCATION_ID, SNAPSHOT_DATE, JOB_COUNT)
-
-    non_res_rolling_average_df = convert_date_to_unix_timestamp(
-        non_res_rolling_average_df,
-        date_col=SNAPSHOT_DATE,
-        date_format="yyyy-MM-dd",
-        new_col_name="snapshot_date_unix_conv",
+def fill_missing_estimate_job_counts(df: DataFrame) -> DataFrame:
+    rows_to_fill_df = df.where(
+        (F.col(ESTIMATE_JOB_COUNT).isNull())
+        & (F.col(PRIMARY_SERVICE_TYPE) == NonResRollingAverage.NON_RESIDENTIAL)
     )
-
-    non_res_rolling_average_df = non_res_rolling_average_df.withColumn(
-        "prediction",
-        rolling_average(JOB_COUNT, "snapshot_date_unix_conv", number_of_days),
+    rows_not_to_fill = df.where(
+        (F.col(ESTIMATE_JOB_COUNT).isNotNull())
+        | (F.col(PRIMARY_SERVICE_TYPE) != NonResRollingAverage.NON_RESIDENTIAL)
     )
-
-    return non_res_rolling_average_df
+    rows_to_fill_df = rows_to_fill_df.withColumn(
+        ESTIMATE_JOB_COUNT, F.col(NonResRollingAverage.MODEL_NAME)
+    )
+    df = rows_to_fill_df.union(rows_not_to_fill)
+    return df
