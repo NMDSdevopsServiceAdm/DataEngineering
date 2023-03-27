@@ -847,25 +847,40 @@ def generate_prepared_locations_preclean_file_parquet(
     output_destination=None, partitions=["2022", "03", "08"], append=False
 ):
     spark = utils.get_spark()
-    columns = [
-        "locationid",
-        "snapshot_date",
-        "ons_region",
-        "number_of_beds",
-        "services_offered",
-        "primary_service_type",
-        "people_directly_employed",
-        "job_count_unfiltered",
-        "local_authority",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-        "carehome",
-        "cqc_sector",
-        "rural_urban_indicator",
-        "job_count_unfiltered_source",
-        "registration_status",
-    ]
+    schema = StructType(
+        [
+            StructField("locationId", StringType(), True),
+            StructField("snapshot_date", StringType(), True),
+            StructField("ons_region", StringType(), True),
+            StructField("number_of_beds", IntegerType(), True),
+            StructField(
+                "services_offered",
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField("primary_service_type", StringType(), True),
+            StructField("people_directly_employed", IntegerType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
+            StructField("local_authority", StringType(), True),
+            StructField("snapshot_year", StringType(), True),
+            StructField("snapshot_month", StringType(), True),
+            StructField("snapshot_day", StringType(), True),
+            StructField("carehome", StringType(), True),
+            StructField("cqc_sector", StringType(), True),
+            StructField(
+                "rural_urban_indicator",
+                StructType(
+                    [
+                        StructField("year_2011", StringType(), True),
+                    ]
+                ),
+            ),
+            StructField("job_count_unfiltered_source", StringType(), True),
+            StructField("registration_status", StringType(), True),
+        ]
+    )
 
     # fmt: off
     rows = [
@@ -886,7 +901,7 @@ def generate_prepared_locations_preclean_file_parquet(
     ]
     # fmt: on
 
-    df = spark.createDataFrame(rows, columns)
+    df = spark.createDataFrame(rows, schema=schema)
 
     df = df.withColumn("snapshot_date", F.to_date(df.snapshot_date, "yyyyMMdd"))
     if append:

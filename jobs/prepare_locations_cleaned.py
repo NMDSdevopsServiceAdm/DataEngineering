@@ -48,6 +48,9 @@ def main(
 
     locations_df = remove_unwanted_data(locations_df)
 
+    locations_df = replace_zero_beds_with_null(locations_df)
+    locations_df = populate_missing_carehome_number_of_beds(locations_df)
+
     locations_df = null_job_count_outliers(locations_df)
 
     locations_df = create_partition_keys_based_on_todays_date(locations_df)
@@ -66,6 +69,40 @@ def remove_unwanted_data(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     df = df.where(F.col("cqc_sector") == "Independent")
     df = df.where(F.col("registration_status") == "Registered")
     return df
+
+
+def replace_zero_beds_with_null(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    return df.replace(0, None, "number_of_beds")
+
+
+def populate_missing_carehome_number_of_beds(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    care_home_df = filter_to_carehomes_with_known_beds(df)
+    avg_beds_per_loc_df = average_beds_per_location(care_home_df)
+    df = df.join(avg_beds_per_loc_df, "locationid", "left")
+    df = replace_null_beds_with_average(df)
+    return df
+
+
+def filter_to_carehomes_with_known_beds(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    df = df.filter(F.col("carehome") == "Y")
+    df = df.filter(F.col("number_of_beds").isNotNull())
+    return df
+
+
+def average_beds_per_location(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    df = df.groupBy("locationid").agg(F.avg("number_of_beds").alias("avg_beds"))
+    df = df.withColumn("avg_beds", F.col("avg_beds").cast("int"))
+    df = df.select("locationid", "avg_beds")
+    return df
+
+
+def replace_null_beds_with_average(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
+    df = df.withColumn("number_of_beds", F.coalesce("number_of_beds", "avg_beds"))
+    return df.drop("avg_beds")
 
 
 def create_partition_keys_based_on_todays_date(df):
