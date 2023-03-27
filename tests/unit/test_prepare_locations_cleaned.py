@@ -131,11 +131,13 @@ class PrepareLocationsCleanedTests(unittest.TestCase):
             ("1-000000003", "2023-01-01", "Y", 1),
             ("1-000000003", "2023-02-01", "Y", None),
             ("1-000000003", "2023-03-01", "Y", 1),
+            ("1-000000004", "2023-01-01", "Y", 1),
+            ("1-000000004", "2023-02-01", "Y", 3),
         ]
         input_df = self.spark.createDataFrame(input_rows, schema=schema)
 
         df = job.populate_missing_carehome_number_of_beds(input_df)
-        self.assertEqual(df.count(), 5)
+        self.assertEqual(df.count(), 7)
 
         df = df.sort("locationid", "snapshot_date").collect()
         self.assertEqual(df[0]["number_of_beds"], None)
@@ -143,6 +145,8 @@ class PrepareLocationsCleanedTests(unittest.TestCase):
         self.assertEqual(df[2]["number_of_beds"], 1)
         self.assertEqual(df[3]["number_of_beds"], 1)
         self.assertEqual(df[4]["number_of_beds"], 1)
+        self.assertEqual(df[5]["number_of_beds"], 1)
+        self.assertEqual(df[6]["number_of_beds"], 3)
 
     def test_filter_to_carehomes_with_known_beds(self):
         columns = [
