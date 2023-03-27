@@ -29,7 +29,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "job-count-filtering-prepare_locations_cleaned_job",
+                "JobName": "${prepare_locations_cleaned_job_name}",
                 "Arguments": {
                   "--prepared_locations_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/",
                   "--prepared_locations_cleaned_destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
