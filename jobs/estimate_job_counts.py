@@ -60,7 +60,6 @@ def main(
     )
     print("Estimating job counts")
 
-    # load locations_prepared df
     locations_df = (
         spark.read.parquet(prepared_locations_cleaned_source)
         .select(
