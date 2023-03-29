@@ -4,6 +4,11 @@ from pyspark.sql import Window
 from pyspark.sql.types import DoubleType
 import pyspark.sql
 
+from utils.estimate_job_count.column_names import ESTIMATE_JOB_COUNT
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
+)
+
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
     df = convert_date_to_unix_timestamp(
@@ -147,6 +152,16 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     df = df.join(average_df, ["primary_service_type", "unix_time"], "left")
 
     df = df.drop("unix_time")
+
+    df = df.withColumn(
+        ESTIMATE_JOB_COUNT,
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("extrapolation_model")),
+    )
+    df = update_dataframe_with_identifying_rule(
+        df, "extrapolation_model", ESTIMATE_JOB_COUNT
+    )
 
     return df
 

@@ -90,8 +90,18 @@ def main(
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
     locations_df = model_extrapolation(locations_df)
+
     locations_df = locations_df.withColumnRenamed(
         "rolling_average", "rolling_average_model"
+    )
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT,
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("rolling_average_model")),
+    )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
     )
 
     # Care homes model
