@@ -25,12 +25,14 @@ from utils.estimate_job_count.column_names import (
     CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
-from utils.estimate_job_count.models.non_res_rolling_average import (
-    model_non_res_rolling_average,
-)
-from utils.estimate_job_count.models.non_res_historical import (
-    model_non_res_historical,
-)
+from utils.estimate_job_count.models.extrapolation import model_extrapolation
+
+# from utils.estimate_job_count.models.non_res_rolling_average import (
+#     model_non_res_rolling_average,
+# )
+# from utils.estimate_job_count.models.non_res_historical import (
+#     model_non_res_historical,
+# )
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
@@ -95,6 +97,11 @@ def main(
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
+    locations_df = model_extrapolation(locations_df)
+    locations_df = locations_df.withColumnRenamed(
+        "rolling_average", "rolling_average_model"
+    )
+
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
@@ -137,9 +144,8 @@ def main(
     )
 
     # Non-res & no PIR data models
-    locations_df = model_non_res_historical(locations_df)
-
-    locations_df = model_non_res_rolling_average(locations_df)
+    # locations_df = model_non_res_historical(locations_df) - REPLACED BY EXTRAPOLATION
+    # locations_df = model_non_res_rolling_average(locations_df) - REPLACED BY EXTRAPOLATION
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
