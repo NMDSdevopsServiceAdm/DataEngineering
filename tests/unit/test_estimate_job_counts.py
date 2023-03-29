@@ -119,100 +119,6 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df[2]["estimate_job_count_source"], "already_populated")
         self.assertEqual(df[3]["estimate_job_count"], 10)
 
-    def test_last_known_job_count_takes_job_count_from_current_snapshot(self):
-        columns = ["locationid", "job_count", "snapshot_date"]
-        rows = [
-            ("1-000000001", 1, "2022-03-04"),
-            ("1-000000002", None, "2022-03-04"),
-            ("1-000000003", 5, "2022-03-04"),
-            ("1-000000004", 10, "2022-03-04"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.populate_last_known_job_count(df)
-
-        df = df.collect()
-        self.assertEqual(df[0].last_known_job_count, 1)
-        self.assertEqual(df[1].last_known_job_count, None)
-        self.assertEqual(df[2].last_known_job_count, 5)
-        self.assertEqual(df[3].last_known_job_count, 10)
-
-    def test_last_known_job_count_takes_job_count_from_previous_snapshot(self):
-        columns = ["locationid", "job_count", "snapshot_date"]
-        rows = [
-            ("1-000000001", None, "2022-03-04"),
-            ("1-000000002", None, "2022-03-04"),
-            ("1-000000003", 5, "2022-03-04"),
-            ("1-000000004", 10, "2022-03-04"),
-            ("1-000000001", 4, "2022-02-04"),
-            ("1-000000002", None, "2022-02-04"),
-            ("1-000000003", 5, "2022-02-04"),
-            ("1-000000004", 12, "2022-02-04"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = (
-            job.populate_last_known_job_count(df)
-            .filter(df["snapshot_date"] == "2022-03-04")
-            .collect()
-        )
-
-        self.assertEqual(df[0].last_known_job_count, 4)
-        self.assertEqual(df[1].last_known_job_count, None)
-        self.assertEqual(df[2].last_known_job_count, 5)
-        self.assertEqual(df[3].last_known_job_count, 10)
-
-    def test_last_known_job_count_takes_job_count_from_most_recent_snapshot(self):
-        columns = ["locationid", "job_count", "snapshot_date"]
-        rows = [
-            ("1-000000001", None, "2022-03-04"),
-            ("1-000000002", None, "2022-03-04"),
-            ("1-000000001", None, "2022-02-04"),
-            ("1-000000002", 5, "2022-02-04"),
-            ("1-000000001", 4, "2021-03-04"),
-            ("1-000000002", 7, "2021-02-04"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = (
-            job.populate_last_known_job_count(df)
-            .filter(df["snapshot_date"] == "2022-03-04")
-            .collect()
-        )
-
-        self.assertEqual(df[0].last_known_job_count, 4)
-        self.assertEqual(df[1].last_known_job_count, 5)
-
-    # def test_model_non_res_historical(self):
-    #     columns = [
-    #         "locationid",
-    #         "primary_service_type",
-    #         "last_known_job_count",
-    #         "estimate_job_count",
-    #         "estimate_job_count_source",
-    #     ]
-    #     rows = [
-    #         ("1-000000001", "non-residential", 10, None, None),
-    #         ("1-000000002", "Care home with nursing", 10, None, None),
-    #         ("1-000000003", "non-residential", 20, None, None),
-    #         ("1-000000004", "non-residential", 10, 10, "already_populated"),
-    #     ]
-    #     df = self.spark.createDataFrame(rows, columns)
-
-    #     df = job.model_non_res_historical(df)
-    #     self.assertEqual(df.count(), 4)
-
-    #     df = df.collect()
-    #     self.assertEqual(df[0]["estimate_job_count"], 10.3)
-    #     self.assertEqual(
-    #         df[0]["estimate_job_count_source"], "model_non_res_ascwds_projected_forward"
-    #     )
-    #     self.assertEqual(df[1]["estimate_job_count"], None)
-    #     self.assertEqual(df[1]["estimate_job_count_source"], None)
-    #     self.assertEqual(df[2]["estimate_job_count"], 20.6)
-    #     self.assertEqual(df[3]["estimate_job_count"], 10)
-    #     self.assertEqual(df[3]["estimate_job_count_source"], "already_populated")
-
     def generate_features_df(self):
         # fmt: off
         feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features", "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
@@ -248,7 +154,6 @@ class EstimateJobCountTests(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "last_known_job_count",
             "estimate_job_count",
             "estimate_job_count_source",
             "carehome",
@@ -257,11 +162,11 @@ class EstimateJobCountTests(unittest.TestCase):
             "snapshot_date"
         ]
         rows = [
-            ("1-000000001", "Care home with nursing", 10, None, None, "Y", "South West", 67, "2022-03-29"),
-            ("1-000000002", "Care home without nursing", 10, None, None, "N", "Merseyside", 12, "2022-03-29"),
-            ("1-000000003", "Care home with nursing", 20, None, None, None, "Merseyside", 34, "2022-03-29"),
-            ("1-000000004", "non-residential", 10, 10, "already_populated", "N", None, 0, "2022-03-29"),
-            ("1-000000001", "non-residential", 10, None, None, "N", None, 0, "2022-02-20"),
+            ("1-000000001", "Care home with nursing", None, None, "Y", "South West", 67, "2022-03-29"),
+            ("1-000000002", "Care home without nursing", None, None, "N", "Merseyside", 12, "2022-03-29"),
+            ("1-000000003", "Care home with nursing", None, None, None, "Merseyside", 34, "2022-03-29"),
+            ("1-000000004", "non-residential", 10, "already_populated", "N", None, 0, "2022-03-29"),
+            ("1-000000001", "non-residential", None, None, "N", None, 0, "2022-02-20"),
         ]
         # fmt: on
         return self.spark.createDataFrame(rows, columns)

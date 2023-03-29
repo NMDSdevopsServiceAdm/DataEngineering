@@ -1,5 +1,4 @@
 LOCATION_ID = "locationid"
-LAST_KNOWN_JOB_COUNT = "last_known_job_count"
 ESTIMATE_JOB_COUNT = "estimate_job_count"
 ESTIMATE_JOB_COUNT_SOURCE = ESTIMATE_JOB_COUNT + "_source"
 PRIMARY_SERVICE_TYPE = "primary_service_type"

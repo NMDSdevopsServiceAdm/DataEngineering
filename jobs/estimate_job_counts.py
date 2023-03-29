@@ -21,7 +21,6 @@ from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT,
     ESTIMATE_JOB_COUNT_SOURCE,
     PRIMARY_SERVICE_TYPE,
-    LAST_KNOWN_JOB_COUNT,
     CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
@@ -78,7 +77,7 @@ def main(
     non_res_features_df = spark.read.parquet(nonres_features_source)
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-    locations_df = populate_last_known_job_count(locations_df)
+
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
@@ -174,37 +173,6 @@ def populate_estimate_jobs_when_job_count_known(
 
     df = update_dataframe_with_identifying_rule(
         df, "ascwds_job_count", ESTIMATE_JOB_COUNT
-    )
-
-    return df
-
-
-def populate_last_known_job_count(df):
-    column_names = df.columns
-    df = df.alias("current").join(
-        df.alias("previous"),
-        (F.col("current.locationid") == F.col("previous.locationid"))
-        & (F.col("current.snapshot_date") >= F.col("previous.snapshot_date"))
-        & (F.col("previous.job_count").isNotNull()),
-        "leftouter",
-    )
-    locationAndSnapshotPartition = Window.partitionBy(
-        "current.locationid", "current.snapshot_date"
-    )
-    df = df.withColumn(
-        "max_date_with_job_count",
-        F.max("previous.snapshot_date").over(locationAndSnapshotPartition),
-    )
-
-    df = df.where(
-        F.col("max_date_with_job_count").isNull()
-        | (F.col("max_date_with_job_count") == F.col("previous.snapshot_date"))
-    )
-    df = df.drop("max_date_with_job_count")
-
-    df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
-    df = df.select(
-        [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
     )
 
     return df

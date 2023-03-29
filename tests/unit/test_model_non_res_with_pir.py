@@ -26,7 +26,6 @@ class TestModelNonResWithPir(unittest.TestCase):
         columns = [
             "locationid",
             "primary_service_type",
-            "last_known_job_count",
             "estimate_job_count",
             "estimate_job_count_source",
             "carehome",
@@ -35,11 +34,11 @@ class TestModelNonResWithPir(unittest.TestCase):
             "snapshot_date"
         ]
         rows = [
-            ("1-000000001", "Care home with nursing", 10, None, None, "Y", "South West", 67, "2022-03-29"),
-            ("1-000000002", "Care home without nursing", 10, None, None, "N", "Merseyside", 12, "2022-03-29"),
-            ("1-000000003", "Care home with nursing", 20, None, None, None, "Merseyside", 34, "2022-03-29"),
-            ("1-000000004", "non-residential", 10, 10, "already_populated", "N", None, 0, "2022-03-29"),
-            ("1-000000001", "non-residential", 10, None, None, "N", None, 0, "2022-02-20"),
+            ("1-000000001", "Care home with nursing", None, None, "Y", "South West", 67, "2022-03-29"),
+            ("1-000000002", "Care home without nursing", None, None, "N", "Merseyside", 12, "2022-03-29"),
+            ("1-000000003", "Care home with nursing", None, None, None, "Merseyside", 34, "2022-03-29"),
+            ("1-000000004", "non-residential", 10, "already_populated", "N", None, 0, "2022-03-29"),
+            ("1-000000001", "non-residential", None, None, "N", None, 0, "2022-02-20"),
         ]
         # fmt: on
         return self.spark.createDataFrame(rows, columns)
