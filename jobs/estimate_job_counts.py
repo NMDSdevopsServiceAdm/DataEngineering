@@ -135,7 +135,7 @@ def main(
         job_name=job_name,
     )
 
-    # Non-res & no PIR data model
+    # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
 
     locations_df = model_non_res_rolling_average(locations_df)
