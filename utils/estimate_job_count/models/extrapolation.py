@@ -115,7 +115,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         "forward_extrapolation_ratio",
         (
             1
-            + (F.col("last_rolling_average") - F.col("rolling_average"))
+            + (F.col("rolling_average") - F.col("last_rolling_average"))
             / F.col("last_rolling_average")
         ),
     )
@@ -128,7 +128,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         "backward_extrapolation_ratio",
         (
             1
-            + (F.col("first_rolling_average") - F.col("rolling_average"))
+            + (F.col("rolling_average") - F.col("first_rolling_average"))
             / F.col("first_rolling_average")
         ),
     )
