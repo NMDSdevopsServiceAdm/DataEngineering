@@ -6,6 +6,8 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql import Window, SparkSession
 
+import time
+
 from utils import utils
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
@@ -53,6 +55,7 @@ def main(
         .getOrCreate()
     )
     print("Estimating job counts")
+    time_1 = time.time()
 
     locations_df = (
         spark.read.parquet(prepared_locations_cleaned_source)
@@ -71,10 +74,14 @@ def main(
         )
         .filter(f"{REGISTRATION_STATUS} = 'Registered'")
     )
+    time_2 = time.time()
+    print("time to read parquet: " + str(time_2 - time_1))
 
     # loads model features
     carehome_features_df = spark.read.parquet(carehome_features_source)
     non_res_features_df = spark.read.parquet(nonres_features_source)
+    time_3 = time.time()
+    print("time to load features: " + str(time_3 - time_2))
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
@@ -84,11 +91,21 @@ def main(
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
     )
+    time_4 = time.time()
+    print("time to filter_to_only_cqc_independent_sector_data: " + str(time_4 - time_3))
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
+    time_5 = time.time()
+    print("time to get_max_snapshot_date: " + str(time_5 - time_5))
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
+    time_6 = time.time()
+    print(
+        "time to populate_estimate_jobs_when_job_count_known: " + str(time_6 - time_5)
+    )
 
     locations_df = model_extrapolation(locations_df)
+    time_7 = time.time()
+    print("time to model extrapolation: " + str(time_7 - time_6))
 
     locations_df = locations_df.withColumnRenamed(
         "rolling_average", "rolling_average_model"
@@ -99,6 +116,8 @@ def main(
             F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
         ).otherwise(F.col("rolling_average_model")),
     )
+    time_8 = time.time()
+    print("time to rename rolling average: " + str(time_8 - time_7))
     locations_df = update_dataframe_with_identifying_rule(
         locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
     )
@@ -109,6 +128,8 @@ def main(
         carehome_features_df,
         care_home_model_directory,
     )
+    time_9 = time.time()
+    print("time to ch model: " + str(time_9 - time_8))
 
     care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
@@ -121,6 +142,8 @@ def main(
         job_run_id=job_run_id,
         job_name=job_name,
     )
+    time_10 = time.time()
+    print("time to save ch metrics: " + str(time_10 - time_9))
 
     # Non-res with PIR data model
     (
@@ -131,6 +154,8 @@ def main(
         non_res_features_df,
         non_res_model_directory,
     )
+    time_11 = time.time()
+    print("time to do PIR model: " + str(time_11 - time_10))
 
     non_res_model_info = non_res_model_directory.split("/")
     write_metrics_df(
@@ -143,6 +168,8 @@ def main(
         job_run_id=job_run_id,
         job_name=job_name,
     )
+    time_12 = time.time()
+    print("time to write_metrics non-res: " + str(time_12 - time_11))
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -158,6 +185,8 @@ def main(
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
     )
+    time_13 = time.time()
+    print("time to write_to_parquet: " + str(time_13 - time_12))
 
 
 def populate_estimate_jobs_when_job_count_known(
