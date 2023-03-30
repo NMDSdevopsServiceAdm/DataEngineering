@@ -90,19 +90,6 @@ def main(
 
     locations_df = model_extrapolation(locations_df)
 
-    locations_df = locations_df.withColumnRenamed(
-        "rolling_average", "rolling_average_model"
-    )
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(
-            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
-        ).otherwise(F.col("rolling_average_model")),
-    )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
-    )
-
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(
         locations_df,
@@ -142,6 +129,19 @@ def main(
         latest_snapshot=latest_snapshot,
         job_run_id=job_run_id,
         job_name=job_name,
+    )
+
+    locations_df = locations_df.withColumnRenamed(
+        "rolling_average", "rolling_average_model"
+    )
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT,
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("rolling_average_model")),
+    )
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
     )
 
     today = date.today()
