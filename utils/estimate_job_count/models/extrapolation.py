@@ -9,6 +9,9 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
+# Note: using 88 as a proxy for 3 months
+ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 88
+
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
     df = convert_date_to_unix_timestamp(
@@ -42,7 +45,9 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         F.sum("job_count").alias("total_job_count"),
     )
 
-    average_df = create_rolling_average_column(average_df, number_of_days=88)
+    average_df = create_rolling_average_column(
+        average_df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
+    )
 
     average_df = average_df.select(
         "primary_service_type", "unix_time", "rolling_average"
