@@ -590,6 +590,19 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(df.schema["import_date"].dataType, DateType())
         self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
 
+    def test_convert_date_to_unix_timestamp(self):
+        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
+        df = utils.convert_date_to_unix_timestamp(
+            df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
+        )
+
+        df = df.orderBy("locationid").collect()
+        self.assertEqual(df[0]["snapshot_date_unix_conv"], 1672531200)
+
+    def test_convert_days_to_unix_time(self):
+        self.assertEqual(utils.convert_days_to_unix_time(1), 86400)
+        self.assertEqual(utils.convert_days_to_unix_time(90), 7776000)
+
     def test_get_max_date_partition_returns_only_partition(self):
         columns = ["id", "snapshot_year", "snapshot_month", "snapshot_day"]
         rows = [(1, "2021", "01", "01")]

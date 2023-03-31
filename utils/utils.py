@@ -6,6 +6,7 @@ import argparse
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
+import pyspark.sql
 
 import boto3
 
@@ -178,6 +179,18 @@ def format_import_date(df, fieldname="import_date"):
     return df.withColumn(
         fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
     )
+
+
+def convert_date_to_unix_timestamp(
+    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
+) -> pyspark.sql.DataFrame:
+    return df.withColumn(
+        new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
+    )
+
+
+def convert_days_to_unix_time(days: int):
+    return days * 86400
 
 
 def get_max_snapshot_date(locations_df):
