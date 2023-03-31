@@ -15,10 +15,10 @@ from jobs import estimate_job_counts as job
 
 class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_MODEL = (
-        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0"
+        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
     )
     NON_RES_WITH_PIR_MODEL = (
-        "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0"
+        "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0/"
     )
     METRICS_DESTINATION = "tests/test_data/tmp/data_engineering/model_metrics/"
     PREPARED_LOCATIONS_CLEANED_DIR = "tests/test_data/tmp/prepared_locations_cleaned/"
