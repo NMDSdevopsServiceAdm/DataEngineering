@@ -2,26 +2,17 @@ from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql import Window
 
-from utils.utils import convert_date_to_unix_timestamp, convert_days_to_unix_time
+from utils.utils import convert_days_to_unix_time
 from utils.estimate_job_count.column_names import (
-    SNAPSHOT_DATE,
+    UNIX_TIME,
     JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
 )
-
-UNIX_TIME = "unix_time"
 
 
 def model_primary_service_rolling_average(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
-
-    df = convert_date_to_unix_timestamp(
-        df,
-        date_col=SNAPSHOT_DATE,
-        date_format="yyyy-MM-dd",
-        new_col_name=UNIX_TIME,
-    )
 
     df_with_job_count_only = filter_to_locations_with_known_job_count(df)
 

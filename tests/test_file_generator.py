@@ -1267,28 +1267,29 @@ def input_data_for_primary_service_rolling_average():
         [
             StructField("locationid", StringType(), False),
             StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
             StructField("job_count", DoubleType(), True),
             StructField("primary_service_type", StringType(), False),
         ]
     )
     # fmt: off
     rows = [
-        ("1-000000001", "2023-01-01", 4.0, "non-residential"),
-        ("1-000000002", "2023-01-01", 6.0, "non-residential"),
-        ("1-000000003", "2023-02-01", 20.0, "non-residential"),
-        ("1-000000004", "2023-03-01", 30.0, "non-residential"),
-        ("1-000000005", "2023-04-01", 40.0, "non-residential"),
-        ("1-000000006", "2023-01-01", None, "non-residential"),
-        ("1-000000007", "2023-02-01", None, "non-residential"),
-        ("1-000000008", "2023-03-01", None, "non-residential"),
-        ("1-000000011", "2023-01-01", 14.0, "Care home with nursing"),
-        ("1-000000012", "2023-01-01", 16.0, "Care home with nursing"),
-        ("1-000000013", "2023-02-01", 120.0, "Care home with nursing"),
-        ("1-000000014", "2023-03-01", 131.0, "Care home with nursing"),
-        ("1-000000015", "2023-04-01", 142.0, "Care home with nursing"),
-        ("1-000000016", "2023-01-01", None, "Care home with nursing"),
-        ("1-000000017", "2023-02-01", None, "Care home with nursing"),
-        ("1-000000018", "2023-03-01", None, "Care home with nursing"),
+        ("1-000000001", "2023-01-01", 1672531200, 4.0, "non-residential"),
+        ("1-000000002", "2023-01-01", 1672531200, 6.0, "non-residential"),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential"),
+        ("1-000000004", "2023-03-01", 1677628800, 30.0, "non-residential"),
+        ("1-000000005", "2023-04-01", 1680303600, 40.0, "non-residential"),
+        ("1-000000006", "2023-01-01", 1672531200, None, "non-residential"),
+        ("1-000000007", "2023-02-01", 1675209600, None, "non-residential"),
+        ("1-000000008", "2023-03-01", 1677628800, None, "non-residential"),
+        ("1-000000011", "2023-01-01", 1672531200, 14.0, "Care home with nursing"),
+        ("1-000000012", "2023-01-01", 1672531200, 16.0, "Care home with nursing"),
+        ("1-000000013", "2023-02-01", 1675209600, 120.0, "Care home with nursing"),
+        ("1-000000014", "2023-03-01", 1677628800, 131.0, "Care home with nursing"),
+        ("1-000000015", "2023-04-01", 1680303600, 142.0, "Care home with nursing"),
+        ("1-000000016", "2023-01-01", 1672531200, None, "Care home with nursing"),
+        ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing"),
+        ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing"),
     ]
     # fmt: on
     df = spark.createDataFrame(rows, schema=schema)
