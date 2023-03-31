@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     IntegerType,
     DoubleType,
     TimestampType,
+    LongType,
 )
 import pyspark.sql.functions as F
 
@@ -1283,11 +1284,117 @@ def input_data_for_primary_service_rolling_average():
         ("1-000000011", "2023-01-01", 14.0, "Care home with nursing"),
         ("1-000000012", "2023-01-01", 16.0, "Care home with nursing"),
         ("1-000000013", "2023-02-01", 120.0, "Care home with nursing"),
-        ("1-000000014", "2023-03-01", 130.0, "Care home with nursing"),
-        ("1-000000015", "2023-04-01", 140.0, "Care home with nursing"),
+        ("1-000000014", "2023-03-01", 131.0, "Care home with nursing"),
+        ("1-000000015", "2023-04-01", 142.0, "Care home with nursing"),
         ("1-000000016", "2023-01-01", None, "Care home with nursing"),
         ("1-000000017", "2023-02-01", None, "Care home with nursing"),
         ("1-000000018", "2023-03-01", None, "Care home with nursing"),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def known_job_count_data_for_primary_service_rolling_average():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("primary_service_type", StringType(), False),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", 1672531200, 4.0, "non-residential"),
+        ("1-000000002", 1672531200, 6.0, "non-residential"),
+        ("1-000000003", 1675209600, 20.0, "non-residential"),
+        ("1-000000004", 1677628800, 30.0, "non-residential"),
+        ("1-000000005", 1680303600, 40.0, "non-residential"),
+        ("1-000000011", 1672531200, 14.0, "Care home with nursing"),
+        ("1-000000012", 1672531200, 16.0, "Care home with nursing"),
+        ("1-000000013", 1675209600, 120.0, "Care home with nursing"),
+        ("1-000000014", 1677628800, 131.0, "Care home with nursing"),
+        ("1-000000015", 1680303600, 142.0, "Care home with nursing"),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def calculate_rolling_sum_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("primary_service_type", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("col_to_sum", StringType(), False),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("service_1", 86400, 10),
+        ("service_1", 172800, 12),
+        ("service_1", 259200, 15),
+        ("service_1", 345600, 17),
+        ("service_1", 432000, 20),
+        ("service_2", 86400, 10),
+        ("service_2", 172800, 11),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def rolling_average_dummy_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("other_col", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("primary_service_type", StringType(), False),
+            StructField("rolling_average_model", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("random_data", 1672531200, "non-residential", 44.24),
+        ("random_data", 1680303600, "Care home with nursing", 25.1),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def data_for_creating_rolling_average_column():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("primary_service_type", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("count_of_job_count", IntegerType(), True),
+            StructField("sum_of_job_count", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("Care home with nursing", 1672531200, 2, 30.0),
+        ("Care home with nursing", 1675209600, 1, 120.0),
+        ("Care home with nursing", 1677628800, 1, 131.0),
+        ("Care home with nursing", 1680303600, 1, 142.0),
+        ("non-residential", 1672531200, 2, 10.0),
+        ("non-residential", 1675209600, 1, 20.0),
+        ("non-residential", 1677628800, 1, 30.0),
+        ("non-residential", 1680303600, 1, 40.0),
     ]
     # fmt: on
     df = spark.createDataFrame(rows, schema=schema)
