@@ -129,56 +129,6 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     return df
 
 
-def convert_date_to_unix_timestamp(
-    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
-) -> pyspark.sql.DataFrame:
-    df = df.withColumn(
-        new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
-    )
-
-    return df
-
-
-def rolling_total(col_to_average: str, unix_date_col: str, number_of_days: int):
-    return F.sum(col_to_average).over(
-        rolling_average_time_period(unix_date_col, number_of_days)
-    )
-
-
-def rolling_average_time_period(unix_date_col: str, number_of_days: int):
-    return (
-        Window.partitionBy("primary_service_type")
-        .orderBy(F.col(unix_date_col).cast("long"))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
-    )
-
-
-def convert_days_to_unix_time(days: int):
-    return days * 86400
-
-
-def create_rolling_average_column(
-    df: pyspark.sql.DataFrame, number_of_days: int
-) -> pyspark.sql.DataFrame:
-
-    df = df.withColumn(
-        "rolling_total_jobs",
-        rolling_total("total_job_count", "unix_time", number_of_days),
-    )
-
-    df = df.withColumn(
-        "rolling_total_count",
-        rolling_total("count", "unix_time", number_of_days),
-    )
-
-    df = df.withColumn(
-        "rolling_average_model",
-        F.col("rolling_total_jobs") / F.col("rolling_total_count"),
-    )
-
-    return df
-
-
 def filter_to_locations_who_have_a_job_count_at_some_point(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
