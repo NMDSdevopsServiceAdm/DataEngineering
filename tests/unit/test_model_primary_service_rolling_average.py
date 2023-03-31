@@ -2,54 +2,27 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    DoubleType,
-)
 
 from utils.estimate_job_count.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
+from tests.test_file_generator import input_data_for_primary_service_rolling_average
 
 
 class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
-    column_schema = StructType(
-        [
-            StructField("locationid", StringType(), False),
-            StructField("snapshot_date", StringType(), False),
-            StructField("job_count", DoubleType(), True),
-            StructField("primary_service_type", StringType(), False),
-        ]
-    )
-    # fmt: off
-    rows = [
-        ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
-        ("1-000000002", "2023-01-01", 4.0, "non-residential"),
-        ("1-000000003", "2023-01-01", 6.0, "non-residential"),
-        ("1-000000004", "2023-02-10", 20.0, "non-residential"),
-        ("1-000000005", "2023-03-20", 30.0, "non-residential"),
-        ("1-000000006", "2023-04-30", 40.0, "non-residential"),
-        ("1-000000007", "2023-01-01", None, "non-residential"),
-        ("1-000000008", "2023-02-10", None, "non-residential"),
-        ("1-000000009", "2023-03-20", None, "non-residential"),
-    ]
-    # fmt: on
-
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_model_primary_service_rolling_average"
         ).getOrCreate()
+        self.input_df = input_data_for_primary_service_rolling_average()
         self.output_df = model_primary_service_rolling_average(
             self.spark.createDataFrame(self.rows, schema=self.column_schema)
         )
-
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_row_count_unchanged_after_running_full_job(self):
-        self.assertEqual(len(self.rows), self.output_df.count())
+        self.assertEqual(self.input_df.count(), self.output_df.count())
 
     def test_model_primary_service_rolling_averages_are_correct(self):
         pass
