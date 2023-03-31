@@ -591,7 +591,16 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
 
     def test_convert_date_to_unix_timestamp(self):
-        df = self.spark.createDataFrame(self.rows, schema=self.column_schema)
+        column_schema = StructType(
+            [
+                StructField("locationid", StringType(), False),
+                StructField("snapshot_date", StringType(), False),
+            ]
+        )
+        row = [
+            ("1-000000001", "2023-01-01"),
+        ]
+        df = spark.createDataFrame(row, schema=column_schema)
         df = utils.convert_date_to_unix_timestamp(
             df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
         )
