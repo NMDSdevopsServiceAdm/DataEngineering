@@ -72,13 +72,11 @@ def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFra
 
 
 def calculate_rolling_sum(
-    df: DataFrame, col_to_average: str, number_of_days: int, new_col_name: str
+    df: DataFrame, col_to_sum: str, number_of_days: int, new_col_name: str
 ) -> DataFrame:
     return df.withColumn(
         new_col_name,
-        F.sum(col_to_average).over(
-            rolling_average_time_period(UNIX_TIME, number_of_days)
-        ),
+        F.sum(col_to_sum).over(rolling_average_time_period(UNIX_TIME, number_of_days)),
     )
 
 
