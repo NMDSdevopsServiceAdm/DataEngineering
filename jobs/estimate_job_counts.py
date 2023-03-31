@@ -41,6 +41,9 @@ from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
 )
 
+# Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
+
 
 def main(
     prepared_locations_cleaned_source,
@@ -94,7 +97,9 @@ def main(
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
-    locations_df = model_primary_service_rolling_average(locations_df)
+    locations_df = model_primary_service_rolling_average(
+        locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    )
 
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(

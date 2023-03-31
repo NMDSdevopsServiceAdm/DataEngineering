@@ -9,13 +9,11 @@ from utils.estimate_job_count.column_names import (
     PRIMARY_SERVICE_TYPE,
 )
 
-# Note: using 88 as a proxy for 3 months
-ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 88
 UNIX_TIME = "unix_time"
 
 
 def model_primary_service_rolling_average(
-    df: DataFrame,
+    df: DataFrame, number_of_days: int
 ) -> DataFrame:
 
     df = convert_date_to_unix_timestamp(
@@ -34,7 +32,7 @@ def model_primary_service_rolling_average(
     )
 
     rolling_average_df = create_rolling_average_column(
-        job_count_sum_and_count_df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
+        job_count_sum_and_count_df, number_of_days
     )
 
     df = join_rolling_average_into_df(df, rolling_average_df)
