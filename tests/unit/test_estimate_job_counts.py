@@ -10,7 +10,7 @@ from pyspark.ml.linalg import Vectors
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
 from tests.test_helpers import remove_file_path
-from jobs import estimate_job_counts as job
+import jobs.estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
