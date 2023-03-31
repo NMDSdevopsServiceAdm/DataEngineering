@@ -9,93 +9,50 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
-# Note: using 88 as a proxy for 3 months
-ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS = 88
-
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
-    df = convert_date_to_unix_timestamp(
-        df,
-        date_col="snapshot_date",
-        date_format="yyyy-MM-dd",
-        new_col_name="unix_time",
+
+    # for_extrapolation = df.select(
+    #     "locationid", "snapshot_date", "unix_time", "job_count", "primary_service_type", "rolling_average_model"
+    # )
+
+    for_extrapolation = filter_to_locations_who_have_a_job_count_at_some_point(df)
+
+    first_and_last_submission_df = add_first_and_last_submission_date_cols(
+        for_extrapolation
     )
 
-    max_job_count_per_location_df = df.groupBy("locationid").agg(
-        F.max("job_count").alias("max_job_count")
-    )
-    max_job_count_per_location_df = max_job_count_per_location_df.where(
-        F.col("max_job_count") > 0.0
+    for_extrapolation = for_extrapolation.join(
+        first_and_last_submission_df, "locationid", "left"
     )
 
-    for_extrapolation = max_job_count_per_location_df.join(df, "locationid", "left")
-
-    for_extrapolation = for_extrapolation.select(
-        "locationid", "snapshot_date", "unix_time", "job_count", "primary_service_type"
-    )
-
-    df_with_populated_job_count_only = for_extrapolation.where(
-        F.col("job_count").isNotNull()
-    )
-
-    average_df = df_with_populated_job_count_only.groupBy(
-        "primary_service_type", "unix_time"
-    ).agg(
-        F.count("job_count").cast("integer").alias("count"),
-        F.sum("job_count").alias("total_job_count"),
-    )
-
-    average_df = create_rolling_average_column(
-        average_df, number_of_days=ROLLING_AVERAGE_TIME_PERIOD_IN_DAYS
-    )
-
-    average_df = average_df.select(
-        "primary_service_type", "unix_time", "rolling_average"
-    )
-
-    df_with_populated_job_count_only = df_with_populated_job_count_only.join(
-        average_df, ["primary_service_type", "unix_time"], "left"
-    )
-
-    grouped_df = df_with_populated_job_count_only.groupBy("locationid").agg(
-        F.min("unix_time").cast("integer").alias("u_time_min"),
-        F.max("unix_time").cast("integer").alias("u_time_max"),
-    )
-
-    df_all_dates = df_with_populated_job_count_only.join(
-        grouped_df, "locationid", "left"
-    )
-
-    first_job_count_df = df_all_dates.where(
-        df_all_dates.u_time_min == df_all_dates.unix_time
+    first_job_count_df = for_extrapolation.where(
+        for_extrapolation.first_submission_time == for_extrapolation.unix_time
     )
     first_job_count_df = first_job_count_df.withColumnRenamed(
         "job_count", "first_job_count"
     )
     first_job_count_df = first_job_count_df.withColumnRenamed(
-        "rolling_average", "first_rolling_average"
+        "rolling_average_model", "first_rolling_average"
     )
     first_job_count_df = first_job_count_df.select(
         "locationid", "first_job_count", "first_rolling_average"
     )
 
-    last_job_count_df = df_all_dates.where(
-        df_all_dates.u_time_max == df_all_dates.unix_time
+    last_job_count_df = for_extrapolation.where(
+        for_extrapolation.last_submission_time == for_extrapolation.unix_time
     )
     last_job_count_df = last_job_count_df.withColumnRenamed(
         "job_count", "last_job_count"
     )
     last_job_count_df = last_job_count_df.withColumnRenamed(
-        "rolling_average", "last_rolling_average"
+        "rolling_average_model", "last_rolling_average"
     )
     last_job_count_df = last_job_count_df.select(
         "locationid", "last_job_count", "last_rolling_average"
     )
 
-    for_extrapolation = for_extrapolation.join(grouped_df, "locationid", "left")
-    for_extrapolation = for_extrapolation.join(
-        average_df, ["primary_service_type", "unix_time"], "left"
-    )
+    # for_extrapolation = for_extrapolation.join(average_df, ["primary_service_type", "unix_time"], "left")
     for_extrapolation = for_extrapolation.join(first_job_count_df, "locationid", "left")
     for_extrapolation = for_extrapolation.join(last_job_count_df, "locationid", "left")
 
@@ -110,17 +67,17 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     )
 
     df_with_forward_rows = df_with_new_columns.where(
-        df_with_new_columns.unix_time > df_with_new_columns.u_time_max
+        df_with_new_columns.unix_time > df_with_new_columns.last_submission_time
     )
     df_with_backward_rows = df_with_new_columns.where(
-        df_with_new_columns.unix_time < df_with_new_columns.u_time_min
+        df_with_new_columns.unix_time < df_with_new_columns.first_submission_time
     )
 
     df_with_forward_rows = df_with_forward_rows.withColumn(
         "forward_extrapolation_ratio",
         (
             1
-            + (F.col("rolling_average") - F.col("last_rolling_average"))
+            + (F.col("rolling_average_model") - F.col("last_rolling_average"))
             / F.col("last_rolling_average")
         ),
     )
@@ -133,7 +90,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         "backward_extrapolation_ratio",
         (
             1
-            + (F.col("rolling_average") - F.col("first_rolling_average"))
+            + (F.col("rolling_average_model") - F.col("first_rolling_average"))
             / F.col("first_rolling_average")
         ),
     )
@@ -154,7 +111,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         df_with_extrapolation_models, ["locationid", "snapshot_date"], "leftouter"
     )
 
-    df = df.join(average_df, ["primary_service_type", "unix_time"], "left")
+    # df = df.join(average_df, ["primary_service_type", "unix_time"], "left")
 
     df = df.drop("unix_time")
 
@@ -167,6 +124,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     df = update_dataframe_with_identifying_rule(
         df, "extrapolation_model", ESTIMATE_JOB_COUNT
     )
+    df.show()
 
     return df
 
@@ -214,7 +172,33 @@ def create_rolling_average_column(
     )
 
     df = df.withColumn(
-        "rolling_average", F.col("rolling_total_jobs") / F.col("rolling_total_count")
+        "rolling_average_model",
+        F.col("rolling_total_jobs") / F.col("rolling_total_count"),
     )
 
     return df
+
+
+def filter_to_locations_who_have_a_job_count_at_some_point(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+
+    max_job_count_per_location_df = df.groupBy("locationid").agg(
+        F.max("job_count").alias("max_job_count")
+    )
+    max_job_count_per_location_df = max_job_count_per_location_df.where(
+        F.col("max_job_count") > 0.0
+    )
+
+    return max_job_count_per_location_df.join(df, "locationid", "left")
+
+
+def add_first_and_last_submission_date_cols(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    populated_job_count_df = df.where(F.col("job_count").isNotNull())
+
+    return populated_job_count_df.groupBy("locationid").agg(
+        F.min("unix_time").cast("integer").alias("first_submission_time"),
+        F.max("unix_time").cast("integer").alias("last_submission_time"),
+    )
