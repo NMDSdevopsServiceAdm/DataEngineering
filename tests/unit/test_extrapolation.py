@@ -6,7 +6,6 @@ from pyspark.sql.types import (
     StructType,
     StructField,
     StringType,
-    IntegerType,
     DoubleType,
     LongType,
 )
@@ -34,7 +33,7 @@ class TestModelNonResDefault(unittest.TestCase):
         ("1-000000001", "2023-03-01", 1677628800, 30.0, "Care home with nursing", 30.0, "already_populated", 15.2),
         ("1-000000002", "2023-01-01", 1672531200, 4.0, "non-residential", None, None, 50.3),
         ("1-000000002", "2023-02-01", 1675209600, None, "non-residential", None, None, 50.5),
-        ("1-000000002", "2023-03-01", 1677628800, None, "non-residential", 30.0, "already_populated", 50.7),
+        ("1-000000002", "2023-03-01", 1677628800, None, "non-residential", 5.0, "already_populated", 50.7),
         ("1-000000002", "2023-04-01", 1680303600, None, "non-residential", None, None, 50.1),
         ("1-000000003", "2023-01-01", 1672531200, None, "non-residential", None, None, 50.3),
         ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", None, None, 50.5),
