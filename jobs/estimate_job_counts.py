@@ -42,7 +42,7 @@ from utils.estimate_job_count.common_filtering_functions import (
 )
 
 # Note: using 88 as a proxy for 3 months
-NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 89
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
 
 
 def main(
