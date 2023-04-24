@@ -87,8 +87,12 @@ def main(
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
     locations_df = populate_last_known_job_count(locations_df)
-    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType()))
-    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType()))
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
+    )
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
+    )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
     locations_df = utils.convert_date_to_unix_timestamp(
@@ -100,7 +104,9 @@ def main(
 
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
 
-    locations_df = model_primary_service_rolling_average(locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE)
+    locations_df = model_primary_service_rolling_average(
+        locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    )
 
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(
@@ -122,7 +128,10 @@ def main(
     )
 
     # Non-res with PIR data model
-    (locations_df, non_residential_with_pir_metrics_info,) = model_non_residential_with_pir(
+    (
+        locations_df,
+        non_residential_with_pir_metrics_info,
+    ) = model_non_residential_with_pir(
         locations_df,
         non_res_features_df,
         non_res_model_directory,
@@ -150,9 +159,9 @@ def main(
     # but will be the last model to populate estimate_job_count
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT,
-        F.when(F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)).otherwise(
-            F.col("rolling_average_model")
-        ),
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("rolling_average_model")),
     )
 
     locations_df = update_dataframe_with_identifying_rule(
@@ -188,7 +197,9 @@ def populate_estimate_jobs_when_job_count_known(
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
-    df = update_dataframe_with_identifying_rule(df, "ascwds_job_count", ESTIMATE_JOB_COUNT)
+    df = update_dataframe_with_identifying_rule(
+        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
+    )
 
     return df
 
@@ -202,7 +213,9 @@ def populate_last_known_job_count(df):
         & (F.col("previous.job_count").isNotNull()),
         "leftouter",
     )
-    locationAndSnapshotPartition = Window.partitionBy("current.locationid", "current.snapshot_date")
+    locationAndSnapshotPartition = Window.partitionBy(
+        "current.locationid", "current.snapshot_date"
+    )
     df = df.withColumn(
         "max_date_with_job_count",
         F.max("previous.snapshot_date").over(locationAndSnapshotPartition),
@@ -215,7 +228,9 @@ def populate_last_known_job_count(df):
     df = df.drop("max_date_with_job_count")
 
     df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
-    df = df.select([f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT])
+    df = df.select(
+        [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
+    )
 
     return df
 
