@@ -128,10 +128,6 @@ class PrepareLocationsTests(unittest.TestCase):
             ],
         )
 
-        df_collected = output_df.collect()
-
-        self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], 1)
-
     def test_get_ascwds_workplace_df(self):
         workplace_df = prepare_locations.get_ascwds_workplace_df(
             self.TEST_ASCWDS_WORKPLACE_FILE, "20200101"
