@@ -181,7 +181,7 @@ def format_import_date(df, fieldname="import_date"):
     )
 
 
-def convert_date_to_unix_timestamp(
+def create_unix_timestamp_variable_from_date_column(
     df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
 ) -> pyspark.sql.DataFrame:
     return df.withColumn(
