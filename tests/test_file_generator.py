@@ -1260,7 +1260,7 @@ def generate_care_home_jobs_per_bed_filter_df():
     return df
 
 
-def input_data_for_primary_service_rolling_average():
+def generate_input_data_for_primary_service_rolling_average():
     spark = utils.get_spark()
 
     schema = StructType(
@@ -1297,7 +1297,7 @@ def input_data_for_primary_service_rolling_average():
     return df
 
 
-def known_job_count_data_for_primary_service_rolling_average():
+def generate_data_for_calculating_job_count_sum_and_count():
     spark = utils.get_spark()
 
     schema = StructType(
@@ -1327,7 +1327,7 @@ def known_job_count_data_for_primary_service_rolling_average():
     return df
 
 
-def calculate_rolling_sum_df():
+def generate_df_for_calculating_rolling_sum():
     spark = utils.get_spark()
 
     schema = StructType(
@@ -1353,7 +1353,7 @@ def calculate_rolling_sum_df():
     return df
 
 
-def rolling_average_dummy_df():
+def generate_rolling_average_dummy_df():
     spark = utils.get_spark()
 
     schema = StructType(
@@ -1375,7 +1375,7 @@ def rolling_average_dummy_df():
     return df
 
 
-def data_for_creating_rolling_average_column():
+def generate_data_for_calculating_rolling_average_column():
     spark = utils.get_spark()
 
     schema = StructType(

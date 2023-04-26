@@ -6,11 +6,11 @@ from pyspark.sql import SparkSession
 
 import utils.estimate_job_count.models.primary_service_rolling_average as job
 from tests.test_file_generator import (
-    input_data_for_primary_service_rolling_average,
-    known_job_count_data_for_primary_service_rolling_average,
-    calculate_rolling_sum_df,
-    rolling_average_dummy_df,
-    data_for_creating_rolling_average_column,
+    generate_input_data_for_primary_service_rolling_average,
+    generate_data_for_calculating_job_count_sum_and_count,
+    generate_df_for_calculating_rolling_sum,
+    generate_rolling_average_dummy_df,
+    generate_data_for_calculating_rolling_average_column,
 )
 
 
@@ -19,13 +19,15 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.spark = SparkSession.builder.appName(
             "test_model_primary_service_rolling_average"
         ).getOrCreate()
-        self.input_df = input_data_for_primary_service_rolling_average()
+        self.input_df = generate_input_data_for_primary_service_rolling_average()
         self.known_job_count_df = (
-            known_job_count_data_for_primary_service_rolling_average()
+            generate_data_for_calculating_job_count_sum_and_count()
         )
-        self.rolling_sum_df = calculate_rolling_sum_df()
-        self.rolling_avg_df = rolling_average_dummy_df()
-        self.data_for_rolling_avg = data_for_creating_rolling_average_column()
+        self.rolling_sum_df = generate_df_for_calculating_rolling_sum()
+        self.rolling_avg_df = generate_rolling_average_dummy_df()
+        self.data_for_rolling_avg = (
+            generate_data_for_calculating_rolling_average_column()
+        )
         self.output_df = job.model_primary_service_rolling_average(self.input_df, 88)
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
