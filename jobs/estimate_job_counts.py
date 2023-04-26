@@ -95,7 +95,7 @@ def main(
     )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
-    locations_df = utils.convert_date_to_unix_timestamp(
+    locations_df = utils.create_unix_timestamp_variable_from_date_column(
         locations_df,
         date_col=SNAPSHOT_DATE,
         date_format="yyyy-MM-dd",
