@@ -190,7 +190,8 @@ def create_unix_timestamp_variable_from_date_column(
 
 
 def convert_days_to_unix_time(days: int):
-    return days * 86400
+    NUMBER_OF_SECONDS_IN_ONE_DAY = 86400
+    return days * NUMBER_OF_SECONDS_IN_ONE_DAY
 
 
 def get_max_snapshot_date(locations_df):
