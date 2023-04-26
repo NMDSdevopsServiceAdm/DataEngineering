@@ -1,6 +1,7 @@
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql import Window
+from dataclasses import dataclass
 
 from utils.utils import convert_days_to_unix_time
 from utils.estimate_job_count.column_names import (
@@ -8,6 +9,15 @@ from utils.estimate_job_count.column_names import (
     JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
 )
+
+
+@dataclass
+class ColName:
+    count_of_job_count: str = "count_of_job_count"
+    sum_of_job_count: str = "sum_of_job_count"
+    rolling_total_count_of_job_count: str = "rolling_total_count_of_job_count"
+    rolling_total_sum_of_job_count: str = "rolling_total_sum_of_job_count"
+    rolling_average_model: str = "rolling_average_model"
 
 
 def model_primary_service_rolling_average(
@@ -39,24 +49,30 @@ def calculate_job_count_sum_and_count_per_service_and_time_period(
     df: DataFrame,
 ) -> DataFrame:
     return df.groupBy(PRIMARY_SERVICE_TYPE, UNIX_TIME).agg(
-        F.count(JOB_COUNT).cast("integer").alias("count_of_job_count"),
-        F.sum(JOB_COUNT).alias("sum_of_job_count"),
+        F.count(JOB_COUNT).cast("integer").alias(ColName.count_of_job_count),
+        F.sum(JOB_COUNT).alias(ColName.sum_of_job_count),
     )
 
 
 def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
 
     df = calculate_rolling_sum(
-        df, "sum_of_job_count", number_of_days, "rolling_total_sum_of_job_count"
+        df,
+        ColName.sum_of_job_count,
+        number_of_days,
+        ColName.rolling_total_sum_of_job_count,
     )
     df = calculate_rolling_sum(
-        df, "count_of_job_count", number_of_days, "rolling_total_count_of_job_count"
+        df,
+        ColName.count_of_job_count,
+        number_of_days,
+        ColName.rolling_total_count_of_job_count,
     )
 
     return df.withColumn(
-        "rolling_average_model",
-        F.col("rolling_total_sum_of_job_count")
-        / F.col("rolling_total_count_of_job_count"),
+        ColName.rolling_average_model,
+        F.col(ColName.rolling_total_sum_of_job_count)
+        / F.col(ColName.rolling_total_count_of_job_count),
     )
 
 
@@ -81,7 +97,7 @@ def join_rolling_average_into_df(
     df: DataFrame, rolling_average_df: DataFrame
 ) -> DataFrame:
     rolling_average_df = rolling_average_df.select(
-        PRIMARY_SERVICE_TYPE, UNIX_TIME, "rolling_average_model"
+        PRIMARY_SERVICE_TYPE, UNIX_TIME, ColName.rolling_average_model
     )
 
     return df.join(rolling_average_df, [PRIMARY_SERVICE_TYPE, UNIX_TIME], "left")
