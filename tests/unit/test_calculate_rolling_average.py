@@ -7,7 +7,6 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     IntegerType,
-    DoubleType,
 )
 from dataclasses import dataclass
 
