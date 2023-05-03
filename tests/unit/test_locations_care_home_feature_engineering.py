@@ -6,10 +6,7 @@ import warnings
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-from jobs import locations_care_home_feature_engineering
-from jobs.locations_care_home_feature_engineering import (
-    filter_locations_df_for_independent_care_home_data,
-)
+import jobs.locations_care_home_feature_engineering as job
 
 from tests.test_file_generator import (
     generate_prepared_locations_file_parquet,
@@ -43,9 +40,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         return super().tearDown()
 
     def test_main_produces_dataframe_with_features(self):
-        result = locations_care_home_feature_engineering.main(
-            self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
-        )
+        result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
 
         expected_features = SparseVector(
             43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]
@@ -57,9 +52,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
 
-        result = locations_care_home_feature_engineering.main(
-            self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
-        )
+        result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
 
         self.assertTrue(result.count() == 1)
 
@@ -75,7 +68,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, cols)
 
-        result = filter_locations_df_for_independent_care_home_data(
+        result = job.filter_locations_df_for_independent_care_home_data(
             df=df, carehome_col_name="carehome", cqc_col_name="cqc_sector"
         )
         result_row = result.collect()
