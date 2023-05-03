@@ -14,7 +14,7 @@ from pyspark.sql.types import (
     IntegerType,
 )
 
-from jobs import prepare_workers
+import jobs.prepare_workers as job
 from tests.test_file_generator import (
     generate_version_1_ascwds_worker_file,
     generate_flexible_worker_file_hours_worked,
@@ -49,7 +49,7 @@ class PrepareWorkersTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_adds_aggregated_columns(self):
-        df = prepare_workers.main(
+        df = job.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
             schema=self.TEST_SCHEMA,
@@ -84,7 +84,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(len(df.columns), 33)
 
     def test_main_aggregates_right_columns(self):
-        df = prepare_workers.main(
+        df = job.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
             schema=self.TEST_SCHEMA,
@@ -119,7 +119,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertAlmostEqual(worker_ut["hourly_rate"], 3.77, 2)
 
     def test_main_uses_snapshot_partitions_from_locations(self):
-        df = prepare_workers.main(
+        df = job.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
             schema=self.TEST_SCHEMA,
@@ -132,7 +132,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(worker_ut.snapshot_day, "02")
 
     def test_main_handles_all_versions_of_data(self):
-        df = prepare_workers.main(
+        df = job.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
             schema=self.TEST_SCHEMA,
@@ -153,7 +153,7 @@ class PrepareWorkersTests(unittest.TestCase):
         )
 
     def test_main_joins_location_ons_workers_dfs(self):
-        df = prepare_workers.main(
+        df = job.main(
             self.TEST_ASCWDS_WORKER_FILE,
             self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE,
             schema=self.TEST_SCHEMA,
@@ -210,7 +210,7 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         # fmt:on
         df = self.spark.createDataFrame(rows, columns)
-        cleaned_df = prepare_workers.clean(df, columns, schema)
+        cleaned_df = job.clean(df, columns, schema)
         cleaned_df_list = cleaned_df.collect()
 
         self.assertEqual(cleaned_df.count(), 2)
@@ -225,7 +225,7 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertAlmostEqual(cleaned_df_list[1]["dayssick"], 15.30, places=2)
 
     def test_get_dataset_worker_has_correct_columns(self):
-        worker_df = prepare_workers.get_dataset_worker(
+        worker_df = job.get_dataset_worker(
             self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
         )
         column_names = utils.extract_column_from_schema(self.TEST_SCHEMA)
@@ -233,23 +233,21 @@ class PrepareWorkersTests(unittest.TestCase):
         self.assertEqual(worker_df.columns, column_names)
 
     def test_get_dataset_worker_has_correct_rows_number(self):
-        worker_df = prepare_workers.get_dataset_worker(
+        worker_df = job.get_dataset_worker(
             self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA
         )
 
         self.assertEqual(worker_df.count(), 6)
 
     def test_get_dataset_worker_filters_by_date_when_provided(self):
-        worker_df = prepare_workers.get_dataset_worker(
+        worker_df = job.get_dataset_worker(
             self.TEST_ASCWDS_WORKER_FILE, self.TEST_SCHEMA, "20210101"
         )
 
         self.assertEqual(worker_df.count(), 1)
 
     def test_get_workplace_with_ons_data(self):
-        df = prepare_workers.get_workplace_with_ons_data(
-            self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE
-        )
+        df = job.get_workplace_with_ons_data(self.TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE)
         expected_columns = [
             "establishmentid",
             "postal_code",
@@ -272,10 +270,10 @@ class PrepareWorkersTests(unittest.TestCase):
 
     def test_replace_columns_after_aggregation(self):
         training_cols = utils.extract_col_with_pattern("^tr\d\d[a-z]", self.TEST_SCHEMA)
-        df = prepare_workers.replace_columns_with_aggregated_column(
+        df = job.replace_columns_with_aggregated_column(
             self.TEST_DF,
             "training",
-            udf_function=prepare_workers.get_training_into_json,
+            udf_function=job.get_training_into_json,
             cols_to_aggregate=training_cols,
         )
 
@@ -303,11 +301,11 @@ class PrepareWorkersTests(unittest.TestCase):
             (0, "2017-05-15", 1, 0, 0, 0, 0, "2019-06-15", 1, 0, 0, 0),
         ]
         df = self.spark.createDataFrame(rows, columns)
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             "training",
             columns,
-            prepare_workers.get_training_into_json,
+            job.get_training_into_json,
             types=["tr01", "tr02"],
         )
 
@@ -322,11 +320,11 @@ class PrepareWorkersTests(unittest.TestCase):
         columns = ["jr01flag", "jr05flag", "jr16cat8"]
         rows = [(1, 1, 0), (0, 0, 0)]
         df = self.spark.createDataFrame(rows, columns)
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             "job_role",
             columns,
-            prepare_workers.get_job_role_into_json,
+            job.get_job_role_into_json,
             types=columns,
             output_type=ArrayType(StringType()),
         )
@@ -351,11 +349,11 @@ class PrepareWorkersTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             "qualification",
             columns,
-            prepare_workers.get_qualification_into_json,
+            job.get_qualification_into_json,
             types=["ql01achq2", "ql34achqe", "ql37achq"],
             output_type=MapType(StringType(), MapType(StringType(), IntegerType())),
         )
@@ -386,11 +384,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -411,11 +409,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -435,11 +433,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -459,11 +457,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -483,11 +481,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -507,11 +505,11 @@ class PrepareWorkersTests(unittest.TestCase):
             "averagehours",
             "conthrs",
         ]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hrs_worked",
             columns=columns,
-            udf_function=prepare_workers.calculate_hours_worked,
+            udf_function=job.calculate_hours_worked,
             output_type=FloatType(),
         )
 
@@ -526,11 +524,11 @@ class PrepareWorkersTests(unittest.TestCase):
             salary, salaryint, hrlyrate, hrs_worked
         )
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hourly_rate",
             columns=columns,
-            udf_function=prepare_workers.calculate_hourly_pay,
+            udf_function=job.calculate_hourly_pay,
             output_type=FloatType(),
         )
 
@@ -547,11 +545,11 @@ class PrepareWorkersTests(unittest.TestCase):
             salary, salaryint, hrlyrate, hrs_worked
         )
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hourly_rate",
             columns=columns,
-            udf_function=prepare_workers.calculate_hourly_pay,
+            udf_function=job.calculate_hourly_pay,
             output_type=FloatType(),
         )
 
@@ -566,11 +564,11 @@ class PrepareWorkersTests(unittest.TestCase):
             salary, salaryint, hrlyrate, hrs_worked
         )
         columns = ["salary", "salaryint", "hrlyrate", "hrs_worked"]
-        df = prepare_workers.add_aggregated_column(
+        df = job.add_aggregated_column(
             df,
             col_name="hourly_rate",
             columns=columns,
-            udf_function=prepare_workers.calculate_hourly_pay,
+            udf_function=job.calculate_hourly_pay,
             output_type=FloatType(),
         )
 

@@ -14,7 +14,7 @@ from pyspark.sql.types import (
     BooleanType,
 )
 
-from jobs import prepare_locations
+import jobs.prepare_locations as job
 from utils import utils
 from tests.test_file_generator import (
     generate_ascwds_workplace_file,
@@ -68,7 +68,7 @@ class PrepareLocationsTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_main_successfully_runs(self):
-        output_df = prepare_locations.main(
+        output_df = job.main(
             self.TEST_ASCWDS_WORKPLACE_FILE,
             self.TEST_CQC_LOCATION_FILE,
             self.TEST_CQC_PROVIDERS_FILE,
@@ -133,7 +133,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df_collected[0]["cqc_coverage_in_ascwds"], 1)
 
     def test_get_ascwds_workplace_df(self):
-        workplace_df = prepare_locations.get_ascwds_workplace_df(
+        workplace_df = job.get_ascwds_workplace_df(
             self.TEST_ASCWDS_WORKPLACE_FILE, "20200101"
         )
 
@@ -147,7 +147,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(workplace_df.count(), 10)
 
     def test_get_cqc_location_df(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(
+        cqc_location_df = job.get_cqc_location_df(
             self.TEST_CQC_LOCATION_FILE, "20200101"
         )
 
@@ -172,7 +172,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        df = prepare_locations.allocate_primary_service_type(df)
+        df = job.allocate_primary_service_type(df)
         self.assertEqual(df.count(), 4)
 
         df = df.collect()
@@ -182,7 +182,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[3]["primary_service_type"], "non-residential")
 
     def test_get_cqc_provider_df(self):
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+        cqc_provider_df = job.get_cqc_provider_df(
             self.TEST_CQC_PROVIDERS_FILE, "20210105"
         )
 
@@ -192,7 +192,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(cqc_provider_df.count(), 3)
 
     def test_get_pir_df(self):
-        pir_df = prepare_locations.get_pir_df(self.TEST_PIR_FILE, "20210105")
+        pir_df = job.get_pir_df(self.TEST_PIR_FILE, "20210105")
 
         self.assertEqual(pir_df.count(), 8)
         self.assertEqual(len(pir_df.columns), 3)
@@ -205,7 +205,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(data_type_of_column, "int")
 
     def test_get_ons_df(self):
-        pir_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
+        pir_df = job.get_ons_df(self.TEST_ONS_FILE)
 
         self.assertEqual(pir_df.count(), 3)
         self.assertEqual(len(pir_df.columns), 14)
@@ -215,7 +215,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertIn("ons_import_date", pir_df.columns)
 
     def test_map_illegitimate_postcodes_is_replacing_wrong_postcodes(self):
-        df = prepare_locations.map_illegitimate_postcodes(self.cqc_loc_df, "postalCode")
+        df = job.map_illegitimate_postcodes(self.cqc_loc_df, "postalCode")
 
         rows = df.collect()
 
@@ -236,9 +236,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         test_date = date(2022, 3, 12)
 
-        result = prepare_locations.get_date_closest_to_search_date(
-            test_date, date_search_list
-        )
+        result = job.get_date_closest_to_search_date(test_date, date_search_list)
         self.assertEqual(result, date(2022, 2, 11))
 
     def test_get_date_closest_to_search_date_returns_None_if_no_historical_dates_available(
@@ -253,26 +251,22 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         test_date = date(2019, 1, 1)
 
-        result = prepare_locations.get_date_closest_to_search_date(
-            test_date, date_search_list
-        )
+        result = job.get_date_closest_to_search_date(test_date, date_search_list)
         self.assertEqual(result, None)
 
     def test_get_date_closest_to_search_date_with_single_valid_date_returns_date(self):
         date_search_list = [date(2020, 3, 31)]
         test_date = date(2022, 5, 1)
 
-        result = prepare_locations.get_date_closest_to_search_date(
-            test_date, date_search_list
-        )
+        result = job.get_date_closest_to_search_date(test_date, date_search_list)
         self.assertEqual(result, date(2020, 3, 31))
 
     def test_get_unique_import_dates_from_cqc_location_dataset(self):
-        cqc_location_df = prepare_locations.get_cqc_location_df(
+        cqc_location_df = job.get_cqc_location_df(
             self.TEST_CQC_LOCATION_FILE, "20210101"
         )
 
-        result = prepare_locations.get_unique_import_dates(cqc_location_df)
+        result = job.get_unique_import_dates(cqc_location_df)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
         self.assertEqual(result, ["20220101"])
@@ -295,7 +289,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        result = prepare_locations.get_unique_import_dates(df)
+        result = job.get_unique_import_dates(df)
         self.assertEqual(
             result,
             [
@@ -308,24 +302,24 @@ class PrepareLocationsTests(unittest.TestCase):
         )
 
     def test_generate_closest_date_matrix(self):
-        workplace_df = prepare_locations.get_ascwds_workplace_df(
+        workplace_df = job.get_ascwds_workplace_df(
             self.TEST_ASCWDS_WORKPLACE_FILE,
             # date(2021, 11, 29)
         )
-        cqc_location_df = prepare_locations.get_cqc_location_df(
+        cqc_location_df = job.get_cqc_location_df(
             self.TEST_CQC_LOCATION_FILE,
             # date(2022, 1, 4)
         )
-        cqc_provider_df = prepare_locations.get_cqc_provider_df(
+        cqc_provider_df = job.get_cqc_provider_df(
             self.TEST_CQC_PROVIDERS_FILE,
             # date(2022, 3, 29)
         )
-        pir_df = prepare_locations.get_pir_df(
+        pir_df = job.get_pir_df(
             self.TEST_PIR_FILE,
             #  date(2020, 3, 30)
         )
 
-        result = prepare_locations.generate_closest_date_matrix(
+        result = job.generate_closest_date_matrix(
             workplace_df, cqc_location_df, cqc_provider_df, pir_df
         )
 
@@ -351,7 +345,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        cleaned_df = prepare_locations.clean(df)
+        cleaned_df = job.clean(df)
         cleaned_df_list = cleaned_df.collect()
         self.assertEqual(cleaned_df.count(), 6)
         self.assertEqual(cleaned_df_list[0]["total_staff"], None)
@@ -366,9 +360,9 @@ class PrepareLocationsTests(unittest.TestCase):
             ("1-000000004", "SW10 0AB"),
         ]
         locations_df = self.spark.createDataFrame(rows, columns)
-        ons_df = prepare_locations.get_ons_df(self.TEST_ONS_FILE)
+        ons_df = job.get_ons_df(self.TEST_ONS_FILE)
 
-        df = prepare_locations.add_geographical_data(locations_df, ons_df)
+        df = job.add_geographical_data(locations_df, ons_df)
 
         location_one = df.where(df.locationid == "1-000000001").first()
         self.assertEqual(location_one.ons_region, "London")
@@ -399,7 +393,7 @@ class PrepareLocationsTests(unittest.TestCase):
             ("9", date(2013, 1, 1), "5", "0", date(2010, 1, 1)),
         ]
         df = self.spark.createDataFrame(rows, columns)
-        df = prepare_locations.purge_workplaces(df)
+        df = job.purge_workplaces(df)
 
         self.assertEqual(df.count(), 7)
 
@@ -420,7 +414,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        df = prepare_locations.add_cqc_sector(df)
+        df = job.add_cqc_sector(df)
         self.assertEqual(df.count(), 5)
 
         df = df.collect()
@@ -431,9 +425,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(df[4]["cqc_sector"], "Independent")
 
     def test_get_cqc_location_df_standardises_yorkshire_and_the_humber_region(self):
-        cqc_locations = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE
-        )
+        cqc_locations = job.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE)
 
         yorks_and_the_humber_count = cqc_locations.filter(
             cqc_locations.region == "Yorkshire and The Humber"
@@ -446,9 +438,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(yorks_and_the_humber_count, 5)
 
     def test_get_cqc_location_df_convert_dormancy_to_a_bool(self):
-        cqc_locations = prepare_locations.get_cqc_location_df(
-            self.TEST_CQC_LOCATION_FILE
-        )
+        cqc_locations = job.get_cqc_location_df(self.TEST_CQC_LOCATION_FILE)
 
         dormancy_data_type = cqc_locations.schema["dormancy"].dataType
 
@@ -490,7 +480,7 @@ class PrepareLocationsTests(unittest.TestCase):
 
         df = spark.createDataFrame(rows, columns)
 
-        df = prepare_locations.create_coverage_df(df)
+        df = job.create_coverage_df(df)
 
         self.assertEqual(df.count(), 8)
 
@@ -516,7 +506,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = spark.createDataFrame(data=rows, schema=ascwds_schema)
 
-        df = prepare_locations.add_column_if_locationid_is_in_ascwds(df)
+        df = job.add_column_if_locationid_is_in_ascwds(df)
 
         self.assertEqual(df.count(), 2)
 
@@ -545,7 +535,7 @@ class PrepareLocationsTests(unittest.TestCase):
         ]
         df = spark.createDataFrame(data=rows, schema=cqc_locations_schema)
 
-        df = prepare_locations.filter_out_locations_with_no_providerid(df)
+        df = job.filter_out_locations_with_no_providerid(df)
 
         self.assertEqual(df.count(), 1)
 
