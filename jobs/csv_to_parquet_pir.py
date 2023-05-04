@@ -10,7 +10,7 @@ def main(source, destination):
         print("Single file provided to job. Handling single file.")
         bucket, key = utils.split_s3_uri(source)
         new_destination = utils.construct_destination_path(destination, key)
-        ingest_pir_dataset(source, bucket, key, new_destination)
+        ingest_pir_dataset(source, new_destination, PIR_CSV)
         return
 
     print("Multiple files provided to job. Handling each file...")
@@ -23,12 +23,12 @@ def main(source, destination):
     for key in objects_list:
         new_source = utils.construct_s3_uri(bucket, key)
         new_destination = utils.construct_destination_path(destination, key)
-        ingest_pir_dataset(new_source, bucket, key, new_destination)
+        ingest_pir_dataset(new_source, new_destination, PIR_CSV)
 
 
 def ingest_pir_dataset(source, destination, schema):
     print(f"Reading CSV from {source} with schema: {schema}")
-    df = utils.read_csv_with_defined_schema(source, PIR_CSV)
+    df = utils.read_csv_with_defined_schema(source, schema)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination, False)
