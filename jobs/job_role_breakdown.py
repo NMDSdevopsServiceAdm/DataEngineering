@@ -91,7 +91,7 @@ def calculate_job_count_breakdown_by_jobrole(master_df):
 
     master_df = master_df.withColumn(
         "sum_of_estimated_minus_ascwds",
-        sum("estimated_minus_ascwds").over(Window.partitionBy("master_locationid")),
+        F.sum("estimated_minus_ascwds").over(Window.partitionBy("master_locationid")),
     )
 
     master_df = master_df.withColumn(
@@ -124,11 +124,11 @@ def calculate_job_count_breakdown_by_service(master_df):
             "snapshot_date as breakdown_snapshot_date",
         )
         .groupBy("service_type", "job_role", "breakdown_snapshot_date")
-        .agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
+        .agg(F.sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
     )
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "all_ascwds_jobs_in_service",
-        sum("ascwds_num_of_jobs_in_service").over(
+        F.sum("ascwds_num_of_jobs_in_service").over(
             Window.partitionBy("service_type", "breakdown_snapshot_date")
         ),
     )
