@@ -33,6 +33,20 @@ module "spss_csv_to_parquet_job" {
   }
 }
 
+module "csv_to_parquet_pir_job" {
+  source          = "../modules/glue-job"
+  script_name     = "csv_to_parquet_pir.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = "s3://sfc-data-engineering-raw/domain=CQC/dataset=pir/"
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
+  }
+}
+
 
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
