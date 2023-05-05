@@ -4,7 +4,7 @@ import warnings
 from dataclasses import dataclass, asdict
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StringType, IntegerType, StructField
+from pyspark.sql.types import StructType, StringType, StructField
 
 from utils.prepare_locations_utils.dataframe_utils import (
     add_column_with_snaphot_date_substring,

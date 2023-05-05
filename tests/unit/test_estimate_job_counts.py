@@ -10,15 +10,15 @@ from pyspark.ml.linalg import Vectors
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
 from tests.test_helpers import remove_file_path
-from jobs import estimate_job_counts as job
+import jobs.estimate_job_counts as job
 
 
 class EstimateJobCountTests(unittest.TestCase):
     CAREHOME_MODEL = (
-        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0"
+        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
     )
     NON_RES_WITH_PIR_MODEL = (
-        "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0"
+        "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0/"
     )
     METRICS_DESTINATION = "tests/test_data/tmp/data_engineering/model_metrics/"
     PREPARED_LOCATIONS_CLEANED_DIR = "tests/test_data/tmp/prepared_locations_cleaned/"
@@ -296,6 +296,9 @@ class EstimateJobCountTests(unittest.TestCase):
         self.assertEqual(df.first()["latest_snapshot"], "20220601")
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
+
+    def test_number_of_days_constant_is_eighty_eight(self):
+        self.assertEqual(job.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 88)
 
 
 if __name__ == "__main__":

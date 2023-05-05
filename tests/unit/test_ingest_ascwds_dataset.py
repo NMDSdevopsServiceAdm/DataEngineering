@@ -2,7 +2,7 @@ import unittest
 
 from pyspark.sql import SparkSession
 
-from jobs import ingest_ascwds_dataset
+import jobs.ingest_ascwds_dataset as job
 
 
 class IngestASCWDSDatasetTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = ingest_ascwds_dataset.filter_test_accounts(df)
+        df = job.filter_test_accounts(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
@@ -47,7 +47,7 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = ingest_ascwds_dataset.filter_test_accounts(df)
+        df = job.filter_test_accounts(df)
         self.assertEqual(df.count(), 4)
 
 

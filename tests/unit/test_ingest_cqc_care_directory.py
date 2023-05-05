@@ -4,7 +4,7 @@ import shutil
 from pyspark.sql import SparkSession, Row
 
 from utils import utils
-from jobs import ingest_cqc_care_directory
+import jobs.ingest_cqc_care_directory as job
 from tests.test_file_generator import (
     generate_raw_cqc_care_directory_csv_file,
     generate_cqc_care_directory_file,
@@ -90,9 +90,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_cqc_care_directory(self):
-        df = ingest_cqc_care_directory.get_cqc_care_directory(
-            self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE
-        )
+        df = job.get_cqc_care_directory(self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE)
 
         self.assertEqual(df.count(), 1)
         self.assertEqual(
@@ -107,7 +105,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_LOCATIONID_AND_PROVIDERID_FILE)
 
-        locations_at_prov_df = ingest_cqc_care_directory.unique_providerids_with_array_of_their_locationids(
+        locations_at_prov_df = job.unique_providerids_with_array_of_their_locationids(
             df
         )
 
@@ -132,7 +130,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_DUPLICATE_PROVIDER_DATA_FILE)
 
-        distinct_prov_df = ingest_cqc_care_directory.get_distinct_provider_info(df)
+        distinct_prov_df = job.get_distinct_provider_info(df)
 
         self.assertEqual(distinct_prov_df.count(), 4)
         self.assertEqual(
@@ -155,7 +153,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_LOCATION_DATA_FILE)
 
-        location_df = ingest_cqc_care_directory.get_general_location_info(df)
+        location_df = job.get_general_location_info(df)
 
         self.assertEqual(location_df.count(), 3)
         self.assertEqual(
@@ -186,7 +184,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.csv(self.TEST_MULTIPLE_BOOLEAN_COLUMNS, header=True)
 
-        services_df = ingest_cqc_care_directory.convert_multiple_boolean_columns_into_single_array(
+        services_df = job.convert_multiple_boolean_columns_into_single_array(
             df, self.REFORMAT_DICT, "new_alias"
         )
 
@@ -211,7 +209,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_REGISTERED_MANAGER_NAME)
 
-        df = ingest_cqc_care_directory.create_contacts_from_registered_manager_name(df)
+        df = job.create_contacts_from_registered_manager_name(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "contacts"])
@@ -256,7 +254,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
 
-        df = ingest_cqc_care_directory.convert_gac_service_types_to_struct(df)
+        df = job.convert_gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "gacservicetypes"])
@@ -291,7 +289,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_SPECIALISMS)
 
-        df = ingest_cqc_care_directory.convert_specialisms_to_struct(df)
+        df = job.convert_specialisms_to_struct(df)
 
         self.assertEqual(df.count(), 3)
         self.assertEqual(df.columns, ["locationId", "specialisms"])
@@ -318,7 +316,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE, header=True)
 
-        provider_df = ingest_cqc_care_directory.convert_to_cqc_provider_api_format(df)
+        provider_df = job.convert_to_cqc_provider_api_format(df)
 
         self.assertEqual(provider_df.count(), 4)
         self.assertEqual(
@@ -354,7 +352,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.csv(self.TEST_CQC_CARE_DIRECTORY_FILE, header=True)
 
-        location_df = ingest_cqc_care_directory.convert_to_cqc_location_api_format(df)
+        location_df = job.convert_to_cqc_location_api_format(df)
 
         self.assertEqual(location_df.count(), 10)
         self.assertEqual(

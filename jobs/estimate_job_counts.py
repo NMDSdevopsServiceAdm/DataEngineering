@@ -25,8 +25,8 @@ from utils.estimate_job_count.column_names import (
     CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
-from utils.estimate_job_count.models.non_res_rolling_average import (
-    model_non_res_rolling_average,
+from utils.estimate_job_count.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
 )
 from utils.estimate_job_count.models.non_res_historical import (
     model_non_res_historical,
@@ -40,6 +40,9 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
 )
+
+# Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
 
 
 def main(
@@ -92,7 +95,18 @@ def main(
     )
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
+    locations_df = utils.create_unix_timestamp_variable_from_date_column(
+        locations_df,
+        date_col=SNAPSHOT_DATE,
+        date_format="yyyy-MM-dd",
+        new_col_name="unix_time",
+    )
+
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
+
+    locations_df = model_primary_service_rolling_average(
+        locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    )
 
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(
@@ -138,7 +152,23 @@ def main(
     # Non-res & no PIR data models
     locations_df = model_non_res_historical(locations_df)
 
-    locations_df = model_non_res_rolling_average(locations_df)
+    # TODO: Create seperate function which chooses which order to
+    # build estimate_job_count column
+
+    # Rolling average needs to be created prior to extrapolation
+    # but will be the last model to populate estimate_job_count
+    locations_df = locations_df.withColumn(
+        ESTIMATE_JOB_COUNT,
+        F.when(
+            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+        ).otherwise(F.col("rolling_average_model")),
+    )
+
+    locations_df = update_dataframe_with_identifying_rule(
+        locations_df,
+        "model_primary_service_rolling_average",
+        ESTIMATE_JOB_COUNT,
+    )
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))

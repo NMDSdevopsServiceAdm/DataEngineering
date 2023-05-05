@@ -1,10 +1,3 @@
-from schemas.cqc_location_schema import LOCATION_SCHEMA
-from pyspark import SparkConf
-from pyspark.context import SparkContext
-from pprint import pprint
-from pyspark.sql.types import *
-from pyspark.sql import SparkSession
-from pyspark.sql import SQLContext
 from ratelimit import limits, sleep_and_retry
 from time import sleep
 
