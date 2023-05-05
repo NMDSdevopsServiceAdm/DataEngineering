@@ -6,6 +6,7 @@ resource "aws_s3_bucket" "s3_bucket" {
 resource "aws_s3_bucket_acl" "s3_bucket_acl" {
   bucket = aws_s3_bucket.s3_bucket.id
   acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
 }
 
 resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
@@ -22,5 +23,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_bucket_encrypt
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.bucket-one-two.id
+  rule {
+    object_ownership = "ObjectWriter"
   }
 }
