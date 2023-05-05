@@ -3,7 +3,7 @@ import unittest
 
 from pyspark.sql import SparkSession
 
-from jobs import worker_tracking
+import jobs.worker_tracking as job
 from utils import utils
 from tests.test_file_generator import (
     generate_ascwds_stayer_leaver_workplace_data,
@@ -48,7 +48,7 @@ class Worker_Tracking(unittest.TestCase):
         workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
         worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
-        max_import_date = worker_tracking.max_import_date_in_two_datasets(
+        max_import_date = job.max_import_date_in_two_datasets(
             workplace_dates, worker_dates
         )
 
@@ -60,7 +60,7 @@ class Worker_Tracking(unittest.TestCase):
         workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
         worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
-        start_period_import_date = worker_tracking.get_start_period_import_date(
+        start_period_import_date = job.get_start_period_import_date(
             workplace_dates, worker_dates, "20220101"
         )
 
@@ -72,11 +72,11 @@ class Worker_Tracking(unittest.TestCase):
         workplace_dates = spark.read.parquet(self.WORKPLACE_IMPORT_DATES)
         worker_dates = spark.read.parquet(self.WORKER_IMPORT_DATES)
 
-        end_period_import_date = worker_tracking.max_import_date_in_two_datasets(
+        end_period_import_date = job.max_import_date_in_two_datasets(
             workplace_dates, worker_dates
         )
 
-        start_period_import_date = worker_tracking.get_start_period_import_date(
+        start_period_import_date = job.get_start_period_import_date(
             workplace_dates, worker_dates, end_period_import_date
         )
 
@@ -88,9 +88,7 @@ class Worker_Tracking(unittest.TestCase):
 
         workplaces = spark.read.parquet(self.ASCWDS_WORKPLACE)
 
-        filtered_df = worker_tracking.filter_workplaces(
-            workplaces, "20210101", "20220101"
-        )
+        filtered_df = job.filter_workplaces(workplaces, "20210101", "20220101")
 
         self.assertEqual(filtered_df.columns, ["establishmentid"])
 
@@ -111,7 +109,7 @@ class Worker_Tracking(unittest.TestCase):
         final_column_list = workers.columns
         final_column_list.append("establishment_worker_id")
 
-        df = worker_tracking.get_employees_with_new_identifier(workers)
+        df = job.get_employees_with_new_identifier(workers)
 
         self.assertEqual(df.columns, final_column_list)
         self.assertEqual(df.count(), 36)
@@ -126,7 +124,7 @@ class Worker_Tracking(unittest.TestCase):
         workers = spark.read.parquet(self.ASCWDS_WORKER)
         filtered_workplaces = spark.read.parquet(self.FILTERED_WORKPLACES)
 
-        start_df = worker_tracking.determine_stayer_or_leaver(
+        start_df = job.determine_stayer_or_leaver(
             filtered_workplaces, workers, "20210101", "20220101"
         )
 
@@ -137,7 +135,7 @@ class Worker_Tracking(unittest.TestCase):
         self.assertEqual(collected_start_df[1]["stayer_or_leaver"], "leaver")
 
     def test_main(self):
-        output_df = worker_tracking.main(
+        output_df = job.main(
             self.ASCWDS_WORKPLACE,
             self.ASCWDS_WORKER,
         )

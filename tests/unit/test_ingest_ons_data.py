@@ -6,7 +6,7 @@ import warnings
 from pyspark.sql import SparkSession
 from unittest.mock import patch
 
-from jobs import ingest_ons_data
+import jobs.ingest_ons_data as job
 
 
 class IngestIngestONSDataTests(unittest.TestCase):
@@ -94,7 +94,7 @@ class IngestIngestONSDataTests(unittest.TestCase):
             f"{self.DATA_SOURCE}/dataset=postcode-directory/"
         )
 
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(
             f"{self.DESTINATION}/dataset=postcode-directory/"
@@ -110,8 +110,8 @@ class IngestIngestONSDataTests(unittest.TestCase):
             f"{self.DATA_SOURCE}/dataset=postcode-directory/"
         )
 
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(
             f"{self.DESTINATION}/dataset=postcode-directory/"
@@ -125,11 +125,11 @@ class IngestIngestONSDataTests(unittest.TestCase):
             f"{self.DATA_SOURCE}/dataset=postcode-directory/"
         )
 
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
         self.generate_ons_test_csv_file(
             f"{self.DATA_SOURCE}/dataset=postcode-directory/", ("2022", "01", "02")
         )
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(
             f"{self.DESTINATION}/dataset=postcode-directory/"
@@ -147,7 +147,7 @@ class IngestIngestONSDataTests(unittest.TestCase):
         self.generate_nhs_region_lookup_csv(self.LOOKUPS_SOURCE)
         self.generate_region_lookup_csv(self.LOOKUPS_SOURCE)
 
-        ingest_ons_data.main(self.DATA_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.DESTINATION)
         rgn_lookup = self.spark.read.parquet(
             f"{self.DESTINATION}/dataset=postcode-directory-field-lookups/field=rgn/"
         )
