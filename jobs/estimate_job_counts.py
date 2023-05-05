@@ -24,6 +24,9 @@ from utils.estimate_job_count.column_names import (
     CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
+from utils.estimate_job_count.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
 from utils.estimate_job_count.models.extrapolation import model_extrapolation
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
@@ -34,6 +37,9 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 from utils.estimate_job_count.common_filtering_functions import (
     filter_to_only_cqc_independent_sector_data,
 )
+
+# Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
 
 
 def main(
@@ -78,15 +84,20 @@ def main(
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
-    )
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
-    )
+    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType()))
+    locations_df = locations_df.withColumn(ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType()))
     latest_snapshot = utils.get_max_snapshot_date(locations_df)
 
+    locations_df = utils.create_unix_timestamp_variable_from_date_column(
+        locations_df,
+        date_col=SNAPSHOT_DATE,
+        date_format="yyyy-MM-dd",
+        new_col_name="unix_time",
+    )
+
     locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
+
+    locations_df = model_primary_service_rolling_average(locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE)
 
     locations_df = model_extrapolation(locations_df)
 
@@ -110,10 +121,7 @@ def main(
     )
 
     # Non-res with PIR data model
-    (
-        locations_df,
-        non_residential_with_pir_metrics_info,
-    ) = model_non_residential_with_pir(
+    (locations_df, non_residential_with_pir_metrics_info,) = model_non_residential_with_pir(
         locations_df,
         non_res_features_df,
         non_res_model_directory,
@@ -131,18 +139,14 @@ def main(
         job_name=job_name,
     )
 
-    locations_df = locations_df.withColumnRenamed(
-        "rolling_average", "rolling_average_model"
-    )
+    locations_df = locations_df.withColumnRenamed("rolling_average", "rolling_average_model")
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT,
-        F.when(
-            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
-        ).otherwise(F.col("rolling_average_model")),
+        F.when(F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)).otherwise(
+            F.col("rolling_average_model")
+        ),
     )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
-    )
+    locations_df = update_dataframe_with_identifying_rule(locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT)
 
     today = date.today()
     locations_df = locations_df.withColumn("run_year", F.lit(today.year))
@@ -171,9 +175,7 @@ def populate_estimate_jobs_when_job_count_known(
         ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
     )
 
-    df = update_dataframe_with_identifying_rule(
-        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
-    )
+    df = update_dataframe_with_identifying_rule(df, "ascwds_job_count", ESTIMATE_JOB_COUNT)
 
     return df
 

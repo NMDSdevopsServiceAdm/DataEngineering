@@ -1,8 +1,5 @@
 from utils import cqc_api as cqc
-from pyspark.sql import SparkSession
-import mock
 import unittest
-import requests
 import re
 
 EXAMPLE_LOCATION_ID = "1-10000792582"

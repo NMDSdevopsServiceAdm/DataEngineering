@@ -3,7 +3,7 @@ import shutil
 
 from pyspark.sql import SparkSession
 
-from jobs import job_role_breakdown
+import jobs.job_role_breakdown as job
 from tests.test_file_generator import (
     generate_estimate_jobs_parquet,
     generate_worker_parquet,
@@ -32,9 +32,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
 
     def test_get_job_estimates_dataset(self):
 
-        breakdown_df = job_role_breakdown.get_job_estimates_dataset(
-            self.TEST_JOB_ESTIMATES_FILE
-        )
+        breakdown_df = job.get_job_estimates_dataset(self.TEST_JOB_ESTIMATES_FILE)
 
         self.assertEqual(breakdown_df.count(), 5)
         self.assertEqual(
@@ -51,7 +49,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         )
 
     def test_get_worker_dataset(self):
-        worker_df = job_role_breakdown.get_worker_dataset(self.TEST_WORKER_FILE)
+        worker_df = job.get_worker_dataset(self.TEST_WORKER_FILE)
 
         self.assertEqual(worker_df.count(), 15)
         self.assertEqual(
@@ -75,9 +73,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        output_df = job_role_breakdown.get_distinct_list(
-            df, column_name="mainjrid", alias="mylist"
-        )
+        output_df = job.get_distinct_list(df, column_name="mainjrid", alias="mylist")
 
         self.assertEqual(output_df.count(), 5)
         self.assertEqual(output_df.columns, ["mylist"])
@@ -104,7 +100,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        output_df = job_role_breakdown.get_distinct_list(df, column_name="mainjrid")
+        output_df = job.get_distinct_list(df, column_name="mainjrid")
 
         self.assertEqual(output_df.count(), 5)
         self.assertEqual(output_df.columns, ["mainjrid"])
@@ -130,9 +126,9 @@ class JobRoleBreakdownTests(unittest.TestCase):
 
         master_df = self.spark.createDataFrame(master_rows, master_columns)
 
-        worker_df = job_role_breakdown.get_worker_dataset(self.TEST_WORKER_FILE)
+        worker_df = job.get_worker_dataset(self.TEST_WORKER_FILE)
 
-        ouput_df = job_role_breakdown.get_comprehensive_list_of_job_roles_to_locations(
+        ouput_df = job.get_comprehensive_list_of_job_roles_to_locations(
             worker_df, master_df
         )
 
@@ -154,7 +150,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
 
         df = self.spark.createDataFrame(rows, columns)
 
-        df = job_role_breakdown.determine_worker_record_to_jobs_ratio(df)
+        df = job.determine_worker_record_to_jobs_ratio(df)
 
         self.assertEqual(df.count(), 4)
         self.assertEqual(
@@ -177,9 +173,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
         self.assertEqual(df_list[3]["location_jobs_to_model"], 0)
 
     def test_main(self):
-        result_df = job_role_breakdown.main(
-            self.TEST_JOB_ESTIMATES_FILE, self.TEST_WORKER_FILE
-        )
+        result_df = job.main(self.TEST_JOB_ESTIMATES_FILE, self.TEST_WORKER_FILE)
 
         self.assertEqual(
             result_df.columns,
