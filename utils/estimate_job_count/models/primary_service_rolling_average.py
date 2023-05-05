@@ -85,7 +85,7 @@ def calculate_rolling_sum(
     )
 
 
-def define_window_specifications(unix_date_col: str, number_of_days: int):
+def define_window_specifications(unix_date_col: str, number_of_days: int) -> Window:
     return (
         Window.partitionBy(PRIMARY_SERVICE_TYPE)
         .orderBy(F.col(unix_date_col).cast("long"))
