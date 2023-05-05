@@ -33,6 +33,20 @@ module "spss_csv_to_parquet_job" {
   }
 }
 
+module "ingest_cqc_pir_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_cqc_pir_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
+  }
+}
+
 
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
