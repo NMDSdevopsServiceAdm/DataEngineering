@@ -1,6 +1,5 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
 import pyspark.sql.functions as F
-from pyspark.sql import Window
 from dataclasses import dataclass
 
 from utils.utils import convert_days_to_unix_time
