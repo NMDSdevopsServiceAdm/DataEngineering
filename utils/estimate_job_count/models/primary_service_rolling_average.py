@@ -27,7 +27,7 @@ def model_primary_service_rolling_average(
     df_with_job_count_only = filter_to_locations_with_known_job_count(df)
 
     job_count_sum_and_count_df = (
-        calculate_job_count_sum_and_count_per_service_and_time_period(
+        calculate_job_count_aggregates_per_service_and_time_period(
             df_with_job_count_only
         )
     )
@@ -45,7 +45,7 @@ def filter_to_locations_with_known_job_count(df: DataFrame) -> DataFrame:
     return df.where((F.col(JOB_COUNT).isNotNull()) & (F.col(JOB_COUNT) > 0))
 
 
-def calculate_job_count_sum_and_count_per_service_and_time_period(
+def calculate_job_count_aggregates_per_service_and_time_period(
     df: DataFrame,
 ) -> DataFrame:
     return df.groupBy(PRIMARY_SERVICE_TYPE, UNIX_TIME).agg(

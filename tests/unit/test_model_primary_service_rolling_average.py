@@ -48,8 +48,8 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.assertEqual(df.count(), 10)
         self.assertEqual(df.where(F.col("job_count").isNull()).count(), 0)
 
-    def test_calculate_job_count_sum_and_count_per_service_and_time_period(self):
-        df = job.calculate_job_count_sum_and_count_per_service_and_time_period(
+    def test_calculate_job_count_aggregates_per_service_and_time_period(self):
+        df = job.calculate_job_count_aggregates_per_service_and_time_period(
             self.known_job_count_df
         )
         self.assertEqual(df.count(), 8)
