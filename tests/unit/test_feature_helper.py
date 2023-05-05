@@ -3,7 +3,6 @@ import unittest
 import warnings
 
 from pyspark.ml.functions import vector_to_array
-from pyspark.ml.linalg import DenseVector
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 

@@ -1,6 +1,6 @@
 import sys
 import argparse
-import pyspark.sql.functions as f
+import pyspark.sql.functions as F
 
 from schemas.spss_job_estimates_schema import SPSS_JOBS_ESTIMATES
 from utils import utils
@@ -9,7 +9,7 @@ from utils import utils
 def main(source, destination):
     df = utils.read_csv_with_defined_schema(source, SPSS_JOBS_ESTIMATES)
     df_with_formatted_date = df.withColumn(
-        "snapshot_date_formatted", f.col("Snapshot_date")
+        "snapshot_date_formatted", F.col("Snapshot_date")
     )
     df_with_formatted_date = utils.format_date_fields(
         df_with_formatted_date,

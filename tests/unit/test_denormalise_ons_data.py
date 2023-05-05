@@ -4,7 +4,7 @@ import warnings
 
 from pyspark.sql import SparkSession
 
-from jobs import denormalise_ons_data
+import jobs.denormalise_ons_data as job
 
 
 class TestDenormaliseONSDataTests(unittest.TestCase):
@@ -85,100 +85,76 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         # fmt: on
 
     def test_main_writes_data_to_the_output(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         self.assertEqual(ons_data.count(), 1)
 
     def test_main_wont_import_data_already_imported(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         self.assertEqual(ons_data.count(), 1)
 
     def test_replaces_rgn_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.rgn, "North East")
 
     def test_replaces_nhser_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.nhser, "London")
 
     def test_replaces_ccg_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.ccg, "NHS Barnsley CCG")
 
     def test_replaces_ctry_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.ctry, "England")
 
     def test_replaces_imd_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.imd, "Tendring 018A")
 
     def test_replaces_lsoa_fields_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.lsoa["year_2011"], "Aldergrove 1")
 
     def test_replaces_msoa_fields_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.msoa["year_2011"], "City of London 001")
 
     def test_replaces_oslaua_field_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
         self.assertEqual(ons_data_row.oslaua, "Hartlepool")
 
     def test_replaces_ru_ind_fields_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]
@@ -188,9 +164,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         )
 
     def test_replace_stp_fields_with_lookup_values(self):
-        denormalise_ons_data.main(
-            self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION
-        )
+        job.main(self.DATA_SOURCE, self.LOOKUPS_SOURCE, self.DESTINATION)
 
         ons_data = self.spark.read.parquet(self.DESTINATION)
         ons_data_row = ons_data.collect()[0]

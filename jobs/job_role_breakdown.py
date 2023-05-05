@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from pyspark.sql.functions import col, lit, least, greatest, sum, coalesce, date_format
+import pyspark.sql.functions as F
 from pyspark.sql import Window
 
 from utils import utils
@@ -79,35 +79,37 @@ def calculate_job_count_breakdown_by_jobrole(master_df):
 
     master_df = master_df.withColumn(
         "estimated_jobs_in_role",
-        col("estimate_job_count") * col("estimated_job_role_percentage"),
+        F.col("estimate_job_count") * F.col("estimated_job_role_percentage"),
     ).drop("estimated_job_role_percentage")
 
     master_df = master_df.withColumn(
         "estimated_minus_ascwds",
-        greatest(lit(0), col("estimated_jobs_in_role") - col("ascwds_num_of_jobs")),
+        F.greatest(
+            F.lit(0), F.col("estimated_jobs_in_role") - F.col("ascwds_num_of_jobs")
+        ),
     ).drop("estimated_jobs_in_role")
 
     master_df = master_df.withColumn(
         "sum_of_estimated_minus_ascwds",
-        sum("estimated_minus_ascwds").over(Window.partitionBy("master_locationid")),
+        F.sum("estimated_minus_ascwds").over(Window.partitionBy("master_locationid")),
     )
 
     master_df = master_df.withColumn(
         "adjusted_job_role_percentage",
-        coalesce(
-            (col("estimated_minus_ascwds") / col("sum_of_estimated_minus_ascwds")),
-            lit(0.0),
+        F.coalesce(
+            (F.col("estimated_minus_ascwds") / F.col("sum_of_estimated_minus_ascwds")),
+            F.lit(0.0),
         ),
     ).drop("estimated_minus_ascwds", "sum_of_estimated_minus_ascwds")
 
     master_df = master_df.withColumn(
         "estimated_num_of_jobs",
-        col("location_jobs_to_model") * col("adjusted_job_role_percentage"),
+        F.col("location_jobs_to_model") * F.col("adjusted_job_role_percentage"),
     ).drop("location_jobs_to_model", "adjusted_job_role_percentage")
 
     master_df = master_df.withColumn(
         "estimate_job_role_count",
-        col("ascwds_num_of_jobs") + col("estimated_num_of_jobs"),
+        F.col("ascwds_num_of_jobs") + F.col("estimated_num_of_jobs"),
     ).drop("location_worker_records")
 
     return master_df
@@ -122,17 +124,17 @@ def calculate_job_count_breakdown_by_service(master_df):
             "snapshot_date as breakdown_snapshot_date",
         )
         .groupBy("service_type", "job_role", "breakdown_snapshot_date")
-        .agg(sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
+        .agg(F.sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
     )
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "all_ascwds_jobs_in_service",
-        sum("ascwds_num_of_jobs_in_service").over(
+        F.sum("ascwds_num_of_jobs_in_service").over(
             Window.partitionBy("service_type", "breakdown_snapshot_date")
         ),
     )
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "estimated_job_role_percentage",
-        col("ascwds_num_of_jobs_in_service") / col("all_ascwds_jobs_in_service"),
+        F.col("ascwds_num_of_jobs_in_service") / F.col("all_ascwds_jobs_in_service"),
     ).drop("ascwds_num_of_jobs_in_service", "all_ascwds_jobs_in_service")
 
     master_df = master_df.join(
@@ -152,11 +154,15 @@ def calculate_job_count_breakdown_by_service(master_df):
 def determine_worker_record_to_jobs_ratio(master_df):
     master_df = master_df.withColumn(
         "location_jobs_ratio",
-        least(lit(1), col("estimate_job_count") / col("location_worker_records")),
+        F.least(
+            F.lit(1), F.col("estimate_job_count") / F.col("location_worker_records")
+        ),
     )
     master_df = master_df.withColumn(
         "location_jobs_to_model",
-        greatest(lit(0), col("estimate_job_count") - col("location_worker_records")),
+        F.greatest(
+            F.lit(0), F.col("estimate_job_count") - F.col("location_worker_records")
+        ),
     )
 
     return master_df
@@ -192,7 +198,7 @@ def get_worker_dataset(worker_source):
     spark = utils.get_spark()
     print(f"Reading worker source parquet from {worker_source}")
     worker_df = spark.read.parquet(worker_source).select(
-        col("locationid"), col("workerid"), col("mainjrid"), col("import_date")
+        F.col("locationid"), F.col("workerid"), F.col("mainjrid"), F.col("import_date")
     )
 
     worker_df = worker_df.withColumnRenamed("import_date", "snapshot_date")
@@ -204,18 +210,18 @@ def get_job_estimates_dataset(job_estimates_source):
     spark = utils.get_spark()
     print(f"Reading job_estimates_2021 parquet from {job_estimates_source}")
     job_estimates_df = spark.read.parquet(job_estimates_source).select(
-        col("locationid").alias("master_locationid"),
-        col("primary_service_type"),
-        col("estimate_job_count"),
-        col("snapshot_date"),
-        col("run_year"),
-        col("run_month"),
-        col("run_day"),
+        F.col("locationid").alias("master_locationid"),
+        F.col("primary_service_type"),
+        F.col("estimate_job_count"),
+        F.col("snapshot_date"),
+        F.col("run_year"),
+        F.col("run_month"),
+        F.col("run_day"),
     )
 
     job_estimates_df = utils.get_latest_partition(job_estimates_df)
     job_estimates_df = job_estimates_df.withColumn(
-        "snapshot_date", date_format(col("snapshot_date"), "yyyyMMdd")
+        "snapshot_date", F.date_format(F.col("snapshot_date"), "yyyyMMdd")
     )
 
     return job_estimates_df
