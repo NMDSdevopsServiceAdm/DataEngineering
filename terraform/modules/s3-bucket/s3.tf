@@ -27,7 +27,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_bucket_encrypt
 }
 
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
-  bucket = aws_s3_bucket.bucket-one-two.id
+  bucket = aws_s3_bucket.s3_bucket.id
   rule {
     object_ownership = "ObjectWriter"
   }
