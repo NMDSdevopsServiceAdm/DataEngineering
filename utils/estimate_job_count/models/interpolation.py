@@ -62,7 +62,7 @@ def filter_to_locations_with_a_known_job_count(
 
     df = df.select(LOCATION_ID, UNIX_TIME, JOB_COUNT)
 
-    return df.where(F.col(JOB_COUNT).isNotNull)
+    return df.where(F.col(JOB_COUNT).isNotNull())
 
 
 def calculate_first_and_last_submission_date_per_location(
@@ -126,8 +126,9 @@ def get_previous_value_in_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
     return df.withColumn(
-        new_column_name, F.last(F.col(column_name), ignorenulls=True)
-    ).over(window_for_previous_value)
+        new_column_name,
+        F.last(F.col(column_name), ignorenulls=True).over(window_for_previous_value()),
+    )
 
 
 def window_for_next_value() -> Window:
@@ -140,8 +141,14 @@ def get_next_value_in_new_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
     return df.withColumn(
-        new_column_name, F.first(F.col(column_name), ignorenulls=True)
-    ).over(window_for_next_value)
+        new_column_name,
+        F.first(F.col(column_name), ignorenulls=True).over(window_for_next_value()),
+    )
+
+
+def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
+    df = input_previous_and_next_values_into_df(df)
+    return calculated_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
 
 
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
@@ -155,11 +162,13 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     )
 
 
-def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
+def calculated_interpolated_values_in_new_column(
+    df: DataFrame, new_column_name: str
+) -> DataFrame:
     interpol_udf = F.udf(interpolation_calculation, FloatType())
 
     df = df.withColumn(
-        INTERPOLATION_MODEL,
+        new_column_name,
         interpol_udf(
             UNIX_TIME,
             PREVIOUS_JOB_COUNT_UNIX_TIME,
