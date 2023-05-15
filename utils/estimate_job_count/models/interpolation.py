@@ -112,7 +112,7 @@ def leftouter_join_on_locationid_and_unix_time(
 def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
     return df.withColumn(
         JOB_COUNT_UNIX_TIME,
-        F.when((F.col(JOB_COUNT) > 0.0), F.col(UNIX_TIME)).otherwise(F.lit(None)),
+        F.when((F.col(JOB_COUNT).isNotNull()), F.col(UNIX_TIME)).otherwise(F.lit(None)),
     )
 
 
