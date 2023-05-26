@@ -26,6 +26,7 @@ class SetupSpark(object):
 
     def setupSpark(self):
         spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
 
         return spark
 
@@ -51,8 +52,7 @@ def get_s3_sub_folders_for_path(path, s3_client=None):
     bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-=_/]*)$", path).groups()
     response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
     return [
-        common_prefix["Prefix"].replace(prefix, "").replace("/", "")
-        for common_prefix in response["CommonPrefixes"]
+        common_prefix["Prefix"].replace(prefix, "").replace("/", "") for common_prefix in response["CommonPrefixes"]
     ]
 
 
@@ -97,9 +97,7 @@ def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
 
 
 def read_csv(source, delimiter=","):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
 
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
@@ -107,9 +105,7 @@ def read_csv(source, delimiter=","):
 
 
 def read_csv_with_defined_schema(source, schema):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_spss_csv_to_parquet"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_spss_csv_to_parquet").getOrCreate()
 
     df = spark.read.schema(schema).option("header", "true").csv(source)
 
@@ -176,17 +172,13 @@ def extract_specific_column_types(pattern, schema):
 
 
 def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(
-        fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
-    )
+    return df.withColumn(fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd"))
 
 
 def create_unix_timestamp_variable_from_date_column(
     df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
 ) -> pyspark.sql.DataFrame:
-    return df.withColumn(
-        new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
-    )
+    return df.withColumn(new_col_name, F.unix_timestamp(F.col(date_col), format=date_format))
 
 
 def convert_days_to_unix_time(days: int):
@@ -202,9 +194,7 @@ def get_max_snapshot_partitions(location=None):
     if not location:
         return None
 
-    spark = SparkSession.builder.appName(
-        "sfc_get_max_snapshot_partitions"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_get_max_snapshot_partitions").getOrCreate()
 
     try:
         previous_snpashots = spark.read.option("basePath", location).parquet(location)
