@@ -11,6 +11,9 @@ from pyspark.sql.types import (
 )
 
 import utils.estimate_job_count.models.interpolation as job
+from tests.test_file_generator import (
+    generate_data_for_calculating_first_and_last_submission_date_per_location,
+)
 
 
 class TestModelInterpolation(unittest.TestCase):
@@ -47,6 +50,9 @@ class TestModelInterpolation(unittest.TestCase):
         self.interpolation_df = job.model_interpolation(
             self.spark.createDataFrame(self.rows, schema=self.column_schema)
         )
+        self.data_for_calculating_submission_dates = (
+            generate_data_for_calculating_first_and_last_submission_date_per_location()
+        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -63,7 +69,22 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(filtered_df.columns, ["locationid", "unix_time", "job_count"])
 
     def test_calculate_first_and_last_submission_date_per_location(self):
-        pass
+
+        output_df = job.calculate_first_and_last_submission_date_per_location(
+            self.data_for_calculating_submission_dates
+        )
+
+        self.assertEqual(output_df.count(), 2)
+        self.assertEqual(
+            output_df.columns,
+            ["locationid", "first_submission_time", "last_submission_time"],
+        )
+
+        output_df = output_df.sort("locationid").collect()
+        self.assertEqual(output_df[0]["first_submission_time"], 1672617600)
+        self.assertEqual(output_df[0]["last_submission_time"], 1672617600)
+        self.assertEqual(output_df[1]["first_submission_time"], 1672704000)
+        self.assertEqual(output_df[1]["last_submission_time"], 1673222400)
 
     def test_convert_first_and_last_known_time_into_timeseries_df(self):
         pass

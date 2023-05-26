@@ -1401,3 +1401,24 @@ def generate_data_for_calculating_rolling_average_column():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
+
+
+def generate_data_for_calculating_first_and_last_submission_date_per_location():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600, 1.0),
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1673049600, 1.0),
+        ("1-000000002", 1673222400, 1.0),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
