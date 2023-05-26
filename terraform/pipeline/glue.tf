@@ -307,3 +307,10 @@ module "ons_lookups_crawler" {
   exclusions                   = ["dataset=postcode-directory/**", "dataset=postcode-directory-denormalised/**"]
   table_level                  = 4
 }
+
+module "dpr_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "DPR"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
