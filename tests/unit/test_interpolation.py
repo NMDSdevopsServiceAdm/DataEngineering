@@ -7,6 +7,7 @@ import utils.estimate_job_count.models.interpolation as job
 from tests.test_file_generator import (
     generate_data_for_interpolation_model,
     generate_data_for_calculating_first_and_last_submission_date_per_location,
+    generate_data_for_exploding_dates_into_timeseries_df,
 )
 
 
@@ -16,6 +17,9 @@ class TestModelInterpolation(unittest.TestCase):
         self.interpolation_df = generate_data_for_interpolation_model()
         self.data_for_calculating_submission_dates = (
             generate_data_for_calculating_first_and_last_submission_date_per_location()
+        )
+        self.data_for_creating_timeseries_df = (
+            generate_data_for_exploding_dates_into_timeseries_df()
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -52,7 +56,15 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(output_df[1]["last_submission_time"], 1673222400)
 
     def test_convert_first_and_last_known_time_into_timeseries_df(self):
-        pass
+        df = job.convert_first_and_last_known_time_into_timeseries_df(
+            self.data_for_creating_timeseries_df
+        )
+
+        self.assertEqual(df.count(), 6)
+        self.assertEqual(
+            df.columns,
+            ["locationid", "unix_time"],
+        )
 
     def test_date_range(self):
         pass

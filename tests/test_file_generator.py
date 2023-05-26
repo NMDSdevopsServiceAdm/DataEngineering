@@ -1457,3 +1457,22 @@ def generate_data_for_calculating_first_and_last_submission_date_per_location():
     df = spark.createDataFrame(input_rows, schema=schema)
 
     return df
+
+
+def generate_data_for_exploding_dates_into_timeseries_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600, 1672617600),
+        ("1-000000002", 1672704000, 1673049600),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
