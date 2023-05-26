@@ -86,7 +86,9 @@ def convert_first_and_last_known_time_into_timeseries_df(
     ).drop(FIRST_SUBMISSION_TIME, LAST_SUBMISSION_TIME)
 
 
-def date_range(unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1):
+def date_range(
+    unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1
+) -> int:
     """Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes"""
     unix_time_step = convert_days_to_unix_time(step_size_in_days)
 
