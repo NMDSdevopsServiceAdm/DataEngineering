@@ -75,7 +75,9 @@ def calculate_first_and_last_submission_date_per_location(
     )
 
 
-def convert_first_and_last_known_time_into_timeseries_df(df):
+def convert_first_and_last_known_time_into_timeseries_df(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
     date_range_udf = F.udf(date_range, ArrayType(LongType()))
 
     return df.withColumn(
