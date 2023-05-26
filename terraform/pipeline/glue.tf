@@ -25,7 +25,7 @@ module "spss_csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
