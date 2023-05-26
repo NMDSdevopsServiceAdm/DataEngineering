@@ -9,7 +9,7 @@ module "csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -25,7 +25,7 @@ module "spss_csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -54,7 +54,7 @@ module "ingest_ascwds_dataset_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -96,7 +96,7 @@ module "prepare_locations_job" {
   number_of_workers = 6
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "2.0"
+  glue_version      = "3.0"
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
@@ -113,7 +113,7 @@ module "worker_tracking_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
 
   job_parameters = {

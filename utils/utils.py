@@ -26,6 +26,7 @@ class SetupSpark(object):
 
     def setupSpark(self):
         spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
 
         return spark
 
