@@ -247,7 +247,7 @@ module "collect_dq_metrics_on_workplaces_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "2.0"
 
   job_parameters = {
     "--source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
