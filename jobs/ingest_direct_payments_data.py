@@ -13,7 +13,9 @@ def main(source, destination):
 
 def collect_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", help="A CSV file used as source input", required=True)
+    parser.add_argument(
+        "--source", help="A CSV file used as source input", required=True
+    )
     parser.add_argument(
         "--destination",
         help="A destination directory for outputting parquet files",
