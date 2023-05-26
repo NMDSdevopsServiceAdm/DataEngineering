@@ -1403,6 +1403,41 @@ def generate_data_for_calculating_rolling_average_column():
     return df
 
 
+def generate_data_for_interpolation_model():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("estimate_job_count", DoubleType(), True),
+            StructField("estimate_job_count_source", StringType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, None, None, None),
+        ("1-000000001", "2023-01-02", 1672617600, 30.0, 30.0, "ascwds_job_count"),
+        ("1-000000001", "2023-01-03", 1672704000, None, None, None),
+        ("1-000000002", "2023-01-01", 1672531200, None, None, None),
+        ("1-000000002", "2023-01-03", 1672704000, 4.0, 4.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-05", 1672876800, None, None, None),
+        ("1-000000002", "2023-01-07", 1673049600, 5.0, 5.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-09", 1673222400, 5.0, 5.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-11", 1673395200, None, None, None),
+        ("1-000000002", "2023-01-13", 1673568000, None, None, None),
+        ("1-000000002", "2023-01-15", 1673740800, 20.0, 20.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-17", 1673913600, None, 21.0, "other_source"),
+        ("1-000000002", "2023-01-19", 1674086400, None, None, None),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
 def generate_data_for_calculating_first_and_last_submission_date_per_location():
     spark = utils.get_spark()
 
