@@ -62,6 +62,20 @@ module "ingest_ascwds_dataset_job" {
   }
 }
 
+module "ingest_direct_payments_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_direct_payments_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_data_csv/DPR_2022_data_for_aws.csv"
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_data_parquet/"
+  }
+}
+
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ons_data.py"
