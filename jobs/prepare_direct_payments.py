@@ -33,6 +33,8 @@ def main(
         DP.IMD_SCORE,
     )
 
+    direct_payments_df = determine_areas_including_carers_on_adass(direct_payments_df)
+
     utils.write_to_parquet(
         direct_payments_df,
         destination,
