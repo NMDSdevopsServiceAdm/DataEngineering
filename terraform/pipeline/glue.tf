@@ -62,6 +62,20 @@ module "ingest_ascwds_dataset_job" {
   }
 }
 
+module "ingest_direct_payments_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_direct_payments_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/"
+  }
+}
+
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ons_data.py"
@@ -292,4 +306,11 @@ module "ons_lookups_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory/**", "dataset=postcode-directory-denormalised/**"]
   table_level                  = 4
+}
+
+module "dpr_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "DPR"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
