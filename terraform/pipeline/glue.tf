@@ -71,8 +71,8 @@ module "ingest_direct_payments_data_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--source"      = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_data_csv/DPR_2022_data_for_aws.csv"
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_data_parquet/"
+    "--source"      = ""
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/"
   }
 }
 
