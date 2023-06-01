@@ -11,6 +11,8 @@ from utils.prepare_direct_payments_utils.direct_payments_column_names import (
 )
 
 MOST_RECENT_YEAR = 2021
+DIFFERENCE_IN_BASES_THRESHOLD = 10.0
+PROPORTION_EMPLOYING_STAFF_THRESHOLD = 0.3
 
 
 def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> DataFrame:
@@ -30,6 +32,9 @@ def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> 
         most_recent_direct_payments_df
     )
     # alocate_method()
+    most_recent_direct_payments_df = allocate_method_for_calculating_service_users_employing_staff(
+        most_recent_direct_payments_df
+    )
     # calculate_proportion_of_su_employing_staff
     # rejoin to table
     return direct_payments_df
@@ -73,5 +78,19 @@ def calculate_difference_between_survey_base_and_total_dpr_during_year(df: DataF
     df = df.withColumn(
         DP.DIFFERENCE_IN_BASES,
         F.abs(df[DP.DPRS_EMPLOYING_STAFF_ADASS] - df[DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF]),
+    )
+    return df
+
+
+def allocate_method_for_calculating_service_users_employing_staff(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
+        DP.METHOD,
+        F.when(
+            (
+                (df[DP.DIFFERENCE_IN_BASES] < DIFFERENCE_IN_BASES_THRESHOLD)
+                | (df[DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF] < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
+            ),
+            F.lit("adass includes carers"),
+        ).otherwise("adass does not include carers"),
     )
     return df
