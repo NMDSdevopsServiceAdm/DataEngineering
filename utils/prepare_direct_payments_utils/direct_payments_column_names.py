@@ -14,3 +14,4 @@ class DirectPaymentColumnNames:
     IMD_SCORE: str = "imd_2010"
     DPRS_ADASS: str = "number_of_dprs_adass"
     DPRS_EMPLOYING_STAFF_ADASS: str = "number_of_dprs_who_employ_staff_adass"
+    TOTAL_DPRS_DURING_YEAR: str = "total_dpr"

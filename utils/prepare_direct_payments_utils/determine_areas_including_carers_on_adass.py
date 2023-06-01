@@ -16,6 +16,7 @@ def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> 
     # filter to most recent year
     most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
     # calculate_total_dprs_during_year()
+    most_recent_direct_payments_df = calculate_total_dprs_during_year(most_recent_direct_payments_df)
     # calculate_dprs_employing_staff()
     # calculate_carers_employing_staff()
     # calculate_total_employing_staff_including_carers()
@@ -29,4 +30,9 @@ def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> 
 def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
     most_recent_year = F.max(DP.YEAR)
     df = df.where(DP.YEAR == most_recent_year)
+    return df
+
+
+def calculate_total_dprs_during_year(df: DataFrame) -> DataFrame:
+    df = df.withColumn(DP.TOTAL_DPRS_DURING_YEAR, df[DP.SERVICE_USER_DPRS_DURING_YEAR] + df[DP.CARER_DPRS_DURING_YEAR])
     return df
