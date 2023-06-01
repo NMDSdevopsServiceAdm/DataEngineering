@@ -10,6 +10,8 @@ from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
+MOST_RECENT_YEAR = 2021
+
 
 def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> DataFrame:
     # TODO
@@ -28,8 +30,7 @@ def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> 
 
 
 def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
-    most_recent_year = F.max(DP.YEAR)
-    df = df.where(DP.YEAR == most_recent_year)
+    df = df.where(df[DP.YEAR] == MOST_RECENT_YEAR)
     return df
 
 
