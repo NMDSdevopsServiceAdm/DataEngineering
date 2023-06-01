@@ -12,3 +12,5 @@ class DirectPaymentColumnNames:
     SERVICE_USER_DPRS_AT_YEAR_END: str = "number_su_dpr_year_end_ascof"
     CARER_DPRS_AT_YEAR_END: str = "number_carer_dpr_year_end_ascof"
     IMD_SCORE: str = "imd_2010"
+    DPRS_ADASS: str = "number_of_dprs_adass"
+    DPRS_EMPLOYING_STAFF_ADASS: str = "number_of_dprs_who_employ_staff_adass"
