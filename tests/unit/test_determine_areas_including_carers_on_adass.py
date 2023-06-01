@@ -15,6 +15,7 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     filter_to_most_recent_year,
     calculate_total_dprs_during_year,
     calculate_service_users_employing_staff,
+    calculate_carers_employing_staff,
 )
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -92,9 +93,29 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        total_dprs_df = calculate_service_users_employing_staff(df)
+        output_df = calculate_service_users_employing_staff(df)
 
-        total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(total_dprs_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF], 100.0)
-        self.assertEqual(total_dprs_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF], 25.0)
+        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF], 100.0)
+        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF], 25.0)
+
+    def test_calculate_carers_employing_staff_returns_correct_product(self):
+        rows = [
+            ("area_1", 5.0, 0.5),
+            ("area_2", 10.0, 0.25),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = calculate_carers_employing_staff(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 2.5)
+        self.assertEqual(output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 2.5)
