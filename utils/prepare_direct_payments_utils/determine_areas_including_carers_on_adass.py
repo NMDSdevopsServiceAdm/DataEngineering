@@ -26,6 +26,9 @@ def determine_areas_including_carers_on_adass(direct_payments_df: DataFrame) -> 
     # calculate_total_employing_staff_including_carers()
     most_recent_direct_payments_df = calculate_service_users_and_carers_employing_staff(most_recent_direct_payments_df)
     # determine_if_survey_base_is_close_to_ascof_base
+    most_recent_direct_payments_df = calculate_difference_between_survey_base_and_total_dpr_during_year(
+        most_recent_direct_payments_df
+    )
     # alocate_method()
     # calculate_proportion_of_su_employing_staff
     # rejoin to table
@@ -62,5 +65,13 @@ def calculate_service_users_and_carers_employing_staff(df: DataFrame) -> DataFra
     df = df.withColumn(
         DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF,
         df[DP.SERVICE_USERS_EMPLOYING_STAFF] + df[DP.CARERS_EMPLOYING_STAFF],
+    )
+    return df
+
+
+def calculate_difference_between_survey_base_and_total_dpr_during_year(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
+        DP.DIFFERENCE_IN_BASES,
+        F.abs(df[DP.DPRS_EMPLOYING_STAFF_ADASS] - df[DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF]),
     )
     return df

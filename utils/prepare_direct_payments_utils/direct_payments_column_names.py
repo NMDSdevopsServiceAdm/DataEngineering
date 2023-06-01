@@ -18,3 +18,4 @@ class DirectPaymentColumnNames:
     SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
     CARERS_EMPLOYING_STAFF: str = "carers_emplying_staff"
     SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = "service_users_and_carers_employing_staff"
+    DIFFERENCE_IN_BASES: str = "difference_in_bases_between_adass_and_ascof"

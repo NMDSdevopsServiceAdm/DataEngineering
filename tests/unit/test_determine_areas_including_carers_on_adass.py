@@ -17,6 +17,7 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     calculate_service_users_employing_staff,
     calculate_carers_employing_staff,
     calculate_service_users_and_carers_employing_staff,
+    calculate_difference_between_survey_base_and_total_dpr_during_year,
 )
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -140,3 +141,23 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5)
         self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5)
+
+    def test_difference_between_survey_base_and_total_dpr_during_year_returns_correct_value(self):
+        rows = [
+            ("area_1", 120.0, 102.5),
+            ("area_2", 25.0, 27.5),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
+                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.DIFFERENCE_IN_BASES], 17.5)
+        self.assertEqual(output_df_list[1][DP.DIFFERENCE_IN_BASES], 2.5)
