@@ -186,7 +186,9 @@ def calculated_interpolated_values_in_new_column(
     return df.select(LOCATION_ID, UNIX_TIME, INTERPOLATION_MODEL)
 
 
-def interpolation_calculation(x, x_prev, x_next, y, y_prev, y_next):
+def interpolation_calculation(
+    x: str, x_prev: str, x_next: str, y: str, y_prev: str, y_next: str
+) -> float:
     if x_prev == x_next:
         return y
     else:
