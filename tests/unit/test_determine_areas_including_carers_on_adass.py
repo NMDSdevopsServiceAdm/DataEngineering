@@ -16,6 +16,7 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     calculate_total_dprs_during_year,
     calculate_service_users_employing_staff,
     calculate_carers_employing_staff,
+    calculate_service_users_and_carers_employing_staff,
 )
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -119,3 +120,23 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         self.assertEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 2.5)
         self.assertEqual(output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 2.5)
+
+    def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(self):
+        rows = [
+            ("area_1", 100.0, 2.5),
+            ("area_2", 25.0, 2.5),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.CARERS_EMPLOYING_STAFF, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = calculate_service_users_and_carers_employing_staff(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5)
+        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5)

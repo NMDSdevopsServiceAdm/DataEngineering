@@ -17,3 +17,4 @@ class DirectPaymentColumnNames:
     TOTAL_DPRS_DURING_YEAR: str = "total_dpr"
     SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
     CARERS_EMPLOYING_STAFF: str = "carers_emplying_staff"
+    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = "service_users_and_carers_employing_staff"
