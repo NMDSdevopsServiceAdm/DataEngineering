@@ -29,14 +29,18 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         [
             StructField(DP.LA_AREA, StringType(), False),
             StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+            StructField(
+                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+            ),
             StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
             StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
         ]
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_areas_including_carers"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -62,7 +66,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(filtered_df_list[1][DP.YEAR], 2021)
         self.assertEqual(filtered_df.count(), 2)
 
-    def test_calculate_total_dprs_during_year_sums_su_and_carers_during_year_returns_correct_sum(self):
+    def test_calculate_total_dprs_during_year_sums_su_and_carers_during_year_returns_correct_sum(
+        self,
+    ):
         rows = [
             ("area_1", 200.0, 5.0),
             ("area_2", 100.0, 10.0),
@@ -91,7 +97,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -111,7 +119,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -122,7 +132,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 2.5)
         self.assertEqual(output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 2.5)
 
-    def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(self):
+    def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(
+        self,
+    ):
         rows = [
             ("area_1", 100.0, 2.5),
             ("area_2", 25.0, 2.5),
@@ -139,10 +151,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5
+        )
 
-    def test_difference_between_survey_base_and_total_dpr_during_year_returns_correct_value(self):
+    def test_difference_between_survey_base_and_total_dpr_during_year_returns_correct_value(
+        self,
+    ):
         rows = [
             ("area_1", 120.0, 102.5),
             ("area_2", 25.0, 27.5),
@@ -151,11 +169,15 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(df)
+        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(
+            df
+        )
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
