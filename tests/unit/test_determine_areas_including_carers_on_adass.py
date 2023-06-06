@@ -235,13 +235,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", "adass includes carers"),
-            ("area_2", "adass does not include carers"),
+            ("area_1", "adass includes carers", 102.5, 100.0, 200.0),
+            ("area_2", "adass does not include carers", 72.5, 25.0, 100.0),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.METHOD, StringType(), True),
+                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -249,9 +252,5 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(
-            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        )
-        self.assertEqual(
-            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        )
+        self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5125)
+        self.assertEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.25)

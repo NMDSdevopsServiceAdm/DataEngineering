@@ -14,7 +14,7 @@ class DirectPaymentColumnNames:
     IMD_SCORE: str = "imd_2010"
     DPRS_ADASS: str = "number_of_dprs_adass"
     DPRS_EMPLOYING_STAFF_ADASS: str = "number_of_dprs_who_employ_staff_adass"
-    TOTAL_DPRS_DURING_YEAR: str = "total_dpr"
+    TOTAL_DPRS_AT_YEAR_END: str = "total_dpr"
     SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
     CARERS_EMPLOYING_STAFF: str = "carers_emplying_staff"
     SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = "service_users_and_carers_employing_staff"

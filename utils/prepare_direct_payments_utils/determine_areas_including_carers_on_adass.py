@@ -126,6 +126,11 @@ def calculate_proportion_of_service_users_only_employing_staff(
         F.when(
             (df[DP.METHOD] == "adass includes carers"),
             df[DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF] / df[DP.SERVICE_USER_DPRS_AT_YEAR_END],
-        ).otherwise(),
+        )
+        .when(
+            (df[DP.METHOD] == "adass does not include carers"),
+            df[DP.SERVICE_USERS_EMPLOYING_STAFF] / df[DP.SERVICE_USER_DPRS_AT_YEAR_END],
+        )
+        .otherwise(F.lit(None)),
     )
     return df
