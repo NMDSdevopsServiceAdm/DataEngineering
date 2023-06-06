@@ -188,7 +188,8 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
     ):
         rows = [
             ("area_1", 17.5, 0.5),
-            ("area_2", 2.5, 0.25),
+            ("area_2", 2.5, 0.75),
+            ("area_3", 12.5, 0.25),
         ]
         test_schema = StructType(
             [
@@ -204,3 +205,4 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         self.assertEqual(output_df_list[0][DP.METHOD], "adass does not include carers")
         self.assertEqual(output_df_list[1][DP.METHOD], "adass includes carers")
+        self.assertEqual(output_df_list[2][DP.METHOD], "adass includes carers")
