@@ -16,11 +16,11 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     determine_areas_including_carers_on_adass,
     filter_to_most_recent_year,
     calculate_propoartion_of_dprs_employing_staff,
-    calculate_total_dprs_during_year,
+    calculate_total_dprs_at_year_end,
     calculate_service_users_employing_staff,
     calculate_carers_employing_staff,
     calculate_service_users_and_carers_employing_staff,
-    calculate_difference_between_survey_base_and_total_dpr_during_year,
+    calculate_difference_between_survey_base_and_total_dpr_at_year_end,
     allocate_method_for_calculating_service_users_employing_staff,
     calculate_proportion_of_service_users_only_employing_staff,
 )
@@ -35,8 +35,8 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             StructField(DP.LA_AREA, StringType(), False),
             StructField(DP.YEAR, IntegerType(), True),
             StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
-            StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-            StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+            StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
+            StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
         ]
     )
 
@@ -89,7 +89,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5)
         self.assertEqual(total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25)
 
-    def test_calculate_total_dprs_during_year_sums_su_and_carers_during_year_returns_correct_sum(
+    def test_calculate_total_dprs_at_year_end_sums_su_and_carers_at_year_end_returns_correct_sum(
         self,
     ):
         rows = [
@@ -99,17 +99,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
+                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        total_dprs_df = calculate_total_dprs_during_year(df)
+        total_dprs_df = calculate_total_dprs_at_year_end(df)
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(total_dprs_df_list[0][DP.TOTAL_DPRS_DURING_YEAR], 205.0)
-        self.assertEqual(total_dprs_df_list[1][DP.TOTAL_DPRS_DURING_YEAR], 110.0)
+        self.assertEqual(total_dprs_df_list[0][DP.TOTAL_DPRS_AT_YEAR_END], 205.0)
+        self.assertEqual(total_dprs_df_list[1][DP.TOTAL_DPRS_AT_YEAR_END], 110.0)
 
     def test_calculate_service_users_employing_staff_returns_correct_product(self):
         rows = [
@@ -119,7 +119,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
                 StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
@@ -139,7 +139,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
                 StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
@@ -173,7 +173,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5)
         self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5)
 
-    def test_difference_between_survey_base_and_total_dpr_during_year_returns_correct_value(
+    def test_difference_between_survey_base_and_total_dpr_at_year_end_returns_correct_value(
         self,
     ):
         rows = [
@@ -188,7 +188,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(df)
+        output_df = calculate_difference_between_survey_base_and_total_dpr_at_year_end(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -230,3 +230,28 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[0][DP.METHOD], "adass does not include carers")
         self.assertEqual(output_df_list[1][DP.METHOD], "adass includes carers")
         self.assertEqual(output_df_list[2][DP.METHOD], "adass includes carers")
+
+    def test_calculate_proportion_of_service_users_only_employing_staff_returns_correct_value(
+        self,
+    ):
+        rows = [
+            ("area_1", "adass includes carers"),
+            ("area_2", "adass does not include carers"),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.METHOD, StringType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = calculate_proportion_of_service_users_only_employing_staff(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(
+            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+        )
+        self.assertEqual(
+            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+        )
