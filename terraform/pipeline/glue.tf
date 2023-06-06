@@ -129,8 +129,8 @@ module "prepare_direct_payments_job" {
   datasets_bucket   = module.datasets_bucket
   glue_version      = "3.0"
   job_parameters = {
-    "--direct_payments_source"    = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=0.0.1/"
+    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=0.0.1/"
   }
 }
 
