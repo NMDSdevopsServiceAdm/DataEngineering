@@ -19,7 +19,11 @@ class DirectPaymentColumnNames:
     TOTAL_DPRS_AT_YEAR_END: str = "total_dpr"
     SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
     CARERS_EMPLOYING_STAFF: str = "carers_emplying_staff"
-    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = "service_users_and_carers_employing_staff"
+    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = (
+        "service_users_and_carers_employing_staff"
+    )
     DIFFERENCE_IN_BASES: str = "difference_in_bases_between_adass_and_ascof"
     METHOD: str = "method"
-    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "proportion_su_only_employing_staff"
+    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
+        "proportion_su_only_employing_staff"
+    )
