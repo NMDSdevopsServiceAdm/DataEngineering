@@ -20,6 +20,7 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     calculate_carers_employing_staff,
     calculate_service_users_and_carers_employing_staff,
     calculate_difference_between_survey_base_and_total_dpr_during_year,
+    allocate_method_for_calculating_service_users_employing_staff,
 )
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -181,3 +182,25 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
     ):
 
         self.assertEqual(PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.3)
+
+    def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
+        self,
+    ):
+        rows = [
+            ("area_1", 17.5, 0.5),
+            ("area_2", 2.5, 0.25),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.DIFFERENCE_IN_BASES, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = allocate_method_for_calculating_service_users_employing_staff(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.METHOD], "adass does not include carers")
+        self.assertEqual(output_df_list[1][DP.METHOD], "adass includes carers")
