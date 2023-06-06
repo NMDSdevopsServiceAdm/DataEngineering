@@ -22,7 +22,7 @@ def determine_areas_including_carers_on_adass(
     # filter to most recent year
     most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
     # calculate dprs employing staff (from adass figures)
-    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(direct_payments_df)
+    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(most_recent_direct_payments_df)
     # calculate_total_dprs_at_year_end()
     most_recent_direct_payments_df = calculate_total_dprs_at_year_end(most_recent_direct_payments_df)
     # calculate_dprs_employing_staff()
@@ -44,11 +44,16 @@ def determine_areas_including_carers_on_adass(
         most_recent_direct_payments_df
     )
     # rejoin to table
-    return direct_payments_df
+
+    enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
+        direct_payments_df, most_recent_direct_payments_df
+    )
+    return enriched_direct_payments_df
 
 
 def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
     df = df.where(df[DP.YEAR] == MOST_RECENT_YEAR)
+    df.show()
     return df
 
 
@@ -57,6 +62,7 @@ def calculate_propoartion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
         DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
         df[DP.DPRS_EMPLOYING_STAFF_ADASS] / df[DP.DPRS_ADASS],
     )
+    df.show()
     return df
 
 
@@ -134,3 +140,23 @@ def calculate_proportion_of_service_users_only_employing_staff(
         .otherwise(F.lit(None)),
     )
     return df
+
+
+def rejoin_new_variables_into_direct_payments_data(
+    direct_payments_df: DataFrame,
+    most_recent_direct_payments_df: DataFrame,
+) -> DataFrame:
+    most_recent_direct_payments_df = most_recent_direct_payments_df.select(
+        DP.LA_AREA,
+        DP.YEAR,
+        DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
+        DP.TOTAL_DPRS_AT_YEAR_END,
+        DP.SERVICE_USERS_EMPLOYING_STAFF,
+        DP.CARERS_EMPLOYING_STAFF,
+        DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF,
+        DP.DIFFERENCE_IN_BASES,
+        DP.METHOD,
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+    )
+    new_df = direct_payments_df.join(most_recent_direct_payments_df, on=[DP.LA_AREA, DP.YEAR], how="left")
+    return new_df
