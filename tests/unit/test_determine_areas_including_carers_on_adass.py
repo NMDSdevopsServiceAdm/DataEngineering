@@ -11,6 +11,8 @@ from pyspark.sql.types import (
 )
 
 from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_adass import (
+    DIFFERENCE_IN_BASES_THRESHOLD,
+    PROPORTION_EMPLOYING_STAFF_THRESHOLD,
     determine_areas_including_carers_on_adass,
     filter_to_most_recent_year,
     calculate_total_dprs_during_year,
@@ -29,18 +31,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         [
             StructField(DP.LA_AREA, StringType(), False),
             StructField(DP.YEAR, IntegerType(), True),
-            StructField(
-                DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-            ),
+            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
             StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
         ]
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_areas_including_carers"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -97,9 +95,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -119,9 +115,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -151,12 +145,8 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(
-            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5
-        )
-        self.assertEqual(
-            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5
-        )
+        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5)
+        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5)
 
     def test_difference_between_survey_base_and_total_dpr_during_year_returns_correct_value(
         self,
@@ -169,17 +159,25 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(
-                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(
-            df
-        )
+        output_df = calculate_difference_between_survey_base_and_total_dpr_during_year(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(output_df_list[0][DP.DIFFERENCE_IN_BASES], 17.5)
         self.assertEqual(output_df_list[1][DP.DIFFERENCE_IN_BASES], 2.5)
+
+    def test_difference_in_bases_threshold_is_correct_value(
+        self,
+    ):
+
+        self.assertEqual(DIFFERENCE_IN_BASES_THRESHOLD, 10.0)
+
+    def test_proportion_emplying_staff_threshold_is_correct_value(
+        self,
+    ):
+
+        self.assertEqual(PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.3)
