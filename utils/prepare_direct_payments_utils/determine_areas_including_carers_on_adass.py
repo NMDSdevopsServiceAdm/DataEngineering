@@ -21,6 +21,8 @@ def determine_areas_including_carers_on_adass(
     # TODO
     # filter to most recent year
     most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
+    # calculate dprs employing staff (from adass figures)
+    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(direct_payments_df)
     # calculate_total_dprs_during_year()
     most_recent_direct_payments_df = calculate_total_dprs_during_year(most_recent_direct_payments_df)
     # calculate_dprs_employing_staff()
@@ -50,6 +52,14 @@ def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
     return df
 
 
+def calculate_propoartion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
+        DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
+        df[DP.DPRS_EMPLOYING_STAFF_ADASS] / df[DP.DPRS_ADASS],
+    )
+    return df
+
+
 def calculate_total_dprs_during_year(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.TOTAL_DPRS_DURING_YEAR,
@@ -61,7 +71,7 @@ def calculate_total_dprs_during_year(df: DataFrame) -> DataFrame:
 def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.SERVICE_USERS_EMPLOYING_STAFF,
-        df[DP.SERVICE_USER_DPRS_DURING_YEAR] * df[DP.PROPORTION_EMPLOYING_STAFF],
+        df[DP.SERVICE_USER_DPRS_DURING_YEAR] * df[DP.PROPORTION_OF_DPR_EMPLOYING_STAFF],
     )
     return df
 
@@ -69,7 +79,7 @@ def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
 def calculate_carers_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.CARERS_EMPLOYING_STAFF,
-        df[DP.CARER_DPRS_DURING_YEAR] * df[DP.PROPORTION_EMPLOYING_STAFF],
+        df[DP.CARER_DPRS_DURING_YEAR] * df[DP.PROPORTION_OF_DPR_EMPLOYING_STAFF],
     )
     return df
 
@@ -100,7 +110,7 @@ def allocate_method_for_calculating_service_users_employing_staff(
         F.when(
             (
                 (df[DP.DIFFERENCE_IN_BASES] < DIFFERENCE_IN_BASES_THRESHOLD)
-                | (df[DP.PROPORTION_EMPLOYING_STAFF] < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
+                | (df[DP.PROPORTION_OF_DPR_EMPLOYING_STAFF] < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
             ),
             F.lit("adass includes carers"),
         ).otherwise("adass does not include carers"),
@@ -114,11 +124,8 @@ def calculate_proportion_of_service_users_only_employing_staff(
     df = df.withColumn(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
-            (
-                (df[DP.DIFFERENCE_IN_BASES] < DIFFERENCE_IN_BASES_THRESHOLD)
-                | (df[DP.PROPORTION_EMPLOYING_STAFF] < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
-            ),
-            F.lit("adass includes carers"),
-        ).otherwise("adass does not include carers"),
+            (df[DP.METHOD] == "adass includes carers"),
+            1,
+        ).otherwise(2),
     )
     return df

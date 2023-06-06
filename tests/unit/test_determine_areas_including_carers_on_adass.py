@@ -15,12 +15,14 @@ from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_ada
     PROPORTION_EMPLOYING_STAFF_THRESHOLD,
     determine_areas_including_carers_on_adass,
     filter_to_most_recent_year,
+    calculate_propoartion_of_dprs_employing_staff,
     calculate_total_dprs_during_year,
     calculate_service_users_employing_staff,
     calculate_carers_employing_staff,
     calculate_service_users_and_carers_employing_staff,
     calculate_difference_between_survey_base_and_total_dpr_during_year,
     allocate_method_for_calculating_service_users_employing_staff,
+    calculate_proportion_of_service_users_only_employing_staff,
 )
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -32,7 +34,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         [
             StructField(DP.LA_AREA, StringType(), False),
             StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.PROPORTION_EMPLOYING_STAFF, FloatType(), True),
+            StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
             StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
         ]
@@ -65,6 +67,28 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(filtered_df_list[1][DP.YEAR], 2021)
         self.assertEqual(filtered_df.count(), 2)
 
+    def test_calculate_proportion_of_dprs_employing_staff_returns_correct_sum(
+        self,
+    ):
+        rows = [
+            ("area_1", 100.0, 50.0),
+            ("area_2", 100.0, 25.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.DPRS_ADASS, FloatType(), True),
+                StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        total_dprs_df = calculate_propoartion_of_dprs_employing_staff(df)
+
+        total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5)
+        self.assertEqual(total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25)
+
     def test_calculate_total_dprs_during_year_sums_su_and_carers_during_year_returns_correct_sum(
         self,
     ):
@@ -96,7 +120,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -116,7 +140,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -195,7 +219,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DIFFERENCE_IN_BASES, FloatType(), True),
-                StructField(DP.PROPORTION_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
