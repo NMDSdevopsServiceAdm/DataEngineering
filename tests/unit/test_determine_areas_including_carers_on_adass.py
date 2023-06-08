@@ -203,16 +203,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.METHOD], "adass does not include carers")
-        self.assertEqual(output_df_list[1][DP.METHOD], "adass includes carers")
-        self.assertEqual(output_df_list[2][DP.METHOD], "adass includes carers")
+        self.assertEqual(output_df_list[0][DP.METHOD], job.ADASS_DOES_NOT_INCLUDE_CARERS)
+        self.assertEqual(output_df_list[1][DP.METHOD], job.ADASS_INCLUDES_CARERS)
+        self.assertEqual(output_df_list[2][DP.METHOD], job.ADASS_INCLUDES_CARERS)
 
     def test_calculate_proportion_of_service_users_only_employing_staff_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", "adass includes carers", 102.5, 100.0, 200.0),
-            ("area_2", "adass does not include carers", 72.5, 25.0, 100.0),
+            ("area_1", job.ADASS_INCLUDES_CARERS, 102.5, 100.0, 200.0),
+            ("area_2", job.ADASS_DOES_NOT_INCLUDE_CARERS, 72.5, 25.0, 100.0),
         ]
         test_schema = StructType(
             [
