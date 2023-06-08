@@ -72,7 +72,7 @@ module "ingest_direct_payments_data_job" {
 
   job_parameters = {
     "--source"      = ""
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/"
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
   }
 }
 
