@@ -281,7 +281,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = determine_areas_including_carers_on_adass(df)
-        output_df.show()
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5125)
