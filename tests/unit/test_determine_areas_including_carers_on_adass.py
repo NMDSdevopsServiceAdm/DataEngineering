@@ -213,13 +213,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
 
-        self.assertEqual(DIFFERENCE_IN_BASES_THRESHOLD, 10.0)
+        self.assertEqual(DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.3)
+        self.assertEqual(PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
     def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
         self,
