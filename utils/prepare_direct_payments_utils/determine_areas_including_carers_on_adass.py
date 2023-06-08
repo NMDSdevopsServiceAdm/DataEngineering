@@ -9,6 +9,8 @@ MOST_RECENT_YEAR = 2021
 CARERS_EMPLOYING_PERCENTAGE = 0.0063872289536592
 DIFFERENCE_IN_BASES_THRESHOLD = 100.0
 PROPORTION_EMPLOYING_STAFF_THRESHOLD = 0.1
+ADASS_INCLUDES_CARERS = "adass includes carers"
+ADASS_DOES_NOT_INCLUDE_CARERS = "addas does not include carers"
 
 
 def determine_areas_including_carers_on_adass(
@@ -100,8 +102,8 @@ def allocate_method_for_calculating_service_users_employing_staff(
                 (F.col(DP.DIFFERENCE_IN_BASES) < DIFFERENCE_IN_BASES_THRESHOLD)
                 | (F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF) < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
             ),
-            F.lit("adass includes carers"),
-        ).otherwise("adass does not include carers"),
+            F.lit(ADASS_INCLUDES_CARERS),
+        ).otherwise(ADASS_DOES_NOT_INCLUDE_CARERS),
     )
     return df
 
@@ -112,11 +114,11 @@ def calculate_proportion_of_service_users_only_employing_staff(
     df = df.withColumn(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
-            (F.col(DP.METHOD) == "adass includes carers"),
+            (F.col(DP.METHOD) == ADASS_INCLUDES_CARERS),
             F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF) / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .when(
-            (F.col(DP.METHOD) == "adass does not include carers"),
+            (F.col(DP.METHOD) == ADASS_DOES_NOT_INCLUDE_CARERS),
             F.col(DP.SERVICE_USERS_EMPLOYING_STAFF) / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .otherwise(F.lit(None)),
