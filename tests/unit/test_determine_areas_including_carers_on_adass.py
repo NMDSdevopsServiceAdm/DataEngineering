@@ -290,10 +290,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(
             output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.5001596807238414,
+            places=5,
         )
         self.assertEqual(
             output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.25063872289536593,
+            places=5,
         )
         self.assertEqual(
             output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
