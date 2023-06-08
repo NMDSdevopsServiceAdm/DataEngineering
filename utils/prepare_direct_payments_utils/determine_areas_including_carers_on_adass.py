@@ -20,35 +20,19 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
-    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(
+    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(most_recent_direct_payments_df)
+    most_recent_direct_payments_df = calculate_total_dprs_at_year_end(most_recent_direct_payments_df)
+    most_recent_direct_payments_df = calculate_service_users_employing_staff(most_recent_direct_payments_df)
+    most_recent_direct_payments_df = calculate_carers_employing_staff(most_recent_direct_payments_df)
+    most_recent_direct_payments_df = calculate_service_users_and_carers_employing_staff(most_recent_direct_payments_df)
+    most_recent_direct_payments_df = calculate_difference_between_survey_base_and_total_dpr_at_year_end(
         most_recent_direct_payments_df
     )
-    most_recent_direct_payments_df = calculate_total_dprs_at_year_end(
+    most_recent_direct_payments_df = allocate_method_for_calculating_service_users_employing_staff(
         most_recent_direct_payments_df
     )
-    most_recent_direct_payments_df = calculate_service_users_employing_staff(
+    most_recent_direct_payments_df = calculate_proportion_of_service_users_only_employing_staff(
         most_recent_direct_payments_df
-    )
-    most_recent_direct_payments_df = calculate_carers_employing_staff(
-        most_recent_direct_payments_df
-    )
-    most_recent_direct_payments_df = calculate_service_users_and_carers_employing_staff(
-        most_recent_direct_payments_df
-    )
-    most_recent_direct_payments_df = (
-        calculate_difference_between_survey_base_and_total_dpr_at_year_end(
-            most_recent_direct_payments_df
-        )
-    )
-    most_recent_direct_payments_df = (
-        allocate_method_for_calculating_service_users_employing_staff(
-            most_recent_direct_payments_df
-        )
-    )
-    most_recent_direct_payments_df = (
-        calculate_proportion_of_service_users_only_employing_staff(
-            most_recent_direct_payments_df
-        )
     )
     enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
         direct_payments_df, most_recent_direct_payments_df
@@ -57,14 +41,14 @@ def determine_areas_including_carers_on_adass(
 
 
 def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
-    df = df.where(df[DP.YEAR] == MOST_RECENT_YEAR)
+    df = df.where(F.col(DP.YEAR) == MOST_RECENT_YEAR)
     return df
 
 
 def calculate_propoartion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
-        df[DP.DPRS_EMPLOYING_STAFF_ADASS] / df[DP.DPRS_ADASS],
+        F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) / F.col(DP.DPRS_ADASS),
     )
     return df
 
@@ -72,7 +56,7 @@ def calculate_propoartion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
 def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.TOTAL_DPRS_AT_YEAR_END,
-        df[DP.SERVICE_USER_DPRS_AT_YEAR_END] + df[DP.CARER_DPRS_AT_YEAR_END],
+        F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END) + F.col(DP.CARER_DPRS_AT_YEAR_END),
     )
     return df
 
@@ -80,7 +64,7 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.SERVICE_USERS_EMPLOYING_STAFF,
-        df[DP.SERVICE_USER_DPRS_AT_YEAR_END] * df[DP.PROPORTION_OF_DPR_EMPLOYING_STAFF],
+        F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END) * F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF),
     )
     return df
 
@@ -88,7 +72,7 @@ def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
 def calculate_carers_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.CARERS_EMPLOYING_STAFF,
-        df[DP.CARER_DPRS_AT_YEAR_END] * CARERS_EMPLOYING_PERCENTAGE,
+        F.col(DP.CARER_DPRS_AT_YEAR_END) * CARERS_EMPLOYING_PERCENTAGE,
     )
     return df
 
@@ -96,7 +80,7 @@ def calculate_carers_employing_staff(df: DataFrame) -> DataFrame:
 def calculate_service_users_and_carers_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF,
-        df[DP.SERVICE_USERS_EMPLOYING_STAFF] + df[DP.CARERS_EMPLOYING_STAFF],
+        F.col(DP.SERVICE_USERS_EMPLOYING_STAFF) + F.col(DP.CARERS_EMPLOYING_STAFF),
     )
     return df
 
@@ -106,10 +90,7 @@ def calculate_difference_between_survey_base_and_total_dpr_at_year_end(
 ) -> DataFrame:
     df = df.withColumn(
         DP.DIFFERENCE_IN_BASES,
-        F.abs(
-            df[DP.DPRS_EMPLOYING_STAFF_ADASS]
-            - df[DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF]
-        ),
+        F.abs(F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) - F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF)),
     )
     return df
 
@@ -121,11 +102,8 @@ def allocate_method_for_calculating_service_users_employing_staff(
         DP.METHOD,
         F.when(
             (
-                (df[DP.DIFFERENCE_IN_BASES] < DIFFERENCE_IN_BASES_THRESHOLD)
-                | (
-                    df[DP.PROPORTION_OF_DPR_EMPLOYING_STAFF]
-                    < PROPORTION_EMPLOYING_STAFF_THRESHOLD
-                )
+                (F.col(DP.DIFFERENCE_IN_BASES) < DIFFERENCE_IN_BASES_THRESHOLD)
+                | (F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF) < PROPORTION_EMPLOYING_STAFF_THRESHOLD)
             ),
             F.lit("adass includes carers"),
         ).otherwise("adass does not include carers"),
@@ -139,13 +117,12 @@ def calculate_proportion_of_service_users_only_employing_staff(
     df = df.withColumn(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
-            (df[DP.METHOD] == "adass includes carers"),
-            df[DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF]
-            / df[DP.SERVICE_USER_DPRS_AT_YEAR_END],
+            (F.col(DP.METHOD) == "adass includes carers"),
+            F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF) / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .when(
-            (df[DP.METHOD] == "adass does not include carers"),
-            df[DP.SERVICE_USERS_EMPLOYING_STAFF] / df[DP.SERVICE_USER_DPRS_AT_YEAR_END],
+            (F.col(DP.METHOD) == "adass does not include carers"),
+            F.col(DP.SERVICE_USERS_EMPLOYING_STAFF) / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .otherwise(F.lit(None)),
     )
@@ -168,7 +145,5 @@ def rejoin_new_variables_into_direct_payments_data(
         DP.METHOD,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
     )
-    new_df = direct_payments_df.join(
-        most_recent_direct_payments_df, on=[DP.LA_AREA, DP.YEAR], how="left"
-    )
+    new_df = direct_payments_df.join(most_recent_direct_payments_df, on=[DP.LA_AREA, DP.YEAR], how="left")
     return new_df
