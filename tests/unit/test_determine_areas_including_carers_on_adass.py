@@ -10,20 +10,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_adass import (
-    DIFFERENCE_IN_BASES_THRESHOLD,
-    PROPORTION_EMPLOYING_STAFF_THRESHOLD,
-    determine_areas_including_carers_on_adass,
-    filter_to_most_recent_year,
-    calculate_propoartion_of_dprs_employing_staff,
-    calculate_total_dprs_at_year_end,
-    calculate_service_users_employing_staff,
-    calculate_carers_employing_staff,
-    calculate_service_users_and_carers_employing_staff,
-    calculate_difference_between_survey_base_and_total_dpr_at_year_end,
-    allocate_method_for_calculating_service_users_employing_staff,
-    calculate_proportion_of_service_users_only_employing_staff,
-)
+import utils.prepare_direct_payments_utils.determine_areas_including_carers_on_adass as job
 from utils.prepare_direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -49,7 +36,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        filtered_df = filter_to_most_recent_year(df)
+        filtered_df = job.filter_to_most_recent_year(df)
 
         filtered_df_list = filtered_df.sort(DP.LA_AREA).collect()
 
@@ -72,7 +59,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        total_dprs_df = calculate_propoartion_of_dprs_employing_staff(df)
+        total_dprs_df = job.calculate_propoartion_of_dprs_employing_staff(df)
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
@@ -94,7 +81,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        total_dprs_df = calculate_total_dprs_at_year_end(df)
+        total_dprs_df = job.calculate_total_dprs_at_year_end(df)
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
@@ -114,7 +101,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_service_users_employing_staff(df)
+        output_df = job.calculate_service_users_employing_staff(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -133,7 +120,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_carers_employing_staff(df)
+        output_df = job.calculate_carers_employing_staff(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -155,7 +142,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_service_users_and_carers_employing_staff(df)
+        output_df = job.calculate_service_users_and_carers_employing_staff(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -177,7 +164,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_difference_between_survey_base_and_total_dpr_at_year_end(df)
+        output_df = job.calculate_difference_between_survey_base_and_total_dpr_at_year_end(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -188,13 +175,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
 
-        self.assertEqual(DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
+        self.assertEqual(job.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
+        self.assertEqual(job.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
     def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
         self,
@@ -212,7 +199,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = allocate_method_for_calculating_service_users_employing_staff(df)
+        output_df = job.allocate_method_for_calculating_service_users_employing_staff(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -237,7 +224,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = calculate_proportion_of_service_users_only_employing_staff(df)
+        output_df = job.calculate_proportion_of_service_users_only_employing_staff(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -269,7 +256,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = determine_areas_including_carers_on_adass(df)
+        output_df = job.determine_areas_including_carers_on_adass(df)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(
