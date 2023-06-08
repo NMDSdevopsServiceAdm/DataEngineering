@@ -231,7 +231,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5125)
         self.assertEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.25)
 
-    def test_determine_aread_including_carers_on_adass_returns_correct_columns(
+    def test_determine_areas_including_carers_on_adass_returns_correct_columns(
         self,
     ):
         rows = [
