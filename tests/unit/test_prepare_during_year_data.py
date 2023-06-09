@@ -16,7 +16,7 @@ from utils.prepare_direct_payments_utils.direct_payments_column_names import (
 )
 
 
-class TestDetermineAreasIncludingCarers(unittest.TestCase):
+class TestPrepareDuringYearData(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName(
             "test_areas_including_carers"
@@ -24,28 +24,30 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    def test_determine_areas_including_carers_on_adass_completes(self):
+    def test_calculate_total_dprs_during_year_returns_correct_sum(
+        self,
+    ):
         rows = [
-            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0),
-            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0),
-            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0),
-            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0),
-            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0),
-            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0),
+            ("area_1", 100.0, 2.5),
+            ("area_2", 25.0, 2.5),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.IMD_SCORE, FloatType(), True),
-                StructField(DP.DPRS_ADASS, FloatType(), True),
-                StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.prepare_during_year_data(df)
-        self.assertEqual(df.count(), output_df.count())
+        output_df = job.calculate_total_dprs_during_year(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(
+            output_df_list[0][DP.TOTAL_DPRS_DURING_YEAR],
+            102.5,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
+            27.5,
+        )
