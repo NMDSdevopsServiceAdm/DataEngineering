@@ -10,7 +10,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-import utils.direct_payments_utils.determine_areas_including_carers_on_adass as job
+import utils.direct_payments_utils.prepare_direct_payments.determine_areas_including_carers_on_adass as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )

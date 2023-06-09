@@ -9,7 +9,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-import utils.direct_payments_utils.prepare_during_year_data as job
+import utils.direct_payments_utils.prepare_direct_payments.prepare_during_year_data as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
