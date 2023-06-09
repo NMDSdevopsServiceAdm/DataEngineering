@@ -9,7 +9,7 @@ module "csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -25,7 +25,7 @@ module "spss_csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
@@ -54,11 +54,25 @@ module "ingest_ascwds_dataset_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
   job_parameters = {
     "--source"      = ""
     "--destination" = ""
+  }
+}
+
+module "ingest_direct_payments_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_direct_payments_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
   }
 }
 
@@ -96,7 +110,7 @@ module "prepare_locations_job" {
   number_of_workers = 6
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "2.0"
+  glue_version      = "3.0"
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
     "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
@@ -107,13 +121,26 @@ module "prepare_locations_job" {
   }
 }
 
+module "prepare_direct_payments_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_direct_payments.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+  job_parameters = {
+    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=0.0.1/"
+  }
+}
+
 module "worker_tracking_job" {
   source          = "../modules/glue-job"
   script_name     = "worker_tracking.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "2.0"
+  glue_version    = "3.0"
 
 
   job_parameters = {
@@ -292,4 +319,11 @@ module "ons_lookups_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory/**", "dataset=postcode-directory-denormalised/**"]
   table_level                  = 4
+}
+
+module "dpr_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "DPR"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
