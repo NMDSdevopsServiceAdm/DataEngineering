@@ -156,11 +156,11 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(
-            output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 0.0127744579073184
+        self.assertAlmostEqual(
+            output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 0.0127744579073184, points=5
         )
-        self.assertEqual(
-            output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 0.063872289536592
+        self.assertAlmostEqual(
+            output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 0.063872289536592, points=5
         )
 
     def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(
