@@ -17,13 +17,9 @@ def main(
     direct_payments_prepared_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_prepared_source
-    ).select(
+    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.DPRS_ADASS,
@@ -38,9 +34,19 @@ def main(
 
     # TODO
     # mean model
+    # Calculate mean %
+    # Calculate mean % * SALT
+    # Save in column
     # ratio model
+    # calculate ratio backwards from each year
     # interpolation model
+    # calculate even points on line - may want to use Gary's code for this
     # model selection logic
+    # If we know the % use that
+    # If we have never known the percentage, use the mean model
+    # If we have gaps between dates, interpolate
+    # If we have gaps at the beginning, ratio back from last known year
+
     # normalise estimates
     # Calculate remaining variables
     # Estimate SU DPRs using self employed PAs
