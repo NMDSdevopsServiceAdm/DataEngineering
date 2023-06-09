@@ -9,17 +9,15 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-import utils.prepare_direct_payments_utils.prepare_during_year_data as job
-from utils.prepare_direct_payments_utils.direct_payments_column_names import (
+import utils.direct_payments_utils.prepare_during_year_data as job
+from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
 
 class TestPrepareDuringYearData(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_areas_including_carers"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 

@@ -8,7 +8,7 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-from utils.prepare_direct_payments_utils.direct_payments_column_names import (
+from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
@@ -17,13 +17,9 @@ def main(
     direct_payments_prepared_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_prepared_source
-    ).select(
+    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.DPRS_ADASS,
