@@ -18,7 +18,9 @@ from utils.prepare_direct_payments_utils.direct_payments_column_names import (
 
 class TestDetermineAreasIncludingCarers(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_areas_including_carers"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -89,8 +91,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5)
-        self.assertEqual(total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25)
+        self.assertEqual(
+            total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5
+        )
+        self.assertEqual(
+            total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25
+        )
 
     def test_calculate_total_dprs_at_year_end_sums_su_and_carers_at_year_end_returns_correct_sum(
         self,
@@ -131,8 +137,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 100.0)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 25.0)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 100.0
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 25.0
+        )
 
     def test_calculate_carers_employing_staff_returns_correct_product(self):
         rows = [
@@ -150,8 +160,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END], 0.0127744579073184)
-        self.assertEqual(output_df_list[1][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END], 0.063872289536592)
+        self.assertEqual(
+            output_df_list[0][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END], 0.0127744579073184
+        )
+        self.assertEqual(
+            output_df_list[1][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END], 0.063872289536592
+        )
 
     def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(
         self,
@@ -163,7 +177,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
                 StructField(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
             ]
         )
@@ -172,8 +188,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END], 102.5)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END], 27.5)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            102.5,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            27.5,
+        )
 
     def test_difference_between_survey_base_and_total_dpr_at_year_end_returns_correct_value(
         self,
@@ -186,11 +208,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.calculate_difference_between_survey_base_and_total_dpr_at_year_end(df)
+        output_df = (
+            job.calculate_difference_between_survey_base_and_total_dpr_at_year_end(df)
+        )
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -225,11 +253,15 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.allocate_method_for_calculating_service_users_employing_staff(df)
+        output_df = job.allocate_method_for_calculating_service_users_employing_staff(
+            df
+        )
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.METHOD], job.ADASS_DOES_NOT_INCLUDE_CARERS)
+        self.assertEqual(
+            output_df_list[0][DP.METHOD], job.ADASS_DOES_NOT_INCLUDE_CARERS
+        )
         self.assertEqual(output_df_list[1][DP.METHOD], job.ADASS_INCLUDES_CARERS)
         self.assertEqual(output_df_list[2][DP.METHOD], job.ADASS_INCLUDES_CARERS)
 
@@ -244,8 +276,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.METHOD, StringType(), True),
-                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
+                ),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
         )
@@ -254,8 +292,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5125)
-        self.assertEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.25)
+        self.assertEqual(
+            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5125
+        )
+        self.assertEqual(
+            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.25
+        )
 
     def test_determine_areas_including_carers_on_adass_returns_correct_columns(
         self,
@@ -295,8 +337,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.25063872289536593,
             places=5,
         )
-        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
+        self.assertEqual(
+            output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
+        self.assertEqual(
+            output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
+        self.assertEqual(
+            output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
+        self.assertEqual(
+            output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
         self.assertEqual(len(output_df.columns), 17)
