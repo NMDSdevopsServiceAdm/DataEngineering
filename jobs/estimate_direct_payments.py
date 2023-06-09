@@ -33,28 +33,35 @@ def main(
     )
 
     # TODO
-    # mean model
-    # Calculate mean %
-    # Calculate mean % * SALT
-    # Save in column
-    # ratio model
-    # calculate ratio backwards from each year
-    # interpolation model
-    # calculate even points on line - may want to use Gary's code for this
+
     # model selection logic
     # If we know the % use that
     # If we have never known the percentage, use the mean model
     # If we have gaps between dates, interpolate
     # If we have gaps at the beginning, ratio back from last known year
 
+    # mean model
+    # Calculate mean %
+    # Calculate mean % * SALT
+    # Save in column
+
+    # ratio model
+    # calculate ratio backwards from each year
+
+    # interpolation model
+    # calculate even points on line - may want to use Gary's code for this
+
     # normalise estimates
+
     # Calculate remaining variables
     # Estimate SU DPRs using self employed PAs
     # Estimate carer DPRs employing staff
     # Calculate total DPRs employing staff
     # Calculate total PA filled posts
     # Estimate proportion of DPRs that employ staff
+
     # Check for outliers
+
     # Recreate overall trends
 
     utils.write_to_parquet(
