@@ -17,9 +17,13 @@ def main(
     direct_payments_prepared_source,
     destination,
 ):
-    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_estimate_direct_payments"
+    ).getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
+    direct_payments_df: DataFrame = spark.read.parquet(
+        direct_payments_prepared_source
+    ).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.DPRS_ADASS,
