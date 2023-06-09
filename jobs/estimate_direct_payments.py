@@ -11,6 +11,21 @@ from utils import utils
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.direct_payments_utils.estimate_direct_payments.estimate_service_users_employing_staff import (
+    estimate_service_users_employing_staff,
+)
+from utils.direct_payments_utils.estimate_direct_payments.normalise_estimates import (
+    normalise_estimates,
+)
+from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_variables import (
+    calculate_remaining_variables,
+)
+from utils.direct_payments_utils.estimate_direct_payments.identify_outliers import (
+    identify_outliers,
+)
+from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
+    create_summary_table,
+)
 
 
 def main(
@@ -33,36 +48,20 @@ def main(
     )
 
     # TODO
-
-    # model selection logic
-    # If we know the % use that
-    # If we have never known the percentage, use the mean model
-    # If we have gaps between dates, interpolate
-    # If we have gaps at the beginning, ratio back from last known year
-
-    # mean model
-    # Calculate mean %
-    # Calculate mean % * SALT
-    # Save in column
-
-    # ratio model
-    # calculate ratio backwards from each year
-
-    # interpolation model
-    # calculate even points on line - may want to use Gary's code for this
+    # model missing data
+    direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
 
     # normalise estimates
+    direct_payments_df = normalise_estimates(direct_payments_df)
 
     # Calculate remaining variables
-    # Estimate SU DPRs using self employed PAs
-    # Estimate carer DPRs employing staff
-    # Calculate total DPRs employing staff
-    # Calculate total PA filled posts
-    # Estimate proportion of DPRs that employ staff
+    direct_payments_df = calculate_remaining_variables(direct_payments_df)
 
     # Check for outliers
+    direct_payments_df = identify_outliers(direct_payments_df)
 
     # Recreate overall trends
+    direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
         direct_payments_df,

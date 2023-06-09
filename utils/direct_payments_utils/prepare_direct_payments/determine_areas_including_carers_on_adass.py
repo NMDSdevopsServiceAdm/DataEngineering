@@ -10,14 +10,6 @@ from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
 
-# MOST_RECENT_YEAR = 2021
-# The carer's employing percentage was calculated from a question in older surveys. As this is so close to zero it was removed as a question from more recent surveys and we use the most recent value.
-# CARERS_EMPLOYING_PERCENTAGE = 0.0063872289536592
-# DIFFERENCE_IN_BASES_THRESHOLD = 100.0
-# PROPORTION_EMPLOYING_STAFF_THRESHOLD = 0.1
-# ADASS_INCLUDES_CARERS = "adass includes carers"
-# ADASS_DOES_NOT_INCLUDE_CARERS = "addas does not include carers"
-
 
 def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
