@@ -13,6 +13,7 @@ from pyspark.sql.types import (
 import utils.direct_payments_utils.prepare_direct_payments.determine_areas_including_carers_on_adass as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
+    DirectPaymentColumnValues as Values,
 )
 
 
@@ -219,13 +220,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
 
-        self.assertEqual(job.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
+        self.assertEqual(Values.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(job.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
+        self.assertEqual(Values.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
     def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
         self,
@@ -247,16 +248,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.METHOD], job.ADASS_DOES_NOT_INCLUDE_CARERS)
-        self.assertEqual(output_df_list[1][DP.METHOD], job.ADASS_INCLUDES_CARERS)
-        self.assertEqual(output_df_list[2][DP.METHOD], job.ADASS_INCLUDES_CARERS)
+        self.assertEqual(output_df_list[0][DP.METHOD], Values.ADASS_DOES_NOT_INCLUDE_CARERS)
+        self.assertEqual(output_df_list[1][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
+        self.assertEqual(output_df_list[2][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
 
     def test_calculate_proportion_of_service_users_only_employing_staff_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", job.ADASS_INCLUDES_CARERS, 102.5, 100.0, 200.0),
-            ("area_2", job.ADASS_DOES_NOT_INCLUDE_CARERS, 72.5, 25.0, 100.0),
+            ("area_1", Values.ADASS_INCLUDES_CARERS, 102.5, 100.0, 200.0),
+            ("area_2", Values.ADASS_DOES_NOT_INCLUDE_CARERS, 72.5, 25.0, 100.0),
         ]
         test_schema = StructType(
             [
