@@ -17,7 +17,9 @@ from utils.prepare_direct_payments_utils.direct_payments_column_names import (
 
 class TestPrepareDuringYearData(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_areas_including_carers"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
