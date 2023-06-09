@@ -143,7 +143,7 @@ module "estimate_direct_payments_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=0.0.1/"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=0.0.1/"
   }
 }
 
