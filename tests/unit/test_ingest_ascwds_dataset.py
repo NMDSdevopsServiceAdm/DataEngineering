@@ -50,6 +50,26 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
         df = job.filter_test_accounts(df)
         self.assertEqual(df.count(), 4)
 
+    def test_remove_white_space_from_nmdsid(self):
+        columns = [
+            "locationid",
+            "nmdsid",
+        ]
+        rows = [
+            ("1-000000001", "A123  "),
+            ("1-000000002", "A1234 "),
+            ("1-000000003", "A12345"),
+        ]
+        df = self.spark.createDataFrame(rows, columns)
+
+        df = job.remove_white_space_from_nmdsid(df)
+        self.assertEqual(df.count(), 3)
+
+        df = df.sort("locationid").collect()
+        self.assertEqual(df[0]["nmdsid"], "A123")
+        self.assertEqual(df[1]["nmdsid"], "A1234")
+        self.assertEqual(df[2]["nmdsid"], "A12345")
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
