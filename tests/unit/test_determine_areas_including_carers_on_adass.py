@@ -137,8 +137,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF], 100.0)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF], 25.0)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 100.0
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 25.0
+        )
 
     def test_calculate_carers_employing_staff_returns_correct_product(self):
         rows = [
@@ -157,10 +161,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(
-            output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 0.0127744579073184, places=5
+            output_df_list[0][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            0.0127744579073184,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 0.063872289536592, places=5
+            output_df_list[1][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            0.063872289536592,
+            places=5,
         )
 
     def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(
@@ -173,8 +181,10 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.CARERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
+                StructField(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -183,10 +193,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(
-            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            102.5,
         )
         self.assertEqual(
-            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            27.5,
         )
 
     def test_difference_between_survey_base_and_total_dpr_at_year_end_returns_correct_value(
@@ -201,7 +213,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(
-                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
                 ),
             ]
         )
@@ -267,9 +281,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.METHOD, StringType(), True),
                 StructField(
-                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
                 ),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
         )

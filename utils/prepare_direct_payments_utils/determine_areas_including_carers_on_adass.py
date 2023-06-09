@@ -77,7 +77,7 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 
 def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        DP.SERVICE_USERS_EMPLOYING_STAFF,
+        DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END,
         F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
         * F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF),
     )
@@ -86,7 +86,7 @@ def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
 
 def calculate_carers_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        DP.CARERS_EMPLOYING_STAFF,
+        DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END,
         F.col(DP.CARER_DPRS_AT_YEAR_END) * CARERS_EMPLOYING_PERCENTAGE,
     )
     return df
@@ -94,8 +94,9 @@ def calculate_carers_employing_staff(df: DataFrame) -> DataFrame:
 
 def calculate_service_users_and_carers_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF,
-        F.col(DP.SERVICE_USERS_EMPLOYING_STAFF) + F.col(DP.CARERS_EMPLOYING_STAFF),
+        DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+        F.col(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END)
+        + F.col(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END),
     )
     return df
 
@@ -107,7 +108,7 @@ def calculate_difference_between_survey_base_and_total_dpr_at_year_end(
         DP.DIFFERENCE_IN_BASES,
         F.abs(
             F.col(DP.DPRS_EMPLOYING_STAFF_ADASS)
-            - F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF)
+            - F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END)
         ),
     )
     return df
@@ -139,12 +140,12 @@ def calculate_proportion_of_service_users_only_employing_staff(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
             (F.col(DP.METHOD) == ADASS_INCLUDES_CARERS),
-            F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF)
+            F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END)
             / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .when(
             (F.col(DP.METHOD) == ADASS_DOES_NOT_INCLUDE_CARERS),
-            F.col(DP.SERVICE_USERS_EMPLOYING_STAFF)
+            F.col(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END)
             / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
         .otherwise(F.lit(None)),
@@ -161,9 +162,9 @@ def rejoin_new_variables_into_direct_payments_data(
         DP.YEAR,
         DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
         DP.TOTAL_DPRS_AT_YEAR_END,
-        DP.SERVICE_USERS_EMPLOYING_STAFF,
-        DP.CARERS_EMPLOYING_STAFF,
-        DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF,
+        DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END,
+        DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+        DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
         DP.DIFFERENCE_IN_BASES,
         DP.METHOD,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
