@@ -24,9 +24,13 @@ def estimate_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
 
-    direct_payments_df = apply_known_values_for_service_users_employing_staff(direct_payments_df)
+    direct_payments_df = apply_known_values_for_service_users_employing_staff(
+        direct_payments_df
+    )
 
-    direct_payments_df = estimate_missing_data_for_service_users_employing_staff(direct_payments_df)
+    direct_payments_df = estimate_missing_data_for_service_users_employing_staff(
+        direct_payments_df
+    )
     return direct_payments_df
 
 
