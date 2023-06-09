@@ -15,6 +15,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
     DirectPaymentColumnValues as Values,
 )
+from utils.direct_payments_utils.direct_payments_configuration import (
+    DirectPaymentConfiguration as Config,
+)
 
 
 class TestDetermineAreasIncludingCarers(unittest.TestCase):
@@ -220,13 +223,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
 
-        self.assertEqual(Values.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
+        self.assertEqual(Config.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(Values.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
+        self.assertEqual(Config.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
     def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
         self,
