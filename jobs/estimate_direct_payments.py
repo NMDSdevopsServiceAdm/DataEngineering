@@ -33,6 +33,19 @@ def main(
     )
 
     # TODO
+    # mean model
+    # ratio model
+    # interpolation model
+    # model selection logic
+    # normalise estimates
+    # Calculate remaining variables
+    # Estimate SU DPRs using self employed PAs
+    # Estimate carer DPRs employing staff
+    # Calculate total DPRs employing staff
+    # Calculate total PA filled posts
+    # Estimate proportion of DPRs that employ staff
+    # Check for outliers
+    # Recreate overall trends
 
     utils.write_to_parquet(
         direct_payments_df,
