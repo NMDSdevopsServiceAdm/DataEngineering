@@ -175,8 +175,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(
             output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
             102.5,
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            102.5,
         )
         self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            27.5,
             output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
             27.5,
         )
@@ -193,6 +197,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
                     DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
                     FloatType(),
                     True,
