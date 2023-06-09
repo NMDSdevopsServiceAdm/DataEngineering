@@ -172,8 +172,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END], 102.5)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END], 27.5)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            102.5,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            27.5,
+        )
 
     def test_difference_between_survey_base_and_total_dpr_at_year_end_returns_correct_value(
         self,
@@ -186,7 +192,11 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -244,7 +254,11 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.METHOD, StringType(), True),
-                StructField(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
+                ),
                 StructField(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
