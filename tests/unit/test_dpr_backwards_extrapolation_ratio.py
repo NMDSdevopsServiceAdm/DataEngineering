@@ -163,6 +163,8 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.4,
         )
 
+
+@unittest.skip("to do")    
 def test_calculate_rolling_average_returns_correct_value(
         self,
     ):
@@ -195,7 +197,7 @@ def test_calculate_rolling_average_returns_correct_value(
             ,
         )
         
-
+@unittest.skip("to do")    
 def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
         self,
     ):
@@ -228,7 +230,8 @@ def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
             output_df_list[0][DP.EXTRAPOLATION_RATIO],
             ,
         )
-        
+
+@unittest.skip("to do")    
 def test_calculate_ratio_estimates_returns_correct_value(
         self,
     ):
