@@ -31,3 +31,9 @@ class DirectPaymentColumnNames:
     )
 
     TOTAL_DPRS_DURING_YEAR: str = "total_dpr_during_year"
+
+
+@dataclass
+class DirectPaymentColumnValues:
+    ADASS_INCLUDES_CARERS: str = "adass includes carers"
+    ADASS_DOES_NOT_INCLUDE_CARERS: str = "adass does not include carers"
