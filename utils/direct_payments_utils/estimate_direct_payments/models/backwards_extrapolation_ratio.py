@@ -38,6 +38,17 @@ def add_column_with_year_as_integer(
 def add_column_with_first_year_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
+
+    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+
+    first_and_last_submission_date_df = populated_df.groupBy(DP.LA_AREA).agg(
+        F.min(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.FIRST_YEAR_WITH_DATA),
+    )
+
+    direct_payments_df = direct_payments_df.join(first_and_last_submission_date_df, DP.LA_AREA, "left")
+
+    return direct_payments_df
+
     return direct_payments_df
 
 
