@@ -3,7 +3,6 @@ import pyspark.sql.functions as F
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
-    DirectPaymentColumnValues as Values,
 )
 
 from utils.direct_payments_utils.direct_payments_configuration import (
