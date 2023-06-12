@@ -34,7 +34,9 @@ class DirectPaymentColumnNames:
     YEAR_AS_INTEGER: str = "year_as_integer"
     FIRST_YEAR_WITH_DATA: str = "first_year_with_data"
     FIRST_DATA_POINT: str = "first_data_point"
+    ROLLING_AVERAGE: str = "rolling_average"
     EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
+    ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO: str = "estimate_using_backward_extrapolation_ratio"
 
 
 @dataclass
