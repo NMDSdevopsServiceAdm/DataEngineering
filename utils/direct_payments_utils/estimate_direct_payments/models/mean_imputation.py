@@ -15,13 +15,11 @@ def model_when_no_historical_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     most_recent_year_df = filter_to_most_recent_year(direct_payments_df)
-    mean_proportion_of_service_users_employing_staff = (
-        calculate_mean_proportion_of_service_users_employing_staff(most_recent_year_df)
+    mean_proportion_of_service_users_employing_staff = calculate_mean_proportion_of_service_users_employing_staff(
+        most_recent_year_df
     )
-    direct_payments_df = (
-        calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(
-            direct_payments_df, mean_proportion_of_service_users_employing_staff
-        )
+    direct_payments_df = calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(
+        direct_payments_df, mean_proportion_of_service_users_employing_staff
     )
     return direct_payments_df
 
@@ -45,8 +43,7 @@ def calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean
     mean_proportion_of_service_users_employing_staff: float,
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
-        DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
-        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
-        * mean_proportion_of_service_users_employing_staff,
+        DP.ESTIMATE_USING_MEAN,
+        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR) * mean_proportion_of_service_users_employing_staff,
     )
     return direct_payments_df

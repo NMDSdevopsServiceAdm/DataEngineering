@@ -40,9 +40,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -83,9 +81,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -108,52 +104,36 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         mean = 0.35
-        output_df = job.calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(
-            df, mean
-        )
+        output_df = job.calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(df, mean)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(
-            output_df_list[0][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[0][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(
-            output_df_list[1][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[1][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(
-            output_df_list[2][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[2][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(
-            output_df_list[3][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[3][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(
-            output_df_list[4][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[4][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(
-            output_df_list[5][
-                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
-            ],
+            output_df_list[5][DP.ESTIMATE_USING_MEAN],
             105.0,
         )
         self.assertEqual(output_df.count(), 6)
