@@ -100,65 +100,41 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[6][DP.FIRST_YEAR_WITH_DATA], 2021)
         self.assertEqual(output_df_list[7][DP.FIRST_YEAR_WITH_DATA], 2021)
 
-    @unittest.skip("to do")
-    def test_add_column_with_percentage_service_users_employing_staff_in_first_year_of_data_returns_correct_value(
+    def test_add_data_point_from_first_year_of_data_returns_correct_values(
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 0.3, 2019),
-            ("area_2", 2021, 300.0, 0.4, 2020),
-            ("area_1", 2020, 300.0, 0.3, 2019),
-            ("area_2", 2020, 300.0, None, 2020),
-            ("area_1", 2019, 300.0, 0.3, 2019),
-            ("area_2", 2019, 300.0, None, 2020),
-            ("area_1", 2018, 300.0, None, 2019),
-            ("area_2", 2018, 300.0, None, 2020),
+            ("area_1", 2021, 2019, 0.3),
+            ("area_2", 2021, 2021, 0.4),
+            ("area_1", 2020, 2019, 0.3),
+            ("area_2", 2020, 2021, None),
+            ("area_1", 2019, 2019, 0.3),
+            ("area_2", 2019, 2021, None),
+            ("area_1", 2018, 2019, None),
+            ("area_2", 2018, 2021, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.add_column_with_percentage_service_users_employing_staff_in_first_year_of_data(df)
+        output_df = job.add_data_point_from_first_year_of_data(
+            df, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.FIRST_DATA_POINT
+        )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(
-            output_df_list[0][DP.FIRST_DATA_POINT],
-            0.3,
-        )
-        self.assertEqual(
-            output_df_list[1][DP.FIRST_DATA_POINT],
-            0.3,
-        )
-        self.assertEqual(
-            output_df_list[2][DP.FIRST_DATA_POINT],
-            0.3,
-        )
-        self.assertEqual(
-            output_df_list[3][DP.FIRST_DATA_POINT],
-            0.3,
-        )
-        self.assertEqual(
-            output_df_list[4][DP.FIRST_DATA_POINT],
-            0.4,
-        )
-        self.assertEqual(
-            output_df_list[5][DP.FIRST_DATA_POINT],
-            0.4,
-        )
-        self.assertEqual(
-            output_df_list[6][DP.FIRST_DATA_POINT],
-            0.4,
-        )
-        self.assertEqual(
-            output_df_list[7][DP.FIRST_DATA_POINT],
-            0.4,
-        )
+        self.assertAlmostEqual(output_df_list[0][DP.FIRST_DATA_POINT], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.FIRST_DATA_POINT], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.FIRST_DATA_POINT], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.FIRST_DATA_POINT], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.FIRST_DATA_POINT], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.FIRST_DATA_POINT], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.FIRST_DATA_POINT], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.FIRST_DATA_POINT], 0.4, places=5)
 
     def test_calculate_rolling_average_returns_correct_value(
         self,
