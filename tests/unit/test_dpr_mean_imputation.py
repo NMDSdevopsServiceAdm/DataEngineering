@@ -84,8 +84,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output = job.calculate_mean_proportion_of_service_users_employing_staff(df)
-        assert isinstance(output, type(float))
-        self.assertEqual(output, 0.35)
+        self.assertAlmostEqual(output, 0.35, places=5)
 
     def test_calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(self):
         rows = [

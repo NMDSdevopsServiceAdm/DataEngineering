@@ -32,7 +32,7 @@ def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
 def calculate_mean_proportion_of_service_users_employing_staff(most_recent_year_df: DataFrame) -> float:
     mean_proportion_of_service_users_employing_staff = most_recent_year_df.select(
         F.mean(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-    ).collect()
+    ).collect()[0][0]
     return mean_proportion_of_service_users_employing_staff
 
 
