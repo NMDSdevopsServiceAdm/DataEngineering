@@ -51,9 +51,7 @@ def calculate_rolling_average(
 ) -> DataFrame:
     populated_df = filter_to_locations_with_known_proportion_service_users_employing_staff(direct_payments_df)
     proportion_service_users_employing_staff_sum_and_count_df = calculate_proportion_aggregates_per_year(populated_df)
-    rolling_average_df = create_rolling_average_column(
-        proportion_service_users_employing_staff_sum_and_count_df, Config.NUMBER_OF_YEARS_ROLLING_AVERAGE
-    )
+    rolling_average_df = create_rolling_average_column(proportion_service_users_employing_staff_sum_and_count_df)
     direct_payments_df = join_rolling_average_into_df(direct_payments_df, rolling_average_df)
     return direct_payments_df
 
@@ -102,13 +100,11 @@ def create_rolling_average_column(
     direct_payments_df = calculate_rolling_sum(
         direct_payments_df,
         DP.COUNT_OF_PROPORTION,
-        Config.NUMBER_OF_YEARS_ROLLING_AVERAGE,
         DP.ROLLING_TOTAL_COUNT_OF_PROPORTION,
     )
     direct_payments_df = calculate_rolling_sum(
         direct_payments_df,
         DP.SUM_OF_PROPORTION,
-        Config.NUMBER_OF_YEARS_ROLLING_AVERAGE,
         DP.ROLLING_TOTAL_SUM_OF_PROPORTION,
     )
 
@@ -116,19 +112,22 @@ def create_rolling_average_column(
         DP.ROLLING_AVERAGE,
         F.col(DP.ROLLING_TOTAL_SUM_OF_PROPORTION) / F.col(DP.ROLLING_TOTAL_COUNT_OF_PROPORTION),
     )
+    direct_payments_df.select(DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE).show()
     return direct_payments_df
 
 
-def calculate_rolling_sum(df: DataFrame, col_to_sum: str, number_of_years: int, new_col_name: str) -> DataFrame:
+def calculate_rolling_sum(df: DataFrame, col_to_sum: str, new_col_name: str) -> DataFrame:
     df = df.withColumn(
         new_col_name,
-        F.sum(col_to_sum).over(define_window_specifications(DP.YEAR_AS_INTEGER, number_of_years)),
+        F.sum(col_to_sum).over(define_window_specifications(DP.YEAR_AS_INTEGER)),
     )
     return df
 
 
-def define_window_specifications(year_column: str, number_of_years: int) -> Window:
-    rolling_window = Window.orderBy(F.col(year_column).cast("long")).rangeBetween(-(number_of_years), Config.FIRST_YEAR)
+def define_window_specifications(year_column: str) -> Window:
+    rolling_window = Window.orderBy(F.col(year_column).cast("long")).rangeBetween(
+        -(Config.NUMBER_OF_YEARS_ROLLING_AVERAGE), 0
+    )
     return rolling_window
 
 

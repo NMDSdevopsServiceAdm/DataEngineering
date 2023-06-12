@@ -170,7 +170,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ("area_2", 2020, 300.0, None, 2020, 0.4),
             ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
             ("area_2", 2019, 300.0, None, 2020, 0.4),
-            ("area_1", 2018, 300.0, None, 2019, 0.3),
+            ("area_1", 2018, 300.0, 0.3, 2019, 0.3),
             ("area_2", 2018, 300.0, None, 2020, 0.4),
         ]
         test_schema = StructType(
@@ -185,7 +185,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_rolling_average(df)
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
         self.assertEqual(df.count(), output_df.count())
+        self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 0.3, places=5)
 
     @unittest.skip("to do")
     def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
