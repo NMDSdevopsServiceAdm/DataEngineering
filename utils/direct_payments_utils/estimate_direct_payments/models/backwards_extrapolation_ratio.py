@@ -78,22 +78,22 @@ def add_data_point_from_first_year_of_data(
 def calculate_extrapolation_ratio_for_earlier_years(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    relevant_data_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
-    direct_payments_df.withColumn(
+    ratio_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
+    ratio_df = ratio_df.withColumn(
         DP.EXTRAPOLATION_RATIO,
         (1 + (F.col(DP.ROLLING_AVERAGE) - F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)) / F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)),
     )
-    return relevant_data_df
+    return ratio_df
 
 
 def calculate_extrapolation_estimates(
-    direct_payments_df: DataFrame,
+    ratio_df: DataFrame,
 ) -> DataFrame:
-    direct_payments_df = direct_payments_df.withColumn(
+    extrapolation_df = ratio_df.withColumn(
         DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO,
         (F.col(DP.FIRST_YEAR_WITH_DATA) * F.col(DP.EXTRAPOLATION_RATIO)),
     )
-    return direct_payments_df
+    return extrapolation_df
 
 
 def filter_to_locations_with_known_proportion_service_users_employing_staff(
@@ -131,7 +131,6 @@ def create_rolling_average_column(
         DP.ROLLING_AVERAGE,
         F.col(DP.ROLLING_TOTAL_SUM_OF_PROPORTION) / F.col(DP.ROLLING_TOTAL_COUNT_OF_PROPORTION),
     )
-    direct_payments_df.select(DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE).show()
     return direct_payments_df
 
 
