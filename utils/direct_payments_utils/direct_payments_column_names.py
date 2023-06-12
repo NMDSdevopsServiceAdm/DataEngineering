@@ -17,18 +17,12 @@ class DirectPaymentColumnNames:
 
     PROPORTION_OF_DPR_EMPLOYING_STAFF: str = "proportion_dpr_employing_staff"
     TOTAL_DPRS_AT_YEAR_END: str = "total_dpr_at_year_end"
-    SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END: str = (
-        "service_users_employing_staff_at_year_end"
-    )
+    SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END: str = "service_users_employing_staff_at_year_end"
     CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = "carers_employing_staff_at_year_end"
-    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = (
-        "service_users_and_carers_employing_staff_at_year_end"
-    )
+    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = "service_users_and_carers_employing_staff_at_year_end"
     DIFFERENCE_IN_BASES: str = "difference_in_bases_between_adass_and_ascof"
     METHOD: str = "method"
-    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
-        "proportion_su_only_employing_staff"
-    )
+    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "proportion_su_only_employing_staff"
 
     TOTAL_DPRS_DURING_YEAR: str = "total_dpr_during_year"
 
@@ -36,6 +30,11 @@ class DirectPaymentColumnNames:
         "estimated_service_user_dprs_during_year_employing_staff"
     )
     ESTIMATE_USING_MEAN: str = "estimate_using_mean"
+
+    YEAR_AS_INTEGER: str = "year_as_integer"
+    FIRST_YEAR_WITH_DATA: str = "first_year_with_data"
+    FIRST_DATA_POINT: str = "first_data_point"
+    EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
 
 
 @dataclass
