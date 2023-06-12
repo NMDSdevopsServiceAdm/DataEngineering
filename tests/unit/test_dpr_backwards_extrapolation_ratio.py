@@ -13,10 +13,6 @@ from pyspark.sql.types import (
 import utils.direct_payments_utils.estimate_direct_payments.models.backwards_extrapolation_ratio as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
-    DirectPaymentColumnValues as Values,
-)
-from utils.direct_payments_utils.direct_payments_configuration import (
-    DirectPaymentConfiguration as Config,
 )
 
 
@@ -57,7 +53,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -65,10 +61,10 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.YEAR_AS_INTEGER], 2021)
+        self.assertEqual(output_df_list[0][DP.YEAR_AS_INTEGER], 2020)
         self.assertEqual(output_df_list[1][DP.YEAR_AS_INTEGER], 2021)
-        self.assertEqual(output_df_list[2][DP.YEAR_AS_INTEGER], 2021)
-        self.assertEqual(output_df_list[2][DP.YEAR_AS_INTEGER], 2021)
+        self.assertEqual(output_df_list[2][DP.YEAR_AS_INTEGER], 2020)
+        self.assertEqual(output_df_list[3][DP.YEAR_AS_INTEGER], 2021)
         self.assertEqual(output_df.count(), 4)
 
     def test_add_column_with_first_year_of_data_returns_first_year_as_integer(
@@ -163,91 +159,88 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.4,
         )
 
-
-@unittest.skip("to do")
-def test_calculate_rolling_average_returns_correct_value(
-    self,
-):
-    rows = [
-        ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-        ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2020, 300.0, None, 2020, 0.4),
-        ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2019, 300.0, None, 2020, 0.4),
-        ("area_1", 2018, 300.0, None, 2019, 0.3),
-        ("area_2", 2018, 300.0, None, 2020, 0.4),
-    ]
-    test_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), False),
-            StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-            StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
-            StructField(DP.FIRST_DATA_POINT, FloatType(), True),
+    @unittest.skip("to do")
+    def test_calculate_rolling_average_returns_correct_value(
+        self,
+    ):
+        rows = [
+            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
+            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2020, 300.0, None, 2020, 0.4),
+            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2019, 300.0, None, 2020, 0.4),
+            ("area_1", 2018, 300.0, None, 2019, 0.3),
+            ("area_2", 2018, 300.0, None, 2020, 0.4),
         ]
-    )
-    df = self.spark.createDataFrame(rows, schema=test_schema)
-    output_df = job.calculate_rolling_average(df)
-    output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
+                StructField(DP.FIRST_DATA_POINT, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_rolling_average(df)
+        self.assertEqual(df.count(), output_df.count())
 
-
-@unittest.skip("to do")
-def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
-    self,
-):
-    rows = [
-        ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-        ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2020, 300.0, None, 2020, 0.4),
-        ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2019, 300.0, None, 2020, 0.4),
-        ("area_1", 2018, 300.0, None, 2019, 0.3),
-        ("area_2", 2018, 300.0, None, 2020, 0.4),
-    ]
-    test_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), False),
-            StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-            StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
-            StructField(DP.FIRST_DATA_POINT, FloatType(), True),
-            # rolling avg?
+    @unittest.skip("to do")
+    def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
+        self,
+    ):
+        rows = [
+            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
+            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2020, 300.0, None, 2020, 0.4),
+            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2019, 300.0, None, 2020, 0.4),
+            ("area_1", 2018, 300.0, None, 2019, 0.3),
+            ("area_2", 2018, 300.0, None, 2020, 0.4),
         ]
-    )
-    df = self.spark.createDataFrame(rows, schema=test_schema)
-    output_df = job.calculate_extrapolation_ratio_for_earlier_years(df)
-    output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
+                StructField(DP.FIRST_DATA_POINT, FloatType(), True),
+                # rolling avg?
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_extrapolation_ratio_for_earlier_years(df)
+        self.assertEqual(df.count(), output_df.count())
 
-
-@unittest.skip("to do")
-def test_calculate_ratio_estimates_returns_correct_value(
-    self,
-):
-    rows = [
-        ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-        ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2020, 300.0, None, 2020, 0.4),
-        ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-        ("area_2", 2019, 300.0, None, 2020, 0.4),
-        ("area_1", 2018, 300.0, None, 2019, 0.3),
-        ("area_2", 2018, 300.0, None, 2020, 0.4),
-    ]
-    test_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), False),
-            StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-            StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
-            StructField(DP.FIRST_DATA_POINT, FloatType(), True),
-            # ratio?
+    @unittest.skip("to do")
+    def test_calculate_ratio_estimates_returns_correct_value(
+        self,
+    ):
+        rows = [
+            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
+            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2020, 300.0, None, 2020, 0.4),
+            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
+            ("area_2", 2019, 300.0, None, 2020, 0.4),
+            ("area_1", 2018, 300.0, None, 2019, 0.3),
+            ("area_2", 2018, 300.0, None, 2020, 0.4),
         ]
-    )
-    df = self.spark.createDataFrame(rows, schema=test_schema)
-    output_df = job.calculate_ratio_estimates(df)
-    output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
+                StructField(DP.FIRST_DATA_POINT, FloatType(), True),
+                # ratio?
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_ratio_estimates(df)
+        self.assertEqual(df.count(), output_df.count())

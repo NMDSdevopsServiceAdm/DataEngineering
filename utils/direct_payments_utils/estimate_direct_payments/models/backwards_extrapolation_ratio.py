@@ -1,4 +1,13 @@
 from pyspark.sql import DataFrame
+import pyspark.sql.functions as F
+
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
+
+from utils.direct_payments_utils.direct_payments_configuration import (
+    DirectPaymentConfiguration as Config,
+)
 
 
 def model_extrapolation_backwards(
@@ -19,6 +28,10 @@ def model_extrapolation_backwards(
 def add_column_with_year_as_integer(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.YEAR_AS_INTEGER,
+        F.col(DP.YEAR).cast("int"),
+    )
     return direct_payments_df
 
 
