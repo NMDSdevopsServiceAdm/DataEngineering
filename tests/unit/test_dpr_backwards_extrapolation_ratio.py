@@ -83,7 +83,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
