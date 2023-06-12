@@ -40,7 +40,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -69,7 +71,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(filtered_df_list[1][DP.YEAR], 2021)
         self.assertEqual(filtered_df.count(), 2)
 
-    def test_calculate_mean_proportion_of_service_users_employing_staff_returns_mean(self):
+    def test_calculate_mean_proportion_of_service_users_employing_staff_returns_mean(
+        self,
+    ):
         rows = [
             ("area_1", 2021, 300.0, 0.3),
             ("area_2", 2021, 300.0, 0.4),
@@ -79,14 +83,18 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output = job.calculate_mean_proportion_of_service_users_employing_staff(df)
         self.assertAlmostEqual(output, 0.35, places=5)
 
-    def test_calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(self):
+    def test_calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(
+        self,
+    ):
         rows = [
             ("area_1", 2021, 300.0, 0.3),
             ("area_2", 2021, 300.0, 0.4),
@@ -100,19 +108,53 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         mean = 0.35
-        output_df = job.calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(df, mean)
+        output_df = job.calculate_estimated_service_user_dprs_during_year_employing_staff_using_mean(
+            df, mean
+        )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
-        self.assertEqual(output_df_list[1][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
-        self.assertEqual(output_df_list[2][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
-        self.assertEqual(output_df_list[3][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
-        self.assertEqual(output_df_list[4][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
-        self.assertEqual(output_df_list[5][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 105.0)
+        self.assertEqual(
+            output_df_list[0][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
+        self.assertEqual(
+            output_df_list[1][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
+        self.assertEqual(
+            output_df_list[2][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
+        self.assertEqual(
+            output_df_list[3][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
+        self.assertEqual(
+            output_df_list[4][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
+        self.assertEqual(
+            output_df_list[5][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            105.0,
+        )
         self.assertEqual(output_df.count(), 6)
         self.assertEqual(df.count(), output_df.count())
