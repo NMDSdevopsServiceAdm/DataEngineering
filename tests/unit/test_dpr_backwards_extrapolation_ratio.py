@@ -172,29 +172,26 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertAlmostEqual(output_df_list[6][DP.ROLLING_AVERAGE], 0.3, places=5)
         self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 0.3, places=5)
 
-    @unittest.skip("to do")
     def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2020, 300.0, None, 2020, 0.4),
-            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2019, 300.0, None, 2020, 0.4),
-            ("area_1", 2018, 300.0, None, 2019, 0.3),
-            ("area_2", 2018, 300.0, None, 2020, 0.4),
+            ("area_1", 2021, 300.0, 0.3, 2019),
+            ("area_2", 2021, 300.0, 0.4, 2020),
+            ("area_1", 2020, 300.0, 0.3, 2019),
+            ("area_2", 2020, 300.0, None, 2020),
+            ("area_1", 2019, 300.0, 0.3, 2019),
+            ("area_2", 2019, 300.0, None, 2020),
+            ("area_1", 2018, 300.0, None, 2019),
+            ("area_2", 2018, 300.0, None, 2020),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
-                StructField(DP.FIRST_DATA_POINT, FloatType(), True),
-                # rolling avg?
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.ROLLING_AVERAGE, FloatType(), True),
+                StructField(DP.FIRST_YEAR_ROLLING_AVERAGE, FloatType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
