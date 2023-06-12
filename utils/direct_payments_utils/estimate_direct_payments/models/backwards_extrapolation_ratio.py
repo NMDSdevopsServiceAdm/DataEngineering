@@ -23,7 +23,7 @@ def model_extrapolation_backwards(
         direct_payments_df, DP.ROLLING_AVERAGE, DP.FIRST_YEAR_ROLLING_AVERAGE
     )
     direct_payments_df = calculate_extrapolation_ratio_for_earlier_years(direct_payments_df)
-    direct_payments_df = calculate_ratio_estimates(direct_payments_df)
+    direct_payments_df = calculate_ratio_estimates(direct_payments_df, DP.FIRST_DATA_POINT)
 
     return direct_payments_df
 
@@ -76,14 +76,21 @@ def add_data_point_from_first_year_of_data(
 def calculate_extrapolation_ratio_for_earlier_years(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    return direct_payments_df
+    relevant_data_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
+    direct_payments_df.withColumn(
+        DP.EXTRAPOLATION_RATIO,
+        (1 + (F.col(DP.ROLLING_AVERAGE) - F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)) / F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)),
+    )
+    return relevant_data_df
 
 
-def calculate_ratio_estimates(
+def calculate_extrapolation_estimates(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO,
+        (F.col(DP.FIRST_YEAR_WITH_DATA) * F.col(DP.EXTRAPOLATION_RATIO)),
+    )
     return direct_payments_df
 
 
