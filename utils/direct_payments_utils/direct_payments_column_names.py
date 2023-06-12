@@ -39,6 +39,7 @@ class DirectPaymentColumnNames:
     ROLLING_TOTAL_COUNT_OF_PROPORTION: str = "rolling_total_count_of_proportion"
     ROLLING_TOTAL_SUM_OF_PROPORTION: str = "rolling_total_sum_of_proportion"
     ROLLING_AVERAGE: str = "rolling_average"
+    FIRST_YEAR_ROLLING_AVERAGE: str = "first_year_rolling_average"
     EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
     ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO: str = "estimate_using_backward_extrapolation_ratio"
 

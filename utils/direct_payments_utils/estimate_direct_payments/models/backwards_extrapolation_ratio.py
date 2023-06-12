@@ -15,7 +15,7 @@ def model_extrapolation_backwards(
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
     direct_payments_df = add_column_with_first_year_of_data(direct_payments_df)
-    direct_payments_df = add_column_with_percentage_service_users_employing_staff_in_first_year_of_data(
+    direct_payments_df = add_percentage_service_users_employing_staff_and_rolling_average_in_first_year_of_data(
         direct_payments_df
     )
     direct_payments_df = calculate_rolling_average(direct_payments_df)
@@ -56,10 +56,16 @@ def calculate_rolling_average(
     return direct_payments_df
 
 
-def add_column_with_percentage_service_users_employing_staff_in_first_year_of_data(
+def add_percentage_service_users_employing_staff_and_rolling_average_in_first_year_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
+    first_year_df = direct_payments_df.where(F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER))
+    first_year_df = first_year_df.withColumnRenamed(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.FIRST_DATA_POINT)
+    first_year_df = first_year_df.withColumnRenamed(DP.ROLLING_AVERAGE, DP.FIRST_YEAR_ROLLING_AVERAGE)
+    first_year_df = first_year_df.select(DP.LA_AREA, DP.FIRST_DATA_POINT, DP.FIRST_YEAR_ROLLING_AVERAGE)
+
+    direct_payments_df = direct_payments_df.join(first_year_df, [DP.LA_AREA], "left")
+
     return direct_payments_df
 
 
