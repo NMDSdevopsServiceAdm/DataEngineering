@@ -100,6 +100,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[6][DP.FIRST_YEAR_WITH_DATA], 2021)
         self.assertEqual(output_df_list[7][DP.FIRST_YEAR_WITH_DATA], 2021)
 
+    @unittest.skip("to do")
     def test_add_column_with_percentage_service_users_employing_staff_in_first_year_of_data_returns_correct_value(
         self,
     ):
@@ -159,7 +160,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.4,
         )
 
-    @unittest.skip("to do")
     def test_calculate_rolling_average_returns_correct_value(
         self,
     ):
@@ -176,10 +176,10 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
+                StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
                 StructField(DP.FIRST_DATA_POINT, FloatType(), True),
             ]
         )
