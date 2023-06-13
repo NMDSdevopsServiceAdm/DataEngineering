@@ -30,10 +30,12 @@ def determine_areas_including_carers_on_adass(
     most_recent_direct_payments_df = calculate_proportion_of_service_users_only_employing_staff(
         most_recent_direct_payments_df
     )
+    most_recent_direct_payments_df.show()
+
     enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
         direct_payments_df, most_recent_direct_payments_df
     )
-
+    enriched_direct_payments_df.show()
     return enriched_direct_payments_df
 
 
@@ -112,7 +114,7 @@ def calculate_proportion_of_service_users_only_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
     df = df.withColumn(
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_TEMP,
         F.when(
             F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
             F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
@@ -134,6 +136,14 @@ def rejoin_new_variables_into_direct_payments_data(
     direct_payments_df: DataFrame,
     most_recent_direct_payments_df: DataFrame,
 ) -> DataFrame:
+    direct_payments_df = direct_payments_df.drop(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    most_recent_direct_payments_df = most_recent_direct_payments_df.withColumn(
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ).otherwise(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_TEMP)),
+    )
     most_recent_direct_payments_df = most_recent_direct_payments_df.select(
         DP.LA_AREA,
         DP.YEAR,

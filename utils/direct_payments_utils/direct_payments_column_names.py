@@ -23,6 +23,7 @@ class DirectPaymentColumnNames:
     DIFFERENCE_IN_BASES: str = "difference_in_bases_between_adass_and_ascof"
     METHOD: str = "method"
     PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "proportion_su_only_employing_staff"
+    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_TEMP: str = "proportion_su_only_employing_staff_temp"
 
     TOTAL_DPRS_DURING_YEAR: str = "total_dpr_during_year"
 
