@@ -161,7 +161,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_rolling_average(df)
-        output_df_list = output_df.sort(DP.LA_AREA).collect()
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
         self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 0.32, places=5)
         self.assertAlmostEqual(output_df_list[1][DP.ROLLING_AVERAGE], 0.3, places=5)

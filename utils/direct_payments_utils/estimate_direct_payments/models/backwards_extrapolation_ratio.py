@@ -146,8 +146,10 @@ def calculate_rolling_sum(df: DataFrame, col_to_sum: str, new_col_name: str) -> 
 
 
 def define_window_specifications(year_column: str) -> Window:
-    rolling_window = Window.orderBy(F.col(year_column).cast("long")).rangeBetween(
-        -(Config.NUMBER_OF_YEARS_ROLLING_AVERAGE), 0
+    rolling_window = (
+        Window.partitionBy(F.lit(0))
+        .orderBy(F.col(year_column).cast("long"))
+        .rangeBetween(-(Config.NUMBER_OF_YEARS_ROLLING_AVERAGE), 0)
     )
     return rolling_window
 
