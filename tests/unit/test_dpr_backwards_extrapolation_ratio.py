@@ -139,21 +139,20 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2020, 300.0, None, 2020, 0.4),
-            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2019, 300.0, None, 2020, 0.4),
-            ("area_1", 2018, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2018, 300.0, None, 2020, 0.4),
+            ("area_1", 2021, 300.0, 2019, 300.0),
+            ("area_2", 2021, 400.0, 2021, 400.0),
+            ("area_1", 2020, 300.0, 2019, 300.0),
+            ("area_2", 2020, None, 2021, 400.0),
+            ("area_1", 2019, 300.0, 2019, 300.0),
+            ("area_2", 2019, None, 2021, 400.0),
+            ("area_1", 2018, 300.0, 2019, 300.0),
+            ("area_2", 2018, None, 2021, 400.0),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
                 StructField(DP.FIRST_DATA_POINT, FloatType(), True),
             ]
@@ -162,27 +161,27 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         output_df = job.calculate_rolling_average(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
-        self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[2][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.ROLLING_AVERAGE], 0.32, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[5][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[6][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ROLLING_AVERAGE], 320.0, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.ROLLING_AVERAGE], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 320.0, places=5)
 
     def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", 2021, 0.32, 0.3, 2019),
-            ("area_2", 2021, 0.32, 0.3, 2020),
-            ("area_1", 2020, 0.3, 0.3, 2019),
-            ("area_2", 2020, 0.3, 0.3, 2020),
-            ("area_1", 2019, 0.3, 0.3, 2019),
-            ("area_2", 2019, 0.3, 0.3, 2020),
-            ("area_1", 2018, 0.3, 0.3, 2019),
-            ("area_2", 2018, 0.3, 0.3, 2020),
+            ("area_1", 2021, 320.0, 300.0, 2019),
+            ("area_2", 2021, 320.0, 300.0, 2020),
+            ("area_1", 2020, 300.0, 300.0, 2019),
+            ("area_2", 2020, 300.0, 300.0, 2020),
+            ("area_1", 2019, 300.0, 300.0, 2019),
+            ("area_2", 2019, 300.0, 300.0, 2020),
+            ("area_1", 2018, 300.0, 300.0, 2019),
+            ("area_2", 2018, 300.0, 300.0, 2020),
         ]
         test_schema = StructType(
             [
@@ -201,18 +200,18 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         self.assertAlmostEqual(output_df_list[2][DP.EXTRAPOLATION_RATIO], 1.0, places=5)
         self.assertEqual(output_df.count(), 3)
 
-    def test_calculate_ratio_estimates_returns_correct_value(
+    def test_calculate_extrapolation_estimates_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", 2021, 0.32, 0.3),
-            ("area_2", 2021, 0.32, 0.4),
-            ("area_1", 2020, 0.3, 0.3),
-            ("area_2", 2020, 0.3, 0.4),
-            ("area_1", 2019, 0.3, 0.3),
-            ("area_2", 2019, 0.3, 0.4),
-            ("area_1", 2018, 0.3, 0.3),
-            ("area_2", 2018, 0.3, 0.4),
+            ("area_1", 2021, 1.0, 300.0),
+            ("area_2", 2021, 1.0, 400.0),
+            ("area_1", 2020, 1.0, 300.0),
+            ("area_2", 2020, 1.0, 400.0),
+            ("area_1", 2019, 1.0, 300.0),
+            ("area_2", 2019, 1.0, 400.0),
+            ("area_1", 2018, 1.0, 300.0),
+            ("area_2", 2018, 1.0, 400.0),
         ]
         test_schema = StructType(
             [
@@ -226,11 +225,11 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         output_df = job.calculate_extrapolation_estimates(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
-        self.assertAlmostEqual(output_df_list[2][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.096, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
-        self.assertAlmostEqual(output_df_list[5][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
-        self.assertAlmostEqual(output_df_list[6][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
-        self.assertAlmostEqual(output_df_list[7][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.128, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
