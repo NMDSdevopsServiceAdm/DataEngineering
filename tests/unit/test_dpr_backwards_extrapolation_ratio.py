@@ -16,7 +16,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 )
 
 
-class TestDetermineAreasIncludingCarers(unittest.TestCase):
+class TestBackwardsExtrapolationRatio(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName("test_backwards_extrapolation_ratio").getOrCreate()
 
