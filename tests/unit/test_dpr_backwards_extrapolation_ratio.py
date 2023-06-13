@@ -71,21 +71,20 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 0.3),
-            ("area_2", 2021, 300.0, 0.4),
-            ("area_1", 2020, 300.0, 0.3),
-            ("area_2", 2020, 300.0, None),
-            ("area_1", 2019, 300.0, 0.3),
-            ("area_2", 2019, 300.0, None),
-            ("area_1", 2018, 300.0, None),
-            ("area_2", 2018, 300.0, None),
+            ("area_1", 2021, 300.0),
+            ("area_2", 2021, 400.0),
+            ("area_1", 2020, 300.0),
+            ("area_2", 2020, None),
+            ("area_1", 2019, 300.0),
+            ("area_2", 2019, None),
+            ("area_1", 2018, None),
+            ("area_2", 2018, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
