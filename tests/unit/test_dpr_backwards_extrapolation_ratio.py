@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestBackwardsExtrapolationRatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_backwards_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_backwards_extrapolation_ratio"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -36,7 +38,9 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -117,7 +121,9 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -225,11 +231,43 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         output_df = job.calculate_extrapolation_estimates(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
-        self.assertAlmostEqual(output_df_list[2][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 300.0, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
-        self.assertAlmostEqual(output_df_list[5][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
-        self.assertAlmostEqual(output_df_list[6][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
-        self.assertAlmostEqual(output_df_list[7][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 400.0, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            300.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            300.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[2][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            300.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[3][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            300.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[4][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            400.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[5][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            400.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[6][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            400.0,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[7][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO],
+            400.0,
+            places=5,
+        )
