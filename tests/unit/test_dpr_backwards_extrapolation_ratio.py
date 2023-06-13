@@ -18,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestBackwardsExtrapolationRatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_backwards_extrapolation_ratio"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_backwards_extrapolation_ratio").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -37,10 +35,8 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -88,7 +84,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -121,9 +117,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -158,7 +152,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
                 StructField(DP.FIRST_DATA_POINT, FloatType(), True),
             ]
