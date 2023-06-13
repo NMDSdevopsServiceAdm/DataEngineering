@@ -33,6 +33,7 @@ def determine_areas_including_carers_on_adass(
     enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
         direct_payments_df, most_recent_direct_payments_df
     )
+
     return enriched_direct_payments_df
 
 
@@ -44,11 +45,7 @@ def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
 def calculate_propoartion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.PROPORTION_OF_DPR_EMPLOYING_STAFF,
-        F.when(
-            F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF).isNotNull(), F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
-        ).otherwise(
-            F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) / F.col(DP.DPRS_ADASS),
-        ),
+        F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) / F.col(DP.DPRS_ADASS),
     )
     return df
 
@@ -117,6 +114,10 @@ def calculate_proportion_of_service_users_only_employing_staff(
     df = df.withColumn(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        )
+        .when(
             (F.col(DP.METHOD) == Values.ADASS_INCLUDES_CARERS),
             F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END) / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
         )
