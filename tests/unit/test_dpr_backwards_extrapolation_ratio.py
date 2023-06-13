@@ -202,31 +202,36 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         self.assertAlmostEqual(output_df_list[2][DP.EXTRAPOLATION_RATIO], 1.0, places=5)
         self.assertEqual(output_df.count(), 3)
 
-    @unittest.skip("to do")
     def test_calculate_ratio_estimates_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2021, 300.0, 0.4, 2020, 0.4),
-            ("area_1", 2020, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2020, 300.0, None, 2020, 0.4),
-            ("area_1", 2019, 300.0, 0.3, 2019, 0.3),
-            ("area_2", 2019, 300.0, None, 2020, 0.4),
-            ("area_1", 2018, 300.0, None, 2019, 0.3),
-            ("area_2", 2018, 300.0, None, 2020, 0.4),
+            ("area_1", 2021, 0.32, 0.3),
+            ("area_2", 2021, 0.32, 0.4),
+            ("area_1", 2020, 0.3, 0.3),
+            ("area_2", 2020, 0.3, 0.4),
+            ("area_1", 2019, 0.3, 0.3),
+            ("area_2", 2019, 0.3, 0.4),
+            ("area_1", 2018, 0.3, 0.3),
+            ("area_2", 2018, 0.3, 0.4),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
-                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.FIRST_YEAR_WITH_DATA, FloatType(), True),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.EXTRAPOLATION_RATIO, FloatType(), True),
                 StructField(DP.FIRST_DATA_POINT, FloatType(), True),
-                # ratio?
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.calculate_ratio_estimates(df)
+        output_df = job.calculate_extrapolation_estimates(df)
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.09, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.096, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.12, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO], 0.128, places=5)

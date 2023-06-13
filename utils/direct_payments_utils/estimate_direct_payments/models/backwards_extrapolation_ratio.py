@@ -16,7 +16,7 @@ def model_extrapolation_backwards(
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
     direct_payments_df = add_column_with_first_year_of_data(direct_payments_df)
     direct_payments_df = add_data_point_from_first_year_of_data(
-        direct_payments_df, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.FIRST_DATA_POINT
+        direct_payments_df, DP.SERVICE_USER_DPRS_DURING_YEAR, DP.FIRST_DATA_POINT
     )
     direct_payments_df = calculate_rolling_average(direct_payments_df)
     direct_payments_df = add_data_point_from_first_year_of_data(
@@ -43,7 +43,7 @@ def add_column_with_year_as_integer(
 def add_column_with_first_year_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_proportion_service_users_employing_staff(direct_payments_df)
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
     first_and_last_submission_date_df = determine_first_year_with_data(populated_df)
 
     direct_payments_df = direct_payments_df.join(first_and_last_submission_date_df, DP.LA_AREA, "left")
@@ -54,9 +54,9 @@ def add_column_with_first_year_of_data(
 def calculate_rolling_average(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_proportion_service_users_employing_staff(direct_payments_df)
-    proportion_service_users_employing_staff_sum_and_count_df = calculate_proportion_aggregates_per_year(populated_df)
-    rolling_average_df = create_rolling_average_column(proportion_service_users_employing_staff_sum_and_count_df)
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    service_users_employing_staff_sum_and_count_df = calculate_aggregates_per_year(populated_df)
+    rolling_average_df = create_rolling_average_column(service_users_employing_staff_sum_and_count_df)
     direct_payments_df = join_rolling_average_into_df(direct_payments_df, rolling_average_df)
     return direct_payments_df
 
@@ -96,20 +96,20 @@ def calculate_extrapolation_estimates(
     return extrapolation_df
 
 
-def filter_to_locations_with_known_proportion_service_users_employing_staff(
+def filter_to_locations_with_known_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+    populated_df = direct_payments_df.where(F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNotNull())
     populated_df.show()
     return populated_df
 
 
-def calculate_proportion_aggregates_per_year(
+def calculate_aggregates_per_year(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.groupBy(DP.YEAR_AS_INTEGER).agg(
-        F.count(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).cast("integer").alias(DP.COUNT_OF_PROPORTION),
-        F.sum(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(DP.SUM_OF_PROPORTION),
+        F.count(DP.SERVICE_USER_DPRS_DURING_YEAR).cast("integer").alias(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR),
+        F.sum(DP.SERVICE_USER_DPRS_DURING_YEAR).alias(DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR),
     )
     direct_payments_df.show()
     return direct_payments_df
@@ -120,18 +120,19 @@ def create_rolling_average_column(
 ) -> DataFrame:
     direct_payments_df = calculate_rolling_sum(
         direct_payments_df,
-        DP.COUNT_OF_PROPORTION,
-        DP.ROLLING_TOTAL_COUNT_OF_PROPORTION,
+        DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR,
+        DP.ROLLING_TOTAL_COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR,
     )
     direct_payments_df = calculate_rolling_sum(
         direct_payments_df,
-        DP.SUM_OF_PROPORTION,
-        DP.ROLLING_TOTAL_SUM_OF_PROPORTION,
+        DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR,
+        DP.ROLLING_TOTAL_SUM_OF_SERVICE_USER_DPRS_DURING_YEAR,
     )
 
     direct_payments_df = direct_payments_df.withColumn(
         DP.ROLLING_AVERAGE,
-        F.col(DP.ROLLING_TOTAL_SUM_OF_PROPORTION) / F.col(DP.ROLLING_TOTAL_COUNT_OF_PROPORTION),
+        F.col(DP.ROLLING_TOTAL_SUM_OF_SERVICE_USER_DPRS_DURING_YEAR)
+        / F.col(DP.ROLLING_TOTAL_COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR),
     )
     direct_payments_df.show()
     return direct_payments_df
