@@ -200,7 +200,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
-                StructField(DP.FIRST_YEAR_ROLLING_AVERAGE, FloatType(), True),
+                StructField(DP.FIRST_YEAR_MEAN_ESTIMATE, FloatType(), True),
                 StructField(DP.FIRST_YEAR_WITH_DATA, IntegerType(), True),
             ]
         )
@@ -230,7 +230,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.EXTRAPOLATION_RATIO, FloatType(), True),
-                StructField(DP.FIRST_DATA_POINT, FloatType(), True),
+                StructField(DP.FIRST_YEAR_MEAN_ESTIMATE, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
