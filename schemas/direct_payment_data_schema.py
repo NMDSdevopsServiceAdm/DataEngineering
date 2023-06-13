@@ -15,7 +15,7 @@ DIRECT_PAYMENTS_DATA = StructType(
         StructField("la_area_excel", StringType(), True),
         StructField("la_area_imd", StringType(), True),
         StructField("year", IntegerType(), False),
-        StructField("proportion_su_employing_staff_adass", FloatType(), True),
+        StructField("proportion_su_only_employing_staff", FloatType(), True),
         StructField("number_su_dpr_salt", FloatType(), True),
         StructField("number_carer_dpr_salt", FloatType(), True),
         StructField("number_su_dpr_year_end_ascof", FloatType(), True),
