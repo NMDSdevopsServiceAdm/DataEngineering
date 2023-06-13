@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestBackwardsExtrapolationRatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_backwards_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_backwards_extrapolation_ratio"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -40,7 +42,9 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
                 StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
             ]
         )
@@ -130,17 +134,35 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.add_data_point_from_first_year_of_data(df, DP.ESTIMATE_USING_MEAN, DP.FIRST_YEAR_MEAN_ESTIMATE)
+        output_df = job.add_data_point_from_first_year_of_data(
+            df, DP.ESTIMATE_USING_MEAN, DP.FIRST_YEAR_MEAN_ESTIMATE
+        )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
-        self.assertAlmostEqual(output_df_list[5][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
-        self.assertAlmostEqual(output_df_list[6][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
-        self.assertAlmostEqual(output_df_list[7][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[4][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[5][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[6][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[7][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
+        )
 
     @unittest.skip("not needed")
     def test_calculate_rolling_average_returns_correct_value(
