@@ -24,12 +24,12 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
 
     def test_model_extrapolation_backwards_completes(self):
         rows = [
-            ("area_1", 2021, 300.0, 0.3),
-            ("area_2", 2021, 300.0, 0.4),
-            ("area_3", 2020, 300.0, 0.45),
-            ("area_4", 2020, 300.0, 0.35),
-            ("area_5", 2019, 300.0, 0.375),
-            ("area_6", 2019, 300.0, 0.2),
+            ("area_1", 2021, 300.0, 0.3, 320.0),
+            ("area_2", 2021, 300.0, 0.4, 320.0),
+            ("area_1", 2020, 300.0, 0.45, 300.0),
+            ("area_2", 2020, 300.0, 0.35, 300.0),
+            ("area_1", 2019, 300.0, 0.375, 300.0),
+            ("area_2", 2019, 300.0, 0.2, 300.0),
         ]
         test_schema = StructType(
             [
@@ -41,6 +41,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
                     True,
                 ),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
