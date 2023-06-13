@@ -163,14 +163,14 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         output_df = job.calculate_rolling_average(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertEqual(df.count(), output_df.count())
-        self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.ROLLING_AVERAGE], 0.3, places=5)
         self.assertAlmostEqual(output_df_list[1][DP.ROLLING_AVERAGE], 0.3, places=5)
         self.assertAlmostEqual(output_df_list[2][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ROLLING_AVERAGE], 0.32, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ROLLING_AVERAGE], 0.3, places=5)
         self.assertAlmostEqual(output_df_list[5][DP.ROLLING_AVERAGE], 0.3, places=5)
         self.assertAlmostEqual(output_df_list[6][DP.ROLLING_AVERAGE], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.ROLLING_AVERAGE], 0.32, places=5)
 
     def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
         self,

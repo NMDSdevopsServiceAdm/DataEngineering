@@ -91,7 +91,7 @@ def calculate_extrapolation_estimates(
 ) -> DataFrame:
     extrapolation_df = ratio_df.withColumn(
         DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO,
-        (F.col(DP.FIRST_YEAR_WITH_DATA) * F.col(DP.EXTRAPOLATION_RATIO)),
+        (F.col(DP.FIRST_DATA_POINT) * F.col(DP.EXTRAPOLATION_RATIO)),
     )
     return extrapolation_df
 
