@@ -27,9 +27,7 @@ def model_extrapolation_backwards(
     ratio_df = calculate_extrapolation_ratio_for_earlier_years(direct_payments_df)
     extrapolation_df = calculate_extrapolation_estimates(ratio_df)
 
-    direct_payments_df = join_extrapolation_into_df(
-        direct_payments_df, extrapolation_df
-    )
+    direct_payments_df = join_extrapolation_into_df(direct_payments_df, extrapolation_df)
 
     return direct_payments_df
 
@@ -47,14 +45,10 @@ def add_column_with_year_as_integer(
 def add_column_with_first_year_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(
-        direct_payments_df
-    )
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
     first_and_last_submission_date_df = determine_first_year_with_data(populated_df)
 
-    direct_payments_df = direct_payments_df.join(
-        first_and_last_submission_date_df, DP.LA_AREA, "left"
-    )
+    direct_payments_df = direct_payments_df.join(first_and_last_submission_date_df, DP.LA_AREA, "left")
 
     return direct_payments_df
 
@@ -62,18 +56,10 @@ def add_column_with_first_year_of_data(
 def calculate_rolling_average(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(
-        direct_payments_df
-    )
-    service_users_employing_staff_sum_and_count_df = calculate_aggregates_per_year(
-        populated_df
-    )
-    rolling_average_df = create_rolling_average_column(
-        service_users_employing_staff_sum_and_count_df
-    )
-    direct_payments_df = join_rolling_average_into_df(
-        direct_payments_df, rolling_average_df
-    )
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    service_users_employing_staff_sum_and_count_df = calculate_aggregates_per_year(populated_df)
+    rolling_average_df = create_rolling_average_column(service_users_employing_staff_sum_and_count_df)
+    direct_payments_df = join_rolling_average_into_df(direct_payments_df, rolling_average_df)
     return direct_payments_df
 
 
@@ -82,9 +68,7 @@ def add_data_point_from_first_year_of_data(
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    first_year_df = direct_payments_df.where(
-        F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER)
-    )
+    first_year_df = direct_payments_df.where(F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER))
     first_year_df = first_year_df.withColumnRenamed(original_column, new_column)
     first_year_df = first_year_df.select(DP.LA_AREA, new_column)
 
@@ -96,16 +80,10 @@ def add_data_point_from_first_year_of_data(
 def calculate_extrapolation_ratio_for_earlier_years(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    ratio_df = direct_payments_df.where(
-        F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA)
-    )
+    ratio_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
     ratio_df = ratio_df.withColumn(
         DP.EXTRAPOLATION_RATIO,
-        (
-            1
-            + (F.col(DP.ROLLING_AVERAGE) - F.col(DP.FIRST_YEAR_ROLLING_AVERAGE))
-            / F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)
-        ),
+        (F.col(DP.ESTIMATE_USING_MEAN) / F.col(DP.FIRST_YEAR_ROLLING_AVERAGE)),
     )
     return ratio_df
 
@@ -165,9 +143,7 @@ def create_rolling_average_column(
     return direct_payments_df
 
 
-def calculate_rolling_sum(
-    df: DataFrame, col_to_sum: str, new_col_name: str
-) -> DataFrame:
+def calculate_rolling_sum(df: DataFrame, col_to_sum: str, new_col_name: str) -> DataFrame:
     df = df.withColumn(
         new_col_name,
         F.sum(col_to_sum).over(define_window_specifications(DP.YEAR_AS_INTEGER)),
@@ -188,12 +164,8 @@ def join_rolling_average_into_df(
     direct_payments_df: DataFrame,
     rolling_average_df: DataFrame,
 ) -> DataFrame:
-    rolling_average_df = rolling_average_df.select(
-        DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE
-    )
-    direct_payments_df = direct_payments_df.join(
-        rolling_average_df, [DP.YEAR_AS_INTEGER], "left"
-    )
+    rolling_average_df = rolling_average_df.select(DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE)
+    direct_payments_df = direct_payments_df.join(rolling_average_df, [DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
 
 
@@ -213,7 +185,5 @@ def join_extrapolation_into_df(
     extrapolation_df = extrapolation_df.select(
         DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO
     )
-    direct_payments_df = direct_payments_df.join(
-        extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left"
-    )
+    direct_payments_df = direct_payments_df.join(extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
