@@ -15,7 +15,7 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
 
-    most_recent_direct_payments_df = calculate_propoartion_of_dprs_employing_staff(most_recent_direct_payments_df)
+    direct_payments_df = calculate_propoartion_of_dprs_employing_staff(direct_payments_df)
     most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
     most_recent_direct_payments_df = calculate_total_dprs_at_year_end(most_recent_direct_payments_df)
     most_recent_direct_payments_df = calculate_service_users_employing_staff(most_recent_direct_payments_df)
