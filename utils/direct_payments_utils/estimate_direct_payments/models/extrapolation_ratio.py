@@ -17,14 +17,29 @@ def model_extrapolation_backwards(
     direct_payments_df = add_columns_with_first_and_last_years_of_data(direct_payments_df)
     direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
+        DP.FIRST_YEAR_WITH_DATA,
         DP.ESTIMATE_USING_MEAN,
         DP.FIRST_YEAR_MEAN_ESTIMATE,
     )
     # direct_payments_df = calculate_rolling_average(direct_payments_df)
     direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
+        DP.FIRST_YEAR_WITH_DATA,
         DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
         DP.FIRST_DATA_POINT,
+    )
+    direct_payments_df = add_data_point_from_given_year_of_data(
+        direct_payments_df,
+        DP.LAST_YEAR_WITH_DATA,
+        DP.ESTIMATE_USING_MEAN,
+        DP.LAST_YEAR_MEAN_ESTIMATE,
+    )
+    # direct_payments_df = calculate_rolling_average(direct_payments_df)
+    direct_payments_df = add_data_point_from_given_year_of_data(
+        direct_payments_df,
+        DP.LAST_YEAR_WITH_DATA,
+        DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+        DP.LAST_DATA_POINT,
     )
     ratio_df = calculate_extrapolation_ratio_for_earlier_years(direct_payments_df)
     extrapolation_df = calculate_extrapolation_estimates(ratio_df)
