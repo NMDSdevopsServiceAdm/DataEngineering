@@ -15,13 +15,13 @@ def model_extrapolation_backwards(
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
     direct_payments_df = add_columns_with_first_and_last_years_of_data(direct_payments_df)
-    direct_payments_df = add_data_point_from_first_year_of_data(
+    direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
         DP.ESTIMATE_USING_MEAN,
         DP.FIRST_YEAR_MEAN_ESTIMATE,
     )
     # direct_payments_df = calculate_rolling_average(direct_payments_df)
-    direct_payments_df = add_data_point_from_first_year_of_data(
+    direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
         DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
         DP.FIRST_DATA_POINT,
@@ -68,16 +68,17 @@ def calculate_rolling_average(
 """
 
 
-def add_data_point_from_first_year_of_data(
+def add_data_point_from_given_year_of_data(
     direct_payments_df: DataFrame,
+    year_of_data_to_add: str,
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    first_year_df = direct_payments_df.where(F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER))
-    first_year_df = first_year_df.withColumnRenamed(original_column, new_column)
-    first_year_df = first_year_df.select(DP.LA_AREA, new_column)
+    df = direct_payments_df.where(F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER))
+    df = df.withColumnRenamed(original_column, new_column)
+    df = df.select(DP.LA_AREA, new_column)
 
-    direct_payments_df = direct_payments_df.join(first_year_df, [DP.LA_AREA], "left")
+    direct_payments_df = direct_payments_df.join(df, [DP.LA_AREA], "left")
 
     return direct_payments_df
 
