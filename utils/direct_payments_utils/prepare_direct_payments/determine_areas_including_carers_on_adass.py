@@ -96,6 +96,15 @@ def calculate_difference_between_survey_base_and_total_dpr_at_year_end(
 def allocate_method_for_calculating_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
+    """
+    ### Replace allocation logic after estimates script is created ###
+    1) If ADASS DPRs is more than 100 greater than ascof total dprs, remove data point
+    2) Work out if the number of DPR's ADASS have surveyed is closer to the ASCOF service user figure or to the total of SU and carers.
+    3) If it's closer to ASCOF service user, then do (% employing from survey * SU's from ASCOF) + (carers * magic low % figure)
+    4) If it's closer to the total ASCOF figure, then do % employing from survey * total from ASCOF
+    5) Then divide each of these figures by SU's from ASCOF
+    """
+
     df = df.withColumn(
         DP.METHOD,
         F.when(
@@ -160,4 +169,6 @@ def rejoin_new_variables_into_direct_payments_data(
 
 def remove_outliers(df: DataFrame) -> DataFrame:
     # TODO
+    # calculate average proportion employing staff for each LA over all years
+    # remove any values that are more than a threshold value away from the average
     return df
