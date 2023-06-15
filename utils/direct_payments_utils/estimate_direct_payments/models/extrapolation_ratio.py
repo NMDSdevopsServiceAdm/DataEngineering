@@ -14,7 +14,7 @@ def model_extrapolation_backwards(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
-    direct_payments_df = add_column_with_first_year_of_data(direct_payments_df)
+    direct_payments_df = add_columns_with_first_and_last_years_of_data(direct_payments_df)
     direct_payments_df = add_data_point_from_first_year_of_data(
         direct_payments_df,
         DP.ESTIMATE_USING_MEAN,
@@ -29,9 +29,7 @@ def model_extrapolation_backwards(
     ratio_df = calculate_extrapolation_ratio_for_earlier_years(direct_payments_df)
     extrapolation_df = calculate_extrapolation_estimates(ratio_df)
 
-    direct_payments_df = join_extrapolation_into_df(
-        direct_payments_df, extrapolation_df
-    )
+    direct_payments_df = join_extrapolation_into_df(direct_payments_df, extrapolation_df)
 
     return direct_payments_df
 
@@ -46,17 +44,13 @@ def add_column_with_year_as_integer(
     return direct_payments_df
 
 
-def add_column_with_first_year_of_data(
+def add_columns_with_first_and_last_years_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(
-        direct_payments_df
-    )
-    first_and_last_submission_date_df = determine_first_year_with_data(populated_df)
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    first_and_last_submission_date_df = determine_first_and_last_years_with_data(populated_df)
 
-    direct_payments_df = direct_payments_df.join(
-        first_and_last_submission_date_df, DP.LA_AREA, "left"
-    )
+    direct_payments_df = direct_payments_df.join(first_and_last_submission_date_df, DP.LA_AREA, "left")
 
     return direct_payments_df
 
@@ -79,9 +73,7 @@ def add_data_point_from_first_year_of_data(
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    first_year_df = direct_payments_df.where(
-        F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER)
-    )
+    first_year_df = direct_payments_df.where(F.col(DP.FIRST_YEAR_WITH_DATA) == F.col(DP.YEAR_AS_INTEGER))
     first_year_df = first_year_df.withColumnRenamed(original_column, new_column)
     first_year_df = first_year_df.select(DP.LA_AREA, new_column)
 
@@ -93,9 +85,7 @@ def add_data_point_from_first_year_of_data(
 def calculate_extrapolation_ratio_for_earlier_years(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    ratio_df = direct_payments_df.where(
-        F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA)
-    )
+    ratio_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
     ratio_df = ratio_df.withColumn(
         DP.EXTRAPOLATION_RATIO,
         (F.col(DP.ESTIMATE_USING_MEAN) / F.col(DP.FIRST_YEAR_MEAN_ESTIMATE)),
@@ -186,11 +176,12 @@ def join_rolling_average_into_df(
 """
 
 
-def determine_first_year_with_data(
+def determine_first_and_last_years_with_data(
     populated_df: DataFrame,
 ) -> DataFrame:
     first_and_last_submission_date_df = populated_df.groupBy(DP.LA_AREA).agg(
         F.min(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.FIRST_YEAR_WITH_DATA),
+        F.max(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.LAST_YEAR_WITH_DATA),
     )
     return first_and_last_submission_date_df
 
@@ -202,7 +193,5 @@ def join_extrapolation_into_df(
     extrapolation_df = extrapolation_df.select(
         DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO
     )
-    direct_payments_df = direct_payments_df.join(
-        extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left"
-    )
+    direct_payments_df = direct_payments_df.join(extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
