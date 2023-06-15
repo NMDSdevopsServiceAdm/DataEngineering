@@ -138,7 +138,9 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.add_data_point_from_first_year_of_data(df, DP.ESTIMATE_USING_MEAN, DP.FIRST_YEAR_MEAN_ESTIMATE)
+        output_df = job.add_data_point_from_given_year_of_data(
+            df, DP.FIRST_YEAR_WITH_DATA, DP.ESTIMATE_USING_MEAN, DP.FIRST_YEAR_MEAN_ESTIMATE
+        )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
@@ -149,6 +151,42 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
         self.assertAlmostEqual(output_df_list[5][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
         self.assertAlmostEqual(output_df_list[6][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
         self.assertAlmostEqual(output_df_list[7][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+
+    def test_add_data_point_from_last_year_of_data_returns_correct_values(
+        self,
+    ):
+        rows = [
+            ("area_1", 2021, 2019, 0.3),
+            ("area_2", 2021, 2021, 0.4),
+            ("area_1", 2020, 2019, 0.3),
+            ("area_2", 2020, 2021, None),
+            ("area_1", 2019, 2019, 0.3),
+            ("area_2", 2019, 2021, None),
+            ("area_1", 2018, 2019, None),
+            ("area_2", 2018, 2021, None),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.LAST_YEAR_WITH_DATA, IntegerType(), True),
+                StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.add_data_point_from_given_year_of_data(
+            df, DP.LAST_YEAR_WITH_DATA, DP.ESTIMATE_USING_MEAN, DP.LAST_YEAR_MEAN_ESTIMATE
+        )
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertAlmostEqual(output_df_list[0][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
 
     def test_calculate_extrapolation_ratio_for_earlier_years_returns_correct_value(
         self,
