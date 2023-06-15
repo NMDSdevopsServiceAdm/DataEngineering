@@ -43,7 +43,7 @@ class DirectPaymentColumnNames:
     # FIRST_YEAR_ROLLING_AVERAGE: str = "first_year_rolling_average"
     FIRST_YEAR_MEAN_ESTIMATE: str = "first_year_mean_estimate"
     EXTRAPOLATION_RATIO: str = "extrapolation_ratio"
-    ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO: str = "estimate_using_backward_extrapolation_ratio"
+    ESTIMATE_USING_EXTRAPOLATION_RATIO: str = "estimate_using_extrapolation_ratio"
     LAST_YEAR_WITH_DATA: str = "last_year_with_data"
     LAST_DATA_POINT: str = "last_data_point"
     LAST_YEAR_MEAN_ESTIMATE: str = "last_year_mean_estimate"

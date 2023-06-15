@@ -123,8 +123,14 @@ def calculate_extrapolation_estimates(
     ratio_df: DataFrame,
 ) -> DataFrame:
     extrapolation_df = ratio_df.withColumn(
-        DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO,
-        (F.col(DP.FIRST_DATA_POINT) * F.col(DP.EXTRAPOLATION_RATIO)),
+        DP.ESTIMATE_USING_EXTRAPOLATION_RATIO,
+        F.when(
+            (F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA)),
+            (F.col(DP.FIRST_DATA_POINT) * F.col(DP.EXTRAPOLATION_RATIO)),
+        ).when(
+            (F.col(DP.YEAR_AS_INTEGER) > F.col(DP.LAST_YEAR_WITH_DATA)),
+            (F.col(DP.LAST_DATA_POINT) * F.col(DP.EXTRAPOLATION_RATIO)),
+        ),
     )
     return extrapolation_df
 
