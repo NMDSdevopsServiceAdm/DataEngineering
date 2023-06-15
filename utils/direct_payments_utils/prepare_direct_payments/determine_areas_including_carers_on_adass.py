@@ -98,11 +98,12 @@ def allocate_method_for_calculating_service_users_employing_staff(
 ) -> DataFrame:
     """
     ### Replace allocation logic after estimates script is created ###
-    1) If ADASS DPRs is more than 100 greater than ascof total dprs, remove data point
-    2) Work out if the number of DPR's ADASS have surveyed is closer to the ASCOF service user figure or to the total of SU and carers.
-    3) If it's closer to ASCOF service user, then do (% employing from survey * SU's from ASCOF) + (carers * magic low % figure)
-    4) If it's closer to the total ASCOF figure, then do % employing from survey * total from ASCOF
-    5) Then divide each of these figures by SU's from ASCOF
+    1) If ADASS DPRs is more than double ascof total dprs, remove data point
+    2) If ADASS DPRs is less than half ascof su dprs, remove data point
+    3) Work out if the number of DPR's ADASS have surveyed is closer to the ASCOF service user figure or to the total of SU and carers.
+    4) If it's closer to ASCOF service user, then do (% employing from survey * SU's from ASCOF) + (carers * magic low % figure)
+    5) If it's closer to the total ASCOF figure, then do % employing from survey * total from ASCOF
+    6) Then divide each of these figures by SU's from ASCOF
     """
 
     df = df.withColumn(
@@ -170,5 +171,35 @@ def rejoin_new_variables_into_direct_payments_data(
 def remove_outliers(df: DataFrame) -> DataFrame:
     # TODO
     # calculate average proportion employing staff for each LA over all years
+    df = calculate_mean_proportion_of_service_users_employing_staff(df)
     # remove any values that are more than a threshold value away from the average
+    df = remove_outliers_using_threshold_value(df)
+    return df
+
+
+def calculate_mean_proportion_of_service_users_employing_staff(
+    df: DataFrame,
+) -> DataFrame:
+    means_df = df.groupBy(DP.LA_AREA).mean(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    df = df.join(means_df, on=DP.LA_AREA, how="left")
+    df = df.withColumnRenamed(
+        DP.GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, DP.MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+    )
+    return df
+
+
+def remove_outliers_using_threshold_value(
+    df: DataFrame,
+) -> DataFrame:
+    df = df.withColumn(
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.abs(
+                F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+                - F.col(DP.MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+            )
+            < Config.ADASS_PROPORTION_OUTLIER_THRESHOLD,
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ),
+    )
     return df
