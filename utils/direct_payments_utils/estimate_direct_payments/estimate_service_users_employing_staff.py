@@ -10,7 +10,7 @@ from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
 from utils.direct_payments_utils.estimate_direct_payments.models.extrapolation_ratio import (
-    model_extrapolation_backwards,
+    model_extrapolation,
 )
 from utils.direct_payments_utils.estimate_direct_payments.models.interpolation import (
     model_interpolation,
@@ -54,7 +54,7 @@ def estimate_missing_data_for_service_users_employing_staff(
     # If we have gaps at the beginning, ratio back from last known year
     # ratio model
     # calculate ratio backwards from each year
-    direct_payments_df = model_extrapolation_backwards(direct_payments_df)
+    direct_payments_df = model_extrapolation(direct_payments_df)
 
     # If we have gaps between dates, interpolate
     # interpolation model

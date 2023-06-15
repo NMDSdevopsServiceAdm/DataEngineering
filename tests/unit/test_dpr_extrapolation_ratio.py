@@ -16,13 +16,13 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 )
 
 
-class TestBackwardsExtrapolationRatio(unittest.TestCase):
+class TestExtrapolationRatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_backwards_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    def test_model_extrapolation_backwards_completes(self):
+    def test_model_extrapolation_completes(self):
         rows = [
             ("area_1", 2021, 300.0, 0.3, 320.0),
             ("area_2", 2021, 300.0, 0.4, 320.0),
@@ -45,7 +45,7 @@ class TestBackwardsExtrapolationRatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.model_extrapolation_backwards(df)
+        output_df = job.model_extrapolation(df)
         self.assertEqual(df.count(), output_df.count())
 
     def test_add_column_with_year_as_integer_adds_same_value_as_integer(self):

@@ -10,7 +10,7 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 )
 
 
-def model_extrapolation_backwards(
+def model_extrapolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
@@ -222,8 +222,6 @@ def join_extrapolation_into_df(
     direct_payments_df: DataFrame,
     extrapolation_df: DataFrame,
 ) -> DataFrame:
-    extrapolation_df = extrapolation_df.select(
-        DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_BACKWARD_EXTRAPOLATION_RATIO
-    )
+    extrapolation_df = extrapolation_df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_EXTRAPOLATION_RATIO)
     direct_payments_df = direct_payments_df.join(extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
