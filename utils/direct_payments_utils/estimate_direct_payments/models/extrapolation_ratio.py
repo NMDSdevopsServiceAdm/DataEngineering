@@ -41,7 +41,7 @@ def model_extrapolation_backwards(
         DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
         DP.LAST_DATA_POINT,
     )
-    ratio_df = calculate_extrapolation_ratio_for_earlier_years(direct_payments_df)
+    ratio_df = calculate_extrapolation_ratios(direct_payments_df)
     extrapolation_df = calculate_extrapolation_estimates(ratio_df)
 
     direct_payments_df = join_extrapolation_into_df(direct_payments_df, extrapolation_df)
@@ -98,14 +98,24 @@ def add_data_point_from_given_year_of_data(
     return direct_payments_df
 
 
-def calculate_extrapolation_ratio_for_earlier_years(
+def calculate_extrapolation_ratios(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    ratio_df = direct_payments_df.where(F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
+    ratio_df = direct_payments_df.where(
+        (F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA))
+        | (F.col(DP.YEAR_AS_INTEGER) > F.col(DP.LAST_YEAR_WITH_DATA))
+    )
     ratio_df = ratio_df.withColumn(
         DP.EXTRAPOLATION_RATIO,
-        (F.col(DP.ESTIMATE_USING_MEAN) / F.col(DP.FIRST_YEAR_MEAN_ESTIMATE)),
+        F.when(
+            (F.col(DP.YEAR_AS_INTEGER) < F.col(DP.FIRST_YEAR_WITH_DATA)),
+            (F.col(DP.ESTIMATE_USING_MEAN) / F.col(DP.FIRST_YEAR_MEAN_ESTIMATE)),
+        ).when(
+            (F.col(DP.YEAR_AS_INTEGER) > F.col(DP.LAST_YEAR_WITH_DATA)),
+            (F.col(DP.ESTIMATE_USING_MEAN) / F.col(DP.LAST_YEAR_MEAN_ESTIMATE)),
+        ),
     )
+
     return ratio_df
 
 
