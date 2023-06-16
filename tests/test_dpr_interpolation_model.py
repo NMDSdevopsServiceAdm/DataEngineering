@@ -49,7 +49,6 @@ class TestDPRInterpolation(unittest.TestCase):
         output_df = job.model_interpolation(df)
         self.assertEqual(df.count(), output_df.count())
 
-    @unittest.skip("to do")
     def test_filter_to_locations_with_a_known_service_users_employing_staff_filters_correctly(self):
         rows = [
             ("area_1", 2021, 300.0, 0.3),

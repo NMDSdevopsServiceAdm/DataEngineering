@@ -17,7 +17,10 @@ def model_interpolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     # TODO
-    # filter to locations with known job count
+    # filter to locations with known service users emlpoying staff
+    known_service_users_employing_staff_df = filter_to_locations_with_a_known_service_users_employing_staff(
+        direct_payments_df
+    )
     # calculate_first_and_last_submission_year_per_la_area
     # convert firts and last known year into time series df
     # add known info
@@ -51,13 +54,13 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     return df
 
 
-def filter_to_locations_with_a_known_job_count(
+def filter_to_locations_with_a_known_service_users_employing_staff(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
     df = df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
-
-    return df.where(F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).isNotNull())
+    df = df.where(F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).isNotNull())
+    return df
 
 
 def calculate_first_and_last_submission_date_per_location(
