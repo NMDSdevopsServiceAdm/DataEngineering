@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_extrapolation_ratio"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -53,33 +55,53 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
         self.assertAlmostEqual(
-            output_df_list[0][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.33, places=5
+            output_df_list[0][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.33,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[1][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.37, places=5
+            output_df_list[1][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.37,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[2][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.41, places=5
+            output_df_list[2][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.41,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[3][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.45, places=5
+            output_df_list[3][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.45,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[4][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.49, places=5
+            output_df_list[4][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.49,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[5][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.6, places=5
+            output_df_list[5][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.6,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[6][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.6, places=5
+            output_df_list[6][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.6,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[7][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.6, places=5
+            output_df_list[7][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.6,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[8][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5, places=5
+            output_df_list[8][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.5,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[9][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.4, places=5
+            output_df_list[9][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.4,
+            places=5,
         )
         self.assertEqual(output_df.count(), df.count())
