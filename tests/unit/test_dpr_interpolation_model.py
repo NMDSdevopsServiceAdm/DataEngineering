@@ -55,7 +55,7 @@ class TestDPRInterpolation(unittest.TestCase):
             ("area_2", 2021, 300.0, 0.4),
             ("area_1", 2020, None, 0.45),
             ("area_2", 2020, 300.0, 0.35),
-            ("area_1", 2019, None, 0.375),
+            ("area_1", 2019, 300.0, 0.375),
             ("area_2", 2019, 300.0, 0.2),
         ]
         test_schema = StructType(
@@ -82,6 +82,7 @@ class TestDPRInterpolation(unittest.TestCase):
     def test_calculate_first_and_last_submission_date_per_location(self):
         rows = [
             ("area_1", 2021, 300.0),
+            ("area_1", 2019, 300.0),
             ("area_2", 2021, 300.0),
             ("area_2", 2020, 300.0),
             ("area_2", 2019, 300.0),
@@ -106,8 +107,41 @@ class TestDPRInterpolation(unittest.TestCase):
             [DP.LA_AREA, DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR],
         )
 
-        output_df = output_df.sort(DP.LA_AREA).collect()
-        self.assertEqual(output_df[0][DP.FIRST_SUBMISSION_YEAR], 2021)
-        self.assertEqual(output_df[0][DP.LAST_SUBMISSION_YEAR], 2021)
-        self.assertEqual(output_df[1][DP.FIRST_SUBMISSION_YEAR], 2019)
-        self.assertEqual(output_df[1][DP.LAST_SUBMISSION_YEAR], 2021)
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+        self.assertEqual(output_df_list[0][DP.FIRST_SUBMISSION_YEAR], 2019)
+        self.assertEqual(output_df_list[0][DP.LAST_SUBMISSION_YEAR], 2021)
+        self.assertEqual(output_df_list[1][DP.FIRST_SUBMISSION_YEAR], 2019)
+        self.assertEqual(output_df_list[1][DP.LAST_SUBMISSION_YEAR], 2021)
+
+    def test_convert_first_and_last_known_time_into_timeseries_df(self):
+        rows = [
+            ("area_1", 2019, 2021),
+            ("area_2", 2019, 2021),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.FIRST_SUBMISSION_YEAR, IntegerType(), True),
+                StructField(
+                    DP.LAST_SUBMISSION_YEAR,
+                    IntegerType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.convert_first_and_last_known_time_into_timeseries_df(df)
+        output_df_list = output_df.sort(DP.LA_AREA, DP.INTERPOLATION_YEAR).collect()
+
+        self.assertEqual(output_df.count(), 6)
+        self.assertEqual(
+            output_df.columns,
+            [DP.LA_AREA, DP.INTERPOLATION_YEAR],
+        )
+
+        self.assertEqual(output_df_list[0][DP.INTERPOLATION_YEAR], 2019)
+        self.assertEqual(output_df_list[1][DP.INTERPOLATION_YEAR], 2020)
+        self.assertEqual(output_df_list[2][DP.INTERPOLATION_YEAR], 2021)
+        self.assertEqual(output_df_list[3][DP.INTERPOLATION_YEAR], 2019)
+        self.assertEqual(output_df_list[4][DP.INTERPOLATION_YEAR], 2020)
+        self.assertEqual(output_df_list[5][DP.INTERPOLATION_YEAR], 2021)

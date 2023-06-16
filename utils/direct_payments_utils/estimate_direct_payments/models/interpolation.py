@@ -3,7 +3,7 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame  # , Window
 import pyspark.sql
 
-# from pyspark.sql.types import ArrayType, LongType, FloatType
+from pyspark.sql.types import ArrayType, LongType  # , FloatType
 
 
 # from utils.utils import convert_days_to_unix_time
@@ -28,6 +28,7 @@ def model_interpolation(
     )
 
     # convert firts and last known year into time series df
+    all_dates_df = convert_first_and_last_known_year_into_timeseries_df(first_and_last_submission_date_df)
     # add known info
     # interpolate values for all dates
     # join into df
@@ -39,7 +40,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
    # known_job_count_df = filter_to_locations_with_a_known_job_count(df)
 
-    first_and_last_submission_date_df = calculate_first_and_last_submission_date_per_location(known_job_count_df)
+   # first_and_last_submission_date_df = calculate_first_and_last_submission_date_per_location(known_job_count_df)
 
     all_dates_df = convert_first_and_last_known_time_into_timeseries_df(first_and_last_submission_date_df)
 
@@ -81,28 +82,31 @@ def calculate_first_and_last_submission_year_per_la_area(
     return df
 
 
-"""
 def convert_first_and_last_known_time_into_timeseries_df(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    date_range_udf = F.udf(date_range, ArrayType(LongType()))
+    create_list_of_equally_spaced_points_between_start_and_finish_years_udf = F.udf(
+        create_list_of_equally_spaced_points_between_start_and_finish_years, ArrayType(LongType())
+    )
 
     return df.withColumn(
-        "unix_time",
-        F.explode(date_range_udf(DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR)),
+        DP.INTERPOLATION_YEAR,
+        F.explode(
+            create_list_of_equally_spaced_points_between_start_and_finish_years_udf(
+                DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR
+            )
+        ),
     ).drop(DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR)
 
 
-def date_range(unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1) -> int:
- #   Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes
-    unix_time_step = convert_days_to_unix_time(step_size_in_days)
-
-    return [
-        unix_start_time + unix_time_step * x
-        for x in range(int((unix_finish_time - unix_start_time) / unix_time_step) + 1)
-    ]
+def create_list_of_equally_spaced_points_between_start_and_finish_years(
+    start_year: int, finish_year: int, step_size_in_years: int = 1
+) -> int:
+    year_step = step_size_in_years
+    return [start_year + year_step * x for x in range(int((finish_year - start_year) / year_step) + 1)]
 
 
+"""
 def add_known_job_count_information(df: DataFrame, known_job_count_df: DataFrame) -> DataFrame:
 
     df = leftouter_join_on_locationid_and_unix_time(df, known_job_count_df)
