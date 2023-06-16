@@ -14,9 +14,7 @@ def model_extrapolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
-    direct_payments_df = add_columns_with_first_and_last_years_of_data(
-        direct_payments_df
-    )
+    direct_payments_df = add_columns_with_first_and_last_years_of_data(direct_payments_df)
     direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
         DP.FIRST_YEAR_WITH_DATA,
@@ -27,7 +25,7 @@ def model_extrapolation(
     direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
         DP.FIRST_YEAR_WITH_DATA,
-        DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.FIRST_DATA_POINT,
     )
     direct_payments_df = add_data_point_from_given_year_of_data(
@@ -40,15 +38,13 @@ def model_extrapolation(
     direct_payments_df = add_data_point_from_given_year_of_data(
         direct_payments_df,
         DP.LAST_YEAR_WITH_DATA,
-        DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.LAST_DATA_POINT,
     )
     ratio_df = calculate_extrapolation_ratios(direct_payments_df)
     extrapolation_df = calculate_extrapolation_estimates(ratio_df)
 
-    direct_payments_df = join_extrapolation_into_df(
-        direct_payments_df, extrapolation_df
-    )
+    direct_payments_df = join_extrapolation_into_df(direct_payments_df, extrapolation_df)
 
     return direct_payments_df
 
@@ -66,16 +62,10 @@ def add_column_with_year_as_integer(
 def add_columns_with_first_and_last_years_of_data(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(
-        direct_payments_df
-    )
-    first_and_last_submission_date_df = determine_first_and_last_years_with_data(
-        populated_df
-    )
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    first_and_last_submission_date_df = determine_first_and_last_years_with_data(populated_df)
 
-    direct_payments_df = direct_payments_df.join(
-        first_and_last_submission_date_df, DP.LA_AREA, "left"
-    )
+    direct_payments_df = direct_payments_df.join(first_and_last_submission_date_df, DP.LA_AREA, "left")
 
     return direct_payments_df
 
@@ -99,9 +89,7 @@ def add_data_point_from_given_year_of_data(
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    df = direct_payments_df.where(
-        F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER)
-    )
+    df = direct_payments_df.where(F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER))
     df = df.withColumnRenamed(original_column, new_column)
     df = df.select(DP.LA_AREA, new_column)
 
@@ -150,26 +138,10 @@ def calculate_extrapolation_estimates(
 def filter_to_locations_with_known_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = direct_payments_df.where(
-        F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).isNotNull()
-    )
+    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
     return populated_df
 
 
-"""
-def calculate_aggregates_per_year(
-    direct_payments_df: DataFrame,
-) -> DataFrame:
-    direct_payments_df = direct_payments_df.groupBy(DP.YEAR_AS_INTEGER).agg(
-        F.count(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
-        .cast("integer")
-        .alias(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR),
-        F.sum(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).alias(
-            DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR
-        ),
-    )
-    return direct_payments_df
-"""
 """
 def create_rolling_average_column(
     direct_payments_df: DataFrame,
@@ -234,10 +206,6 @@ def join_extrapolation_into_df(
     direct_payments_df: DataFrame,
     extrapolation_df: DataFrame,
 ) -> DataFrame:
-    extrapolation_df = extrapolation_df.select(
-        DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_EXTRAPOLATION_RATIO
-    )
-    direct_payments_df = direct_payments_df.join(
-        extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left"
-    )
+    extrapolation_df = extrapolation_df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_EXTRAPOLATION_RATIO)
+    direct_payments_df = direct_payments_df.join(extrapolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
