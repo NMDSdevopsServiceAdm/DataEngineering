@@ -10,7 +10,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-import utils.direct_payments_utils.estimate_direct_payments.models.extrapolation_ratio as job
+import utils.direct_payments_utils.estimate_direct_payments.models.interpolation as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -46,5 +46,5 @@ class TestDPRInterpolation(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.model_extrapolation(df)
+        output_df = job.model_interpolation(df)
         self.assertEqual(df.count(), output_df.count())
