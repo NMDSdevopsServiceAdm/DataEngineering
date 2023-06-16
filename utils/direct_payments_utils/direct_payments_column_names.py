@@ -69,6 +69,16 @@ class DirectPaymentColumnNames:
     LAST_DATA_POINT: str = "last_data_point"
     LAST_YEAR_MEAN_ESTIMATE: str = "last_year_mean_estimate"
 
+    FIRST_SUBMISSION_YEAR: str = "first_submission_year"
+    LAST_SUBMISSION_YEAR: str = "last_submission_year"
+    PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF: str = "previous_service_users_employing_staff"
+    NEXT_SERVICE_USERS_EMPLOYING_STAFF: str = "next_service_users_employing_staff"
+    SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "service_users_employing_staff_year_with_data"
+    PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "previous_service_users_employing_staff_year_with_data"
+    NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "previous_service_users_employing_staff_year_with_data"
+    ESTIMATE_USING_INTERPOLATION: str = 
+
+
 
 @dataclass
 class DirectPaymentColumnValues:
