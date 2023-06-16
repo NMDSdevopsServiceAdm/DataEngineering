@@ -40,7 +40,8 @@ def model_interpolation(
     # interpolate values for all dates
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
     # join into df
-    return all_dates_df
+    direct_payments_df = join_interpolation_into_df(direct_payments_df, all_dates_df)
+    return direct_payments_df
 
 
 """
@@ -258,3 +259,13 @@ def interpolation_calculation(
     else:
         m = (y_next - y_prev) / (x_next - x_prev)
         return y_prev + m * (x - x_prev)
+
+
+def join_interpolation_into_df(
+    direct_payments_df: DataFrame,
+    interpolation_df: DataFrame,
+) -> DataFrame:
+    direct_payments_df = direct_payments_df.join(
+        interpolation_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left"
+    )
+    return direct_payments_df
