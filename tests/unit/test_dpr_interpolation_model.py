@@ -22,7 +22,6 @@ class TestDPRInterpolation(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    @unittest.skip("to do")
     def test_model_interpolation_completes(self):
         rows = [
             ("area_1", 2021, 300.0, 0.3, 320.0),
@@ -35,7 +34,7 @@ class TestDPRInterpolation(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(
                     DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
                     FloatType(),
