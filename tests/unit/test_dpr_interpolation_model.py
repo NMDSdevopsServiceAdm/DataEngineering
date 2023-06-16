@@ -211,3 +211,45 @@ class TestDPRInterpolation(unittest.TestCase):
         self.assertEqual(output_df_list[3][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019)
         self.assertEqual(output_df_list[4][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2020)
         self.assertEqual(output_df_list[5][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2021)
+
+    def test_interpolate_values_for_all_dates_returns_interpolated_values(self):
+        rows = [
+            ("area_1", 2019, 300.0, 2019),
+            ("area_1", 2020, None, None),
+            ("area_1", 2021, 300.0, 2021),
+            ("area_2", 2019, 100.0, 2019),
+            ("area_2", 2020, None, None),
+            ("area_2", 2021, 300.0, 2021),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+                    FloatType(),
+                    True,
+                ),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
+                    IntegerType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.interpolate_values_for_all_dates(df)
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
+
+        self.assertEqual(output_df.count(), 6)
+        self.assertEqual(
+            output_df.columns,
+            [DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_INTERPOLATION],
+        )
+
+        self.assertEqual(output_df_list[0][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
+        self.assertEqual(output_df_list[1][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
+        self.assertEqual(output_df_list[2][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
+        self.assertEqual(output_df_list[3][DP.ESTIMATE_USING_INTERPOLATION], 100.0)
+        self.assertEqual(output_df_list[4][DP.ESTIMATE_USING_INTERPOLATION], 200.0)
+        self.assertEqual(output_df_list[5][DP.ESTIMATE_USING_INTERPOLATION], 300.0)

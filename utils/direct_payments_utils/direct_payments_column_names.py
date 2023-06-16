@@ -57,7 +57,7 @@ class DirectPaymentColumnNames:
     NEXT_SERVICE_USERS_EMPLOYING_STAFF: str = "next_service_users_employing_staff"
     SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "service_users_employing_staff_year_with_data"
     PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "previous_service_users_employing_staff_year_with_data"
-    NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "previous_service_users_employing_staff_year_with_data"
+    NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA: str = "next_service_users_employing_staff_year_with_data"
     ESTIMATE_USING_INTERPOLATION: str = "estimate_using_interpolation"
     INTERPOLATION_YEAR: str = "interpolation_year"
 

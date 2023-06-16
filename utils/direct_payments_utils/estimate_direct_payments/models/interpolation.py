@@ -1,9 +1,9 @@
 import sys
 import pyspark.sql.functions as F
-from pyspark.sql import DataFrame  # , Window
+from pyspark.sql import DataFrame, Window
 import pyspark.sql
 
-from pyspark.sql.types import ArrayType, LongType  # , FloatType
+from pyspark.sql.types import ArrayType, LongType, FloatType
 
 
 # from utils.utils import convert_days_to_year_with_data
@@ -32,8 +32,9 @@ def model_interpolation(
     # add known info
     all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_service_users_employing_staff_df)
     # interpolate values for all dates
+    all_dates_df = interpolate_values_for_all_dates(all_dates_df)
     # join into df
-    return first_and_last_submission_year_df
+    return all_dates_df
 
 
 """
@@ -43,9 +44,9 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
    # first_and_last_submission_date_df = calculate_first_and_last_submission_date_per_location(known_job_count_df)
 
-    all_dates_df = convert_first_and_last_known_time_into_timeseries_df(first_and_last_submission_date_df)
+   # all_dates_df = convert_first_and_last_known_time_into_timeseries_df(first_and_last_submission_date_df)
 
-    all_dates_df = add_known_job_count_information(all_dates_df, known_job_count_df)
+   # all_dates_df = add_known_job_count_information(all_dates_df, known_job_count_df)
 
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
 
@@ -129,32 +130,10 @@ def add_year_with_data_for_known_service_users_employing_staff(df: DataFrame) ->
     return df
 
 
-"""
-def window_for_previous_value() -> Window:
-    return Window.partitionBy(DP.LA_AREA).orderBy(DP.YEAR_AS_INTEGER).rowsBetween(-sys.maxsize, 0)
-
-
-def get_previous_value_in_column(df: DataFrame, column_name: str, new_column_name: str) -> DataFrame:
-    return df.withColumn(
-        new_column_name,
-        F.last(F.col(column_name), ignorenulls=True).over(window_for_previous_value()),
-    )
-
-
-def window_for_next_value() -> Window:
-    return Window.partitionBy(DP.LA_AREA).orderBy(DP.YEAR_AS_INTEGER).rowsBetween(0, sys.maxsize)
-
-
-def get_next_value_in_new_column(df: DataFrame, column_name: str, new_column_name: str) -> DataFrame:
-    return df.withColumn(
-        new_column_name,
-        F.first(F.col(column_name), ignorenulls=True).over(window_for_next_value()),
-    )
-
-
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
-    return calculated_interpolated_values_in_new_column(df, DP.ESTIMATE_USING_INTERPOLATION)
+    df = calculated_interpolated_values_in_new_column(df, DP.ESTIMATE_USING_INTERPOLATION)
+    return df
 
 
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
@@ -167,17 +146,44 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     df = get_next_value_in_new_column(
         df, DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF, DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF
     )
-    return get_next_value_in_new_column(
+    df = get_next_value_in_new_column(
         df, DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA, DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA
     )
+    return df
+
+
+def create_window_for_previous_value() -> Window:
+    window = Window.partitionBy(DP.LA_AREA).orderBy(DP.YEAR_AS_INTEGER).rowsBetween(-sys.maxsize, 0)
+    return window
+
+
+def get_previous_value_in_column(df: DataFrame, column_name: str, new_column_name: str) -> DataFrame:
+    df = df.withColumn(
+        new_column_name,
+        F.last(F.col(column_name), ignorenulls=True).over(create_window_for_previous_value()),
+    )
+    return df
+
+
+def create_window_for_next_value() -> Window:
+    window = Window.partitionBy(DP.LA_AREA).orderBy(DP.YEAR_AS_INTEGER).rowsBetween(0, sys.maxsize)
+    return window
+
+
+def get_next_value_in_new_column(df: DataFrame, column_name: str, new_column_name: str) -> DataFrame:
+    df = df.withColumn(
+        new_column_name,
+        F.first(F.col(column_name), ignorenulls=True).over(create_window_for_next_value()),
+    )
+    return df
 
 
 def calculated_interpolated_values_in_new_column(df: DataFrame, new_column_name: str) -> DataFrame:
-    interpol_udf = F.udf(interpolation_calculation, FloatType())
+    interpolate_udf = F.udf(interpolation_calculation, FloatType())
 
     df = df.withColumn(
         new_column_name,
-        interpol_udf(
+        interpolate_udf(
             DP.YEAR_AS_INTEGER,
             DP.PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
             DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
@@ -186,8 +192,8 @@ def calculated_interpolated_values_in_new_column(df: DataFrame, new_column_name:
             DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF,
         ),
     )
-
-    return df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_INTERPOLATION)
+    df = df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_INTERPOLATION)
+    return df
 
 
 def interpolation_calculation(x: str, x_prev: str, x_next: str, y: str, y_prev: str, y_next: str) -> float:
@@ -196,4 +202,3 @@ def interpolation_calculation(x: str, x_prev: str, x_next: str, y: str, y_prev: 
     else:
         m = (y_next - y_prev) / (x_next - x_prev)
         return y_prev + m * (x - x_prev)
-"""
