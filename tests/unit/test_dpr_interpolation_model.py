@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestDPRInterpolation(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_dpr_interpolation").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_dpr_interpolation"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -40,7 +42,9 @@ class TestDPRInterpolation(unittest.TestCase):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
                 StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
             ]
         )
@@ -48,7 +52,9 @@ class TestDPRInterpolation(unittest.TestCase):
         output_df = job.model_interpolation(df)
         self.assertEqual(df.count(), output_df.count())
 
-    def test_filter_to_locations_with_known_service_users_employing_staff_filters_correctly(self):
+    def test_filter_to_locations_with_known_service_users_employing_staff_filters_correctly(
+        self,
+    ):
         rows = [
             ("area_1", 2021, 300.0, 0.3),
             ("area_2", 2021, 300.0, 0.4),
@@ -66,7 +72,9 @@ class TestDPRInterpolation(unittest.TestCase):
                     FloatType(),
                     True,
                 ),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -75,7 +83,11 @@ class TestDPRInterpolation(unittest.TestCase):
         self.assertEqual(output_df.count(), 5)
         self.assertEqual(
             output_df.columns,
-            [DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF],
+            [
+                DP.LA_AREA,
+                DP.YEAR_AS_INTEGER,
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+            ],
         )
 
     def test_calculate_first_and_last_submission_date_per_location(self):
@@ -160,7 +172,9 @@ class TestDPRInterpolation(unittest.TestCase):
                 StructField(DP.INTERPOLATION_YEAR, IntegerType(), True),
             ]
         )
-        all_dates_df = self.spark.createDataFrame(all_dates_rows, schema=all_dates_test_schema)
+        all_dates_df = self.spark.createDataFrame(
+            all_dates_rows, schema=all_dates_test_schema
+        )
 
         known_values_rows = [
             ("area_1", 2021, 300.0),
@@ -184,7 +198,9 @@ class TestDPRInterpolation(unittest.TestCase):
             known_values_rows, schema=known_values_test_schema
         )
 
-        output_df = job.merge_known_values_with_exploded_dates(all_dates_df, known_service_users_employing_staff_df)
+        output_df = job.merge_known_values_with_exploded_dates(
+            all_dates_df, known_service_users_employing_staff_df
+        )
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         output_df.show()
         self.assertEqual(output_df.count(), 6)
@@ -198,18 +214,60 @@ class TestDPRInterpolation(unittest.TestCase):
             ],
         )
 
-        self.assertEqual(output_df_list[0][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 300.0)
-        self.assertEqual(output_df_list[1][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[2][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 300.0)
-        self.assertEqual(output_df_list[3][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 300.0)
-        self.assertEqual(output_df_list[4][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 300.0)
-        self.assertEqual(output_df_list[5][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 300.0)
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], None)
-        self.assertEqual(output_df_list[2][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2021)
-        self.assertEqual(output_df_list[3][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019)
-        self.assertEqual(output_df_list[4][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2020)
-        self.assertEqual(output_df_list[5][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2021)
+        self.assertEqual(
+            output_df_list[0][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            300.0,
+        )
+        self.assertEqual(
+            output_df_list[1][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            None,
+        )
+        self.assertEqual(
+            output_df_list[2][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            300.0,
+        )
+        self.assertEqual(
+            output_df_list[3][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            300.0,
+        )
+        self.assertEqual(
+            output_df_list[4][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            300.0,
+        )
+        self.assertEqual(
+            output_df_list[5][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            300.0,
+        )
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], None
+        )
+        self.assertEqual(
+            output_df_list[2][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2021
+        )
+        self.assertEqual(
+            output_df_list[3][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019
+        )
+        self.assertEqual(
+            output_df_list[4][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2020
+        )
+        self.assertEqual(
+            output_df_list[5][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2021
+        )
 
     def test_interpolate_values_for_all_dates_returns_interpolated_values(self):
         rows = [
