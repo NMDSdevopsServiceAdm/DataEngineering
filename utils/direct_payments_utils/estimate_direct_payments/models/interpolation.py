@@ -29,6 +29,7 @@ def model_interpolation(
     return direct_payments_df
 
 
+"""
 def model_interpolation(df: DataFrame) -> DataFrame:
 
     known_job_count_df = filter_to_locations_with_a_known_job_count(df)
@@ -52,6 +53,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     df = update_dataframe_with_identifying_rule(df, DP.ESTIMATE_USING_INTERPOLATION, ESTIMATE_JOB_COUNT)
 
     return df
+"""
 
 
 def filter_to_locations_with_a_known_service_users_employing_staff(
@@ -63,6 +65,7 @@ def filter_to_locations_with_a_known_service_users_employing_staff(
     return df
 
 
+"""
 def calculate_first_and_last_submission_date_per_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
@@ -85,7 +88,7 @@ def convert_first_and_last_known_time_into_timeseries_df(
 
 
 def date_range(unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1) -> int:
-    """Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes"""
+ #   Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes
     unix_time_step = convert_days_to_unix_time(step_size_in_days)
 
     return [
@@ -180,3 +183,4 @@ def interpolation_calculation(x: str, x_prev: str, x_next: str, y: str, y_prev: 
     else:
         m = (y_next - y_prev) / (x_next - x_prev)
         return y_prev + m * (x - x_prev)
+"""
