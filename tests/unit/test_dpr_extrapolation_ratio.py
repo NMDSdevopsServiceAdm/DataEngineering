@@ -18,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestExtrapolationRatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_extrapolation_ratio"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -42,9 +40,7 @@ class TestExtrapolationRatio(unittest.TestCase):
                     FloatType(),
                     True,
                 ),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
             ]
         )
@@ -80,11 +76,11 @@ class TestExtrapolationRatio(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0),
-            ("area_2", 2021, 400.0),
-            ("area_1", 2020, 300.0),
+            ("area_1", 2021, 0.5),
+            ("area_2", 2021, 0.5),
+            ("area_1", 2020, 0.5),
             ("area_2", 2020, None),
-            ("area_1", 2019, 300.0),
+            ("area_1", 2019, 0.5),
             ("area_2", 2019, None),
             ("area_1", 2018, None),
             ("area_2", 2018, None),
@@ -94,7 +90,7 @@ class TestExtrapolationRatio(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(
-                    DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                     FloatType(),
                     True,
                 ),
@@ -150,30 +146,14 @@ class TestExtrapolationRatio(unittest.TestCase):
         )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(
-            output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[4][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[5][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[6][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[7][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
+        self.assertAlmostEqual(output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
 
     def test_add_data_point_from_last_year_of_data_returns_correct_values(
         self,
@@ -205,30 +185,14 @@ class TestExtrapolationRatio(unittest.TestCase):
         )
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(
-            output_df_list[0][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[1][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[2][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[3][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[4][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[5][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[6][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[7][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5
-        )
+        self.assertAlmostEqual(output_df_list[0][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.LAST_YEAR_MEAN_ESTIMATE], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[6][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[7][DP.LAST_YEAR_MEAN_ESTIMATE], 0.4, places=5)
 
     def test_calculate_extrapolation_ratio_returns_correct_value(
         self,
@@ -258,9 +222,7 @@ class TestExtrapolationRatio(unittest.TestCase):
         output_df = job.calculate_extrapolation_ratios(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
         self.assertAlmostEqual(output_df_list[0][DP.EXTRAPOLATION_RATIO], 1.0, places=5)
-        self.assertAlmostEqual(
-            output_df_list[1][DP.EXTRAPOLATION_RATIO], 1.0666666, places=5
-        )
+        self.assertAlmostEqual(output_df_list[1][DP.EXTRAPOLATION_RATIO], 1.0666666, places=5)
         self.assertAlmostEqual(output_df_list[2][DP.EXTRAPOLATION_RATIO], 1.0, places=5)
         self.assertAlmostEqual(output_df_list[3][DP.EXTRAPOLATION_RATIO], 1.0, places=5)
         self.assertEqual(output_df.count(), 4)
@@ -269,14 +231,14 @@ class TestExtrapolationRatio(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 1.1, 300.0, 250.0, 2019, 300.0, 250.0, 2020),
-            ("area_2", 2021, 1.0, 400.0, 450.0, 2019, 300.0, 250.0, 2020),
-            ("area_1", 2020, 0.9, 300.0, 250.0, 2019, 300.0, 250.0, 2020),
-            ("area_2", 2020, 1.0, 400.0, 450.0, 2019, 300.0, 250.0, 2020),
-            ("area_1", 2019, 1.0, 300.0, 250.0, 2019, 300.0, 250.0, 2020),
-            ("area_2", 2019, 1.0, 400.0, 450.0, 2019, 300.0, 250.0, 2020),
-            ("area_1", 2018, 0.8, 300.0, 250.0, 2019, 300.0, 250.0, 2020),
-            ("area_2", 2018, 1.0, 400.0, 450.0, 2019, 300.0, 250.0, 2020),
+            ("area_1", 2021, 1.1, 0.3, 0.4, 2019, 0.3, 0.4, 2020),
+            ("area_2", 2021, 1.0, 0.3, 0.4, 2019, 0.3, 0.4, 2020),
+            ("area_1", 2020, 0.9, 0.3, 0.4, 2019, 0.3, 0.4, 2020),
+            ("area_2", 2020, 1.0, 0.3, 0.4, 2019, 0.3, 0.4, 2020),
+            ("area_1", 2019, 1.0, 0.4, 0.4, 2019, 0.4, 0.4, 2020),
+            ("area_2", 2019, 1.0, 0.4, 0.4, 2019, 0.4, 0.4, 2020),
+            ("area_1", 2018, 0.8, 0.4, 0.4, 2019, 0.4, 0.4, 2020),
+            ("area_2", 2018, 1.0, 0.4, 0.4, 2019, 0.4, 0.4, 2020),
         ]
         test_schema = StructType(
             [
@@ -297,7 +259,7 @@ class TestExtrapolationRatio(unittest.TestCase):
         self.assertEqual(df.count(), output_df.count())
         self.assertAlmostEqual(
             output_df_list[0][DP.ESTIMATE_USING_EXTRAPOLATION_RATIO],
-            200.0,
+            0.32,
             places=5,
         )
         self.assertEqual(
@@ -310,12 +272,12 @@ class TestExtrapolationRatio(unittest.TestCase):
         )
         self.assertAlmostEqual(
             output_df_list[3][DP.ESTIMATE_USING_EXTRAPOLATION_RATIO],
-            275.0,
+            0.44,
             places=5,
         )
         self.assertAlmostEqual(
             output_df_list[4][DP.ESTIMATE_USING_EXTRAPOLATION_RATIO],
-            450.0,
+            0.4,
             places=5,
         )
         self.assertEqual(
@@ -328,6 +290,6 @@ class TestExtrapolationRatio(unittest.TestCase):
         )
         self.assertAlmostEqual(
             output_df_list[7][DP.ESTIMATE_USING_EXTRAPOLATION_RATIO],
-            250.0,
+            0.4,
             places=5,
         )
