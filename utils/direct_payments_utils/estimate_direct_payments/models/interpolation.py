@@ -6,7 +6,7 @@ import pyspark.sql
 from pyspark.sql.types import ArrayType, LongType  # , FloatType
 
 
-# from utils.utils import convert_days_to_unix_time
+# from utils.utils import convert_days_to_year_with_data
 #
 
 from utils.direct_payments_utils.direct_payments_column_names import (
@@ -30,7 +30,7 @@ def model_interpolation(
     # convert firts and last known year into time series df
     all_dates_df = convert_first_and_last_known_years_into_exploded_df(first_and_last_submission_year_df)
     # add known info
-    # all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_service_users_employing_staff_df)
+    all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_service_users_employing_staff_df)
     # interpolate values for all dates
     # join into df
     return first_and_last_submission_year_df
@@ -49,7 +49,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
 
-    df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
+    df = leftouter_join_on_locationid_and_year_with_data(df, all_dates_df)
 
     df = df.withColumn(
         ESTIMATE_JOB_COUNT,
@@ -109,27 +109,27 @@ def create_list_of_equally_spaced_points_between_start_and_finish_years(start_ye
     return array_of_years
 
 
-"""
-def add_known_job_count_information(df: DataFrame, known_job_count_df: DataFrame) -> DataFrame:
+def merge_known_values_with_exploded_dates(
+    all_dates_df: DataFrame, known_service_users_employing_staff_df: DataFrame
+) -> DataFrame:
+    all_dates_df = all_dates_df.withColumnRenamed(DP.INTERPOLATION_YEAR, DP.YEAR_AS_INTEGER)
+    merged_df = all_dates_df.join(known_service_users_employing_staff_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
 
-    df = leftouter_join_on_locationid_and_unix_time(df, known_job_count_df)
-
-    return add_unix_time_for_known_job_count(df)
-
-
-def leftouter_join_on_locationid_and_unix_time(df: DataFrame, other_df: DataFrame) -> DataFrame:
-    return df.join(other_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "leftouter")
+    merged_df = add_year_with_data_for_known_service_users_employing_staff(merged_df)
+    return merged_df
 
 
-def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+def add_year_with_data_for_known_service_users_employing_staff(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
         DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
         F.when(
             (F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).isNotNull()), F.col(DP.YEAR_AS_INTEGER)
         ).otherwise(F.lit(None)),
     )
+    return df
 
 
+"""
 def window_for_previous_value() -> Window:
     return Window.partitionBy(DP.LA_AREA).orderBy(DP.YEAR_AS_INTEGER).rowsBetween(-sys.maxsize, 0)
 
