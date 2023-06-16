@@ -54,7 +54,7 @@ class TestDPRInterpolation(unittest.TestCase):
         rows = [
             ("area_1", 2021, 300.0, 0.3),
             ("area_2", 2021, 300.0, 0.4),
-            ("area_1", 2020, None, 0.45),
+            ("area_1", 2020, None, None),
             ("area_2", 2020, 300.0, 0.35),
             ("area_1", 2019, 300.0, 0.375),
             ("area_2", 2019, 300.0, 0.2),
@@ -86,11 +86,11 @@ class TestDPRInterpolation(unittest.TestCase):
 
     def test_calculate_first_and_last_submission_date_per_location(self):
         rows = [
-            ("area_1", 2021, 300.0),
-            ("area_1", 2019, 300.0),
-            ("area_2", 2021, 300.0),
-            ("area_2", 2020, 300.0),
-            ("area_2", 2019, 300.0),
+            ("area_1", 2021, 0.5),
+            ("area_1", 2019, 0.5),
+            ("area_2", 2021, 0.5),
+            ("area_2", 2020, 0.5),
+            ("area_2", 2019, 0.5),
         ]
         test_schema = StructType(
             [
@@ -169,11 +169,11 @@ class TestDPRInterpolation(unittest.TestCase):
         all_dates_df = self.spark.createDataFrame(all_dates_rows, schema=all_dates_test_schema)
 
         known_values_rows = [
-            ("area_1", 2021, 300.0),
-            ("area_1", 2019, 300.0),
-            ("area_2", 2021, 300.0),
-            ("area_2", 2020, 300.0),
-            ("area_2", 2019, 300.0),
+            ("area_1", 2021, 0.5),
+            ("area_1", 2019, 0.5),
+            ("area_2", 2021, 0.5),
+            ("area_2", 2020, 0.5),
+            ("area_2", 2019, 0.5),
         ]
         known_values_test_schema = StructType(
             [
@@ -206,7 +206,7 @@ class TestDPRInterpolation(unittest.TestCase):
 
         self.assertEqual(
             output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            300.0,
+            0.5,
         )
         self.assertEqual(
             output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
@@ -214,19 +214,19 @@ class TestDPRInterpolation(unittest.TestCase):
         )
         self.assertEqual(
             output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            300.0,
+            0.5,
         )
         self.assertEqual(
             output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            300.0,
+            0.5,
         )
         self.assertEqual(
             output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            300.0,
+            0.5,
         )
         self.assertEqual(
             output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            300.0,
+            0.5,
         )
         self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], 2019)
         self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA], None)
@@ -237,12 +237,12 @@ class TestDPRInterpolation(unittest.TestCase):
 
     def test_interpolate_values_for_all_dates_returns_interpolated_values(self):
         rows = [
-            ("area_1", 2019, 300.0, 2019),
+            ("area_1", 2019, 0.5, 2019),
             ("area_1", 2020, None, None),
-            ("area_1", 2021, 300.0, 2021),
-            ("area_2", 2019, 100.0, 2019),
+            ("area_1", 2021, 0.5, 2021),
+            ("area_2", 2019, 0.3, 2019),
             ("area_2", 2020, None, None),
-            ("area_2", 2021, 300.0, 2021),
+            ("area_2", 2021, 0.5, 2021),
         ]
         test_schema = StructType(
             [
@@ -270,9 +270,9 @@ class TestDPRInterpolation(unittest.TestCase):
             [DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATE_USING_INTERPOLATION],
         )
 
-        self.assertEqual(output_df_list[0][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
-        self.assertEqual(output_df_list[1][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
-        self.assertEqual(output_df_list[2][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
-        self.assertEqual(output_df_list[3][DP.ESTIMATE_USING_INTERPOLATION], 100.0)
-        self.assertEqual(output_df_list[4][DP.ESTIMATE_USING_INTERPOLATION], 200.0)
-        self.assertEqual(output_df_list[5][DP.ESTIMATE_USING_INTERPOLATION], 300.0)
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_INTERPOLATION], 0.5, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_INTERPOLATION], 0.5, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.ESTIMATE_USING_INTERPOLATION], 0.5, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.ESTIMATE_USING_INTERPOLATION], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.ESTIMATE_USING_INTERPOLATION], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[5][DP.ESTIMATE_USING_INTERPOLATION], 0.5, places=5)
