@@ -1,8 +1,9 @@
 import sys
 import pyspark.sql.functions as F
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame  # , Window
 import pyspark.sql
-from pyspark.sql.types import ArrayType, LongType, FloatType
+
+# from pyspark.sql.types import ArrayType, LongType, FloatType
 
 
 # from utils.utils import convert_days_to_unix_time
@@ -18,21 +19,25 @@ def model_interpolation(
 ) -> DataFrame:
     # TODO
     # filter to locations with known service users emlpoying staff
-    known_service_users_employing_staff_df = filter_to_locations_with_a_known_service_users_employing_staff(
+    known_service_users_employing_staff_df = filter_to_locations_with_known_service_users_employing_staff(
         direct_payments_df
     )
     # calculate_first_and_last_submission_year_per_la_area
+    first_and_last_submission_year_df = calculate_first_and_last_submission_year_per_la_area(
+        known_service_users_employing_staff_df
+    )
+
     # convert firts and last known year into time series df
     # add known info
     # interpolate values for all dates
     # join into df
-    return direct_payments_df
+    return first_and_last_submission_year_df
 
 
 """
 def model_interpolation(df: DataFrame) -> DataFrame:
 
-    known_job_count_df = filter_to_locations_with_a_known_job_count(df)
+   # known_job_count_df = filter_to_locations_with_a_known_job_count(df)
 
     first_and_last_submission_date_df = calculate_first_and_last_submission_date_per_location(known_job_count_df)
 
@@ -56,7 +61,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 """
 
 
-def filter_to_locations_with_a_known_service_users_employing_staff(
+def filter_to_locations_with_known_service_users_employing_staff(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
@@ -65,17 +70,18 @@ def filter_to_locations_with_a_known_service_users_employing_staff(
     return df
 
 
-"""
-def calculate_first_and_last_submission_date_per_location(
+def calculate_first_and_last_submission_year_per_la_area(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
 
-    return df.groupBy(DP.LA_AREA).agg(
+    df = df.groupBy(DP.LA_AREA).agg(
         F.min(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.FIRST_SUBMISSION_YEAR),
         F.max(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.LAST_SUBMISSION_YEAR),
     )
+    return df
 
 
+"""
 def convert_first_and_last_known_time_into_timeseries_df(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
