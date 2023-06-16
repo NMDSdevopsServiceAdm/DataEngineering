@@ -36,7 +36,9 @@ class TestMeanImputation(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -55,11 +57,17 @@ class TestMeanImputation(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.model_using_mean(df)
         output_df_list = output_df.collect()
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATE_USING_MEAN], 0.35, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATE_USING_MEAN], 0.35, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.ESTIMATE_USING_MEAN], 0.35, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.ESTIMATE_USING_MEAN], 0.35, places=5
+        )

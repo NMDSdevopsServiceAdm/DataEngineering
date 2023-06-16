@@ -64,7 +64,9 @@ def calculate_aggregates_per_year(
         F.count(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
         .cast("integer")
         .alias(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR),
-        F.sum(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR),
+        F.sum(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).alias(
+            DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR
+        ),
     )
     return direct_payments_df
 
@@ -83,6 +85,9 @@ def calculate_mean_per_year(
 ) -> DataFrame:
     mean_df = mean_df.withColumn(
         DP.ESTIMATE_USING_MEAN,
-        (F.col(DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR) / F.col(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR)),
+        (
+            F.col(DP.SUM_OF_SERVICE_USER_DPRS_DURING_YEAR)
+            / F.col(DP.COUNT_OF_SERVICE_USER_DPRS_DURING_YEAR)
+        ),
     )
     return mean_df
