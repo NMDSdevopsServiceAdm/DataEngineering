@@ -28,8 +28,9 @@ def model_interpolation(
     )
 
     # convert firts and last known year into time series df
-    all_dates_df = convert_first_and_last_known_year_into_timeseries_df(first_and_last_submission_date_df)
+    all_dates_df = convert_first_and_last_known_years_into_exploded_df(first_and_last_submission_year_df)
     # add known info
+    # all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_service_users_employing_staff_df)
     # interpolate values for all dates
     # join into df
     return first_and_last_submission_year_df
@@ -63,8 +64,8 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
 
 def filter_to_locations_with_known_service_users_employing_staff(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+    df: DataFrame,
+) -> DataFrame:
 
     df = df.select(DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
     df = df.where(F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF).isNotNull())
@@ -72,8 +73,8 @@ def filter_to_locations_with_known_service_users_employing_staff(
 
 
 def calculate_first_and_last_submission_year_per_la_area(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+    df: DataFrame,
+) -> DataFrame:
 
     df = df.groupBy(DP.LA_AREA).agg(
         F.min(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.FIRST_SUBMISSION_YEAR),
@@ -82,28 +83,30 @@ def calculate_first_and_last_submission_year_per_la_area(
     return df
 
 
-def convert_first_and_last_known_time_into_timeseries_df(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def convert_first_and_last_known_years_into_exploded_df(
+    df: DataFrame,
+) -> DataFrame:
     create_list_of_equally_spaced_points_between_start_and_finish_years_udf = F.udf(
         create_list_of_equally_spaced_points_between_start_and_finish_years, ArrayType(LongType())
     )
-
-    return df.withColumn(
+    df = df.withColumn(
         DP.INTERPOLATION_YEAR,
         F.explode(
             create_list_of_equally_spaced_points_between_start_and_finish_years_udf(
                 DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR
             )
         ),
-    ).drop(DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR)
+    )
+
+    df = df.drop(DP.FIRST_SUBMISSION_YEAR, DP.LAST_SUBMISSION_YEAR)
+    return df
 
 
-def create_list_of_equally_spaced_points_between_start_and_finish_years(
-    start_year: int, finish_year: int, step_size_in_years: int = 1
-) -> int:
-    year_step = step_size_in_years
-    return [start_year + year_step * x for x in range(int((finish_year - start_year) / year_step) + 1)]
+def create_list_of_equally_spaced_points_between_start_and_finish_years(start_year: int, finish_year: int) -> int:
+    year_step = 1
+    years = range(int((finish_year - start_year) / year_step) + 1)
+    array_of_years = [start_year + year_step * year for year in years]
+    return array_of_years
 
 
 """

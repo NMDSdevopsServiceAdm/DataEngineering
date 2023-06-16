@@ -73,7 +73,7 @@ class TestDPRInterpolation(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.filter_to_locations_with_known_service_users_employing_staff(df)
 
-        self.assertEqual(output_df.count(), 4)
+        self.assertEqual(output_df.count(), 5)
         self.assertEqual(
             output_df.columns,
             [DP.LA_AREA, DP.YEAR_AS_INTEGER, DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF],
@@ -130,7 +130,7 @@ class TestDPRInterpolation(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.convert_first_and_last_known_time_into_timeseries_df(df)
+        output_df = job.convert_first_and_last_known_years_into_exploded_df(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.INTERPOLATION_YEAR).collect()
 
         self.assertEqual(output_df.count(), 6)
