@@ -17,15 +17,16 @@ def determine_areas_including_carers_on_adass(
 
     direct_payments_df = calculate_proportion_of_dprs_employing_staff(direct_payments_df)
     #  most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
-    most_recent_direct_payments_df = calculate_total_dprs_at_year_end(most_recent_direct_payments_df)
+    direct_payments_df = calculate_total_dprs_at_year_end(direct_payments_df)
     # TODO: function which adds column to say if adass base is closer to ascof total dprs or su dprs
-
+    direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(direct_payments_df)
     # TODO: function to create formula if adass includes everyone
-
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
     # TODO: function to create formula if adass includes su only
-
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
     # TODO: function to select method - comapare bases and look if % is over 100
-
+    direct_payments_df = allocate_proportions(direct_payments_df)
+    """
     most_recent_direct_payments_df = calculate_service_users_employing_staff(most_recent_direct_payments_df)
     most_recent_direct_payments_df = calculate_carers_employing_staff(most_recent_direct_payments_df)
     most_recent_direct_payments_df = calculate_service_users_and_carers_employing_staff(most_recent_direct_payments_df)
@@ -38,7 +39,7 @@ def determine_areas_including_carers_on_adass(
     most_recent_direct_payments_df = calculate_proportion_of_service_users_only_employing_staff(
         most_recent_direct_payments_df
     )
-    """    enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
+    enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
         direct_payments_df, most_recent_direct_payments_df
     )"""
 
