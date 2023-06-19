@@ -28,7 +28,7 @@ def determine_areas_including_carers_on_adass(
         direct_payments_df
     )
     direct_payments_df = allocate_proportions(direct_payments_df)
-    direct_payments_df = remove_outliers(direct_payments_df)
+    # direct_payments_df = remove_outliers(direct_payments_df)
 
     return direct_payments_df
 
