@@ -60,7 +60,7 @@ def calculate_difference_between_bases(
 ) -> DataFrame:
     df = df.withColumn(
         new_column,
-        F.abs(F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) - F.col(ascof_column)),
+        F.abs(F.col(DP.DPRS_ADASS) - F.col(ascof_column)),
     )
     return df
 
