@@ -14,44 +14,14 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     direct_payments_df = calculate_proportion_of_dprs_employing_staff(direct_payments_df)
-    #  most_recent_direct_payments_df = filter_to_most_recent_year(direct_payments_df)
     direct_payments_df = calculate_total_dprs_at_year_end(direct_payments_df)
-    # TODO: function which adds column to say if adass base is closer to ascof total dprs or su dprs
     direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(direct_payments_df)
-    # TODO: function to create formula if adass includes everyone
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
-    # TODO: function to create formula if adass includes su only
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
-    # TODO: function to select method - comapare bases and look if % is over 100
     direct_payments_df = allocate_proportions(direct_payments_df)
-    """
-    most_recent_direct_payments_df = calculate_service_users_employing_staff(most_recent_direct_payments_df)
-    most_recent_direct_payments_df = calculate_carers_employing_staff(most_recent_direct_payments_df)
-    most_recent_direct_payments_df = calculate_service_users_and_carers_employing_staff(most_recent_direct_payments_df)
-    most_recent_direct_payments_df = calculate_difference_between_survey_base_and_total_dpr_at_year_end(
-        most_recent_direct_payments_df
-    )
-    most_recent_direct_payments_df = allocate_method_for_calculating_service_users_employing_staff(
-        most_recent_direct_payments_df
-    )
-    most_recent_direct_payments_df = calculate_proportion_of_service_users_only_employing_staff(
-        most_recent_direct_payments_df
-    )
-    enriched_direct_payments_df = rejoin_new_variables_into_direct_payments_data(
-        direct_payments_df, most_recent_direct_payments_df
-    )"""
-
-    enriched_direct_payments_df = remove_outliers(enriched_direct_payments_df)
-    return enriched_direct_payments_df
-
-
-"""
-def filter_to_most_recent_year(df: DataFrame) -> DataFrame:
-    df = df.where(F.col(DP.YEAR) == Config.MOST_RECENT_YEAR)
-    return df
-"""
+    direct_payments_df = remove_outliers(direct_payments_df)
+    return direct_payments_df
 
 
 def calculate_proportion_of_dprs_employing_staff(df: DataFrame) -> DataFrame:
@@ -73,8 +43,43 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 def determine_if_adass_base_is_closer_to_total_dpr_or_su_only(df: DataFrame) -> DataFrame:
     # TODO
     # Calculate abs diff between adass base and total dpr
+    df = calculate_difference_between_bases(df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END)
     # calculate abs diff between adass base and SU only dpr
+    df = calculate_difference_between_bases(
+        df, DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF, DP.SERVICE_USER_DPRS_AT_YEAR_END
+    )
     # allocate which value is closer
+    df = allocate_which_base_is_closer(df)
+    return df
+
+
+def calculate_difference_between_bases(
+    df: DataFrame,
+    new_column: str,
+    ascof_column: str,
+) -> DataFrame:
+    df = df.withColumn(
+        new_column,
+        F.abs(F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) - F.col(ascof_column)),
+    )
+    return df
+
+
+def allocate_which_base_is_closer(
+    df: DataFrame,
+) -> DataFrame:
+    df = df.withColumn(
+        DP.CLOSER_BASE,
+        F.when(
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) < F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.lit(Values.TOTAL_DPRS),
+        )
+        .when(
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) > F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.lit(Values.SU_ONLY_DPRS),
+        )
+        .otherwise(F.lit(Values.TOTAL_DPRS)),
+    )
     return df
 
 
@@ -119,16 +124,6 @@ def calculate_service_users_and_carers_employing_staff(df: DataFrame) -> DataFra
     df = df.withColumn(
         DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
         F.col(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END) + F.col(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END),
-    )
-    return df
-
-
-def calculate_difference_between_survey_base_and_total_dpr_at_year_end(
-    df: DataFrame,
-) -> DataFrame:
-    df = df.withColumn(
-        DP.DIFFERENCE_IN_BASES,
-        F.abs(F.col(DP.DPRS_EMPLOYING_STAFF_ADASS) - F.col(DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END)),
     )
     return df
 
