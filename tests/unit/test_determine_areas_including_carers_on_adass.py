@@ -68,7 +68,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        total_dprs_df = job.calculate_propoartion_of_dprs_employing_staff(df)
+        total_dprs_df = job.calculate_proportion_of_dprs_employing_staff(df)
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
