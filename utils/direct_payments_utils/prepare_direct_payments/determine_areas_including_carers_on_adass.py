@@ -84,12 +84,26 @@ def allocate_which_base_is_closer(
 
 
 def calculate_value_if_adass_base_is_closer_to_total_dpr(df: DataFrame) -> DataFrame:
-    # TODO
+    df = df.withColumn(
+        DP.PROPORTION_IF_TOTAL_DPR_CLOSER,
+        F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
+        * F.col(DP.TOTAL_DPRS_AT_YEAR_END)
+        / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
+    )
+    # apply % employing staff from the survey to total DPR's (method 2). Then we divide that by number of service users.
     return df
 
 
 def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFrame:
-    # TODO
+    df = df.withColumn(
+        DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER,
+        (
+            (F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF) * F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END))
+            + (F.col(DP.CARER_DPRS_AT_YEAR_END) * Config.CARERS_EMPLOYING_PERCENTAGE)
+        )
+        / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
+    )
+    # apply % employing staff from the survey to service users only and add on 0.6% of carers employing staff (method 1). Then we divide that by number of service users.
     return df
 
 

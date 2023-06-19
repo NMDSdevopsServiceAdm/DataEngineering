@@ -122,6 +122,49 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[1][DP.CLOSER_BASE], Values.TOTAL_DPRS)
         self.assertEqual(output_df_list[2][DP.CLOSER_BASE], Values.TOTAL_DPRS)
 
+    def test_calculate_value_if_adass_base_is_closer_to_total_dpr_returns_correct_value(self):
+        rows = [
+            ("area_1", 200.0, 0.5, 250.0),
+            ("area_2", 100.0, 0.25, 102.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
+                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.TOTAL_DPRS_AT_YEAR_END, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_value_if_adass_base_is_closer_to_total_dpr(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.625, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.255, places=5)
+
+    def test_calculate_value_if_adass_base_is_closer_to_su_only_returns_correct_value(self):
+        rows = [
+            ("area_1", 200.0, 0.5, 250.0, 12.0),
+            ("area_2", 100.0, 0.25, 102.0, 4.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
+                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.TOTAL_DPRS_AT_YEAR_END, FloatType(), True),
+                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_value_if_adass_base_is_closer_to_su_only(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER], 0.500383233, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER], 0.250255489, places=5)
+
     def test_calculate_service_users_employing_staff_returns_correct_product(self):
         rows = [
             ("area_1", 200.0, 0.5),
