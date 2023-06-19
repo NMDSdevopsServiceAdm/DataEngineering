@@ -234,6 +234,8 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.determine_areas_including_carers_on_adass(df)
+        output_df.select(DP.LA_AREA, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).sort(DP.LA_AREA).show()
+        output_df.printSchema()
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(
@@ -247,11 +249,11 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.25063872289536593,
         )
 
-        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
+        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
+        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
         self.assertEqual(output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5)
-        self.assertEqual(output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(len(output_df.columns), 18)
+        self.assertEqual(output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
+        self.assertEqual(len(output_df.columns), 19)
 
     def test_remove_outliers(
         self,
