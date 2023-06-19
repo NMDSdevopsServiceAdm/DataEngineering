@@ -41,14 +41,10 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 
 
 def determine_if_adass_base_is_closer_to_total_dpr_or_su_only(df: DataFrame) -> DataFrame:
-    # TODO
-    # Calculate abs diff between adass base and total dpr
     df = calculate_difference_between_bases(df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END)
-    # calculate abs diff between adass base and SU only dpr
     df = calculate_difference_between_bases(
         df, DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF, DP.SERVICE_USER_DPRS_AT_YEAR_END
     )
-    # allocate which value is closer
     df = allocate_which_base_is_closer(df)
     return df
 
@@ -90,7 +86,6 @@ def calculate_value_if_adass_base_is_closer_to_total_dpr(df: DataFrame) -> DataF
         * F.col(DP.TOTAL_DPRS_AT_YEAR_END)
         / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
     )
-    # apply % employing staff from the survey to total DPR's (method 2). Then we divide that by number of service users.
     return df
 
 
@@ -103,21 +98,36 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
         )
         / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
     )
-    # apply % employing staff from the survey to service users only and add on 0.6% of carers employing staff (method 1). Then we divide that by number of service users.
     return df
 
 
-def allocate_proportions(df: DataFrame) -> DataFrame:
+def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
     # TODO
-    # If closer to total, apply total
-    # If closer to su only, apply su only
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.PROPORTION_ALLOCATED,
+        F.when(F.col(DP.CLOSER_BASE) == Values.TOTAL_DPRS, F.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),).when(
+            F.col(DP.CLOSER_BASE) == Values.SU_ONLY_DPRS,
+            F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER),
+        ),
+    )
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.PROPORTION_ALLOCATED,
+        F.when(
+            F.col(DP.PROPORTION_ALLOCATED) < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD,
+            F.col(DP.PROPORTION_ALLOCATED),
+        ).otherwise(F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER)),
+    )
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ).otherwise(F.col(DP.PROPORTION_ALLOCATED)),
+    )
+    return direct_payments_df
 
-    # If proportion is > 100%, apply su only
 
-    # Merge calculated and precalculated proportions
-    return df
-
-
+"""
 def calculate_service_users_employing_staff(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END,
@@ -140,6 +150,7 @@ def calculate_service_users_and_carers_employing_staff(df: DataFrame) -> DataFra
         F.col(DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END) + F.col(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END),
     )
     return df
+"""
 
 
 def allocate_method_for_calculating_service_users_employing_staff(

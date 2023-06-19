@@ -266,11 +266,11 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[0][DP.DIFFERENCE_IN_BASES], 17.5)
         self.assertEqual(output_df_list[1][DP.DIFFERENCE_IN_BASES], 2.5)
 
-    def test_difference_in_bases_threshold_is_correct_value(
+    def test_proportion_Service_users_employing_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(Config.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
+        self.assertEqual(Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD, 1.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
@@ -278,29 +278,35 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         self.assertEqual(Config.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
-    def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
+    def test_allocate_proportions_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", 100.0, 0.1),
-            ("area_2", 100.0, 0.09),
-            ("area_3", 99.0, 0.1),
+            ("area_1", Values.TOTAL_DPRS, 0.3, 0.4, None),
+            ("area_2", Values.SU_ONLY_DPRS, 0.3, 0.4, None),
+            ("area_3", Values.TOTAL_DPRS, 0.4, 0.3, None),
+            ("area_4", Values.TOTAL_DPRS, 1.2, 0.9, None),
+            ("area_5", Values.TOTAL_DPRS, 0.3, 0.4, 0.6),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.DIFFERENCE_IN_BASES, FloatType(), True),
-                StructField(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.CLOSER_BASE, StringType(), False),
+                StructField(DP.PROPORTION_IF_TOTAL_DPR_CLOSER, FloatType(), True),
+                StructField(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER, FloatType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.allocate_method_for_calculating_service_users_employing_staff(df)
+        output_df = job.allocate_proportions(df)
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.METHOD], Values.ADASS_DOES_NOT_INCLUDE_CARERS)
-        self.assertEqual(output_df_list[1][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
-        self.assertEqual(output_df_list[2][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
+        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.3, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.4, places=5)
+        self.assertAlmostEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.9, places=5)
+        self.assertAlmostEqual(output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.6, places=5)
 
     def test_calculate_proportion_of_service_users_only_employing_staff_returns_correct_value(
         self,

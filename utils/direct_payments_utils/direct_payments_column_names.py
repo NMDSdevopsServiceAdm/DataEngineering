@@ -21,6 +21,7 @@ class DirectPaymentColumnNames:
     CLOSER_BASE: str = "closer_base"
     PROPORTION_IF_TOTAL_DPR_CLOSER: str = "proportion_if_total_dpr_closer"
     PROPORTION_IF_SERVICE_USER_DPR_CLOSER: str = "proportion_if_service_user_dpr_closer"
+    PROPORTION_ALLOCATED: str = "proportion_allocated"
     SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END: str = "service_users_employing_staff_at_year_end"
     CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = "carers_employing_staff_at_year_end"
     SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = "service_users_and_carers_employing_staff_at_year_end"
