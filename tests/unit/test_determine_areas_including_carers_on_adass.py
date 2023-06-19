@@ -22,7 +22,9 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 
 class TestDetermineAreasIncludingCarers(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_areas_including_carers"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -46,7 +48,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.IMD_SCORE, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -72,8 +76,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         total_dprs_df_list = total_dprs_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5)
-        self.assertEqual(total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25)
+        self.assertEqual(
+            total_dprs_df_list[0][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.5
+        )
+        self.assertEqual(
+            total_dprs_df_list[1][DP.PROPORTION_OF_DPR_EMPLOYING_STAFF], 0.25
+        )
 
     def test_calculate_total_dprs_at_year_end_sums_su_and_carers_at_year_end_returns_correct_sum(
         self,
@@ -122,7 +130,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[1][DP.CLOSER_BASE], Values.TOTAL_DPRS)
         self.assertEqual(output_df_list[2][DP.CLOSER_BASE], Values.TOTAL_DPRS)
 
-    def test_calculate_value_if_adass_base_is_closer_to_total_dpr_returns_correct_value(self):
+    def test_calculate_value_if_adass_base_is_closer_to_total_dpr_returns_correct_value(
+        self,
+    ):
         rows = [
             ("area_1", 200.0, 0.5, 250.0),
             ("area_2", 100.0, 0.25, 102.0),
@@ -140,10 +150,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.625, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.255, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.625, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.PROPORTION_IF_TOTAL_DPR_CLOSER], 0.255, places=5
+        )
 
-    def test_calculate_value_if_adass_base_is_closer_to_su_only_returns_correct_value(self):
+    def test_calculate_value_if_adass_base_is_closer_to_su_only_returns_correct_value(
+        self,
+    ):
         rows = [
             ("area_1", 200.0, 0.5, 250.0, 12.0),
             ("area_2", 100.0, 0.25, 102.0, 4.0),
@@ -162,14 +178,24 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER], 0.500383233, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER], 0.250255489, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER],
+            0.500383233,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER],
+            0.250255489,
+            places=5,
+        )
 
     def test_proportion_Service_users_employing_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD, 1.0)
+        self.assertEqual(
+            Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD, 1.0
+        )
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
@@ -192,8 +218,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.CLOSER_BASE, StringType(), False),
                 StructField(DP.PROPORTION_IF_TOTAL_DPR_CLOSER, FloatType(), True),
-                StructField(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER, FloatType(), True
+                ),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -201,11 +231,31 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.3, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.4, places=5)
-        self.assertAlmostEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.4, places=5)
-        self.assertAlmostEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.9, places=5)
-        self.assertAlmostEqual(output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.6, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.3,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.4,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.4,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.9,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.6,
+            places=5,
+        )
 
     def test_determine_areas_including_carers_on_adass_returns_correct_columns(
         self,
@@ -229,12 +279,16 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.IMD_SCORE, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.determine_areas_including_carers_on_adass(df)
-        output_df.select(DP.LA_AREA, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).sort(DP.LA_AREA).show()
+        output_df.select(
+            DP.LA_AREA, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+        ).sort(DP.LA_AREA).show()
         output_df.printSchema()
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
@@ -249,10 +303,21 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             0.25063872289536593,
         )
 
-        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
-        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
-        self.assertEqual(output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5)
-        self.assertEqual(output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5001596807238414)
+        self.assertEqual(
+            output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.5001596807238414,
+        )
+        self.assertEqual(
+            output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.5001596807238414,
+        )
+        self.assertEqual(
+            output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5
+        )
+        self.assertEqual(
+            output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
+            0.5001596807238414,
+        )
         self.assertEqual(len(output_df.columns), 19)
 
     def test_remove_outliers(
@@ -270,7 +335,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, IntegerType(), True),
-                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -289,8 +356,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             places=5,
         )
 
-        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
+        self.assertEqual(
+            output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
+        self.assertEqual(
+            output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
+        )
         self.assertAlmostEqual(
             output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.4,
