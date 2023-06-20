@@ -63,6 +63,9 @@ def estimate_missing_data_for_service_users_employing_staff(
 
     direct_payments_df = apply_interpolated_values(direct_payments_df)
     direct_payments_df = apply_mean_estimates(direct_payments_df)
+    direct_payments_df = model_interpolation(direct_payments_df)
+
+    direct_payments_df = apply_interpolated_values(direct_payments_df)
     # direct_payments_df = apply_models(direct_payments_df)
     # TODO: Interpolate remaining values for 2016 and 2017 - split apply models into functions to apply each model and then include after models
     # will need to use estimated % - applying extrapolation before modelling interpolation should fix 2016 and 2017 gaps
