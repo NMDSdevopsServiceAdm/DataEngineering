@@ -54,13 +54,19 @@ def estimate_missing_data_for_service_users_employing_staff(
     direct_payments_df = merge_in_historical_estimates_with_estimate_using_mean(
         direct_payments_df
     )
-
+    # Apply know values
+    direct_payments_df = apply_known_values(direct_payments_df)
     direct_payments_df = model_extrapolation(direct_payments_df)
-
+    # Apply extrapolation
+    direct_payments_df = apply_extrapolated_values(direct_payments_df)
     direct_payments_df = model_interpolation(direct_payments_df)
 
-    direct_payments_df = apply_models(direct_payments_df)
-    # TODO: Interpolate remaining values for 2016 and 2017
+    direct_payments_df = apply_interpolated_values(direct_payments_df)
+    direct_payments_df = apply_mean_estimates(direct_payments_df)
+    # direct_payments_df = apply_models(direct_payments_df)
+    # TODO: Interpolate remaining values for 2016 and 2017 - split apply models into functions to apply each model and then include after models
+    # will need to use estimated % - applying extrapolation before modelling interpolation should fix 2016 and 2017 gaps
+    # mean imputation still needs to be last option for those missing all data
 
     return direct_payments_df
 
@@ -105,5 +111,46 @@ def merge_in_historical_estimates_with_estimate_using_mean(
         F.when(
             F.col(DP.ESTIMATE_USING_MEAN).isNotNull(), F.col(DP.ESTIMATE_USING_MEAN)
         ).otherwise(F.col(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE)),
+    )
+    return direct_payments_df
+
+
+def apply_known_values(direct_payments_df: DataFrame) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+    )
+    return direct_payments_df
+
+
+def apply_extrapolated_values(direct_payments_df: DataFrame) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ).otherwise(F.col(DP.ESTIMATE_USING_EXTRAPOLATION_RATIO)),
+    )
+    return direct_payments_df
+
+
+def apply_interpolated_values(direct_payments_df: DataFrame) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ).otherwise(F.col(DP.ESTIMATE_USING_INTERPOLATION)),
+    )
+    return direct_payments_df
+
+
+def apply_mean_estimates(direct_payments_df: DataFrame) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull(),
+            F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        ).otherwise(F.col(DP.ESTIMATE_USING_MEAN)),
     )
     return direct_payments_df
