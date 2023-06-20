@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_extrapolation_ratio"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -128,7 +130,9 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
         self.assertEqual(output_df_list[3][DP.YEAR_AS_INTEGER], 2021)
         self.assertEqual(output_df.count(), 4)
 
-    def test_merge_in_historical_estimates_with_estimate_using_mean_selects_correct_values(self):
+    def test_merge_in_historical_estimates_with_estimate_using_mean_selects_correct_values(
+        self,
+    ):
         rows = [
             ("area_1", "2020", 100.0, None),
             ("area_2", "2021", None, 90.0),
@@ -138,7 +142,11 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, StringType(), True),
                 StructField(DP.ESTIMATE_USING_MEAN, FloatType(), True),
-                StructField(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, FloatType(), True),
+                StructField(
+                    DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
+                    FloatType(),
+                    True,
+                ),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
