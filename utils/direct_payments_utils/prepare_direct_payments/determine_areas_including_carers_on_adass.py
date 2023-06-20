@@ -122,7 +122,6 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
 
 
 def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
-    # TODO
     direct_payments_df = direct_payments_df.withColumn(
         DP.PROPORTION_ALLOCATED,
         F.when(

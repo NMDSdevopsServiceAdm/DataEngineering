@@ -24,23 +24,31 @@ def estimate_missing_salt_data(df: DataFrame) -> DataFrame:
     # Hackney is the only LA missing SALT data. The values in this function are based on a regression in excel of previous data points for Hackney in the SALT data.
     missing_service_user_dprs: float = 580.5
     missing_carer_dprs: float = 140.85
-    # df.show()
+
     df = df.withColumn(
         DP.SERVICE_USER_DPRS_DURING_YEAR,
-        F.when(F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNotNull(), F.col(DP.SERVICE_USER_DPRS_DURING_YEAR)).when(
+        F.when(
+            F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNotNull(),
+            F.col(DP.SERVICE_USER_DPRS_DURING_YEAR),
+        ).when(
             (F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNull())
             & (F.col(DP.LA_AREA) == "Hackney")
             & (F.col(DP.YEAR) == "2022"),
             F.lit(missing_service_user_dprs),
         ),
     )
-    df.show()
+
     df = df.withColumn(
         DP.CARER_DPRS_DURING_YEAR,
-        F.when(F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(), F.col(DP.CARER_DPRS_DURING_YEAR)).when(
-            (F.col(DP.CARER_DPRS_DURING_YEAR).isNull()) & (F.col(DP.LA_AREA) == "Hackney") & (F.col(DP.YEAR) == "2022"),
+        F.when(
+            F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(),
+            F.col(DP.CARER_DPRS_DURING_YEAR),
+        ).when(
+            (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
+            & (F.col(DP.LA_AREA) == "Hackney")
+            & (F.col(DP.YEAR) == "2022"),
             F.lit(missing_carer_dprs),
         ),
     )
-    df.show()
+
     return df

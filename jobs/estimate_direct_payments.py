@@ -48,19 +48,18 @@ def main(
     )
 
     # TODO
-    # model missing data
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
 
-    # normalise estimates
+    # TODO
     direct_payments_df = normalise_estimates(direct_payments_df)
 
-    # Calculate remaining variables
+    # TODO
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
 
-    # Check for outliers
+    # TODO
     direct_payments_df = identify_outliers(direct_payments_df)
 
-    # Recreate overall trends
+    # TODO
     direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(

@@ -17,58 +17,29 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 def model_interpolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # filter to locations with known service users emlpoying staff
+
     known_service_users_employing_staff_df = (
         filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
     )
-    # calculate_first_and_last_submission_year_per_la_area
+
     first_and_last_submission_year_df = (
         calculate_first_and_last_submission_year_per_la_area(
             known_service_users_employing_staff_df
         )
     )
 
-    # convert firts and last known year into time series df
     all_dates_df = convert_first_and_last_known_years_into_exploded_df(
         first_and_last_submission_year_df
     )
-    # add known info
+
     all_dates_df = merge_known_values_with_exploded_dates(
         all_dates_df, known_service_users_employing_staff_df
     )
-    # interpolate values for all dates
+
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
-    # join into df
+
     direct_payments_df = join_interpolation_into_df(direct_payments_df, all_dates_df)
     return direct_payments_df
-
-
-"""
-def model_interpolation(df: DataFrame) -> DataFrame:
-
-   # known_job_count_df = filter_to_locations_with_a_known_job_count(df)
-
-   # first_and_last_submission_date_df = calculate_first_and_last_submission_date_per_location(known_job_count_df)
-
-   # all_dates_df = convert_first_and_last_known_time_into_timeseries_df(first_and_last_submission_date_df)
-
-   # all_dates_df = add_known_job_count_information(all_dates_df, known_job_count_df)
-
-    all_dates_df = interpolate_values_for_all_dates(all_dates_df)
-
-    df = leftouter_join_on_locationid_and_year_with_data(df, all_dates_df)
-
-    df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
-        F.when(F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)).otherwise(
-            F.col(DP.ESTIMATE_USING_INTERPOLATION)
-        ),
-    )
-    df = update_dataframe_with_identifying_rule(df, DP.ESTIMATE_USING_INTERPOLATION, ESTIMATE_JOB_COUNT)
-
-    return df
-"""
 
 
 def filter_to_locations_with_known_service_users_employing_staff(

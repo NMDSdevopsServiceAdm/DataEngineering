@@ -48,25 +48,16 @@ def estimate_missing_data_for_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
-    # If we have never known the percentage, use the mean model
-    # mean model
-    # Calculate mean %
-    # Calculate mean % * SALT
-    # Save in column
-    direct_payments_df = model_using_mean(direct_payments_df)
 
-    # If we have gaps at the beginning, ratio back from last known year
-    # ratio model
-    # calculate ratio backwards from each year
+    direct_payments_df = model_using_mean(direct_payments_df)
+    # TODO: Copy historic estimates into mean estimate column in preparation for extrapolation step
+
     direct_payments_df = model_extrapolation(direct_payments_df)
 
-    # If we have gaps between dates, interpolate
-    # interpolation model
-    # calculate even points on line - may want to use Gary's code for this
     direct_payments_df = model_interpolation(direct_payments_df)
 
-    # select which column to use
     direct_payments_df = apply_models(direct_payments_df)
+    # TODO: Interpolate remaining values for 2016 and 2017
 
     return direct_payments_df
 
