@@ -49,9 +49,11 @@ def filter_to_locations_with_known_service_users_employing_staff(
     df = df.select(
         DP.LA_AREA,
         DP.YEAR_AS_INTEGER,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
     )
-    df = df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+    df = df.where(
+        F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull()
+    )
     return df
 
 
@@ -115,7 +117,11 @@ def add_year_with_data_for_known_service_users_employing_staff(
     df = df.withColumn(
         DP.SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
         F.when(
-            (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull()),
+            (
+                F.col(
+                    DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+                ).isNotNull()
+            ),
             F.col(DP.YEAR_AS_INTEGER),
         ).otherwise(F.lit(None)),
     )
@@ -133,7 +139,7 @@ def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     df = get_previous_value_in_column(
         df,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF,
     )
     df = get_previous_value_in_column(
@@ -143,7 +149,7 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     )
     df = get_next_value_in_new_column(
         df,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF,
     )
     df = get_next_value_in_new_column(
@@ -207,7 +213,7 @@ def calculated_interpolated_values_in_new_column(
             DP.YEAR_AS_INTEGER,
             DP.PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
             DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF_YEAR_WITH_DATA,
-            DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+            DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
             DP.PREVIOUS_SERVICE_USERS_EMPLOYING_STAFF,
             DP.NEXT_SERVICE_USERS_EMPLOYING_STAFF,
         ),
