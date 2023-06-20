@@ -17,9 +17,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestPrepareDuringYearData(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_areas_including_carers"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -49,4 +47,59 @@ class TestPrepareDuringYearData(unittest.TestCase):
         self.assertEqual(
             output_df_list[1][DP.TOTAL_DPRS_DURING_YEAR],
             27.5,
+        )
+
+    def test_estimate_missing_salt_data_adds_missing_value(
+        self,
+    ):
+        rows = [
+            ("area_1", "2021", 100.0, 21.0),
+            ("area_1", "2022", 25.0, 2.0),
+            ("Hackney", "2021", 100.0, 4.5),
+            ("Hackney", "2022", None, None),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, StringType(), False),
+                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.estimate_missing_salt_data(df)
+        output_df.sort(DP.LA_AREA, DP.YEAR).show()
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USER_DPRS_DURING_YEAR],
+            100.0,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USER_DPRS_DURING_YEAR],
+            580.5,
+        )
+        self.assertEqual(
+            output_df_list[2][DP.SERVICE_USER_DPRS_DURING_YEAR],
+            100.0,
+        )
+        self.assertEqual(
+            output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
+            25.0,
+        )
+        self.assertEqual(
+            output_df_list[0][DP.CARER_DPRS_DURING_YEAR],
+            4.5,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.CARER_DPRS_DURING_YEAR],
+            140.85,
+        )
+        self.assertEqual(
+            output_df_list[2][DP.CARER_DPRS_DURING_YEAR],
+            21.0,
+        )
+        self.assertEqual(
+            output_df_list[3][DP.CARER_DPRS_DURING_YEAR],
+            2.0,
         )
