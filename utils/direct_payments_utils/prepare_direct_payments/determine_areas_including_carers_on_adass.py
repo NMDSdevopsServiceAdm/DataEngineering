@@ -152,7 +152,12 @@ def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
 
 def remove_outliers(df: DataFrame) -> DataFrame:
     df = calculate_mean_proportion_of_service_users_employing_staff(df)
+    # TODO Remove if  over 1.0 or below 0.0
+    # TODO If only value in row and above 85 or below 15%, remove
     df = remove_outliers_using_threshold_value(df)
+    # TODO If data points in both 2014 and 2015 but only one in 2018-present, recalculate ignoring 2014/15 data?
+    # TODO If 2022 is more than 0.9 / less than 0.1 AND more than 0.3 above /below previous value, remove
+
     return df
 
 
