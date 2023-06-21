@@ -27,7 +27,10 @@ def estimate_missing_salt_data(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(
         DP.SERVICE_USER_DPRS_DURING_YEAR,
-        F.when(F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNotNull(), F.col(DP.SERVICE_USER_DPRS_DURING_YEAR),).when(
+        F.when(
+            F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNotNull(),
+            F.col(DP.SERVICE_USER_DPRS_DURING_YEAR),
+        ).when(
             (F.col(DP.SERVICE_USER_DPRS_DURING_YEAR).isNull())
             & (F.col(DP.LA_AREA) == "Hackney")
             & (F.col(DP.YEAR_AS_INTEGER) == 2022),
@@ -37,7 +40,10 @@ def estimate_missing_salt_data(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(
         DP.CARER_DPRS_DURING_YEAR,
-        F.when(F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(), F.col(DP.CARER_DPRS_DURING_YEAR),).when(
+        F.when(
+            F.col(DP.CARER_DPRS_DURING_YEAR).isNotNull(),
+            F.col(DP.CARER_DPRS_DURING_YEAR),
+        ).when(
             (F.col(DP.CARER_DPRS_DURING_YEAR).isNull())
             & (F.col(DP.LA_AREA) == "Hackney")
             & (F.col(DP.YEAR_AS_INTEGER) == 2022),
