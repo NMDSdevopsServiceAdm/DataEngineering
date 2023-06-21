@@ -44,8 +44,12 @@ class DirectPaymentColumnNames:
     PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_TEMP: str = (
         "proportion_su_only_employing_staff_temp"
     )
+
     OUTLIERS_FOR_REMOVAL: str = "outliers_for_removal"
     COUNT_OF_YEARS_WITH_PROPORTION: str = "count_of_years_with_proportion_by_la_area"
+    PENULTIMATE_YEAR_DATA: str = "2021_data"
+    LAST_YEAR_CONTAINING_RAW_DATA: str = "last_year_containing_raw_data"
+    LAST_RAW_DATA_POINT: str = "last_raw_data_point"
 
     GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "avg(proportion_su_only_employing_staff)"
