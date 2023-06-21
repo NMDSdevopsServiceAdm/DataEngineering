@@ -41,7 +41,7 @@ def add_column_with_year_as_integer(
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.YEAR_AS_INTEGER,
-        F.col(DP.YEAR_AS_INTEGER).cast("integer"),
+        F.col(DP.YEAR).cast("integer"),
     )
     return direct_payments_df
 

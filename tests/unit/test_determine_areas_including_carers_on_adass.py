@@ -314,7 +314,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.5001596807238414,
         )
-        self.assertEqual(len(output_df.columns), 18)
+        self.assertEqual(len(output_df.columns), 24)
 
     def test_identify_outliers_using_threshold_value(
         self,
@@ -561,3 +561,27 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(
             output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
         )
+
+    def test_add_column_with_year_as_integer_adds_same_value_as_integer(self):
+        rows = [
+            ("area_1", "2020"),
+            ("area_2", "2021"),
+            ("area_3", "2020"),
+            ("area_4", "2021"),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, StringType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.add_column_with_year_as_integer(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.YEAR_AS_INTEGER], 2020)
+        self.assertEqual(output_df_list[1][DP.YEAR_AS_INTEGER], 2021)
+        self.assertEqual(output_df_list[2][DP.YEAR_AS_INTEGER], 2020)
+        self.assertEqual(output_df_list[3][DP.YEAR_AS_INTEGER], 2021)
+        self.assertEqual(output_df.count(), 4)

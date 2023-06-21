@@ -106,30 +106,6 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
         )
         self.assertEqual(output_df.count(), df.count())
 
-    def test_add_column_with_year_as_integer_adds_same_value_as_integer(self):
-        rows = [
-            ("area_1", "2020"),
-            ("area_2", "2021"),
-            ("area_3", "2020"),
-            ("area_4", "2021"),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, StringType(), True),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.add_column_with_year_as_integer(df)
-
-        output_df_list = output_df.sort(DP.LA_AREA).collect()
-
-        self.assertEqual(output_df_list[0][DP.YEAR_AS_INTEGER], 2020)
-        self.assertEqual(output_df_list[1][DP.YEAR_AS_INTEGER], 2021)
-        self.assertEqual(output_df_list[2][DP.YEAR_AS_INTEGER], 2020)
-        self.assertEqual(output_df_list[3][DP.YEAR_AS_INTEGER], 2021)
-        self.assertEqual(output_df.count(), 4)
-
     def test_merge_in_historical_estimates_with_estimate_using_mean_selects_correct_values(
         self,
     ):
