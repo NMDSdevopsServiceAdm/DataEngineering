@@ -479,6 +479,27 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.remove_identifed_outliers(df)
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+
+        self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5)
+        self.assertEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
+
+    def test_remove_outliers(
+        self,
+    ):
+        rows = [
+            ("area_1", 2019, 0.5),
+            ("area_1", 2020, 0.99),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.remove_outliers(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
 

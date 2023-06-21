@@ -151,6 +151,14 @@ def create_column_to_mark_outliers_for_removal(df: DataFrame) -> DataFrame:
 def identify_values_below_zero_or_above_one(df: DataFrame) -> DataFrame:
     # TODO:
     # if proportion is over 1 or below 0, mark for removal
+    df = df.withColumn(
+        DP.OUTLIERS_FOR_REMOVAL,
+        F.when(
+            (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 1.0)
+            | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.0),
+            F.lit(Values.REMOVE),
+        ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
+    )
     return df
 
 
