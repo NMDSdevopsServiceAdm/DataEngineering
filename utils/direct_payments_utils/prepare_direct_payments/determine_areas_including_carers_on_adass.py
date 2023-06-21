@@ -206,7 +206,6 @@ def identify_outliers_using_threshold_value(
 ) -> DataFrame:
     # TODO
     # If distance from mean is over threshold, mark for removal
-    # remove code below
     df = df.withColumn(
         DP.OUTLIERS_FOR_REMOVAL,
         F.when(
@@ -224,10 +223,27 @@ def identify_outliers_using_threshold_value(
 def identify_extreme_values_not_following_a_trend_in_most_recent_year(df: DataFrame) -> DataFrame:
     # TODO
     # group by la
-    # filter to 2021
+    filtered_df = df.where(F.col(DP.YEAR) == "2021")
     # duplicate 2021 column
+    filtered_df = filtered_df.withColumn("2021_data", F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF))
+    filtered_df = filtered_df.select(DP.LA_AREA, "2021_data")
     # join la and 2021 data back into df
+    df = df.join(filtered_df, on=DP.LA_AREA, how="left")
     # if year is 2022 and 2021 data column is not null and proportion column is not null, and proportion is >0.9 or <0.1, and abs diff between 2022 and 2021 >0.3, mark for removal
+    df = df.withColumn(
+        DP.OUTLIERS_FOR_REMOVAL,
+        F.when(
+            (F.col(DP.YEAR) == "2022")
+            & (F.col("2021_data").isNotNull())
+            & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+            & (
+                (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.9)
+                | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.1)
+            )
+            & (F.abs(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) - F.col("2021_data")) > 0.3),
+            F.lit(Values.REMOVE),
+        ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
+    )
     return df
 
 

@@ -28,17 +28,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
     def test_determine_areas_including_carers_on_adass_completes(self):
         rows = [
-            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
-            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_1", "2021", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
+            ("area_2", "2021", 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
+            ("area_3", "2020", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_4", "2020", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_5", "2019", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_6", "2019", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
@@ -243,17 +243,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
-            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_1", "2021", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
+            ("area_2", "2021", 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
+            ("area_3", "2020", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_4", "2020", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_5", "2019", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
+            ("area_6", "2019", 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
@@ -300,17 +300,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.1, Values.RETAIN, 0.50667),
-            ("area_1", 2020, 0.75, Values.RETAIN, 0.50667),
-            ("area_1", 2021, 0.67, Values.RETAIN, 0.50667),
-            ("area_2", 2019, 0.3, Values.REMOVE, 0.53333),
-            ("area_2", 2020, 0.4, Values.RETAIN, 0.53333),
-            ("area_2", 2021, 0.9, Values.REMOVE, 0.53333),
+            ("area_1", "2019", 0.1, Values.RETAIN, 0.50667),
+            ("area_1", "2020", 0.75, Values.RETAIN, 0.50667),
+            ("area_1", "2021", 0.67, Values.RETAIN, 0.50667),
+            ("area_2", "2019", 0.3, Values.REMOVE, 0.53333),
+            ("area_2", "2020", 0.4, Values.RETAIN, 0.53333),
+            ("area_2", "2021", 0.9, Values.REMOVE, 0.53333),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
                 StructField(DP.MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
@@ -331,17 +331,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, -0.1, Values.RETAIN),
-            ("area_1", 2020, 0.75, Values.RETAIN),
-            ("area_1", 2021, 0.67, Values.RETAIN),
-            ("area_2", 2019, 1.3, Values.REMOVE),
-            ("area_2", 2020, 1.4, Values.RETAIN),
-            ("area_2", 2021, 0.9, Values.REMOVE),
+            ("area_1", "2019", -0.1, Values.RETAIN),
+            ("area_1", "2020", 0.75, Values.RETAIN),
+            ("area_1", "2021", 0.67, Values.RETAIN),
+            ("area_2", "2019", 1.3, Values.REMOVE),
+            ("area_2", "2020", 1.4, Values.RETAIN),
+            ("area_2", "2021", 0.9, Values.REMOVE),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
@@ -361,17 +361,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.01, Values.RETAIN),
-            ("area_1", 2020, None, Values.RETAIN),
-            ("area_2", 2019, 0.95, Values.RETAIN),
-            ("area_2", 2020, None, Values.RETAIN),
-            ("area_3", 2019, 0.5, Values.REMOVE),
-            ("area_4", 2021, 0.4, Values.RETAIN),
+            ("area_1", "2019", 0.01, Values.RETAIN),
+            ("area_1", "2020", None, Values.RETAIN),
+            ("area_2", "2019", 0.95, Values.RETAIN),
+            ("area_2", "2020", None, Values.RETAIN),
+            ("area_3", "2019", 0.5, Values.REMOVE),
+            ("area_4", "2021", 0.4, Values.RETAIN),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
@@ -391,23 +391,23 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.5, Values.RETAIN),
-            ("area_1", 2020, 0.01, Values.RETAIN),
-            ("area_2", 2019, 0.5, Values.RETAIN),
-            ("area_2", 2020, 0.99, Values.RETAIN),
-            ("area_3", 2019, None, Values.RETAIN),
-            ("area_3", 2020, 0.4, Values.RETAIN),
-            ("area_4", 2019, 0.4, Values.RETAIN),
-            ("area_4", 2020, None, Values.RETAIN),
-            ("area_5", 2019, 0.99, Values.RETAIN),
-            ("area_5", 2020, None, Values.RETAIN),
-            ("area_6", 2019, 0.5, Values.REMOVE),
-            ("area_6", 2020, 0.3, Values.RETAIN),
+            ("area_1", "2021", 0.5, Values.RETAIN),
+            ("area_1", "2022", 0.01, Values.RETAIN),
+            ("area_2", "2021", 0.5, Values.RETAIN),
+            ("area_2", "2022", 0.99, Values.RETAIN),
+            ("area_3", "2021", None, Values.RETAIN),
+            ("area_3", "2022", 0.4, Values.RETAIN),
+            ("area_4", "2021", 0.4, Values.RETAIN),
+            ("area_4", "2022", None, Values.RETAIN),
+            ("area_5", "2021", 0.99, Values.RETAIN),
+            ("area_5", "2022", None, Values.RETAIN),
+            ("area_6", "2021", 0.5, Values.REMOVE),
+            ("area_6", "2022", 0.3, Values.RETAIN),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
@@ -433,19 +433,19 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.5, Values.RETAIN),
-            ("area_1", 2020, 0.3, Values.REMOVE),
-            ("area_2", 2019, 0.5, Values.RETAIN),
-            ("area_2", 2020, 0.99, Values.REMOVE),
-            ("area_3", 2019, None, Values.RETAIN),
-            ("area_3", 2020, 0.4, Values.RETAIN),
-            ("area_4", 2019, 0.4, Values.REMOVE),
-            ("area_4", 2020, None, Values.RETAIN),
+            ("area_1", "2019", 0.5, Values.RETAIN),
+            ("area_1", "2020", 0.3, Values.REMOVE),
+            ("area_2", "2019", 0.5, Values.RETAIN),
+            ("area_2", "2020", 0.99, Values.REMOVE),
+            ("area_3", "2019", None, Values.RETAIN),
+            ("area_3", "2020", 0.4, Values.RETAIN),
+            ("area_4", "2019", 0.4, Values.REMOVE),
+            ("area_4", "2020", None, Values.RETAIN),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
@@ -467,13 +467,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.5, Values.RETAIN),
-            ("area_1", 2020, 0.9, Values.REMOVE),
+            ("area_1", "2019", 0.5, Values.RETAIN),
+            ("area_1", "2020", 0.9, Values.REMOVE),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
@@ -489,13 +489,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2019, 0.5),
-            ("area_1", 2020, 0.99),
+            ("area_1", "2019", 0.5),
+            ("area_1", "2020", 0.99),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
