@@ -286,10 +286,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.determine_areas_including_carers_on_adass(df)
-        output_df.select(
-            DP.LA_AREA, DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-        ).sort(DP.LA_AREA).show()
-        output_df.printSchema()
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(
@@ -550,7 +546,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.remove_outliers(df)
-        output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).show()
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
         self.assertAlmostEqual(
