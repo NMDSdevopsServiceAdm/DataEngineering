@@ -317,65 +317,45 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.remove_outliers(df)
+        output_df = job.identify_outliers_using_threshold_value(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
 
         self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
-
         self.assertEqual(output_df_list[1][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
-
         self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[3][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[4][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
         self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
 
-
-def test_identify_values_below_zero_or_above_one(
-    self,
-):
-    rows = [
-        ("area_1", 2021, 0.1),
-        ("area_1", 2020, 0.75),
-        ("area_1", 2019, 0.67),
-        ("area_2", 2021, 0.3),
-        ("area_2", 2020, 0.4),
-        ("area_2", 2019, 0.9),
-    ]
-    test_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), False),
-            StructField(DP.YEAR, IntegerType(), True),
-            StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+    def test_identify_values_below_zero_or_above_one(
+        self,
+    ):
+        rows = [
+            ("area_1", 2021, -0.1, Values.RETAIN),
+            ("area_1", 2020, 0.75, Values.RETAIN),
+            ("area_1", 2019, 0.67, Values.RETAIN),
+            ("area_2", 2021, 1.3, Values.REMOVE),
+            ("area_2", 2020, 1.4, Values.RETAIN),
+            ("area_2", 2019, 0.9, Values.REMOVE),
         ]
-    )
-    df = self.spark.createDataFrame(rows, schema=test_schema)
-    output_df = job.remove_outliers(df)
-    output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.identify_values_below_zero_or_above_one(df)
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
 
-    self.assertAlmostEqual(
-        output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        0.67,
-        places=5,
-    )
-
-    self.assertAlmostEqual(
-        output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        0.75,
-        places=5,
-    )
-
-    self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-    self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-    self.assertAlmostEqual(
-        output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        0.4,
-        places=5,
-    )
-    self.assertAlmostEqual(
-        output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-        0.3,
-        places=5,
-    )
+        self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
+        self.assertEqual(output_df_list[1][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[3][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
+        self.assertEqual(output_df_list[4][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
+        self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
 
 
 def test_identify_extreme_values_when_only_value_in_la_area(
@@ -490,6 +470,7 @@ def test_retain_cases_where_latest_number_we_know_is_not_outlier(
             StructField(DP.LA_AREA, StringType(), False),
             StructField(DP.YEAR, IntegerType(), True),
             StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+            StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
         ]
     )
     df = self.spark.createDataFrame(rows, schema=test_schema)
