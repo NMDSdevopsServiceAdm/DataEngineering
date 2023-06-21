@@ -314,7 +314,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.5001596807238414,
         )
-        self.assertEqual(len(output_df.columns), 24)
+        self.assertEqual(len(output_df.columns), 25)
 
     def test_identify_outliers_using_threshold_value(
         self,
