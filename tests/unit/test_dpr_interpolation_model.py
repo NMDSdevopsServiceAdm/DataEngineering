@@ -206,7 +206,6 @@ class TestDPRInterpolation(unittest.TestCase):
             all_dates_df, known_service_users_employing_staff_df
         )
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
-        output_df.show()
         self.assertEqual(output_df.count(), 6)
         self.assertEqual(
             output_df.columns,
