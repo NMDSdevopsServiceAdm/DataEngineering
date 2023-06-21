@@ -334,4 +334,10 @@ def add_data_point_from_given_year_of_data(
 def remove_identified_outliers(df: DataFrame) -> DataFrame:
     # TODO
     # if not marked for removal, retain proportion, otherwise remove
+    df = df.withColumn(
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        F.when(
+            F.col(DP.OUTLIERS_FOR_REMOVAL) == Values.RETAIN, F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        ).otherwise(F.lit(None)),
+    )
     return df
