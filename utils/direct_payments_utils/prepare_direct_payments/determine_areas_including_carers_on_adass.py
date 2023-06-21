@@ -14,19 +14,11 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    direct_payments_df = calculate_proportion_of_dprs_employing_staff(
-        direct_payments_df
-    )
+    direct_payments_df = calculate_proportion_of_dprs_employing_staff(direct_payments_df)
     direct_payments_df = calculate_total_dprs_at_year_end(direct_payments_df)
-    direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(
-        direct_payments_df
-    )
-    direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(
-        direct_payments_df
-    )
-    direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(
-        direct_payments_df
-    )
+    direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(direct_payments_df)
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
     direct_payments_df = allocate_proportions(direct_payments_df)
     # direct_payments_df = remove_outliers(direct_payments_df)
 
@@ -52,9 +44,7 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 def determine_if_adass_base_is_closer_to_total_dpr_or_su_only(
     df: DataFrame,
 ) -> DataFrame:
-    df = calculate_difference_between_bases(
-        df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END
-    )
+    df = calculate_difference_between_bases(df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END)
     df = calculate_difference_between_bases(
         df,
         DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF,
@@ -82,13 +72,11 @@ def allocate_which_base_is_closer(
     df = df.withColumn(
         DP.CLOSER_BASE,
         F.when(
-            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF)
-            < F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) < F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
             F.lit(Values.TOTAL_DPRS),
         )
         .when(
-            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF)
-            > F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) > F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
             F.lit(Values.SU_ONLY_DPRS),
         )
         .otherwise(F.lit(Values.TOTAL_DPRS)),
@@ -110,10 +98,7 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
     df = df.withColumn(
         DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER,
         (
-            (
-                F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
-                * F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
-            )
+            (F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF) * F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END))
             + (F.col(DP.CARER_DPRS_AT_YEAR_END) * Config.CARERS_EMPLOYING_PERCENTAGE)
         )
         / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
@@ -124,10 +109,7 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
 def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.PROPORTION_ALLOCATED,
-        F.when(
-            F.col(DP.CLOSER_BASE) == Values.TOTAL_DPRS,
-            F.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),
-        ).when(
+        F.when(F.col(DP.CLOSER_BASE) == Values.TOTAL_DPRS, F.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),).when(
             F.col(DP.CLOSER_BASE) == Values.SU_ONLY_DPRS,
             F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER),
         ),
@@ -135,8 +117,7 @@ def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.PROPORTION_ALLOCATED,
         F.when(
-            F.col(DP.PROPORTION_ALLOCATED)
-            < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD,
+            F.col(DP.PROPORTION_ALLOCATED) < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD,
             F.col(DP.PROPORTION_ALLOCATED),
         ).otherwise(F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER)),
     )
@@ -151,22 +132,40 @@ def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
 
 
 def remove_outliers(df: DataFrame) -> DataFrame:
+    df = create_column_to_mark_outliers_for_removal(df)
+    df = identify_values_below_zero_or_above_one(df)
+    df = identify_extreme_values_when_only_value_in_la_area(df)
     df = calculate_mean_proportion_of_service_users_employing_staff(df)
-    # TODO Remove if  over 1.0 or below 0.0
-    # TODO If only value in row and above 85 or below 15%, remove
-    df = remove_outliers_using_threshold_value(df)
-    # TODO If data points in both 2014 and 2015 but only one in 2018-present, recalculate ignoring 2014/15 data?
-    # TODO If 2022 is more than 0.9 / less than 0.1 AND more than 0.3 above /below previous value, remove
+    df = identify_outliers_using_threshold_value(df)
+    df = identify_extreme_values_not_following_a_trend_in_most_recent_year(df)
+    df = retain_cases_where_latest_number_we_know_is_not_outlier(df)
+    df = remove_identified_outliers(df)
+    return df
 
+
+def create_column_to_mark_outliers_for_removal(df: DataFrame) -> DataFrame:
+    # TODO
+    return df
+
+
+def identify_values_below_zero_or_above_one(df: DataFrame) -> DataFrame:
+    # TODO:
+    # if proportion is over 1 or below 0, mark for removal
+    return df
+
+
+def identify_extreme_values_when_only_value_in_la_area(df: DataFrame) -> DataFrame:
+    # TODO:
+    # group by la and count number of years with proportion
+    # join count of years with proportion to df
+    # if count of years with proportion is 1 and proportion is not null and value is above 0.85 or below 0.15, mark for removal
     return df
 
 
 def calculate_mean_proportion_of_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
-    means_df = df.groupBy(DP.LA_AREA).mean(
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-    )
+    means_df = df.groupBy(DP.LA_AREA).mean(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
     df = df.join(means_df, on=DP.LA_AREA, how="left")
     df = df.withColumnRenamed(
         DP.GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
@@ -175,9 +174,12 @@ def calculate_mean_proportion_of_service_users_employing_staff(
     return df
 
 
-def remove_outliers_using_threshold_value(
+def identify_outliers_using_threshold_value(
     df: DataFrame,
 ) -> DataFrame:
+    # TODO
+    # If distance from mean is over threshold, mark for removal
+    # remove code below
     df = df.withColumn(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         F.when(
@@ -189,4 +191,28 @@ def remove_outliers_using_threshold_value(
             F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
         ),
     )
+    return df
+
+
+def identify_extreme_values_not_following_a_trend_in_most_recent_year(df: DataFrame) -> DataFrame:
+    # TODO
+    # group by la
+    # filter to 2021
+    # duplicate 2021 column
+    # join la and 2021 data back into df
+    # if year is 2022 and 2021 data column is not null and proportion column is not null, and proportion is >0.9 or <0.1, and abs diff between 2022 and 2021 >0.3, mark for removal
+    return df
+
+
+def retain_cases_where_latest_number_we_know_is_not_outlier(df: DataFrame) -> DataFrame:
+    # TODO
+    # add column with year of latest data (see extrapolation)
+    # add column with proportion of latest data (see extrapolation)
+    # if year of latest data = year and proportion is >0.25 or <0.75, mark to retain
+    return df
+
+
+def remove_identified_outliers(df: DataFrame) -> DataFrame:
+    # TODO
+    # if not marked for removal, retain proportion, otherwise remove
     return df
