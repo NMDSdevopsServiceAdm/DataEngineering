@@ -21,7 +21,7 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
     direct_payments_df = allocate_proportions(direct_payments_df)
-    # direct_payments_df = remove_outliers(direct_payments_df)
+    direct_payments_df = remove_outliers(direct_payments_df)
 
     return direct_payments_df
 
@@ -261,9 +261,74 @@ def identify_extreme_values_not_following_a_trend_in_most_recent_year(df: DataFr
 def retain_cases_where_latest_number_we_know_is_not_outlier(df: DataFrame) -> DataFrame:
     # TODO
     # add column with year of latest data (see extrapolation)
+    df = add_column_with_last_year_of_data(df, "last_year_containing_raw_data")
     # add column with proportion of latest data (see extrapolation)
+    df = add_data_point_from_given_year_of_data(
+        df, "last_year_containing_raw_data", DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, "last_raw_data_point"
+    )
     # if year of latest data = year and proportion is >0.25 or <0.75, mark to retain
+    df = df.withColumn(
+        DP.OUTLIERS_FOR_REMOVAL,
+        F.when(
+            (F.col(DP.YEAR_AS_INTEGER) == F.col("last_year_containing_raw_data"))
+            & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.25)
+            & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.75),
+            F.lit(Values.RETAIN),
+        ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
+    )
+    df.select(
+        DP.LA_AREA,
+        DP.YEAR_AS_INTEGER,
+        DP.OUTLIERS_FOR_REMOVAL,
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        "last_year_containing_raw_data",
+        "last_raw_data_point",
+    ).sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).show()
     return df
+
+
+def add_column_with_last_year_of_data(
+    direct_payments_df: DataFrame,
+    column_name: str,
+) -> DataFrame:
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    last_submission_date_df = determine_last_year_with_data(populated_df, column_name)
+
+    direct_payments_df = direct_payments_df.join(last_submission_date_df, DP.LA_AREA, "left")
+
+    return direct_payments_df
+
+
+def filter_to_locations_with_known_service_users_employing_staff(
+    direct_payments_df: DataFrame,
+) -> DataFrame:
+    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+    return populated_df
+
+
+def determine_last_year_with_data(
+    populated_df: DataFrame,
+    column_name: str,
+) -> DataFrame:
+    last_submission_date_df = populated_df.groupBy(DP.LA_AREA).agg(
+        F.max(DP.YEAR_AS_INTEGER).cast("integer").alias(column_name),
+    )
+    return last_submission_date_df
+
+
+def add_data_point_from_given_year_of_data(
+    direct_payments_df: DataFrame,
+    year_of_data_to_add: str,
+    original_column: str,
+    new_column: str,
+) -> DataFrame:
+    df = direct_payments_df.where(F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER))
+    df = df.withColumnRenamed(original_column, new_column)
+    df = df.select(DP.LA_AREA, new_column)
+
+    direct_payments_df = direct_payments_df.join(df, [DP.LA_AREA], "left")
+
+    return direct_payments_df
 
 
 def remove_identified_outliers(df: DataFrame) -> DataFrame:
