@@ -40,7 +40,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
@@ -271,7 +271,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.YEAR, IntegerType(), True),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
