@@ -165,8 +165,27 @@ def identify_values_below_zero_or_above_one(df: DataFrame) -> DataFrame:
 def identify_extreme_values_when_only_value_in_la_area(df: DataFrame) -> DataFrame:
     # TODO:
     # group by la and count number of years with proportion
+    count_df = df.groupBy(DP.LA_AREA).agg(
+        F.count(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        .cast("integer")
+        .alias(DP.COUNT_OF_YEARS_WITH_PROPORTION),
+    )
+    count_df = count_df.select(DP.LA_AREA, DP.COUNT_OF_YEARS_WITH_PROPORTION)
     # join count of years with proportion to df
+    df = df.join(count_df, on=DP.LA_AREA, how="left")
     # if count of years with proportion is 1 and proportion is not null and value is above 0.85 or below 0.15, mark for removal
+    df = df.withColumn(
+        DP.OUTLIERS_FOR_REMOVAL,
+        F.when(
+            (F.col(DP.COUNT_OF_YEARS_WITH_PROPORTION) == 1)
+            & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+            & (
+                (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.85)
+                | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.15)
+            ),
+            F.lit(Values.REMOVE),
+        ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
+    )
     return df
 
 
