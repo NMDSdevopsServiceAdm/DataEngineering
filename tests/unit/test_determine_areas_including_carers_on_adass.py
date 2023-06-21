@@ -433,12 +433,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 0.1),
-            ("area_1", 2020, 0.75),
-            ("area_1", 2019, 0.67),
-            ("area_2", 2021, 0.3),
-            ("area_2", 2020, 0.4),
-            ("area_2", 2019, 0.9),
+            ("area_1", 2019, 0.5, Values.RETAIN),
+            ("area_1", 2020, 0.3, Values.REMOVE),
+            ("area_2", 2019, 0.5, Values.RETAIN),
+            ("area_2", 2020, 0.99, Values.REMOVE),
+            ("area_3", 2019, None, Values.RETAIN),
+            ("area_3", 2020, 0.4, Values.RETAIN),
+            ("area_4", 2019, 0.4, Values.REMOVE),
+            ("area_4", 2020, None, Values.RETAIN),
         ]
         test_schema = StructType(
             [
@@ -449,33 +451,17 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.remove_outliers(df)
+        output_df = job.retain_cases_where_latest_number_we_know_is_not_outlier(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
 
-        self.assertAlmostEqual(
-            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            0.67,
-            places=5,
-        )
-
-        self.assertAlmostEqual(
-            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            0.75,
-            places=5,
-        )
-
-        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertEqual(output_df_list[3][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
-        self.assertAlmostEqual(
-            output_df_list[4][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            0.4,
-            places=5,
-        )
-        self.assertAlmostEqual(
-            output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
-            0.3,
-            places=5,
-        )
+        self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[1][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[3][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
+        self.assertEqual(output_df_list[4][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[6][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[7][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
 
 
 def test_remove_identified_outliers(
