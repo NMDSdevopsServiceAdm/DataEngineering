@@ -144,7 +144,7 @@ def remove_outliers(df: DataFrame) -> DataFrame:
 
 
 def create_column_to_mark_outliers_for_removal(df: DataFrame) -> DataFrame:
-    # TODO
+    df = df.withColumn(DP.OUTLIERS_FOR_REMOVAL, F.lit(Values.RETAIN))
     return df
 
 
