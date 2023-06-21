@@ -15,23 +15,13 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
-    direct_payments_df = calculate_proportion_of_dprs_employing_staff(
-        direct_payments_df
-    )
+    direct_payments_df = calculate_proportion_of_dprs_employing_staff(direct_payments_df)
     direct_payments_df = calculate_total_dprs_at_year_end(direct_payments_df)
-    direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(
-        direct_payments_df
-    )
-    direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(
-        direct_payments_df
-    )
-    direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(
-        direct_payments_df
-    )
+    direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(direct_payments_df)
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
+    direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
     direct_payments_df = allocate_proportions(direct_payments_df)
-    direct_payments_df = remove_outliers(
-        direct_payments_df
-    )  # move this to it's own script?
+    direct_payments_df = remove_outliers(direct_payments_df)  # move this to it's own script?
 
     return direct_payments_df
 
@@ -41,7 +31,7 @@ def add_column_with_year_as_integer(
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.YEAR_AS_INTEGER,
-        F.col(DP.YEAR_AS_INTEGER).cast("int"),
+        F.col(DP.YEAR_AS_INTEGER).cast("integer"),
     )
     return direct_payments_df
 
@@ -65,9 +55,7 @@ def calculate_total_dprs_at_year_end(df: DataFrame) -> DataFrame:
 def determine_if_adass_base_is_closer_to_total_dpr_or_su_only(
     df: DataFrame,
 ) -> DataFrame:
-    df = calculate_difference_between_bases(
-        df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END
-    )
+    df = calculate_difference_between_bases(df, DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF, DP.TOTAL_DPRS_AT_YEAR_END)
     df = calculate_difference_between_bases(
         df,
         DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF,
@@ -95,13 +83,11 @@ def allocate_which_base_is_closer(
     df = df.withColumn(
         DP.CLOSER_BASE,
         F.when(
-            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF)
-            < F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) < F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
             F.lit(Values.TOTAL_DPRS),
         )
         .when(
-            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF)
-            > F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
+            F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_TOTAL_ASCOF) > F.col(DP.DIFFERENCE_BETWEEN_ADASS_AND_SU_ONLY_ASCOF),
             F.lit(Values.SU_ONLY_DPRS),
         )
         .otherwise(F.lit(Values.TOTAL_DPRS)),
@@ -123,10 +109,7 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
     df = df.withColumn(
         DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER,
         (
-            (
-                F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF)
-                * F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END)
-            )
+            (F.col(DP.PROPORTION_OF_DPR_EMPLOYING_STAFF) * F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END))
             + (F.col(DP.CARER_DPRS_AT_YEAR_END) * Config.CARERS_EMPLOYING_PERCENTAGE)
         )
         / F.col(DP.SERVICE_USER_DPRS_AT_YEAR_END),
@@ -137,10 +120,7 @@ def calculate_value_if_adass_base_is_closer_to_su_only(df: DataFrame) -> DataFra
 def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.PROPORTION_ALLOCATED,
-        F.when(
-            F.col(DP.CLOSER_BASE) == Values.TOTAL_DPRS,
-            F.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),
-        ).when(
+        F.when(F.col(DP.CLOSER_BASE) == Values.TOTAL_DPRS, F.col(DP.PROPORTION_IF_TOTAL_DPR_CLOSER),).when(
             F.col(DP.CLOSER_BASE) == Values.SU_ONLY_DPRS,
             F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER),
         ),
@@ -148,8 +128,7 @@ def allocate_proportions(direct_payments_df: DataFrame) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.PROPORTION_ALLOCATED,
         F.when(
-            F.col(DP.PROPORTION_ALLOCATED)
-            < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD,
+            F.col(DP.PROPORTION_ALLOCATED) < Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD,
             F.col(DP.PROPORTION_ALLOCATED),
         ).otherwise(F.col(DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER)),
     )
@@ -219,9 +198,7 @@ def identify_extreme_values_when_only_value_in_la_area(df: DataFrame) -> DataFra
 def calculate_mean_proportion_of_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
-    means_df = df.groupBy(DP.LA_AREA).mean(
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
-    )
+    means_df = df.groupBy(DP.LA_AREA).mean(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
     df = df.join(means_df, on=DP.LA_AREA, how="left")
     df = df.withColumnRenamed(
         DP.GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
@@ -252,27 +229,21 @@ def identify_extreme_values_not_following_a_trend_in_most_recent_year(
 ) -> DataFrame:
     filtered_df = df.where(F.col(DP.YEAR_AS_INTEGER) == 2021)
     filtered_df = filtered_df.withColumn(
-        "2021_data", F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        DP.PENULTIMATE_YEAR_DATA, F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
     )
-    filtered_df = filtered_df.select(DP.LA_AREA, "2021_data")
+    filtered_df = filtered_df.select(DP.LA_AREA, DP.PENULTIMATE_YEAR_DATA)
     df = df.join(filtered_df, on=DP.LA_AREA, how="left")
     df = df.withColumn(
         DP.OUTLIERS_FOR_REMOVAL,
         F.when(
             (F.col(DP.YEAR_AS_INTEGER) == 2022)
-            & (F.col("2021_data").isNotNull())
+            & (F.col(DP.PENULTIMATE_YEAR_DATA).isNotNull())
             & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
             & (
                 (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.9)
                 | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.1)
             )
-            & (
-                F.abs(
-                    F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
-                    - F.col("2021_data")
-                )
-                > 0.3
-            ),
+            & (F.abs(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) - F.col(DP.PENULTIMATE_YEAR_DATA)) > 0.3),
             F.lit(Values.REMOVE),
         ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
     )
@@ -280,17 +251,17 @@ def identify_extreme_values_not_following_a_trend_in_most_recent_year(
 
 
 def retain_cases_where_latest_number_we_know_is_not_outlier(df: DataFrame) -> DataFrame:
-    df = add_column_with_last_year_of_data(df, "last_year_containing_raw_data")
+    df = add_column_with_last_year_of_data(df, DP.LAST_YEAR_CONTAINING_RAW_DATA)
     df = add_data_point_from_given_year_of_data(
         df,
-        "last_year_containing_raw_data",
+        DP.LAST_YEAR_CONTAINING_RAW_DATA,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
-        "last_raw_data_point",
+        DP.LAST_RAW_DATA_POINT,
     )
     df = df.withColumn(
         DP.OUTLIERS_FOR_REMOVAL,
         F.when(
-            (F.col(DP.YEAR_AS_INTEGER) == F.col("last_year_containing_raw_data"))
+            (F.col(DP.YEAR_AS_INTEGER) == F.col(DP.LAST_YEAR_CONTAINING_RAW_DATA))
             & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.25)
             & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.75),
             F.lit(Values.RETAIN),
@@ -303,14 +274,10 @@ def add_column_with_last_year_of_data(
     direct_payments_df: DataFrame,
     column_name: str,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(
-        direct_payments_df
-    )
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
     last_submission_date_df = determine_last_year_with_data(populated_df, column_name)
 
-    direct_payments_df = direct_payments_df.join(
-        last_submission_date_df, DP.LA_AREA, "left"
-    )
+    direct_payments_df = direct_payments_df.join(last_submission_date_df, DP.LA_AREA, "left")
 
     return direct_payments_df
 
@@ -318,9 +285,7 @@ def add_column_with_last_year_of_data(
 def filter_to_locations_with_known_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = direct_payments_df.where(
-        F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull()
-    )
+    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
     return populated_df
 
 
@@ -340,9 +305,7 @@ def add_data_point_from_given_year_of_data(
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    df = direct_payments_df.where(
-        F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER)
-    )
+    df = direct_payments_df.where(F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER))
     df = df.withColumnRenamed(original_column, new_column)
     df = df.select(DP.LA_AREA, new_column)
 
