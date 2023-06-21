@@ -303,7 +303,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ("area_1", 2019, 0.1, Values.RETAIN, 0.50667),
             ("area_1", 2020, 0.75, Values.RETAIN, 0.50667),
             ("area_1", 2021, 0.67, Values.RETAIN, 0.50667),
-            ("area_2", 2019, 0.3, Values.RETAIN, 0.53333),
+            ("area_2", 2019, 0.3, Values.REMOVE, 0.53333),
             ("area_2", 2020, 0.4, Values.RETAIN, 0.53333),
             ("area_2", 2021, 0.9, Values.REMOVE, 0.53333),
         ]
@@ -320,9 +320,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df = job.identify_outliers_using_threshold_value(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
 
-        self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[1][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
-        self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
+        self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
         self.assertEqual(output_df_list[3][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[4][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
         self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)

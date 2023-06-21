@@ -208,15 +208,15 @@ def identify_outliers_using_threshold_value(
     # If distance from mean is over threshold, mark for removal
     # remove code below
     df = df.withColumn(
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.OUTLIERS_FOR_REMOVAL,
         F.when(
             F.abs(
                 F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
                 - F.col(DP.MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
             )
-            < Config.ADASS_PROPORTION_OUTLIER_THRESHOLD,
-            F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
-        ),
+            >= Config.ADASS_PROPORTION_OUTLIER_THRESHOLD,
+            F.lit(Values.REMOVE),
+        ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
     )
     return df
 
