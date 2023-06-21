@@ -14,6 +14,7 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 def determine_areas_including_carers_on_adass(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
+    direct_payments_df = add_column_with_year_as_integer(direct_payments_df)
     direct_payments_df = calculate_proportion_of_dprs_employing_staff(direct_payments_df)
     direct_payments_df = calculate_total_dprs_at_year_end(direct_payments_df)
     direct_payments_df = determine_if_adass_base_is_closer_to_total_dpr_or_su_only(direct_payments_df)
@@ -22,6 +23,16 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df = allocate_proportions(direct_payments_df)
     # direct_payments_df = remove_outliers(direct_payments_df)
 
+    return direct_payments_df
+
+
+def add_column_with_year_as_integer(
+    direct_payments_df: DataFrame,
+) -> DataFrame:
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.YEAR_AS_INTEGER_AS_INTEGER,
+        F.col(DP.YEAR_AS_INTEGER).cast("int"),
+    )
     return direct_payments_df
 
 
@@ -223,7 +234,7 @@ def identify_outliers_using_threshold_value(
 def identify_extreme_values_not_following_a_trend_in_most_recent_year(df: DataFrame) -> DataFrame:
     # TODO
     # group by la
-    filtered_df = df.where(F.col(DP.YEAR) == "2021")
+    filtered_df = df.where(F.col(DP.YEAR_AS_INTEGER) == 2021)
     # duplicate 2021 column
     filtered_df = filtered_df.withColumn("2021_data", F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF))
     filtered_df = filtered_df.select(DP.LA_AREA, "2021_data")
@@ -233,7 +244,7 @@ def identify_extreme_values_not_following_a_trend_in_most_recent_year(df: DataFr
     df = df.withColumn(
         DP.OUTLIERS_FOR_REMOVAL,
         F.when(
-            (F.col(DP.YEAR) == "2022")
+            (F.col(DP.YEAR_AS_INTEGER) == 2022)
             & (F.col("2021_data").isNotNull())
             & (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
             & (
