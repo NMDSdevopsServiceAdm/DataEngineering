@@ -7,6 +7,7 @@ from pyspark.sql.types import (
     StructField,
     StringType,
     FloatType,
+    IntegerType,
 )
 
 import utils.direct_payments_utils.prepare_direct_payments.prepare_during_year_data as job
@@ -17,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestPrepareDuringYearData(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_areas_including_carers"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_areas_including_carers").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -55,23 +54,22 @@ class TestPrepareDuringYearData(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", "2021", 100.0, 21.0),
-            ("area_1", "2022", 25.0, 2.0),
-            ("Hackney", "2021", 100.0, 4.5),
-            ("Hackney", "2022", None, None),
+            ("area_1", 2021, 100.0, 21.0),
+            ("area_1", 2022, 25.0, 2.0),
+            ("Hackney", 2021, 100.0, 4.5),
+            ("Hackney", 2022, None, None),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR, StringType(), False),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), False),
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.estimate_missing_salt_data(df)
-        output_df.sort(DP.LA_AREA, DP.YEAR).show()
-        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR).collect()
+        output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
         self.assertEqual(
             output_df_list[0][DP.SERVICE_USER_DPRS_DURING_YEAR],
