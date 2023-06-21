@@ -23,8 +23,12 @@ from utils.direct_payments_utils.estimate_direct_payments.models.mean_imputation
 def estimate_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    direct_payments_df = estimate_missing_data_for_service_users_employing_staff(direct_payments_df)
-    direct_payments_df = calculate_estimated_number_of_service_users_employing_staff(direct_payments_df)
+    direct_payments_df = estimate_missing_data_for_service_users_employing_staff(
+        direct_payments_df
+    )
+    direct_payments_df = calculate_estimated_number_of_service_users_employing_staff(
+        direct_payments_df
+    )
     # TODO: remove rows where LA didn't exist for a particular year
     return direct_payments_df
 
@@ -34,7 +38,8 @@ def calculate_estimated_number_of_service_users_employing_staff(
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF,
-        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR) * F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
+        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
+        * F.col(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
     )
     return direct_payments_df
 
@@ -46,7 +51,9 @@ def estimate_missing_data_for_service_users_employing_staff(
 
     direct_payments_df = model_using_mean(direct_payments_df)
     # TODO: Copy historic estimates into mean estimate column in preparation for extrapolation step
-    direct_payments_df = merge_in_historical_estimates_with_estimate_using_mean(direct_payments_df)
+    direct_payments_df = merge_in_historical_estimates_with_estimate_using_mean(
+        direct_payments_df
+    )
     # Apply know values
     direct_payments_df = apply_known_values(direct_payments_df)
     direct_payments_df = model_extrapolation(direct_payments_df)
@@ -105,9 +112,9 @@ def merge_in_historical_estimates_with_estimate_using_mean(
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATE_USING_MEAN,
-        F.when(F.col(DP.ESTIMATE_USING_MEAN).isNotNull(), F.col(DP.ESTIMATE_USING_MEAN)).otherwise(
-            F.col(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE)
-        ),
+        F.when(
+            F.col(DP.ESTIMATE_USING_MEAN).isNotNull(), F.col(DP.ESTIMATE_USING_MEAN)
+        ).otherwise(F.col(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE)),
     )
     return direct_payments_df
 
