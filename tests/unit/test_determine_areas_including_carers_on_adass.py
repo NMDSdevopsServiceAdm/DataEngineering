@@ -305,7 +305,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             ("area_1", 2019, 0.67, Values.RETAIN, 0.50667),
             ("area_2", 2021, 0.3, Values.RETAIN, 0.53333),
             ("area_2", 2020, 0.4, Values.RETAIN, 0.53333),
-            ("area_2", 2019, 0.9, Values.RETAIN, 0.53333),
+            ("area_2", 2019, 0.9, Values.REMOVE, 0.53333),
         ]
         test_schema = StructType(
             [
@@ -325,7 +325,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self.assertEqual(output_df_list[2][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[3][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
         self.assertEqual(output_df_list[4][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
-        self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
+        self.assertEqual(output_df_list[5][DP.OUTLIERS_FOR_REMOVAL], Values.REMOVE)
 
     def test_identify_values_below_zero_or_above_one(
         self,
