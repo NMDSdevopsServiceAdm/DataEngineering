@@ -109,6 +109,8 @@ class DirectPaymentColumnNames:
         "estimated_proportion_of_service_users_employing_staff"
     )
 
+    NORMALISED_ESTIMATES: str = "normalised_estimates_of_services_users_employing_staff"
+
 
 @dataclass
 class DirectPaymentColumnValues:
