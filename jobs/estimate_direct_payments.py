@@ -14,9 +14,6 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 from utils.direct_payments_utils.estimate_direct_payments.estimate_service_users_employing_staff import (
     estimate_service_users_employing_staff,
 )
-from utils.direct_payments_utils.estimate_direct_payments.normalise_estimates import (
-    normalise_estimates,
-)
 from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_variables import (
     calculate_remaining_variables,
 )
@@ -32,13 +29,9 @@ def main(
     direct_payments_prepared_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_prepared_source
-    ).select(
+    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.YEAR_AS_INTEGER,
@@ -49,11 +42,7 @@ def main(
         # TODO
     )
 
-    # TODO
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
-
-    # TODO
-    direct_payments_df = normalise_estimates(direct_payments_df)
 
     # TODO
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
