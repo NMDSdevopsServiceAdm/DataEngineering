@@ -9,9 +9,6 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
-from utils.direct_payments_utils.prepare_direct_payments.remove_outliers import (
-    remove_outliers,
-)
 
 
 def determine_areas_including_carers_on_adass(
@@ -24,8 +21,6 @@ def determine_areas_including_carers_on_adass(
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_total_dpr(direct_payments_df)
     direct_payments_df = calculate_value_if_adass_base_is_closer_to_su_only(direct_payments_df)
     direct_payments_df = allocate_proportions(direct_payments_df)
-    direct_payments_df = remove_outliers(direct_payments_df)  # TODO: move this to it's own script?
-
     return direct_payments_df
 
 

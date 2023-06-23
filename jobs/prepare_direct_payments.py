@@ -11,6 +11,9 @@ from utils.direct_payments_utils.prepare_direct_payments.determine_areas_includi
 from utils.direct_payments_utils.prepare_direct_payments.prepare_during_year_data import (
     prepare_during_year_data,
 )
+from utils.direct_payments_utils.prepare_direct_payments.remove_outliers import (
+    remove_outliers,
+)
 
 
 def main(
@@ -34,7 +37,7 @@ def main(
     )
 
     direct_payments_df = determine_areas_including_carers_on_adass(direct_payments_df)
-
+    direct_payments_df = remove_outliers(direct_payments_df)
     direct_payments_df = prepare_during_year_data(direct_payments_df)
 
     utils.write_to_parquet(
