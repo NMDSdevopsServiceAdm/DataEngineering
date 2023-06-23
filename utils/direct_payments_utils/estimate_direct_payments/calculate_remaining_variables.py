@@ -12,14 +12,10 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 def calculate_remaining_variables(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    direct_payments_df = calculate_service_users_with_self_employed_staff(
-        direct_payments_df
-    )
+    direct_payments_df = calculate_service_users_with_self_employed_staff(direct_payments_df)
     direct_payments_df = calculate_carers_employing_staff(direct_payments_df)
     direct_payments_df = calculate_total_dpr_employing_staff(direct_payments_df)
-    direct_payments_df = calculate_total_personal_assistant_filled_posts(
-        direct_payments_df
-    )
+    direct_payments_df = calculate_total_personal_assistant_filled_posts(direct_payments_df)
     direct_payments_df = calculate_proportion_of_dpr_employing_staff(direct_payments_df)
     return direct_payments_df
 
@@ -27,12 +23,9 @@ def calculate_remaining_variables(
 def calculate_service_users_with_self_employed_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # su dprs * self employed %
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF,
-        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR)
-        * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER,
+        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR) * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER,
     )
     return direct_payments_df
 
@@ -40,8 +33,6 @@ def calculate_service_users_with_self_employed_staff(
 def calculate_carers_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # carer dprs * carer %
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_CARERS_EMPLOYING_STAFF,
         F.col(DP.CARER_DPRS_DURING_YEAR) * Config.CARERS_EMPLOYING_PERCENTAGE,
@@ -52,8 +43,6 @@ def calculate_carers_employing_staff(
 def calculate_total_dpr_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # su employing staff + su with self employed staff + carers employing staff
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF,
         F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
@@ -66,12 +55,9 @@ def calculate_total_dpr_employing_staff(
 def calculate_total_personal_assistant_filled_posts(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # total dpr employing staff * pa ratio
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-        F.col(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
-        * F.col(DP.FILLED_POSTS_PER_EMPLOYER),
+        F.col(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF) * F.col(DP.FILLED_POSTS_PER_EMPLOYER),
     )
     return direct_payments_df
 
@@ -79,11 +65,8 @@ def calculate_total_personal_assistant_filled_posts(
 def calculate_proportion_of_dpr_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    # TODO
-    # total dpr employing staff/ total dpr
     direct_payments_df = direct_payments_df.withColumn(
         DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF,
-        F.col(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
-        / F.col(DP.TOTAL_DPRS_DURING_YEAR),
+        F.col(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF) / F.col(DP.TOTAL_DPRS_DURING_YEAR),
     )
     return direct_payments_df
