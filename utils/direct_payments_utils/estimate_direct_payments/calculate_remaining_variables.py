@@ -37,6 +37,10 @@ def calculate_carers_employing_staff(
 ) -> DataFrame:
     # TODO
     # carer dprs * carer %
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_CARERS_EMPLOYING_STAFF,
+        F.col(DP.CARER_DPRS_DURING_YEAR) * Config.CARERS_EMPLOYING_PERCENTAGE,
+    )
     return direct_payments_df
 
 
