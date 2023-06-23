@@ -18,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestCalculateRemainingVariables(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_calculate_remaining_variables"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_calculate_remaining_variables").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -178,12 +176,8 @@ class TestCalculateRemainingVariables(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_total_dpr_employing_staff(df)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
-        self.assertAlmostEqual(
-            output_df_list[0][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 413.19, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[1][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 404.20, places=4
-        )
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 413.19, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 404.20, places=4)
 
     def test_calculate_total_personal_assistant_filled_posts_returns_correct_values(
         self,
@@ -245,6 +239,37 @@ class TestCalculateRemainingVariables(unittest.TestCase):
         )
         self.assertAlmostEqual(
             output_df_list[1][DP.ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF],
+            0.4588235294117647,
+            places=5,
+        )
+
+    def test_calculate_proportion_of_dpr_who_are_service_users(self):
+        rows = [
+            ("area_1", 2021, 400.0, 800.0),
+            ("area_2", 2021, 390.0, 850.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.SERVICE_USER_DPRS_DURING_YEAR,
+                    FloatType(),
+                    True,
+                ),
+                StructField(DP.TOTAL_DPRS_DURING_YEAR, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_proportion_of_dpr_who_are_service_users(df)
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+        self.assertAlmostEqual(
+            output_df_list[0][DP.ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS],
+            0.5,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS],
             0.4588235294117647,
             places=5,
         )
