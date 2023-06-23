@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestCalculateRemainingVariables(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_calculate_remaining_variables").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_calculate_remaining_variables"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -176,8 +178,12 @@ class TestCalculateRemainingVariables(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_total_dpr_employing_staff(df)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 413.19, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 404.20, places=4)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 413.19, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[1][DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF], 404.20, places=4
+        )
 
     def test_calculate_total_personal_assistant_filled_posts_returns_correct_values(
         self,
