@@ -144,6 +144,7 @@ module "estimate_direct_payments_job" {
   job_parameters = {
     "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/"
     "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=0.0.1/"
+    "--summary_destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_summary_estimates/version=0.0.1/"
   }
 }
 

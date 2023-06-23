@@ -1,11 +1,5 @@
 from pyspark.sql import SparkSession
-import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    FloatType,
-)
 
 from utils import utils
 from utils.direct_payments_utils.direct_payments_column_names import (
@@ -25,6 +19,7 @@ from utils.direct_payments_utils.estimate_direct_payments.create_summary_table i
 def main(
     direct_payments_prepared_source,
     destination,
+    summary_destination,
 ):
     spark = SparkSession.builder.appName(
         "sfc_data_engineering_estimate_direct_payments"
@@ -46,8 +41,6 @@ def main(
 
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
-
-    # TODO
     summary_direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
@@ -59,22 +52,31 @@ def main(
 
     utils.write_to_parquet(
         summary_direct_payments_df,
-        destination,
+        summary_destination,
         append=True,
         partitionKeys=[DP.YEAR],
     )
 
 
 if __name__ == "__main__":
-    (direct_payments_prepared_source, destination,) = utils.collect_arguments(
+    (
+        direct_payments_prepared_source,
+        destination,
+        summary_destination,
+    ) = utils.collect_arguments(
         (
             "--direct_payments_prepared_source",
             "Source s3 directory for direct payments prepared dataset",
         ),
         ("--destination", "A destination directory for outputting dpr data."),
+        (
+            "--summary_destination",
+            "A destination directory for outputting dpr summary data.",
+        ),
     )
 
     main(
         direct_payments_prepared_source,
         destination,
+        summary_destination,
     )
