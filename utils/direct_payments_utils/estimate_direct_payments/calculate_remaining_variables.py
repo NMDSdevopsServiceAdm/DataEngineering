@@ -64,6 +64,10 @@ def calculate_total_personal_assistant_filled_posts(
     # TODO
     # join pa ratio to df
     # total dpr employing staff * pa ratio
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+        F.col(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF) * F.col(DP.FILLED_POSTS_PER_EMPLOYER),
+    )
     return direct_payments_df
 
 

@@ -142,29 +142,26 @@ class TestCalculateRemainingVariables(unittest.TestCase):
 
     def test_calculate_total_personal_assistant_filled_posts_returns_correct_values(self):
         rows = [
-            ("area_1", 2021, 0.49, 400.0, 30.0, 800.0, 414.0121652330579),
-            ("area_2", 2021, 0.34, 390.0, 32.0, 850.0, 404.8864803682295),
+            ("area_1", 2021, 400.0, 1.5),
+            ("area_2", 2021, 390.0, 1.75),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(
-                    DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                    DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF,
                     FloatType(),
                     True,
                 ),
-                StructField(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.TOTAL_DPRS_DURING_YEAR, FloatType(), True),
-                StructField(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, FloatType(), True),
+                StructField(DP.FILLED_POSTS_PER_EMPLOYER, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_total_personal_assistant_filled_posts(df)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 1, places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 1, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 600.0, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 682.5, places=5)
 
     def test_calculate_proportion_of_dpr_employing_staff_returns_correct_values(self):
         rows = [
