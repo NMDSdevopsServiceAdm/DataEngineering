@@ -20,5 +20,6 @@ DIRECT_PAYMENTS_DATA = StructType(
         StructField("year", IntegerType(), False),
         StructField("proportion_su_only_employing_staff", FloatType(), True),
         StructField("prev_service_user_employing_staff_proportion", FloatType(), True),
+        StructField("filled_posts_per_employer", FloatType(), True),
     ]
 )

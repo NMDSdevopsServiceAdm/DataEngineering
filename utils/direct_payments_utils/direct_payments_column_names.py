@@ -81,6 +81,8 @@ class DirectPaymentColumnNames:
     ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: str = "estimated_total_personal_assistant_filled_posts"
     ESTIMATED_PROPORTION_OF_TOTAL_DPR_EMPLOYING_STAFF: str = "estimated_proportion_of_total_dpr_employing_staff"
 
+    FILLED_POSTS_PER_EMPLOYER: str = "filled_posts_per_employer"
+
 
 @dataclass
 class DirectPaymentColumnValues:
