@@ -1,4 +1,12 @@
 from pyspark.sql import DataFrame
+import pyspark.sql.functions as F
+
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
+from utils.direct_payments_utils.direct_payments_configuration import (
+    DirectPaymentConfiguration as Config,
+)
 
 
 def calculate_remaining_variables(
@@ -17,6 +25,10 @@ def calculate_service_users_with_self_employed_staff(
 ) -> DataFrame:
     # TODO
     # su dprs * self employed %
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF,
+        F.col(DP.SERVICE_USER_DPRS_DURING_YEAR) * Config.SELF_EMPLOYED_STAFF_PER_SERVICE_USER,
+    )
     return direct_payments_df
 
 
