@@ -26,9 +26,13 @@ def main(
     direct_payments_prepared_source,
     destination,
 ):
-    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_estimate_direct_payments"
+    ).getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
+    direct_payments_df: DataFrame = spark.read.parquet(
+        direct_payments_prepared_source
+    ).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.YEAR_AS_INTEGER,
@@ -44,10 +48,17 @@ def main(
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
 
     # TODO
-    direct_payments_df = create_summary_table(direct_payments_df)
+    summary_direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
         direct_payments_df,
+        destination,
+        append=True,
+        partitionKeys=[DP.YEAR],
+    )
+
+    utils.write_to_parquet(
+        summary_direct_payments_df,
         destination,
         append=True,
         partitionKeys=[DP.YEAR],
