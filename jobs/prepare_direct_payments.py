@@ -23,9 +23,7 @@ def main(
     direct_payments_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_prepare_direct_payments"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_prepare_direct_payments").getOrCreate()
 
     direct_payments_df: DataFrame = spark.read.parquet(direct_payments_source).select(
         DP.LA_AREA,
@@ -36,7 +34,7 @@ def main(
         DP.CARER_DPRS_AT_YEAR_END,
         DP.SERVICE_USER_DPRS_DURING_YEAR,
         DP.CARER_DPRS_DURING_YEAR,
-        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.PROPORTION_IMPORTED,
         DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
         DP.FILLED_POSTS_PER_EMPLOYER,
     )
@@ -44,7 +42,6 @@ def main(
     direct_payments_df = determine_areas_including_carers_on_adass(direct_payments_df)
 
     direct_payments_df = prepare_during_year_data(direct_payments_df)
-    # TODO
 
     utils.write_to_parquet(
         direct_payments_df,
