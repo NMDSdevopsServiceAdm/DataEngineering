@@ -17,9 +17,6 @@ from utils.direct_payments_utils.estimate_direct_payments.estimate_service_users
 from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_variables import (
     calculate_remaining_variables,
 )
-from utils.direct_payments_utils.estimate_direct_payments.identify_outliers import (
-    identify_outliers,
-)
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
 )
