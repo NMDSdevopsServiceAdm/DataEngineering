@@ -21,7 +21,6 @@ def estimate_service_users_employing_staff(
 ) -> DataFrame:
     direct_payments_df = estimate_missing_data_for_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_estimated_number_of_service_users_employing_staff(direct_payments_df)
-    # TODO: remove rows where LA didn't exist for a particular year
     return direct_payments_df
 
 
@@ -38,28 +37,17 @@ def calculate_estimated_number_of_service_users_employing_staff(
 def estimate_missing_data_for_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     direct_payments_df = model_using_mean(direct_payments_df)
-    # TODO: Copy historic estimates into mean estimate column in preparation for extrapolation step
     direct_payments_df = merge_in_historical_estimates_with_estimate_using_mean(direct_payments_df)
-    # Apply know values
     direct_payments_df = apply_known_values(direct_payments_df)
     direct_payments_df = model_extrapolation(direct_payments_df)
-    # Apply extrapolation
     direct_payments_df = apply_extrapolated_values(direct_payments_df)
     direct_payments_df = model_interpolation(direct_payments_df)
-
     direct_payments_df = apply_interpolated_values(direct_payments_df)
     direct_payments_df = direct_payments_df.drop(DP.ESTIMATE_USING_INTERPOLATION)
     direct_payments_df = apply_mean_estimates(direct_payments_df)
     direct_payments_df = model_interpolation(direct_payments_df)
-
     direct_payments_df = apply_interpolated_values(direct_payments_df)
-    # direct_payments_df = apply_models(direct_payments_df)
-    # TODO: Interpolate remaining values for 2016 and 2017 - split apply models into functions to apply each model and then include after models
-    # will need to use estimated % - applying extrapolation before modelling interpolation should fix 2016 and 2017 gaps
-    # mean imputation still needs to be last option for those missing all data
-
     return direct_payments_df
 
 
