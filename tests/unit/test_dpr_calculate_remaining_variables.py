@@ -163,8 +163,8 @@ class TestCalculateRemainingVariables(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.calculate_total_personal_assistant_filled_posts(df)
         output_df_list = output_df.sort(DP.LA_AREA).collect()
-        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], , places=5)
-        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], , places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 1, places=5)
+        self.assertAlmostEqual(output_df_list[1][DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS], 1, places=5)
 
     def test_calculate_proportion_of_dpr_employing_staff_returns_correct_values(self):
         rows = [
