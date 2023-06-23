@@ -62,6 +62,7 @@ def calculate_total_personal_assistant_filled_posts(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     # TODO
+    # join pa ratio to df
     # total dpr employing staff * pa ratio
     return direct_payments_df
 
