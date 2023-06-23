@@ -1,13 +1,7 @@
 import sys
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, Window
-import pyspark.sql
-
 from pyspark.sql.types import ArrayType, LongType, FloatType
-
-
-# from utils.utils import convert_days_to_year_with_data
-#
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,

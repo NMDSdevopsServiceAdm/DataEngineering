@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 
 from utils.direct_payments_utils.direct_payments_column_names import (
