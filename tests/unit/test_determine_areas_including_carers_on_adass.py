@@ -48,9 +48,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.IMD_SCORE, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -221,9 +219,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(
                     DP.PROPORTION_IF_SERVICE_USER_DPR_CLOSER, FloatType(), True
                 ),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -279,9 +275,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.IMD_SCORE, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -314,7 +308,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.5001596807238414,
         )
-        self.assertEqual(len(output_df.columns), 25)
+        self.assertEqual(len(output_df.columns), 26)
 
     def test_identify_outliers_using_threshold_value(
         self,

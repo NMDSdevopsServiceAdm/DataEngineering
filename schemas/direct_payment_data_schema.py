@@ -6,7 +6,9 @@ from pyspark.sql.types import (
     IntegerType,
 )
 
-from utils.direct_payments_utils.direct_payments_column_names import DirectPaymentColumnNames as DP
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 
 
 DIRECT_PAYMENTS_DATA = StructType(
@@ -21,7 +23,9 @@ DIRECT_PAYMENTS_DATA = StructType(
         StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), False),
         StructField(DP.YEAR, IntegerType(), False),
         StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
-        StructField(DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, FloatType(), True),
+        StructField(
+            DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE, FloatType(), True
+        ),
         StructField(DP.FILLED_POSTS_PER_EMPLOYER, FloatType(), True),
     ]
 )
