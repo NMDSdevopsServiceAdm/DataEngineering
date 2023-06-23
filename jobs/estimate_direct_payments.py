@@ -47,9 +47,6 @@ def main(
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
 
     # TODO
-    direct_payments_df = identify_outliers(direct_payments_df)
-
-    # TODO
     direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
