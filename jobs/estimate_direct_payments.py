@@ -44,6 +44,7 @@ def main(
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
         DP.FILLED_POSTS_PER_EMPLOYER,
+        DP.TOTAL_DPRS_DURING_YEAR,
     )
 
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
