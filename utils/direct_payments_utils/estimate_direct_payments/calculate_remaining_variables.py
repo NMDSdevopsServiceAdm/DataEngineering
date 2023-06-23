@@ -49,6 +49,12 @@ def calculate_total_dpr_employing_staff(
 ) -> DataFrame:
     # TODO
     # su employing staff + su with self employed staff + carers employing staff
+    direct_payments_df = direct_payments_df.withColumn(
+        DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF,
+        F.col(DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF)
+        + F.col(DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF)
+        + F.col(DP.ESTIMATED_CARERS_EMPLOYING_STAFF),
+    )
     return direct_payments_df
 
 
