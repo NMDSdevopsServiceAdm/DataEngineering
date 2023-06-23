@@ -18,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestCreateSummaryTable(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_create_summary_table"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_create_summary_table").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -28,7 +26,7 @@ class TestCreateSummaryTable(unittest.TestCase):
         rows = [
             (
                 "area_1",
-                2021,
+                "2021",
                 0.49,
                 400.0,
                 0.5,
@@ -42,7 +40,7 @@ class TestCreateSummaryTable(unittest.TestCase):
             ),
             (
                 "area_2",
-                2021,
+                "2021",
                 0.34,
                 390.0,
                 0.6,
@@ -56,7 +54,7 @@ class TestCreateSummaryTable(unittest.TestCase):
             ),
             (
                 "area_3",
-                2021,
+                "2021",
                 0.34,
                 390.0,
                 0.7,
@@ -72,7 +70,7 @@ class TestCreateSummaryTable(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(
                     DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                     FloatType(),
@@ -129,7 +127,7 @@ class TestCreateSummaryTable(unittest.TestCase):
         rows = [
             (
                 "area_1",
-                2021,
+                "2021",
                 0.49,
                 400.0,
                 0.5,
@@ -143,7 +141,7 @@ class TestCreateSummaryTable(unittest.TestCase):
             ),
             (
                 "area_2",
-                2021,
+                "2021",
                 0.34,
                 390.0,
                 0.6,
@@ -157,7 +155,7 @@ class TestCreateSummaryTable(unittest.TestCase):
             ),
             (
                 "area_3",
-                2021,
+                "2021",
                 0.34,
                 390.0,
                 0.7,
@@ -173,7 +171,7 @@ class TestCreateSummaryTable(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(
                     DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                     FloatType(),
@@ -227,9 +225,7 @@ class TestCreateSummaryTable(unittest.TestCase):
         output_df.show()
         output_df_list = output_df.collect()
         self.assertAlmostEqual(output_df_list[0]["total_dprs"], 2500.0, places=5)
-        self.assertAlmostEqual(
-            output_df_list[0]["proportion_of_service_user_dprs"], 0.6, places=5
-        )
+        self.assertAlmostEqual(output_df_list[0]["proportion_of_service_user_dprs"], 0.6, places=5)
         self.assertAlmostEqual(output_df_list[0]["service_user_dprs"], 2406, places=5)
         self.assertAlmostEqual(
             output_df_list[0]["estimated_proportion_of_service_users_employing_staff"],
@@ -246,12 +242,8 @@ class TestCreateSummaryTable(unittest.TestCase):
             44.0,
             places=5,
         )
-        self.assertAlmostEqual(
-            output_df_list[0]["estimated_carers_employing_staff"], 14.0, places=5
-        )
-        self.assertAlmostEqual(
-            output_df_list[0]["estimated_total_dprs_employing_staff"], 3000.0, places=5
-        )
+        self.assertAlmostEqual(output_df_list[0]["estimated_carers_employing_staff"], 14.0, places=5)
+        self.assertAlmostEqual(output_df_list[0]["estimated_total_dprs_employing_staff"], 3000.0, places=5)
         self.assertAlmostEqual(
             output_df_list[0]["estimated_total_personal_assistant_filled_posts"],
             2600,
