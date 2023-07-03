@@ -18,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_extrapolation_ratio"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -132,4 +130,32 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
 
         self.assertEqual(output_df_list[0][DP.ESTIMATE_USING_MEAN], 100.0)
         self.assertEqual(output_df_list[1][DP.ESTIMATE_USING_MEAN], 90.0)
+        self.assertEqual(output_df.count(), 2)
+
+    def test_calculate_estimated_number_of_service_users_employing_staff_returns_correct_values(
+        self,
+    ):
+        rows = [
+            ("area_1", "2020", 100.0, 0.5),
+            ("area_2", "2021", 150.0, 0.6),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, StringType(), True),
+                StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
+                StructField(
+                    DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_estimated_number_of_service_users_employing_staff(df)
+
+        output_df_list = output_df.sort(DP.LA_AREA).collect()
+
+        self.assertEqual(output_df_list[0][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 50.0)
+        self.assertEqual(output_df_list[1][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 120.0)
         self.assertEqual(output_df.count(), 2)
