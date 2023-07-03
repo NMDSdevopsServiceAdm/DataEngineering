@@ -67,7 +67,9 @@ def identify_extreme_values_when_only_value_in_la_area(df: DataFrame) -> DataFra
 def calculate_mean_proportion_of_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
-    means_df = df.groupBy(DP.LA_AREA).mean(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+    means_df = df.groupBy(DP.LA_AREA).mean(
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+    )
     df = df.join(means_df, on=DP.LA_AREA, how="left")
     df = df.withColumnRenamed(
         DP.GROUPED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
@@ -112,7 +114,13 @@ def identify_extreme_values_not_following_a_trend_in_most_recent_year(
                 (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > 0.9)
                 | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < 0.1)
             )
-            & (F.abs(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) - F.col(DP.PENULTIMATE_YEAR_DATA)) > 0.3),
+            & (
+                F.abs(
+                    F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+                    - F.col(DP.PENULTIMATE_YEAR_DATA)
+                )
+                > 0.3
+            ),
             F.lit(Values.REMOVE),
         ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
     )
@@ -143,10 +151,14 @@ def add_column_with_last_year_of_data(
     direct_payments_df: DataFrame,
     column_name: str,
 ) -> DataFrame:
-    populated_df = filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
+    populated_df = filter_to_locations_with_known_service_users_employing_staff(
+        direct_payments_df
+    )
     last_submission_date_df = determine_last_year_with_data(populated_df, column_name)
 
-    direct_payments_df = direct_payments_df.join(last_submission_date_df, DP.LA_AREA, "left")
+    direct_payments_df = direct_payments_df.join(
+        last_submission_date_df, DP.LA_AREA, "left"
+    )
 
     return direct_payments_df
 
@@ -154,7 +166,9 @@ def add_column_with_last_year_of_data(
 def filter_to_locations_with_known_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    populated_df = direct_payments_df.where(F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull())
+    populated_df = direct_payments_df.where(
+        F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF).isNotNull()
+    )
     return populated_df
 
 
@@ -174,7 +188,9 @@ def add_data_point_from_given_year_of_data(
     original_column: str,
     new_column: str,
 ) -> DataFrame:
-    df = direct_payments_df.where(F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER))
+    df = direct_payments_df.where(
+        F.col(year_of_data_to_add) == F.col(DP.YEAR_AS_INTEGER)
+    )
     df = df.withColumnRenamed(original_column, new_column)
     df = df.select(DP.LA_AREA, new_column)
 
