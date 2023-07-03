@@ -21,9 +21,13 @@ def main(
     destination,
     summary_destination,
 ):
-    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_estimate_direct_payments"
+    ).getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
+    direct_payments_df: DataFrame = spark.read.parquet(
+        direct_payments_prepared_source
+    ).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.YEAR_AS_INTEGER,
@@ -56,7 +60,11 @@ def main(
 
 
 if __name__ == "__main__":
-    (direct_payments_prepared_source, destination, summary_destination,) = utils.collect_arguments(
+    (
+        direct_payments_prepared_source,
+        destination,
+        summary_destination,
+    ) = utils.collect_arguments(
         (
             "--direct_payments_prepared_source",
             "Source s3 directory for direct payments prepared dataset",
