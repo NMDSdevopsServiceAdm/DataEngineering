@@ -74,7 +74,7 @@ class TestCreateSummaryTable(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, StringType(), True),
                 StructField(
-                    DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                    DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                     FloatType(),
                     True,
                 ),
@@ -175,7 +175,7 @@ class TestCreateSummaryTable(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR, StringType(), True),
                 StructField(
-                    DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+                    DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
                     FloatType(),
                     True,
                 ),
