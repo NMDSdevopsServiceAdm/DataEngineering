@@ -14,6 +14,9 @@ from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_va
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
 )
+from utils.direct_payments_utils.estimate_direct_payments.apply_rolling_average import (
+    apply_rolling_average,
+)
 
 
 def main(
@@ -21,13 +24,9 @@ def main(
     destination,
     summary_destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = SparkSession.builder.appName("sfc_data_engineering_estimate_direct_payments").getOrCreate()
 
-    direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_prepared_source
-    ).select(
+    direct_payments_df: DataFrame = spark.read.parquet(direct_payments_prepared_source).select(
         DP.LA_AREA,
         DP.YEAR,
         DP.YEAR_AS_INTEGER,
@@ -41,6 +40,7 @@ def main(
 
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
+    direct_payments_df = apply_rolling_average(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
@@ -59,11 +59,7 @@ def main(
 
 
 if __name__ == "__main__":
-    (
-        direct_payments_prepared_source,
-        destination,
-        summary_destination,
-    ) = utils.collect_arguments(
+    (direct_payments_prepared_source, destination, summary_destination,) = utils.collect_arguments(
         (
             "--direct_payments_prepared_source",
             "Source s3 directory for direct payments prepared dataset",
