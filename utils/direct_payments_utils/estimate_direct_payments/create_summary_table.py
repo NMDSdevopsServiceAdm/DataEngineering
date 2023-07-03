@@ -18,13 +18,11 @@ def create_summary_table(
         .cast("float")
         .alias("proportion_of_service_user_dprs"),
         # service user dprs during year
-        F.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
-        .cast("float")
-        .alias("service_user_dprs"),
+        F.sum(DP.SERVICE_USER_DPRS_DURING_YEAR).cast("float").alias("service_user_dprs"),
         # change in service users [to calculate]
         # % of change [to calculate]
         # estimated % of services users employing staff
-        F.avg(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+        F.avg(DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
         .cast("float")
         .alias("estimated_proportion_of_service_users_employing_staff"),
         # estimated number of service users employing staff
@@ -36,13 +34,9 @@ def create_summary_table(
         .cast("float")
         .alias("estimated_service_users_with_self_employed_staff"),
         # estimated number of carers employing staff
-        F.sum(DP.ESTIMATED_CARERS_EMPLOYING_STAFF)
-        .cast("float")
-        .alias("estimated_carers_employing_staff"),
+        F.sum(DP.ESTIMATED_CARERS_EMPLOYING_STAFF).cast("float").alias("estimated_carers_employing_staff"),
         # estimated total dprs employing staff
-        F.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
-        .cast("float")
-        .alias("estimated_total_dprs_employing_staff"),
+        F.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF).cast("float").alias("estimated_total_dprs_employing_staff"),
         # estimated PA filled posts
         F.sum(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
         .cast("float")
