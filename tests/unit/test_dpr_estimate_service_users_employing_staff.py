@@ -18,7 +18,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_extrapolation_ratio").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_extrapolation_ratio"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -156,6 +158,16 @@ class TestEstimateServiceUsersEmployingStaff(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 50.0)
-        self.assertEqual(output_df_list[1][DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF], 90.0)
+        self.assertEqual(
+            output_df_list[0][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            50.0,
+        )
+        self.assertEqual(
+            output_df_list[1][
+                DP.ESTIMATED_SERVICE_USER_DPRS_DURING_YEAR_EMPLOYING_STAFF
+            ],
+            90.0,
+        )
         self.assertEqual(output_df.count(), 2)
