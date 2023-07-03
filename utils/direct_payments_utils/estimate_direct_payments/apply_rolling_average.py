@@ -20,7 +20,7 @@ def apply_rolling_average(direct_payments_df: DataFrame) -> DataFrame:
 def calculate_aggregates_per_year(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-    direct_payments_df = direct_payments_df.groupBy(DP.YEAR_AS_INTEGER).agg(
+    direct_payments_df = direct_payments_df.groupBy(DP.LA_AREA, DP.YEAR_AS_INTEGER).agg(
         F.count(DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
         .cast("integer")
         .alias(DP.COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
@@ -74,8 +74,9 @@ def join_rolling_average_into_df(
     rolling_average_df: DataFrame,
 ) -> DataFrame:
     rolling_average_df = rolling_average_df.select(
+        DP.LA_AREA,
         DP.YEAR_AS_INTEGER,
         DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
     )
-    direct_payments_df = direct_payments_df.join(rolling_average_df, [DP.YEAR_AS_INTEGER], "left")
+    direct_payments_df = direct_payments_df.join(rolling_average_df, [DP.LA_AREA, DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
