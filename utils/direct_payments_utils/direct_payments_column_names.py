@@ -97,6 +97,10 @@ class DirectPaymentColumnNames:
     )
     SUM_OF_SERVICE_USER_DPRS_DURING_YEAR: str = "sum_of_service_user_dprs_during_year"
 
+    # Rolling average
+    COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "count_of_estimated_proportion_of_service_users_employing_staff"
+    SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "sum_of_estimated_proportion_of_service_users_employing_staff"
+
     # Calculate remaining variables
     ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: str = (
         "estimated_service_users_with_self_employed_staff"
