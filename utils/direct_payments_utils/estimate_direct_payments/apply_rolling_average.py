@@ -73,6 +73,8 @@ def join_rolling_average_into_df(
     direct_payments_df: DataFrame,
     rolling_average_df: DataFrame,
 ) -> DataFrame:
-    rolling_average_df = rolling_average_df.select(DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE)
+    rolling_average_df = rolling_average_df.select(
+        DP.YEAR_AS_INTEGER, DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF
+    )
     direct_payments_df = direct_payments_df.join(rolling_average_df, [DP.YEAR_AS_INTEGER], "left")
     return direct_payments_df
