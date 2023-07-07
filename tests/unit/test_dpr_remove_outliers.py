@@ -35,9 +35,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -59,9 +57,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
                 StructField(
                     DP.MEAN_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
@@ -96,9 +92,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
         )
@@ -128,9 +122,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
         )
@@ -166,16 +158,12 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = (
-            job.identify_extreme_values_not_following_a_trend_in_most_recent_year(df)
-        )
+        output_df = job.identify_extreme_values_not_following_a_trend_in_most_recent_year(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
         self.assertEqual(output_df_list[0][DP.OUTLIERS_FOR_REMOVAL], Values.RETAIN)
@@ -208,9 +196,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
         )
@@ -238,9 +224,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
                 StructField(DP.OUTLIERS_FOR_REMOVAL, StringType(), True),
             ]
         )
@@ -248,12 +232,8 @@ class TestRemoveOutliers(unittest.TestCase):
         output_df = job.remove_identified_outliers(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
-        self.assertEqual(
-            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5
-        )
-        self.assertEqual(
-            output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
-        )
+        self.assertEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], 0.5)
+        self.assertEqual(output_df_list[1][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
 
     def test_remove_outliers(
         self,
@@ -267,9 +247,7 @@ class TestRemoveOutliers(unittest.TestCase):
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True
-                ),
+                StructField(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -286,6 +264,4 @@ class TestRemoveOutliers(unittest.TestCase):
             0.5,
             places=5,
         )
-        self.assertEqual(
-            output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None
-        )
+        self.assertEqual(output_df_list[2][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF], None)
