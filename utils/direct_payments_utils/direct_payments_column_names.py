@@ -100,6 +100,16 @@ class DirectPaymentColumnNames:
 
     # Create summary table
     # TODO
+    TOTAL_DPRS: str = "total_dprs"
+    PROPORTION_OF_SERVICE_USER_DPRS: str = "proportion_of_service_user_dprs"
+    SERVICE_USER_DPRS: str = "service_user_dprs"
+    PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "proportion_of_service_users_employing_staff"
+    SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
+    SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF: str = "service_users_with_self_employed_staff"
+    CARERS_EMPLOYING_STAFF: str = "carers_employing_staff"
+    TOTAL_DPRS_EMPLOYING_STAFF: str = "total_dprs_employing_staff"
+    TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS: str = "total_personal_assistant_filled_posts"
+    PROPORTION_OF_TOTAL_DPRS_EMPLOYING_STAFF: str = "proportion_of_total_dprs_employing_staff"
 
 
 @dataclass
