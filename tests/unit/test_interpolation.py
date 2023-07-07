@@ -55,8 +55,8 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(output_df[1]["first_submission_time"], 1672704000)
         self.assertEqual(output_df[1]["last_submission_time"], 1673222400)
 
-    def test_convert_first_and_last_known_time_into_timeseries_df(self):
-        df = job.convert_first_and_last_known_time_into_timeseries_df(
+    def test_convert_first_and_last_known_years_into_exploded_df(self):
+        df = job.convert_first_and_last_known_years_into_exploded_df(
             self.data_for_creating_timeseries_df
         )
 

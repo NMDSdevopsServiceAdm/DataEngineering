@@ -33,11 +33,13 @@ def model_interpolation(df: DataFrame) -> DataFrame:
         calculate_first_and_last_submission_date_per_location(known_job_count_df)
     )
 
-    all_dates_df = convert_first_and_last_known_time_into_timeseries_df(
+    all_dates_df = convert_first_and_last_known_years_into_exploded_df(
         first_and_last_submission_date_df
     )
 
-    all_dates_df = add_known_job_count_information(all_dates_df, known_job_count_df)
+    all_dates_df = merge_known_values_with_exploded_dates(
+        all_dates_df, known_job_count_df
+    )
 
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
 
@@ -75,7 +77,7 @@ def calculate_first_and_last_submission_date_per_location(
     )
 
 
-def convert_first_and_last_known_time_into_timeseries_df(
+def convert_first_and_last_known_years_into_exploded_df(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     date_range_udf = F.udf(date_range, ArrayType(LongType()))
@@ -98,7 +100,7 @@ def date_range(
     ]
 
 
-def add_known_job_count_information(
+def merge_known_values_with_exploded_dates(
     df: DataFrame, known_job_count_df: DataFrame
 ) -> DataFrame:
 
@@ -120,7 +122,7 @@ def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
     )
 
 
-def window_for_previous_value() -> Window:
+def create_window_for_previous_value() -> Window:
     return (
         Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(-sys.maxsize, 0)
     )
@@ -131,11 +133,13 @@ def get_previous_value_in_column(
 ) -> DataFrame:
     return df.withColumn(
         new_column_name,
-        F.last(F.col(column_name), ignorenulls=True).over(window_for_previous_value()),
+        F.last(F.col(column_name), ignorenulls=True).over(
+            create_window_for_previous_value()
+        ),
     )
 
 
-def window_for_next_value() -> Window:
+def create_window_for_next_value() -> Window:
     return (
         Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(0, sys.maxsize)
     )
@@ -146,7 +150,9 @@ def get_next_value_in_new_column(
 ) -> DataFrame:
     return df.withColumn(
         new_column_name,
-        F.first(F.col(column_name), ignorenulls=True).over(window_for_next_value()),
+        F.first(F.col(column_name), ignorenulls=True).over(
+            create_window_for_next_value()
+        ),
     )
 
 
