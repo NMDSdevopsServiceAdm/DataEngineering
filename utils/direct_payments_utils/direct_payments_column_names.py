@@ -99,7 +99,6 @@ class DirectPaymentColumnNames:
     ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS: str = "estimated_proportion_of_dpr_who_are_service_users"
 
     # Create summary table
-    # TODO
     TOTAL_DPRS: str = "total_dprs"
     PROPORTION_OF_SERVICE_USER_DPRS: str = "proportion_of_service_user_dprs"
     SERVICE_USER_DPRS: str = "service_user_dprs"
