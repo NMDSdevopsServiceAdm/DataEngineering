@@ -221,35 +221,34 @@ class TestCreateSummaryTable(unittest.TestCase):
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.create_summary_table(df)
-        output_df.show()
         output_df_list = output_df.collect()
-        self.assertAlmostEqual(output_df_list[0]["total_dprs"], 2500.0, places=5)
-        self.assertAlmostEqual(output_df_list[0]["proportion_of_service_user_dprs"], 0.6, places=5)
-        self.assertAlmostEqual(output_df_list[0]["service_user_dprs"], 2406, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.TOTAL_DPRS], 2500.0, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USER_DPRS], 0.6, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.SERVICE_USER_DPRS], 2406, places=5)
         self.assertAlmostEqual(
-            output_df_list[0]["estimated_proportion_of_service_users_employing_staff"],
+            output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.39,
             places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[0]["estimated_service_users_employing_staff"],
+            output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF],
             1180.0,
             places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[0]["estimated_service_users_with_self_employed_staff"],
+            output_df_list[0][DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF],
             44.0,
             places=5,
         )
-        self.assertAlmostEqual(output_df_list[0]["estimated_carers_employing_staff"], 14.0, places=5)
-        self.assertAlmostEqual(output_df_list[0]["estimated_total_dprs_employing_staff"], 3000.0, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 14.0, places=5)
+        self.assertAlmostEqual(output_df_list[0][DP.TOTAL_DPRS_EMPLOYING_STAFF], 3000.0, places=5)
         self.assertAlmostEqual(
-            output_df_list[0]["estimated_total_personal_assistant_filled_posts"],
+            output_df_list[0][DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS],
             2600,
             places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[0]["estimated_proportion_of_total_dprs_employing_staff"],
+            output_df_list[0][DP.PROPORTION_OF_TOTAL_DPRS_EMPLOYING_STAFF],
             0.5,
             places=5,
         )
