@@ -17,7 +17,9 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestCreateSummaryTable(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_create_summary_table").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "test_create_summary_table"
+        ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
 
@@ -223,7 +225,9 @@ class TestCreateSummaryTable(unittest.TestCase):
         output_df = job.create_summary_table(df)
         output_df_list = output_df.collect()
         self.assertAlmostEqual(output_df_list[0][DP.TOTAL_DPRS], 2500.0, places=5)
-        self.assertAlmostEqual(output_df_list[0][DP.PROPORTION_OF_SERVICE_USER_DPRS], 0.6, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.PROPORTION_OF_SERVICE_USER_DPRS], 0.6, places=5
+        )
         self.assertAlmostEqual(output_df_list[0][DP.SERVICE_USER_DPRS], 2406, places=5)
         self.assertAlmostEqual(
             output_df_list[0][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
@@ -240,8 +244,12 @@ class TestCreateSummaryTable(unittest.TestCase):
             44.0,
             places=5,
         )
-        self.assertAlmostEqual(output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 14.0, places=5)
-        self.assertAlmostEqual(output_df_list[0][DP.TOTAL_DPRS_EMPLOYING_STAFF], 3000.0, places=5)
+        self.assertAlmostEqual(
+            output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 14.0, places=5
+        )
+        self.assertAlmostEqual(
+            output_df_list[0][DP.TOTAL_DPRS_EMPLOYING_STAFF], 3000.0, places=5
+        )
         self.assertAlmostEqual(
             output_df_list[0][DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS],
             2600,

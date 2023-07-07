@@ -14,7 +14,9 @@ def create_summary_table(
         F.avg(DP.ESTIMATED_PROPORTION_OF_DPR_WHO_ARE_SERVICE_USERS)
         .cast("float")
         .alias(DP.PROPORTION_OF_SERVICE_USER_DPRS),
-        F.sum(DP.SERVICE_USER_DPRS_DURING_YEAR).cast("float").alias(DP.SERVICE_USER_DPRS),
+        F.sum(DP.SERVICE_USER_DPRS_DURING_YEAR)
+        .cast("float")
+        .alias(DP.SERVICE_USER_DPRS),
         F.avg(DP.ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
         .cast("float")
         .alias(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF),
@@ -24,8 +26,12 @@ def create_summary_table(
         F.sum(DP.ESTIMATED_SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF)
         .cast("float")
         .alias(DP.SERVICE_USERS_WITH_SELF_EMPLOYED_STAFF),
-        F.sum(DP.ESTIMATED_CARERS_EMPLOYING_STAFF).cast("float").alias(DP.CARERS_EMPLOYING_STAFF),
-        F.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF).cast("float").alias(DP.TOTAL_DPRS_EMPLOYING_STAFF),
+        F.sum(DP.ESTIMATED_CARERS_EMPLOYING_STAFF)
+        .cast("float")
+        .alias(DP.CARERS_EMPLOYING_STAFF),
+        F.sum(DP.ESTIMATED_TOTAL_DPR_EMPLOYING_STAFF)
+        .cast("float")
+        .alias(DP.TOTAL_DPRS_EMPLOYING_STAFF),
         F.sum(DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
         .cast("float")
         .alias(DP.TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS),
