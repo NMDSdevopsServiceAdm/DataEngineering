@@ -10,9 +10,13 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-import utils.prepare_direct_payments_utils.determine_areas_including_carers_on_adass as job
-from utils.prepare_direct_payments_utils.direct_payments_column_names import (
+import utils.direct_payments_utils.prepare_direct_payments.determine_areas_including_carers_on_adass as job
+from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
+    DirectPaymentColumnValues as Values,
+)
+from utils.direct_payments_utils.direct_payments_configuration import (
+    DirectPaymentConfiguration as Config,
 )
 
 
@@ -137,8 +141,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
-        self.assertEqual(output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF], 100.0)
-        self.assertEqual(output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF], 25.0)
+        self.assertEqual(
+            output_df_list[0][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 100.0
+        )
+        self.assertEqual(
+            output_df_list[1][DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END], 25.0
+        )
 
     def test_calculate_carers_employing_staff_returns_correct_product(self):
         rows = [
@@ -157,10 +165,14 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(
-            output_df_list[0][DP.CARERS_EMPLOYING_STAFF], 0.0127744579073184, places=5
+            output_df_list[0][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            0.0127744579073184,
+            places=5,
         )
         self.assertAlmostEqual(
-            output_df_list[1][DP.CARERS_EMPLOYING_STAFF], 0.063872289536592, places=5
+            output_df_list[1][DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            0.063872289536592,
+            places=5,
         )
 
     def test_calculate_service_users_and_carers_employing_staff_returns_correct_sum(
@@ -173,8 +185,10 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
-                StructField(DP.CARERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
+                StructField(DP.CARERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True),
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
@@ -183,10 +197,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(
-            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 102.5
+            output_df_list[0][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            102.5,
         )
         self.assertEqual(
-            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF], 27.5
+            output_df_list[1][DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END],
+            27.5,
         )
 
     def test_difference_between_survey_base_and_total_dpr_at_year_end_returns_correct_value(
@@ -201,7 +217,9 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(
-                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
                 ),
             ]
         )
@@ -219,13 +237,13 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
 
-        self.assertEqual(job.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
+        self.assertEqual(Config.DIFFERENCE_IN_BASES_THRESHOLD, 100.0)
 
     def test_proportion_emplying_staff_threshold_is_correct_value(
         self,
     ):
 
-        self.assertEqual(job.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
+        self.assertEqual(Config.PROPORTION_EMPLOYING_STAFF_THRESHOLD, 0.1)
 
     def test_allocate_method_for_calculating_service_users_employing_staff_returns_correct_value(
         self,
@@ -250,26 +268,30 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertEqual(
-            output_df_list[0][DP.METHOD], job.ADASS_DOES_NOT_INCLUDE_CARERS
+            output_df_list[0][DP.METHOD], Values.ADASS_DOES_NOT_INCLUDE_CARERS
         )
-        self.assertEqual(output_df_list[1][DP.METHOD], job.ADASS_INCLUDES_CARERS)
-        self.assertEqual(output_df_list[2][DP.METHOD], job.ADASS_INCLUDES_CARERS)
+        self.assertEqual(output_df_list[1][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
+        self.assertEqual(output_df_list[2][DP.METHOD], Values.ADASS_INCLUDES_CARERS)
 
     def test_calculate_proportion_of_service_users_only_employing_staff_returns_correct_value(
         self,
     ):
         rows = [
-            ("area_1", job.ADASS_INCLUDES_CARERS, 102.5, 100.0, 200.0),
-            ("area_2", job.ADASS_DOES_NOT_INCLUDE_CARERS, 72.5, 25.0, 100.0),
+            ("area_1", Values.ADASS_INCLUDES_CARERS, 102.5, 100.0, 200.0),
+            ("area_2", Values.ADASS_DOES_NOT_INCLUDE_CARERS, 72.5, 25.0, 100.0),
         ]
         test_schema = StructType(
             [
                 StructField(DP.LA_AREA, StringType(), False),
                 StructField(DP.METHOD, StringType(), True),
                 StructField(
-                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF, FloatType(), True
+                    DP.SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END,
+                    FloatType(),
+                    True,
                 ),
-                StructField(DP.SERVICE_USERS_EMPLOYING_STAFF, FloatType(), True),
+                StructField(
+                    DP.SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END, FloatType(), True
+                ),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
             ]
         )

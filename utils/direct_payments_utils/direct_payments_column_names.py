@@ -16,14 +16,24 @@ class DirectPaymentColumnNames:
     PROPORTION_IMPORTED: str = "proportion_dpr_employing_staff_adass"
 
     PROPORTION_OF_DPR_EMPLOYING_STAFF: str = "proportion_dpr_employing_staff"
-    TOTAL_DPRS_AT_YEAR_END: str = "total_dpr"
-    SERVICE_USERS_EMPLOYING_STAFF: str = "service_users_employing_staff"
-    CARERS_EMPLOYING_STAFF: str = "carers_emplying_staff"
-    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF: str = (
-        "service_users_and_carers_employing_staff"
+    TOTAL_DPRS_AT_YEAR_END: str = "total_dpr_at_year_end"
+    SERVICE_USERS_EMPLOYING_STAFF_AT_YEAR_END: str = (
+        "service_users_employing_staff_at_year_end"
+    )
+    CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = "carers_employing_staff_at_year_end"
+    SERVICE_USERS_AND_CARERS_EMPLOYING_STAFF_AT_YEAR_END: str = (
+        "service_users_and_carers_employing_staff_at_year_end"
     )
     DIFFERENCE_IN_BASES: str = "difference_in_bases_between_adass_and_ascof"
     METHOD: str = "method"
     PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "proportion_su_only_employing_staff"
     )
+
+    TOTAL_DPRS_DURING_YEAR: str = "total_dpr_during_year"
+
+
+@dataclass
+class DirectPaymentColumnValues:
+    ADASS_INCLUDES_CARERS: str = "adass includes carers"
+    ADASS_DOES_NOT_INCLUDE_CARERS: str = "adass does not include carers"

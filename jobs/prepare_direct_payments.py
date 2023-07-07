@@ -8,11 +8,14 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-from utils.prepare_direct_payments_utils.direct_payments_column_names import (
+from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils.prepare_direct_payments_utils.determine_areas_including_carers_on_adass import (
+from utils.direct_payments_utils.prepare_direct_payments.determine_areas_including_carers_on_adass import (
     determine_areas_including_carers_on_adass,
+)
+from utils.direct_payments_utils.prepare_direct_payments.prepare_during_year_data import (
+    prepare_during_year_data,
 )
 
 
@@ -37,7 +40,7 @@ def main(
     )
 
     direct_payments_df = determine_areas_including_carers_on_adass(direct_payments_df)
-
+    direct_payments_df = prepare_during_year_data(direct_payments_df)
     # TODO
 
     utils.write_to_parquet(
