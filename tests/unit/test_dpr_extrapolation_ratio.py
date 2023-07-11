@@ -100,11 +100,11 @@ class TestExtrapolationRatio(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 2019, 0.3),
+            ("area_1", 2021, 2019, 0.2),
             ("area_2", 2021, 2021, 0.4),
             ("area_1", 2020, 2019, 0.3),
             ("area_2", 2020, 2021, None),
-            ("area_1", 2019, 2019, 0.3),
+            ("area_1", 2019, 2019, 0.4),
             ("area_2", 2019, 2021, None),
             ("area_1", 2018, 2019, None),
             ("area_2", 2018, 2021, None),
