@@ -41,7 +41,7 @@ def main(
     direct_payments_df = determine_areas_including_carers_on_adass(direct_payments_df)
     direct_payments_df = remove_outliers(direct_payments_df)
     direct_payments_df = prepare_during_year_data(direct_payments_df)
-    # test comment
+
     utils.write_to_parquet(
         direct_payments_df,
         destination,
