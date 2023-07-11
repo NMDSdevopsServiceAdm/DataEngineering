@@ -45,7 +45,7 @@ jdk-8u....-windows-x64.exe
 Variable name | Value
 --- | --- 
 HADOOP_HOME | C:\hadoop-3.2.2
-JAVA_HOME | C:\Program Files\Java\jdk1.8.0_311
+JAVA_HOME | C:\jdk
 
 
 3. Select the 'Path' from 'system variables', press edit and add the below path variables, replacing "_your_name_" for your windows user name:
@@ -55,7 +55,7 @@ C:\hadoop-3.2.2\bin
 C:\'Program Files (x86)'\'Common Files'\Oracle\Java\javapath
 C:\'Program Files (x86)'\'Common Files'\Java\'Java Update'
 C:\Program Files (x86)\Common Files\Oracle\Java\javapath
-C:\Program Files\Java\jdk1.8.0_351\bin
+C:\jdk\bin
 C:\Terraform
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
@@ -103,7 +103,7 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 5. Scroll down and select `Windows installer (64-bit)`
 
-6. In your download folder, click on `python-3.9.6-amd64` and install Python
+6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
 
 7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming`
 
@@ -337,7 +337,7 @@ Python
 
 7. Run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 
-8. Enter `C:\Users\gpolzin\DataEngineering` to change back to data engineering directory
+8. Enter `C:\Users\_your_name_\DataEngineering` to change back to data engineering directory
 
 
 ### Connect AWS Athena to Tableau
