@@ -103,7 +103,7 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 5. Scroll down and select `Windows installer (64-bit)`
 
-6. In your download folder, click on `python-3.9.6-amd64` and install Python
+6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
 
 7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming`
 
@@ -337,7 +337,7 @@ Python
 
 7. Run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 
-8. Enter `C:\Users\gpolzin\DataEngineering` to change back to data engineering directory
+8. Enter `C:\Users\_your_name_\DataEngineering` to change back to data engineering directory
 
 
 ### Connect AWS Athena to Tableau
