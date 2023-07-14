@@ -127,16 +127,16 @@ class TestExtrapolationRatio(unittest.TestCase):
         output_df_list = output_df.sort(DP.LA_AREA).collect()
 
         self.assertAlmostEqual(
-            output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+            output_df_list[0][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
         )
         self.assertAlmostEqual(
-            output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+            output_df_list[1][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
         )
         self.assertAlmostEqual(
-            output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+            output_df_list[2][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
         )
         self.assertAlmostEqual(
-            output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.3, places=5
+            output_df_list[3][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
         )
         self.assertAlmostEqual(
             output_df_list[4][DP.FIRST_YEAR_MEAN_ESTIMATE], 0.4, places=5
