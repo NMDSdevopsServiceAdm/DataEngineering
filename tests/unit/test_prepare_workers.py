@@ -26,7 +26,6 @@ from utils import utils
 
 
 class PrepareWorkersTests(unittest.TestCase):
-
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker/"
     TEST_ASCWDS_WORKPLACE_WITH_ONS_FILE = (
         "tests/test_data/domain=ascwds/dataset=workplace"

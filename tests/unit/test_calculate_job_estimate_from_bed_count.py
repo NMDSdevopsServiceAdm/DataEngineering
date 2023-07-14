@@ -34,7 +34,6 @@ class TestCalculateJobCountBedEstimate(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_jobcount_estimate_from_beds(self):
-
         rows = [
             ("1-000000001", None, 20, 25, None),
             ("1-000000002", 30, None, 25, None),

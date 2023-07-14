@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 @dataclass
 class JobCalculationConstants:
-
     BEDS_IN_WORKPLACE_THRESHOLD: int = 0
 
     BEDS_TO_JOB_COUNT_INTERCEPT: float = 8.40975704621392

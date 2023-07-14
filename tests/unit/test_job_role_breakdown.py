@@ -11,7 +11,6 @@ from tests.test_file_generator import (
 
 
 class JobRoleBreakdownTests(unittest.TestCase):
-
     TEST_JOB_ESTIMATES_FILE = "tests/test_data/tmp/job_estimates.parquet"
 
     TEST_WORKER_FILE = "tests/test_data/tmp/worker_file.parquet"
@@ -31,7 +30,6 @@ class JobRoleBreakdownTests(unittest.TestCase):
             pass  # Ignore dir does not exist
 
     def test_get_job_estimates_dataset(self):
-
         breakdown_df = job.get_job_estimates_dataset(self.TEST_JOB_ESTIMATES_FILE)
 
         self.assertEqual(breakdown_df.count(), 5)
@@ -111,7 +109,6 @@ class JobRoleBreakdownTests(unittest.TestCase):
         )
 
     def test_get_comprehensive_list_of_job_roles_to_locations(self):
-
         master_columns = [
             "master_locationid",
             "primary_service_type",

@@ -180,7 +180,6 @@ def convert_specialisms_to_struct(df):
 
 
 def convert_gac_service_types_to_struct(df):
-
     df = df.withColumn(
         "gacservicetypes",
         F.expr(
