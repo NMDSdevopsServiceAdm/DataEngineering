@@ -342,7 +342,7 @@ class UtilsTests(unittest.TestCase):
 
         dec_first_21 = datetime(2021, 12, 1)
         dir_path = utils.generate_s3_main_datasets_dir_date_path(
-            "test_domain", "test_dateset", dec_first_21
+            "s3://sfc-main-datasets", "test_domain", "test_dateset", dec_first_21
         )
         self.assertEqual(
             dir_path,
