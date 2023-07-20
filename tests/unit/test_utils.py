@@ -346,7 +346,7 @@ class UtilsTests(unittest.TestCase):
         )
         self.assertEqual(
             dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201",
+            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
         )
 
     def test_read_csv(self):
