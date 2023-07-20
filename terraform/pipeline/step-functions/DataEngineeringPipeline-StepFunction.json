@@ -108,7 +108,7 @@
                   }
                 },
                 {
-                  "StartAt": "Run prepare worker jobs",
+                  "StartAt": "Run worker tracking job",
                   "States": {
                     "Run worker tracking job": {
                       "Type": "Task",
