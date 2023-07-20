@@ -338,7 +338,7 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(delimiter, "|")
 
-    def test_generate_s3_main_datasets_dir_date_path(self):
+    def test_generate_s3_datasets_dir_date_path(self):
 
         dec_first_21 = datetime(2021, 12, 1)
         dir_path = utils.generate_s3_main_datasets_dir_date_path(

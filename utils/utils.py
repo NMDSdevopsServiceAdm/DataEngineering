@@ -79,7 +79,7 @@ def identify_csv_delimiter(sample_csv):
     return dialect.delimiter
 
 
-def generate_s3_main_datasets_dir_date_path(destination_prefix, domain, dataset, date):
+def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date):
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"

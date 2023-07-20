@@ -42,7 +42,7 @@ def collect_arguments():
 if __name__ == "__main__":
     destination_prefix = collect_arguments()
     todays_date = date.today()
-    destination = utils.generate_s3_main_datasets_dir_date_path(
+    destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC",
         dataset="providers-api",
