@@ -518,7 +518,6 @@ class UtilsTests(unittest.TestCase):
             "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
 
-
     def test_format_import_date_returns_date_format(self):
         df = utils.format_import_date(self.test_workplace_df)
 
