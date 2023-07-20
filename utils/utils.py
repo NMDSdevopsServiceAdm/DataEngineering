@@ -84,7 +84,7 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
     import_date = year + month + day
-    output_dir = f"s3:/{destination_prefix}/domain={domain}/dataset={dataset}/version=1.0.0/year={year}/month={month}/day={day}/import_date={import_date}/"
+    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version=1.0.0/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
 
