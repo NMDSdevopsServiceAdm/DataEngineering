@@ -8,7 +8,7 @@ python_full_version = "3.9.6"
 
 [packages]
 pyspark = "==3.4.1"
-boto3 = "==1.18.50"
+boto3 = "==1.20.7"
 mock = "==5.1.0"
 requests = "==2.23.0"
 ratelimit = "==2.2.1"
