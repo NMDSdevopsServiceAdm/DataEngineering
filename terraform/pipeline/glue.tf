@@ -47,6 +47,20 @@ module "ingest_cqc_pir_data_job" {
   }
 }
 
+module "ingest_cqc_care_directory_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_cqc_care_directory.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"               = ""
+    "--provider_destination" = ""
+    "--location_destination" = ""
+  }
+}
 
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
