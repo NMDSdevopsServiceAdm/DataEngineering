@@ -15,7 +15,7 @@ ratelimit = "*"
 spark = "=1.0"
 
 [dev-packages]
-pylint = "2.11.1"
+pylint = "*"
 autopep8 = "1.6.0"
 black = "22.12.0"
 flake8 = "6.0.0"
