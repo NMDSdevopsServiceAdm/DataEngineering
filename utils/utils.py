@@ -79,13 +79,12 @@ def identify_csv_delimiter(sample_csv):
     return dialect.delimiter
 
 
-def generate_s3_main_datasets_dir_date_path(domain, dataset, date):
-    dir_prepend = "s3://sfc-main-datasets"
+def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date):
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
     import_date = year + month + day
-    output_dir = f"{dir_prepend}/domain={domain}/dataset={dataset}/version=1.0.0/year={year}/month={month}/day={day}/import_date={import_date}"
+    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version=1.0.0/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
 

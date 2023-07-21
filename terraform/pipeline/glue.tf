@@ -259,9 +259,10 @@ module "bulk_cqc_providers_download_job" {
   datasets_bucket  = module.datasets_bucket
   trigger          = true
   trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "2.0"
+  glue_version     = "3.0"
 
   job_parameters = {
+    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
     "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
@@ -274,9 +275,10 @@ module "bulk_cqc_locations_download_job" {
   datasets_bucket  = module.datasets_bucket
   trigger          = true
   trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "2.0"
+  glue_version     = "3.0"
 
   job_parameters = {
+    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
     "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
