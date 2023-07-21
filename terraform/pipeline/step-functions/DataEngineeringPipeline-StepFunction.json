@@ -106,24 +106,6 @@
                       "End": true
                     }
                   }
-                },
-                {
-                  "StartAt": "Run worker tracking job",
-                  "States": {
-                    "Run worker tracking job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${worker_tracking_job_name}",
-                        "Arguments": {
-                          "--source_ascwds_workplace": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                          "--source_ascwds_worker": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=worker_tracking/version=1.0.0/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
                 }
               ],
               "Next": "Run Data Engineering Crawler 2"
