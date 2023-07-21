@@ -57,8 +57,8 @@ module "ingest_cqc_care_directory_job" {
 
   job_parameters = {
     "--source"               = ""
-    "--provider_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=provider_care_directory/"
-    "--location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=location_care_directory/"
+    "--provider_destination" = ""
+    "--location_destination" = ""
   }
 }
 
