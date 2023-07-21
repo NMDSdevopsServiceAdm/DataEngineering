@@ -11,7 +11,7 @@ pyspark = "*"
 boto3 = "==1.18.50"
 mock = "*"
 requests = "==2.23.0"
-ratelimit = "2.2.1"
+ratelimit = "*"
 spark = "0.2.1"
 
 [dev-packages]
