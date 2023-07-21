@@ -7,16 +7,16 @@ name = "pypi"
 python_full_version = "3.9.6"
 
 [packages]
-pyspark = "*"
+pyspark = "==3.4.1"
 boto3 = "==1.18.50"
-mock = "*"
+mock = "==5.1.0"
 requests = "==2.23.0"
-ratelimit = "*"
+ratelimit = "==2.2.1"
 
 [dev-packages]
-pylint = "*"
-autopep8 = "*"
+pylint = "==2.17.4"
+autopep8 = "==2.0.2"
 black = "==22.12.0"
 numpy = "==1.19.5"
 pandas = "==1.3.2"
-pytest-watch = "*"
+pytest-watch = "==4.2.0"
