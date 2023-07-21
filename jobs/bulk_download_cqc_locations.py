@@ -29,14 +29,14 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--destinationprefix",
+        "--destination_prefix",
         help="A destination bucket name in the format of s3://<bucket_name>/",
         required=False,
     )
 
     args, _ = parser.parse_known_args()
 
-    return args.destinationprefix
+    return args.destination_prefix
 
 
 if __name__ == "__main__":
