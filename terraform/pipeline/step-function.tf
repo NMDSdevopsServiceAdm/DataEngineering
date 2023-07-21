@@ -5,7 +5,6 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   definition = templatefile("step-functions/DataEngineeringPipeline-StepFunction.json", {
     prepare_locations_job_name                       = module.prepare_locations_job.job_name
     prepare_locations_cleaned_job_name               = module.prepare_locations_cleaned_job.job_name
-    prepare_workers_job_name                         = module.prepare_workers_job.job_name
     worker_tracking_job_name                         = module.worker_tracking_job.job_name
     estimate_jobs_job_name                           = module.estimate_job_counts_job.job_name
     locations_care_home_feature_engineering_job_name = module.locations_care_home_feature_engineering_job.job_name

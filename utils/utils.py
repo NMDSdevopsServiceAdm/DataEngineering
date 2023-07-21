@@ -153,28 +153,6 @@ def construct_destination_path(destination, key):
     return construct_s3_uri(destination_bucket, dir_path)
 
 
-def extract_column_from_schema(schema):
-    return [field.name for field in schema.fields]
-
-
-def extract_col_with_pattern(pattern, schema):
-    columns = extract_column_from_schema(schema)
-    pattern = re.compile(rf"{pattern}")
-    output_columns = []
-    for col in columns:
-        if pattern.match(col):
-            output_columns.append(col)
-    return output_columns
-
-
-def extract_specific_column_types(pattern, schema):
-    columns = extract_col_with_pattern(pattern, schema)
-    types = []
-    for col in columns:
-        types.append(col[0:4])
-    return types
-
-
 def format_import_date(df, fieldname="import_date"):
     return df.withColumn(
         fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
