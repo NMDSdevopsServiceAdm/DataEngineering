@@ -12,7 +12,7 @@ boto3 = "==1.18.50"
 mock = "*"
 requests = "==2.23.0"
 ratelimit = "*"
-spark = "0.2.1"
+spark = "=1.0"
 
 [dev-packages]
 pylint = "2.11.1"
