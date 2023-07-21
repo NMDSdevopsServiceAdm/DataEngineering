@@ -17,7 +17,7 @@ spark = "=1.0"
 [dev-packages]
 pylint = "*"
 autopep8 = "*"
-black = "22.12.0"
+black = "==22.12.0"
 flake8 = "6.0.0"
 numpy = "1.22.4"
 pandas = "1.4.2"
