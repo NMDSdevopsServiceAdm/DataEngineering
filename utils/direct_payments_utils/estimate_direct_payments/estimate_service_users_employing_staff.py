@@ -23,7 +23,6 @@ from utils.direct_payments_utils.estimate_direct_payments.models.mean_imputation
 def estimate_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     direct_payments_df = apply_known_values_for_service_users_employing_staff(
         direct_payments_df
     )
@@ -44,7 +43,6 @@ def apply_known_values_for_service_users_employing_staff(
 def estimate_missing_data_for_service_users_employing_staff(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     # If we have never known the percentage, use the mean model
     # mean model
     # Calculate mean %

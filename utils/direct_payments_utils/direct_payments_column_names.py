@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 @dataclass
 class DirectPaymentColumnNames:
-
     LA_AREA: str = "la_area_aws"
     YEAR: str = "year"
     SERVICE_USER_DPRS_DURING_YEAR: str = "number_su_dpr_salt"

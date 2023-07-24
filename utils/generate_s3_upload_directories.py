@@ -7,7 +7,6 @@ def generate_ASCWDS_directories():
         for year in range(2010, 2030):
             for month in range(1, 13):
                 for day in range(1, 32):
-
                     folder_name = f"domain=ASCWDS/dataset={dataset}/version=0.0.1/year={year}/month={f'{month:02d}'}/day={f'{day:02d}'}/import_date={year}{f'{month:02d}'}{f'{day:02d}'}"
                     directories.append(folder_name)
 

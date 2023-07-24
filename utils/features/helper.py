@@ -59,7 +59,6 @@ def add_rui_data_data_frame(
     rui_col_name: str,
     lookup_dict: Dict[str, str],
 ) -> pyspark.sql.DataFrame:
-
     for key in lookup_dict.keys():
         df = df.withColumn(
             key, (F.col(rui_col_name) == lookup_dict[key]).cast("integer")

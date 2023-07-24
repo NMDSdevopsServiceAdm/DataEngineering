@@ -15,7 +15,6 @@ from tests.test_file_generator import (
 
 
 class Worker_Tracking(unittest.TestCase):
-
     ASCWDS_WORKPLACE = "tests/test_data/tmp/ascwds_workplace.parquet"
     ASCWDS_WORKER = "tests/test_data/tmp/ascwds_worker.parquet"
     WORKPLACE_IMPORT_DATES = "tests/test_data/tmp/workplace_import_dates.parquet"

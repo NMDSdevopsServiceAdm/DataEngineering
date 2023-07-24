@@ -52,7 +52,10 @@ def main(
 
 
 if __name__ == "__main__":
-    (direct_payments_source, destination,) = utils.collect_arguments(
+    (
+        direct_payments_source,
+        destination,
+    ) = utils.collect_arguments(
         ("--direct_payments_source", "Source s3 directory for direct payments dataset"),
         ("--destination", "A destination directory for outputting dpr data."),
     )

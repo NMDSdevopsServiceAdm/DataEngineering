@@ -9,7 +9,6 @@ from pyspark.ml.linalg import Vectors
 
 
 class TestModelNonResWithPir(unittest.TestCase):
-
     NON_RES_WITH_PIR_MODEL = (
         "tests/test_models/non_residential_with_pir_jobs_prediction/"
     )
