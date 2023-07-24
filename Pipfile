@@ -13,11 +13,11 @@ mock = "==5.1.0"
 requests = "==2.31.0"
 ratelimit = "==2.2.1"
 urllib3 = "==1.26.5"
+black = "*"
 
 [dev-packages]
 pylint = "==2.17.4"
 autopep8 = "==2.0.2"
-black = "==22.12.0"
 numpy = "==1.19.5"
 pandas = "==1.3.2"
 pytest-watch = "==4.2.0"

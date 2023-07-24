@@ -69,7 +69,6 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
         ).parquet(f"{self.LOOKUPS_SOURCE}field={field}/")
 
     def generate_lookups(self):
-
         # fmt: off
         self.create_lookup_df(("E12000001", "North East"), ["RGN20CD", "RGN20NM"], "rgn")
         self.create_lookup_df(("E40000003", "London"), ["NHSER19CD", "NHSER19NM"], "nhser")

@@ -52,7 +52,6 @@ def get_all_objects(stream, object_type, object_identifier, per_page=DEFAULT_PAG
 def get_page_objects(
     url, page_number, object_type, object_identifier, per_page=DEFAULT_PAGE_SIZE
 ):
-
     page_objects = []
     response_body = call_api(url, {"page": page_number, "perPage": per_page})
 

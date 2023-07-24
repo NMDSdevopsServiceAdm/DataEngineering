@@ -22,7 +22,6 @@ class ColName:
 def model_primary_service_rolling_average(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
-
     df_with_job_count_only = filter_to_locations_with_known_job_count(df)
 
     job_count_sum_and_count_df = (
@@ -54,7 +53,6 @@ def calculate_job_count_aggregates_per_service_and_time_period(
 
 
 def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
-
     df = calculate_rolling_sum(
         df,
         ColName.sum_of_job_count,

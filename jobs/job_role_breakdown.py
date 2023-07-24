@@ -76,7 +76,6 @@ def main(job_estimates_source, worker_source, output_destination=None):
 
 
 def calculate_job_count_breakdown_by_jobrole(master_df):
-
     master_df = master_df.withColumn(
         "estimated_jobs_in_role",
         F.col("estimate_job_count") * F.col("estimated_job_role_percentage"),
@@ -175,7 +174,6 @@ def get_comprehensive_list_of_job_roles_to_locations(worker_df, master_df):
 
 
 def get_distinct_list(input_df, column_name, alias=None):
-
     output_df = input_df.select(column_name).distinct()
 
     if alias:
@@ -185,7 +183,6 @@ def get_distinct_list(input_df, column_name, alias=None):
 
 
 def count_grouped_by_field(input_df, grouping_field="locationid", alias=None):
-
     output_df = input_df.select(grouping_field).groupBy(grouping_field).count()
 
     if alias:
