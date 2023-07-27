@@ -338,15 +338,14 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(delimiter, "|")
 
-    def test_generate_s3_main_datasets_dir_date_path(self):
-
+    def test_generate_s3_datasets_dir_date_path(self):
         dec_first_21 = datetime(2021, 12, 1)
-        dir_path = utils.generate_s3_main_datasets_dir_date_path(
-            "test_domain", "test_dateset", dec_first_21
+        dir_path = utils.generate_s3_datasets_dir_date_path(
+            "s3://sfc-main-datasets", "test_domain", "test_dateset", dec_first_21
         )
         self.assertEqual(
             dir_path,
-            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201",
+            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
         )
 
     def test_read_csv(self):
@@ -517,72 +516,6 @@ class UtilsTests(unittest.TestCase):
             destination_path,
             "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
-
-    def test_extract_col_from_schema_returns_2_col_names(self):
-        schema = StructType(
-            fields=[
-                StructField("estid", IntegerType(), True),
-                StructField("userid", StringType(), True),
-            ]
-        )
-        column_list = utils.extract_column_from_schema(schema)
-        expected_column_list = ["estid", "userid"]
-
-        self.assertEqual(column_list, expected_column_list)
-
-    def test_extract_col_from_schema_returns_no_columns(self):
-        schema = StructType(fields=[])
-        column_list = utils.extract_column_from_schema(schema)
-
-        self.assertFalse(column_list)
-
-    def test_extract_specific_column_types(self):
-        schema = StructType(
-            fields=[
-                StructField("tr01flag", IntegerType(), True),
-                StructField("tr02flag", IntegerType(), True),
-                StructField("tr01count", IntegerType(), True),
-                StructField("tr01ac", IntegerType(), True),
-                StructField("tr03flag", IntegerType(), True),
-                StructField("tr01dn", IntegerType(), True),
-            ]
-        )
-        training_types = utils.extract_specific_column_types("^tr[0-9]{2}flag$", schema)
-        self.assertEqual(training_types, ["tr01", "tr02", "tr03"])
-
-    def test_extract_col_with_pattern(self):
-        schema = StructType(
-            fields=[
-                StructField("tr01flag", IntegerType(), True),
-                StructField("tr01latestdate", IntegerType(), True),
-                StructField("tr01count", IntegerType(), True),
-                StructField("tr02flag", IntegerType(), True),
-                StructField("tr02ac", IntegerType(), True),
-                StructField("tr02nac", IntegerType(), True),
-                StructField("tr02dn", IntegerType(), True),
-                StructField("tr02latestdate", IntegerType(), True),
-                StructField("tr02count", IntegerType(), True),
-                StructField("training", StringType(), True),
-                StructField("tr00034type", IntegerType()),
-            ]
-        )
-        training = utils.extract_col_with_pattern("^tr[0-9]{2}[a-z]+", schema)
-        tr = utils.extract_col_with_pattern("^tr\d\d(count|ac|nac|dn)$", schema)
-        self.assertEqual(
-            training,
-            [
-                "tr01flag",
-                "tr01latestdate",
-                "tr01count",
-                "tr02flag",
-                "tr02ac",
-                "tr02nac",
-                "tr02dn",
-                "tr02latestdate",
-                "tr02count",
-            ],
-        )
-        self.assertEqual(tr, ["tr01count", "tr02ac", "tr02nac", "tr02dn", "tr02count"])
 
     def test_format_import_date_returns_date_format(self):
         df = utils.format_import_date(self.test_workplace_df)

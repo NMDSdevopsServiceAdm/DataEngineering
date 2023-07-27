@@ -40,7 +40,6 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         return super().tearDown()
 
     def test_add_date_diff_into_df(self):
-
         df = self.spark.createDataFrame(
             [["01-10-2013"], ["01-10-2023"]], ["test_input"]
         )

@@ -26,7 +26,6 @@ from tests.test_file_generator import (
 
 
 class PrepareLocationsTests(unittest.TestCase):
-
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/domain=ascwds/dataset=workplace"
     TEST_CQC_LOCATION_FILE = "tests/test_data/domain=cqc/dataset=location"
     TEST_CQC_PROVIDERS_FILE = "tests/test_data/domain=cqc/dataset=providers"
