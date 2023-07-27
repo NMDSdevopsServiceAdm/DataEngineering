@@ -38,7 +38,6 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(filtered_df.columns, ["locationid", "unix_time", "job_count"])
 
     def test_calculate_first_and_last_submission_date_per_location(self):
-
         output_df = job.calculate_first_and_last_submission_date_per_location(
             self.data_for_calculating_submission_dates
         )

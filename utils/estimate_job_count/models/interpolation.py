@@ -26,7 +26,6 @@ INTERPOLATION_MODEL = "interpolation_model"
 
 
 def model_interpolation(df: DataFrame) -> DataFrame:
-
     known_job_count_df = filter_to_locations_with_a_known_job_count(df)
 
     first_and_last_submission_date_df = (
@@ -61,7 +60,6 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 def filter_to_locations_with_a_known_job_count(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-
     df = df.select(LOCATION_ID, UNIX_TIME, JOB_COUNT)
 
     return df.where(F.col(JOB_COUNT).isNotNull())
@@ -70,7 +68,6 @@ def filter_to_locations_with_a_known_job_count(
 def calculate_first_and_last_submission_date_per_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-
     return df.groupBy(LOCATION_ID).agg(
         F.min(UNIX_TIME).cast("integer").alias(FIRST_SUBMISSION_TIME),
         F.max(UNIX_TIME).cast("integer").alias(LAST_SUBMISSION_TIME),
@@ -103,7 +100,6 @@ def date_range(
 def merge_known_values_with_exploded_dates(
     df: DataFrame, known_job_count_df: DataFrame
 ) -> DataFrame:
-
     df = leftouter_join_on_locationid_and_unix_time(df, known_job_count_df)
 
     return add_unix_time_for_known_job_count(df)
