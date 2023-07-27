@@ -7,7 +7,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 
 def prepare_during_year_data(direct_payments_df: DataFrame) -> DataFrame:
-    direct_payments_df = estimate_missing_salt_data(direct_payments_df)
+    direct_payments_df = estimate_missing_salt_data_for_hackney(direct_payments_df)
     direct_payments_df = calculate_total_dprs_during_year(direct_payments_df)
     return direct_payments_df
 
@@ -20,7 +20,7 @@ def calculate_total_dprs_during_year(df: DataFrame) -> DataFrame:
     return df
 
 
-def estimate_missing_salt_data(df: DataFrame) -> DataFrame:
+def estimate_missing_salt_data_for_hackney(df: DataFrame) -> DataFrame:
     # Hackney is the only LA missing SALT data. The values in this function are based on a regression in excel of previous data points for Hackney in the SALT data.
     missing_service_user_dprs: float = 580.5
     missing_carer_dprs: float = 140.85
