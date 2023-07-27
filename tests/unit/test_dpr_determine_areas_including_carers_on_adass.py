@@ -190,7 +190,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
     def test_proportion_service_users_employing_staff_threshold_is_correct_value(
         self,
     ):
-
         self.assertEqual(
             Config.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_THRESHOLD, 1.0
         )
@@ -198,7 +197,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
     def test_carers_employing_percentage_is_correct_value(
         self,
     ):
-
         self.assertEqual(Config.CARERS_EMPLOYING_PERCENTAGE, 0.0063872289536592)
 
     def test_allocate_proportions_returns_correct_value(
