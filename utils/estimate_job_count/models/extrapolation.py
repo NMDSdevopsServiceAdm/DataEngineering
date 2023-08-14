@@ -40,11 +40,9 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
             F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
         ).otherwise(F.col(EXTRAPOLATION_MODEL)),
     )
-    df = update_dataframe_with_identifying_rule(
+    return update_dataframe_with_identifying_rule(
         df, EXTRAPOLATION_MODEL, ESTIMATE_JOB_COUNT
     )
-
-    return df
 
 
 def filter_to_locations_who_have_a_job_count_at_some_point(
@@ -131,7 +129,23 @@ def add_extrapolated_values(
         | (F.col(UNIX_TIME) > F.col(LAST_SUBMISSION_TIME))
     )
 
-    df_with_extrapolation_models = df_with_extrapolation_models.withColumn(
+    df_with_extrapolation_models = create_extrapolation_ratio_column(
+        df_with_extrapolation_models
+    )
+
+    df_with_extrapolation_models = create_extrapolation_model_column(
+        df_with_extrapolation_models
+    )
+
+    return df.join(
+        df_with_extrapolation_models, [LOCATION_ID, SNAPSHOT_DATE], "leftouter"
+    )
+
+
+def create_extrapolation_ratio_column(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    return df.withColumn(
         EXTRAPOLATION_RATIO,
         F.when(
             (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME)),
@@ -150,7 +164,11 @@ def add_extrapolated_values(
         ),
     )
 
-    df_with_extrapolation_models = df_with_extrapolation_models.withColumn(
+
+def create_extrapolation_model_column(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    df = df.withColumn(
         EXTRAPOLATION_MODEL,
         F.when(
             (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME)),
@@ -161,13 +179,7 @@ def add_extrapolated_values(
         ),
     )
 
-    df_with_extrapolation_models = df_with_extrapolation_models.select(
-        LOCATION_ID, SNAPSHOT_DATE, EXTRAPOLATION_MODEL
-    )
-
-    return df.join(
-        df_with_extrapolation_models, [LOCATION_ID, SNAPSHOT_DATE], "leftouter"
-    )
+    return df.select(LOCATION_ID, SNAPSHOT_DATE, EXTRAPOLATION_MODEL)
 
 
 def left_join_on_locationid(
