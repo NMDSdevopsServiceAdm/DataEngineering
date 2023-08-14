@@ -154,7 +154,8 @@ def get_next_value_in_new_column(
 
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
-    return calculated_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
+    df = calculated_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
+    return df
 
 
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:

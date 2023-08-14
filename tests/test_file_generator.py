@@ -1517,3 +1517,29 @@ def generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df():
     df = spark.createDataFrame(input_rows, schema=schema)
 
     return df
+
+
+def generate_data_for_interpolating_values_for_all_dates_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("job_count_unix_time", LongType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1, 30.0, 1),
+        ("1-000000002", 1, 4.0, 1),
+        ("1-000000002", 2, None, None),
+        ("1-000000002", 3, 5.0, 3),
+        ("1-000000003", 2, 5.0, 2),
+        ("1-000000003", 3, None, None),
+        ("1-000000003", 4, None, None),
+        ("1-000000003", 5, 8.5, 5),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df

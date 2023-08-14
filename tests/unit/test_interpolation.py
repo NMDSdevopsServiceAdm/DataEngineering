@@ -10,6 +10,7 @@ from tests.test_file_generator import (
     generate_data_for_exploding_dates_into_timeseries_df,
     generate_data_for_merge_known_values_with_exploded_dates_exploded_timeseries_df,
     generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df,
+    generate_data_for_interpolating_values_for_all_dates_df,
 )
 
 
@@ -30,6 +31,9 @@ class TestModelInterpolation(unittest.TestCase):
 
         self.data_for_merging_known_values_df = (
             generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df()
+        )
+        self.data_for_calculating_interpolated_values_df = (
+            generate_data_for_interpolating_values_for_all_dates_df()
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -97,3 +101,24 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(output_df[3]["job_count_unix_time"], 1672876800)
         self.assertEqual(output_df[4]["job_count"], 15.0)
         self.assertEqual(output_df[4]["job_count_unix_time"], 1672790400)
+
+    def test_interpolate_values_for_all_dates(self):
+        output_df = job.interpolate_values_for_all_dates(
+            self.data_for_calculating_interpolated_values_df
+        )
+
+        self.assertEqual(output_df.count(), 8)
+        self.assertEqual(
+            output_df.columns,
+            ["locationid", "unix_time", "interpolation_model"],
+        )
+
+        output_df = output_df.sort("locationid").collect()
+        self.assertEqual(output_df[0]["interpolation_model"], 30.0)
+        self.assertEqual(output_df[1]["interpolation_model"], 4.0)
+        self.assertEqual(output_df[2]["interpolation_model"], 4.5)
+        self.assertEqual(output_df[3]["interpolation_model"], 5.0)
+        self.assertEqual(output_df[4]["interpolation_model"], 5.0)
+        self.assertAlmostEqual(output_df[5]["interpolation_model"], 6.1666, places=3)
+        self.assertAlmostEqual(output_df[6]["interpolation_model"], 7.3333, places=3)
+        self.assertEqual(output_df[7]["interpolation_model"], 8.5)
