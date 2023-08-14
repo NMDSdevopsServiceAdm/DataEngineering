@@ -126,17 +126,39 @@ def add_job_count_and_rolling_average_for_specific_time_period(
 def add_extrapolated_values(
     df: pyspark.sql.DataFrame, extrapolation_df: pyspark.sql.DataFrame
 ) -> pyspark.sql.DataFrame:
-    extrapolation_ratios_before_first_submission_df = (
-        calculate_extrapolation_ratios_before_first_submission(extrapolation_df)
-    )
-    extrapolation_ratios_after_last_submission_df = (
-        calculate_extrapolation_ratios_after_last_submission(extrapolation_df)
+    df_with_extrapolation_models = extrapolation_df.where(
+        (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME))
+        | (F.col(UNIX_TIME) > F.col(LAST_SUBMISSION_TIME))
     )
 
-    df_with_extrapolation_models = (
-        extrapolation_ratios_before_first_submission_df.unionByName(
-            extrapolation_ratios_after_last_submission_df
-        )
+    df_with_extrapolation_models = df_with_extrapolation_models.withColumn(
+        EXTRAPOLATION_RATIO,
+        F.when(
+            (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME)),
+            (
+                1
+                + (F.col(ROLLING_AVERAGE_MODEL) - F.col(FIRST_ROLLING_AVERAGE))
+                / F.col(FIRST_ROLLING_AVERAGE)
+            ),
+        ).when(
+            (F.col(UNIX_TIME) > F.col(LAST_SUBMISSION_TIME)),
+            (
+                1
+                + (F.col(ROLLING_AVERAGE_MODEL) - F.col(LAST_ROLLING_AVERAGE))
+                / F.col(LAST_ROLLING_AVERAGE)
+            ),
+        ),
+    )
+
+    df_with_extrapolation_models = df_with_extrapolation_models.withColumn(
+        EXTRAPOLATION_MODEL,
+        F.when(
+            (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME)),
+            (F.col(FIRST_JOB_COUNT) * F.col(EXTRAPOLATION_RATIO)),
+        ).when(
+            (F.col(UNIX_TIME) > F.col(LAST_SUBMISSION_TIME)),
+            (F.col(LAST_JOB_COUNT) * F.col(EXTRAPOLATION_RATIO)),
+        ),
     )
 
     df_with_extrapolation_models = df_with_extrapolation_models.select(
@@ -145,48 +167,6 @@ def add_extrapolated_values(
 
     return df.join(
         df_with_extrapolation_models, [LOCATION_ID, SNAPSHOT_DATE], "leftouter"
-    )
-
-
-def calculate_extrapolation_ratios_before_first_submission(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
-    relevant_data_df = df.where(F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME))
-    relevant_data_df = calculate_extrapolation_ratio(
-        relevant_data_df, FIRST_ROLLING_AVERAGE
-    )
-    return calculate_extrapolated_value(relevant_data_df, FIRST_JOB_COUNT)
-
-
-def calculate_extrapolation_ratios_after_last_submission(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
-    relevant_data_df = df.where(F.col(UNIX_TIME) > F.col(LAST_SUBMISSION_TIME))
-    relevant_data_df = calculate_extrapolation_ratio(
-        relevant_data_df, LAST_ROLLING_AVERAGE
-    )
-    return calculate_extrapolated_value(relevant_data_df, LAST_JOB_COUNT)
-
-
-def calculate_extrapolation_ratio(
-    df: pyspark.sql.DataFrame, first_or_last_rolling_avg: str
-) -> pyspark.sql.DataFrame:
-    return df.withColumn(
-        EXTRAPOLATION_RATIO,
-        (
-            1
-            + (F.col(ROLLING_AVERAGE_MODEL) - F.col(first_or_last_rolling_avg))
-            / F.col(first_or_last_rolling_avg)
-        ),
-    )
-
-
-def calculate_extrapolated_value(
-    df: pyspark.sql.DataFrame, first_or_last_job_count: str
-) -> pyspark.sql.DataFrame:
-    return df.withColumn(
-        EXTRAPOLATION_MODEL,
-        (F.col(first_or_last_job_count) * F.col(EXTRAPOLATION_RATIO)),
     )
 
 
