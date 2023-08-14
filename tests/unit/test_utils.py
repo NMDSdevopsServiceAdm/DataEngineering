@@ -81,18 +81,28 @@ class UtilsTests(unittest.TestCase):
     tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
     example_csv_for_schema_tests = "tests/test_data/example_csv_for_schema_tests.csv"
-    example_csv_for_schema_tests_extra_column = "tests/test_data/example_csv_for_schema_tests_extra_column.csv"
-    example_csv_for_schema_tests_with_datetype = "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
+    example_csv_for_schema_tests_extra_column = (
+        "tests/test_data/example_csv_for_schema_tests_extra_column.csv"
+    )
+    example_csv_for_schema_tests_with_datetype = (
+        "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
+    )
 
     # increase length of string to simulate realistic file size
     hundred_percent_string_boost = 100
     smaller_string_boost = 35
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName("sfc_data_engineering_csv_to_parquet").getOrCreate()
+        self.spark = SparkSession.builder.appName(
+            "sfc_data_engineering_csv_to_parquet"
+        ).getOrCreate()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
-        self.test_workplace_df = generate_ascwds_workplace_file(self.TEST_ASCWDS_WORKPLACE_FILE)
-        self.df_with_extra_col = self.spark.read.csv(self.example_csv_for_schema_tests_extra_column, header=True)
+        self.test_workplace_df = generate_ascwds_workplace_file(
+            self.TEST_ASCWDS_WORKPLACE_FILE
+        )
+        self.df_with_extra_col = self.spark.read.csv(
+            self.example_csv_for_schema_tests_extra_column, header=True
+        )
 
     def tearDown(self):
         try:
@@ -208,7 +218,9 @@ class UtilsTests(unittest.TestCase):
         )
 
         print(f"S3 object list {object_list}")
-        self.assertEqual(object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"])
+        self.assertEqual(
+            object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
+        )
         self.assertEqual(len(object_list), 1)
 
     def test_get_s3_sub_folders_returns_one_common_prefix(self):
@@ -251,7 +263,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(sub_directory_list, ["1.0.0", "apples"])
 
     def test_get_model_name_returns_model_name(self):
-        path_to_model = "s3://sfc-bucket/models/care_home_jobs_prediction/1.0.0/subfolder/"
+        path_to_model = (
+            "s3://sfc-bucket/models/care_home_jobs_prediction/1.0.0/subfolder/"
+        )
         model_name = utils.get_model_name(path_to_model)
         expected_model_name = "care_home_jobs_prediction"
 
@@ -275,7 +289,9 @@ class UtilsTests(unittest.TestCase):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", stubber.get_s3_client()
+        )
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -300,7 +316,9 @@ class UtilsTests(unittest.TestCase):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", partial_response, expected_params)
 
-        obj_partial_content = utils.read_partial_csv_content("test-bucket", "my-test/key/", stubber.get_s3_client())
+        obj_partial_content = utils.read_partial_csv_content(
+            "test-bucket", "my-test/key/", stubber.get_s3_client()
+        )
 
         print(f"Object partial content: {obj_partial_content}")
         self.assertEqual(
@@ -344,7 +362,9 @@ class UtilsTests(unittest.TestCase):
             ]
         )
 
-        df = utils.read_csv_with_defined_schema(self.example_csv_for_schema_tests, schema)
+        df = utils.read_csv_with_defined_schema(
+            self.example_csv_for_schema_tests, schema
+        )
         self.assertEqual(df.columns[0], "string_field")
         self.assertEqual(df.columns[1], "integer_field")
         self.assertEqual(df.columns[2], "float_field")
@@ -362,7 +382,9 @@ class UtilsTests(unittest.TestCase):
             ]
         )
 
-        df = utils.read_csv_with_defined_schema(self.example_csv_for_schema_tests, schema)
+        df = utils.read_csv_with_defined_schema(
+            self.example_csv_for_schema_tests, schema
+        )
         self.assertEqual(df.columns[0], "string_field")
         self.assertEqual(df.columns[1], "integer_field")
         self.assertEqual(df.columns[2], "float_field")
@@ -381,7 +403,9 @@ class UtilsTests(unittest.TestCase):
             ]
         )
 
-        df = utils.read_csv_with_defined_schema(self.example_csv_for_schema_tests, schema)
+        df = utils.read_csv_with_defined_schema(
+            self.example_csv_for_schema_tests, schema
+        )
         self.assertEqual(df.columns[0], "string_field")
         self.assertEqual(df.columns[1], "integer_field")
         self.assertEqual(df.columns[2], "float_field")
@@ -398,7 +422,9 @@ class UtilsTests(unittest.TestCase):
 
         df_with_no_schema = self.df_with_extra_col
 
-        df = utils.read_csv_with_defined_schema(self.example_csv_for_schema_tests_extra_column, schema)
+        df = utils.read_csv_with_defined_schema(
+            self.example_csv_for_schema_tests_extra_column, schema
+        )
         self.assertEqual(df.columns[0], "string_field")
         self.assertEqual(df.columns[1], "integer_field")
         self.assertEqual(df.columns[2], "float_field")
@@ -414,7 +440,9 @@ class UtilsTests(unittest.TestCase):
             ]
         )
 
-        df = utils.read_csv_with_defined_schema(self.example_csv_for_schema_tests, schema)
+        df = utils.read_csv_with_defined_schema(
+            self.example_csv_for_schema_tests, schema
+        )
 
         row_one = df.collect()[0]
         assert isinstance(row_one.string_field, type(None))
@@ -445,7 +473,9 @@ class UtilsTests(unittest.TestCase):
         self.assertTrue(csv_test)
 
     def test_is_csv_for_non_csv(self):
-        csv_name_without_extention = "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
+        csv_name_without_extention = (
+            "Provision - March 2013 - IND - NMDS-SC - ASCWDS format"
+        )
         csv_test = utils.is_csv(csv_name_without_extention)
         self.assertFalse(csv_test)
 
@@ -507,7 +537,9 @@ class UtilsTests(unittest.TestCase):
         df = utils.create_unix_timestamp_variable_from_date_column(
             df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
         )
-        self.assertEqual(df.columns, ["locationid", "snapshot_date", "snapshot_date_unix_conv"])
+        self.assertEqual(
+            df.columns, ["locationid", "snapshot_date", "snapshot_date_unix_conv"]
+        )
 
         df = df.orderBy("locationid").collect()
         self.assertEqual(df[0]["snapshot_date_unix_conv"], 1672531200)
@@ -606,7 +638,9 @@ class UtilsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        result_df = utils.get_latest_partition(df, partition_keys=("process_year", "process_month", "process_day"))
+        result_df = utils.get_latest_partition(
+            df, partition_keys=("process_year", "process_month", "process_day")
+        )
 
         self.assertEqual(result_df.count(), 2)
 
