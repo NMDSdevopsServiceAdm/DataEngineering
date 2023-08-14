@@ -51,5 +51,4 @@ class TestModelNonResDefault(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_model_non_res_row_count_unchanged(self):
-
         self.assertEqual(self.non_res_model_df.count(), len(self.rows))

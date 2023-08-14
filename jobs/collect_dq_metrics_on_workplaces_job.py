@@ -15,7 +15,6 @@ def main(source):
     spark = utils.get_spark()
     workplaces = spark.read.parquet(source)
     try:
-
         columnns_to_profile = [
             "totalstaff",
             "totalstarters",

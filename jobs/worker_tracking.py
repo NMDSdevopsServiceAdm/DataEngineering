@@ -12,7 +12,6 @@ def main(
     source_ascwds_worker,
     destination=None,
 ):
-
     spark = utils.get_spark()
 
     print("Creating stayer vs leaver parquet file")
@@ -133,7 +132,6 @@ def get_workers_for_filtered_workplaces(ascwds_workplace, ascwds_worker):
 
 
 def get_employees_with_new_identifier(worker_df):
-
     # employees are permament (=190) or temporary (=191) employed staff ('emplsat')
     worker_df = worker_df.filter(
         (worker_df.emplstat == "190") | (worker_df.emplstat == "191")
@@ -170,7 +168,6 @@ def get_relevant_end_period_workers(ascwds_worker, end_period_import_date):
 def determine_stayer_or_leaver(
     ascwds_workplace, ascwds_worker, start_period_import_date, end_period_import_date
 ):
-
     ascwds_worker = get_workers_for_filtered_workplaces(ascwds_workplace, ascwds_worker)
 
     ascwds_worker = get_employees_with_new_identifier(ascwds_worker)

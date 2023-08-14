@@ -27,7 +27,6 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
-
         self.assertEqual(
             self.estimate_job_count_input_data.count(), self.filtered_output_df.count()
         )

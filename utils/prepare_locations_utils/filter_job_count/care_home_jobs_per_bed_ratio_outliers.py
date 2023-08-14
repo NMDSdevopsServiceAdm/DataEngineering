@@ -29,7 +29,6 @@ class NumericalValues:
 def care_home_jobs_per_bed_ratio_outliers(
     input_df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-
     numerical_value = NumericalValues()
 
     care_homes_df = select_relevant_data(input_df)
@@ -99,7 +98,6 @@ def select_relevant_data(input_df: pyspark.sql.DataFrame) -> pyspark.sql.DataFra
 def select_data_not_in_subset_df(
     complete_df: pyspark.sql.DataFrame, subset_df: pyspark.sql.DataFrame
 ) -> pyspark.sql.DataFrame:
-
     output_df = complete_df.exceptAll(subset_df)
 
     return output_df
@@ -150,7 +148,6 @@ def calculate_standardised_residuals(
     df: pyspark.sql.DataFrame,
     expected_jobs_per_banded_bed_count_df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-
     df = calculate_expected_jobs_based_on_number_of_beds(
         df, expected_jobs_per_banded_bed_count_df
     )
@@ -226,7 +223,6 @@ def calculate_standardised_residual_cutoffs(
 def calculate_percentile(
     df: pyspark.sql.DataFrame, col_name: str, percentile_value: float, alias: str
 ) -> pyspark.sql.DataFrame:
-
     df = df.withColumn("temp_col_for_joining", F.lit(0))
     percentile_df = df.groupBy("temp_col_for_joining").agg(
         F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[
@@ -285,7 +281,6 @@ def add_job_counts_without_filtering_to_data_outside_of_this_filter(
 def combine_dataframes(
     first_df: pyspark.sql.DataFrame, second_df: pyspark.sql.DataFrame
 ) -> pyspark.sql.DataFrame:
-
     output_df = first_df.unionByName(second_df)
 
     return output_df
