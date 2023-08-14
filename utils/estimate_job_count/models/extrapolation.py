@@ -48,14 +48,24 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
 def filter_to_locations_who_have_a_job_count_at_some_point(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    max_job_count_per_location_df = df.groupBy(LOCATION_ID).agg(
-        F.max(JOB_COUNT).alias("max_job_count")
-    )
-    max_job_count_per_location_df = max_job_count_per_location_df.where(
-        F.col("max_job_count") > 0.0
+    max_job_count_per_location_df = calculate_max_job_count_for_each_location(df)
+    max_job_count_per_location_df = filter_to_known_values_only(
+        max_job_count_per_location_df
     )
 
     return left_join_on_locationid(max_job_count_per_location_df, df)
+
+
+def calculate_max_job_count_for_each_location(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    return df.groupBy(LOCATION_ID).agg(F.max(JOB_COUNT).alias("max_job_count"))
+
+
+def filter_to_known_values_only(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    return df.where(F.col("max_job_count") > 0.0)
 
 
 def add_job_count_and_rolling_average_for_first_and_last_submission(

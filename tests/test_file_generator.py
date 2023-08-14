@@ -1430,6 +1430,32 @@ def generate_data_for_extrapolation_model():
         ("1-000000003", "2023-01-01", 1672531200, None, "non-residential", None, None, 50.3),
         ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", None, None, 50.5),
         ("1-000000003", "2023-03-01", 1677628800, None, "non-residential", 30.0, "already_populated", 50.7),
+        ("1-000000004", "2023-03-01", 1677628800, None, "non-residential", None, None, 50.7),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_extrapolation_location_filtering_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("primary_service_type", StringType(), False),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
+        ("1-000000002", "2023-01-01", None, "non-residential"),
+        ("1-000000002", "2023-02-01", None, "non-residential"),
+        ("1-000000003", "2023-01-01", 20.0, "non-residential"),
+        ("1-000000003", "2023-02-01", None, "non-residential"),
     ]
     # fmt: on
     df = spark.createDataFrame(rows, schema=schema)
