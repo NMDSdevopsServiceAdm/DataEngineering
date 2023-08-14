@@ -29,22 +29,24 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting cqc providers, if not provided shall default to S3 todays date.",
+        "--destination_prefix",
+        help="A destination bucket name in the format of s3://<bucket_name>/",
         required=False,
     )
 
     args, _ = parser.parse_known_args()
 
-    return args.destination
+    return args.destination_prefix
 
 
 if __name__ == "__main__":
-    destination = collect_arguments()
-    if not destination:
-        todays_date = date.today()
-        destination = utils.generate_s3_main_datasets_dir_date_path(
-            domain="CQC", dataset="providers-api", date=todays_date
-        )
+    destination_prefix = collect_arguments()
+    todays_date = date.today()
+    destination = utils.generate_s3_datasets_dir_date_path(
+        destination_prefix=destination_prefix,
+        domain="CQC",
+        dataset="providers-api",
+        date=todays_date,
+    )
 
     main(destination)
