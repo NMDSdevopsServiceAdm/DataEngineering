@@ -1461,3 +1461,30 @@ def generate_data_for_extrapolation_location_filtering_df():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
+
+
+def generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("rolling_average_model", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, None, 12.0),
+        ("1-000000001", "2023-02-01", 1675209600, 5.0, 15.0),
+        ("1-000000001", "2023-03-01", 1677628800, None, 18.0),
+        ("1-000000002", "2023-01-01", 1672531200, 4.0, 12.0),
+        ("1-000000002", "2023-02-01", 1675209600, 6.0, 15.0),
+        ("1-000000002", "2023-03-01", 1677628800, None, 18.0),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df

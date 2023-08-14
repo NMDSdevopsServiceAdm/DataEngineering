@@ -7,6 +7,7 @@ import utils.estimate_job_count.models.extrapolation as job
 from tests.test_file_generator import (
     generate_data_for_extrapolation_model,
     generate_data_for_extrapolation_location_filtering_df,
+    generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df,
 )
 
 
@@ -15,6 +16,9 @@ class TestModelExtrapolation(unittest.TestCase):
         self.spark = SparkSession.builder.appName("test_extrapolation").getOrCreate()
         self.extrapolation_df = generate_data_for_extrapolation_model()
         self.data_to_filter_df = generate_data_for_extrapolation_location_filtering_df()
+        self.data_for_first_and_last_submissions_df = (
+            generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df()
+        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -47,3 +51,20 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[1]["max_job_count"], 20.0)
         self.assertEqual(output_df[2]["locationid"], "1-000000003")
         self.assertEqual(output_df[2]["max_job_count"], 20.0)
+
+    def test_add_first_and_last_submission_date_cols(self):
+        output_df = job.add_first_and_last_submission_date_cols(
+            self.data_for_first_and_last_submissions_df
+        )
+
+        self.assertEqual(output_df.count(), 6)
+
+        output_df = output_df.sort("locationid", "unix_time").collect()
+        self.assertEqual(output_df[0][job.FIRST_SUBMISSION_TIME], 1675209600)
+        self.assertEqual(output_df[0][job.LAST_SUBMISSION_TIME], 1675209600)
+        self.assertEqual(output_df[2][job.FIRST_SUBMISSION_TIME], 1675209600)
+        self.assertEqual(output_df[2][job.LAST_SUBMISSION_TIME], 1675209600)
+        self.assertEqual(output_df[3][job.FIRST_SUBMISSION_TIME], 1672531200)
+        self.assertEqual(output_df[3][job.LAST_SUBMISSION_TIME], 1675209600)
+        self.assertEqual(output_df[5][job.FIRST_SUBMISSION_TIME], 1672531200)
+        self.assertEqual(output_df[5][job.LAST_SUBMISSION_TIME], 1675209600)
