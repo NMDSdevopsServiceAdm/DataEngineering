@@ -101,8 +101,8 @@ def merge_known_values_with_exploded_dates(
     df: DataFrame, known_job_count_df: DataFrame
 ) -> DataFrame:
     df = leftouter_join_on_locationid_and_unix_time(df, known_job_count_df)
-
-    return add_unix_time_for_known_job_count(df)
+    df = add_unix_time_for_known_job_count(df)
+    return df
 
 
 def leftouter_join_on_locationid_and_unix_time(

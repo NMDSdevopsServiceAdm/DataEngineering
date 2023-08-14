@@ -1476,3 +1476,44 @@ def generate_data_for_exploding_dates_into_timeseries_df():
     df = spark.createDataFrame(input_rows, schema=schema)
 
     return df
+
+
+def generate_data_for_merge_known_values_with_exploded_dates_exploded_timeseries_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600),
+        ("1-000000002", 1672704000),
+        ("1-000000002", 1672790400),
+        ("1-000000002", 1672876800),
+        ("1-000000003", 1672790400),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1672876800, 2.5),
+        ("1-000000003", 1672790400, 15.0),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df

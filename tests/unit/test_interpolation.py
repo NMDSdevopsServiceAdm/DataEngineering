@@ -8,6 +8,8 @@ from tests.test_file_generator import (
     generate_data_for_interpolation_model,
     generate_data_for_calculating_first_and_last_submission_date_per_location,
     generate_data_for_exploding_dates_into_timeseries_df,
+    generate_data_for_merge_known_values_with_exploded_dates_exploded_timeseries_df,
+    generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df,
 )
 
 
@@ -20,6 +22,14 @@ class TestModelInterpolation(unittest.TestCase):
         )
         self.data_for_creating_timeseries_df = (
             generate_data_for_exploding_dates_into_timeseries_df()
+        )
+
+        self.data_for_merging_exploded_df = (
+            generate_data_for_merge_known_values_with_exploded_dates_exploded_timeseries_df()
+        )
+
+        self.data_for_merging_known_values_df = (
+            generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df()
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -64,3 +74,26 @@ class TestModelInterpolation(unittest.TestCase):
             df.columns,
             ["locationid", "unix_time"],
         )
+
+    def test_merge_known_values_with_exploded_dates(self):
+        output_df = job.merge_known_values_with_exploded_dates(
+            self.data_for_merging_exploded_df, self.data_for_merging_known_values_df
+        )
+
+        self.assertEqual(output_df.count(), 5)
+        self.assertEqual(
+            output_df.columns,
+            ["locationid", "unix_time", "job_count", "job_count_unix_time"],
+        )
+
+        output_df = output_df.sort("locationid", "unix_time").collect()
+        self.assertEqual(output_df[0]["job_count"], None)
+        self.assertEqual(output_df[0]["job_count_unix_time"], None)
+        self.assertEqual(output_df[1]["job_count"], 1.0)
+        self.assertEqual(output_df[1]["job_count_unix_time"], 1672704000)
+        self.assertEqual(output_df[2]["job_count"], None)
+        self.assertEqual(output_df[2]["job_count_unix_time"], None)
+        self.assertEqual(output_df[3]["job_count"], 2.5)
+        self.assertEqual(output_df[3]["job_count_unix_time"], 1672876800)
+        self.assertEqual(output_df[4]["job_count"], 15.0)
+        self.assertEqual(output_df[4]["job_count_unix_time"], 1672790400)
