@@ -14,12 +14,14 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
+MAX_JOB_COUNT = "max_job_count"
 FIRST_SUBMISSION_TIME = "first_submission_time"
 FIRST_ROLLING_AVERAGE = "first_rolling_average"
 FIRST_JOB_COUNT = "first_job_count"
 LAST_SUBMISSION_TIME = "last_submission_time"
 LAST_ROLLING_AVERAGE = "last_rolling_average"
 LAST_JOB_COUNT = "last_job_count"
+EXTRAPOLATION_RATIO = "extrapolation_ratio"
 EXTRAPOLATION_MODEL = "extrapolation_model"
 
 
@@ -59,13 +61,13 @@ def filter_to_locations_who_have_a_job_count_at_some_point(
 def calculate_max_job_count_for_each_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.groupBy(LOCATION_ID).agg(F.max(JOB_COUNT).alias("max_job_count"))
+    return df.groupBy(LOCATION_ID).agg(F.max(JOB_COUNT).alias(MAX_JOB_COUNT))
 
 
 def filter_to_known_values_only(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.where(F.col("max_job_count") > 0.0)
+    return df.where(F.col(MAX_JOB_COUNT) > 0.0)
 
 
 def add_job_count_and_rolling_average_for_first_and_last_submission(
@@ -170,7 +172,7 @@ def calculate_extrapolation_ratio(
     df: pyspark.sql.DataFrame, first_or_last_rolling_avg: str
 ) -> pyspark.sql.DataFrame:
     return df.withColumn(
-        "extrapolation_ratio",
+        EXTRAPOLATION_RATIO,
         (
             1
             + (F.col(ROLLING_AVERAGE_MODEL) - F.col(first_or_last_rolling_avg))
@@ -184,7 +186,7 @@ def calculate_extrapolated_value(
 ) -> pyspark.sql.DataFrame:
     return df.withColumn(
         EXTRAPOLATION_MODEL,
-        (F.col(first_or_last_job_count) * F.col("extrapolation_ratio")),
+        (F.col(first_or_last_job_count) * F.col(EXTRAPOLATION_RATIO)),
     )
 
 
