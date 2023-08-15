@@ -68,3 +68,21 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[3][job.LAST_SUBMISSION_TIME], 1675209600)
         self.assertEqual(output_df[5][job.FIRST_SUBMISSION_TIME], 1672531200)
         self.assertEqual(output_df[5][job.LAST_SUBMISSION_TIME], 1675209600)
+
+    def test_add_job_count_and_rolling_average_for_first_and_last_submission(self):
+        output_df = job.add_job_count_and_rolling_average_for_first_and_last_submission(
+            self.data_for_first_and_last_submissions_df
+        )
+
+        self.assertEqual(output_df.count(), 6)
+
+        output_df = output_df.sort("locationid", "unix_time").collect()
+        self.assertEqual(output_df[1][job.FIRST_JOB_COUNT], 5.0)
+        self.assertEqual(output_df[1][job.FIRST_ROLLING_AVERAGE], 15.0)
+        self.assertEqual(output_df[1][job.LAST_JOB_COUNT], 5.0)
+        self.assertEqual(output_df[1][job.LAST_ROLLING_AVERAGE], 15.0)
+
+        self.assertEqual(output_df[4][job.FIRST_JOB_COUNT], 4.0)
+        self.assertEqual(output_df[4][job.FIRST_ROLLING_AVERAGE], 12.0)
+        self.assertEqual(output_df[4][job.LAST_JOB_COUNT], 6.0)
+        self.assertEqual(output_df[4][job.LAST_ROLLING_AVERAGE], 15.0)
