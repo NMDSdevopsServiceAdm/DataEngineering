@@ -8,6 +8,8 @@ from tests.test_file_generator import (
     generate_data_for_extrapolation_model,
     generate_data_for_extrapolation_location_filtering_df,
     generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df,
+    generate_data_for_adding_extrapolated_values_df,
+    generate_data_for_adding_extrapolated_values_to_be_added_into_df,
 )
 
 
@@ -18,6 +20,12 @@ class TestModelExtrapolation(unittest.TestCase):
         self.data_to_filter_df = generate_data_for_extrapolation_location_filtering_df()
         self.data_for_first_and_last_submissions_df = (
             generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df()
+        )
+        self.data_for_extrapolated_values_df = (
+            generate_data_for_adding_extrapolated_values_df()
+        )
+        self.data_for_extrapolated_values_to_be_added_into_df = (
+            generate_data_for_adding_extrapolated_values_to_be_added_into_df()
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -86,3 +94,31 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[4][job.FIRST_ROLLING_AVERAGE], 12.0)
         self.assertEqual(output_df[4][job.LAST_JOB_COUNT], 6.0)
         self.assertEqual(output_df[4][job.LAST_ROLLING_AVERAGE], 15.0)
+
+    def test_create_extrapolation_ratio_column(self):
+        pass
+
+    def test_create_extrapolation_model_column(self):
+        pass
+
+    def test_add_extrapolated_values(self):
+        output_df = job.add_extrapolated_values(
+            self.data_for_extrapolated_values_to_be_added_into_df,
+            self.data_for_extrapolated_values_df,
+        )
+        output_df.sort("locationid", "unix_time").show()
+
+        self.assertEqual(output_df.count(), 11)
+
+        output_df = output_df.sort("locationid", "unix_time").collect()
+        self.assertEqual(output_df[0][job.EXTRAPOLATION_MODEL], None)
+        self.assertEqual(output_df[1][job.EXTRAPOLATION_MODEL], None)
+        self.assertEqual(output_df[4][job.EXTRAPOLATION_MODEL], 60.0)
+        self.assertEqual(output_df[5][job.EXTRAPOLATION_MODEL], 20.0)
+        self.assertAlmostEqual(
+            output_df[6][job.EXTRAPOLATION_MODEL], 11.7647058, places=5
+        )
+        self.assertAlmostEqual(
+            output_df[8][job.EXTRAPOLATION_MODEL], 23.5294117, places=5
+        )
+        self.assertEqual(output_df[10][job.EXTRAPOLATION_MODEL], None)
