@@ -10,6 +10,8 @@ from tests.test_file_generator import (
     generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df,
     generate_data_for_adding_extrapolated_values_df,
     generate_data_for_adding_extrapolated_values_to_be_added_into_df,
+    generate_data_for_creating_extrapolated_ratios_df,
+    generate_data_for_creating_extrapolated_model_outputs_df,
 )
 
 
@@ -26,6 +28,12 @@ class TestModelExtrapolation(unittest.TestCase):
         )
         self.data_for_extrapolated_values_to_be_added_into_df = (
             generate_data_for_adding_extrapolated_values_to_be_added_into_df()
+        )
+        self.data_for_extrapolated_ratios_df = (
+            generate_data_for_creating_extrapolated_ratios_df()
+        )
+        self.data_for_extrapolated_model_outputs_df = (
+            generate_data_for_creating_extrapolated_model_outputs_df()
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -96,17 +104,46 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[4][job.LAST_ROLLING_AVERAGE], 15.0)
 
     def test_create_extrapolation_ratio_column(self):
-        pass
+        output_df = job.create_extrapolation_ratio_column(
+            self.data_for_extrapolated_ratios_df
+        )
+
+        self.assertEqual(output_df.count(), 3)
+
+        output_df = output_df.sort("locationid").collect()
+        self.assertEqual(output_df[0][job.EXTRAPOLATION_RATIO], 0.5)
+        self.assertEqual(output_df[1][job.EXTRAPOLATION_RATIO], 1.0)
+        self.assertAlmostEqual(
+            output_df[2][job.EXTRAPOLATION_RATIO], 1.17647059, places=5
+        )
 
     def test_create_extrapolation_model_column(self):
-        pass
+        output_df = job.create_extrapolation_model_column(
+            self.data_for_extrapolated_model_outputs_df
+        )
+
+        self.assertEqual(output_df.count(), 3)
+        self.assertEqual(
+            output_df.columns,
+            [
+                "locationid",
+                "snapshot_date",
+                "extrapolation_model",
+            ],
+        )
+
+        output_df = output_df.sort("locationid", "unix_time").collect()
+        self.assertEqual(output_df[0][job.EXTRAPOLATION_MODEL], 7.5)
+        self.assertEqual(output_df[1][job.EXTRAPOLATION_MODEL], 15.0)
+        self.assertAlmostEqual(
+            output_df[2][job.EXTRAPOLATION_MODEL], 22.0323678, places=5
+        )
 
     def test_add_extrapolated_values(self):
         output_df = job.add_extrapolated_values(
             self.data_for_extrapolated_values_to_be_added_into_df,
             self.data_for_extrapolated_values_df,
         )
-        output_df.sort("locationid", "unix_time").show()
 
         self.assertEqual(output_df.count(), 11)
 

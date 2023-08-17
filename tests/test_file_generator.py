@@ -1554,3 +1554,57 @@ def generate_data_for_adding_extrapolated_values_to_be_added_into_df():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
+
+
+def generate_data_for_creating_extrapolated_ratios_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("rolling_average_model", DoubleType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), False),
+            StructField("first_rolling_average", DoubleType(), True),
+            StructField("last_rolling_average", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", 1675000000, 1.0, 1678000000, 1680000000, 2.0, 3.0),
+        ("1-000000002", 1675000000, 1.0, 1678000000, 1680000000, 1.0, 3.0),
+        ("1-000000003", 1675000000, 2.0, 1670000000, 1672000000, 3.0, 1.7),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_creating_extrapolated_model_outputs_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("rolling_average_model", DoubleType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), False),
+            StructField("first_job_count", DoubleType(), True),
+            StructField("last_job_count", DoubleType(), True),
+            StructField("extrapolation_ratio", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1675000000, 1.0, 1678000000, 1680000000, 15.0, 10.0, 0.5),
+        ("1-000000002", "2023-02-01", 1675000000, 1.0, 1678000000, 1680000000, 15.0, 10.0, 1.0),
+        ("1-000000003", "2023-03-01", 1675000000, 2.0, 1670000000, 1672000000, 10.0, 15.0, 1.46882452),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
