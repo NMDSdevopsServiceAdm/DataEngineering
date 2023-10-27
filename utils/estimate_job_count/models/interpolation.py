@@ -190,10 +190,19 @@ def calculated_interpolated_values_in_new_column(
 
 
 def interpolation_calculation(
-    x: str, x_prev: str, x_next: str, y: str, y_prev: str, y_next: str
+    unix_time: str,
+    previous_job_count_unix_time: str,
+    next_job_count_unix_time: str,
+    job_count: str,
+    previous_job_count: str,
+    next_job_count: str,
 ) -> float:
-    if x_prev == x_next:
-        return y
+    if previous_job_count_unix_time == next_job_count_unix_time:
+        return job_count
     else:
-        m = (y_next - y_prev) / (x_next - x_prev)
-        return y_prev + m * (x - x_prev)
+        job_count_per_unix_time_ratio = (next_job_count - previous_job_count) / (
+            next_job_count_unix_time - previous_job_count_unix_time
+        )
+        return previous_job_count + job_count_per_unix_time_ratio * (
+            unix_time - previous_job_count_unix_time
+        )
