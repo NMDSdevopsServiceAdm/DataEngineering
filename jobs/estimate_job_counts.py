@@ -28,6 +28,7 @@ from utils.estimate_job_count.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
 from utils.estimate_job_count.models.extrapolation import model_extrapolation
+from utils.estimate_job_count.models.interpolation import model_interpolation
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
@@ -113,6 +114,8 @@ def main(
         carehome_features_df,
         care_home_model_directory,
     )
+
+    locations_df = model_interpolation(locations_df)
 
     care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
