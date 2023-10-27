@@ -43,6 +43,31 @@ class TestModelInterpolation(unittest.TestCase):
         df = job.model_interpolation(self.interpolation_df)
         self.assertEqual(df.count(), self.interpolation_df.count())
 
+        self.assertEqual(
+            df.columns,
+            [
+                "locationid",
+                "unix_time",
+                "snapshot_date",
+                "job_count",
+                "estimate_job_count",
+                "estimate_job_count_source",
+                "interpolation_model",
+            ],
+        )
+
+    def test_model_interpolation_outputted_values_correct(self):
+        df = job.model_interpolation(self.interpolation_df)
+        df = df.sort("locationid", "unix_time").collect()
+
+        self.assertEqual(df[0]["interpolation_model"], None)
+        self.assertEqual(df[1]["interpolation_model"], 30.0)
+        self.assertEqual(df[2]["interpolation_model"], None)
+
+        self.assertEqual(df[5]["interpolation_model"], 4.5)
+        self.assertEqual(df[8]["interpolation_model"], 10.0)
+        self.assertEqual(df[9]["interpolation_model"], 15.0)
+
     def test_filter_to_locations_with_a_known_job_count(self):
         filtered_df = job.filter_to_locations_with_a_known_job_count(
             self.interpolation_df
