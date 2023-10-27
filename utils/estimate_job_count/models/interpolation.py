@@ -118,40 +118,6 @@ def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
     )
 
 
-def create_window_for_previous_value() -> Window:
-    return (
-        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(-sys.maxsize, 0)
-    )
-
-
-def get_previous_value_in_column(
-    df: DataFrame, column_name: str, new_column_name: str
-) -> DataFrame:
-    return df.withColumn(
-        new_column_name,
-        F.last(F.col(column_name), ignorenulls=True).over(
-            create_window_for_previous_value()
-        ),
-    )
-
-
-def create_window_for_next_value() -> Window:
-    return (
-        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(0, sys.maxsize)
-    )
-
-
-def get_next_value_in_new_column(
-    df: DataFrame, column_name: str, new_column_name: str
-) -> DataFrame:
-    return df.withColumn(
-        new_column_name,
-        F.first(F.col(column_name), ignorenulls=True).over(
-            create_window_for_next_value()
-        ),
-    )
-
-
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
     df = calculated_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
@@ -166,6 +132,40 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     df = get_next_value_in_new_column(df, JOB_COUNT, NEXT_JOB_COUNT)
     return get_next_value_in_new_column(
         df, JOB_COUNT_UNIX_TIME, NEXT_JOB_COUNT_UNIX_TIME
+    )
+
+
+def get_previous_value_in_column(
+    df: DataFrame, column_name: str, new_column_name: str
+) -> DataFrame:
+    return df.withColumn(
+        new_column_name,
+        F.last(F.col(column_name), ignorenulls=True).over(
+            create_window_for_previous_value()
+        ),
+    )
+
+
+def create_window_for_previous_value() -> Window:
+    return (
+        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(-sys.maxsize, 0)
+    )
+
+
+def get_next_value_in_new_column(
+    df: DataFrame, column_name: str, new_column_name: str
+) -> DataFrame:
+    return df.withColumn(
+        new_column_name,
+        F.first(F.col(column_name), ignorenulls=True).over(
+            create_window_for_next_value()
+        ),
+    )
+
+
+def create_window_for_next_value() -> Window:
+    return (
+        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(0, sys.maxsize)
     )
 
 
