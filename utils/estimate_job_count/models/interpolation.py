@@ -120,7 +120,7 @@ def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
 
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
-    df = calculated_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
+    df = calculate_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
     return df
 
 
@@ -169,10 +169,10 @@ def create_window_for_next_value() -> Window:
     )
 
 
-def calculated_interpolated_values_in_new_column(
+def calculate_interpolated_values_in_new_column(
     df: DataFrame, new_column_name: str
 ) -> DataFrame:
-    interpol_udf = F.udf(interpolation_calculation, FloatType())
+    interpol_udf = F.udf(interpolate_values, FloatType())
 
     df = df.withColumn(
         new_column_name,
@@ -189,7 +189,7 @@ def calculated_interpolated_values_in_new_column(
     return df.select(LOCATION_ID, UNIX_TIME, INTERPOLATION_MODEL)
 
 
-def interpolation_calculation(
+def interpolate_values(
     unix_time: str,
     previous_job_count_unix_time: str,
     next_job_count_unix_time: str,
