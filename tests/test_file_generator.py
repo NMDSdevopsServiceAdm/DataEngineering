@@ -1401,3 +1401,145 @@ def generate_data_for_calculating_rolling_average_column():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
+
+
+def generate_data_for_interpolation_model():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("estimate_job_count", DoubleType(), True),
+            StructField("estimate_job_count_source", StringType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, None, None, None),
+        ("1-000000001", "2023-01-02", 1672617600, 30.0, 30.0, "ascwds_job_count"),
+        ("1-000000001", "2023-01-03", 1672704000, None, None, None),
+        ("1-000000002", "2023-01-01", 1672531200, None, None, None),
+        ("1-000000002", "2023-01-03", 1672704000, 4.0, 4.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-05", 1672876800, None, None, None),
+        ("1-000000002", "2023-01-07", 1673049600, 5.0, 5.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-09", 1673222400, 5.0, 5.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-11", 1673395200, None, None, None),
+        ("1-000000002", "2023-01-13", 1673568000, None, None, None),
+        ("1-000000002", "2023-01-15", 1673740800, 20.0, 20.0, "ascwds_job_count"),
+        ("1-000000002", "2023-01-17", 1673913600, None, 21.0, "other_source"),
+        ("1-000000002", "2023-01-19", 1674086400, None, None, None),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_calculating_first_and_last_submission_date_per_location():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600, 1.0),
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1673049600, 1.0),
+        ("1-000000002", 1673222400, 1.0),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_exploding_dates_into_timeseries_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600, 1672617600),
+        ("1-000000002", 1672704000, 1673049600),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_merge_known_values_with_exploded_dates_exploded_timeseries_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1672617600),
+        ("1-000000002", 1672704000),
+        ("1-000000002", 1672790400),
+        ("1-000000002", 1672876800),
+        ("1-000000003", 1672790400),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_merge_known_values_with_exploded_dates_known_ascwds_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1672876800, 2.5),
+        ("1-000000003", 1672790400, 15.0),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_interpolating_values_for_all_dates_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), True),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("job_count_unix_time", LongType(), True),
+        ]
+    )
+    input_rows = [
+        ("1-000000001", 1, 30.0, 1),
+        ("1-000000002", 1, 4.0, 1),
+        ("1-000000002", 2, None, None),
+        ("1-000000002", 3, 5.0, 3),
+        ("1-000000003", 2, 5.0, 2),
+        ("1-000000003", 3, None, None),
+        ("1-000000003", 4, None, None),
+        ("1-000000003", 5, 8.5, 5),
+    ]
+    df = spark.createDataFrame(input_rows, schema=schema)
+
+    return df
