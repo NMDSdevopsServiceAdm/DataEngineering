@@ -77,7 +77,7 @@ def calculate_first_and_last_submission_date_per_location(
 def convert_first_and_last_known_years_into_exploded_df(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    date_range_udf = F.udf(date_range, ArrayType(LongType()))
+    date_range_udf = F.udf(create_date_range, ArrayType(LongType()))
 
     return df.withColumn(
         "unix_time",
@@ -85,7 +85,7 @@ def convert_first_and_last_known_years_into_exploded_df(
     ).drop(FIRST_SUBMISSION_TIME, LAST_SUBMISSION_TIME)
 
 
-def date_range(
+def create_date_range(
     unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1
 ) -> int:
     """Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes"""
