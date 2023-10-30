@@ -148,7 +148,7 @@ def add_extrapolated_values(
 def create_extrapolation_ratio_column(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.withColumn(
+    df_with_extrapolation_ratio_column_df = df.withColumn(
         EXTRAPOLATION_RATIO,
         F.when(
             (F.col(UNIX_TIME) < F.col(FIRST_SUBMISSION_TIME)),
@@ -166,6 +166,7 @@ def create_extrapolation_ratio_column(
             ),
         ),
     )
+    return df_with_extrapolation_ratio_column_df
 
 
 def create_extrapolation_model_column(
