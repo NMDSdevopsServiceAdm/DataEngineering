@@ -26,22 +26,24 @@ EXTRAPOLATION_MODEL = "extrapolation_model"
 
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
-    for_extrapolation = filter_to_locations_who_have_a_job_count_at_some_point(df)
+    filtered_df = filter_to_locations_who_have_a_job_count_at_some_point(df)
 
-    for_extrapolation = add_job_count_and_rolling_average_for_first_and_last_submission(
-        for_extrapolation
+    filtered_with_first_and_last_submitted_data_df = (
+        add_job_count_and_rolling_average_for_first_and_last_submission(filtered_df)
     )
 
-    df = add_extrapolated_values(df, for_extrapolation)
+    df_with_extrapolated_values = add_extrapolated_values(
+        df, filtered_with_first_and_last_submitted_data_df
+    )
 
-    df = df.withColumn(
+    df_with_extrapolated_values = df_with_extrapolated_values.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
             F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
         ).otherwise(F.col(EXTRAPOLATION_MODEL)),
     )
     return update_dataframe_with_identifying_rule(
-        df, EXTRAPOLATION_MODEL, ESTIMATE_JOB_COUNT
+        df_with_extrapolated_values, EXTRAPOLATION_MODEL, ESTIMATE_JOB_COUNT
     )
 
 
