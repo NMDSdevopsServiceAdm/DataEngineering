@@ -43,6 +43,51 @@ class TestModelExtrapolation(unittest.TestCase):
         output_df = job.model_extrapolation(self.extrapolation_df)
         self.assertEqual(output_df.count(), self.extrapolation_df.count())
 
+        self.assertEqual(
+            output_df.columns,
+            [
+                "locationid",
+                "snapshot_date",
+                "unix_time",
+                "job_count",
+                "primary_service_type",
+                "estimate_job_count",
+                "estimate_job_count_source",
+                "rolling_average_model",
+                "extrapolation_model",
+            ],
+        )
+
+    def test_model_extrapolation_outputted_values_correct(self):
+        df = job.model_extrapolation(self.extrapolation_df)
+        df = df.sort("locationid", "snapshot_date").collect()
+
+        self.assertEqual(df[1]["extrapolation_model"], None)
+
+        self.assertAlmostEqual(
+            df[4]["extrapolation_model"],
+            4.0159045,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            df[6]["extrapolation_model"],
+            3.9840954,
+            places=5,
+        )
+
+        self.assertAlmostEqual(
+            df[7]["extrapolation_model"],
+            19.920792,
+            places=5,
+        )
+        self.assertAlmostEqual(
+            df[9]["extrapolation_model"],
+            20.079207,
+            places=5,
+        )
+
+        self.assertEqual(df[10]["extrapolation_model"], None)
+
     def test_filter_to_locations_who_have_a_job_count_at_some_point(self):
         output_df = job.filter_to_locations_who_have_a_job_count_at_some_point(
             self.data_to_filter_df
