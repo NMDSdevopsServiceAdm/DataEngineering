@@ -59,7 +59,10 @@ def filter_to_locations_who_have_a_job_count_at_some_point(
 def calculate_max_job_count_for_each_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.groupBy(LOCATION_ID).agg(F.max(JOB_COUNT).alias(MAX_JOB_COUNT))
+    max_job_count_for_each_location_df = df.groupBy(LOCATION_ID).agg(
+        F.max(JOB_COUNT).alias(MAX_JOB_COUNT)
+    )
+    return max_job_count_for_each_location_df
 
 
 def filter_to_known_values_only(
