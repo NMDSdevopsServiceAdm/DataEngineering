@@ -42,9 +42,10 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
             F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
         ).otherwise(F.col(EXTRAPOLATION_MODEL)),
     )
-    return update_dataframe_with_identifying_rule(
+    df_with_extrapolated_values = update_dataframe_with_identifying_rule(
         df_with_extrapolated_values, EXTRAPOLATION_MODEL, ESTIMATE_JOB_COUNT
     )
+    return df_with_extrapolated_values
 
 
 def filter_to_locations_who_have_a_job_count_at_some_point(
