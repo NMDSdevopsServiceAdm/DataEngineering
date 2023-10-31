@@ -1543,3 +1543,210 @@ def generate_data_for_interpolating_values_for_all_dates_df():
     df = spark.createDataFrame(input_rows, schema=schema)
 
     return df
+
+
+def generate_data_for_extrapolation_model():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("primary_service_type", StringType(), False),
+            StructField("estimate_job_count", DoubleType(), True),
+            StructField("estimate_job_count_source", StringType(), True),
+            StructField("rolling_average_model", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, 15.0, "Care home with nursing", None, None, 15.0),
+        ("1-000000001", "2023-02-01", 1675209600, None, "Care home with nursing", None, None, 15.1),
+        ("1-000000001", "2023-03-01", 1677628800, 30.0, "Care home with nursing", 30.0, "already_populated", 15.2),
+        ("1-000000002", "2023-01-01", 1672531200, 4.0, "non-residential", None, None, 50.3),
+        ("1-000000002", "2023-02-01", 1675209600, None, "non-residential", None, None, 50.5),
+        ("1-000000002", "2023-03-01", 1677628800, None, "non-residential", 5.0, "already_populated", 50.7),
+        ("1-000000002", "2023-04-01", 1680303600, None, "non-residential", None, None, 50.1),
+        ("1-000000003", "2023-01-01", 1672531200, None, "non-residential", None, None, 50.3),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", None, None, 50.5),
+        ("1-000000003", "2023-03-01", 1677628800, None, "non-residential", 30.0, "already_populated", 50.7),
+        ("1-000000004", "2023-03-01", 1677628800, None, "non-residential", None, None, 50.7),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_extrapolation_location_filtering_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("primary_service_type", StringType(), False),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
+        ("1-000000002", "2023-01-01", None, "non-residential"),
+        ("1-000000002", "2023-02-01", None, "non-residential"),
+        ("1-000000003", "2023-01-01", 20.0, "non-residential"),
+        ("1-000000003", "2023-02-01", None, "non-residential"),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("rolling_average_model", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, None, 12.0),
+        ("1-000000001", "2023-02-01", 1675209600, 5.0, 15.0),
+        ("1-000000001", "2023-03-01", 1677628800, None, 18.0),
+        ("1-000000002", "2023-01-01", 1672531200, 4.0, 12.0),
+        ("1-000000002", "2023-02-01", 1675209600, 6.0, 15.0),
+        ("1-000000002", "2023-03-01", 1677628800, None, 18.0),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_adding_extrapolated_values_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("job_count", DoubleType(), True),
+            StructField("rolling_average_model", DoubleType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), False),
+            StructField("first_job_count", DoubleType(), True),
+            StructField("first_rolling_average", DoubleType(), True),
+            StructField("last_job_count", DoubleType(), True),
+            StructField("last_rolling_average", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200, 15.0, 5.0, 1672531200, 1677628800, 15.0, 5.0, 30.0, 5.0),
+        ("1-000000001", "2023-02-01", 1675209600, None, 5.0, 1672531200, 1677628800, 15.0, 5.0, 30.0, 5.0),
+        ("1-000000001", "2023-03-01", 1677628800, 30.0, 5.0, 1672531200, 1677628800, 15.0, 5.0, 30.0, 5.0),
+        ("1-000000002", "2023-01-01", 1672531200, 40.0, 1.0, 1672531200, 1672531200, 40.0, 1.0, 40.0, 1.0),
+        ("1-000000002", "2023-02-01", 1675209600, None, 1.5, 1672531200, 1672531200, 40.0, 1.0, 40.0, 1.0),
+        ("1-000000002", "2023-03-01", 1677628800, None, 0.5, 1672531200, 1672531200, 40.0, 1.0, 40.0, 1.0),
+        ("1-000000003", "2023-01-01", 1672531200, None, 1.0, 1675209600, 1675209600, 20.0, 1.7, 20.0, 1.7),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, 1.7, 1675209600, 1675209600, 20.0, 1.7, 20.0, 1.7),
+        ("1-000000003", "2023-03-01", 1677628800, None, 2.0, 1675209600, 1675209600, 20.0, 1.7, 20.0, 1.7),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_adding_extrapolated_values_to_be_added_into_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1672531200),
+        ("1-000000001", "2023-02-01", 1675209600),
+        ("1-000000001", "2023-03-01", 1677628800),
+        ("1-000000002", "2023-01-01", 1672531200),
+        ("1-000000002", "2023-02-01", 1675209600),
+        ("1-000000002", "2023-03-01", 1677628800),
+        ("1-000000003", "2023-01-01", 1672531200),
+        ("1-000000003", "2023-02-01", 1675209600),
+        ("1-000000003", "2023-03-01", 1677628800),
+        ("1-000000003", "2023-04-01", 1680303600),
+        ("1-000000004", "2023-01-01", 1672531200),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_creating_extrapolated_ratios_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("rolling_average_model", DoubleType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), False),
+            StructField("first_rolling_average", DoubleType(), True),
+            StructField("last_rolling_average", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", 1675000000, 1.0, 1678000000, 1680000000, 2.0, 3.0),
+        ("1-000000002", 1675000000, 1.0, 1678000000, 1680000000, 1.0, 3.0),
+        ("1-000000003", 1675000000, 2.0, 1670000000, 1672000000, 3.0, 1.7),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df
+
+
+def generate_data_for_creating_extrapolated_model_outputs_df():
+    spark = utils.get_spark()
+
+    schema = StructType(
+        [
+            StructField("locationid", StringType(), False),
+            StructField("snapshot_date", StringType(), False),
+            StructField("unix_time", LongType(), False),
+            StructField("rolling_average_model", DoubleType(), True),
+            StructField("first_submission_time", LongType(), False),
+            StructField("last_submission_time", LongType(), False),
+            StructField("first_job_count", DoubleType(), True),
+            StructField("last_job_count", DoubleType(), True),
+            StructField("extrapolation_ratio", DoubleType(), True),
+        ]
+    )
+    # fmt: off
+    rows = [
+        ("1-000000001", "2023-01-01", 1675000000, 1.0, 1678000000, 1680000000, 15.0, 10.0, 0.5),
+        ("1-000000002", "2023-02-01", 1675000000, 1.0, 1678000000, 1680000000, 15.0, 10.0, 1.0),
+        ("1-000000003", "2023-03-01", 1675000000, 2.0, 1670000000, 1672000000, 10.0, 15.0, 1.46882452),
+    ]
+    # fmt: on
+    df = spark.createDataFrame(rows, schema=schema)
+
+    return df

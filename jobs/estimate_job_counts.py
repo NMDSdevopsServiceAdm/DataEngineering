@@ -4,7 +4,7 @@ import sys
 import pyspark.sql
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql import Window, SparkSession
+from pyspark.sql import SparkSession
 
 from utils import utils
 from utils.estimate_job_count.column_names import (
@@ -21,16 +21,13 @@ from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT,
     ESTIMATE_JOB_COUNT_SOURCE,
     PRIMARY_SERVICE_TYPE,
-    LAST_KNOWN_JOB_COUNT,
     CQC_SECTOR,
 )
 from utils.estimate_job_count.models.care_homes import model_care_homes
 from utils.estimate_job_count.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
-from utils.estimate_job_count.models.non_res_historical import (
-    model_non_res_historical,
-)
+from utils.estimate_job_count.models.extrapolation import model_extrapolation
 from utils.estimate_job_count.models.interpolation import model_interpolation
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
@@ -87,7 +84,7 @@ def main(
     non_res_features_df = spark.read.parquet(nonres_features_source)
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-    locations_df = populate_last_known_job_count(locations_df)
+
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
     )
@@ -108,6 +105,8 @@ def main(
     locations_df = model_primary_service_rolling_average(
         locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
     )
+
+    locations_df = model_extrapolation(locations_df)
 
     # Care homes model
     locations_df, care_home_metrics_info = model_care_homes(
@@ -152,25 +151,17 @@ def main(
         job_name=job_name,
     )
 
-    # Non-res & no PIR data models
-    locations_df = model_non_res_historical(locations_df)
-
-    # TODO: Create seperate function which chooses which order to
-    # build estimate_job_count column
-
-    # Rolling average needs to be created prior to extrapolation
-    # but will be the last model to populate estimate_job_count
+    locations_df = locations_df.withColumnRenamed(
+        "rolling_average", "rolling_average_model"
+    )
     locations_df = locations_df.withColumn(
         ESTIMATE_JOB_COUNT,
         F.when(
             F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
         ).otherwise(F.col("rolling_average_model")),
     )
-
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df,
-        "model_primary_service_rolling_average",
-        ESTIMATE_JOB_COUNT,
+        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
     )
 
     today = date.today()
@@ -202,37 +193,6 @@ def populate_estimate_jobs_when_job_count_known(
 
     df = update_dataframe_with_identifying_rule(
         df, "ascwds_job_count", ESTIMATE_JOB_COUNT
-    )
-
-    return df
-
-
-def populate_last_known_job_count(df):
-    column_names = df.columns
-    df = df.alias("current").join(
-        df.alias("previous"),
-        (F.col("current.locationid") == F.col("previous.locationid"))
-        & (F.col("current.snapshot_date") >= F.col("previous.snapshot_date"))
-        & (F.col("previous.job_count").isNotNull()),
-        "leftouter",
-    )
-    locationAndSnapshotPartition = Window.partitionBy(
-        "current.locationid", "current.snapshot_date"
-    )
-    df = df.withColumn(
-        "max_date_with_job_count",
-        F.max("previous.snapshot_date").over(locationAndSnapshotPartition),
-    )
-
-    df = df.where(
-        F.col("max_date_with_job_count").isNull()
-        | (F.col("max_date_with_job_count") == F.col("previous.snapshot_date"))
-    )
-    df = df.drop("max_date_with_job_count")
-
-    df = df.withColumn(LAST_KNOWN_JOB_COUNT, F.col("previous.job_count"))
-    df = df.select(
-        [f"current.{col_name}" for col_name in column_names] + [LAST_KNOWN_JOB_COUNT]
     )
 
     return df
