@@ -33,7 +33,10 @@ def identify_values_below_zero_or_above_one(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         DP.OUTLIERS_FOR_REMOVAL,
         F.when(
-            (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) > OT.ONE_HUNDRED_PERCENT)
+            (
+                F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF)
+                > OT.ONE_HUNDRED_PERCENT
+            )
             | (F.col(DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF) < OT.ZERO_PERCENT),
             F.lit(Values.REMOVE),
         ).otherwise(F.col(DP.OUTLIERS_FOR_REMOVAL)),
