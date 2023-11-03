@@ -42,7 +42,7 @@ class TestModelInterpolation(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.select_la_area_year_imd_score(df)
 
-        output_df_columns = output_df.columns()
+        output_df_columns = output_df.columns
 
         self.assertEqual(
             output_df_columns, [DP.LA_AREA, DP.YEAR, DP.IMD_SCORE]
@@ -96,15 +96,15 @@ class TestModelInterpolation(unittest.TestCase):
         output_df_list = output_df.collect()
 
         self.assertEqual(
-            output_df_list[0][DP.EMPLOYING_STAFF],
+            output_df_list[0]["DP_EMPLOYING_STAFF"],
             0.5,
         )
         self.assertEqual(
-            output_df_list[1][DP.EMPLOYING_STAFF],
+            output_df_list[1]["DP_EMPLOYING_STAFF"],
             0.25,
         )
         self.assertEqual(
-            output_df_list[2][DP.EMPLOYING_STAFF],
+            output_df_list[2]["DP_EMPLOYING_STAFF"],
             0.5,
         )
 
