@@ -52,7 +52,7 @@ class TestPrepareDuringYearData(unittest.TestCase):
             27.5,
         )
 
-    def test_estimate_missing_salt_data_adds_missing_value(
+    def test_estimate_missing_salt_data_for_hackney_adds_missing_value(
         self,
     ):
         rows = [
@@ -70,7 +70,7 @@ class TestPrepareDuringYearData(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.estimate_missing_salt_data(df)
+        output_df = job.estimate_missing_salt_data_for_hackney(df)
         output_df_list = output_df.sort(DP.LA_AREA, DP.YEAR_AS_INTEGER).collect()
 
         self.assertEqual(
