@@ -10,6 +10,7 @@ class DirectPaymentConfiguration:
     SELF_EMPLOYED_STAFF_PER_SERVICE_USER: float = 0.0179487641096729
     NUMBER_OF_YEARS_ROLLING_AVERAGE: int = 3
 
+
 @dataclass
 class DirectPaymentsOutlierThresholds:
     ONE_HUNDRED_PERCENT: float = 1.0
