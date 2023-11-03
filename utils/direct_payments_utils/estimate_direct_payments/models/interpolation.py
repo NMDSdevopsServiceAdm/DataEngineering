@@ -11,7 +11,6 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 def model_interpolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     known_service_users_employing_staff_df = (
         filter_to_locations_with_known_service_users_employing_staff(direct_payments_df)
     )
@@ -39,7 +38,6 @@ def model_interpolation(
 def filter_to_locations_with_known_service_users_employing_staff(
     df: DataFrame,
 ) -> DataFrame:
-
     df = df.select(
         DP.LA_AREA,
         DP.YEAR_AS_INTEGER,
@@ -54,7 +52,6 @@ def filter_to_locations_with_known_service_users_employing_staff(
 def calculate_first_and_last_submission_year_per_la_area(
     df: DataFrame,
 ) -> DataFrame:
-
     df = df.groupBy(DP.LA_AREA).agg(
         F.min(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.FIRST_SUBMISSION_YEAR),
         F.max(DP.YEAR_AS_INTEGER).cast("integer").alias(DP.LAST_SUBMISSION_YEAR),

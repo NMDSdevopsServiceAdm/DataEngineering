@@ -9,7 +9,6 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 def model_extrapolation(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
-
     direct_payments_df = add_columns_with_first_and_last_years_of_data(
         direct_payments_df
     )

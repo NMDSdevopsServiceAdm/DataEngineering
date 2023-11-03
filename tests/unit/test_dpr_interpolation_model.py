@@ -242,22 +242,40 @@ class TestDPRInterpolation(unittest.TestCase):
             0.5,
         )
         self.assertEqual(
-            output_df_list[0][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], 2019
+            output_df_list[0][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            2019,
         )
         self.assertEqual(
-            output_df_list[1][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], None
+            output_df_list[1][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            None,
         )
         self.assertEqual(
-            output_df_list[2][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], 2021
+            output_df_list[2][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            2021,
         )
         self.assertEqual(
-            output_df_list[3][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], 2019
+            output_df_list[3][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            2019,
         )
         self.assertEqual(
-            output_df_list[4][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], 2020
+            output_df_list[4][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            2020,
         )
         self.assertEqual(
-            output_df_list[5][DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED], 2021
+            output_df_list[5][
+                DP.ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED
+            ],
+            2021,
         )
 
     def test_interpolate_values_for_all_dates_returns_interpolated_values(self):
