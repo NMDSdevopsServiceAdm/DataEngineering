@@ -45,7 +45,33 @@ class TestModelInterpolation(unittest.TestCase):
         output_df_columns = output_df.columns()
 
         self.assertEqual(
-            output_df_columns = [DP.LA_AREA, DP.YEAR, DP.IMD_SCORE]
+            output_df_columns, [DP.LA_AREA, DP.YEAR, DP.IMD_SCORE]
         )
+
+    def test_filter_to_leeds_local_authority_has_two_rows(self):
+              
+        rows = [
+            ("Leeds", 2019, 2.5, 100.0, 50.0),
+            ("Leeds", 2020, 2.5, 20.0, 13.0),
+            ("York", 2019, 2.5, 30.0, 14.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.IMD_SCORE, FloatType(), True),
+                StructField(DP.DPRS_ADASS, FloatType(), True),
+                StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.filter_to_leeds_local_authority(df)
+
+        output_df_rows = output_df.count()
+
+        self.assertEqual(
+            output_df_rows, 2
+        )
+
         
 
