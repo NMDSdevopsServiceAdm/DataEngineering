@@ -73,5 +73,38 @@ class TestModelInterpolation(unittest.TestCase):
             output_df_rows, 2
         )
 
-        
+
+    def test_calculate_proportion_employing_staff(self):
+              
+        rows = [
+            ("Leeds", 2019, 2.5, 100.0, 50.0),
+            ("Leeds", 2020, 2.5, 20.0, 5.0),
+            ("York", 2019, 2.5, 28.0, 14.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), False),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.IMD_SCORE, FloatType(), True),
+                StructField(DP.DPRS_ADASS, FloatType(), True),
+                StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_proportion_employing_staff(df)
+
+        output_df_list = output_df.collect()
+
+        self.assertEqual(
+            output_df_list[0][DP.EMPLOYING_STAFF],
+            0.5,
+        )
+        self.assertEqual(
+            output_df_list[1][DP.EMPLOYING_STAFF],
+            0.25,
+        )
+        self.assertEqual(
+            output_df_list[2][DP.EMPLOYING_STAFF],
+            0.5,
+        )
 
