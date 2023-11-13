@@ -4,6 +4,7 @@ from pyspark.sql.types import (
     StringType,
     FloatType,
     IntegerType,
+    BooleanType,
 )
 
 
@@ -40,5 +41,43 @@ CAPACITY_TRACKER_CARE_HOMES = StructType(
         StructField("Days_Absense", IntegerType(), True),
         StructField("Last_Updated_UTC", StringType(), False),
         StructField("Last_Updated_BST", StringType(), False),
+    ]
+)
+
+
+CAPACITY_TRACKER_NON_RESIDENTIAL = StructType(
+    fields=[
+        StructField("Local_Authority", StringType(), True),
+        StructField("Sub_ICB", StringType(), False),
+        StructField("ICB", StringType(), False),
+        StructField("Region", StringType(), False),
+        StructField("LocalAuthority", StringType(), False),
+        StructField("LRF", StringType(), False),
+        StructField("LA_Region_name", StringType(), False),
+        StructField("Location", StringType(), False),
+        StructField("CQC_ID", StringType(), False),
+        StructField("ODS_Code", StringType(), False),
+        StructField("CQC_Survey_Last_Updated_UTC", StringType(), False),
+        StructField("CQC_Survey_Last_Updated_BST", StringType(), False),
+        StructField("Service_User_Count", IntegerType(), False),
+        StructField("Covid_Confirmed_and_Suspected", IntegerType(), False),
+        StructField("Legacy_Covid_Confirmed", IntegerType(), False),
+        StructField("Legacy_Covid_Suspected", IntegerType(), False),
+        StructField("CQC_Care_Workers_Employed", FloatType(), False),
+        StructField("CQC_Care_Workers_Absent", FloatType(), False),
+        StructField("Can_Provider_More_Hours", BooleanType(), False),
+        StructField("Extra_Hours_Count", FloatType(), False),
+        StructField("Covid_Notes", StringType(), False),
+        StructField("Covid_Vaccination_Full_Course", FloatType(), False),
+        StructField("Has_CQC_PPE_Issues", StringType(), False),
+        StructField("Confirmed_Save", StringType(), False),
+        StructField("Hours_Paid_Dom_Care", FloatType(), False),
+        StructField("Hours_Overtime_Dom_Care", FloatType(), False),
+        StructField("Hours_Agency_Dom_Care", FloatType(), False),
+        StructField("Hours_Absence_Dom_Care", FloatType(), False),
+        StructField("Days_Absence_Dom_Care", FloatType(), False),
+        StructField("Users_NHS_LA", IntegerType(), False),
+        StructField("Users_Self_Funded", IntegerType(), False),
+        StructField("Return_PoC_Percent", FloatType(), False),
     ]
 )
