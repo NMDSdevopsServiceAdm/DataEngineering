@@ -9,7 +9,7 @@ from schemas.capacity_tracker_schema import (
 from utils import utils
 
 
-def main(source, destination):
+def main(care_home_source, care_home_destination, non_res_source, non_res_destination):
     df = utils.read_csv_with_defined_schema(source, SPSS_JOBS_ESTIMATES)
     df_with_formatted_date = df.withColumn(
         "snapshot_date_formatted", F.col("Snapshot_date")
@@ -39,10 +39,10 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
-    print("Spark job 'csv_to_parquet' starting...")
+    print("Spark job 'ingest_capacity_tracker_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    source, destination = collect_arguments()
-    main(source, destination)
+    care_home_source, care_home_destination, non_res_source, non_res_destination = collect_arguments()
+    main(care_home_source, care_home_destination, non_res_source, non_res_destination)
 
-    print("Spark job 'spss_csv_to_parquet' done")
+    print("Spark job 'ingest_capacity_tracker_data' done")
