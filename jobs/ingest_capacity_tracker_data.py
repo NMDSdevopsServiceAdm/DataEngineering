@@ -10,14 +10,26 @@ from utils import utils
 
 
 def main(care_home_source, care_home_destination, non_res_source, non_res_destination):
-    import_capacity_tracker_file(care_home_source, care_home_destination, CAPACITY_TRACKER_CARE_HOMES, "Last_Updated_UTC", "dd MMM yyyy")
-    import_capacity_tracker_file(non_res_source, non_res_destination, CAPACITY_TRACKER_NON_RESIDENTIAL, "CQC_Survey_Last_Updated_UTC", "d/M/y")
-
-
-def import_capacity_tracker_file (source, destination, schema, date_column_name, date_format):
-    df = utils.read_csv_with_defined_schema(
-        source, schema
+    import_capacity_tracker_file(
+        care_home_source,
+        care_home_destination,
+        CAPACITY_TRACKER_CARE_HOMES,
+        "Last_Updated_UTC",
+        "dd MMM yyyy",
     )
+    import_capacity_tracker_file(
+        non_res_source,
+        non_res_destination,
+        CAPACITY_TRACKER_NON_RESIDENTIAL,
+        "CQC_Survey_Last_Updated_UTC",
+        "d/M/y",
+    )
+
+
+def import_capacity_tracker_file(
+    source, destination, schema, date_column_name, date_format
+):
+    df = utils.read_csv_with_defined_schema(source, schema)
     df = add_column_with_formatted_dates(
         df,
         date_column_name,
