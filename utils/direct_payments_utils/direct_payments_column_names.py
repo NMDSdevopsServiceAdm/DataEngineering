@@ -13,7 +13,7 @@ class DirectPaymentColumnNames:
     IMD_SCORE: str = "imd_2010"
     DPRS_ADASS: str = "number_of_dprs_adass"
     DPRS_EMPLOYING_STAFF_ADASS: str = "number_of_dprs_who_employ_staff_adass"
-    PROPORTION_IMPORTED: str = "proportion_dpr_employing_staff_adass"
+    PROPORTION_IMPORTED: str = "proportion_su_employing_staff_adass"
     HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE: str = (
         "prev_service_user_employing_staff_proportion"
     )
