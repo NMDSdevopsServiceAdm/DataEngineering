@@ -52,7 +52,7 @@ class TestJobCountAbsDiffInRange(unittest.TestCase):
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = job.add_column_with_formatted_dates(
-            df, "Last_Updated_UTC", "Last_Updated_UTC_formatted", "dd/MM/yyyy "
+            df, "Last_Updated_UTC", "Last_Updated_UTC_formatted", "d/M/y"
         )
         self.assertEqual(df.count(), 2)
 
