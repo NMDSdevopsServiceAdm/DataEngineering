@@ -38,10 +38,11 @@ def main(care_home_source, care_home_destination, non_res_source, non_res_destin
 
 
 def add_column_with_formatted_dates(df, old_column, new_column):
-    df = df.withColumn(new_column, F.col(old_column))
+    df = df.withColumn(new_column, F.substring(F.col(old_column), 1, 11))
+
     df_with_formatted_date = utils.format_date_fields(
         df,
-        raw_date_format="yyyy/MM/dd",
+        raw_date_format="dd MMM yyyy",
         date_column_identifier=new_column,
     )
     return df_with_formatted_date
