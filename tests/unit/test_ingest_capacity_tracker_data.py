@@ -13,6 +13,7 @@ from pyspark.sql.types import (
 
 import jobs.ingest_capacity_tracker_data as job
 
+
 class TestJobCountAbsDiffInRange(unittest.TestCase):
     calculate_jobs_schema = StructType(
         [
@@ -36,7 +37,7 @@ class TestJobCountAbsDiffInRange(unittest.TestCase):
         df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
 
         df = job.add_column_with_formatted_dates(
-             df, "Last_Updated_UTC", "Last_Updated_UTC_formatted"
+            df, "Last_Updated_UTC", "Last_Updated_UTC_formatted"
         )
         self.assertEqual(df.count(), 2)
 
