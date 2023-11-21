@@ -38,9 +38,9 @@ def import_capacity_tracker_file(
     utils.write_to_parquet(df, destination, False)
 
 
-def add_column_with_formatted_dates(df, old_column, date_format):
-    new_column = old_column + "_formatted"
-    df = df.withColumn(new_column, F.trim(F.substring(F.col(old_column), 1, 11)))
+def add_column_with_formatted_dates(df, date_column_name, date_format):
+    new_column = date_column_name + "_formatted"
+    df = df.withColumn(new_column, F.trim(F.substring(F.col(date_column_name), 1, 11)))
 
     df_with_formatted_date = utils.format_date_fields(
         df,
