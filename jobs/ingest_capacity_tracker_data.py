@@ -28,13 +28,13 @@ def main(care_home_source, care_home_destination, non_res_source, non_res_destin
         non_res_df,
         "CQC_Survey_Last_Updated_UTC",
         "CQC_Survey_Last_Updated_UTC_formatted",
-        "dd/MM/yyyy"
+        "dd/MM/yyyy",
     )
     non_res_df = add_column_with_formatted_dates(
         non_res_df,
         "CQC_Survey_Last_Updated_BST",
         "CQC_Survey_Last_Updated_BST_formatted",
-        "dd/MM/yyyy"
+        "dd/MM/yyyy",
     )
     utils.write_to_parquet(non_res_df, non_res_destination, False)
 
