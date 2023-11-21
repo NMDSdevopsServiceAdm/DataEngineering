@@ -2,7 +2,6 @@ import sys
 import argparse
 import pyspark.sql.functions as F
 
-from pyspark.sql import SparkSession
 from schemas.capacity_tracker_schema import (
     CAPACITY_TRACKER_CARE_HOMES,
     CAPACITY_TRACKER_NON_RESIDENTIAL,
@@ -11,36 +10,24 @@ from utils import utils
 
 
 def main(care_home_source, care_home_destination, non_res_source, non_res_destination):
-    care_home_df = utils.read_csv_with_defined_schema(
-        care_home_source, CAPACITY_TRACKER_CARE_HOMES
-    )
-    care_home_df = add_column_with_formatted_dates(
-        care_home_df, "Last_Updated_UTC", "Last_Updated_UTC_formatted", "dd MMM yyyy"
-    )
-    care_home_df = add_column_with_formatted_dates(
-        care_home_df, "Last_Updated_BST", "Last_Updated_BST_formatted", "dd MMM yyyy"
-    )
-    utils.write_to_parquet(care_home_df, care_home_destination, False)
-
-    non_res_df = utils.read_csv_with_defined_schema(
-        non_res_source, CAPACITY_TRACKER_NON_RESIDENTIAL
-    )
-    non_res_df = add_column_with_formatted_dates(
-        non_res_df,
-        "CQC_Survey_Last_Updated_UTC",
-        "CQC_Survey_Last_Updated_UTC_formatted",
-        "d/M/y",
-    )
-    non_res_df = add_column_with_formatted_dates(
-        non_res_df,
-        "CQC_Survey_Last_Updated_BST",
-        "CQC_Survey_Last_Updated_BST_formatted",
-        "d/M/y",
-    )
-    utils.write_to_parquet(non_res_df, non_res_destination, False)
+    import_capacity_tracker_file(care_home_source, care_home_destination, CAPACITY_TRACKER_CARE_HOMES, "Last_Updated_UTC", "dd MMM yyyy")
+    import_capacity_tracker_file(non_res_source, non_res_destination, CAPACITY_TRACKER_NON_RESIDENTIAL, "CQC_Survey_Last_Updated_UTC", "d/M/y")
 
 
-def add_column_with_formatted_dates(df, old_column, new_column, date_format):
+def import_capacity_tracker_file (source, destination, schema, date_column_name, date_format):
+    df = utils.read_csv_with_defined_schema(
+        source, schema
+    )
+    df = add_column_with_formatted_dates(
+        df,
+        date_column_name,
+        date_format,
+    )
+    utils.write_to_parquet(df, destination, False)
+
+
+def add_column_with_formatted_dates(df, old_column, date_format):
+    new_column = old_column + "_formatted"
     df = df.withColumn(new_column, F.trim(F.substring(F.col(old_column), 1, 11)))
 
     df_with_formatted_date = utils.format_date_fields(
