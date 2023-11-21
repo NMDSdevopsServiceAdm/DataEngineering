@@ -14,10 +14,10 @@ def main(care_home_source, care_home_destination, non_res_source, non_res_destin
         care_home_source, CAPACITY_TRACKER_CARE_HOMES
     )
     care_home_df = add_column_with_formatted_dates(
-        care_home_df, "Last_Updated_UTC", "Last_Updated_UTC_formatted"
+        care_home_df, "Last_Updated_UTC", "Last_Updated_UTC_formatted", "dd MMM yyyy"
     )
     care_home_df = add_column_with_formatted_dates(
-        care_home_df, "Last_Updated_BST", "Last_Updated_BST_formatted"
+        care_home_df, "Last_Updated_BST", "Last_Updated_BST_formatted", "dd MMM yyyy"
     )
     utils.write_to_parquet(care_home_df, care_home_destination, False)
 
@@ -28,21 +28,23 @@ def main(care_home_source, care_home_destination, non_res_source, non_res_destin
         non_res_df,
         "CQC_Survey_Last_Updated_UTC",
         "CQC_Survey_Last_Updated_UTC_formatted",
+        "dd/MM/yyyy"
     )
     non_res_df = add_column_with_formatted_dates(
         non_res_df,
         "CQC_Survey_Last_Updated_BST",
         "CQC_Survey_Last_Updated_BST_formatted",
+        "dd/MM/yyyy"
     )
     utils.write_to_parquet(non_res_df, non_res_destination, False)
 
 
-def add_column_with_formatted_dates(df, old_column, new_column):
+def add_column_with_formatted_dates(df, old_column, new_column, date_format):
     df = df.withColumn(new_column, F.substring(F.col(old_column), 1, 11))
 
     df_with_formatted_date = utils.format_date_fields(
         df,
-        raw_date_format="dd MMM yyyy",
+        raw_date_format=date_format,
         date_column_identifier=new_column,
     )
     return df_with_formatted_date
