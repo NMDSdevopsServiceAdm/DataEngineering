@@ -33,6 +33,22 @@ module "spss_csv_to_parquet_job" {
   }
 }
 
+module "ingest_capacity_tracker_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_capacity_tracker_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--care_home_source"      = ""
+    "--care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_care_home/"
+    "--non_res_source"        = ""
+    "--non_res_destination"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
+  }
+}
+
 module "ingest_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_cqc_pir_data.py"

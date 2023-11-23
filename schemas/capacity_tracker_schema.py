@@ -78,6 +78,6 @@ CAPACITY_TRACKER_NON_RESIDENTIAL = StructType(
         StructField("Days_Absence_Dom_Care", FloatType(), False),
         StructField("Users_NHS_LA", IntegerType(), False),
         StructField("Users_Self_Funded", IntegerType(), False),
-        StructField("Return_PoC_Percent", FloatType(), False),
+        StructField("Return_PoC_Percent", StringType(), False),
     ]
 )
