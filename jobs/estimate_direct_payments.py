@@ -1,11 +1,5 @@
 from pyspark.sql import SparkSession
-import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    FloatType,
-)
 
 from utils import utils
 from utils.direct_payments_utils.direct_payments_column_names import (
@@ -14,14 +8,8 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 from utils.direct_payments_utils.estimate_direct_payments.estimate_service_users_employing_staff import (
     estimate_service_users_employing_staff,
 )
-from utils.direct_payments_utils.estimate_direct_payments.normalise_estimates import (
-    normalise_estimates,
-)
 from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_variables import (
     calculate_remaining_variables,
-)
-from utils.direct_payments_utils.estimate_direct_payments.identify_outliers import (
-    identify_outliers,
 )
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
@@ -31,6 +19,7 @@ from utils.direct_payments_utils.estimate_direct_payments.create_summary_table i
 def main(
     direct_payments_prepared_source,
     destination,
+    summary_destination,
 ):
     spark = SparkSession.builder.appName(
         "sfc_data_engineering_estimate_direct_payments"
@@ -41,35 +30,29 @@ def main(
     ).select(
         DP.LA_AREA,
         DP.YEAR,
-        DP.DPRS_ADASS,
-        DP.DPRS_EMPLOYING_STAFF_ADASS,
-        DP.SERVICE_USER_DPRS_AT_YEAR_END,
-        DP.CARER_DPRS_AT_YEAR_END,
+        DP.YEAR_AS_INTEGER,
         DP.SERVICE_USER_DPRS_DURING_YEAR,
         DP.CARER_DPRS_DURING_YEAR,
-        DP.IMD_SCORE,
-        # TODO
+        DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
+        DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
+        DP.FILLED_POSTS_PER_EMPLOYER,
+        DP.TOTAL_DPRS_DURING_YEAR,
     )
 
-    # TODO
-    # model missing data
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
-
-    # normalise estimates
-    direct_payments_df = normalise_estimates(direct_payments_df)
-
-    # Calculate remaining variables
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
-
-    # Check for outliers
-    direct_payments_df = identify_outliers(direct_payments_df)
-
-    # Recreate overall trends
-    direct_payments_df = create_summary_table(direct_payments_df)
+    summary_direct_payments_df = create_summary_table(direct_payments_df)
 
     utils.write_to_parquet(
         direct_payments_df,
         destination,
+        append=True,
+        partitionKeys=[DP.YEAR],
+    )
+
+    utils.write_to_parquet(
+        summary_direct_payments_df,
+        summary_destination,
         append=True,
         partitionKeys=[DP.YEAR],
     )
@@ -79,15 +62,21 @@ if __name__ == "__main__":
     (
         direct_payments_prepared_source,
         destination,
+        summary_destination,
     ) = utils.collect_arguments(
         (
             "--direct_payments_prepared_source",
             "Source s3 directory for direct payments prepared dataset",
         ),
         ("--destination", "A destination directory for outputting dpr data."),
+        (
+            "--summary_destination",
+            "A destination directory for outputting dpr summary data.",
+        ),
     )
 
     main(
         direct_payments_prepared_source,
         destination,
+        summary_destination,
     )
