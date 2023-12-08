@@ -30,7 +30,8 @@ from utils.estimate_job_count.column_names import (
 
 def main(
     estimate_job_counts_source,
-    capacity_tracker_source,
+    capacity_tracker_care_home_source,
+    capacity_tracker_non_residential_source,
     pir_source,
     diagnostics_destination,
     residuals_destination,
@@ -64,7 +65,8 @@ if __name__ == "__main__":
 
     (
         estimate_job_counts_source,
-        capacity_tracker_source,
+        capacity_tracker_care_home_source,
+        capacity_tracker_non_residential_source,
         pir_source,
         diagnostics_destination,
         residuals_destination,
@@ -74,8 +76,12 @@ if __name__ == "__main__":
             "Source s3 directory for job_estimates",
         ),
         (
-            "--capacity_tracker_source",
-            "Source s3 directory for capacity tracker data",
+            "--capacity_tracker_care_home_source",
+            "Source s3 directory for capacity tracker care home data",
+        ),
+        (
+            "--capacity_tracker_non_residential_source",
+            "Source s3 directory for capacity tracker non residential data",
         ),
         (
             "--pir_source",
@@ -93,7 +99,8 @@ if __name__ == "__main__":
 
     main(
         estimate_job_counts_source,
-        capacity_tracker_source,
+        capacity_tracker_care_home_source,
+        capacity_tracker_non_residential_source,
         pir_source,
         diagnostics_destination,
         residuals_destination,
