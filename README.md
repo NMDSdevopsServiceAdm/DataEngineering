@@ -336,3 +336,43 @@ One thing to be aware of is that and bucket with the `sfc-` will have versioning
 With versioning enabled, the previous versions of that object exist and can be viewed within the bucket by clicking on the `Show Version` slider. With a versioning enabled bucket we can see every version of the object which was previously hidden. You have the ability to download or view the older version, you can also see previous version and objects that have been deleted.
 
 A new item appears in the list of objects; the **Delete Marker**. This gets added to any object which is deleted; not it does not get added to objects that get updated or over wrote. If you wish to restore a version that was previously deleted, click the check box beside the delete marker and at the top of the screen click "delete".  Deleting the delete marker restores the previous version of the object. 
+
+
+## Linking Power BI to AWS
+
+### For Power BI
+Install 64 bit ODBC driver (need admin rights) https://docs.aws.amazon.com/athena/latest/ug/connect-with-odbc.html
+
+Needs to be run by administrator:
+Click on system DSN then select ‘Add’
+Select Simba/Athena ODBC driver then ‘Finish’
+
+Info needed:
+Data source name: name your source (remember the name)
+Description (describe your source)
+AWS region: eu-west-2
+Catalog: AWSDataCatalog
+Schema: Database name (default)
+Worksgroup: Primary (default)
+S3 output location: s3://skillsforcare/athena-results/
+encryption: Not set or SS3
+
+Click on athentication options
+User: Access Key
+Password: Secret Key
+Click ‘Okay’
+Test - hopefully successful!
+
+Open Power BI, click ‘get data’, search for ODBC, select whatever the name of your datasource is.
+
+### For Tableau
+Download Driver: https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
+download JDBC 4.1 for with AWS SDK
+
+Save here: C:\Program Files\Tableau\Drivers
+
+Server: athena.eu-west-2.amazonaws.com
+
+Port: 443
+
+S3 Staging Directory: s3://skillsforcare/tableau-staging-directory/
