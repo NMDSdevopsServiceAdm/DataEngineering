@@ -43,10 +43,33 @@ def main(
     print("Creating diagnostics for job estimates")
 
 # Create dataframe with necessary columns
+    # locationid
+    # snapshot date
+    # job count unfiltered
+    # job count
+    # primary service type
+    # value for each model
+    # current estimated value
+    # number directly employed
+    
+    # CT CH cqc id
+    # CT CH nurses employed
+    # CT CH care workers employed
+    # CT CH non care workers employed
+    # CT CH agency nurses employed
+    # CT CH agency care workers employed
+    # CT CH agency non care workers employed
+
+    # CT NR cqc id
+    # CT NR care workers employed
+
+
 
 # Add column to split data into known/ unkown values
+    # 3 categories: ASCWDS known; known externally; Unknown 
     
 # Calculate residuals for each model/ service/ known value status
+    # Split into 
     
 # Calculate average residuals
     
