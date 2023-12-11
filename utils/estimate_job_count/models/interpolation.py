@@ -9,6 +9,7 @@ from utils.estimate_job_count.column_names import (
     UNIX_TIME,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
+    INTERPOLATION_MODEL,
 )
 from pyspark.sql.types import ArrayType, LongType, FloatType
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
@@ -22,7 +23,7 @@ NEXT_JOB_COUNT = "next_job_count"
 JOB_COUNT_UNIX_TIME = "job_count_unix_time"
 PREVIOUS_JOB_COUNT_UNIX_TIME = "previous_job_count_unix_time"
 NEXT_JOB_COUNT_UNIX_TIME = "next_job_count_unix_time"
-INTERPOLATION_MODEL = "interpolation_model"
+
 
 
 def model_interpolation(df: DataFrame) -> DataFrame:

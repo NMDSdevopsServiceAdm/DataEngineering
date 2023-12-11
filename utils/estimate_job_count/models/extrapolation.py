@@ -9,6 +9,7 @@ from utils.estimate_job_count.column_names import (
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
     ROLLING_AVERAGE_MODEL,
+    EXTRAPOLATION_MODEL,
 )
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
@@ -22,7 +23,6 @@ LAST_SUBMISSION_TIME = "last_submission_time"
 LAST_ROLLING_AVERAGE = "last_rolling_average"
 LAST_JOB_COUNT = "last_job_count"
 EXTRAPOLATION_RATIO = "extrapolation_ratio"
-EXTRAPOLATION_MODEL = "extrapolation_model"
 
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
