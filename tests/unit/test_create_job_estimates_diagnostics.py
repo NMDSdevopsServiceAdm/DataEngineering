@@ -13,6 +13,7 @@ from pyspark.sql.types import (
     StringType,
     IntegerType,
     FloatType,
+    DateType,
 )
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
@@ -74,7 +75,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     estimate_jobs_schema = StructType(
             [
                 StructField(LOCATION_ID, StringType(), False),
-                StructField(SNAPSHOT_DATE, StringType(), True),
                 StructField(
                     JOB_COUNT_UNFILTERED,
                     FloatType(),
@@ -88,7 +88,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 StructField(INTERPOLATION_MODEL, FloatType(), True),
                 StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
                 StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-                StructField(PEOPLE_DIRECTLY_EMPLOYED, FloatType(), True),
+                StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
             ]
         )
     capacity_tracker_care_home_schema = StructType(
@@ -101,7 +101,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             ),
             StructField(CARE_WORKERS_EMPLOYED, FloatType(), True),
             StructField(NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
             StructField(AGENCY_NURSES_EMPLOYED, FloatType(), True),
             StructField(AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
             StructField(AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
@@ -119,9 +118,30 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
     )
 
-    @unittest.skip("not written yet")
-    def test_create_job_estimates_diagnostics_completes(self):
+
+    
+
+    @patch("jobs.create_job_estimates_diagnostics.main")
+    def test_create_job_estimates_diagnostics_completes(self, mock_main):
+        estimate_jobs_rows = [
+            ("location_1", 40.0, 40.0, "Care home with nursing", 60.9, 23.4, 45.1, None, None, 40.0, 45 ),
+        ]
+
+        capacity_tracker_care_home_rows = [
+            ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
+        ]
+        capacity_tracker_non_residential_rows = [
+            ("location_2", 67.0),
+        ]
         
+        estimate_jobs_df= self.spark.createDataFrame(estimate_jobs_rows, schema = self.estimate_jobs_schema)
+        capacity_tracker_care_home_df = self.spark.createDataFrame(capacity_tracker_care_home_rows, schema = self.capacity_tracker_care_home_schema)
+        capacity_tracker_non_residential_df = self.spark.createDataFrame(capacity_tracker_non_residential_rows, schema = self.capacity_tracker_non_residential_schema)
+        
+        job.main(estimate_jobs_df, capacity_tracker_care_home_df, capacity_tracker_non_residential_df, self.DIAGNOSTICS_DESTINATION, self.RESIDUALS_DESTINATION)
+
+        mock_main.assert_called_once()
+     
 
 
     @unittest.skip("not written yet")

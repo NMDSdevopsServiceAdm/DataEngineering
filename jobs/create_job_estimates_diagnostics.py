@@ -39,10 +39,10 @@ def main(
     estimate_job_counts_source,
     capacity_tracker_care_home_source,
     capacity_tracker_non_residential_source,
-    pir_source,
     diagnostics_destination,
     residuals_destination,
 ):
+    
     spark = SparkSession.builder.appName(
         "sfc_data_engineering_job_estimate_diagnostics"
     ).getOrCreate()
@@ -96,21 +96,21 @@ def main(
     )
 
 
-# Add column to split data into known/ unkown values
-# 3 categories: ASCWDS known; known externally; Unknown
+    # Add column to split data into known/ unkown values
+    # 3 categories: ASCWDS known; known externally; Unknown
 
-# Calculate residuals for each model/ service/ known value status
-# add column to split into groups for model/ service / known value
-# calculate residuals wihin each group (window function?)
+    # Calculate residuals for each model/ service/ known value status
+    # add column to split into groups for model/ service / known value
+    # calculate residuals wihin each group (window function?)
 
-# Calculate average residuals
+    # Calculate average residuals
 
-# Create table for histograms
-# probably just involves dropping some values
+    # Create table for histograms
+    # probably just involves dropping some values
 
-# Save diagnostics to parquet - append with timestamp
+    # Save diagnostics to parquet - append with timestamp
 
-# Save residuals to parquet - append with timestamp
+    # Save residuals to parquet - append with timestamp
 
 
 if __name__ == "__main__":
@@ -121,7 +121,6 @@ if __name__ == "__main__":
         estimate_job_counts_source,
         capacity_tracker_care_home_source,
         capacity_tracker_non_residential_source,
-        pir_source,
         diagnostics_destination,
         residuals_destination,
     ) = utils.collect_arguments(
@@ -138,10 +137,6 @@ if __name__ == "__main__":
             "Source s3 directory for capacity tracker non residential data",
         ),
         (
-            "--pir_source",
-            "Source s3 directory for PIR data",
-        ),
-        (
             "--diagnostics_destination",
             "A destination directory for outputting summary diagnostics tables.",
         ),
@@ -155,7 +150,6 @@ if __name__ == "__main__":
         estimate_job_counts_source,
         capacity_tracker_care_home_source,
         capacity_tracker_non_residential_source,
-        pir_source,
         diagnostics_destination,
         residuals_destination,
     )
