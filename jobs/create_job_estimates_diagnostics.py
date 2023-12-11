@@ -23,15 +23,16 @@ from utils.estimate_job_count.column_names import (
     INTERPOLATION_MODEL,
     NON_RESIDENTIAL_MODEL,
 )
-
-CQC_ID: str = "CQC_ID"
-NURSES_EMPLOYED: str = "Nurses_Employed"
-CARE_WORKERS_EMPLOYED: str = "Care_Workers_Employed"
-NON_CARE_WORKERS_EMPLOYED: str = "Non_Care_Workers_Employed"
-AGENCY_NURSES_EMPLOYED: str = "Agency_Nurses_Employed"
-AGENCY_CARE_WORKERS_EMPLOYED: str = "Agency_Care_Workers_Employed"
-AGENCY_NON_CARE_WORKERS_EMPLOYED: str = "Agency_Non_Care_Workers_Employed"
-CQC_CARE_WORKERS_EMPLOYED: str = "CQC_Care_Workers_Employed"
+from utils.estimate_job_count.capacity_tracker_column_names import (
+    CQC_ID,
+    NURSES_EMPLOYED,
+    CARE_WORKERS_EMPLOYED,
+    NON_CARE_WORKERS_EMPLOYED,
+    AGENCY_NURSES_EMPLOYED,
+    AGENCY_CARE_WORKERS_EMPLOYED,
+    AGENCY_NON_CARE_WORKERS_EMPLOYED,
+    CQC_CARE_WORKERS_EMPLOYED,
+)
 
 def main(
     estimate_job_counts_source,
