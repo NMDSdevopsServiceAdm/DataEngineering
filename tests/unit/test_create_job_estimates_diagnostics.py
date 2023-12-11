@@ -73,24 +73,24 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.RESIDUALS_DESTINATION)
 
     estimate_jobs_schema = StructType(
-            [
-                StructField(LOCATION_ID, StringType(), False),
-                StructField(
-                    JOB_COUNT_UNFILTERED,
-                    FloatType(),
-                    True,
-                ),
-                StructField(JOB_COUNT, FloatType(), True),
-                StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-                StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-                StructField(CARE_HOME_MODEL, FloatType(), True),
-                StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-                StructField(INTERPOLATION_MODEL, FloatType(), True),
-                StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-                StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-                StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
-            ]
-        )
+        [
+            StructField(LOCATION_ID, StringType(), False),
+            StructField(
+                JOB_COUNT_UNFILTERED,
+                FloatType(),
+                True,
+            ),
+            StructField(JOB_COUNT, FloatType(), True),
+            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
+            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
+            StructField(CARE_HOME_MODEL, FloatType(), True),
+            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
+            StructField(INTERPOLATION_MODEL, FloatType(), True),
+            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
+            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
+            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+        ]
+    )
     capacity_tracker_care_home_schema = StructType(
         [
             StructField(CQC_ID, StringType(), False),
@@ -106,7 +106,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             StructField(AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
         ]
     )
-    capacity_tracker_non_residential_schema= StructType(
+    capacity_tracker_non_residential_schema = StructType(
         [
             StructField(CQC_ID, StringType(), False),
             StructField(
@@ -114,17 +114,25 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 FloatType(),
                 True,
             ),
-            
         ]
     )
-
-
-    
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         estimate_jobs_rows = [
-            ("location_1", 40.0, 40.0, "Care home with nursing", 60.9, 23.4, 45.1, None, None, 40.0, 45 ),
+            (
+                "location_1",
+                40.0,
+                40.0,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+            ),
         ]
 
         capacity_tracker_care_home_rows = [
@@ -133,26 +141,36 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         capacity_tracker_non_residential_rows = [
             ("location_2", 67.0),
         ]
-        
-        estimate_jobs_df= self.spark.createDataFrame(estimate_jobs_rows, schema = self.estimate_jobs_schema)
-        capacity_tracker_care_home_df = self.spark.createDataFrame(capacity_tracker_care_home_rows, schema = self.capacity_tracker_care_home_schema)
-        capacity_tracker_non_residential_df = self.spark.createDataFrame(capacity_tracker_non_residential_rows, schema = self.capacity_tracker_non_residential_schema)
-        
-        job.main(estimate_jobs_df, capacity_tracker_care_home_df, capacity_tracker_non_residential_df, self.DIAGNOSTICS_DESTINATION, self.RESIDUALS_DESTINATION)
+
+        estimate_jobs_df = self.spark.createDataFrame(
+            estimate_jobs_rows, schema=self.estimate_jobs_schema
+        )
+        capacity_tracker_care_home_df = self.spark.createDataFrame(
+            capacity_tracker_care_home_rows,
+            schema=self.capacity_tracker_care_home_schema,
+        )
+        capacity_tracker_non_residential_df = self.spark.createDataFrame(
+            capacity_tracker_non_residential_rows,
+            schema=self.capacity_tracker_non_residential_schema,
+        )
+
+        job.main(
+            estimate_jobs_df,
+            capacity_tracker_care_home_df,
+            capacity_tracker_non_residential_df,
+            self.DIAGNOSTICS_DESTINATION,
+            self.RESIDUALS_DESTINATION,
+        )
 
         mock_main.assert_called_once()
-     
-
 
     @unittest.skip("not written yet")
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         pass
 
-
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
         pass
-
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
@@ -160,30 +178,25 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         pass
 
-
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
     ):
         pass
 
-
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
         pass
 
-
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_residual_value_when_known_data_is_available(self):
         pass
-
 
     @unittest.skip("not written yet")
     def test_calculate_residuals_does_not_add_residual_value_when_known_data_is_unkown(
         self,
     ):
         pass
-
 
     @unittest.skip("not written yet")
     def test_calculate_average_residual_adds_column_with_average_residual(self):

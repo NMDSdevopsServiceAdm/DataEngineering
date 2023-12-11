@@ -42,7 +42,6 @@ def main(
     diagnostics_destination,
     residuals_destination,
 ):
-    
     spark = SparkSession.builder.appName(
         "sfc_data_engineering_job_estimate_diagnostics"
     ).getOrCreate()
@@ -94,7 +93,6 @@ def main(
         diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df[CQC_ID],
         how="left",
     )
-
 
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
