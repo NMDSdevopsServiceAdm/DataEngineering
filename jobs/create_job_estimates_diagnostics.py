@@ -84,6 +84,11 @@ def main(
     )
 
     diagnostics_df = merge_dataframes(job_estimates_df, capacity_tracker_care_homes_df, capacity_tracker_non_residential_df)
+
+    # add column for capacity tracker care home to calculate total employed
+    # add column for capacity tracker non res to estimate total employed
+    # drop unnecessary columns
+    
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
 

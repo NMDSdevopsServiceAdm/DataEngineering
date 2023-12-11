@@ -210,18 +210,21 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
+        # when job count unfiltered is populated
         pass
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
         self,
     ):
+        # when job count unfiltered is empty and capcity tracker (CH or NR) or pir is populated
         pass
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
     ):
+        # when job count unfiltered, capcity tracker columns, and pir are all empty
         pass
 
     @unittest.skip("not written yet")
