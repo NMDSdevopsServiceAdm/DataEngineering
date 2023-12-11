@@ -83,6 +83,7 @@ def main(
         CQC_CARE_WORKERS_EMPLOYED,
     )
 
+    diagnostics_df = merge_dataframes(job_estimates_df, capacity_tracker_care_homes_df, capacity_tracker_non_residential_df)
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
 
