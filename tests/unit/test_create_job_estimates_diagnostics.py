@@ -164,9 +164,50 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         mock_main.assert_called_once()
 
-    @unittest.skip("not written yet")
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
-        pass
+        estimate_jobs_rows = [
+            (
+                "location_1",
+                40.0,
+                40.0,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+            ),
+        ]
+
+        capacity_tracker_care_home_rows = [
+            ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
+        ]
+        capacity_tracker_non_residential_rows = [
+            ("location_2", 67.0),
+        ]
+
+        estimate_jobs_df = self.spark.createDataFrame(
+            estimate_jobs_rows, schema=self.estimate_jobs_schema
+        )
+        capacity_tracker_care_home_df = self.spark.createDataFrame(
+            capacity_tracker_care_home_rows,
+            schema=self.capacity_tracker_care_home_schema,
+        )
+        capacity_tracker_non_residential_df = self.spark.createDataFrame(
+            capacity_tracker_non_residential_rows,
+            schema=self.capacity_tracker_non_residential_schema,
+        )
+
+        output_df = job.merge_dataframes(
+            estimate_jobs_df,
+            capacity_tracker_care_home_df,
+            capacity_tracker_non_residential_df,
+        )
+        expected_rows = 1
+        self.assertEqual(output_df.count(), expected_rows)
+        
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
