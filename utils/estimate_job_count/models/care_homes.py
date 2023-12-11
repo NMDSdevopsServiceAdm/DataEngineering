@@ -11,6 +11,7 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
+
 def model_care_homes(locations_df, features_df, model_path):
     gbt_trained_model = GBTRegressionModel.load(model_path)
     features_df = features_df.where("carehome = 'Y'")

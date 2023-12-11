@@ -34,6 +34,7 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CQC_CARE_WORKERS_EMPLOYED,
 )
 
+
 def main(
     estimate_job_counts_source,
     capacity_tracker_care_home_source,
@@ -42,17 +43,14 @@ def main(
     diagnostics_destination,
     residuals_destination,
 ):
-    spark = (
-        SparkSession.builder.appName("sfc_data_engineering_job_estimate_diagnostics")
-        .getOrCreate()
-    )
+    spark = SparkSession.builder.appName(
+        "sfc_data_engineering_job_estimate_diagnostics"
+    ).getOrCreate()
     print("Creating diagnostics for job estimates")
 
-# Create dataframe with necessary columns
+    # Create dataframe with necessary columns
 
-    job_estimates_df: DataFrame = spark.read.parquet(
-        estimate_job_counts_source
-    ).select(
+    job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
         LOCATION_ID,
         SNAPSHOT_DATE,
         JOB_COUNT_UNFILTERED,
@@ -86,26 +84,33 @@ def main(
         CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    diagnostics_df: DataFrame = job_estimates_df.join(capacity_tracker_care_homes_df, job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df[CQC_ID], how="left")
-    diagnostics_df = diagnostics_df.join(capacity_tracker_non_residential_df, diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df[CQC_ID], how="left")
+    diagnostics_df: DataFrame = job_estimates_df.join(
+        capacity_tracker_care_homes_df,
+        job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df[CQC_ID],
+        how="left",
+    )
+    diagnostics_df = diagnostics_df.join(
+        capacity_tracker_non_residential_df,
+        diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df[CQC_ID],
+        how="left",
+    )
+
 
 # Add column to split data into known/ unkown values
-    # 3 categories: ASCWDS known; known externally; Unknown 
-    
+# 3 categories: ASCWDS known; known externally; Unknown
+
 # Calculate residuals for each model/ service/ known value status
-    # add column to split into groups for model/ service / known value
-    # calculate residuals wihin each group (window function?)
-    
+# add column to split into groups for model/ service / known value
+# calculate residuals wihin each group (window function?)
+
 # Calculate average residuals
-    
+
 # Create table for histograms
-    # probably just involves dropping some values
+# probably just involves dropping some values
 
 # Save diagnostics to parquet - append with timestamp
 
 # Save residuals to parquet - append with timestamp
-
-
 
 
 if __name__ == "__main__":

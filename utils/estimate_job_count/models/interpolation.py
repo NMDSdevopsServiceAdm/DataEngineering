@@ -25,7 +25,6 @@ PREVIOUS_JOB_COUNT_UNIX_TIME = "previous_job_count_unix_time"
 NEXT_JOB_COUNT_UNIX_TIME = "next_job_count_unix_time"
 
 
-
 def model_interpolation(df: DataFrame) -> DataFrame:
     known_job_count_df = filter_to_locations_with_a_known_job_count(df)
 
