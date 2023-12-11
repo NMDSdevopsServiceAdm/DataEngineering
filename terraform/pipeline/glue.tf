@@ -102,7 +102,7 @@ module "ingest_direct_payments_data_job" {
 
   job_parameters = {
     "--source"      = ""
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
+    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/version=1.0.0/"
   }
 }
 
@@ -159,8 +159,8 @@ module "prepare_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=0.0.1/"
+    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/version=1.0.0/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=1.0.0/"
   }
 }
 
@@ -172,9 +172,9 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/"
-    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=0.0.1/"
-    "--summary_destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=0.0.1/"
+    "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=1.0.0/"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=1.0.0/"
+    "--summary_destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=1.0.0/"
   }
 }
 
