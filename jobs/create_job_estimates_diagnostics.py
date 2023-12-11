@@ -83,7 +83,6 @@ def main(
         CQC_CARE_WORKERS_EMPLOYED,
     )
 
-
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
 
@@ -100,7 +99,12 @@ def main(
 
     # Save residuals to parquet - append with timestamp
 
-def merge_dataframes(job_estimates_df: DataFrame, capacity_tracker_care_homes_df: DataFrame, capacity_tracker_non_residential_df: DataFrame) -> DataFrame:
+
+def merge_dataframes(
+    job_estimates_df: DataFrame,
+    capacity_tracker_care_homes_df: DataFrame,
+    capacity_tracker_non_residential_df: DataFrame,
+) -> DataFrame:
     diagnostics_df: DataFrame = job_estimates_df.join(
         capacity_tracker_care_homes_df,
         job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df[CQC_ID],
@@ -112,6 +116,7 @@ def merge_dataframes(job_estimates_df: DataFrame, capacity_tracker_care_homes_df
         how="left",
     )
     return diagnostics_df
+
 
 if __name__ == "__main__":
     print("Spark job 'create_estimate_job_counts_diagnostics' starting...")

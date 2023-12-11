@@ -207,7 +207,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
         expected_rows = 1
         self.assertEqual(output_df.count(), expected_rows)
-        
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
