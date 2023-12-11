@@ -31,9 +31,14 @@ from utils.estimate_job_count.column_names import (
     NON_RESIDENTIAL_MODEL,
 )
 
-
-
-
+CQC_ID: str = "CQC_ID"
+NURSES_EMPLOYED: str = "Nurses_Employed"
+CARE_WORKERS_EMPLOYED: str = "Care_Workers_Employed"
+NON_CARE_WORKERS_EMPLOYED: str = "Non_Care_Workers_Employed"
+AGENCY_NURSES_EMPLOYED: str = "Agency_Nurses_Employed"
+AGENCY_CARE_WORKERS_EMPLOYED: str = "Agency_Care_Workers_Employed"
+AGENCY_NON_CARE_WORKERS_EMPLOYED: str = "Agency_Non_Care_Workers_Employed"
+CQC_CARE_WORKERS_EMPLOYED: str = "CQC_Care_Workers_Employed"
 
 def main(
     estimate_job_counts_source,
@@ -68,17 +73,24 @@ def main(
         PEOPLE_DIRECTLY_EMPLOYED,
     )
 
-    # CT CH cqc id
-    # CT CH nurses employed
-    # CT CH care workers employed
-    # CT CH non care workers employed
-    # CT CH agency nurses employed
-    # CT CH agency care workers employed
-    # CT CH agency non care workers employed
+    capacity_tracker_care_homes_df: DataFrame = spark.read.parquet(
+        capacity_tracker_care_home_source
+    ).select(
+        CQC_ID,
+        NURSES_EMPLOYED,
+        CARE_WORKERS_EMPLOYED,
+        NON_CARE_WORKERS_EMPLOYED,
+        AGENCY_NURSES_EMPLOYED,
+        AGENCY_CARE_WORKERS_EMPLOYED,
+        AGENCY_NON_CARE_WORKERS_EMPLOYED,
+    )
 
-    # CT NR cqc id
-    # CT NR care workers employed
-
+    capacity_tracker_non_residential_df: DataFrame = spark.read.parquet(
+        capacity_tracker_non_residential_source
+    ).select(
+        CQC_ID,
+        CQC_CARE_WORKERS_EMPLOYED,
+    )
 
 
 # Add column to split data into known/ unkown values
