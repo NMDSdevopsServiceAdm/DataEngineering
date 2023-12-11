@@ -5,6 +5,8 @@ import pyspark.sql
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame
+
 
 from utils import utils
 from utils.estimate_job_count.column_names import (
@@ -22,6 +24,11 @@ from utils.estimate_job_count.column_names import (
     ESTIMATE_JOB_COUNT_SOURCE,
     PRIMARY_SERVICE_TYPE,
     CQC_SECTOR,
+    ROLLING_AVERAGE_MODEL,
+    EXTRAPOLATION_MODEL,
+    CARE_HOME_MODEL,
+    INTERPOLATION_MODEL,
+    NON_RESIDENTIAL_MODEL,
 )
 
 
@@ -43,15 +50,24 @@ def main(
     print("Creating diagnostics for job estimates")
 
 # Create dataframe with necessary columns
-    # locationid
-    # snapshot date
-    # job count unfiltered
-    # job count
-    # primary service type
-    # value for each model
-    # current estimated value
-    # number directly employed
-    
+
+    job_estimates_df: DataFrame = spark.read.parquet(
+        estimate_job_counts_source
+    ).select(
+        LOCATION_ID,
+        SNAPSHOT_DATE,
+        JOB_COUNT_UNFILTERED,
+        JOB_COUNT,
+        PRIMARY_SERVICE_TYPE,
+        ROLLING_AVERAGE_MODEL,
+        CARE_HOME_MODEL,
+        EXTRAPOLATION_MODEL,
+        INTERPOLATION_MODEL,
+        NON_RESIDENTIAL_MODEL,
+        ESTIMATE_JOB_COUNT,
+        PEOPLE_DIRECTLY_EMPLOYED,
+    )
+
     # CT CH cqc id
     # CT CH nurses employed
     # CT CH care workers employed
@@ -69,15 +85,17 @@ def main(
     # 3 categories: ASCWDS known; known externally; Unknown 
     
 # Calculate residuals for each model/ service/ known value status
-    # Split into 
+    # add column to split into groups for model/ service / known value
+    # calculate residuals wihin each group (window function?)
     
 # Calculate average residuals
     
 # Create table for histograms
+    # probably just involves dropping some values
 
-# Save diagnostics to parquet
+# Save diagnostics to parquet - append with timestamp
 
-# Save residuals to parquet
+# Save residuals to parquet - append with timestamp
 
 
 
