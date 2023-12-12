@@ -307,7 +307,63 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     @unittest.skip("not written yet")
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(self):
-        pass
+        diagnostics_rows = [
+            (
+                "location_1",
+                40.0,
+                40.0,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45, 
+                8.0, 
+                12.0, 
+                15.0, 
+                1.0, 
+                3.0, 
+                2.0,
+                None,
+            ),
+            (
+                "location_2",
+                40.0,
+                40.0,
+                "Non residential",
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45, 
+                None, 
+                None, 
+                None, 
+                None, 
+                None, 
+                None,
+                75.0,
+            ),
+        ]
+        
+        diagnostics_df = self.spark.createDataFrame(
+            diagnostics_rows, schema=self.diagnostics_schema
+        )
+
+        output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
+
+        CT_NON_RESIDENTIAL_EMPLOYED ="ct_non_residential_employed"
+
+        expected_totals = [None, 100.0]
+    
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertEqual(output_df_list[0][CT_NON_RESIDENTIAL_EMPLOYED], expected_totals[0])
+        self.assertEqual(output_df_list[1][CT_NON_RESIDENTIAL_EMPLOYED], expected_totals[1])
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
