@@ -177,15 +177,17 @@ def prepare_capacity_tracker_non_residential_data(
 def add_categorisation_column(
     diagnostics_prepared_df: DataFrame,
 ) -> DataFrame:
-    
-    diagnostics_prepared_df= diagnostics_prepared_df.withColumn(
+    diagnostics_prepared_df = diagnostics_prepared_df.withColumn(
         RESIDUAL_CATEGORY,
         F.when(diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull(), ascwds_known)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) & 
-              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull()) &
-              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull()) &
-              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNull()), unknown)
-        .otherwise(known_externally)
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
+            & (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull())
+            & (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull())
+            & (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNull()),
+            unknown,
+        )
+        .otherwise(known_externally),
     )
     return diagnostics_prepared_df
 

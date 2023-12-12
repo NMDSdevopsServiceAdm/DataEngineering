@@ -427,10 +427,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(
-            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
-        )
-
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
 
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
         self,
@@ -508,19 +505,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(
-            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
-        )
-        self.assertEqual(
-            output_df_list[1][RESIDUAL_CATEGORY], expected_values[1]
-        )
-        self.assertEqual(
-            output_df_list[2][RESIDUAL_CATEGORY], expected_values[2]
-        )
-        self.assertEqual(
-            output_df_list[3][RESIDUAL_CATEGORY], expected_values[3]
-        )
-
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
+        self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], expected_values[1])
+        self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], expected_values[2])
+        self.assertEqual(output_df_list[3][RESIDUAL_CATEGORY], expected_values[3])
 
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
@@ -541,7 +529,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
             ),
-            
         ]
 
         diagnostics_prepared_df = self.spark.createDataFrame(
@@ -554,10 +541,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(
-            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
-        )
-        
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
 
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
