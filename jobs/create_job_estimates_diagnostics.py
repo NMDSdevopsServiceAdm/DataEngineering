@@ -32,7 +32,10 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     AGENCY_CARE_WORKERS_EMPLOYED,
     AGENCY_NON_CARE_WORKERS_EMPLOYED,
     CQC_CARE_WORKERS_EMPLOYED,
+    CARE_HOME_EMPLOYED,
+    NON_RESIDENTIAL_EMPLOYED,
 )
+
 
 
 def main(
@@ -122,6 +125,26 @@ def merge_dataframes(
         how="left",
     )
     return diagnostics_df
+
+
+def prepare_capacity_tracker_care_home_data(diagnostics_df: DataFrame) -> DataFrame:
+    diagnostics_df = diagnostics_df.withColumn(CARE_HOME_EMPLOYED, (diagnostics_df[NURSES_EMPLOYED] +
+        diagnostics_df[CARE_WORKERS_EMPLOYED] +
+        diagnostics_df[NON_CARE_WORKERS_EMPLOYED] +
+        diagnostics_df[AGENCY_NURSES_EMPLOYED] +
+        diagnostics_df[AGENCY_CARE_WORKERS_EMPLOYED] +
+        diagnostics_df[AGENCY_NON_CARE_WORKERS_EMPLOYED]))
+    return diagnostics_df
+
+
+
+def prepare_capacity_tracker_non_residential_data(diagnostics_df: DataFrame) -> DataFrame:
+    care_worker_to_all_jobs_ratio = 1.3
+    
+    diagnostics_df = diagnostics_df.withColumn(NON_RESIDENTIAL_EMPLOYED, (diagnostics_df[CQC_CARE_WORKERS_EMPLOYED] * care_worker_to_all_jobs_ratio
+        ))
+    return diagnostics_df
+
 
 
 if __name__ == "__main__":

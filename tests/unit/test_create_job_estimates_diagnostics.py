@@ -42,6 +42,8 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     AGENCY_CARE_WORKERS_EMPLOYED,
     AGENCY_NON_CARE_WORKERS_EMPLOYED,
     CQC_CARE_WORKERS_EMPLOYED,
+    CARE_HOME_EMPLOYED,
+    NON_RESIDENTIAL_EMPLOYED,
 )
 
 
@@ -243,7 +245,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_rows = 1
         self.assertEqual(output_df.count(), expected_rows)
 
-    @unittest.skip("not written yet")
+
     def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(self):
         diagnostics_rows = [
             (
@@ -294,18 +296,17 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
 
-        CT_CARE_HOME_EMPLOYED ="ct_care_home_employed"
+        
 
-        expected_totals = [31.0, None]
+        expected_totals = [41.0, None]
     
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][CT_CARE_HOME_EMPLOYED], expected_totals[0])
-        self.assertEqual(output_df_list[1][CT_CARE_HOME_EMPLOYED], expected_totals[1])
+        self.assertEqual(output_df_list[0][CARE_HOME_EMPLOYED], expected_totals[0])
+        self.assertEqual(output_df_list[1][CARE_HOME_EMPLOYED], expected_totals[1])
 
 
 
-    @unittest.skip("not written yet")
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(self):
         diagnostics_rows = [
             (
@@ -356,14 +357,13 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
 
-        CT_NON_RESIDENTIAL_EMPLOYED ="ct_non_residential_employed"
 
-        expected_totals = [None, 100.0]
+        expected_totals = [None, 97.5]
     
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][CT_NON_RESIDENTIAL_EMPLOYED], expected_totals[0])
-        self.assertEqual(output_df_list[1][CT_NON_RESIDENTIAL_EMPLOYED], expected_totals[1])
+        self.assertEqual(output_df_list[0][NON_RESIDENTIAL_EMPLOYED], expected_totals[0])
+        self.assertEqual(output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1])
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
