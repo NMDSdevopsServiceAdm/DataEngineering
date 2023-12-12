@@ -87,10 +87,24 @@ def main(
     )
 
     diagnostics_df = merge_dataframes(job_estimates_df, capacity_tracker_care_homes_df, capacity_tracker_non_residential_df)
-
-    # add column for capacity tracker care home to calculate total employed
-    # add column for capacity tracker non res to estimate total employed
-    # drop unnecessary columns
+    diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
+    diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
+    diagnostics_df_prepared = diagnostics_df.select(
+        LOCATION_ID,
+        SNAPSHOT_DATE,
+        JOB_COUNT_UNFILTERED,
+        JOB_COUNT,
+        PRIMARY_SERVICE_TYPE,
+        ROLLING_AVERAGE_MODEL,
+        CARE_HOME_MODEL,
+        EXTRAPOLATION_MODEL,
+        INTERPOLATION_MODEL,
+        NON_RESIDENTIAL_MODEL,
+        ESTIMATE_JOB_COUNT,
+        PEOPLE_DIRECTLY_EMPLOYED,
+        CARE_HOME_EMPLOYED,
+        NON_RESIDENTIAL_EMPLOYED,
+    )
     
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
