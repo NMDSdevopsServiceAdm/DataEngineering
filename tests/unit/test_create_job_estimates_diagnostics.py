@@ -426,19 +426,134 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
 
-    @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
         self,
     ):
         # when job count unfiltered is empty and capcity tracker (CH or NR) or pir is populated
-        pass
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                None,
+                None,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_2",
+                None,
+                None,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                50.0,
+                None,
+            ),
+            (
+                "location_3",
+                None,
+                None,
+                "Non residential",
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                None,
+                None,
+                40.0,
+            ),
+            (
+                "location_4",
+                None,
+                None,
+                "Non residential",
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                None,
+                32.0,
+                40.0,
+            ),
+        ]
 
-    @unittest.skip("not written yet")
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+
+        expected_values = ["known externally", "known externally", "known externally", "known externally"]
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertEqual(
+            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
+        )
+        self.assertEqual(
+            output_df_list[1][RESIDUAL_CATEGORY], expected_values[1]
+        )
+        self.assertEqual(
+            output_df_list[2][RESIDUAL_CATEGORY], expected_values[2]
+        )
+        self.assertEqual(
+            output_df_list[3][RESIDUAL_CATEGORY], expected_values[3]
+        )
+
+
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
     ):
         # when job count unfiltered, capcity tracker columns, and pir are all empty
-        pass
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                None,
+                None,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                None,
+                None,
+            ),
+            
+        ]
+
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+
+        expected_values = ["unknown"]
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertEqual(
+            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
+        )
+        
 
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
