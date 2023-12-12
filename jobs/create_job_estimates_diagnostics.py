@@ -204,6 +204,21 @@ def add_categorisation_column(
                ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), ascwds_known_care_home)
         .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()) &
                (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), ascwds_known_non_residential)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
+              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull()) &
+               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), capacity_tracker_known_care_home)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
+              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull()) &
+               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), capacity_tracker_known_non_residential)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
+              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull()) &
+              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull()) &
+               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), pir_known_care_home)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
+              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull()) &
+              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull()) &
+               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), pir_known_non_residential)
+        .otherwise(unknown)
     )
     return diagnostics_prepared_df
 
