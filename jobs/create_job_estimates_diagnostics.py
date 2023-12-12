@@ -37,7 +37,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
 )
 
 
-
 def main(
     estimate_job_counts_source,
     capacity_tracker_care_home_source,
@@ -86,7 +85,11 @@ def main(
         CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    diagnostics_df = merge_dataframes(job_estimates_df, capacity_tracker_care_homes_df, capacity_tracker_non_residential_df)
+    diagnostics_df = merge_dataframes(
+        job_estimates_df,
+        capacity_tracker_care_homes_df,
+        capacity_tracker_non_residential_df,
+    )
     diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
     diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
     diagnostics_df_prepared = diagnostics_df.select(
@@ -105,7 +108,7 @@ def main(
         CARE_HOME_EMPLOYED,
         NON_RESIDENTIAL_EMPLOYED,
     )
-    
+
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
 
@@ -142,23 +145,30 @@ def merge_dataframes(
 
 
 def prepare_capacity_tracker_care_home_data(diagnostics_df: DataFrame) -> DataFrame:
-    diagnostics_df = diagnostics_df.withColumn(CARE_HOME_EMPLOYED, (diagnostics_df[NURSES_EMPLOYED] +
-        diagnostics_df[CARE_WORKERS_EMPLOYED] +
-        diagnostics_df[NON_CARE_WORKERS_EMPLOYED] +
-        diagnostics_df[AGENCY_NURSES_EMPLOYED] +
-        diagnostics_df[AGENCY_CARE_WORKERS_EMPLOYED] +
-        diagnostics_df[AGENCY_NON_CARE_WORKERS_EMPLOYED]))
+    diagnostics_df = diagnostics_df.withColumn(
+        CARE_HOME_EMPLOYED,
+        (
+            diagnostics_df[NURSES_EMPLOYED]
+            + diagnostics_df[CARE_WORKERS_EMPLOYED]
+            + diagnostics_df[NON_CARE_WORKERS_EMPLOYED]
+            + diagnostics_df[AGENCY_NURSES_EMPLOYED]
+            + diagnostics_df[AGENCY_CARE_WORKERS_EMPLOYED]
+            + diagnostics_df[AGENCY_NON_CARE_WORKERS_EMPLOYED]
+        ),
+    )
     return diagnostics_df
 
 
-
-def prepare_capacity_tracker_non_residential_data(diagnostics_df: DataFrame) -> DataFrame:
+def prepare_capacity_tracker_non_residential_data(
+    diagnostics_df: DataFrame,
+) -> DataFrame:
     care_worker_to_all_jobs_ratio = 1.3
-    
-    diagnostics_df = diagnostics_df.withColumn(NON_RESIDENTIAL_EMPLOYED, (diagnostics_df[CQC_CARE_WORKERS_EMPLOYED] * care_worker_to_all_jobs_ratio
-        ))
-    return diagnostics_df
 
+    diagnostics_df = diagnostics_df.withColumn(
+        NON_RESIDENTIAL_EMPLOYED,
+        (diagnostics_df[CQC_CARE_WORKERS_EMPLOYED] * care_worker_to_all_jobs_ratio),
+    )
+    return diagnostics_df
 
 
 if __name__ == "__main__":

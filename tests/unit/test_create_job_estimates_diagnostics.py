@@ -245,8 +245,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_rows = 1
         self.assertEqual(output_df.count(), expected_rows)
 
-
-    def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(self):
+    def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(
+        self,
+    ):
         diagnostics_rows = [
             (
                 "location_1",
@@ -259,12 +260,12 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
                 40.0,
-                45, 
-                8.0, 
-                12.0, 
-                15.0, 
-                1.0, 
-                3.0, 
+                45,
+                8.0,
+                12.0,
+                15.0,
+                1.0,
+                3.0,
                 2.0,
                 None,
             ),
@@ -279,35 +280,33 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
                 40.0,
-                45, 
-                None, 
-                None, 
-                None, 
-                None, 
-                None, 
+                45,
+                None,
+                None,
+                None,
+                None,
+                None,
                 None,
                 30.0,
             ),
         ]
-        
+
         diagnostics_df = self.spark.createDataFrame(
             diagnostics_rows, schema=self.diagnostics_schema
         )
 
         output_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
 
-        
-
         expected_totals = [41.0, None]
-    
+
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
         self.assertEqual(output_df_list[0][CARE_HOME_EMPLOYED], expected_totals[0])
         self.assertEqual(output_df_list[1][CARE_HOME_EMPLOYED], expected_totals[1])
 
-
-
-    def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(self):
+    def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
+        self,
+    ):
         diagnostics_rows = [
             (
                 "location_1",
@@ -320,12 +319,12 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
                 40.0,
-                45, 
-                8.0, 
-                12.0, 
-                15.0, 
-                1.0, 
-                3.0, 
+                45,
+                8.0,
+                12.0,
+                15.0,
+                1.0,
+                3.0,
                 2.0,
                 None,
             ),
@@ -340,30 +339,33 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
                 40.0,
-                45, 
-                None, 
-                None, 
-                None, 
-                None, 
-                None, 
+                45,
+                None,
+                None,
+                None,
+                None,
+                None,
                 None,
                 75.0,
             ),
         ]
-        
+
         diagnostics_df = self.spark.createDataFrame(
             diagnostics_rows, schema=self.diagnostics_schema
         )
 
         output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
 
-
         expected_totals = [None, 97.5]
-    
+
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][NON_RESIDENTIAL_EMPLOYED], expected_totals[0])
-        self.assertEqual(output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1])
+        self.assertEqual(
+            output_df_list[0][NON_RESIDENTIAL_EMPLOYED], expected_totals[0]
+        )
+        self.assertEqual(
+            output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
+        )
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
