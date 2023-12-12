@@ -115,6 +115,8 @@ def main(
         NON_RESIDENTIAL_EMPLOYED,
     )
 
+    diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
+
     # Add column to split data into known/ unkown values
     # 3 categories: ASCWDS known; known externally; Unknown
 
