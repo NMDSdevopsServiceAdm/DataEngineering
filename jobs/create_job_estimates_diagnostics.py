@@ -36,6 +36,11 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     NON_RESIDENTIAL_EMPLOYED,
     RESIDUAL_CATEGORY,
 )
+from utils.estimate_job_count.capacity_tracker_column_values import (
+    ascwds_known,
+    known_externally,
+    unknown,
+)
 
 
 def main(
@@ -93,7 +98,7 @@ def main(
     )
     diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
     diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
-    diagnostics_df_prepared = diagnostics_df.select(
+    diagnostics_prepared_df = diagnostics_df.select(
         LOCATION_ID,
         SNAPSHOT_DATE,
         JOB_COUNT_UNFILTERED,
@@ -170,6 +175,22 @@ def prepare_capacity_tracker_non_residential_data(
         (diagnostics_df[CQC_CARE_WORKERS_EMPLOYED] * care_worker_to_all_jobs_ratio),
     )
     return diagnostics_df
+
+
+def add_categorisation_column(
+    diagnostics_prepared_df: DataFrame,
+) -> DataFrame:
+    
+    diagnostics_prepared_df= diagnostics_prepared_df.withColumn(
+        RESIDUAL_CATEGORY,
+        F.when(diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull(), ascwds_known)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) & 
+              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull()) &
+              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull()) &
+              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNull()), unknown)
+        .otherwise(known_externally)
+    )
+    return diagnostics_prepared_df
 
 
 if __name__ == "__main__":

@@ -46,6 +46,11 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     NON_RESIDENTIAL_EMPLOYED,
     RESIDUAL_CATEGORY,
 )
+from utils.estimate_job_count.capacity_tracker_column_values import (
+    ascwds_known,
+    known_externally,
+    unknown,
+)
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
@@ -418,7 +423,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = ["ASCWDS known"]
+        expected_values = [ascwds_known]
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
@@ -500,7 +505,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = ["known externally", "known externally", "known externally", "known externally"]
+        expected_values = [known_externally] * len(diagnostics_prepared_rows)
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
@@ -547,7 +552,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = ["unknown"]
+        expected_values = [unknown]
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
