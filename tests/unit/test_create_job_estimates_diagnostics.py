@@ -209,6 +209,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df.count(), expected_rows)
 
     @unittest.skip("not written yet")
+    def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(self):
+        pass
+
+    @unittest.skip("not written yet")
+    def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(self):
+        pass
+
+    @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
         # when job count unfiltered is populated
         pass
