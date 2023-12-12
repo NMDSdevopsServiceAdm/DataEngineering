@@ -37,8 +37,12 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     RESIDUAL_CATEGORY,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
-    ascwds_known,
-    known_externally,
+    ascwds_known_care_home,
+    ascwds_known_non_residential,
+    capacity_tracker_known_care_home,
+    capacity_tracker_known_non_residential,
+    pir_known_care_home,
+    pir_known_non_residential,
     unknown,
 )
 
