@@ -153,6 +153,31 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             ),
         ]
     )
+    diagnostics_prepared_schema = StructType(
+        [
+            StructField(LOCATION_ID, StringType(), False),
+            StructField(
+                JOB_COUNT_UNFILTERED,
+                FloatType(),
+                True,
+            ),
+            StructField(JOB_COUNT, FloatType(), True),
+            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
+            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
+            StructField(CARE_HOME_MODEL, FloatType(), True),
+            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
+            StructField(INTERPOLATION_MODEL, FloatType(), True),
+            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
+            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
+            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(
+                CARE_HOME_EMPLOYED,
+                FloatType(),
+                True,
+            ),
+            StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+        ]
+    )
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
@@ -367,10 +392,39 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
         )
 
-    @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
-        # when job count unfiltered is populated
-        pass
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                40.0,
+                40.0,
+                "Care home with nursing",
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+            ),
+        ]
+
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+
+        expected_values = ["ASCWDS known"]
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertEqual(
+            output_df_list[0][RESIDUAL_CATEGORY], expected_values[0]
+        )
+
 
     @unittest.skip("not written yet")
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
