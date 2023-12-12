@@ -54,6 +54,9 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     pir_known_care_home,
     pir_known_non_residential,
     unknown,
+    care_home_with_nursing,
+    care_home_without_nursing,
+    non_residential,
 )
 
 
@@ -196,7 +199,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 40.0,
                 40.0,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 45.1,
@@ -242,7 +245,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 40.0,
                 40.0,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 45.1,
@@ -288,7 +291,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 40.0,
                 40.0,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 45.1,
@@ -308,7 +311,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_2",
                 40.0,
                 40.0,
-                "Non residential",
+                non_residential,
                 60.9,
                 23.4,
                 45.1,
@@ -347,7 +350,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 40.0,
                 40.0,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 45.1,
@@ -367,7 +370,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_2",
                 40.0,
                 40.0,
-                "Non residential",
+                non_residential,
                 60.9,
                 23.4,
                 45.1,
@@ -408,7 +411,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 40.0,
                 40.0,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 45.1,
@@ -420,10 +423,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
             ),
             (
-                "location_3",
+                "location_2",
                 40.0,
                 40.0,
-                "Non residential",
+                non_residential,
                 60.9,
                 23.4,
                 45.1,
@@ -434,6 +437,21 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 40.0,
             ),
+            (
+                "location_3",
+                40.0,
+                40.0,
+                care_home_without_nursing,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+            ),
         ]
 
         diagnostics_prepared_df = self.spark.createDataFrame(
@@ -442,12 +460,13 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = [ascwds_known_care_home, ascwds_known_non_residential]
+        expected_values = [ascwds_known_care_home, ascwds_known_non_residential, ascwds_known_care_home]
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
         self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
         self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], expected_values[1])
+        self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], expected_values[2])
 
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
         self,
@@ -457,7 +476,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 None,
                 None,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 None,
@@ -472,7 +491,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_2",
                 None,
                 None,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 None,
@@ -487,7 +506,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_3",
                 None,
                 None,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 None,
@@ -502,7 +521,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_4",
                 None,
                 None,
-                "Non residential",
+                non_residential,
                 60.9,
                 None,
                 None,
@@ -517,7 +536,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_5",
                 None,
                 None,
-                "Non residential",
+                non_residential,
                 60.9,
                 None,
                 None,
@@ -533,7 +552,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_6",
                 None,
                 None,
-                "Non residential",
+                non_residential,
                 60.9,
                 None,
                 None,
@@ -576,7 +595,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_1",
                 None,
                 None,
-                "Care home with nursing",
+                care_home_with_nursing,
                 60.9,
                 23.4,
                 None,

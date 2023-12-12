@@ -44,6 +44,9 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     pir_known_care_home,
     pir_known_non_residential,
     unknown,
+    care_home_with_nursing,
+    care_home_without_nursing,
+    non_residential,
 )
 
 
@@ -197,15 +200,10 @@ def add_categorisation_column(
 ) -> DataFrame:
     diagnostics_prepared_df = diagnostics_prepared_df.withColumn(
         RESIDUAL_CATEGORY,
-        F.when(diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull(), ascwds_known)
-        .when(
-            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
-            & (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull())
-            & (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull())
-            & (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNull()),
-            unknown,
-        )
-        .otherwise(known_externally),
+        F.when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()) &
+               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), ascwds_known_care_home)
+        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()) &
+               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), ascwds_known_non_residential)
     )
     return diagnostics_prepared_df
 
