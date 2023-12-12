@@ -118,7 +118,21 @@ def main(
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
     # calculate residuals wihin each group (window function?)
-
+        # estmiate job count (output)-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+        # job count -> care home/ non-res -> ascwds known -> 2
+        # care home model-> care home -> ascwds knwon/ extranlly knwon/ unknown -> 3
+        # non res model-> non-res -> ascwds knwon/ extranlly knwon/ unknown -> 3
+        # interpolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+        # extrapolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+        # rolling average model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+        # total combinations = 32
+    # recode the residual category column into ascwds known care home/ ascwds kown non res/ externally known ct care home/ externally known ct non res/ externally known pir care home / externally known pir non res / unknown
+    # select columns
+    # explode df so row per model and one "output value" column and one "output model"
+    # create column with "known" value using residual category to control flow
+    
+    # calculate difference between known and outputed values in "residuals" column
+    # window by partition on residual category column
     # Calculate average residuals
 
     # Create table for histograms
