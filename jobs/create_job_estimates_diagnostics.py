@@ -125,19 +125,19 @@ def main(
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
     # calculate residuals wihin each group (window function?)
-        # estmiate job count (output)-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
-        # job count -> care home/ non-res -> ascwds known -> 2
-        # care home model-> care home -> ascwds knwon/ extranlly knwon/ unknown -> 3
-        # non res model-> non-res -> ascwds knwon/ extranlly knwon/ unknown -> 3
-        # interpolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
-        # extrapolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
-        # rolling average model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
-        # total combinations = 32
+    # estmiate job count (output)-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+    # job count -> care home/ non-res -> ascwds known -> 2
+    # care home model-> care home -> ascwds knwon/ extranlly knwon/ unknown -> 3
+    # non res model-> non-res -> ascwds knwon/ extranlly knwon/ unknown -> 3
+    # interpolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+    # extrapolation model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+    # rolling average model-> care home/ non-res -> ascwds knwon/ extranlly knwon/ unknown -> 6
+    # total combinations = 32
     # recode the residual category column into ascwds known care home/ ascwds kown non res/ externally known ct care home/ externally known ct non res/ externally known pir care home / externally known pir non res / unknown
     # select columns
     # explode df so row per model and one "output value" column and one "output model"
     # create column with "known" value using residual category to control flow
-    
+
     # calculate difference between known and outputed values in "residuals" column
     # window by partition on residual category column
     # Calculate average residuals
@@ -200,25 +200,70 @@ def add_categorisation_column(
 ) -> DataFrame:
     diagnostics_prepared_df = diagnostics_prepared_df.withColumn(
         RESIDUAL_CATEGORY,
-        F.when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()) &
-               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), ascwds_known_care_home)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()) &
-               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), ascwds_known_non_residential)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
-              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull()) &
-               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), capacity_tracker_known_care_home)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
-              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull()) &
-               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), capacity_tracker_known_non_residential)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
-              (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull()) &
-              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull()) &
-               ((diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_with_nursing) | (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == care_home_without_nursing)), pir_known_care_home)
-        .when((diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull()) &
-              (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull()) &
-              (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull()) &
-               (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential), pir_known_non_residential)
-        .otherwise(unknown)
+        F.when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull())
+            & (
+                (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_with_nursing
+                )
+                | (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_without_nursing
+                )
+            ),
+            ascwds_known_care_home,
+        )
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull())
+            & (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential),
+            ascwds_known_non_residential,
+        )
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
+            & (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull())
+            & (
+                (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_with_nursing
+                )
+                | (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_without_nursing
+                )
+            ),
+            capacity_tracker_known_care_home,
+        )
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
+            & (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull())
+            & (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential),
+            capacity_tracker_known_non_residential,
+        )
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
+            & (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNull())
+            & (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull())
+            & (
+                (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_with_nursing
+                )
+                | (
+                    diagnostics_prepared_df[PRIMARY_SERVICE_TYPE]
+                    == care_home_without_nursing
+                )
+            ),
+            pir_known_care_home,
+        )
+        .when(
+            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
+            & (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNull())
+            & (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull())
+            & (diagnostics_prepared_df[PRIMARY_SERVICE_TYPE] == non_residential),
+            pir_known_non_residential,
+        )
+        .otherwise(unknown),
     )
     return diagnostics_prepared_df
 

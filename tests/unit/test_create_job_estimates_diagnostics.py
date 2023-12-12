@@ -460,7 +460,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = [ascwds_known_care_home, ascwds_known_non_residential, ascwds_known_care_home]
+        expected_values = [
+            ascwds_known_care_home,
+            ascwds_known_non_residential,
+            ascwds_known_care_home,
+        ]
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
@@ -547,7 +551,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 40.0,
             ),
-            
             (
                 "location_6",
                 None,
@@ -571,12 +574,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = [pir_known_care_home, 
-                           capacity_tracker_known_care_home, 
-                           capacity_tracker_known_care_home,
-                           pir_known_non_residential,
-                           capacity_tracker_known_non_residential,
-                           capacity_tracker_known_non_residential,]
+        expected_values = [
+            pir_known_care_home,
+            capacity_tracker_known_care_home,
+            capacity_tracker_known_care_home,
+            pir_known_non_residential,
+            capacity_tracker_known_non_residential,
+            capacity_tracker_known_non_residential,
+        ]
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
