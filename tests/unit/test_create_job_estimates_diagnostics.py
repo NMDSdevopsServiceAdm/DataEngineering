@@ -44,6 +44,7 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CQC_CARE_WORKERS_EMPLOYED,
     CARE_HOME_EMPLOYED,
     NON_RESIDENTIAL_EMPLOYED,
+    RESIDUAL_CATEGORY,
 )
 
 
