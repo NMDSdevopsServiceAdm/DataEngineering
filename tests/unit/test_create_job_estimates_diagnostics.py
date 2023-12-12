@@ -435,7 +435,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
         self,
     ):
-        # when job count unfiltered is empty and capcity tracker (CH or NR) or pir is populated
         diagnostics_prepared_rows = [
             (
                 "location_1",
@@ -526,7 +525,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
     ):
-        # when job count unfiltered, capcity tracker columns, and pir are all empty
         diagnostics_prepared_rows = [
             (
                 "location_1",

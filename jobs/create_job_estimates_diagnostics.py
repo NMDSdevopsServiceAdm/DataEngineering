@@ -55,8 +55,6 @@ def main(
     ).getOrCreate()
     print("Creating diagnostics for job estimates")
 
-    # Create dataframe with necessary columns
-
     job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
         LOCATION_ID,
         SNAPSHOT_DATE,
@@ -116,9 +114,6 @@ def main(
     )
 
     diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
-
-    # Add column to split data into known/ unkown values
-    # 3 categories: ASCWDS known; known externally; Unknown
 
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
