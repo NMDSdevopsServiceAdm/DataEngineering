@@ -589,11 +589,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = [unknown]
-
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], unknown)
 
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
