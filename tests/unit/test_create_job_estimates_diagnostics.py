@@ -552,12 +552,12 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], known)
         self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], known)
         self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], known)
-        self.assertEqual(output_df_list[3][RESIDUAL_CATEGORY], unknown)
-        self.assertEqual(output_df_list[4][RESIDUAL_CATEGORY], unknown)
-        self.assertEqual(output_df_list[5][RESIDUAL_CATEGORY], unknown)
-        self.assertEqual(output_df_list[6][RESIDUAL_CATEGORY], unknown)
-        self.assertEqual(output_df_list[7][RESIDUAL_CATEGORY], unknown)
-        self.assertEqual(output_df_list[8][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[3][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[4][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[5][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[6][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[7][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[8][RESIDUAL_CATEGORY], known)
 
 
 
