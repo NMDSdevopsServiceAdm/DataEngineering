@@ -972,8 +972,15 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     @unittest.skip("not written yet")
     def test_create_residuals_column_name(
         self,
-    ):
-        pass
+    ):  
+        model = ESTIMATE_JOB_COUNT
+        service = care_home_with_nursing
+        data_source = "PIR"
+        
+        output = job.create_residuals_column_name(model, service, data_source)
+        expected_output = "residuals_estimate_job_count_care_home_pir"
+
+        self.assertEqual(output, expected_output)
 
     @unittest.skip("not written yet")
     def test_run_residuals_creates_multiple_columns(
