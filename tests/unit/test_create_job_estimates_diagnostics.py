@@ -568,17 +568,49 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         diagnostics_prepared_rows = [
             (
                 "location_1",
-                40.0,
-                40.0,
+                None,
+                None,
                 care_home_with_nursing,
                 60.9,
                 23.4,
-                45.1,
                 None,
                 None,
-                40.0,
-                45,
-                41.0,
+                None,
+                60.9,
+                None,
+                None,
+                None,
+            ),
+            
+        ]
+
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], unknown)
+
+    def test_add_catagorisation_column_leaves_no_rows_blank(
+        self,
+    ):
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                None,
                 None,
             ),
             (
@@ -726,11 +758,21 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], unknown)
+        self.assertIsNotNone(output_df_list[0][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[1][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[2][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[3][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[4][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[5][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[6][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[7][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[8][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[9][RESIDUAL_CATEGORY])
 
-    def test_add_catagorisation_column_leaves_no_rows_blank(
-        self,
-    ):
+
+    
+    @unittest.skip("not written yet")
+    def test_calculate_residuals_adds_a_column(self):
         diagnostics_prepared_rows = [
             (
                 "location_1",
@@ -747,39 +789,26 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
             ),
+            
         ]
 
         diagnostics_prepared_df = self.spark.createDataFrame(
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
         )
 
-        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+        output_df = job.calculate_residuals(diagnostics_prepared_df)
 
-        output_df_list = output_df.sort(LOCATION_ID).collect()
+        output_df_size= output_df.count()
+        expected_df_size = diagnostics_prepared_df.count() + 1
 
-        self.assertIsNotNone(output_df_list[0][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[1][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[2][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[3][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[4][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[5][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[6][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[7][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[8][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[9][RESIDUAL_CATEGORY])
-        self.assertIsNotNone(output_df_list[10][RESIDUAL_CATEGORY])
+        self.assertEqual(output_df_size, expected_df_size)
 
-    
     @unittest.skip("not written yet")
-    def test_calculate_residuals_adds_a_column(self):
+    def test_calculate_residuals_adds_residual_value(self):
         pass
 
     @unittest.skip("not written yet")
-    def test_calculate_residuals_adds_residual_value_when_known_data_is_available(self):
-        pass
-
-    @unittest.skip("not written yet")
-    def test_calculate_residuals_does_not_add_residual_value_when_known_data_is_unkown(
+    def test_run_residuals_creates_multiple_columns(
         self,
     ):
         pass

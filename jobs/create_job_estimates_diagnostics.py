@@ -116,7 +116,8 @@ def main(
     )
 
     diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
-
+    known_values_df = diagnostics_prepared_df.where(diagnostics_prepared_df[RESIDUAL_CATEGORY] == known)
+    
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
     # calculate residuals wihin each group (window function?)
