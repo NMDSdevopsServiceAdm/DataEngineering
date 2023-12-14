@@ -568,6 +568,141 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         diagnostics_prepared_rows = [
             (
                 "location_1",
+                40.0,
+                40.0,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+            ),
+            (
+                "location_2",
+                40.0,
+                40.0,
+                non_residential,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                None,
+                None,
+                40.0,
+            ),
+            (
+                "location_3",
+                40.0,
+                40.0,
+                care_home_without_nursing,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+            ),
+            (
+                "location_4",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_5",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                50.0,
+                None,
+            ),
+            (
+                "location_6",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                50.0,
+                None,
+            ),
+            (
+                "location_7",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_8",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                None,
+                None,
+                40.0,
+            ),
+            (
+                "location_9",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                45,
+                None,
+                40.0,
+            ),
+            (
+                "location_10",
                 None,
                 None,
                 care_home_with_nursing,
@@ -593,6 +728,48 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], unknown)
 
+    def test_add_catagorisation_column_leaves_no_rows_blank(
+        self,
+    ):
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                None,
+                None,
+            ),
+        ]
+
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+        output_df = job.add_categorisation_column(diagnostics_prepared_df)
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+
+        self.assertIsNotNone(output_df_list[0][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[1][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[2][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[3][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[4][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[5][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[6][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[7][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[8][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[9][RESIDUAL_CATEGORY])
+        self.assertIsNotNone(output_df_list[10][RESIDUAL_CATEGORY])
+
+    
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
         pass
