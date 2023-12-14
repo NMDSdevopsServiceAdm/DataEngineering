@@ -185,6 +185,34 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             ),
             StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
         ]
+
+    )
+    
+    known_values_schema = StructType(
+        [
+            StructField(LOCATION_ID, StringType(), False),
+            StructField(
+                JOB_COUNT_UNFILTERED,
+                FloatType(),
+                True,
+            ),
+            StructField(JOB_COUNT, FloatType(), True),
+            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
+            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
+            StructField(CARE_HOME_MODEL, FloatType(), True),
+            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
+            StructField(INTERPOLATION_MODEL, FloatType(), True),
+            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
+            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
+            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(
+                CARE_HOME_EMPLOYED,
+                FloatType(),
+                True,
+            ),
+            StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+            StructField(RESIDUAL_CATEGORY, StringType(), True),
+        ]
     )
 
     @patch("jobs.create_job_estimates_diagnostics.main")
@@ -773,9 +801,57 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_a_column(self):
-        diagnostics_prepared_rows = [
+        known_values_rows = [
             (
-                "location_1",
+                "location_2",
+                40.0,
+                40.0,
+                non_residential,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                None,
+                None,
+                40.0,
+                known,
+            ),
+            (
+                "location_3",
+                40.0,
+                40.0,
+                care_home_without_nursing,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+                known,
+            ),
+            (
+                "location_4",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                None,
+                None,
+                known,
+            ),
+            (
+                "location_5",
                 None,
                 None,
                 care_home_with_nursing,
@@ -786,25 +862,117 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 60.9,
                 None,
+                50.0,
                 None,
-                None,
+                known,
             ),
             
         ]
 
-        diagnostics_prepared_df = self.spark.createDataFrame(
-            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        known_values_df = self.spark.createDataFrame(
+            known_values_rows, schema=self.known_values_schema
         )
 
-        output_df = job.calculate_residuals(diagnostics_prepared_df)
+        output_df = job.calculate_residuals(known_values_df)
 
         output_df_size= output_df.count()
-        expected_df_size = diagnostics_prepared_df.count() + 1
+        expected_df_size = known_values_df.count() + 1
 
         self.assertEqual(output_df_size, expected_df_size)
 
     @unittest.skip("not written yet")
     def test_calculate_residuals_adds_residual_value(self):
+        known_values_rows = [
+            (
+                "location_2",
+                40.0,
+                40.0,
+                non_residential,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                None,
+                None,
+                40.0,
+                known,
+            ),
+            (
+                "location_3",
+                40.0,
+                40.0,
+                non_residential,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0, 
+                45, 
+                41.0,
+                None,
+                known,
+            ),
+            (
+                "location_4", 
+                None,
+                None,
+                non_residential,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9, 
+                45, 
+                None,
+                None,
+                known,
+            ),
+            (
+                "location_5",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                50.0,
+                None,
+                known,
+            ),
+            
+        ]
+
+        known_values_df = self.spark.createDataFrame(
+            known_values_rows, schema=self.known_values_schema
+        )
+
+        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service = non_residential, known_data="pir")
+
+        output_df_list = output_df.sort(LOCATION_ID).collect()
+        expected_values = [
+            0.0,
+            5.0,
+            15.9,
+            0.0,
+        ]
+
+        self.assertEqual(output_df_list[0][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[0])
+        self.assertEqual(output_df_list[1][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[1])
+        self.assertEqual(output_df_list[2][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[2])
+        self.assertEqual(output_df_list[3][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[3])
+
+    @unittest.skip("not written yet")
+    def test_create_residuals_column_name(
+        self,
+    ):
         pass
 
     @unittest.skip("not written yet")
