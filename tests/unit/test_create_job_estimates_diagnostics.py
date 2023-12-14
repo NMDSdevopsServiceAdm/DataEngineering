@@ -47,12 +47,7 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     RESIDUAL_CATEGORY,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
-    ascwds_known_care_home,
-    ascwds_known_non_residential,
-    capacity_tracker_known_care_home,
-    capacity_tracker_known_non_residential,
-    pir_known_care_home,
-    pir_known_non_residential,
+    known,
     unknown,
     care_home_with_nursing,
     care_home_without_nursing,
@@ -405,7 +400,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
         )
 
-    def test_add_catagorisation_column_adds_ascwds_known_when_data_is_in_ascwds(self):
+    def test_add_catagorisation_column_adds_known_when_data_is_in_ascwds_or_capacity_tracker_or_pir(self):
         diagnostics_prepared_rows = [
             (
                 "location_1",
@@ -452,85 +447,16 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 41.0,
                 None,
             ),
-        ]
-
-        diagnostics_prepared_df = self.spark.createDataFrame(
-            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
-        )
-
-        output_df = job.add_categorisation_column(diagnostics_prepared_df)
-
-        expected_values = [
-            ascwds_known_care_home,
-            ascwds_known_non_residential,
-            ascwds_known_care_home,
-        ]
-
-        output_df_list = output_df.sort(LOCATION_ID).collect()
-
-        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
-        self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], expected_values[1])
-        self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], expected_values[2])
-
-    def test_add_catagorisation_column_adds_externally_known_when_data_is_in_capacity_tracker_or_pir(
-        self,
-    ):
-        diagnostics_prepared_rows = [
-            (
-                "location_1",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                45,
-                None,
-                None,
-            ),
-            (
-                "location_2",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                50.0,
-                None,
-            ),
-            (
-                "location_3",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                45,
-                50.0,
-                None,
-            ),
             (
                 "location_4",
                 None,
                 None,
-                non_residential,
+                care_home_with_nursing,
                 60.9,
+                23.4,
                 None,
                 None,
                 None,
-                40.0,
                 60.9,
                 45,
                 None,
@@ -540,6 +466,51 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 "location_5",
                 None,
                 None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                50.0,
+                None,
+            ),
+            (
+                "location_6",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                50.0,
+                None,
+            ),
+            (
+                "location_7",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_8",
+                None,
+                None,
                 non_residential,
                 60.9,
                 None,
@@ -552,7 +523,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 40.0,
             ),
             (
-                "location_6",
+                "location_9",
                 None,
                 None,
                 non_residential,
@@ -574,23 +545,22 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df = job.add_categorisation_column(diagnostics_prepared_df)
 
-        expected_values = [
-            pir_known_care_home,
-            capacity_tracker_known_care_home,
-            capacity_tracker_known_care_home,
-            pir_known_non_residential,
-            capacity_tracker_known_non_residential,
-            capacity_tracker_known_non_residential,
-        ]
+        
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], expected_values[0])
-        self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], expected_values[1])
-        self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], expected_values[2])
-        self.assertEqual(output_df_list[3][RESIDUAL_CATEGORY], expected_values[3])
-        self.assertEqual(output_df_list[4][RESIDUAL_CATEGORY], expected_values[4])
-        self.assertEqual(output_df_list[5][RESIDUAL_CATEGORY], expected_values[5])
+        self.assertEqual(output_df_list[0][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[1][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[2][RESIDUAL_CATEGORY], known)
+        self.assertEqual(output_df_list[3][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[4][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[5][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[6][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[7][RESIDUAL_CATEGORY], unknown)
+        self.assertEqual(output_df_list[8][RESIDUAL_CATEGORY], unknown)
+
+
+
 
     def test_add_catagorisation_column_adds_unknown_when_no_comparison_data_is_available(
         self,
