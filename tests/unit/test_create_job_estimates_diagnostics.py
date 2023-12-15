@@ -1168,7 +1168,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output, expected_output)
 
 
-    def test_calculate_average_residual_adds_column_with_average_residual(self):
+    def test_calculate_average_residual_creates_df_of_average_residuals(self):
         residuals_rows = [
             (
                "location_1",
