@@ -200,6 +200,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 FloatType(),
                 True,
             ),
+            StructField(RESIDUAL_CATEGORY, StringType(), True),
         ]
     )
 
@@ -1173,26 +1174,42 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             (
                "location_1",
                 0.0, 
+                known,
             ),
             (
                "location_2",
-                -1.0, 
+                -1.0,
+                known,
             ),
             (
                "location_3",
                 3.0, 
+                known,
             ),
             (
                "location_4",
                 None, 
+                known,
             ),
             (
                "location_5",
                 10.5, 
+                known,
             ),
             (
                "location_6",
                 -2.5, 
+                known,
+            ),
+            (
+               "location_7",
+                None, 
+                unknown,
+            ),
+            (
+               "location_8",
+                None, 
+                unknown,
             ),
         ]
 
@@ -1203,10 +1220,17 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.calculate_average_residual(residuals_df, self.residuals_test_column_name)
         output_df_rows = output_df.collect()
 
-        expected_output = [2.0]
-        average_residual = "average_residual"
+        expected_output = [2.0, 2.0, 2.0, None, 2.0, 2.0, None, None]
+        average_residual = "avg_" + self.residuals_test_column_name
 
         self.assertEqual(output_df_rows[0][average_residual], expected_output[0])
+        self.assertEqual(output_df_rows[1][average_residual], expected_output[1])
+        self.assertEqual(output_df_rows[2][average_residual], expected_output[2])
+        self.assertEqual(output_df_rows[3][average_residual], expected_output[3])
+        self.assertEqual(output_df_rows[4][average_residual], expected_output[4])
+        self.assertEqual(output_df_rows[5][average_residual], expected_output[5])
+        self.assertEqual(output_df_rows[6][average_residual], expected_output[6])
+        self.assertEqual(output_df_rows[7][average_residual], expected_output[7])
 
 
 if __name__ == "__main__":

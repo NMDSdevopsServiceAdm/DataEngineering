@@ -250,6 +250,13 @@ def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
         df = calculate_residuals(df, combination[0], combination[1], combination[2])
     return df
 
+def calculate_average_residual(df:DataFrame, residuals_column_name:str) -> DataFrame:
+    average_residual_rows = df.agg(F.avg(df[residuals_column_name]).alias("avg")).collect()
+    average_residual = average_residual_rows[0]["avg"]
+    #average_residual = df.agg(df[residuals_column_name])
+    average_residual_column_name = "avg_" + residuals_column_name
+    df = df.withColumn(average_residual_column_name, F.when(df[residuals_column_name].isNotNull(), F.lit(average_residual)))
+    return df
 
 if __name__ == "__main__":
     print("Spark job 'create_estimate_job_counts_diagnostics' starting...")
