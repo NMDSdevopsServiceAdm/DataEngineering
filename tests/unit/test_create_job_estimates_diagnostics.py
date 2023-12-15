@@ -1,29 +1,21 @@
 import unittest
 import warnings
-from datetime import datetime, date
-import re
-import os
 from unittest.mock import patch
 
 from pyspark.sql import SparkSession
-from pyspark.ml.linalg import Vectors
 from pyspark.sql.types import (
     StructType,
     StructField,
     StringType,
     IntegerType,
     FloatType,
-    DateType,
-    TimestampType,
 )
 
-from tests.test_file_generator import generate_prepared_locations_file_parquet
 from tests.test_helpers import remove_file_path
 import jobs.create_job_estimates_diagnostics as job
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
-    SNAPSHOT_DATE,
     JOB_COUNT_UNFILTERED,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
@@ -46,6 +38,10 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CARE_HOME_EMPLOYED,
     NON_RESIDENTIAL_EMPLOYED,
     RESIDUAL_CATEGORY,
+    DESCRIPTION_OF_CHANGES,
+    VALUE,
+    ID,
+    RUN_TIMESTAMP,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
     known,
@@ -53,10 +49,12 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     care_home_with_nursing,
     care_home_without_nursing,
     non_residential,
-    pir,
     care_home,
     non_res,
     ResidualsRequired,
+    average_prefix,
+    care_worker_to_all_jobs_ratio,
+    residuals_prefix,
 )
 
 
@@ -1230,7 +1228,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
         )
-        output_column_name = "avg_" + self.residuals_test_column_names[0]
+        output_column_name = average_prefix + self.residuals_test_column_names[0]
 
         output = job.calculate_average_residual(
             residuals_df, self.residuals_test_column_names[0], output_column_name
@@ -1255,7 +1253,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_row_count = 1
         expected_column_count = 1
 
-        self.assertEqual(output_df_rows[0]["description_of_changes"], expected_value)
+        self.assertEqual(output_df_rows[0][DESCRIPTION_OF_CHANGES], expected_value)
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
 
@@ -1328,8 +1326,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 0.0]
-        output_column_names = ["avg_" + self.residuals_test_column_names[0],
-                               "avg_" + self.residuals_test_column_names[1],]
+        output_column_names = [average_prefix + self.residuals_test_column_names[0],
+                               average_prefix + self.residuals_test_column_names[1],]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
         self.assertEqual(output_df_rows[0][output_column_names[1]], expected_output[1])
@@ -1361,8 +1359,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df_rows = output_df.collect()
 
 
-        self.assertEqual(output_df_rows[0]["run_timestamp"], run_timestamp)
-        self.assertEqual(output_df_rows[0]["run_timestamp"], run_timestamp)
+        self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)
+        self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)
 
 
 if __name__ == "__main__":
