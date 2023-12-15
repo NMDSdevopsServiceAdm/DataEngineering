@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from utils.estimate_job_count.column_names import (
     PEOPLE_DIRECTLY_EMPLOYED,
     JOB_COUNT_UNFILTERED,
