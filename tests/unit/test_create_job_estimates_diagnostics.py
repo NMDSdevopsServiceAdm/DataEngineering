@@ -204,8 +204,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
     )
 
-    
-
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         estimate_jobs_rows = [
@@ -965,11 +963,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         self.assertEqual(output, expected_output)
 
-
     def test_run_residuals_creates_additional_columns(
         self,
     ):
-        
         diagnostics_prepared_rows = [
             (
                 "location_1",
@@ -1127,17 +1123,19 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
         )
 
-        
-        residuals_list = job.create_residuals_list(ResidualsRequired.models,
-                                                ResidualsRequired.services,
-                                                ResidualsRequired.data_source_columns)
+        residuals_list = job.create_residuals_list(
+            ResidualsRequired.models,
+            ResidualsRequired.services,
+            ResidualsRequired.data_source_columns,
+        )
 
-        output_df = job.run_residuals(diagnostics_prepared_df, residuals_list=residuals_list)
+        output_df = job.run_residuals(
+            diagnostics_prepared_df, residuals_list=residuals_list
+        )
         output_df_size = len(output_df.columns)
 
         expected_df_size = len(diagnostics_prepared_df.columns)
         self.assertGreater(output_df_size, expected_df_size)
-
 
     def test_create_residuals_list_includes_all_permutations(self):
         models = [
@@ -1168,47 +1166,46 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
         self.assertEqual(output, expected_output)
 
-
     def test_calculate_average_residual_creates_df_of_average_residuals(self):
         residuals_rows = [
             (
-               "location_1",
-                0.0, 
+                "location_1",
+                0.0,
                 known,
             ),
             (
-               "location_2",
+                "location_2",
                 -1.0,
                 known,
             ),
             (
-               "location_3",
-                3.0, 
+                "location_3",
+                3.0,
                 known,
             ),
             (
-               "location_4",
-                None, 
+                "location_4",
+                None,
                 known,
             ),
             (
-               "location_5",
-                10.5, 
+                "location_5",
+                10.5,
                 known,
             ),
             (
-               "location_6",
-                -2.5, 
+                "location_6",
+                -2.5,
                 known,
             ),
             (
-               "location_7",
-                None, 
+                "location_7",
+                None,
                 unknown,
             ),
             (
-               "location_8",
-                None, 
+                "location_8",
+                None,
                 unknown,
             ),
         ]
@@ -1217,7 +1214,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             residuals_rows, schema=self.residuals_schema
         )
 
-        output_df = job.calculate_average_residual(residuals_df, self.residuals_test_column_name)
+        output_df = job.calculate_average_residual(
+            residuals_df, self.residuals_test_column_name
+        )
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 2.0, 2.0, None, 2.0, 2.0, None, None]
