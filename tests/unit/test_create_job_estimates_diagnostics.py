@@ -1334,6 +1334,36 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
         self.assertEqual(output_df_rows[0][output_column_names[1]], expected_output[1])
 
+    def test_add_timestamp_column_adds_a_column_with_the_specified_timestamp_as_a_string(self):
+        residuals_rows = [
+            (
+                "location_1",
+                0.0,
+                0.0,
+                known,
+            ),
+            (
+                "location_2",
+                -1.0,
+                0.0,
+                known,
+            ),
+        ]
+
+        residuals_df = self.spark.createDataFrame(
+            residuals_rows, schema=self.residuals_schema
+        )
+        run_timestamp = "12/24/2018, 04:59:31"
+
+        output_df = job.add_timestamp_column(
+            residuals_df, run_timestamp
+        )
+        output_df_rows = output_df.collect()
+
+
+        self.assertEqual(output_df_rows[0]["run_timestamp"], run_timestamp)
+        self.assertEqual(output_df_rows[0]["run_timestamp"], run_timestamp)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

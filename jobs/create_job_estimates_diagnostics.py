@@ -62,6 +62,8 @@ def main(
     ).getOrCreate()
     print("Creating diagnostics for job estimates")
 
+    run_timestamp = datetime.now()
+
     job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
         LOCATION_ID,
         SNAPSHOT_DATE,
@@ -129,17 +131,28 @@ def main(
     )
     column_names_list = create_column_names_list(residuals_list)
     residuals_df= run_residuals(diagnostics_prepared_df, residuals_list)
+    residuals_df= add_timestamp_column(residuals_df, run_timestamp)
+
+    utils.write_to_parquet(
+        residuals_df,
+        residuals_destination,
+        append=True,
+        partitionKeys=["run_year", "run_month", "run_day"],
+    )
 
     average_residuals_df = create_empty_dataframe(description_of_change)
     
-    # Calculate average residuals
     average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, column_names_list)
-    # Create table for histograms
-    # probably just involves dropping some values
+    average_residuals_dfresiduals_df= add_timestamp_column(average_residuals_df, run_timestamp)
 
-    # Save diagnostics to parquet - append with timestamp
+    utils.write_to_parquet(
+        average_residuals_df,
+        diagnostics_destination,
+        append=True,
+        partitionKeys=["run_year", "run_month", "run_day"],
+    )
 
-    # Save residuals to parquet - append with timestamp
+
 
 
 def merge_dataframes(
