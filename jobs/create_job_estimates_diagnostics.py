@@ -62,7 +62,8 @@ def main(
     ).getOrCreate()
     print("Creating diagnostics for job estimates")
 
-    run_timestamp = datetime.now()
+    now  = datetime.now()
+    run_timestamp = now.strftime("%Y-%m-%d, %H:%M:%S")
 
     job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
         LOCATION_ID,
@@ -285,6 +286,7 @@ def calculate_average_residual(df: DataFrame, residual_column_name: str, average
     average_residual_df.show()
     return average_residual_df
 
+
 def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residuals_columns: list) -> DataFrame:
     for column in residuals_columns:
         average_residual_column_name = "avg_" + column
@@ -297,11 +299,17 @@ def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residua
         average_residuals_df.show()
     return average_residuals_df
 
+
 def create_empty_dataframe(description_of_change:str, spark:SparkSession) -> DataFrame:
     column = "description_of_changes"
     rows = [(description_of_change)]
     df:DataFrame = spark.createDataFrame(rows, StringType())
     df = df.withColumnRenamed("value", column)
+    return df
+
+
+def add_timestamp_column(df:DataFrame, run_timestamp:str) -> DataFrame:
+    df = df.withColumn("run_timestamp", F.lit(run_timestamp))
     return df
 
 
