@@ -16,8 +16,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     NON_RESIDENTIAL_EMPLOYED,
 )
 
-known: str = "known"
-unknown: str = "unknown"
 
 care_home_with_nursing: str = "Care home with nursing"
 care_home_without_nursing: str = "Care home without nursing"

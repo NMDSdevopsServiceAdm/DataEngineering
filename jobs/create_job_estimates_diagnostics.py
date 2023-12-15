@@ -39,8 +39,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     RUN_TIMESTAMP,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
-    known,
-    unknown,
     care_home_with_nursing,
     care_home_without_nursing,
     capacity_tracker,
@@ -129,7 +127,6 @@ def main(
         NON_RESIDENTIAL_EMPLOYED,
     )
 
-    diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
 
     residuals_list: list = create_residuals_list(
         ResidualsRequired.models,
@@ -205,27 +202,7 @@ def prepare_capacity_tracker_non_residential_data(
     return diagnostics_df
 
 
-def add_categorisation_column(
-    diagnostics_prepared_df: DataFrame,
-) -> DataFrame:
-    diagnostics_prepared_df = diagnostics_prepared_df.withColumn(
-        RESIDUAL_CATEGORY,
-        F.when(
-            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNotNull()),
-            known,
-        )
-        .when(
-            (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
-            & (
-                (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull())
-                | (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull())
-                | (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull())
-            ),
-            known,
-        )
-        .otherwise(unknown),
-    )
-    return diagnostics_prepared_df
+
 
 
 def create_residuals_column_name(
