@@ -41,7 +41,9 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     unknown,
     care_home_with_nursing,
     care_home_without_nursing,
-    non_residential,
+    capacity_tracker,
+    asc_wds,
+    pir,
 )
 
 
@@ -217,15 +219,28 @@ def add_categorisation_column(
     )
     return diagnostics_prepared_df
 
-def create_residuals_column_name(model: str, service: str, data_source: str) -> str:
+
+def create_residuals_column_name(model: str, service: str, data_source_column: str) -> str:
     if ((service == care_home_with_nursing) | (service == care_home_without_nursing)):
         service_renamed = "care_home"
     else:
         service_renamed = "non_res"
+
+    if (data_source_column == CARE_HOME_EMPLOYED) | (data_source_column == NON_RESIDENTIAL_EMPLOYED):
+        data_source = capacity_tracker
+    elif (data_source_column == PEOPLE_DIRECTLY_EMPLOYED):
+        data_source = pir
+    elif (data_source_column == JOB_COUNT_UNFILTERED):
+        data_source = asc_wds
     
     new_column_name = f"residuals_{model}_{service_renamed}_{data_source}"
     return new_column_name
 
+
+def calculate_residuals(df: DataFrame, model: str, service: str, data_source_column: str) -> DataFrame:
+    new_column_name = create_residuals_column_name(model, service, data_source_column)
+    df_with_residuals_column = df.withColumn(new_column_name, df[model] - df[data_source_column])
+    return df_with_residuals_column
 
 if __name__ == "__main__":
     print("Spark job 'create_estimate_job_counts_diagnostics' starting...")

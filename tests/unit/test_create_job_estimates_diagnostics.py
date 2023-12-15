@@ -873,12 +873,13 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         known_values_df = self.spark.createDataFrame(
             known_values_rows, schema=self.known_values_schema
         )
-
-        output_df = job.calculate_residuals(known_values_df)
-
-        output_df_size= output_df.count()
-        expected_df_size = known_values_df.count() + 1
-
+        known_values_df.printSchema()
+        
+        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service=non_residential, data_source_column=PEOPLE_DIRECTLY_EMPLOYED)
+        output_df.printSchema()
+        output_df_size= len(output_df.columns)
+        
+        expected_df_size = len(known_values_df.columns) + 1
         self.assertEqual(output_df_size, expected_df_size)
 
 
@@ -955,7 +956,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             known_values_rows, schema=self.known_values_schema
         )
 
-        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service = non_residential, known_data=pir)
+        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service = non_residential, data_source=pir)
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
         expected_values = [
@@ -977,9 +978,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):  
         model = ESTIMATE_JOB_COUNT
         service = care_home_with_nursing
-        data_source = pir
+        data_source_column = PEOPLE_DIRECTLY_EMPLOYED
         
-        output = job.create_residuals_column_name(model, service, data_source)
+        output = job.create_residuals_column_name(model, service, data_source_column)
         expected_output = "residuals_estimate_job_count_care_home_pir"
 
         self.assertEqual(output, expected_output)
