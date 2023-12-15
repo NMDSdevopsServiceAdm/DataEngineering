@@ -44,8 +44,7 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     capacity_tracker,
     asc_wds,
     pir,
-    care_home,
-    non_res,
+    ResidualsRequired,
 )
 
 
@@ -121,29 +120,12 @@ def main(
 
     diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
 
-    models = [
-        ESTIMATE_JOB_COUNT,
-        JOB_COUNT,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
-    ]
+    
+    
 
-    services = [
-        care_home,
-        non_res,
-    ]
-
-    data_source_columns = [
-        JOB_COUNT_UNFILTERED,
-        CARE_HOME_EMPLOYED,
-        NON_RESIDENTIAL_EMPLOYED,
-        PEOPLE_DIRECTLY_EMPLOYED,
-    ]
-
-    residuals_list:list = create_residuals_list(models, services, data_source_columns)
+    residuals_list:list = create_residuals_list(ResidualsRequired.models,
+                                                ResidualsRequired.services,
+                                                ResidualsRequired.data_source_columns)
     residuals_df: DataFrame = run_residuals(diagnostics_prepared_df, residuals_list)
 
     # Calculate average residuals
