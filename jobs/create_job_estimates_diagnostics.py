@@ -1,13 +1,10 @@
 from datetime import datetime
 import sys
 
-import pyspark.sql
 import pyspark.sql.functions as F
-from pyspark.sql.types import StructType, StringType, StructField
+from pyspark.sql.types import StringType
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
-from pyspark.sql import Window
-
 
 from utils import utils
 from utils.estimate_job_count.column_names import (
