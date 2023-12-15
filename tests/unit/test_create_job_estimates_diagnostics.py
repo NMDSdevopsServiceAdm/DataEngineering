@@ -1240,7 +1240,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_rows[0][output_column_name], expected_output)
 
     
-    def test_run_average_residual_df_creates_df_of_average_residuals(self):
+    def test_run_average_residuals_creates_df_of_average_residuals(self):
         residuals_rows = [
             (
                 "location_1",
@@ -1296,8 +1296,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             residuals_rows, schema=self.residuals_schema
         )
 
-        output_df = job.calculate_average_residual(
-            residuals_df, self.residuals_test_column_names[0]
+        output_df = job.run_average_residuals(
+            residuals_df, residuals_column_names
         )
         output_df_rows = output_df.collect()
 

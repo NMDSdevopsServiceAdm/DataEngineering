@@ -1,9 +1,9 @@
-from datetime import date
+from datetime import datetime
 import sys
 
 import pyspark.sql
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType, StringType
+from pyspark.sql.types import StructType, StringType, TimestampType, StructField
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
@@ -54,6 +54,7 @@ def main(
     capacity_tracker_non_residential_source,
     diagnostics_destination,
     residuals_destination,
+    description_of_change,
 ):
     spark = SparkSession.builder.appName(
         "sfc_data_engineering_job_estimate_diagnostics"
@@ -125,8 +126,21 @@ def main(
         ResidualsRequired.services,
         ResidualsRequired.data_source_columns,
     )
-    residuals_df: DataFrame = run_residuals(diagnostics_prepared_df, residuals_list)
+    residuals_df, residuals_columns = run_residuals(diagnostics_prepared_df, residuals_list)
 
+    average_residuals_schema = StructType(
+        [
+            StructField("timestamp", TimestampType(), False),
+            StructField(
+                "description_of_change",
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
+    average_residuals_df = SparkSession.createDataFrame([datetime.now(), description_of_change], schema=average_residuals_schema)
+    average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, residuals_columns)
     # Calculate average residuals
 
     # Create table for histograms
@@ -228,12 +242,12 @@ def create_residuals_column_name(
 
 def calculate_residuals(
     df: DataFrame, model: str, service: str, data_source_column: str
-) -> DataFrame:
+) -> DataFrame, str:
     new_column_name = create_residuals_column_name(model, service, data_source_column)
     df_with_residuals_column = df.withColumn(
         new_column_name, df[model] - df[data_source_column]
     )
-    return df_with_residuals_column
+    return df_with_residuals_column, new_column_name
 
 
 def create_residuals_list(models, services, data_source_columns):
@@ -246,10 +260,11 @@ def create_residuals_list(models, services, data_source_columns):
     return residuals_list
 
 
-def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
+def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame, list:
+    residuals_columns = []
     for combination in residuals_list:
-        df = calculate_residuals(df, combination[0], combination[1], combination[2])
-    return df
+        df, residuals_columns[combination] = calculate_residuals(df, combination[0], combination[1], combination[2])
+    return df, residuals_columns
 
 
 def calculate_average_residual(df: DataFrame, residuals_column_name: str) -> DataFrame:
@@ -259,7 +274,11 @@ def calculate_average_residual(df: DataFrame, residuals_column_name: str) -> Dat
     )
     return average_residual_column
 
-
+def run_average_residuals(df: DataFrame, average_residuals_df: DataFrame, residuals_columns: list) -> DataFrame:
+    for column in residuals_columns:
+        average_residual_column = calculate_average_residual(df, column)
+        average_residuals_df = average_residuals_df.withColumn(column, average_residual_column)
+    return df
 
 
 if __name__ == "__main__":
@@ -272,6 +291,7 @@ if __name__ == "__main__":
         capacity_tracker_non_residential_source,
         diagnostics_destination,
         residuals_destination,
+        description_of_change,
     ) = utils.collect_arguments(
         (
             "--estimate_job_counts_source",
@@ -293,6 +313,10 @@ if __name__ == "__main__":
             "--residuals_destination",
             "A destination directory for outputting detailed residuals tables with which to make histograms.",
         ),
+        (
+            "--description_of_change",
+            "A description of the changes in the pipeline that will affect these diagnostics.",
+        ),
     )
 
     main(
@@ -301,6 +325,7 @@ if __name__ == "__main__":
         capacity_tracker_non_residential_source,
         diagnostics_destination,
         residuals_destination,
+        description_of_change,
     )
 
     print("Spark job 'create_estimate_job_counts_diagnostics' complete")
