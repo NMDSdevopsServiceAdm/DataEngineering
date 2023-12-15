@@ -86,6 +86,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
+    residuals_test_column_name = "residuals_estimate_job_count_non_res_pir"
+
     estimate_jobs_schema = StructType(
         [
             StructField(LOCATION_ID, StringType(), False),
@@ -188,6 +190,16 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 True,
             ),
             StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+        ]
+    )
+    residuals_schema = StructType(
+        [
+            StructField(LOCATION_ID, StringType(), False),
+            StructField(
+                residuals_test_column_name,
+                FloatType(),
+                True,
+            ),
         ]
     )
 
@@ -933,7 +945,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             15.0,
             None,
         ]
-        new_column_name = "residuals_estimate_job_count_non_res_pir"
+        new_column_name = self.residuals_test_column_name
 
         self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
         self.assertEqual(output_df_list[1][new_column_name], expected_values[1])
@@ -944,11 +956,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         model = ESTIMATE_JOB_COUNT
-        service = care_home_with_nursing
+        service = non_residential
         data_source_column = PEOPLE_DIRECTLY_EMPLOYED
 
         output = job.create_residuals_column_name(model, service, data_source_column)
-        expected_output = "residuals_estimate_job_count_care_home_pir"
+        expected_output = self.residuals_test_column_name
 
         self.assertEqual(output, expected_output)
 
@@ -1156,9 +1168,45 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output, expected_output)
 
 
-    @unittest.skip("not written yet")
     def test_calculate_average_residual_adds_column_with_average_residual(self):
-        pass
+        residuals_rows = [
+            (
+               "location_1",
+                0.0, 
+            ),
+            (
+               "location_2",
+                -1.0, 
+            ),
+            (
+               "location_3",
+                3.0, 
+            ),
+            (
+               "location_4",
+                None, 
+            ),
+            (
+               "location_5",
+                10.5, 
+            ),
+            (
+               "location_6",
+                -2.5, 
+            ),
+        ]
+
+        residuals_df = self.spark.createDataFrame(
+            residuals_rows, schema=self.residuals_schema
+        )
+
+        output_df = job.calculate_average_residual(residuals_df, self.residuals_test_column_name)
+        output_df_rows = output_df.collect()
+
+        expected_output = [2.0]
+        average_residual = "average_residual"
+
+        self.assertEqual(output_df_rows[0][average_residual], expected_output[0])
 
 
 if __name__ == "__main__":
