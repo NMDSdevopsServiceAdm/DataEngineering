@@ -864,7 +864,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         known_values_df = self.spark.createDataFrame(
             known_values_rows, schema=self.known_values_schema
         )
-        known_values_df.printSchema()
 
         output_df = job.calculate_residuals(
             known_values_df,
@@ -872,7 +871,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             service=non_residential,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
-        output_df.printSchema()
+
         output_df_size = len(output_df.columns)
 
         expected_df_size = len(known_values_df.columns) + 1
@@ -984,10 +983,174 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output, expected_output)
 
     @unittest.skip("not written yet")
-    def test_run_residuals_creates_multiple_columns(
+    def test_run_residuals_creates_additional_columns(
         self,
     ):
-        pass
+        
+        diagnostics_prepared_rows = [
+            (
+                "location_1",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                None,
+                None,
+            ),
+            (
+                "location_2",
+                40.0,
+                40.0,
+                non_residential,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                None,
+                None,
+                40.0,
+            ),
+            (
+                "location_3",
+                40.0,
+                40.0,
+                care_home_without_nursing,
+                60.9,
+                23.4,
+                45.1,
+                None,
+                None,
+                40.0,
+                45,
+                41.0,
+                None,
+            ),
+            (
+                "location_4",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_5",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                50.0,
+                None,
+            ),
+            (
+                "location_6",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                45,
+                50.0,
+                None,
+            ),
+            (
+                "location_7",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                45,
+                None,
+                None,
+            ),
+            (
+                "location_8",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                None,
+                None,
+                40.0,
+            ),
+            (
+                "location_9",
+                None,
+                None,
+                non_residential,
+                60.9,
+                None,
+                None,
+                None,
+                40.0,
+                60.9,
+                45,
+                None,
+                40.0,
+            ),
+            (
+                "location_10",
+                None,
+                None,
+                care_home_with_nursing,
+                60.9,
+                23.4,
+                None,
+                None,
+                None,
+                60.9,
+                None,
+                None,
+                None,
+            ),
+        ]
+
+        diagnostics_prepared_df = self.spark.createDataFrame(
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+        )
+
+
+        output_df = job.run_residuals(diagnostics_prepared_df)
+        output_df_size = len(output_df.columns)
+
+        expected_df_size = len(diagnostics_prepared_df.columns)
+        self.assertGreater(output_df_size, expected_df_size)
+
 
     @unittest.skip("not written yet")
     def test_calculate_average_residual_adds_column_with_average_residual(self):
