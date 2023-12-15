@@ -144,7 +144,7 @@ def main(
     average_residuals_df = create_empty_dataframe(description_of_change)
     
     average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, column_names_list)
-    average_residuals_dfresiduals_df= add_timestamp_column(average_residuals_df, run_timestamp)
+    average_residuals_df = add_timestamp_column(average_residuals_df, run_timestamp)
 
     utils.write_to_parquet(
         average_residuals_df,
