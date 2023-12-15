@@ -14,6 +14,7 @@ from pyspark.sql.types import (
     IntegerType,
     FloatType,
     DateType,
+    TimestampType,
 )
 
 from tests.test_file_generator import generate_prepared_locations_file_parquet
@@ -210,6 +211,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             StructField(RESIDUAL_CATEGORY, StringType(), True),
         ]
     )
+
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
@@ -1228,16 +1230,34 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
         )
+        output_column_name = "avg_" + self.residuals_test_column_names[0]
 
         output = job.calculate_average_residual(
-            residuals_df, self.residuals_test_column_names[0]
+            residuals_df, self.residuals_test_column_names[0], output_column_name
         )
+        output.printSchema()
         output_rows = output.collect()
 
         expected_output = 2.0
-        output_column_name = "avg_" + self.residuals_test_column_names[0]
-
+        
         self.assertEqual(output_rows[0][output_column_name], expected_output)
+
+
+    def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
+        description_of_change:str = "test"
+
+        output_df = job.create_empty_dataframe(description_of_change, self.spark)
+        output_df_rows = output_df.collect()
+        output_df_row_count = output_df.count()
+        output_df_column_count = len(output_df_rows)
+
+        expected_value = description_of_change
+        expected_row_count = 1
+        expected_column_count = 1
+
+        self.assertEqual(output_df_rows[0]["description_of_changes"], expected_value)
+        self.assertEqual(output_df_row_count, expected_row_count)
+        self.assertEqual(output_df_column_count, expected_column_count)
 
     
     def test_run_average_residuals_creates_df_of_average_residuals(self):
@@ -1296,9 +1316,15 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             residuals_rows, schema=self.residuals_schema
         )
 
+
+        
+        blank_df = job.create_empty_dataframe("test", self.spark)
+
+
         output_df = job.run_average_residuals(
-            residuals_df, residuals_column_names
+            residuals_df, blank_df, self.residuals_test_column_names
         )
+        output_df.printSchema()
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 0.0]

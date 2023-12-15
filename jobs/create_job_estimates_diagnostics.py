@@ -3,9 +3,10 @@ import sys
 
 import pyspark.sql
 import pyspark.sql.functions as F
-from pyspark.sql.types import StructType, StringType, TimestampType, StructField
+from pyspark.sql.types import StructType, StringType, StructField
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
+from pyspark.sql import Window
 
 
 from utils import utils
@@ -126,23 +127,13 @@ def main(
         ResidualsRequired.services,
         ResidualsRequired.data_source_columns,
     )
-    residuals_df, residuals_columns = run_residuals(diagnostics_prepared_df, residuals_list)
+    column_names_list = create_column_names_list(residuals_list)
+    residuals_df= run_residuals(diagnostics_prepared_df, residuals_list)
 
-    average_residuals_schema = StructType(
-        [
-            StructField("timestamp", TimestampType(), False),
-            StructField(
-                "description_of_change",
-                StringType(),
-                True,
-            ),
-        ]
-    )
-
-    average_residuals_df = SparkSession.createDataFrame([datetime.now(), description_of_change], schema=average_residuals_schema)
-    average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, residuals_columns)
+    average_residuals_df = create_empty_dataframe(description_of_change)
+    
     # Calculate average residuals
-
+    average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, column_names_list)
     # Create table for histograms
     # probably just involves dropping some values
 
@@ -241,17 +232,18 @@ def create_residuals_column_name(
 
 
 def calculate_residuals(
-    df: DataFrame, model: str, service: str, data_source_column: str
-) -> DataFrame, str:
+    df: DataFrame, model: str, service: str, data_source_column: str, 
+) -> (DataFrame, str):
     new_column_name = create_residuals_column_name(model, service, data_source_column)
     df_with_residuals_column = df.withColumn(
         new_column_name, df[model] - df[data_source_column]
     )
-    return df_with_residuals_column, new_column_name
+    return df_with_residuals_column
 
 
-def create_residuals_list(models, services, data_source_columns):
+def create_residuals_list(models:list, services:list, data_source_columns:list) -> list:
     residuals_list = []
+
     for model in models:
         for service in services:
             for data_source_column in data_source_columns:
@@ -259,25 +251,44 @@ def create_residuals_list(models, services, data_source_columns):
                 residuals_list.append(combination)
     return residuals_list
 
-
-def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame, list:
-    residuals_columns = []
+def create_column_names_list(residuals_list:list) -> list:
+    column_names_list = []
     for combination in residuals_list:
-        df, residuals_columns[combination] = calculate_residuals(df, combination[0], combination[1], combination[2])
-    return df, residuals_columns
+        column_name = create_residuals_column_name(combination[0], combination[1], combination[2])
+        column_names_list.append(column_name)
+    return column_names_list
 
 
-def calculate_average_residual(df: DataFrame, residuals_column_name: str) -> DataFrame:
-    average_residual_column_name = "avg_" + residuals_column_name
-    average_residual_column = df.agg(
-        F.avg(df[residuals_column_name]).alias(average_residual_column_name)
+def run_residuals(df: DataFrame, residuals_list: list) -> (DataFrame, list):
+    for combination in residuals_list:
+        df = calculate_residuals(df, combination[0], combination[1], combination[2])
+    return df
+
+
+def calculate_average_residual(df: DataFrame, residual_column_name: str, average_residual_column_name:str) -> DataFrame:
+    average_residual_df = df.agg(
+        F.avg(df[residual_column_name]).alias(average_residual_column_name)
     )
-    return average_residual_column
+    average_residual_df.show()
+    return average_residual_df
 
-def run_average_residuals(df: DataFrame, average_residuals_df: DataFrame, residuals_columns: list) -> DataFrame:
+def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residuals_columns: list) -> DataFrame:
     for column in residuals_columns:
-        average_residual_column = calculate_average_residual(df, column)
-        average_residuals_df = average_residuals_df.withColumn(column, average_residual_column)
+        average_residual_column_name = "avg_" + column
+        print(average_residual_column_name)
+        average_df = calculate_average_residual(df, column, average_residual_column_name)
+        average_df = average_df.withColumn("id", F.lit("A"))
+        average_residuals_df = average_residuals_df.withColumn("id", F.lit("A"))
+        average_df.show()
+        average_residuals_df = average_residuals_df.join(average_df, on=["id"]).drop("id")
+        average_residuals_df.show()
+    return average_residuals_df
+
+def create_empty_dataframe(description_of_change:str, spark:SparkSession) -> DataFrame:
+    column = "description_of_changes"
+    rows = [(description_of_change)]
+    df:DataFrame = spark.createDataFrame(rows, StringType())
+    df = df.withColumnRenamed("value", column)
     return df
 
 
