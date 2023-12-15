@@ -36,6 +36,10 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CARE_HOME_EMPLOYED,
     NON_RESIDENTIAL_EMPLOYED,
     RESIDUAL_CATEGORY,
+    DESCRIPTION_OF_CHANGES,
+    VALUE,
+    ID,
+    RUN_TIMESTAMP,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
     known,
@@ -46,6 +50,9 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     asc_wds,
     pir,
     ResidualsRequired,
+    care_home,
+    non_res,
+    average_prefix,
 )
 
 
@@ -228,9 +235,9 @@ def create_residuals_column_name(
     model: str, service: str, data_source_column: str
 ) -> str:
     if (service == care_home_with_nursing) | (service == care_home_without_nursing):
-        service_renamed = "care_home"
+        service_renamed = care_home
     else:
-        service_renamed = "non_res"
+        service_renamed = non_res
 
     if (data_source_column == CARE_HOME_EMPLOYED) | (
         data_source_column == NON_RESIDENTIAL_EMPLOYED
@@ -289,27 +296,27 @@ def calculate_average_residual(df: DataFrame, residual_column_name: str, average
 
 def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residuals_columns: list) -> DataFrame:
     for column in residuals_columns:
-        average_residual_column_name = "avg_" + column
+        average_residual_column_name = average_prefix + column
         print(average_residual_column_name)
         average_df = calculate_average_residual(df, column, average_residual_column_name)
-        average_df = average_df.withColumn("id", F.lit("A"))
-        average_residuals_df = average_residuals_df.withColumn("id", F.lit("A"))
+        average_df = average_df.withColumn(ID, F.lit("A"))
+        average_residuals_df = average_residuals_df.withColumn(ID, F.lit("A"))
         average_df.show()
-        average_residuals_df = average_residuals_df.join(average_df, on=["id"]).drop("id")
+        average_residuals_df = average_residuals_df.join(average_df, on=[ID]).drop(ID)
         average_residuals_df.show()
     return average_residuals_df
 
 
 def create_empty_dataframe(description_of_change:str, spark:SparkSession) -> DataFrame:
-    column = "description_of_changes"
+    column = DESCRIPTION_OF_CHANGES
     rows = [(description_of_change)]
     df:DataFrame = spark.createDataFrame(rows, StringType())
-    df = df.withColumnRenamed("value", column)
+    df = df.withColumnRenamed(VALUE, column)
     return df
 
 
 def add_timestamp_column(df:DataFrame, run_timestamp:str) -> DataFrame:
-    df = df.withColumn("run_timestamp", F.lit(run_timestamp))
+    df = df.withColumn(RUN_TIMESTAMP, F.lit(run_timestamp))
     return df
 
 

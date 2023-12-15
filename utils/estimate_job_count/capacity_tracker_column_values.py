@@ -30,6 +30,8 @@ pir: str = "pir"
 care_home: str = "care_home"
 non_res: str = "non_res"
 
+average_prefix:str = "avg_"
+
 
 @dataclass
 class ResidualsRequired:
