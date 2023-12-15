@@ -53,6 +53,8 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     care_home,
     non_res,
     average_prefix,
+    care_worker_to_all_jobs_ratio,
+    residuals_prefix,
 )
 
 
@@ -199,8 +201,6 @@ def prepare_capacity_tracker_care_home_data(diagnostics_df: DataFrame) -> DataFr
 def prepare_capacity_tracker_non_residential_data(
     diagnostics_df: DataFrame,
 ) -> DataFrame:
-    care_worker_to_all_jobs_ratio = 1.3
-
     diagnostics_df = diagnostics_df.withColumn(
         NON_RESIDENTIAL_EMPLOYED,
         (diagnostics_df[CQC_CARE_WORKERS_EMPLOYED] * care_worker_to_all_jobs_ratio),
@@ -248,7 +248,7 @@ def create_residuals_column_name(
     elif data_source_column == JOB_COUNT_UNFILTERED:
         data_source = asc_wds
 
-    new_column_name = f"residuals_{model}_{service_renamed}_{data_source}"
+    new_column_name = f"{residuals_prefix}_{model}_{service_renamed}_{data_source}"
     return new_column_name
 
 
