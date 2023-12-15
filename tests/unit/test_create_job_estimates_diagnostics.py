@@ -191,32 +191,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
     )
 
-    known_values_schema = StructType(
-        [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(
-                JOB_COUNT_UNFILTERED,
-                FloatType(),
-                True,
-            ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
-            StructField(
-                CARE_HOME_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-            StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
-            StructField(RESIDUAL_CATEGORY, StringType(), True),
-        ]
-    )
+    
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
@@ -797,7 +772,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertIsNotNone(output_df_list[9][RESIDUAL_CATEGORY])
 
     def test_calculate_residuals_adds_a_column(self):
-        known_values_rows = [
+        diagnostics_prepared_rows = [
             (
                 "location_2",
                 40.0,
@@ -812,7 +787,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 None,
                 40.0,
-                known,
             ),
             (
                 "location_3",
@@ -828,7 +802,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 45,
                 41.0,
                 None,
-                known,
             ),
             (
                 "location_4",
@@ -844,7 +817,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 45,
                 None,
                 None,
-                known,
             ),
             (
                 "location_5",
@@ -860,12 +832,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 50.0,
                 None,
-                known,
             ),
         ]
 
         known_values_df = self.spark.createDataFrame(
-            known_values_rows, schema=self.known_values_schema
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
         )
 
         output_df = job.calculate_residuals(
@@ -881,7 +852,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_size, expected_df_size)
 
     def test_calculate_residuals_adds_residual_value(self):
-        known_values_rows = [
+        diagnostics_prepared_rows = [
             (
                 "location_2",
                 40.0,
@@ -896,7 +867,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 40,
                 None,
                 40.0,
-                known,
             ),
             (
                 "location_3",
@@ -912,7 +882,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 45,
                 41.0,
                 None,
-                known,
             ),
             (
                 "location_4",
@@ -928,7 +897,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 45,
                 None,
                 None,
-                known,
             ),
             (
                 "location_5",
@@ -944,12 +912,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 None,
                 50.0,
                 None,
-                known,
             ),
         ]
 
         known_values_df = self.spark.createDataFrame(
-            known_values_rows, schema=self.known_values_schema
+            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
         )
 
         output_df = job.calculate_residuals(
