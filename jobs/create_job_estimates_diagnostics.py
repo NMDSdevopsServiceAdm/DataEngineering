@@ -44,6 +44,8 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     capacity_tracker,
     asc_wds,
     pir,
+    care_home,
+    non_res,
 )
 
 
@@ -122,6 +124,27 @@ def main(
         diagnostics_prepared_df[RESIDUAL_CATEGORY] == known
     )
 
+    models = [
+        ESTIMATE_JOB_COUNT,
+        JOB_COUNT,
+        ROLLING_AVERAGE_MODEL,
+        CARE_HOME_MODEL,
+        EXTRAPOLATION_MODEL,
+        INTERPOLATION_MODEL,
+        NON_RESIDENTIAL_MODEL,
+    ]
+
+    services = [
+        care_home,
+        non_res,
+    ]
+
+    data_source_columns = [
+        JOB_COUNT_UNFILTERED,
+        CARE_HOME_EMPLOYED,
+        NON_RESIDENTIAL_EMPLOYED,
+        PEOPLE_DIRECTLY_EMPLOYED,
+    ]
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
     # calculate residuals wihin each group (window function?)
@@ -247,6 +270,20 @@ def calculate_residuals(
         new_column_name, df[model] - df[data_source_column]
     )
     return df_with_residuals_column
+
+def create_residuals_list(models, services, data_source_columns):
+    residuals_list = []
+    for model in models:
+        for service in services:
+            for data_source_column in data_source_columns:
+                combination = [model, service, data_source_column]
+                residuals_list.append(combination)
+    return residuals_list
+
+def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
+    for combination in residuals_list:
+        df = calculate_residuals(df, combination[0], combination[1], combination[2])
+    return df
 
 
 if __name__ == "__main__":

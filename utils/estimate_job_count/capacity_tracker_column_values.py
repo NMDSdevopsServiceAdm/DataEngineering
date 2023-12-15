@@ -8,3 +8,6 @@ non_residential: str = "non-residential"
 asc_wds: str = "ascwds"
 capacity_tracker: str = "capacity_tracker"
 pir: str = "pir"
+
+care_home:str = "care_home"
+non_res:str = "non_res"
