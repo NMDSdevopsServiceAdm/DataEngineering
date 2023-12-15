@@ -118,8 +118,10 @@ def main(
     )
 
     diagnostics_prepared_df = add_categorisation_column(diagnostics_prepared_df)
-    known_values_df = diagnostics_prepared_df.where(diagnostics_prepared_df[RESIDUAL_CATEGORY] == known)
-    
+    known_values_df = diagnostics_prepared_df.where(
+        diagnostics_prepared_df[RESIDUAL_CATEGORY] == known
+    )
+
     # Calculate residuals for each model/ service/ known value status
     # add column to split into groups for model/ service / known value
     # calculate residuals wihin each group (window function?)
@@ -204,14 +206,10 @@ def add_categorisation_column(
         )
         .when(
             (diagnostics_prepared_df[JOB_COUNT_UNFILTERED].isNull())
-            & ((diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull())
-            | (
-                
-                    diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull()
-                )
-                | (
-                    diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull()
-                )
+            & (
+                (diagnostics_prepared_df[CARE_HOME_EMPLOYED].isNotNull())
+                | (diagnostics_prepared_df[NON_RESIDENTIAL_EMPLOYED].isNotNull())
+                | (diagnostics_prepared_df[PEOPLE_DIRECTLY_EMPLOYED].isNotNull())
             ),
             known,
         )
@@ -220,27 +218,36 @@ def add_categorisation_column(
     return diagnostics_prepared_df
 
 
-def create_residuals_column_name(model: str, service: str, data_source_column: str) -> str:
-    if ((service == care_home_with_nursing) | (service == care_home_without_nursing)):
+def create_residuals_column_name(
+    model: str, service: str, data_source_column: str
+) -> str:
+    if (service == care_home_with_nursing) | (service == care_home_without_nursing):
         service_renamed = "care_home"
     else:
         service_renamed = "non_res"
 
-    if (data_source_column == CARE_HOME_EMPLOYED) | (data_source_column == NON_RESIDENTIAL_EMPLOYED):
+    if (data_source_column == CARE_HOME_EMPLOYED) | (
+        data_source_column == NON_RESIDENTIAL_EMPLOYED
+    ):
         data_source = capacity_tracker
-    elif (data_source_column == PEOPLE_DIRECTLY_EMPLOYED):
+    elif data_source_column == PEOPLE_DIRECTLY_EMPLOYED:
         data_source = pir
-    elif (data_source_column == JOB_COUNT_UNFILTERED):
+    elif data_source_column == JOB_COUNT_UNFILTERED:
         data_source = asc_wds
-    
+
     new_column_name = f"residuals_{model}_{service_renamed}_{data_source}"
     return new_column_name
 
 
-def calculate_residuals(df: DataFrame, model: str, service: str, data_source_column: str) -> DataFrame:
+def calculate_residuals(
+    df: DataFrame, model: str, service: str, data_source_column: str
+) -> DataFrame:
     new_column_name = create_residuals_column_name(model, service, data_source_column)
-    df_with_residuals_column = df.withColumn(new_column_name, df[model] - df[data_source_column])
+    df_with_residuals_column = df.withColumn(
+        new_column_name, df[model] - df[data_source_column]
+    )
     return df_with_residuals_column
+
 
 if __name__ == "__main__":
     print("Spark job 'create_estimate_job_counts_diagnostics' starting...")
