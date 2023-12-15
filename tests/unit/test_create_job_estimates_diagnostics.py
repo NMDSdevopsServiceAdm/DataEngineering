@@ -37,7 +37,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CQC_CARE_WORKERS_EMPLOYED,
     CARE_HOME_EMPLOYED,
     NON_RESIDENTIAL_EMPLOYED,
-    RESIDUAL_CATEGORY,
     DESCRIPTION_OF_CHANGES,
     RUN_TIMESTAMP,
 )
@@ -79,8 +78,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
-    residuals_test_column_names = ["residuals_estimate_job_count_non_res_pir",
-                                   "residuals_job_count_non_res_pir",
+    residuals_test_column_names = [
+        "residuals_estimate_job_count_non_res_pir",
+        "residuals_job_count_non_res_pir",
     ]
 
     estimate_jobs_schema = StructType(
@@ -187,10 +187,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
                 FloatType(),
                 True,
             ),
-            StructField(RESIDUAL_CATEGORY, StringType(), True),
         ]
     )
-
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
@@ -323,71 +321,23 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
         )
 
-    
-
     def test_calculate_residuals_adds_a_column(self):
+        # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_2",
-                40.0,
-                40.0,
-                non_residential,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                None,
-                None,
-                40.0,
+                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
             ),
             (
-                "location_3",
-                40.0,
-                40.0,
-                care_home_without_nursing,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                45,
-                41.0,
-                None,
+                "location_3", 40.0, 40.0, care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                45,
-                None,
-                None,
+                "location_4", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
             ),
             (
-                "location_5",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                50.0,
-                None,
+                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
         ]
+        # fmt: on
 
         known_values_df = self.spark.createDataFrame(
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
@@ -406,68 +356,22 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_size, expected_df_size)
 
     def test_calculate_residuals_adds_residual_value(self):
+        # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_2",
-                40.0,
-                40.0,
-                non_residential,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                40,
-                None,
-                40.0,
+                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,
             ),
             (
-                "location_3",
-                40.0,
-                40.0,
-                non_residential,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                45,
-                41.0,
-                None,
+                "location_3", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4",
-                None,
-                None,
-                non_residential,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.0,
-                45,
-                None,
-                None,
+                "location_4", None, None, non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,
             ),
             (
-                "location_5",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                50.0,
-                None,
+                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
         ]
+        # fmt: on
 
         known_values_df = self.spark.createDataFrame(
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
@@ -509,158 +413,40 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_run_residuals_creates_additional_columns(
         self,
     ):
+        # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_1",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                None,
-                None,
+                "location_1", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
             ),
             (
-                "location_2",
-                40.0,
-                40.0,
-                non_residential,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                None,
-                None,
-                40.0,
+                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
             ),
             (
-                "location_3",
-                40.0,
-                40.0,
-                care_home_without_nursing,
-                60.9,
-                23.4,
-                45.1,
-                None,
-                None,
-                40.0,
-                45,
-                41.0,
-                None,
+                "location_3", 40.0, 40.0, care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                45,
-                None,
-                None,
+                "location_4", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
             ),
             (
-                "location_5",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                50.0,
-                None,
+                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
             (
-                "location_6",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                45,
-                50.0,
-                None,
+                "location_6", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,
             ),
             (
-                "location_7",
-                None,
-                None,
-                non_residential,
-                60.9,
-                None,
-                None,
-                None,
-                40.0,
-                60.9,
-                45,
-                None,
-                None,
+                "location_7", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,
             ),
             (
-                "location_8",
-                None,
-                None,
-                non_residential,
-                60.9,
-                None,
-                None,
-                None,
-                40.0,
-                60.9,
-                None,
-                None,
-                40.0,
+                "location_8", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,
             ),
             (
-                "location_9",
-                None,
-                None,
-                non_residential,
-                60.9,
-                None,
-                None,
-                None,
-                40.0,
-                60.9,
-                45,
-                None,
-                40.0,
+                "location_9", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,
             ),
             (
-                "location_10",
-                None,
-                None,
-                care_home_with_nursing,
-                60.9,
-                23.4,
-                None,
-                None,
-                None,
-                60.9,
-                None,
-                None,
-                None,
+                "location_10", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
             ),
         ]
+        # fmt: on
 
         diagnostics_prepared_df = self.spark.createDataFrame(
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
@@ -710,56 +496,34 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output, expected_output)
 
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
+        # fmt: off
         residuals_rows = [
             (
-                "location_1",
-                0.0,
-                0.0,
-                known,
+                "location_1", 0.0, 0.0,
             ),
             (
-                "location_2",
-                -1.0,
-                0.0,
-                known,
+                "location_2", -1.0, 0.0,
             ),
             (
-                "location_3",
-                3.0,
-                0.0,
-                known,
+                "location_3", 3.0, 0.0,
             ),
             (
-                "location_4",
-                None,
-                0.0,
-                known,
+                "location_4", None, 0.0,
             ),
             (
-                "location_5",
-                10.5,
-                0.0,
-                known,
+                "location_5", 10.5, 0.0,
             ),
             (
-                "location_6",
-                -2.5,
-                0.0,
-                known,
+                "location_6", -2.5, 0.0,
             ),
             (
-                "location_7",
-                None,
-                None,
-                unknown,
+                "location_7", None, None,
             ),
             (
-                "location_8",
-                None,
-                None,
-                unknown,
+                "location_8", None, None,
             ),
         ]
+        # fmt: on
 
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
@@ -773,12 +537,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_rows = output.collect()
 
         expected_output = 2.0
-        
+
         self.assertEqual(output_rows[0][output_column_name], expected_output)
 
-
     def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
-        description_of_change:str = "test"
+        description_of_change: str = "test"
 
         output_df = job.create_empty_dataframe(description_of_change, self.spark)
         output_df_rows = output_df.collect()
@@ -793,67 +556,41 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
 
-    
     def test_run_average_residuals_creates_df_of_average_residuals(self):
+        # fmt: off
         residuals_rows = [
             (
-                "location_1",
-                0.0,
-                0.0,
-                known,
+                "location_1", 0.0, 0.0,
             ),
             (
-                "location_2",
-                -1.0,
-                0.0,
-                known,
+                "location_2", -1.0, 0.0,
             ),
             (
-                "location_3",
-                3.0,
-                0.0,
-                known,
+                "location_3", 3.0, 0.0,
             ),
             (
-                "location_4",
-                None,
-                0.0,
-                known,
+                "location_4", None, 0.0,
             ),
             (
-                "location_5",
-                10.5,
-                0.0,
-                known,
+                "location_5", 10.5, 0.0,
             ),
             (
-                "location_6",
-                -2.5,
-                0.0,
-                known,
+                "location_6", -2.5, 0.0,
             ),
             (
-                "location_7",
-                None,
-                None,
-                unknown,
+                "location_7", None, None,
             ),
             (
-                "location_8",
-                None,
-                None,
-                unknown,
+                "location_8", None, None,
             ),
         ]
+        # fmt: on
 
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
         )
 
-
-        
         blank_df = job.create_empty_dataframe("test", self.spark)
-
 
         output_df = job.run_average_residuals(
             residuals_df, blank_df, self.residuals_test_column_names
@@ -862,38 +599,35 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 0.0]
-        output_column_names = [average_prefix + self.residuals_test_column_names[0],
-                               average_prefix + self.residuals_test_column_names[1],]
+        output_column_names = [
+            average_prefix + self.residuals_test_column_names[0],
+            average_prefix + self.residuals_test_column_names[1],
+        ]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
         self.assertEqual(output_df_rows[0][output_column_names[1]], expected_output[1])
 
-    def test_add_timestamp_column_adds_a_column_with_the_specified_timestamp_as_a_string(self):
+    def test_add_timestamp_column_adds_a_column_with_the_specified_timestamp_as_a_string(
+        self,
+    ):
+        # fmt: off
         residuals_rows = [
             (
-                "location_1",
-                0.0,
-                0.0,
-                known,
+                "location_1", 0.0, 0.0,
             ),
             (
-                "location_2",
-                -1.0,
-                0.0,
-                known,
+                "location_2", -1.0, 0.0,
             ),
         ]
+        # fmt: on
 
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
         )
         run_timestamp = "12/24/2018, 04:59:31"
 
-        output_df = job.add_timestamp_column(
-            residuals_df, run_timestamp
-        )
+        output_df = job.add_timestamp_column(residuals_df, run_timestamp)
         output_df_rows = output_df.collect()
-
 
         self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)
         self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)

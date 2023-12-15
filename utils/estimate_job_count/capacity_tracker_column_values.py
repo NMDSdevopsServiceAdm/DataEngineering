@@ -28,10 +28,10 @@ pir: str = "pir"
 care_home: str = "care_home"
 non_res: str = "non_res"
 
-average_prefix:str = "avg_"
-residuals_prefix:str = "residuals_"
+average_prefix: str = "avg_"
+residuals_prefix: str = "residuals_"
 
-care_worker_to_all_jobs_ratio:float = 1.3
+care_worker_to_all_jobs_ratio: float = 1.3
 
 
 @dataclass

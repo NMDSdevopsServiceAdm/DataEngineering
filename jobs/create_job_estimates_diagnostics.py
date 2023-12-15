@@ -32,7 +32,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     CQC_CARE_WORKERS_EMPLOYED,
     CARE_HOME_EMPLOYED,
     NON_RESIDENTIAL_EMPLOYED,
-    RESIDUAL_CATEGORY,
     DESCRIPTION_OF_CHANGES,
     VALUE,
     ID,
@@ -66,7 +65,7 @@ def main(
     ).getOrCreate()
     print("Creating diagnostics for job estimates")
 
-    now  = datetime.now()
+    now = datetime.now()
     run_timestamp = now.strftime("%Y-%m-%d, %H:%M:%S")
 
     job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
@@ -127,15 +126,14 @@ def main(
         NON_RESIDENTIAL_EMPLOYED,
     )
 
-
     residuals_list: list = create_residuals_list(
         ResidualsRequired.models,
         ResidualsRequired.services,
         ResidualsRequired.data_source_columns,
     )
     column_names_list = create_column_names_list(residuals_list)
-    residuals_df= run_residuals(diagnostics_prepared_df, residuals_list)
-    residuals_df= add_timestamp_column(residuals_df, run_timestamp)
+    residuals_df = run_residuals(diagnostics_prepared_df, residuals_list)
+    residuals_df = add_timestamp_column(residuals_df, run_timestamp)
 
     utils.write_to_parquet(
         residuals_df,
@@ -145,8 +143,10 @@ def main(
     )
 
     average_residuals_df = create_empty_dataframe(description_of_change)
-    
-    average_residuals_df = run_average_residuals(residuals_df, average_residuals_df, column_names_list)
+
+    average_residuals_df = run_average_residuals(
+        residuals_df, average_residuals_df, column_names_list
+    )
     average_residuals_df = add_timestamp_column(average_residuals_df, run_timestamp)
 
     utils.write_to_parquet(
@@ -155,8 +155,6 @@ def main(
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
     )
-
-
 
 
 def merge_dataframes(
@@ -202,9 +200,6 @@ def prepare_capacity_tracker_non_residential_data(
     return diagnostics_df
 
 
-
-
-
 def create_residuals_column_name(
     model: str, service: str, data_source_column: str
 ) -> str:
@@ -222,12 +217,15 @@ def create_residuals_column_name(
     elif data_source_column == JOB_COUNT_UNFILTERED:
         data_source = asc_wds
 
-    new_column_name = f"{residuals_prefix}_{model}_{service_renamed}_{data_source}"
+    new_column_name = f"{residuals_prefix}{model}_{service_renamed}_{data_source}"
     return new_column_name
 
 
 def calculate_residuals(
-    df: DataFrame, model: str, service: str, data_source_column: str, 
+    df: DataFrame,
+    model: str,
+    service: str,
+    data_source_column: str,
 ) -> (DataFrame, str):
     new_column_name = create_residuals_column_name(model, service, data_source_column)
     df_with_residuals_column = df.withColumn(
@@ -236,7 +234,9 @@ def calculate_residuals(
     return df_with_residuals_column
 
 
-def create_residuals_list(models:list, services:list, data_source_columns:list) -> list:
+def create_residuals_list(
+    models: list, services: list, data_source_columns: list
+) -> list:
     residuals_list = []
 
     for model in models:
@@ -246,10 +246,13 @@ def create_residuals_list(models:list, services:list, data_source_columns:list) 
                 residuals_list.append(combination)
     return residuals_list
 
-def create_column_names_list(residuals_list:list) -> list:
+
+def create_column_names_list(residuals_list: list) -> list:
     column_names_list = []
     for combination in residuals_list:
-        column_name = create_residuals_column_name(combination[0], combination[1], combination[2])
+        column_name = create_residuals_column_name(
+            combination[0], combination[1], combination[2]
+        )
         column_names_list.append(column_name)
     return column_names_list
 
@@ -260,7 +263,9 @@ def run_residuals(df: DataFrame, residuals_list: list) -> (DataFrame, list):
     return df
 
 
-def calculate_average_residual(df: DataFrame, residual_column_name: str, average_residual_column_name:str) -> DataFrame:
+def calculate_average_residual(
+    df: DataFrame, residual_column_name: str, average_residual_column_name: str
+) -> DataFrame:
     average_residual_df = df.agg(
         F.avg(df[residual_column_name]).alias(average_residual_column_name)
     )
@@ -268,11 +273,15 @@ def calculate_average_residual(df: DataFrame, residual_column_name: str, average
     return average_residual_df
 
 
-def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residuals_columns: list) -> DataFrame:
+def run_average_residuals(
+    df: DataFrame, average_residuals_df: DataFrame, residuals_columns: list
+) -> DataFrame:
     for column in residuals_columns:
         average_residual_column_name = average_prefix + column
         print(average_residual_column_name)
-        average_df = calculate_average_residual(df, column, average_residual_column_name)
+        average_df = calculate_average_residual(
+            df, column, average_residual_column_name
+        )
         average_df = average_df.withColumn(ID, F.lit("A"))
         average_residuals_df = average_residuals_df.withColumn(ID, F.lit("A"))
         average_df.show()
@@ -281,15 +290,17 @@ def run_average_residuals(df: DataFrame, average_residuals_df:DataFrame, residua
     return average_residuals_df
 
 
-def create_empty_dataframe(description_of_change:str, spark:SparkSession) -> DataFrame:
+def create_empty_dataframe(
+    description_of_change: str, spark: SparkSession
+) -> DataFrame:
     column = DESCRIPTION_OF_CHANGES
     rows = [(description_of_change)]
-    df:DataFrame = spark.createDataFrame(rows, StringType())
+    df: DataFrame = spark.createDataFrame(rows, StringType())
     df = df.withColumnRenamed(VALUE, column)
     return df
 
 
-def add_timestamp_column(df:DataFrame, run_timestamp:str) -> DataFrame:
+def add_timestamp_column(df: DataFrame, run_timestamp: str) -> DataFrame:
     df = df.withColumn(RUN_TIMESTAMP, F.lit(run_timestamp))
     return df
 
