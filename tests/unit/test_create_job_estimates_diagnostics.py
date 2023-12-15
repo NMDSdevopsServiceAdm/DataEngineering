@@ -39,8 +39,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     NON_RESIDENTIAL_EMPLOYED,
     RESIDUAL_CATEGORY,
     DESCRIPTION_OF_CHANGES,
-    VALUE,
-    ID,
     RUN_TIMESTAMP,
 )
 from utils.estimate_job_count.capacity_tracker_column_values import (
@@ -53,8 +51,6 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     non_res,
     ResidualsRequired,
     average_prefix,
-    care_worker_to_all_jobs_ratio,
-    residuals_prefix,
 )
 
 
