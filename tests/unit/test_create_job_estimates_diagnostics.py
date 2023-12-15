@@ -1178,40 +1178,48 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             (
                 "location_1",
                 0.0,
+                0.0,
                 known,
             ),
             (
                 "location_2",
                 -1.0,
+                0.0,
                 known,
             ),
             (
                 "location_3",
                 3.0,
+                0.0,
                 known,
             ),
             (
                 "location_4",
                 None,
+                0.0,
                 known,
             ),
             (
                 "location_5",
                 10.5,
+                0.0,
                 known,
             ),
             (
                 "location_6",
                 -2.5,
+                0.0,
                 known,
             ),
             (
                 "location_7",
                 None,
+                None,
                 unknown,
             ),
             (
                 "location_8",
+                None,
                 None,
                 unknown,
             ),
