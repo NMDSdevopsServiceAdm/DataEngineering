@@ -218,7 +218,7 @@ def add_categorisation_column(
     return diagnostics_prepared_df
 
 def create_residuals_column_name(model: str, service: str, data_source: str) -> str:
-    if (service == care_home_with_nursing | service == care_home_without_nursing):
+    if ((service == care_home_with_nursing) | (service == care_home_without_nursing)):
         service_renamed = "care_home"
     else:
         service_renamed = "non_res"
