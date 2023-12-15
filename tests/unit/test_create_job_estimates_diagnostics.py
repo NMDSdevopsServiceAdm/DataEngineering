@@ -55,6 +55,7 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     pir,
     care_home,
     non_res,
+    ResidualsRequired,
 )
 
 
@@ -1146,28 +1147,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
         )
 
-        models = [
-            ESTIMATE_JOB_COUNT,
-            JOB_COUNT,
-            ROLLING_AVERAGE_MODEL,
-            CARE_HOME_MODEL,
-            EXTRAPOLATION_MODEL,
-            INTERPOLATION_MODEL,
-            NON_RESIDENTIAL_MODEL,
-        ]
-
-        services = [
-            care_home,
-            non_res,
-        ]
-
-        data_source_columns = [
-            JOB_COUNT_UNFILTERED,
-            CARE_HOME_EMPLOYED,
-            NON_RESIDENTIAL_EMPLOYED,
-            PEOPLE_DIRECTLY_EMPLOYED,
-        ]
-        residuals_list = job.create_residuals_list(models, services, data_source_columns)
+        
+        residuals_list = job.create_residuals_list(ResidualsRequired.models,
+                                                ResidualsRequired.services,
+                                                ResidualsRequired.data_source_columns)
 
         output_df = job.run_residuals(diagnostics_prepared_df, residuals_list=residuals_list)
         output_df_size = len(output_df.columns)
