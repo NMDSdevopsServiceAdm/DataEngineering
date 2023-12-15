@@ -253,17 +253,13 @@ def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
 
 
 def calculate_average_residual(df: DataFrame, residuals_column_name: str) -> DataFrame:
-    average_residual_rows = df.agg(
-        F.avg(df[residuals_column_name]).alias("avg")
-    ).collect()
-    average_residual = average_residual_rows[0]["avg"]
-    # average_residual = df.agg(df[residuals_column_name])
     average_residual_column_name = "avg_" + residuals_column_name
-    df = df.withColumn(
-        average_residual_column_name,
-        F.when(df[residuals_column_name].isNotNull(), F.lit(average_residual)),
+    average_residual_column = df.agg(
+        F.avg(df[residuals_column_name]).alias(average_residual_column_name)
     )
-    return df
+    return average_residual_column
+
+
 
 
 if __name__ == "__main__":
