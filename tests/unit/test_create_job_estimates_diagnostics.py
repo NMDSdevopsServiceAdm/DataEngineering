@@ -52,6 +52,7 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     care_home_with_nursing,
     care_home_without_nursing,
     non_residential,
+    pir,
 )
 
 
@@ -799,7 +800,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
 
     
-    @unittest.skip("not written yet")
+
     def test_calculate_residuals_adds_a_column(self):
         known_values_rows = [
             (
@@ -880,7 +881,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         self.assertEqual(output_df_size, expected_df_size)
 
-    @unittest.skip("not written yet")
+
     def test_calculate_residuals_adds_residual_value(self):
         known_values_rows = [
             (
@@ -954,7 +955,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             known_values_rows, schema=self.known_values_schema
         )
 
-        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service = non_residential, known_data="pir")
+        output_df = job.calculate_residuals(known_values_df, model=ESTIMATE_JOB_COUNT, service = non_residential, known_data=pir)
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
         expected_values = [
@@ -963,19 +964,20 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             15.9,
             0.0,
         ]
+        new_column_name = "residuals_estimate_job_count_non_residential_pir"
 
-        self.assertEqual(output_df_list[0][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[0])
-        self.assertEqual(output_df_list[1][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[1])
-        self.assertEqual(output_df_list[2][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[2])
-        self.assertEqual(output_df_list[3][RESIDUALS_ESTIMATES_NON_RES_PIR], expected_values[3])
+        self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
+        self.assertEqual(output_df_list[1][new_column_name], expected_values[1])
+        self.assertEqual(output_df_list[2][new_column_name], expected_values[2])
+        self.assertEqual(output_df_list[3][new_column_name], expected_values[3])
 
-    @unittest.skip("not written yet")
+
     def test_create_residuals_column_name(
         self,
     ):  
         model = ESTIMATE_JOB_COUNT
         service = care_home_with_nursing
-        data_source = "PIR"
+        data_source = pir
         
         output = job.create_residuals_column_name(model, service, data_source)
         expected_output = "residuals_estimate_job_count_care_home_pir"
