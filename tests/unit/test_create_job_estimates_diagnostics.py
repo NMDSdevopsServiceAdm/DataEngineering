@@ -53,6 +53,8 @@ from utils.estimate_job_count.capacity_tracker_column_values import (
     care_home_without_nursing,
     non_residential,
     pir,
+    care_home,
+    non_res,
 )
 
 
@@ -1145,11 +1147,42 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
 
-        output_df = job.run_residuals(diagnostics_prepared_df)
+        output_df = job.run_residuals(diagnostics_prepared_df, residuals_list=residuals_list)
         output_df_size = len(output_df.columns)
 
         expected_df_size = len(diagnostics_prepared_df.columns)
         self.assertGreater(output_df_size, expected_df_size)
+
+
+    @unittest.skip("not written yet")
+    def test_create_residuals_list_includes_all_permutations(self):
+        models = [
+            ESTIMATE_JOB_COUNT,
+            JOB_COUNT,
+        ]
+
+        services = [
+            care_home,
+            non_res,
+        ]
+
+        data_source_columns = [
+            JOB_COUNT_UNFILTERED,
+            CARE_HOME_EMPLOYED,
+        ]
+
+        output = job.create_residuals_list(models, services, data_source_columns)
+        expected_output = [
+            [ESTIMATE_JOB_COUNT, care_home, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, care_home, CARE_HOME_EMPLOYED],
+            [ESTIMATE_JOB_COUNT, non_res, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, non_res, CARE_HOME_EMPLOYED],
+            [JOB_COUNT, care_home, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, care_home, CARE_HOME_EMPLOYED],
+            [JOB_COUNT, non_res, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, non_res, CARE_HOME_EMPLOYED],
+        ]
+        self.assertEqual(output, expected_output)
 
 
     @unittest.skip("not written yet")
