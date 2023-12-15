@@ -964,7 +964,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             15.9,
             0.0,
         ]
-        new_column_name = "residuals_estimate_job_count_non_residential_pir"
+        new_column_name = "residuals_estimate_job_count_non_res_pir"
 
         self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
         self.assertEqual(output_df_list[1][new_column_name], expected_values[1])

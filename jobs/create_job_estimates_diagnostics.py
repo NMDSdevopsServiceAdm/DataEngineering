@@ -217,6 +217,15 @@ def add_categorisation_column(
     )
     return diagnostics_prepared_df
 
+def create_residuals_column_name(model: str, service: str, data_source: str) -> str:
+    if (service == care_home_with_nursing | service == care_home_without_nursing):
+        service_renamed = "care_home"
+    else:
+        service_renamed = "non_res"
+    
+    new_column_name = f"residuals_{model}_{service_renamed}_{data_source}"
+    return new_column_name
+
 
 if __name__ == "__main__":
     print("Spark job 'create_estimate_job_counts_diagnostics' starting...")
