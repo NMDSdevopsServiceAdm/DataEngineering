@@ -1232,5 +1232,64 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_df_rows[7][average_residual], expected_output[7])
 
 
+    def test_calculate_average_residual_creates_df_of_average_residuals(self):
+        # TODO: rewrite the test above here to create a sumamry table of average residuals in one row
+        residuals_rows = [
+            (
+                "location_1",
+                0.0,
+                known,
+            ),
+            (
+                "location_2",
+                -1.0,
+                known,
+            ),
+            (
+                "location_3",
+                3.0,
+                known,
+            ),
+            (
+                "location_4",
+                None,
+                known,
+            ),
+            (
+                "location_5",
+                10.5,
+                known,
+            ),
+            (
+                "location_6",
+                -2.5,
+                known,
+            ),
+            (
+                "location_7",
+                None,
+                unknown,
+            ),
+            (
+                "location_8",
+                None,
+                unknown,
+            ),
+        ]
+
+        residuals_df = self.spark.createDataFrame(
+            residuals_rows, schema=self.residuals_schema
+        )
+
+        output_df = job.calculate_average_residual(
+            residuals_df, self.residuals_test_column_name
+        )
+        output_df_rows = output_df.collect()
+
+        expected_output = [2.0]
+        average_residual = "avg_" + self.residuals_test_column_name
+
+        self.assertEqual(output_df_rows[0][average_residual], expected_output[0])
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
