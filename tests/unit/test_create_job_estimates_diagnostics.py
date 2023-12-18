@@ -179,7 +179,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.calculate_residuals(
             calculate_residuals_df,
             model=ESTIMATE_JOB_COUNT,
-            service=Values.non_residential,
+            service=Values.non_res,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
 
@@ -196,9 +196,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.calculate_residuals(
             calculate_residuals_df,
             model=ESTIMATE_JOB_COUNT,
-            service=Values.non_residential,
+            service=Values.non_res,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
+        output_df.show()
+        output_df.printSchema()
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
         expected_values = [
