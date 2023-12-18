@@ -58,12 +58,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
-    
-
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         estimate_jobs_df = self.spark.createDataFrame(
-            Data.estimate_jobs_rows, schema=Schemas.estimate_jobs,
+            Data.estimate_jobs_rows,
+            schema=Schemas.estimate_jobs,
         )
         capacity_tracker_care_home_df = self.spark.createDataFrame(
             Data.capacity_tracker_care_home_rows,
@@ -83,26 +82,30 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
         mock_main.assert_called_once()
-    
-    def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(self):
+
+    def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
+        self,
+    ):
         capacity_tracker_df = self.spark.createDataFrame(
-            Data.capacity_tracker_care_home_rows, schema=Schemas.capacity_tracker_care_home
+            Data.capacity_tracker_care_home_rows,
+            schema=Schemas.capacity_tracker_care_home,
         )
         capacity_tracker_df.show()
 
-        output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_df)
+        output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
+            capacity_tracker_df
+        )
         output_df.show()
-        
 
         expected_df_size = len(capacity_tracker_df.columns) + 1
         expected_rows = capacity_tracker_df.count()
-        expected_value = date.fromisoformat(Values.capacity_tracker_snapshot_date_formatted)
+        expected_value = date.fromisoformat(
+            Values.capacity_tracker_snapshot_date_formatted
+        )
 
-        
         output_df_list = output_df.collect()
         output_df_size = len(output_df_list[0])
         output_df_rows = len(output_df_list)
-        
 
         self.assertEqual(output_df_size, expected_df_size)
         self.assertEqual(output_df_rows, expected_rows)
@@ -132,7 +135,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(
         self,
     ):
-        
         diagnostics_df = self.spark.createDataFrame(
             Data.prepare_capacity_tracker_care_home_rows, schema=Schemas.diagnostics
         )
@@ -143,14 +145,19 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][Columns.CARE_HOME_EMPLOYED], expected_totals[0])
-        self.assertEqual(output_df_list[1][Columns.CARE_HOME_EMPLOYED], expected_totals[1])
+        self.assertEqual(
+            output_df_list[0][Columns.CARE_HOME_EMPLOYED], expected_totals[0]
+        )
+        self.assertEqual(
+            output_df_list[1][Columns.CARE_HOME_EMPLOYED], expected_totals[1]
+        )
 
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
         self,
     ):
         diagnostics_df = self.spark.createDataFrame(
-            Data.prepare_capacity_tracker_non_residential_rows, schema=Schemas.diagnostics
+            Data.prepare_capacity_tracker_non_residential_rows,
+            schema=Schemas.diagnostics,
         )
 
         output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
@@ -234,9 +241,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             ResidualsRequired.data_source_columns,
         )
 
-        output_df = job.run_residuals(
-            run_residuals_df, residuals_list=residuals_list
-        )
+        output_df = job.run_residuals(run_residuals_df, residuals_list=residuals_list)
         output_df_size = len(output_df.columns)
 
         expected_df_size = len(run_residuals_df.columns)
@@ -287,8 +292,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_rows[0][output_column_name], expected_output)
 
     def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
-        
-
         output_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
         output_df_rows = output_df.collect()
         output_df_row_count = output_df.count()
@@ -298,7 +301,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_row_count = 1
         expected_column_count = 1
 
-        self.assertEqual(output_df_rows[0][Columns.DESCRIPTION_OF_CHANGES], expected_value)
+        self.assertEqual(
+            output_df_rows[0][Columns.DESCRIPTION_OF_CHANGES], expected_value
+        )
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
 
@@ -329,7 +334,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         add_timestamps_df = self.spark.createDataFrame(
             Data.add_timestamps_rows, schema=Schemas.residuals
         )
-        
+
         output_df = job.add_timestamp_column(add_timestamps_df, Data.run_timestamp)
         output_df_rows = output_df.collect()
 

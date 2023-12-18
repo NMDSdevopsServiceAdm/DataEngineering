@@ -12,6 +12,7 @@ from utils.estimate_job_count.column_names import (
     NON_RESIDENTIAL_MODEL,
 )
 
+
 @dataclass
 class Variables:
     care_home_with_nursing: str = "Care home with nursing"
@@ -25,17 +26,20 @@ class Variables:
     care_home: str = "care_home"
     non_res: str = "non_res"
 
-    capacity_tracker_snapshot_date:str = "20230401"
-    capacity_tracker_snapshot_date_formatted:str = "2023-04-01"
+    capacity_tracker_snapshot_date: str = "20230401"
+    capacity_tracker_snapshot_date_formatted: str = "2023-04-01"
+
 
 @dataclass
 class Prefixes:
     avg: str = "avg_"
     residuals: str = "residuals_"
 
+
 @dataclass
 class CareWorkerToJobsRatio:
     care_worker_to_all_jobs_ratio: float = 1.3
+
 
 @dataclass
 class Columns:
@@ -54,13 +58,13 @@ class Columns:
     ID: str = "id"
     RUN_TIMESTAMP: str = "run_timestamp"
 
+
 @dataclass
 class TestColumns:
     residuals_test_column_names = [
         "residuals_estimate_job_count_non_res_pir",
         "residuals_job_count_non_res_pir",
     ]
-
 
 
 @dataclass

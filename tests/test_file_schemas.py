@@ -27,6 +27,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     TestColumns,
 )
 
+
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(

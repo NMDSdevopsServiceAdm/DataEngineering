@@ -26,7 +26,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Prefixes,
     CareWorkerToJobsRatio as Ratio,
     Columns,
-    ResidualsRequired, 
+    ResidualsRequired,
 )
 
 
@@ -80,8 +80,6 @@ def main(
         Columns.CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    
-
     diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
     diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
 
@@ -90,7 +88,7 @@ def main(
         capacity_tracker_care_homes_df,
         capacity_tracker_non_residential_df,
     )
-    
+
     diagnostics_prepared_df = diagnostics_df.select(
         LOCATION_ID,
         SNAPSHOT_DATE,
@@ -138,7 +136,8 @@ def main(
         partitionKeys=["run_year", "run_month", "run_day"],
     )
 
-def add_snapshot_date_to_capacity_tracker_dataframe(df:DataFrame) -> DataFrame:
+
+def add_snapshot_date_to_capacity_tracker_dataframe(df: DataFrame) -> DataFrame:
     df = df.withColumn(SNAPSHOT_DATE, F.lit(Values.capacity_tracker_snapshot_date))
     df = df.withColumn(SNAPSHOT_DATE, F.to_date(SNAPSHOT_DATE, "yyyyMMdd"))
     return df
@@ -149,19 +148,39 @@ def merge_dataframes(
     capacity_tracker_care_homes_df: DataFrame,
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
-    capacity_tracker_care_homes_df_with_snapshot_date = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
-    capacity_tracker_non_residential_df_with_snapshot_date = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_non_residential_df)
+    capacity_tracker_care_homes_df_with_snapshot_date = (
+        add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
+    )
+    capacity_tracker_non_residential_df_with_snapshot_date = (
+        add_snapshot_date_to_capacity_tracker_dataframe(
+            capacity_tracker_non_residential_df
+        )
+    )
 
     diagnostics_df: DataFrame = job_estimates_df.join(
         capacity_tracker_care_homes_df_with_snapshot_date,
-        [(job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CQC_ID]),
-         (job_estimates_df[SNAPSHOT_DATE] == capacity_tracker_care_homes_df_with_snapshot_date[SNAPSHOT_DATE])],
+        [
+            (
+                job_estimates_df[LOCATION_ID]
+                == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CQC_ID]
+            ),
+            (
+                job_estimates_df[SNAPSHOT_DATE]
+                == capacity_tracker_care_homes_df_with_snapshot_date[SNAPSHOT_DATE]
+            ),
+        ],
         how="left",
     )
     diagnostics_df = diagnostics_df.join(
         capacity_tracker_non_residential_df_with_snapshot_date,
-        [diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
-        (job_estimates_df[SNAPSHOT_DATE] == capacity_tracker_non_residential_df_with_snapshot_date[SNAPSHOT_DATE])],
+        [
+            diagnostics_df[LOCATION_ID]
+            == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
+            (
+                job_estimates_df[SNAPSHOT_DATE]
+                == capacity_tracker_non_residential_df_with_snapshot_date[SNAPSHOT_DATE]
+            ),
+        ],
         how="left",
     )
     return diagnostics_df
@@ -187,7 +206,10 @@ def prepare_capacity_tracker_non_residential_data(
 ) -> DataFrame:
     diagnostics_df = diagnostics_df.withColumn(
         Columns.NON_RESIDENTIAL_EMPLOYED,
-        (diagnostics_df[Columns.CQC_CARE_WORKERS_EMPLOYED] * Ratio.care_worker_to_all_jobs_ratio),
+        (
+            diagnostics_df[Columns.CQC_CARE_WORKERS_EMPLOYED]
+            * Ratio.care_worker_to_all_jobs_ratio
+        ),
     )
     return diagnostics_df
 
@@ -195,7 +217,9 @@ def prepare_capacity_tracker_non_residential_data(
 def create_residuals_column_name(
     model: str, service: str, data_source_column: str
 ) -> str:
-    if (service == Values.care_home_with_nursing) | (service == Values.care_home_without_nursing):
+    if (service == Values.care_home_with_nursing) | (
+        service == Values.care_home_without_nursing
+    ):
         service_renamed = Values.care_home
     else:
         service_renamed = Values.non_res
@@ -274,7 +298,9 @@ def run_average_residuals(
         )
         average_df = average_df.withColumn(Columns.ID, F.lit("A"))
         average_residuals_df = average_residuals_df.withColumn(Columns.ID, F.lit("A"))
-        average_residuals_df = average_residuals_df.join(average_df, on=[Columns.ID]).drop(Columns.ID)
+        average_residuals_df = average_residuals_df.join(
+            average_df, on=[Columns.ID]
+        ).drop(Columns.ID)
     return average_residuals_df
 
 

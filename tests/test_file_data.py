@@ -4,6 +4,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
     # fmt: off
@@ -58,4 +59,4 @@ class CreateJobEstimatesDiagnosticsData:
     ]
     # fmt: on
     description_of_change: str = "test"
-    run_timestamp:str = "12/24/2018, 04:59:31"
+    run_timestamp: str = "12/24/2018, 04:59:31"
