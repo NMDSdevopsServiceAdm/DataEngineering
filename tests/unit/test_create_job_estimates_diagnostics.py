@@ -259,18 +259,20 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         data_source_columns = [
             JOB_COUNT_UNFILTERED,
             Columns.CARE_HOME_EMPLOYED,
+            Columns.NON_RESIDENTIAL_EMPLOYED
         ]
 
         output = job.create_residuals_list(models, services, data_source_columns)
+        print(output)
         expected_output = [
             [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
             [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
             [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
             [JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
             [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
             [JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
-            [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
         ]
         self.assertEqual(output, expected_output)
 
@@ -292,7 +294,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_size = len(output)
 
         self.assertEqual(output_size, expected_size)
-
 
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(

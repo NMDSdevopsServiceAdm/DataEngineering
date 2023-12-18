@@ -80,8 +80,12 @@ def main(
         Columns.CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    capacity_tracker_care_homes_df = prepare_capacity_tracker_care_home_data(capacity_tracker_care_homes_df)
-    capacity_tracker_non_residential_df = prepare_capacity_tracker_non_residential_data(capacity_tracker_non_residential_df)
+    capacity_tracker_care_homes_df = prepare_capacity_tracker_care_home_data(
+        capacity_tracker_care_homes_df
+    )
+    capacity_tracker_non_residential_df = prepare_capacity_tracker_non_residential_data(
+        capacity_tracker_non_residential_df
+    )
 
     diagnostics_df = merge_dataframes(
         job_estimates_df,
@@ -116,9 +120,9 @@ def main(
     residuals_df = add_timestamp_column(residuals_df, run_timestamp)
 
     today = date.today()
-    residuals_df =residuals_df.withColumn("run_year", F.lit(today.year))
-    residuals_df =residuals_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
-    residuals_df =residuals_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+    residuals_df = residuals_df.withColumn("run_year", F.lit(today.year))
+    residuals_df = residuals_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    residuals_df = residuals_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
 
     utils.write_to_parquet(
         residuals_df,
@@ -134,9 +138,15 @@ def main(
     )
     average_residuals_df = add_timestamp_column(average_residuals_df, run_timestamp)
 
-    average_residuals_df =average_residuals_df.withColumn("run_year", F.lit(today.year))
-    average_residuals_df =average_residuals_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
-    average_residuals_df =average_residuals_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+    average_residuals_df = average_residuals_df.withColumn(
+        "run_year", F.lit(today.year)
+    )
+    average_residuals_df = average_residuals_df.withColumn(
+        "run_month", F.lit(f"{today.month:0>2}")
+    )
+    average_residuals_df = average_residuals_df.withColumn(
+        "run_day", F.lit(f"{today.day:0>2}")
+    )
 
     utils.write_to_parquet(
         average_residuals_df,
@@ -146,7 +156,9 @@ def main(
     )
 
 
-def add_snapshot_date_to_capacity_tracker_dataframe(df: DataFrame, column_name: str) -> DataFrame:
+def add_snapshot_date_to_capacity_tracker_dataframe(
+    df: DataFrame, column_name: str
+) -> DataFrame:
     df = df.withColumn(column_name, F.lit(Values.capacity_tracker_snapshot_date))
     df = df.withColumn(column_name, F.to_date(column_name, "yyyyMMdd"))
     return df
@@ -158,11 +170,15 @@ def merge_dataframes(
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
     capacity_tracker_care_homes_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df, Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE)
+        add_snapshot_date_to_capacity_tracker_dataframe(
+            capacity_tracker_care_homes_df,
+            Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE,
+        )
     )
     capacity_tracker_non_residential_df_with_snapshot_date = (
         add_snapshot_date_to_capacity_tracker_dataframe(
-            capacity_tracker_non_residential_df, Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE
+            capacity_tracker_non_residential_df,
+            Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE,
         )
     )
 
@@ -175,7 +191,9 @@ def merge_dataframes(
             ),
             (
                 job_estimates_df[SNAPSHOT_DATE]
-                == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE]
+                == capacity_tracker_care_homes_df_with_snapshot_date[
+                    Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE
+                ]
             ),
         ],
         how="left",
@@ -187,7 +205,9 @@ def merge_dataframes(
             == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
             (
                 job_estimates_df[SNAPSHOT_DATE]
-                == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE]
+                == capacity_tracker_non_residential_df_with_snapshot_date[
+                    Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE
+                ]
             ),
         ],
         how="left",
@@ -271,6 +291,17 @@ def create_residuals_list(
             for data_source_column in data_source_columns:
                 combination = [model, service, data_source_column]
                 residuals_list.append(combination)
+
+    for combination in residuals_list[:]:
+        if (
+            (combination[1] == Values.care_home)
+            & (combination[2] == Columns.NON_RESIDENTIAL_EMPLOYED)
+        ) | (
+            (combination[1] == Values.non_res)
+            & (combination[2] == Columns.CARE_HOME_EMPLOYED)
+        ):
+            residuals_list.remove(combination)
+
     return residuals_list
 
 
