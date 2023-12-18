@@ -10,6 +10,7 @@ from pyspark.sql.types import (
 
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
+    SNAPSHOT_DATE,
     PEOPLE_DIRECTLY_EMPLOYED,
     JOB_COUNT_UNFILTERED,
     JOB_COUNT,
@@ -31,6 +32,7 @@ class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(
         [
             StructField(LOCATION_ID, StringType(), False),
+            StructField(SNAPSHOT_DATE, StringType(), False),
             StructField(
                 JOB_COUNT_UNFILTERED,
                 FloatType(),

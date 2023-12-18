@@ -80,8 +80,7 @@ def main(
         Columns.CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    capacity_tracker_care_homes_df = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
-    capacity_tracker_non_residential_df = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_non_residential_df)
+    
 
     diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
     diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
@@ -150,14 +149,19 @@ def merge_dataframes(
     capacity_tracker_care_homes_df: DataFrame,
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
+    capacity_tracker_care_homes_df_with_snapshot_date = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
+    capacity_tracker_non_residential_df_with_snapshot_date = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_non_residential_df)
+
     diagnostics_df: DataFrame = job_estimates_df.join(
-        capacity_tracker_care_homes_df,
-        job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df[Columns.CQC_ID],
+        capacity_tracker_care_homes_df_with_snapshot_date,
+        [(job_estimates_df[LOCATION_ID] == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CQC_ID]),
+         (job_estimates_df[SNAPSHOT_DATE] == capacity_tracker_care_homes_df_with_snapshot_date[SNAPSHOT_DATE])],
         how="left",
     )
     diagnostics_df = diagnostics_df.join(
-        capacity_tracker_non_residential_df,
-        diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df[Columns.CQC_ID],
+        capacity_tracker_non_residential_df_with_snapshot_date,
+        [diagnostics_df[LOCATION_ID] == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
+        (job_estimates_df[SNAPSHOT_DATE] == capacity_tracker_non_residential_df_with_snapshot_date[SNAPSHOT_DATE])],
         how="left",
     )
     return diagnostics_df

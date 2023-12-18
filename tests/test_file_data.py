@@ -8,7 +8,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 class CreateJobEstimatesDiagnosticsData:
     # fmt: off
     estimate_jobs_rows = [
-        ("location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
+        ("location_1", "20230401", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
     ]
     capacity_tracker_care_home_rows = [
         ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
