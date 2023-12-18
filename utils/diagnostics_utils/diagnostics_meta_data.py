@@ -26,6 +26,7 @@ class Variables:
     non_res: str = "non_res"
 
     capacity_tracker_snapshot_date:str = "20230401"
+    capacity_tracker_snapshot_date_formatted:str = "2023-04-01"
 
 @dataclass
 class Prefixes:

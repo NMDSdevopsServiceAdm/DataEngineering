@@ -83,7 +83,9 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
         mock_main.assert_called_once()
-            capacity_tracker_df = self.spark.createDataFrame(
+    
+    def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(self):
+        capacity_tracker_df = self.spark.createDataFrame(
             Data.capacity_tracker_care_home_rows, schema=Schemas.capacity_tracker_care_home
         )
         capacity_tracker_df.show()
@@ -94,7 +96,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         expected_df_size = len(capacity_tracker_df.columns) + 1
         expected_rows = capacity_tracker_df.count()
-        expected_value = date.fromisoformat(Values.capacity_tracker_snapshot_date)
+        expected_value = date.fromisoformat(Values.capacity_tracker_snapshot_date_formatted)
 
         
         output_df_list = output_df.collect()
