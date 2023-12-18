@@ -278,7 +278,6 @@ module "create_job_estimates_diagnostics" {
     "--estimate_job_counts_source"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
     "--capacity_tracker_care_home_source"       = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_care_home/"
     "--capacity_tracker_non_residential_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
-    "--pir_source"                              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/1.0.0/"
     "--diagnostics_destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_diagnostics/version=0.1.0/"
     "--residuals_destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_residuals/version=0.1.0/"
   }
