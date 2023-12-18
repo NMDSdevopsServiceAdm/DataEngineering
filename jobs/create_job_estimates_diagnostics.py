@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import sys
 
 import pyspark.sql.functions as F
@@ -115,6 +115,11 @@ def main(
     residuals_df = run_residuals(diagnostics_prepared_df, residuals_list)
     residuals_df = add_timestamp_column(residuals_df, run_timestamp)
 
+    today = date.today()
+    residuals_df =residuals_df.withColumn("run_year", F.lit(today.year))
+    residuals_df =residuals_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    residuals_df =residuals_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
+
     utils.write_to_parquet(
         residuals_df,
         residuals_destination,
@@ -128,6 +133,10 @@ def main(
         residuals_df, average_residuals_df, column_names_list
     )
     average_residuals_df = add_timestamp_column(average_residuals_df, run_timestamp)
+
+    average_residuals_df =average_residuals_df.withColumn("run_year", F.lit(today.year))
+    average_residuals_df =average_residuals_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
+    average_residuals_df =average_residuals_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
 
     utils.write_to_parquet(
         average_residuals_df,
