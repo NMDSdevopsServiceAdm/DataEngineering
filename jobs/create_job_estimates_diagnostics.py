@@ -22,7 +22,7 @@ from utils.estimate_job_count.column_names import (
     NON_RESIDENTIAL_MODEL,
 )
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    CategoricalVariables as Values,
+    Variables as Values,
     Prefixes,
     CareWorkerToJobsRatio as Ratio,
     Columns,
@@ -80,13 +80,18 @@ def main(
         Columns.CQC_CARE_WORKERS_EMPLOYED,
     )
 
+    capacity_tracker_care_homes_df = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
+    capacity_tracker_non_residential_df = add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_non_residential_df)
+
+    diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
+    diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
+
     diagnostics_df = merge_dataframes(
         job_estimates_df,
         capacity_tracker_care_homes_df,
         capacity_tracker_non_residential_df,
     )
-    diagnostics_df = prepare_capacity_tracker_care_home_data(diagnostics_df)
-    diagnostics_df = prepare_capacity_tracker_non_residential_data(diagnostics_df)
+    
     diagnostics_prepared_df = diagnostics_df.select(
         LOCATION_ID,
         SNAPSHOT_DATE,
@@ -133,6 +138,11 @@ def main(
         append=True,
         partitionKeys=["run_year", "run_month", "run_day"],
     )
+
+def add_snapshot_date_to_capacity_tracker_dataframe(df:DataFrame) -> DataFrame:
+    df = df.withColumn(SNAPSHOT_DATE, F.lit(Values.capacity_tracker_snapshot_date))
+    df = df.withColumn(SNAPSHOT_DATE, F.to_date(SNAPSHOT_DATE, "yyyyMMdd"))
+    return df
 
 
 def merge_dataframes(
@@ -247,7 +257,6 @@ def calculate_average_residual(
     average_residual_df = df.agg(
         F.avg(df[residual_column_name]).alias(average_residual_column_name)
     )
-    average_residual_df.show()
     return average_residual_df
 
 
@@ -256,15 +265,12 @@ def run_average_residuals(
 ) -> DataFrame:
     for column in residuals_columns:
         average_residual_column_name = Prefixes.avg + column
-        print(average_residual_column_name)
         average_df = calculate_average_residual(
             df, column, average_residual_column_name
         )
         average_df = average_df.withColumn(Columns.ID, F.lit("A"))
         average_residuals_df = average_residuals_df.withColumn(Columns.ID, F.lit("A"))
-        average_df.show()
         average_residuals_df = average_residuals_df.join(average_df, on=[Columns.ID]).drop(Columns.ID)
-        average_residuals_df.show()
     return average_residuals_df
 
 

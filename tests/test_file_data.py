@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    CategoricalVariables as Values,
+    Variables as Values,
 )
 
 @dataclass

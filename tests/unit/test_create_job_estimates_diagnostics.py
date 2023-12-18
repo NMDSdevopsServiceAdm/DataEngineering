@@ -1,6 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import patch
+from datetime import date
 
 from pyspark.sql import SparkSession
 
@@ -19,9 +20,10 @@ from utils.estimate_job_count.column_names import (
     JOB_COUNT_UNFILTERED,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
+    SNAPSHOT_DATE,
 )
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    CategoricalVariables as Values,
+    Variables as Values,
     Prefixes,
     Columns,
     TestColumns,
@@ -81,6 +83,28 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
         mock_main.assert_called_once()
+            capacity_tracker_df = self.spark.createDataFrame(
+            Data.capacity_tracker_care_home_rows, schema=Schemas.capacity_tracker_care_home
+        )
+        capacity_tracker_df.show()
+
+        output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_df)
+        output_df.show()
+        
+
+        expected_df_size = len(capacity_tracker_df.columns) + 1
+        expected_rows = capacity_tracker_df.count()
+        expected_value = date.fromisoformat(Values.capacity_tracker_snapshot_date)
+
+        
+        output_df_list = output_df.collect()
+        output_df_size = len(output_df_list[0])
+        output_df_rows = len(output_df_list)
+        
+
+        self.assertEqual(output_df_size, expected_df_size)
+        self.assertEqual(output_df_rows, expected_rows)
+        self.assertEqual(output_df_list[0][SNAPSHOT_DATE], expected_value)
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         estimate_jobs_df = self.spark.createDataFrame(
@@ -254,7 +278,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output = job.calculate_average_residual(
             residuals_df, TestColumns.residuals_test_column_names[0], output_column_name
         )
-        output.printSchema()
         output_rows = output.collect()
 
         expected_output = 2.0
@@ -287,7 +310,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.run_average_residuals(
             residuals_df, blank_df, TestColumns.residuals_test_column_names
         )
-        output_df.printSchema()
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 0.0]

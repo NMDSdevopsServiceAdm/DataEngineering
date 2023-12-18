@@ -13,7 +13,7 @@ from utils.estimate_job_count.column_names import (
 )
 
 @dataclass
-class CategoricalVariables:
+class Variables:
     care_home_with_nursing: str = "Care home with nursing"
     care_home_without_nursing: str = "Care home without nursing"
     non_residential: str = "non-residential"
@@ -24,6 +24,8 @@ class CategoricalVariables:
 
     care_home: str = "care_home"
     non_res: str = "non_res"
+
+    capacity_tracker_snapshot_date:str = "20230401"
 
 @dataclass
 class Prefixes:
@@ -73,8 +75,8 @@ class ResidualsRequired:
     ]
 
     services = [
-        CategoricalVariables.care_home,
-        CategoricalVariables.non_res,
+        Variables.care_home,
+        Variables.non_res,
     ]
 
     data_source_columns = [
