@@ -226,12 +226,14 @@ def prepare_capacity_tracker_non_residential_data(
 def create_residuals_column_name(
     model: str, service: str, data_source_column: str
 ) -> str:
+    """
     if (service == Values.care_home_with_nursing) | (
         service == Values.care_home_without_nursing
     ):
         service_renamed = Values.care_home
     else:
         service_renamed = Values.non_res
+    """
 
     if (data_source_column == Columns.CARE_HOME_EMPLOYED) | (
         data_source_column == Columns.NON_RESIDENTIAL_EMPLOYED
@@ -242,7 +244,7 @@ def create_residuals_column_name(
     elif data_source_column == JOB_COUNT_UNFILTERED:
         data_source = Values.asc_wds
 
-    new_column_name = f"{Prefixes.residuals}{model}_{service_renamed}_{data_source}"
+    new_column_name = f"{Prefixes.residuals}{model}_{service}_{data_source}"
     return new_column_name
 
 

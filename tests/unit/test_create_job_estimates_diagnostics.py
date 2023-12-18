@@ -218,7 +218,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         model = ESTIMATE_JOB_COUNT
-        service = Values.non_residential
+        service = Values.non_res
         data_source_column = PEOPLE_DIRECTLY_EMPLOYED
 
         output = job.create_residuals_column_name(model, service, data_source_column)
@@ -273,6 +273,26 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
         ]
         self.assertEqual(output, expected_output)
+
+    def test_create_column_names_list_adds_the_correct_number_of_columns(self):
+        residuals_list = [
+            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+        ]
+
+        output = job.create_column_names_list(residuals_list)
+
+        expected_size = len(residuals_list)
+        output_size = len(output)
+
+        self.assertEqual(output_size, expected_size)
+
 
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(
