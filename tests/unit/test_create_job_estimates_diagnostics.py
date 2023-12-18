@@ -90,12 +90,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             Data.capacity_tracker_care_home_rows,
             schema=Schemas.capacity_tracker_care_home,
         )
-        capacity_tracker_df.show()
 
         output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
             capacity_tracker_df
         )
-        output_df.show()
 
         expected_df_size = len(capacity_tracker_df.columns) + 1
         expected_rows = capacity_tracker_df.count()
