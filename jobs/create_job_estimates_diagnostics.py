@@ -155,7 +155,7 @@ def merge_dataframes(
 
 def prepare_capacity_tracker_care_home_data(diagnostics_df: DataFrame) -> DataFrame:
     diagnostics_df = diagnostics_df.withColumn(
-        Columns.CARE_WORKERS_EMPLOYED,
+        Columns.CARE_HOME_EMPLOYED,
         (
             diagnostics_df[Columns.NURSES_EMPLOYED]
             + diagnostics_df[Columns.CARE_WORKERS_EMPLOYED]
@@ -186,7 +186,7 @@ def create_residuals_column_name(
     else:
         service_renamed = Values.non_res
 
-    if (data_source_column == Columns.CARE_WORKERS_EMPLOYED) | (
+    if (data_source_column == Columns.CARE_HOME_EMPLOYED) | (
         data_source_column == Columns.NON_RESIDENTIAL_EMPLOYED
     ):
         data_source = Values.capacity_tracker

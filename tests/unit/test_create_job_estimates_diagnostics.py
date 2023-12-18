@@ -583,8 +583,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         expected_output = [2.0, 0.0]
         output_column_names = [
-            Prefixes.average_prefix + self.residuals_test_column_names[0],
-            Prefixes.average_prefix + self.residuals_test_column_names[1],
+            Prefixes.avg + self.residuals_test_column_names[0],
+            Prefixes.avg + self.residuals_test_column_names[1],
         ]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
