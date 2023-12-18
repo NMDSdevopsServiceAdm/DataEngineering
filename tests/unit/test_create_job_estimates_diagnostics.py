@@ -6,8 +6,11 @@ from pyspark.sql import SparkSession
 
 
 from tests.test_helpers import remove_file_path
-from tests.test_schemas.schemas_for_tests import (
+from tests.test_file_schemas import (
     CreateJobEstimatesDiagnosticsSchemas as Schemas,
+)
+from tests.test_file_data import (
+    CreateJobEstimatesDiagnosticsData as Data,
 )
 import jobs.create_job_estimates_diagnostics as job
 from utils.estimate_job_count.column_names import (
@@ -24,7 +27,6 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     TestColumns,
     ResidualsRequired,
 )
-
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
@@ -54,69 +56,19 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
-    # fmt: off
-    estimate_jobs_rows = [
-        ("location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
-    ]
-    capacity_tracker_care_home_rows = [
-        ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
-    ]
-    capacity_tracker_non_residential_rows = [
-        ("location_2", 67.0),
-    ]
-    prepare_capacity_tracker_care_home_rows = [
-        ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
-        ("location_2", Values.non_residential,  None, None, None, None, None, None, 30.0,),
-    ]
-    prepare_capacity_tracker_non_residential_rows = [
-        ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
-        ("location_2", Values.non_residential, None, None, None, None, None, None, 75.0,),
-    ]
-    calculate_residuals_rows = [
-        ("location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,),
-        ("location_3", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
-        ("location_4", None, None, Values.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,),
-        ("location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
-    ]
-    run_residuals_rows = [
-        ("location_1", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
-        ("location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
-        ("location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
-        ("location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,),
-        ("location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
-        ("location_6", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,),
-        ("location_7", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,),
-        ("location_8", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,),
-        ("location_9", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,),
-        ("location_10", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
-    ]
-    residuals_rows = [
-        ("location_1", 0.0, 0.0,),
-        ("location_2", -1.0, 0.0,),
-        ("location_3", 3.0, 0.0,),
-        ("location_4", None, 0.0,),
-        ("location_5", 10.5, 0.0,),
-        ("location_6", -2.5, 0.0,),
-        ("location_7", None, None,),
-        ("location_8", None, None,),
-    ]
-    add_timestamps_rows = [
-        ("location_1", 0.0, 0.0,),
-        ("location_2", -1.0, 0.0,),
-    ]
-    # fmt: on
+    
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         estimate_jobs_df = self.spark.createDataFrame(
-            self.estimate_jobs_rows, schema=Schemas.estimate_jobs,
+            Data.estimate_jobs_rows, schema=Schemas.estimate_jobs,
         )
         capacity_tracker_care_home_df = self.spark.createDataFrame(
-            self.capacity_tracker_care_home_rows,
+            Data.capacity_tracker_care_home_rows,
             schema=Schemas.capacity_tracker_care_home,
         )
         capacity_tracker_non_residential_df = self.spark.createDataFrame(
-            self.capacity_tracker_non_residential_rows,
+            Data.capacity_tracker_non_residential_rows,
             schema=Schemas.capacity_tracker_non_residential,
         )
 
@@ -132,14 +84,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         estimate_jobs_df = self.spark.createDataFrame(
-            self.estimate_jobs_rows, schema=Schemas.estimate_jobs
+            Data.estimate_jobs_rows, schema=Schemas.estimate_jobs
         )
         capacity_tracker_care_home_df = self.spark.createDataFrame(
-            self.capacity_tracker_care_home_rows,
+            Data.capacity_tracker_care_home_rows,
             schema=Schemas.capacity_tracker_care_home,
         )
         capacity_tracker_non_residential_df = self.spark.createDataFrame(
-            self.capacity_tracker_non_residential_rows,
+            Data.capacity_tracker_non_residential_rows,
             schema=Schemas.capacity_tracker_non_residential,
         )
 
@@ -156,7 +108,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         
         diagnostics_df = self.spark.createDataFrame(
-            self.prepare_capacity_tracker_care_home_rows, schema=Schemas.diagnostics
+            Data.prepare_capacity_tracker_care_home_rows, schema=Schemas.diagnostics
         )
 
         output_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
@@ -172,7 +124,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         diagnostics_df = self.spark.createDataFrame(
-            self.prepare_capacity_tracker_non_residential_rows, schema=Schemas.diagnostics
+            Data.prepare_capacity_tracker_non_residential_rows, schema=Schemas.diagnostics
         )
 
         output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
@@ -190,7 +142,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def test_calculate_residuals_adds_a_column(self):
         calculate_residuals_df = self.spark.createDataFrame(
-            self.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
+            Data.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
         )
 
         output_df = job.calculate_residuals(
@@ -207,7 +159,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def test_calculate_residuals_adds_residual_value(self):
         calculate_residuals_df = self.spark.createDataFrame(
-            self.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
+            Data.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
         )
 
         output_df = job.calculate_residuals(
@@ -247,7 +199,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         run_residuals_df = self.spark.createDataFrame(
-            self.run_residuals_rows, schema=Schemas.diagnostics_prepared
+            Data.run_residuals_rows, schema=Schemas.diagnostics_prepared
         )
 
         residuals_list = job.create_residuals_list(
@@ -295,7 +247,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(
-            self.residuals_rows, schema=Schemas.residuals
+            Data.residuals_rows, schema=Schemas.residuals
         )
         output_column_name = Prefixes.avg + TestColumns.residuals_test_column_names[0]
 
@@ -310,14 +262,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(output_rows[0][output_column_name], expected_output)
 
     def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
-        description_of_change: str = "test"
+        
 
-        output_df = job.create_empty_dataframe(description_of_change, self.spark)
+        output_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
         output_df_rows = output_df.collect()
         output_df_row_count = output_df.count()
         output_df_column_count = len(output_df_rows)
 
-        expected_value = description_of_change
+        expected_value = Data.description_of_change
         expected_row_count = 1
         expected_column_count = 1
 
@@ -327,10 +279,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def test_run_average_residuals_creates_df_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(
-            self.residuals_rows, schema=Schemas.residuals
+            Data.residuals_rows, schema=Schemas.residuals
         )
 
-        blank_df = job.create_empty_dataframe("test", self.spark)
+        blank_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
 
         output_df = job.run_average_residuals(
             residuals_df, blank_df, TestColumns.residuals_test_column_names
@@ -351,15 +303,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         add_timestamps_df = self.spark.createDataFrame(
-            self.add_timestamps_rows, schema=Schemas.residuals
+            Data.add_timestamps_rows, schema=Schemas.residuals
         )
-        run_timestamp = "12/24/2018, 04:59:31"
-
-        output_df = job.add_timestamp_column(add_timestamps_df, run_timestamp)
+        
+        output_df = job.add_timestamp_column(add_timestamps_df, Data.run_timestamp)
         output_df_rows = output_df.collect()
 
-        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], run_timestamp)
-        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], run_timestamp)
+        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], Data.run_timestamp)
+        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], Data.run_timestamp)
 
 
 if __name__ == "__main__":
