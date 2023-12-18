@@ -80,8 +80,8 @@ def main(
         Columns.CQC_CARE_WORKERS_EMPLOYED,
     )
 
-    diagnostics_df = prepare_capacity_tracker_care_home_data(capacity_tracker_care_homes_df)
-    diagnostics_df = prepare_capacity_tracker_non_residential_data(capacity_tracker_non_residential_df)
+    capacity_tracker_care_homes_df = prepare_capacity_tracker_care_home_data(capacity_tracker_care_homes_df)
+    capacity_tracker_non_residential_df = prepare_capacity_tracker_non_residential_data(capacity_tracker_non_residential_df)
 
     diagnostics_df = merge_dataframes(
         job_estimates_df,
