@@ -51,6 +51,14 @@ class Columns:
     ID: str = "id"
     RUN_TIMESTAMP: str = "run_timestamp"
 
+@dataclass
+class TestColumns:
+    residuals_test_column_names = [
+        "residuals_estimate_job_count_non_res_pir",
+        "residuals_job_count_non_res_pir",
+    ]
+
+
 
 @dataclass
 class ResidualsRequired:

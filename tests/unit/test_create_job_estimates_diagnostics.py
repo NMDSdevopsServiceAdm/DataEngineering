@@ -3,15 +3,12 @@ import warnings
 from unittest.mock import patch
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    IntegerType,
-    FloatType,
-)
+
 
 from tests.test_helpers import remove_file_path
+from tests.test_schemas.schemas_for_tests import (
+    CreateJobEstimatesDiagnosticsSchemas as Schemas,
+)
 import jobs.create_job_estimates_diagnostics as job
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
@@ -19,19 +16,15 @@ from utils.estimate_job_count.column_names import (
     JOB_COUNT_UNFILTERED,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
 )
 from utils.diagnostics_utils.diagnostics_meta_data import (
     CategoricalVariables as Values,
     Prefixes,
     Columns,
+    TestColumns,
     ResidualsRequired,
 )
+
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
@@ -61,117 +54,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
-    residuals_test_column_names = [
-        "residuals_estimate_job_count_non_res_pir",
-        "residuals_job_count_non_res_pir",
-    ]
-
-    estimate_jobs_schema = StructType(
-        [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(
-                JOB_COUNT_UNFILTERED,
-                FloatType(),
-                True,
-            ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
-        ]
-    )
-    capacity_tracker_care_home_schema = StructType(
-        [
-            StructField(Columns.CQC_ID, StringType(), False),
-            StructField(
-                Columns.NURSES_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-        ]
-    )
-    capacity_tracker_non_residential_schema = StructType(
-        [
-            StructField(Columns.CQC_ID, StringType(), False),
-            StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-
-    diagnostics_schema = StructType(
-        [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(
-                Columns.NURSES_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    diagnostics_prepared_schema = StructType(
-        [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(
-                JOB_COUNT_UNFILTERED,
-                FloatType(),
-                True,
-            ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
-            StructField(
-                Columns.CARE_HOME_EMPLOYED,
-                FloatType(),
-                True,
-            ),
-            StructField(Columns.NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
-        ]
-    )
-    residuals_schema = StructType(
-        [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(
-                residuals_test_column_names[0],
-                FloatType(),
-                True,
-            ),
-            StructField(
-                residuals_test_column_names[1],
-                FloatType(),
-                True,
-            ),
-        ]
-    )
 
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
@@ -191,15 +73,15 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
 
         estimate_jobs_df = self.spark.createDataFrame(
-            estimate_jobs_rows, schema=self.estimate_jobs_schema
+            estimate_jobs_rows, schema=Schemas.estimate_jobs,
         )
         capacity_tracker_care_home_df = self.spark.createDataFrame(
             capacity_tracker_care_home_rows,
-            schema=self.capacity_tracker_care_home_schema,
+            schema=Schemas.capacity_tracker_care_home,
         )
         capacity_tracker_non_residential_df = self.spark.createDataFrame(
             capacity_tracker_non_residential_rows,
-            schema=self.capacity_tracker_non_residential_schema,
+            schema=Schemas.capacity_tracker_non_residential,
         )
 
         job.main(
@@ -229,15 +111,15 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
 
         estimate_jobs_df = self.spark.createDataFrame(
-            estimate_jobs_rows, schema=self.estimate_jobs_schema
+            estimate_jobs_rows, schema=Schemas.estimate_jobs
         )
         capacity_tracker_care_home_df = self.spark.createDataFrame(
             capacity_tracker_care_home_rows,
-            schema=self.capacity_tracker_care_home_schema,
+            schema=Schemas.capacity_tracker_care_home,
         )
         capacity_tracker_non_residential_df = self.spark.createDataFrame(
             capacity_tracker_non_residential_rows,
-            schema=self.capacity_tracker_non_residential_schema,
+            schema=Schemas.capacity_tracker_non_residential,
         )
 
         output_df = job.merge_dataframes(
@@ -262,7 +144,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
         # fmt: on
         diagnostics_df = self.spark.createDataFrame(
-            diagnostics_rows, schema=self.diagnostics_schema
+            diagnostics_rows, schema=Schemas.diagnostics
         )
 
         output_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
@@ -288,7 +170,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
         # fmt: on
         diagnostics_df = self.spark.createDataFrame(
-            diagnostics_rows, schema=self.diagnostics_schema
+            diagnostics_rows, schema=Schemas.diagnostics
         )
 
         output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
@@ -323,7 +205,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         known_values_df = self.spark.createDataFrame(
-            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+            diagnostics_prepared_rows, schema=Schemas.diagnostics_prepared
         )
 
         output_df = job.calculate_residuals(
@@ -357,7 +239,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         known_values_df = self.spark.createDataFrame(
-            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+            diagnostics_prepared_rows, schema=Schemas.diagnostics_prepared
         )
 
         output_df = job.calculate_residuals(
@@ -374,7 +256,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             15.0,
             None,
         ]
-        new_column_name = self.residuals_test_column_names[0]
+        new_column_name = TestColumns.residuals_test_column_names[0]
 
         self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
         self.assertEqual(output_df_list[1][new_column_name], expected_values[1])
@@ -389,7 +271,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         data_source_column = PEOPLE_DIRECTLY_EMPLOYED
 
         output = job.create_residuals_column_name(model, service, data_source_column)
-        expected_output = self.residuals_test_column_names[0]
+        expected_output = TestColumns.residuals_test_column_names[0]
 
         self.assertEqual(output, expected_output)
 
@@ -432,7 +314,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         diagnostics_prepared_df = self.spark.createDataFrame(
-            diagnostics_prepared_rows, schema=self.diagnostics_prepared_schema
+            diagnostics_prepared_rows, schema=Schemas.diagnostics_prepared
         )
 
         residuals_list = job.create_residuals_list(
@@ -509,12 +391,12 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         residuals_df = self.spark.createDataFrame(
-            residuals_rows, schema=self.residuals_schema
+            residuals_rows, schema=Schemas.residuals
         )
-        output_column_name = Prefixes.avg + self.residuals_test_column_names[0]
+        output_column_name = Prefixes.avg + TestColumns.residuals_test_column_names[0]
 
         output = job.calculate_average_residual(
-            residuals_df, self.residuals_test_column_names[0], output_column_name
+            residuals_df, TestColumns.residuals_test_column_names[0], output_column_name
         )
         output.printSchema()
         output_rows = output.collect()
@@ -570,21 +452,21 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         residuals_df = self.spark.createDataFrame(
-            residuals_rows, schema=self.residuals_schema
+            residuals_rows, schema=Schemas.residuals
         )
 
         blank_df = job.create_empty_dataframe("test", self.spark)
 
         output_df = job.run_average_residuals(
-            residuals_df, blank_df, self.residuals_test_column_names
+            residuals_df, blank_df, TestColumns.residuals_test_column_names
         )
         output_df.printSchema()
         output_df_rows = output_df.collect()
 
         expected_output = [2.0, 0.0]
         output_column_names = [
-            Prefixes.avg + self.residuals_test_column_names[0],
-            Prefixes.avg + self.residuals_test_column_names[1],
+            Prefixes.avg + TestColumns.residuals_test_column_names[0],
+            Prefixes.avg + TestColumns.residuals_test_column_names[1],
         ]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
@@ -605,7 +487,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: on
 
         residuals_df = self.spark.createDataFrame(
-            residuals_rows, schema=self.residuals_schema
+            residuals_rows, schema=Schemas.residuals
         )
         run_timestamp = "12/24/2018, 04:59:31"
 
