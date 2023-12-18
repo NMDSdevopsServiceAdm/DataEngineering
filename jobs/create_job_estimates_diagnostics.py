@@ -137,9 +137,9 @@ def main(
     )
 
 
-def add_snapshot_date_to_capacity_tracker_dataframe(df: DataFrame) -> DataFrame:
-    df = df.withColumn(SNAPSHOT_DATE, F.lit(Values.capacity_tracker_snapshot_date))
-    df = df.withColumn(SNAPSHOT_DATE, F.to_date(SNAPSHOT_DATE, "yyyyMMdd"))
+def add_snapshot_date_to_capacity_tracker_dataframe(df: DataFrame, column_name: str) -> DataFrame:
+    df = df.withColumn(column_name, F.lit(Values.capacity_tracker_snapshot_date))
+    df = df.withColumn(column_name, F.to_date(column_name, "yyyyMMdd"))
     return df
 
 
@@ -149,11 +149,11 @@ def merge_dataframes(
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
     capacity_tracker_care_homes_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df)
+        add_snapshot_date_to_capacity_tracker_dataframe(capacity_tracker_care_homes_df, Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE)
     )
     capacity_tracker_non_residential_df_with_snapshot_date = (
         add_snapshot_date_to_capacity_tracker_dataframe(
-            capacity_tracker_non_residential_df
+            capacity_tracker_non_residential_df, Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE
         )
     )
 

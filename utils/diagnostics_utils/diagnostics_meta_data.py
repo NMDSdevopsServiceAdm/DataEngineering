@@ -57,6 +57,8 @@ class Columns:
     VALUE: str = "value"
     ID: str = "id"
     RUN_TIMESTAMP: str = "run_timestamp"
+    CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE: str = "capacity_tracker_care_homes_snapshot_date"
+    CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE: str = "capacity_tracker_non_residential_snapshot_date"
 
 
 @dataclass

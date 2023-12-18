@@ -92,7 +92,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
         output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
-            capacity_tracker_df
+            capacity_tracker_df, SNAPSHOT_DATE
         )
 
         expected_df_size = len(capacity_tracker_df.columns) + 1
