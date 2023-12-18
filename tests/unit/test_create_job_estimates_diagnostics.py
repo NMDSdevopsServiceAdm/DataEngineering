@@ -59,9 +59,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         # fmt: off
         estimate_jobs_rows = [
-            (
-                "location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
-            ),
+            ("location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
         ]
         # fmt: on
 
@@ -97,9 +95,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         # fmt: off
         estimate_jobs_rows = [
-            (
-                "location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
-            ),
+            ("location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
         ]
         # fmt: on
 
@@ -135,12 +131,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         # fmt: off
         diagnostics_rows = [
-            (
-                "location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
-            ),
-            (
-                "location_2", Values.non_residential,  None, None, None, None, None, None, 30.0,
-            ),
+            ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
+            ("location_2", Values.non_residential,  None, None, None, None, None, None, 30.0,),
         ]
         # fmt: on
         diagnostics_df = self.spark.createDataFrame(
@@ -161,12 +153,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         # fmt: off
         diagnostics_rows = [
-            (
-                "location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
-            ),
-            (
-                "location_2", Values.non_residential, None, None, None, None, None, None, 75.0,
-            ),
+            ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
+            ("location_2", Values.non_residential, None, None, None, None, None, None, 75.0,),
         ]
         # fmt: on
         diagnostics_df = self.spark.createDataFrame(
@@ -189,18 +177,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_calculate_residuals_adds_a_column(self):
         # fmt: off
         diagnostics_prepared_rows = [
-            (
-                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
-            ),
-            (
-                "location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
-            ),
-            (
-                "location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
-            ),
-            (
-                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
-            ),
+            ("location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
+            ("location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
+            ("location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,),
+            ("location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
         ]
         # fmt: on
 
@@ -223,18 +203,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_calculate_residuals_adds_residual_value(self):
         # fmt: off
         diagnostics_prepared_rows = [
-            (
-                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,
-            ),
-            (
-                "location_3", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
-            ),
-            (
-                "location_4", None, None, Values.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,
-            ),
-            (
-                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
-            ),
+            ("location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,),
+            ("location_3", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
+            ("location_4", None, None, Values.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,),
+            ("location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
         ]
         # fmt: on
 
@@ -280,36 +252,16 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         # fmt: off
         diagnostics_prepared_rows = [
-            (
-                "location_1", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
-            ),
-            (
-                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
-            ),
-            (
-                "location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
-            ),
-            (
-                "location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
-            ),
-            (
-                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
-            ),
-            (
-                "location_6", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,
-            ),
-            (
-                "location_7", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,
-            ),
-            (
-                "location_8", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,
-            ),
-            (
-                "location_9", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,
-            ),
-            (
-                "location_10", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
-            ),
+            ("location_1", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
+            ("location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
+            ("location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
+            ("location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,),
+            ("location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
+            ("location_6", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,),
+            ("location_7", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,),
+            ("location_8", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,),
+            ("location_9", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,),
+            ("location_10", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
         ]
         # fmt: on
 
@@ -363,30 +315,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
         # fmt: off
         residuals_rows = [
-            (
-                "location_1", 0.0, 0.0,
-            ),
-            (
-                "location_2", -1.0, 0.0,
-            ),
-            (
-                "location_3", 3.0, 0.0,
-            ),
-            (
-                "location_4", None, 0.0,
-            ),
-            (
-                "location_5", 10.5, 0.0,
-            ),
-            (
-                "location_6", -2.5, 0.0,
-            ),
-            (
-                "location_7", None, None,
-            ),
-            (
-                "location_8", None, None,
-            ),
+            ("location_1", 0.0, 0.0,),
+            ("location_2", -1.0, 0.0,),
+            ("location_3", 3.0, 0.0,),
+            ("location_4", None, 0.0,),
+            ("location_5", 10.5, 0.0,),
+            ("location_6", -2.5, 0.0,),
+            ("location_7", None, None,),
+            ("location_8", None, None,),
         ]
         # fmt: on
 
@@ -424,30 +360,14 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     def test_run_average_residuals_creates_df_of_average_residuals(self):
         # fmt: off
         residuals_rows = [
-            (
-                "location_1", 0.0, 0.0,
-            ),
-            (
-                "location_2", -1.0, 0.0,
-            ),
-            (
-                "location_3", 3.0, 0.0,
-            ),
-            (
-                "location_4", None, 0.0,
-            ),
-            (
-                "location_5", 10.5, 0.0,
-            ),
-            (
-                "location_6", -2.5, 0.0,
-            ),
-            (
-                "location_7", None, None,
-            ),
-            (
-                "location_8", None, None,
-            ),
+            ("location_1", 0.0, 0.0,),
+            ("location_2", -1.0, 0.0,),
+            ("location_3", 3.0, 0.0,),
+            ("location_4", None, 0.0,),
+            ( "location_5", 10.5, 0.0,),
+            ("location_6", -2.5, 0.0,),
+            ("location_7", None, None,),
+            ("location_8", None, None,),
         ]
         # fmt: on
 
@@ -477,12 +397,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     ):
         # fmt: off
         residuals_rows = [
-            (
-                "location_1", 0.0, 0.0,
-            ),
-            (
-                "location_2", -1.0, 0.0,
-            ),
+            ("location_1", 0.0, 0.0,),
+            ("location_2", -1.0, 0.0,),
         ]
         # fmt: on
 
