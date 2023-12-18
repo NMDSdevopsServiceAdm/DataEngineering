@@ -27,25 +27,10 @@ from utils.estimate_job_count.column_names import (
     NON_RESIDENTIAL_MODEL,
 )
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    CQC_ID,
-    NURSES_EMPLOYED,
-    CARE_WORKERS_EMPLOYED,
-    NON_CARE_WORKERS_EMPLOYED,
-    AGENCY_NURSES_EMPLOYED,
-    AGENCY_CARE_WORKERS_EMPLOYED,
-    AGENCY_NON_CARE_WORKERS_EMPLOYED,
-    CQC_CARE_WORKERS_EMPLOYED,
-    CARE_HOME_EMPLOYED,
-    NON_RESIDENTIAL_EMPLOYED,
-    DESCRIPTION_OF_CHANGES,
-    RUN_TIMESTAMP,
-    care_home_with_nursing,
-    care_home_without_nursing,
-    non_residential,
-    care_home,
-    non_res,
+    CategoricalVariables as Values,
+    Prefixes,
+    Columns,
     ResidualsRequired,
-    average_prefix,
 )
 
 
@@ -102,24 +87,24 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     )
     capacity_tracker_care_home_schema = StructType(
         [
-            StructField(CQC_ID, StringType(), False),
+            StructField(Columns.CQC_ID, StringType(), False),
             StructField(
-                NURSES_EMPLOYED,
+                Columns.NURSES_EMPLOYED,
                 FloatType(),
                 True,
             ),
-            StructField(CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
         ]
     )
     capacity_tracker_non_residential_schema = StructType(
         [
-            StructField(CQC_ID, StringType(), False),
+            StructField(Columns.CQC_ID, StringType(), False),
             StructField(
-                CQC_CARE_WORKERS_EMPLOYED,
+                Columns.CQC_CARE_WORKERS_EMPLOYED,
                 FloatType(),
                 True,
             ),
@@ -131,17 +116,17 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             StructField(LOCATION_ID, StringType(), False),
             StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
             StructField(
-                NURSES_EMPLOYED,
+                Columns.NURSES_EMPLOYED,
                 FloatType(),
                 True,
             ),
-            StructField(CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
             StructField(
-                CQC_CARE_WORKERS_EMPLOYED,
+                Columns.CQC_CARE_WORKERS_EMPLOYED,
                 FloatType(),
                 True,
             ),
@@ -165,11 +150,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
             StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
             StructField(
-                CARE_HOME_EMPLOYED,
+                Columns.CARE_HOME_EMPLOYED,
                 FloatType(),
                 True,
             ),
-            StructField(NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+            StructField(Columns.NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
         ]
     )
     residuals_schema = StructType(
@@ -193,7 +178,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         estimate_jobs_rows = [
             (
-                "location_1", 40.0, 40.0, care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
+                "location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
             ),
         ]
         # fmt: on
@@ -231,7 +216,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         estimate_jobs_rows = [
             (
-                "location_1", 40.0, 40.0, care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
+                "location_1", 40.0, 40.0, Values.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,
             ),
         ]
         # fmt: on
@@ -269,10 +254,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         diagnostics_rows = [
             (
-                "location_1", care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
+                "location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
             ),
             (
-                "location_2", non_residential,  None, None, None, None, None, None, 30.0,
+                "location_2", Values.non_residential,  None, None, None, None, None, None, 30.0,
             ),
         ]
         # fmt: on
@@ -286,8 +271,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
-        self.assertEqual(output_df_list[0][CARE_HOME_EMPLOYED], expected_totals[0])
-        self.assertEqual(output_df_list[1][CARE_HOME_EMPLOYED], expected_totals[1])
+        self.assertEqual(output_df_list[0][Columns.CARE_HOME_EMPLOYED], expected_totals[0])
+        self.assertEqual(output_df_list[1][Columns.CARE_HOME_EMPLOYED], expected_totals[1])
 
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
         self,
@@ -295,10 +280,10 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         diagnostics_rows = [
             (
-                "location_1", care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
+                "location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,
             ),
             (
-                "location_2", non_residential, None, None, None, None, None, None, 75.0,
+                "location_2", Values.non_residential, None, None, None, None, None, None, 75.0,
             ),
         ]
         # fmt: on
@@ -313,26 +298,26 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df_list = output_df.sort(LOCATION_ID).collect()
 
         self.assertEqual(
-            output_df_list[0][NON_RESIDENTIAL_EMPLOYED], expected_totals[0]
+            output_df_list[0][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[0]
         )
         self.assertEqual(
-            output_df_list[1][NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
+            output_df_list[1][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
         )
 
     def test_calculate_residuals_adds_a_column(self):
         # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
+                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
             ),
             (
-                "location_3", 40.0, 40.0, care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
+                "location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
+                "location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
             ),
             (
-                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
+                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
         ]
         # fmt: on
@@ -344,7 +329,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.calculate_residuals(
             known_values_df,
             model=ESTIMATE_JOB_COUNT,
-            service=non_residential,
+            service=Values.non_residential,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
 
@@ -357,16 +342,16 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,
+                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,
             ),
             (
-                "location_3", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
+                "location_3", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4", None, None, non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,
+                "location_4", None, None, Values.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,
             ),
             (
-                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
+                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
         ]
         # fmt: on
@@ -378,7 +363,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.calculate_residuals(
             known_values_df,
             model=ESTIMATE_JOB_COUNT,
-            service=non_residential,
+            service=Values.non_residential,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
 
@@ -400,7 +385,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self,
     ):
         model = ESTIMATE_JOB_COUNT
-        service = non_residential
+        service = Values.non_residential
         data_source_column = PEOPLE_DIRECTLY_EMPLOYED
 
         output = job.create_residuals_column_name(model, service, data_source_column)
@@ -414,34 +399,34 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         # fmt: off
         diagnostics_prepared_rows = [
             (
-                "location_1", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
+                "location_1", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
             ),
             (
-                "location_2", 40.0, 40.0, non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
+                "location_2", 40.0, 40.0, Values.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,
             ),
             (
-                "location_3", 40.0, 40.0, care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
+                "location_3", 40.0, 40.0, Values.care_home_without_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,
             ),
             (
-                "location_4", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
+                "location_4", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,
             ),
             (
-                "location_5", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
+                "location_5", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,
             ),
             (
-                "location_6", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,
+                "location_6", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,
             ),
             (
-                "location_7", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,
+                "location_7", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,
             ),
             (
-                "location_8", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,
+                "location_8", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,
             ),
             (
-                "location_9", None, None, non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,
+                "location_9", None, None, Values.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,
             ),
             (
-                "location_10", None, None, care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
+                "location_10", None, None, Values.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,
             ),
         ]
         # fmt: on
@@ -471,25 +456,25 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
 
         services = [
-            care_home,
-            non_res,
+            Values.care_home,
+            Values.non_res,
         ]
 
         data_source_columns = [
             JOB_COUNT_UNFILTERED,
-            CARE_HOME_EMPLOYED,
+            Columns.CARE_HOME_EMPLOYED,
         ]
 
         output = job.create_residuals_list(models, services, data_source_columns)
         expected_output = [
-            [ESTIMATE_JOB_COUNT, care_home, JOB_COUNT_UNFILTERED],
-            [ESTIMATE_JOB_COUNT, care_home, CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, non_res, JOB_COUNT_UNFILTERED],
-            [ESTIMATE_JOB_COUNT, non_res, CARE_HOME_EMPLOYED],
-            [JOB_COUNT, care_home, JOB_COUNT_UNFILTERED],
-            [JOB_COUNT, care_home, CARE_HOME_EMPLOYED],
-            [JOB_COUNT, non_res, JOB_COUNT_UNFILTERED],
-            [JOB_COUNT, non_res, CARE_HOME_EMPLOYED],
+            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
         ]
         self.assertEqual(output, expected_output)
 
@@ -526,7 +511,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         residuals_df = self.spark.createDataFrame(
             residuals_rows, schema=self.residuals_schema
         )
-        output_column_name = average_prefix + self.residuals_test_column_names[0]
+        output_column_name = Prefixes.avg + self.residuals_test_column_names[0]
 
         output = job.calculate_average_residual(
             residuals_df, self.residuals_test_column_names[0], output_column_name
@@ -550,7 +535,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_row_count = 1
         expected_column_count = 1
 
-        self.assertEqual(output_df_rows[0][DESCRIPTION_OF_CHANGES], expected_value)
+        self.assertEqual(output_df_rows[0][Columns.DESCRIPTION_OF_CHANGES], expected_value)
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
 
@@ -598,8 +583,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         expected_output = [2.0, 0.0]
         output_column_names = [
-            average_prefix + self.residuals_test_column_names[0],
-            average_prefix + self.residuals_test_column_names[1],
+            Prefixes.average_prefix + self.residuals_test_column_names[0],
+            Prefixes.average_prefix + self.residuals_test_column_names[1],
         ]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
@@ -627,8 +612,8 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output_df = job.add_timestamp_column(residuals_df, run_timestamp)
         output_df_rows = output_df.collect()
 
-        self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)
-        self.assertEqual(output_df_rows[0][RUN_TIMESTAMP], run_timestamp)
+        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], run_timestamp)
+        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], run_timestamp)
 
 
 if __name__ == "__main__":
