@@ -261,7 +261,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         data_source_columns = [
             JOB_COUNT_UNFILTERED,
             Columns.CARE_HOME_EMPLOYED,
-            Columns.NON_RESIDENTIAL_EMPLOYED
+            Columns.NON_RESIDENTIAL_EMPLOYED,
         ]
 
         output = job.create_residuals_list(models, services, data_source_columns)
