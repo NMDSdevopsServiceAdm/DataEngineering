@@ -102,7 +102,7 @@ def main(
         NON_RESIDENTIAL_MODEL,
         ESTIMATE_JOB_COUNT,
         PEOPLE_DIRECTLY_EMPLOYED,
-        Columns.CARE_WORKERS_EMPLOYED,
+        Columns.CARE_HOME_EMPLOYED,
         Columns.NON_RESIDENTIAL_EMPLOYED,
     )
 
