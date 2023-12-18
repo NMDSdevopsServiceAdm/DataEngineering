@@ -199,8 +199,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
             service=Values.non_res,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
         )
-        output_df.show()
-        output_df.printSchema()
 
         output_df_list = output_df.sort(LOCATION_ID).collect()
         expected_values = [
@@ -265,7 +263,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
 
         output = job.create_residuals_list(models, services, data_source_columns)
-        print(output)
+
         expected_output = [
             [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
             [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
