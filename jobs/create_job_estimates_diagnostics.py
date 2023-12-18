@@ -166,7 +166,7 @@ def merge_dataframes(
             ),
             (
                 job_estimates_df[SNAPSHOT_DATE]
-                == capacity_tracker_care_homes_df_with_snapshot_date[SNAPSHOT_DATE]
+                == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE]
             ),
         ],
         how="left",
@@ -178,7 +178,7 @@ def merge_dataframes(
             == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
             (
                 job_estimates_df[SNAPSHOT_DATE]
-                == capacity_tracker_non_residential_df_with_snapshot_date[SNAPSHOT_DATE]
+                == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE]
             ),
         ],
         how="left",
