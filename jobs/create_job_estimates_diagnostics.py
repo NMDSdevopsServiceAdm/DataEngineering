@@ -21,7 +21,7 @@ from utils.estimate_job_count.column_names import (
     INTERPOLATION_MODEL,
     NON_RESIDENTIAL_MODEL,
 )
-from utils.estimate_job_count.capacity_tracker_column_names import (
+from utils.diagnostics_utils.diagnostics_meta_data import (
     CQC_ID,
     NURSES_EMPLOYED,
     CARE_WORKERS_EMPLOYED,
@@ -36,8 +36,6 @@ from utils.estimate_job_count.capacity_tracker_column_names import (
     VALUE,
     ID,
     RUN_TIMESTAMP,
-)
-from utils.estimate_job_count.capacity_tracker_column_values import (
     care_home_with_nursing,
     care_home_without_nursing,
     capacity_tracker,
