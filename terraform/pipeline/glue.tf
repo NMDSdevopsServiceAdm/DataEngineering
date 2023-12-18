@@ -280,6 +280,7 @@ module "create_job_estimates_diagnostics" {
     "--capacity_tracker_non_residential_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
     "--diagnostics_destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_diagnostics/version=0.1.0/"
     "--residuals_destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_residuals/version=0.1.0/"
+    "--description_of_change"                   = ""
   }
 }
 
