@@ -266,7 +266,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_output = [
             [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT,
+            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
             [JOB_COUNT, Values.care_home, JOB_COUNT],
             [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
