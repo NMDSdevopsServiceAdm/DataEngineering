@@ -17,7 +17,6 @@ import jobs.create_job_estimates_diagnostics as job
 from utils.estimate_job_count.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
-    JOB_COUNT_UNFILTERED,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
     SNAPSHOT_DATE,
@@ -257,7 +256,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
 
         data_source_columns = [
-            JOB_COUNT_UNFILTERED,
+            JOB_COUNT,
             Columns.CARE_HOME_EMPLOYED,
             Columns.NON_RESIDENTIAL_EMPLOYED,
         ]
@@ -265,26 +264,26 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         output = job.create_residuals_list(models, services, data_source_columns)
 
         expected_output = [
-            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
-            [JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.care_home, JOB_COUNT],
             [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.non_res, JOB_COUNT],
             [JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
         ]
         self.assertEqual(output, expected_output)
 
     def test_create_column_names_list_adds_the_correct_number_of_columns(self):
         residuals_list = [
-            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT],
             [ESTIMATE_JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.care_home, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.care_home, JOB_COUNT],
             [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.non_res, JOB_COUNT_UNFILTERED],
+            [JOB_COUNT, Values.non_res, JOB_COUNT],
             [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
         ]
 
