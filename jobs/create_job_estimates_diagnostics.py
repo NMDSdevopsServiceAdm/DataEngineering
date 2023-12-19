@@ -11,7 +11,6 @@ from utils.estimate_job_count.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
     SNAPSHOT_DATE,
-    JOB_COUNT_UNFILTERED,
     JOB_COUNT,
     ESTIMATE_JOB_COUNT,
     PRIMARY_SERVICE_TYPE,
@@ -49,7 +48,6 @@ def main(
     job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
         LOCATION_ID,
         SNAPSHOT_DATE,
-        JOB_COUNT_UNFILTERED,
         JOB_COUNT,
         PRIMARY_SERVICE_TYPE,
         ROLLING_AVERAGE_MODEL,
@@ -96,7 +94,6 @@ def main(
     diagnostics_prepared_df = diagnostics_df.select(
         LOCATION_ID,
         SNAPSHOT_DATE,
-        JOB_COUNT_UNFILTERED,
         JOB_COUNT,
         PRIMARY_SERVICE_TYPE,
         ROLLING_AVERAGE_MODEL,
@@ -252,7 +249,7 @@ def create_residuals_column_name(
         data_source = Values.capacity_tracker
     elif data_source_column == PEOPLE_DIRECTLY_EMPLOYED:
         data_source = Values.pir
-    elif data_source_column == JOB_COUNT_UNFILTERED:
+    elif data_source_column == JOB_COUNT:
         data_source = Values.asc_wds
 
     new_column_name = f"{Prefixes.residuals}{model}_{service}_{data_source}"

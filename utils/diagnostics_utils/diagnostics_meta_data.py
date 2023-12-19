@@ -91,7 +91,7 @@ class ResidualsRequired:
     ]
 
     data_source_columns = [
-        JOB_COUNT_UNFILTERED,
+        JOB_COUNT,
         Columns.CARE_HOME_EMPLOYED,
         Columns.NON_RESIDENTIAL_EMPLOYED,
         PEOPLE_DIRECTLY_EMPLOYED,
