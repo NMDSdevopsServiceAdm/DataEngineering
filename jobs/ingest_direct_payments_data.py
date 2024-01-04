@@ -1,14 +1,16 @@
 import sys
 import argparse
 
-from schemas.direct_payment_data_schema import DIRECT_PAYMENTS_DATA
+from schemas.direct_payment_data_schema import EXTERNAL_DATA, SURVEY_DATA
 from utils import utils
 
 
 def main(external_data_source, survey_data_source, external_data_destination, survey_data_destination):
-    df = utils.read_csv_with_defined_schema(external_data_source, DIRECT_PAYMENTS_DATA)
+    external_df = utils.read_csv_with_defined_schema(external_data_source, EXTERNAL_DATA)
+    survey_df = utils.read_csv_with_defined_schema(survey_data_source, SURVEY_DATA)
 
-    utils.write_to_parquet(df, external_data_destination, False)
+    utils.write_to_parquet(external_df, external_data_destination, False)
+    utils.write_to_parquet(survey_df, survey_data_destination, False)
 
 
 def collect_arguments():
