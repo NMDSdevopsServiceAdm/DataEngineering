@@ -50,4 +50,31 @@ class TestCalculatePARatio(unittest.TestCase):
             output_rows, 0
         )
         
+    def test_exclude_outliers(self):
+        rows = [
+            (2021, 10.0),
+            (2021, 20.0),
+            (2021, 0.0),
+            (2021, 9.0),
+            (2021, 1.0),
+            (2021, -1.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.TOTAL_STAFF_RECODED,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.exclude_outliers(df)
+        output_rows = output_df.count()
+        expected_rows = 2
+
+        self.assertEqual(
+            output_rows, expected_rows
+        )
     

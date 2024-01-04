@@ -10,12 +10,12 @@ from utils.direct_payments_utils.direct_payments_configuration import (
 )
 
 def calculate_pa_ratio(survey_df: DataFrame) -> DataFrame:
-    survey_df = prepare_survey_data(survey_df)
+    survey_df = exclude_outliers(survey_df)
     average_survey_df = calculate_average_ratios(survey_df)
     pa_ratio_df = estimate_ratios(average_survey_df)
     return pa_ratio_df
 
-def prepare_survey_data(survey_df: DataFrame) -> DataFrame:
+def exclude_outliers(survey_df: DataFrame) -> DataFrame:
     
     return survey_df
 
