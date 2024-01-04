@@ -101,8 +101,10 @@ module "ingest_direct_payments_data_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--source"      = ""
-    "--destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments/version=1.0.0/"
+    "--external_data_source"      = ""
+    "--survey_data_source"        = ""
+    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=1.0.0/"
+    "--survey_data_destination"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=1.0.0/"
   }
 }
 
