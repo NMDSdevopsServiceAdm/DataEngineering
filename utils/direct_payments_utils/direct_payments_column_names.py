@@ -146,6 +146,9 @@ class DirectPaymentColumnNames:
         "proportion_of_total_dprs_employing_staff"
     )
 
+    # PA ratio
+    TOTAL_STAFF_RECODED:str = "total_staff_recoded"
+
 
 @dataclass
 class DirectPaymentColumnValues:
