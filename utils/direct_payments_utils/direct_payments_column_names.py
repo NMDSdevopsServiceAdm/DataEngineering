@@ -148,6 +148,7 @@ class DirectPaymentColumnNames:
 
     # PA ratio
     TOTAL_STAFF_RECODED:str = "total_staff_recoded"
+    AVERAGE_STAFF:str = "average_staff"
 
 
 @dataclass

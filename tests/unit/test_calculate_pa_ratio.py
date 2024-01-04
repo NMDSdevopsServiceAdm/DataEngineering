@@ -78,3 +78,37 @@ class TestCalculatePARatio(unittest.TestCase):
             output_rows, expected_rows
         )
     
+    def test_calculate_average_ratios(self):
+        rows = [
+            (2021, 1.0),
+            (2021, 2.0),
+            (2020, 1.0),
+            (2020, 1.0),
+            (2019, 2.0),
+            (2019, 2.0),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.TOTAL_STAFF_RECODED,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output_df = job.calculate_average_ratios(df)
+        output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
+        expected_rows = [2.0, 1.0, 1.5]
+
+        self.assertEqual(
+            output_rows[0][DP.AVERAGE_STAFF], expected_rows[0]
+        )
+        self.assertEqual(
+            output_rows[1][DP.AVERAGE_STAFF], expected_rows[1]
+        )
+        self.assertEqual(
+            output_rows[2][DP.AVERAGE_STAFF], expected_rows[2]
+        )
+    
