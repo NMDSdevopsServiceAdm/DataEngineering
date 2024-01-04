@@ -111,4 +111,7 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(
             output_rows[2][DP.AVERAGE_STAFF], expected_rows[2]
         )
+        self.assertEqual(
+            len(output_rows), len(expected_rows)
+        )
     
