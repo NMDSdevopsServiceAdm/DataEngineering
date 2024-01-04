@@ -128,7 +128,7 @@ class TestCalculatePARatio(unittest.TestCase):
             [
                 StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
                 StructField(
-                    DP.TOTAL_STAFF_RECODED,
+                    DP.AVERAGE_STAFF,
                     FloatType(),
                     True,
                 ),
