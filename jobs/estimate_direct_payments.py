@@ -14,6 +14,9 @@ from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_va
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
 )
+from utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio import (
+    calculate_pa_ratio,
+)
 
 
 def main(
@@ -39,7 +42,11 @@ def main(
         DP.FILLED_POSTS_PER_EMPLOYER,
         DP.TOTAL_DPRS_DURING_YEAR,
     )
+    survey_df: DataFrame = spark.read.parquet(
+        survey_data_source
+    )
 
+    pa_ratio_df = calculate_pa_ratios(survey_df)
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)
