@@ -7,7 +7,7 @@ from pyspark.sql.types import (
 )
 
 
-DIRECT_PAYMENTS_DATA = StructType(
+EXTERNAL_DATA = StructType(
     fields=[
         StructField("number_su_dpr_salt", FloatType(), True),
         StructField("number_carer_dpr_salt", FloatType(), True),
@@ -21,5 +21,12 @@ DIRECT_PAYMENTS_DATA = StructType(
         StructField("proportion_su_employing_staff_adass", FloatType(), True),
         StructField("prev_service_user_employing_staff_proportion", FloatType(), True),
         StructField("filled_posts_per_employer", FloatType(), True),
+    ]
+)
+
+SURVEY_DATA = StructType(
+    fields=[
+        StructField("year", IntegerType(), True),
+        StructField("total_staff_recoded", FloatType(), True),
     ]
 )
