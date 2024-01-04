@@ -18,6 +18,7 @@ from utils.direct_payments_utils.estimate_direct_payments.create_summary_table i
 
 def main(
     direct_payments_prepared_source,
+    survey_data_source,
     destination,
     summary_destination,
 ):
@@ -61,12 +62,17 @@ def main(
 if __name__ == "__main__":
     (
         direct_payments_prepared_source,
+        survey_data_source,
         destination,
         summary_destination,
     ) = utils.collect_arguments(
         (
             "--direct_payments_prepared_source",
             "Source s3 directory for direct payments prepared dataset",
+        ),
+        (
+            "--survey_data_source",
+            "Source s3 directory for ingested IE/PA survey data",
         ),
         ("--destination", "A destination directory for outputting dpr data."),
         (
@@ -77,6 +83,7 @@ if __name__ == "__main__":
 
     main(
         direct_payments_prepared_source,
+        survey_data_source,
         destination,
         summary_destination,
     )
