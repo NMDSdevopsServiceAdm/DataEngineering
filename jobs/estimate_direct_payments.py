@@ -46,7 +46,7 @@ def main(
         survey_data_source
     )
 
-    pa_ratio_df = calculate_pa_ratios(survey_df)
+    pa_ratio_df = calculate_pa_ratio(survey_df)
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)
