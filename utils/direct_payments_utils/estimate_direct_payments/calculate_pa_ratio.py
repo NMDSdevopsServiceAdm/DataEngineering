@@ -1,5 +1,8 @@
+from datetime import datetime, date
+
 import pyspark.sql.functions as F
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame, Window, SparkSession
+from pyspark.sql.types import ArrayType, LongType, IntegerType
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -25,6 +28,35 @@ def calculate_average_ratios(survey_df: DataFrame) -> DataFrame:
     average_survey_df = survey_df.select(DP.YEAR_AS_INTEGER, DP.AVERAGE_STAFF).dropDuplicates()
     return average_survey_df
 
-def estimate_ratios(average_survey_df: DataFrame) -> DataFrame:
-    pa_ratio_df = average_survey_df
+def estimate_ratios(average_survey_df: DataFrame, spark: SparkSession) -> DataFrame:
+    known_ratios_df = create_dataframe_including_all_years(average_survey_df, spark)
+    # calculate mean
+    
+    # interpolate
+    # extrapolate
+    # apply rolling avg
+
+
+    pa_ratio_df = 
     return pa_ratio_df
+
+
+
+
+def create_year_range(
+    min_year: int, max_year: int, step_size_in_years: int = 1
+) -> int:
+    years = [min_year]
+    number_of_years = max_year - min_year
+    for year in range(number_of_years):
+        years.append(min_year + year + 1)
+    return years
+
+def create_dataframe_including_all_years(average_survey_df: DataFrame, spark: SparkSession) -> DataFrame:
+    current_year = date.today().year
+    last_year_estimated = current_year - 1
+    years = create_year_range(Config.FIRST_YEAR, last_year_estimated)
+    years_df: DataFrame = spark.createDataFrame(years, IntegerType())
+    years_df = years_df.withColumnRenamed("value", DP.YEAR_AS_INTEGER)
+    years_df = years_df.join(average_survey_df, DP.YEAR_AS_INTEGER, how="left")
+    return years_df

@@ -135,7 +135,7 @@ class TestCalculatePARatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.estimate_ratios(df)
+        output_df = job.estimate_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [1.5, 1.5, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.8, 1.8, 1.8]
 
@@ -177,4 +177,27 @@ class TestCalculatePARatio(unittest.TestCase):
         )
         self.assertEqual(
             len(output_rows), len(expected_rows)
+        )
+
+    def test_create_year_range(self):
+        min_year = 2019
+        max_year = 2022
+        step_size_in_years = 1
+        output = job.create_year_range(min_year, max_year, step_size_in_years)
+        expected = [2019, 2020, 2021, 2022]
+
+        self.assertEqual(
+            output[0], expected[0]
+        )
+        self.assertEqual(
+            output[1], expected[1]
+        )
+        self.assertEqual(
+            output[2], expected[2]
+        )
+        self.assertEqual(
+            output[3], expected[3]
+        )
+        self.assertEqual(
+            len(output), len(expected)
         )
