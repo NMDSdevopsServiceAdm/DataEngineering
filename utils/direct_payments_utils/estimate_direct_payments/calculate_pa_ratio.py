@@ -16,7 +16,7 @@ def calculate_pa_ratio(survey_df: DataFrame) -> DataFrame:
     return pa_ratio_df
 
 def exclude_outliers(survey_df: DataFrame) -> DataFrame:
-    
+    survey_df = survey_df.where((survey_df[DP.TOTAL_STAFF_RECODED] < 10.0) & (survey_df[DP.TOTAL_STAFF_RECODED] > 0.0) )
     return survey_df
 
 def calculate_average_ratios(survey_df: DataFrame) -> DataFrame:
