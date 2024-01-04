@@ -135,7 +135,7 @@ class TestCalculatePARatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.calculate_average_ratios(df)
+        output_df = job.estimate_ratios(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [1.5, 1.5, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.8, 1.8, 1.8]
 
