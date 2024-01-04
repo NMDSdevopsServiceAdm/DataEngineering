@@ -20,7 +20,9 @@ def exclude_outliers(survey_df: DataFrame) -> DataFrame:
     return survey_df
 
 def calculate_average_ratios(survey_df: DataFrame) -> DataFrame:
-    average_survey_df = survey_df
+    w = Window.partitionBy(DP.YEAR_AS_INTEGER)
+    survey_df = survey_df.withColumn(DP.AVERAGE_STAFF, F.avg(DP.TOTAL_STAFF_RECODED).over(w))
+    average_survey_df = survey_df.select(DP.YEAR_AS_INTEGER, DP.AVERAGE_STAFF).dropDuplicates()
     return average_survey_df
 
 def estimate_ratios(average_survey_df: DataFrame) -> DataFrame:
