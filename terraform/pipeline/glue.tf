@@ -174,9 +174,9 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=1.0.0/"
-    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=1.0.0/"
-    "--summary_destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=1.0.0/"
+    "--direct_payments_joined_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=1.0.0/"
+    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=1.0.0/"
+    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=1.0.0/"
   }
 }
 
