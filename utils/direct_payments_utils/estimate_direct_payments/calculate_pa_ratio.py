@@ -30,14 +30,15 @@ def calculate_average_ratios(survey_df: DataFrame) -> DataFrame:
 
 def estimate_ratios(average_survey_df: DataFrame, spark: SparkSession) -> DataFrame:
     known_ratios_df = create_dataframe_including_all_years(average_survey_df, spark)
-    # calculate mean
+    # extrapolate by imputing value
+    last_known_ratio = get_first_known_ratio(known_ratios_df)
     
     # interpolate
-    # extrapolate
+    
     # apply rolling avg
 
 
-    pa_ratio_df = 
+   # pa_ratio_df = 
     return pa_ratio_df
 
 
@@ -60,3 +61,10 @@ def create_dataframe_including_all_years(average_survey_df: DataFrame, spark: Sp
     years_df = years_df.withColumnRenamed("value", DP.YEAR_AS_INTEGER)
     years_df = years_df.join(average_survey_df, DP.YEAR_AS_INTEGER, how="left")
     return years_df
+
+def get_first_known_ratio(df: DataFrame) -> float:
+    known_rows_df = df.where(df[DP.AVERAGE_STAFF].isNotNull())
+    first_known_year = known_rows_df.agg(F.min(known_rows_df[DP.YEAR_AS_INTEGER])).collect()[0][0]
+    first_known_ratio_df = known_rows_df.where(df[DP.YEAR_AS_INTEGER] == first_known_year)
+    first_known_ratio = first_known_ratio_df.collect()[0][DP.AVERAGE_STAFF]
+    return first_known_ratio
