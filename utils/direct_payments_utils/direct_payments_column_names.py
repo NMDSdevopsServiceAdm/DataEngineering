@@ -149,7 +149,7 @@ class DirectPaymentColumnNames:
     # PA ratio
     TOTAL_STAFF_RECODED: str = "total_staff_recoded"
     AVERAGE_STAFF: str = "average_staff"
-    
+
     RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
     COUNT: str = "count"
     COUNT_OF_YEARS: str = "count_of_years"

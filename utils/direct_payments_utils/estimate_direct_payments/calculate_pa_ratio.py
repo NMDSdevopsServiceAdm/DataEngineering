@@ -68,4 +68,3 @@ def apply_rolling_average(df: DataFrame) -> DataFrame:
         DP.RATIO_ROLLING_AVERAGE, df[DP.SUM_OF_RATIOS] / df[DP.COUNT_OF_YEARS]
     )
     return df
-

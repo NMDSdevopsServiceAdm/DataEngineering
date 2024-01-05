@@ -203,4 +203,3 @@ class TestCalculatePARatio(unittest.TestCase):
         )
 
         self.assertEqual(len(output_rows), len(expected_rows))
-
