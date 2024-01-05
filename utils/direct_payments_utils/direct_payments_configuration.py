@@ -1,5 +1,15 @@
 from dataclasses import dataclass
 
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    IntegerType,
+    FloatType,
+)
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
+
 
 @dataclass
 class DirectPaymentConfiguration:
@@ -16,3 +26,25 @@ class DirectPaymentConfiguration:
 class DirectPaymentsOutlierThresholds:
     ONE_HUNDRED_PERCENT: float = 1.0
     ZERO_PERCENT: float = 0.0
+
+
+@dataclass
+class DirectPaymentsMissingPARatios:
+    ratios = [
+        (2011, 1.98),
+        (2012, 1.98),
+        (2013, 1.98),
+        (2015, 2.00),
+        (2016, 2.01),
+        (2018, 1.96),
+    ]
+    schema = StructType(
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField(
+                DP.HISTORIC_RATIO,
+                FloatType(),
+                True,
+            ),
+        ]
+    )

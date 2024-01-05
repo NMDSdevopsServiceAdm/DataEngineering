@@ -164,6 +164,8 @@ class DirectPaymentColumnNames:
     COUNT_OF_YEARS: str = "count_of_years"
     SUM_OF_RATIOS: str = "sum_of_ratios"
 
+    HISTORIC_RATIO:str = "historic_ratio"
+
 
 @dataclass
 class DirectPaymentColumnValues:
