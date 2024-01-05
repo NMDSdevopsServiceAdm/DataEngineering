@@ -1,9 +1,9 @@
 import sys
-from datetime import datetime, date
+from datetime import date
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, Window, SparkSession
-from pyspark.sql.types import ArrayType, LongType, IntegerType, FloatType
+from pyspark.sql.types import IntegerType
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -13,10 +13,6 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
-from utils.direct_payments_utils.estimate_direct_payments.models.interpolation import (
-    interpolation_calculation,
-)
-
 
 def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
     survey_df = exclude_outliers(survey_df)
