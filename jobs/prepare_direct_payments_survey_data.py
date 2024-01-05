@@ -41,7 +41,6 @@ def main(
     direct_payments_df = direct_payments_df.withColumnRenamed(
         DP.RATIO_ROLLING_AVERAGE, DP.FILLED_POSTS_PER_EMPLOYER
     )
-    
 
     utils.write_to_parquet(
         direct_payments_df,
@@ -50,7 +49,7 @@ def main(
         partitionKeys=[DP.YEAR],
     )
 
-    
+
 if __name__ == "__main__":
     (
         direct_payments_prepared_source,

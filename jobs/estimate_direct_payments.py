@@ -41,7 +41,7 @@ def main(
         DP.TOTAL_DPRS_DURING_YEAR,
         DP.FILLED_POSTS_PER_EMPLOYER,
     )
-    
+
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)
