@@ -14,7 +14,9 @@ from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
 )
 
+
 def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
+    survey_df = survey_df.withColumnRenamed(DP.YEAR, DP.YEAR_AS_INTEGER)
     survey_df = exclude_outliers(survey_df)
     average_survey_df = calculate_average_ratios(survey_df)
     pa_ratio_df = estimate_ratios(average_survey_df, spark)
