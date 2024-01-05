@@ -53,7 +53,6 @@ def estimate_ratios(average_survey_df: DataFrame, spark: SparkSession) -> DataFr
     return ratios_df
 
 
-
 def create_year_range(min_year: int, max_year: int, step_size_in_years: int = 1) -> int:
     years = [min_year]
     number_of_years = max_year - min_year
@@ -104,16 +103,20 @@ def impute_values_backwards(ratios_df: DataFrame) -> DataFrame:
 
 
 def get_value_in_new_column(
-    df: DataFrame, column_name: str, new_column_name: str, direction:str
+    df: DataFrame, column_name: str, new_column_name: str, direction: str
 ) -> DataFrame:
     if direction == Values.NEXT:
-        w= Window.partitionBy().orderBy(DP.YEAR_AS_INTEGER).rowsBetween(0, sys.maxsize)
+        w = Window.partitionBy().orderBy(DP.YEAR_AS_INTEGER).rowsBetween(0, sys.maxsize)
         df = df.withColumn(
             new_column_name,
             F.first(F.col(column_name), ignorenulls=True).over(w),
         )
     elif direction == Values.PREVIOUS:
-        w= Window.partitionBy().orderBy(DP.YEAR_AS_INTEGER).rowsBetween(-sys.maxsize, 0)
+        w = (
+            Window.partitionBy()
+            .orderBy(DP.YEAR_AS_INTEGER)
+            .rowsBetween(-sys.maxsize, 0)
+        )
         df = df.withColumn(
             new_column_name,
             F.last(F.col(column_name), ignorenulls=True).over(w),
@@ -169,29 +172,43 @@ def interpolate_missing_ratios(df: DataFrame) -> DataFrame:
     )
     return df_with_interpolated_values
 
-def interpolate_values(ratios_df:DataFrame) -> DataFrame:
+
+def interpolate_values(ratios_df: DataFrame) -> DataFrame:
     ratios_df = add_column_with_year_for_known_data(ratios_df)
     ratios_df = get_value_in_new_column(
         ratios_df, DP.AVERAGE_STAFF, DP.PREVIOUS_AVERAGE_STAFF, Values.PREVIOUS
     )
     ratios_df = get_value_in_new_column(
-        ratios_df, DP.AVERAGE_STAFF_YEAR_KNOWN, DP.PREVIOUS_AVERAGE_STAFF_YEAR_KNOWN, Values.PREVIOUS
+        ratios_df,
+        DP.AVERAGE_STAFF_YEAR_KNOWN,
+        DP.PREVIOUS_AVERAGE_STAFF_YEAR_KNOWN,
+        Values.PREVIOUS,
     )
     ratios_df = get_value_in_new_column(
         ratios_df, DP.AVERAGE_STAFF, DP.NEXT_AVERAGE_STAFF, Values.NEXT
     )
     ratios_df = get_value_in_new_column(
-        ratios_df, DP.AVERAGE_STAFF_YEAR_KNOWN, DP.NEXT_AVERAGE_STAFF_YEAR_KNOWN, Values.NEXT
+        ratios_df,
+        DP.AVERAGE_STAFF_YEAR_KNOWN,
+        DP.NEXT_AVERAGE_STAFF_YEAR_KNOWN,
+        Values.NEXT,
     )
     ratios_df = interpolate_missing_ratios(ratios_df)
     return ratios_df
 
-def apply_rolling_average(df:DataFrame) -> DataFrame:
+
+def apply_rolling_average(df: DataFrame) -> DataFrame:
     range = Config.NUMBER_OF_YEARS_ROLLING_AVERAGE - 1
-    w = Window.partitionBy().orderBy(F.col(DP.YEAR_AS_INTEGER).cast("long")).rangeBetween(-(range), 0)
+    w = (
+        Window.partitionBy()
+        .orderBy(F.col(DP.YEAR_AS_INTEGER).cast("long"))
+        .rangeBetween(-(range), 0)
+    )
     df = df.withColumn(DP.COUNT, F.lit(1))
     df = df.withColumn(DP.COUNT_OF_YEARS, F.sum(df[DP.COUNT]).over(w))
     df = df.withColumn(DP.SUM_OF_RATIOS, F.sum(df[DP.AVERAGE_STAFF]).over(w))
-    df = df.withColumn(DP.RATIO_ROLLING_AVERAGE, df[DP.SUM_OF_RATIOS] / df[DP.COUNT_OF_YEARS])
+    df = df.withColumn(
+        DP.RATIO_ROLLING_AVERAGE, df[DP.SUM_OF_RATIOS] / df[DP.COUNT_OF_YEARS]
+    )
     df.show()
     return df

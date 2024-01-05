@@ -111,7 +111,7 @@ class TestCalculatePARatio(unittest.TestCase):
             (2012, 1.5),
             (2019, 1.8),
             (2013, 1.5),
-            (2023, 1.85)
+            (2023, 1.85),
         ]
         test_schema = StructType(
             [
@@ -126,7 +126,21 @@ class TestCalculatePARatio(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.estimate_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
-        expected_rows = [1.5, 1.5, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.8, 1.8, 1.8, 1.85]
+        expected_rows = [
+            1.5,
+            1.5,
+            1.5,
+            1.55,
+            1.6,
+            1.65,
+            1.7,
+            1.75,
+            1.8,
+            1.8,
+            1.8,
+            1.8,
+            1.85,
+        ]
 
         self.assertAlmostEqual(output_rows[0][DP.AVERAGE_STAFF], expected_rows[0])
         self.assertAlmostEqual(output_rows[1][DP.AVERAGE_STAFF], expected_rows[1])
@@ -202,10 +216,20 @@ class TestCalculatePARatio(unittest.TestCase):
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [1.0, 1.0, 1.0, 1.2, 1.6]
 
-        self.assertAlmostEqual(output_rows[0][DP.RATIO_ROLLING_AVERAGE], expected_rows[0])
-        self.assertAlmostEqual(output_rows[1][DP.RATIO_ROLLING_AVERAGE], expected_rows[1])
-        self.assertAlmostEqual(output_rows[2][DP.RATIO_ROLLING_AVERAGE], expected_rows[2])
-        self.assertAlmostEqual(output_rows[3][DP.RATIO_ROLLING_AVERAGE], expected_rows[3])
-        self.assertAlmostEqual(output_rows[4][DP.RATIO_ROLLING_AVERAGE], expected_rows[4])
-        
+        self.assertAlmostEqual(
+            output_rows[0][DP.RATIO_ROLLING_AVERAGE], expected_rows[0]
+        )
+        self.assertAlmostEqual(
+            output_rows[1][DP.RATIO_ROLLING_AVERAGE], expected_rows[1]
+        )
+        self.assertAlmostEqual(
+            output_rows[2][DP.RATIO_ROLLING_AVERAGE], expected_rows[2]
+        )
+        self.assertAlmostEqual(
+            output_rows[3][DP.RATIO_ROLLING_AVERAGE], expected_rows[3]
+        )
+        self.assertAlmostEqual(
+            output_rows[4][DP.RATIO_ROLLING_AVERAGE], expected_rows[4]
+        )
+
         self.assertEqual(len(output_rows), len(expected_rows))
