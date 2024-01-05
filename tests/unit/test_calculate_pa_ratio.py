@@ -43,7 +43,7 @@ class TestCalculatePARatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.calculate_pa_ratio(df)
+        output_df = job.calculate_pa_ratio(df, self.spark)
         output_rows = output_df.count()
 
         self.assertGreaterEqual(output_rows, 0)
@@ -198,21 +198,14 @@ class TestCalculatePARatio(unittest.TestCase):
             ]
         )
         df = self.spark.createDataFrame(rows, schema=test_schema)
-        output_df = job.apply_rolling_average(df, self.spark)
+        output_df = job.apply_rolling_average(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
-        expected_rows = [1.0, 1.2, 1.6, 1.9, 2.2]
+        expected_rows = [1.0, 1.0, 1.0, 1.2, 1.6]
 
         self.assertAlmostEqual(output_rows[0][DP.RATIO_ROLLING_AVERAGE], expected_rows[0])
         self.assertAlmostEqual(output_rows[1][DP.RATIO_ROLLING_AVERAGE], expected_rows[1])
         self.assertAlmostEqual(output_rows[2][DP.RATIO_ROLLING_AVERAGE], expected_rows[2])
         self.assertAlmostEqual(output_rows[3][DP.RATIO_ROLLING_AVERAGE], expected_rows[3])
         self.assertAlmostEqual(output_rows[4][DP.RATIO_ROLLING_AVERAGE], expected_rows[4])
-        self.assertAlmostEqual(output_rows[5][DP.RATIO_ROLLING_AVERAGE], expected_rows[5])
-        self.assertAlmostEqual(output_rows[6][DP.RATIO_ROLLING_AVERAGE], expected_rows[6])
-        self.assertAlmostEqual(output_rows[7][DP.RATIO_ROLLING_AVERAGE], expected_rows[7])
-        self.assertAlmostEqual(output_rows[8][DP.RATIO_ROLLING_AVERAGE], expected_rows[8])
-        self.assertAlmostEqual(output_rows[9][DP.RATIO_ROLLING_AVERAGE], expected_rows[9])
-        self.assertAlmostEqual(output_rows[10][DP.RATIO_ROLLING_AVERAGE], expected_rows[10])
-        self.assertAlmostEqual(output_rows[11][DP.RATIO_ROLLING_AVERAGE], expected_rows[11])
-        self.assertAlmostEqual(output_rows[12][DP.RATIO_ROLLING_AVERAGE], expected_rows[12])
+        
         self.assertEqual(len(output_rows), len(expected_rows))

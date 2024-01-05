@@ -18,10 +18,10 @@ from utils.direct_payments_utils.estimate_direct_payments.models.interpolation i
 )
 
 
-def calculate_pa_ratio(survey_df: DataFrame) -> DataFrame:
+def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
     survey_df = exclude_outliers(survey_df)
     average_survey_df = calculate_average_ratios(survey_df)
-    pa_ratio_df = estimate_ratios(average_survey_df)
+    pa_ratio_df = estimate_ratios(average_survey_df, spark)
     pa_ratio_df = apply_rolling_average(pa_ratio_df)
     return pa_ratio_df
 
@@ -186,4 +186,11 @@ def interpolate_values(ratios_df:DataFrame) -> DataFrame:
     return ratios_df
 
 def apply_rolling_average(df:DataFrame) -> DataFrame:
+    range = Config.NUMBER_OF_YEARS_ROLLING_AVERAGE - 1
+    w = Window.partitionBy().orderBy(F.col(DP.YEAR_AS_INTEGER).cast("long")).rangeBetween(-(range), 0)
+    df = df.withColumn(DP.COUNT, F.lit(1))
+    df = df.withColumn(DP.COUNT_OF_YEARS, F.sum(df[DP.COUNT]).over(w))
+    df = df.withColumn(DP.SUM_OF_RATIOS, F.sum(df[DP.AVERAGE_STAFF]).over(w))
+    df = df.withColumn(DP.RATIO_ROLLING_AVERAGE, df[DP.SUM_OF_RATIOS] / df[DP.COUNT_OF_YEARS])
+    df.show()
     return df

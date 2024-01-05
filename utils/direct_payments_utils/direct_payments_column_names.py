@@ -160,6 +160,9 @@ class DirectPaymentColumnNames:
     YEAR_DIFFERENCE: str = "year_difference"
     INTERPOLATION_MODEL: str = "interpolation_model"
     RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
+    COUNT: str = "count"
+    COUNT_OF_YEARS: str = "count_of_years"
+    SUM_OF_RATIOS: str = "sum_of_ratios"
 
 
 @dataclass
