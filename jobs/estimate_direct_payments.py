@@ -39,12 +39,13 @@ def main(
         DP.CARER_DPRS_DURING_YEAR,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
-        DP.FILLED_POSTS_PER_EMPLOYER,
         DP.TOTAL_DPRS_DURING_YEAR,
     )
     survey_df: DataFrame = spark.read.parquet(survey_data_source)
 
-    pa_ratio_df = calculate_pa_ratio(survey_df)
+    pa_ratio_df = calculate_pa_ratio(survey_df, spark)
+    direct_payments_df = direct_payments_df.join(pa_ratio_df, DP.YEAR_AS_INTEGER, how="left")
+    direct_payments_df = direct_payments_df.withColumnRenamed(DP.RATIO_ROLLING_AVERAGE, DP.FILLED_POSTS_PER_EMPLOYER)
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)

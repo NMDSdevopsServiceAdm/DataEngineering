@@ -23,6 +23,7 @@ def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
     average_survey_df = calculate_average_ratios(survey_df)
     pa_ratio_df = estimate_ratios(average_survey_df, spark)
     pa_ratio_df = apply_rolling_average(pa_ratio_df)
+    pa_ratio_df = pa_ratio_df.select(DP.YEAR_AS_INTEGER, DP.RATIO_ROLLING_AVERAGE)
     return pa_ratio_df
 
 
