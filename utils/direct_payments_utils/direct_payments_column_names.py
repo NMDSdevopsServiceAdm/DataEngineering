@@ -159,6 +159,7 @@ class DirectPaymentColumnNames:
     RATIO_DIFFERENCE: str = "ratio_difference"
     YEAR_DIFFERENCE: str = "year_difference"
     INTERPOLATION_MODEL: str = "interpolation_model"
+    RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
 
 
 @dataclass
@@ -167,3 +168,5 @@ class DirectPaymentColumnValues:
     SU_ONLY_DPRS: str = "su_only_dprs"
     REMOVE: str = "remove"
     RETAIN: str = "retain"
+    PREVIOUS: str = "previous"
+    NEXT: str = "next"
