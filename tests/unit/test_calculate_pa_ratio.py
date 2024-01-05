@@ -46,10 +46,8 @@ class TestCalculatePARatio(unittest.TestCase):
         output_df = job.calculate_pa_ratio(df)
         output_rows = output_df.count()
 
-        self.assertGreaterEqual(
-            output_rows, 0
-        )
-        
+        self.assertGreaterEqual(output_rows, 0)
+
     def test_exclude_outliers(self):
         rows = [
             (2021, 10.0),
@@ -74,10 +72,8 @@ class TestCalculatePARatio(unittest.TestCase):
         output_rows = output_df.count()
         expected_rows = 2
 
-        self.assertEqual(
-            output_rows, expected_rows
-        )
-    
+        self.assertEqual(output_rows, expected_rows)
+
     def test_calculate_average_ratios(self):
         rows = [
             (2021, 1.0),
@@ -102,19 +98,11 @@ class TestCalculatePARatio(unittest.TestCase):
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [2.0, 1.0, 1.5]
 
-        self.assertEqual(
-            output_rows[0][DP.AVERAGE_STAFF], expected_rows[0]
-        )
-        self.assertEqual(
-            output_rows[1][DP.AVERAGE_STAFF], expected_rows[1]
-        )
-        self.assertEqual(
-            output_rows[2][DP.AVERAGE_STAFF], expected_rows[2]
-        )
-        self.assertEqual(
-            len(output_rows), len(expected_rows)
-        )
-    
+        self.assertEqual(output_rows[0][DP.AVERAGE_STAFF], expected_rows[0])
+        self.assertEqual(output_rows[1][DP.AVERAGE_STAFF], expected_rows[1])
+        self.assertEqual(output_rows[2][DP.AVERAGE_STAFF], expected_rows[2])
+        self.assertEqual(len(output_rows), len(expected_rows))
+
     def test_estimate_ratios(self):
         rows = [
             (2021, 1.8),
@@ -123,6 +111,7 @@ class TestCalculatePARatio(unittest.TestCase):
             (2012, 1.5),
             (2019, 1.8),
             (2013, 1.5),
+            (2023, 1.85)
         ]
         test_schema = StructType(
             [
@@ -137,47 +126,22 @@ class TestCalculatePARatio(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.estimate_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
-        expected_rows = [1.5, 1.5, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.8, 1.8, 1.8]
+        expected_rows = [1.5, 1.5, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.8, 1.8, 1.8, 1.85]
 
-        self.assertEqual(
-            output_rows[0][DP.AVERAGE_STAFF], expected_rows[0]
-        )
-        self.assertEqual(
-            output_rows[1][DP.AVERAGE_STAFF], expected_rows[1]
-        )
-        self.assertEqual(
-            output_rows[2][DP.AVERAGE_STAFF], expected_rows[2]
-        )
-        self.assertEqual(
-            output_rows[3][DP.AVERAGE_STAFF], expected_rows[3]
-        )
-        self.assertEqual(
-            output_rows[4][DP.AVERAGE_STAFF], expected_rows[4]
-        )
-        self.assertEqual(
-            output_rows[5][DP.AVERAGE_STAFF], expected_rows[5]
-        )
-        self.assertEqual(
-            output_rows[6][DP.AVERAGE_STAFF], expected_rows[6]
-        )
-        self.assertEqual(
-            output_rows[7][DP.AVERAGE_STAFF], expected_rows[7]
-        )
-        self.assertEqual(
-            output_rows[8][DP.AVERAGE_STAFF], expected_rows[8]
-        )
-        self.assertEqual(
-            output_rows[9][DP.AVERAGE_STAFF], expected_rows[9]
-        )
-        self.assertEqual(
-            output_rows[10][DP.AVERAGE_STAFF], expected_rows[10]
-        )
-        self.assertEqual(
-            output_rows[11][DP.AVERAGE_STAFF], expected_rows[11]
-        )
-        self.assertEqual(
-            len(output_rows), len(expected_rows)
-        )
+        self.assertAlmostEqual(output_rows[0][DP.AVERAGE_STAFF], expected_rows[0])
+        self.assertAlmostEqual(output_rows[1][DP.AVERAGE_STAFF], expected_rows[1])
+        self.assertAlmostEqual(output_rows[2][DP.AVERAGE_STAFF], expected_rows[2])
+        self.assertAlmostEqual(output_rows[3][DP.AVERAGE_STAFF], expected_rows[3])
+        self.assertAlmostEqual(output_rows[4][DP.AVERAGE_STAFF], expected_rows[4])
+        self.assertAlmostEqual(output_rows[5][DP.AVERAGE_STAFF], expected_rows[5])
+        self.assertAlmostEqual(output_rows[6][DP.AVERAGE_STAFF], expected_rows[6])
+        self.assertAlmostEqual(output_rows[7][DP.AVERAGE_STAFF], expected_rows[7])
+        self.assertAlmostEqual(output_rows[8][DP.AVERAGE_STAFF], expected_rows[8])
+        self.assertAlmostEqual(output_rows[9][DP.AVERAGE_STAFF], expected_rows[9])
+        self.assertAlmostEqual(output_rows[10][DP.AVERAGE_STAFF], expected_rows[10])
+        self.assertAlmostEqual(output_rows[11][DP.AVERAGE_STAFF], expected_rows[11])
+        self.assertAlmostEqual(output_rows[12][DP.AVERAGE_STAFF], expected_rows[12])
+        self.assertEqual(len(output_rows), len(expected_rows))
 
     def test_create_year_range(self):
         min_year = 2019
@@ -186,21 +150,11 @@ class TestCalculatePARatio(unittest.TestCase):
         output = job.create_year_range(min_year, max_year, step_size_in_years)
         expected = [2019, 2020, 2021, 2022]
 
-        self.assertEqual(
-            output[0], expected[0]
-        )
-        self.assertEqual(
-            output[1], expected[1]
-        )
-        self.assertEqual(
-            output[2], expected[2]
-        )
-        self.assertEqual(
-            output[3], expected[3]
-        )
-        self.assertEqual(
-            len(output), len(expected)
-        )
+        self.assertEqual(output[0], expected[0])
+        self.assertEqual(output[1], expected[1])
+        self.assertEqual(output[2], expected[2])
+        self.assertEqual(output[3], expected[3])
+        self.assertEqual(len(output), len(expected))
 
     def test_get_first_known_ratio(self):
         rows = [
@@ -223,7 +177,4 @@ class TestCalculatePARatio(unittest.TestCase):
         output = job.get_first_known_ratio(df)
         expected = 1.6
 
-        self.assertAlmostEqual(
-            output, expected
-        )
-        
+        self.assertAlmostEqual(output, expected)

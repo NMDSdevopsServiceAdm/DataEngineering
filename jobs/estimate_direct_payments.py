@@ -42,9 +42,7 @@ def main(
         DP.FILLED_POSTS_PER_EMPLOYER,
         DP.TOTAL_DPRS_DURING_YEAR,
     )
-    survey_df: DataFrame = spark.read.parquet(
-        survey_data_source
-    )
+    survey_df: DataFrame = spark.read.parquet(survey_data_source)
 
     pa_ratio_df = calculate_pa_ratio(survey_df)
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
