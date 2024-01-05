@@ -40,8 +40,10 @@ def calculate_average_ratios(survey_df: DataFrame) -> DataFrame:
     return average_survey_df
 
 
-def add_in_missing_historic_ratios(df: DataFrame, spark:SparkSession) -> DataFrame:
-    historic_ratios_df = spark.createDataFrame(HistoricRatios.ratios, HistoricRatios.schema)
+def add_in_missing_historic_ratios(df: DataFrame, spark: SparkSession) -> DataFrame:
+    historic_ratios_df = spark.createDataFrame(
+        HistoricRatios.ratios, HistoricRatios.schema
+    )
     historic_ratios_df.show()
     df = df.join(historic_ratios_df, DP.YEAR_AS_INTEGER, how="left")
     df.show()
@@ -49,7 +51,8 @@ def add_in_missing_historic_ratios(df: DataFrame, spark:SparkSession) -> DataFra
         DP.AVERAGE_STAFF,
         F.when(df[DP.AVERAGE_STAFF].isNull(), df[DP.HISTORIC_RATIO]).otherwise(
             df[DP.AVERAGE_STAFF]
-        ))
+        ),
+    )
     df.show()
     return df
 
@@ -69,4 +72,3 @@ def apply_rolling_average(df: DataFrame) -> DataFrame:
     )
     df.show()
     return df
-

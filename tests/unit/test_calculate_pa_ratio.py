@@ -132,47 +132,35 @@ class TestCalculatePARatio(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema=test_schema)
         output_df = job.add_in_missing_historic_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
-        expected_rows = [1.98, 1.98, 1.98, 1.0, 2.00, 2.01, 1.0, 1.96, 1.0, 1.0, 1.0, 1.6, 2.2]
+        expected_rows = [
+            1.98,
+            1.98,
+            1.98,
+            1.0,
+            2.00,
+            2.01,
+            1.0,
+            1.96,
+            1.0,
+            1.0,
+            1.0,
+            1.6,
+            2.2,
+        ]
 
-        self.assertAlmostEqual(
-            output_rows[0][DP.AVERAGE_STAFF], expected_rows[0]
-        )
-        self.assertAlmostEqual(
-            output_rows[1][DP.AVERAGE_STAFF], expected_rows[1]
-        )
-        self.assertAlmostEqual(
-            output_rows[2][DP.AVERAGE_STAFF], expected_rows[2]
-        )
-        self.assertAlmostEqual(
-            output_rows[3][DP.AVERAGE_STAFF], expected_rows[3]
-        )
-        self.assertAlmostEqual(
-            output_rows[4][DP.AVERAGE_STAFF], expected_rows[4]
-        )
-        self.assertAlmostEqual(
-            output_rows[5][DP.AVERAGE_STAFF], expected_rows[5]
-        )
-        self.assertAlmostEqual(
-            output_rows[6][DP.AVERAGE_STAFF], expected_rows[6]
-        )
-        self.assertAlmostEqual(
-            output_rows[7][DP.AVERAGE_STAFF], expected_rows[7]
-        )
-        self.assertAlmostEqual(
-            output_rows[8][DP.AVERAGE_STAFF], expected_rows[8]
-        )
-        self.assertAlmostEqual(
-            output_rows[9][DP.AVERAGE_STAFF], expected_rows[9]
-        )
-        self.assertAlmostEqual(
-            output_rows[10][DP.AVERAGE_STAFF], expected_rows[10]
-        )
-        self.assertAlmostEqual(
-            output_rows[11][DP.AVERAGE_STAFF], expected_rows[11]
-        )
-        self.assertAlmostEqual(
-            output_rows[12][DP.AVERAGE_STAFF], expected_rows[12]
-        )
+        self.assertAlmostEqual(output_rows[0][DP.AVERAGE_STAFF], expected_rows[0])
+        self.assertAlmostEqual(output_rows[1][DP.AVERAGE_STAFF], expected_rows[1])
+        self.assertAlmostEqual(output_rows[2][DP.AVERAGE_STAFF], expected_rows[2])
+        self.assertAlmostEqual(output_rows[3][DP.AVERAGE_STAFF], expected_rows[3])
+        self.assertAlmostEqual(output_rows[4][DP.AVERAGE_STAFF], expected_rows[4])
+        self.assertAlmostEqual(output_rows[5][DP.AVERAGE_STAFF], expected_rows[5])
+        self.assertAlmostEqual(output_rows[6][DP.AVERAGE_STAFF], expected_rows[6])
+        self.assertAlmostEqual(output_rows[7][DP.AVERAGE_STAFF], expected_rows[7])
+        self.assertAlmostEqual(output_rows[8][DP.AVERAGE_STAFF], expected_rows[8])
+        self.assertAlmostEqual(output_rows[9][DP.AVERAGE_STAFF], expected_rows[9])
+        self.assertAlmostEqual(output_rows[10][DP.AVERAGE_STAFF], expected_rows[10])
+        self.assertAlmostEqual(output_rows[11][DP.AVERAGE_STAFF], expected_rows[11])
+        self.assertAlmostEqual(output_rows[12][DP.AVERAGE_STAFF], expected_rows[12])
 
         self.assertEqual(len(output_rows), len(expected_rows))
 
@@ -216,5 +204,3 @@ class TestCalculatePARatio(unittest.TestCase):
         )
 
         self.assertEqual(len(output_rows), len(expected_rows))
-
-
