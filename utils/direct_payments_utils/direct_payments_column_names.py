@@ -149,16 +149,7 @@ class DirectPaymentColumnNames:
     # PA ratio
     TOTAL_STAFF_RECODED: str = "total_staff_recoded"
     AVERAGE_STAFF: str = "average_staff"
-    MEAN_RATIO: str = "mean_ratio"
-    PREVIOUS_AVERAGE_STAFF: str = "previous_average_staff"
-    NEXT_AVERAGE_STAFF: str = "next_average_staff"
-    AVERAGE_STAFF_YEAR_KNOWN: str = "average_staff_year_known"
-    PREVIOUS_AVERAGE_STAFF_YEAR_KNOWN: str = "previous_average_staff_year_known"
-    NEXT_AVERAGE_STAFF_YEAR_KNOWN: str = "next_average_staff_year_known"
-    INTERPOLATED_RATIO: str = "interpolated_ratio"
-    RATIO_DIFFERENCE: str = "ratio_difference"
-    YEAR_DIFFERENCE: str = "year_difference"
-    INTERPOLATION_MODEL: str = "interpolation_model"
+    
     RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
     COUNT: str = "count"
     COUNT_OF_YEARS: str = "count_of_years"

@@ -5,7 +5,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     StructType,
     StructField,
-    StringType,
     IntegerType,
     FloatType,
 )
@@ -204,3 +203,4 @@ class TestCalculatePARatio(unittest.TestCase):
         )
 
         self.assertEqual(len(output_rows), len(expected_rows))
+
