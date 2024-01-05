@@ -57,7 +57,7 @@ def add_in_missing_historic_ratios(df: DataFrame, spark: SparkSession) -> DataFr
 def apply_rolling_average(df: DataFrame) -> DataFrame:
     range = Config.NUMBER_OF_YEARS_ROLLING_AVERAGE - 1
     w = (
-        Window.partitionBy()
+        Window.partitionBy(F.lit(0))
         .orderBy(F.col(DP.YEAR_AS_INTEGER).cast("long"))
         .rangeBetween(-(range), 0)
     )
