@@ -201,3 +201,29 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(
             len(output), len(expected)
         )
+
+    def test_get_first_known_ratio(self):
+        rows = [
+            (2021, 1.8),
+            (2022, 1.7),
+            (2020, 1.9),
+            (2019, 1.6),
+        ]
+        test_schema = StructType(
+            [
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.AVERAGE_STAFF,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+        df = self.spark.createDataFrame(rows, schema=test_schema)
+        output = job.get_first_known_ratio(df)
+        expected = 1.6
+
+        self.assertAlmostEqual(
+            output, expected
+        )
+        
