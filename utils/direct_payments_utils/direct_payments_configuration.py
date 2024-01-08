@@ -27,6 +27,9 @@ class DirectPaymentsOutlierThresholds:
     ONE_HUNDRED_PERCENT: float = 1.0
     ZERO_PERCENT: float = 0.0
 
+    MAX_PAS: float = 9.0
+    MIN_PAS: float = 1.0
+
 
 @dataclass
 class DirectPaymentsMissingPARatios:

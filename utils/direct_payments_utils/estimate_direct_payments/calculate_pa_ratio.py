@@ -8,6 +8,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 from utils.direct_payments_utils.direct_payments_configuration import (
     DirectPaymentConfiguration as Config,
     DirectPaymentsMissingPARatios as HistoricRatios,
+    DirectPaymentsOutlierThresholds as Thresholds,
 )
 
 
@@ -23,8 +24,8 @@ def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
 
 def exclude_outliers(survey_df: DataFrame) -> DataFrame:
     survey_df = survey_df.where(
-        (survey_df[DP.TOTAL_STAFF_RECODED] < 10.0)
-        & (survey_df[DP.TOTAL_STAFF_RECODED] > 0.0)
+        (survey_df[DP.TOTAL_STAFF_RECODED] <= Thresholds.MAX_PAS)
+        & (survey_df[DP.TOTAL_STAFF_RECODED] >= Thresholds.MIN_PAS)
     )
     return survey_df
 
