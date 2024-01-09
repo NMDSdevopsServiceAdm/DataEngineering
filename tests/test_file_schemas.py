@@ -141,25 +141,26 @@ class CreateJobEstimatesDiagnosticsSchemas:
         ]
     )
 
+
 @dataclass
 class CalculatePaRatioSchemas:
     total_staff_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.TOTAL_STAFF_RECODED,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField(
+                DP.TOTAL_STAFF_RECODED,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
     average_staff_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.AVERAGE_STAFF,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField(
+                DP.AVERAGE_STAFF,
+                FloatType(),
+                True,
+            ),
+        ]
+    )

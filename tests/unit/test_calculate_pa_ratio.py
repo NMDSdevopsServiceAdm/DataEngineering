@@ -20,14 +20,18 @@ class TestCalculatePARatio(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_pa_ratio_completes(self):
-        df = self.spark.createDataFrame(Data.calculate_pa_ratio_rows, schema=Schemas.total_staff_schema)
+        df = self.spark.createDataFrame(
+            Data.calculate_pa_ratio_rows, schema=Schemas.total_staff_schema
+        )
         output_df = job.calculate_pa_ratio(df, self.spark)
         output_rows = output_df.count()
 
         self.assertGreaterEqual(output_rows, 0)
 
     def test_exclude_outliers(self):
-        df = self.spark.createDataFrame(Data.exclude_outliers_rows, schema=Schemas.total_staff_schema)
+        df = self.spark.createDataFrame(
+            Data.exclude_outliers_rows, schema=Schemas.total_staff_schema
+        )
         output_df = job.exclude_outliers(df)
         output_rows = output_df.count()
         expected_rows = 2
@@ -35,7 +39,9 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(output_rows, expected_rows)
 
     def test_calculate_average_ratios(self):
-        df = self.spark.createDataFrame(Data.calculate_average_ratio_rows, schema=Schemas.total_staff_schema)
+        df = self.spark.createDataFrame(
+            Data.calculate_average_ratio_rows, schema=Schemas.total_staff_schema
+        )
         output_df = job.calculate_average_ratios(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [2.0, 1.0, 1.5]
@@ -46,7 +52,9 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(len(output_rows), len(expected_rows))
 
     def test_add_in_missing_historic_ratios(self):
-        df = self.spark.createDataFrame(Data.add_historic_rows, schema=Schemas.average_staff_schema)
+        df = self.spark.createDataFrame(
+            Data.add_historic_rows, schema=Schemas.average_staff_schema
+        )
         output_df = job.add_in_missing_historic_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [
@@ -82,7 +90,9 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(len(output_rows), len(expected_rows))
 
     def test_apply_rolling_average(self):
-        df = self.spark.createDataFrame(Data.apply_rolling_average_rows, schema=Schemas.average_staff_schema)
+        df = self.spark.createDataFrame(
+            Data.apply_rolling_average_rows, schema=Schemas.average_staff_schema
+        )
         output_df = job.apply_rolling_average(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [1.0, 1.0, 1.0, 1.2, 1.6]
