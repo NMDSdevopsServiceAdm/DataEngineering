@@ -14,10 +14,13 @@ from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_va
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
 )
+from utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio import (
+    calculate_pa_ratio,
+)
 
 
 def main(
-    direct_payments_prepared_source,
+    direct_payments_joined_source,
     destination,
     summary_destination,
 ):
@@ -26,7 +29,7 @@ def main(
     ).getOrCreate()
 
     direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_prepared_source
+        direct_payments_joined_source
     ).select(
         DP.LA_AREA,
         DP.YEAR,
@@ -35,8 +38,8 @@ def main(
         DP.CARER_DPRS_DURING_YEAR,
         DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF,
         DP.HISTORIC_SERVICE_USERS_EMPLOYING_STAFF_ESTIMATE,
-        DP.FILLED_POSTS_PER_EMPLOYER,
         DP.TOTAL_DPRS_DURING_YEAR,
+        DP.FILLED_POSTS_PER_EMPLOYER,
     )
 
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
@@ -60,12 +63,12 @@ def main(
 
 if __name__ == "__main__":
     (
-        direct_payments_prepared_source,
+        direct_payments_joined_source,
         destination,
         summary_destination,
     ) = utils.collect_arguments(
         (
-            "--direct_payments_prepared_source",
+            "--direct_payments_joined_source",
             "Source s3 directory for direct payments prepared dataset",
         ),
         ("--destination", "A destination directory for outputting dpr data."),
@@ -76,7 +79,7 @@ if __name__ == "__main__":
     )
 
     main(
-        direct_payments_prepared_source,
+        direct_payments_joined_source,
         destination,
         summary_destination,
     )

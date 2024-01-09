@@ -146,6 +146,17 @@ class DirectPaymentColumnNames:
         "proportion_of_total_dprs_employing_staff"
     )
 
+    # PA ratio
+    TOTAL_STAFF_RECODED: str = "total_staff_recoded"
+    AVERAGE_STAFF: str = "average_staff"
+
+    RATIO_ROLLING_AVERAGE: str = "ratio_rolling_average"
+    COUNT: str = "count"
+    COUNT_OF_YEARS: str = "count_of_years"
+    SUM_OF_RATIOS: str = "sum_of_ratios"
+
+    HISTORIC_RATIO: str = "historic_ratio"
+
 
 @dataclass
 class DirectPaymentColumnValues:
@@ -153,3 +164,5 @@ class DirectPaymentColumnValues:
     SU_ONLY_DPRS: str = "su_only_dprs"
     REMOVE: str = "remove"
     RETAIN: str = "retain"
+    PREVIOUS: str = "previous"
+    NEXT: str = "next"
