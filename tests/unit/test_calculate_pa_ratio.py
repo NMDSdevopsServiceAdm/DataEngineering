@@ -25,8 +25,9 @@ class TestCalculatePARatio(unittest.TestCase):
         )
         output_df = job.calculate_pa_ratio(df, self.spark)
         output_rows = output_df.count()
+        minimum_expected_rows = 1
 
-        self.assertGreaterEqual(output_rows, 0)
+        self.assertGreaterEqual(output_rows, minimum_expected_rows)
 
     def test_exclude_outliers(self):
         df = self.spark.createDataFrame(
