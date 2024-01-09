@@ -26,6 +26,9 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Columns,
     TestColumns,
 )
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 
 
 @dataclass
@@ -137,3 +140,26 @@ class CreateJobEstimatesDiagnosticsSchemas:
             ),
         ]
     )
+
+@dataclass
+class CalculatePaRatioSchemas:
+    total_staff_schema = StructType(
+            [
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.TOTAL_STAFF_RECODED,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+    average_staff_schema = StructType(
+            [
+                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+                StructField(
+                    DP.AVERAGE_STAFF,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )

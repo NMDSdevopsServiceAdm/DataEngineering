@@ -2,17 +2,13 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    IntegerType,
-    FloatType,
-)
 
 import utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from tests.test_file_schemas import CalculatePaRatioSchemas as Schemas
+from tests.test_file_data import CalculatePaRatioData as Data
 
 
 class TestCalculatePARatio(unittest.TestCase):
@@ -24,49 +20,14 @@ class TestCalculatePARatio(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_calculate_pa_ratio_completes(self):
-        rows = [
-            (2021, 1.0),
-            (2021, 2.0),
-            (2021, 2.0),
-            (2021, 1.0),
-            (2021, 1.0),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.TOTAL_STAFF_RECODED,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
+        df = self.spark.createDataFrame(Data.calculate_pa_ratio_rows, schema=Schemas.total_staff_schema)
         output_df = job.calculate_pa_ratio(df, self.spark)
         output_rows = output_df.count()
 
         self.assertGreaterEqual(output_rows, 0)
 
     def test_exclude_outliers(self):
-        rows = [
-            (2021, 10.0),
-            (2021, 20.0),
-            (2021, 0.0),
-            (2021, 9.0),
-            (2021, 1.0),
-            (2021, -1.0),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.TOTAL_STAFF_RECODED,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
+        df = self.spark.createDataFrame(Data.exclude_outliers_rows, schema=Schemas.total_staff_schema)
         output_df = job.exclude_outliers(df)
         output_rows = output_df.count()
         expected_rows = 2
@@ -74,25 +35,7 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(output_rows, expected_rows)
 
     def test_calculate_average_ratios(self):
-        rows = [
-            (2021, 1.0),
-            (2021, 2.0),
-            (2020, 1.0),
-            (2020, 1.0),
-            (2019, 2.0),
-            (2019, 2.0),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.TOTAL_STAFF_RECODED,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
+        df = self.spark.createDataFrame(Data.calculate_average_ratio_rows, schema=Schemas.total_staff_schema)
         output_df = job.calculate_average_ratios(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [2.0, 1.0, 1.5]
@@ -103,32 +46,7 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(len(output_rows), len(expected_rows))
 
     def test_add_in_missing_historic_ratios(self):
-        rows = [
-            (2011, None),
-            (2012, None),
-            (2013, None),
-            (2014, 1.0),
-            (2015, None),
-            (2016, None),
-            (2017, 1.0),
-            (2018, None),
-            (2019, 1.0),
-            (2020, 1.0),
-            (2021, 1.0),
-            (2022, 1.6),
-            (2023, 2.2),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.AVERAGE_STAFF,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
+        df = self.spark.createDataFrame(Data.add_historic_rows, schema=Schemas.average_staff_schema)
         output_df = job.add_in_missing_historic_ratios(df, self.spark)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [
@@ -164,24 +82,7 @@ class TestCalculatePARatio(unittest.TestCase):
         self.assertEqual(len(output_rows), len(expected_rows))
 
     def test_apply_rolling_average(self):
-        rows = [
-            (2019, 1.0),
-            (2020, 1.0),
-            (2021, 1.0),
-            (2022, 1.6),
-            (2023, 2.2),
-        ]
-        test_schema = StructType(
-            [
-                StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
-                StructField(
-                    DP.AVERAGE_STAFF,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-        df = self.spark.createDataFrame(rows, schema=test_schema)
+        df = self.spark.createDataFrame(Data.apply_rolling_average_rows, schema=Schemas.average_staff_schema)
         output_df = job.apply_rolling_average(df)
         output_rows = output_df.sort(DP.YEAR_AS_INTEGER).collect()
         expected_rows = [1.0, 1.0, 1.0, 1.2, 1.6]
