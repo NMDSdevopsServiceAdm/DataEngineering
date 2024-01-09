@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+
 @dataclass
 class CqcCategories:
     SERVICE_TYPES = [
@@ -75,10 +76,11 @@ class CqcCategories:
     la_keywords = "Department of Community Services|Social & Community Services|SCC Adult Social Care|Cheshire West and Chester Reablement Service|Council|Social Services|MBC|MDC|London Borough|Royal Borough|Borough of"
     non_la_keywords = "The Council of St Monica Trust"
 
+
 @dataclass
 class CqcConfig:
     DIRECTORY = Path(
-    "F:/ASC-WDS Copy Files/Research & Analysis Team Folders/Analysis Team/b. Data Sources/02. Data sets and databases/CQC Registered Providers lists/"
+        "F:/ASC-WDS Copy Files/Research & Analysis Team Folders/Analysis Team/b. Data Sources/02. Data sets and databases/CQC Registered Providers lists/"
     )
     OLD_FILE_NAME = Path("2024/01. CQC 050124.xlsx")
     NEW_FILE_NAME = Path("2024/01. CQC 050124 inc sector and service.xlsx")
@@ -86,7 +88,6 @@ class CqcConfig:
     BLANK_ROWS = 6  # CQC data file starts on row 7
     COLUMNS_TO_EXPORT = ["Location ID", "Sector", "Main Service"]
     new_sheet_name = "CQC sector service"
-
 
 
 @dataclass

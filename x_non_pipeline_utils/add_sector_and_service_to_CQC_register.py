@@ -7,6 +7,7 @@ from cqc_metadata import (
     ColumnValues as Values,
 )
 
+
 def main():
     file = CqcConfig.DIRECTORY / CqcConfig.OLD_FILE_NAME
     data = open_CQC_File(file, CqcConfig.SHEET_NAME)
@@ -19,8 +20,11 @@ def main():
 
 def open_CQC_File(File_name, sheet_name):
     print("opening file")
-    CQCdata = pd.read_excel(File_name, sheet_name=sheet_name, skiprows=CqcConfig.BLANK_ROWS)
+    CQCdata = pd.read_excel(
+        File_name, sheet_name=sheet_name, skiprows=CqcConfig.BLANK_ROWS
+    )
     return CQCdata
+
 
 def remove_non_social_care_data(data):
     data = data[data[Columns.location_type] == Values.social_care_org].reset_index(
@@ -60,7 +64,9 @@ def add_service_data(data):
     print("adding main service")
     data.loc[:, Columns.main_service] = data.apply(get_main_service, axis=1)
 
-    data[Columns.main_service_group] = data[Columns.main_service].map(CqcCategories.SERVICE_DICT)
+    data[Columns.main_service_group] = data[Columns.main_service].map(
+        CqcCategories.SERVICE_DICT
+    )
 
     return data
 
