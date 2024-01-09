@@ -3,13 +3,15 @@ resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
   name        = "${local.workspace_prefix}-ascwds-csv-added"
   description = "Captures when a new ASC WDS worker or workspace CSV is uploaded to sfc-data-engineering-raw bucket"
 
+#      "name": ["sfc-data-engineering-raw"]
+
   event_pattern = <<EOF
 {
   "source": ["aws.s3"],
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["sfc-fix-eventbridge-depreciation-datasets"]
     },
     "object": {
       "key": [ {"prefix": "domain=ASCWDS/dataset=worker" }, {"prefix": "domain=ASCWDS/dataset=workplace" }  ]
