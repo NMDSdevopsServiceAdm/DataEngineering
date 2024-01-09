@@ -92,7 +92,7 @@ class CqcConfig:
 @dataclass
 class ColumnNames:
     sector = "sector"
-    provider_name = "provider_name"
+    provider_name = "Provider Name"
     location_type = "Location Type/Sector"
     main_service = "Main Service"
     main_service_group = "Main Service Group"

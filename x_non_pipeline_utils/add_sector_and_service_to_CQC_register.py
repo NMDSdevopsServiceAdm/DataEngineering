@@ -56,7 +56,6 @@ def get_main_service(row):
         return service
 
 
-### This function adds MAIN SERVICE data to the dataframe. It take the old dataframe as an input and outputs an updated dataframe.
 def add_service_data(data):
     print("adding main service")
     data.loc[:, Columns.main_service] = data.apply(get_main_service, axis=1)
@@ -66,7 +65,6 @@ def add_service_data(data):
     return data
 
 
-### This function saves selected columns from the dataframe to a new Excel Workbook. It takes a dataframe and reurtns None.
 def save_CQC_file(df):
     print("saving file")
     save_location = CqcConfig.DIRECTORY / CqcConfig.NEW_FILE_NAME
