@@ -9,7 +9,7 @@ resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-main-datasets"]
+      "name": ["sfc-data-engineering-raw"]
     },
     "object": {
       "key": [ {"prefix": "domain=ASCWDS/dataset=worker" }, {"prefix": "domain=ASCWDS/dataset=workplace" }  ]
