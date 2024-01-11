@@ -51,8 +51,9 @@ def add_sector_data(data):
 
 def get_main_service(row):
     service = Values.service_not_found
+    service_types = list(CqcCategories.SERVICE_DICT.keys())
 
-    for service_type in CqcCategories.SERVICE_TYPES:
+    for service_type in service_types:
         if row[service_type] == Values.yes:
             service = service_type
             return service
