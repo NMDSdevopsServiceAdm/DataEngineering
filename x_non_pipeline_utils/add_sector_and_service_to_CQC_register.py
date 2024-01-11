@@ -9,8 +9,8 @@ from cqc_metadata import (
 
 
 def main():
-    file = CqcConfig.DIRECTORY / CqcConfig.OLD_FILE_NAME
-    data = open_CQC_File(file, CqcConfig.SHEET_NAME)
+    file = CqcConfig.directory / CqcConfig.old_file_name
+    data = open_CQC_File(file, CqcConfig.sheet_name)
     data = remove_non_social_care_data(data)
     data = add_sector_data(data)
     data = add_service_data(data)
@@ -21,7 +21,7 @@ def main():
 def open_CQC_File(File_name, sheet_name):
     print("opening file")
     CQCdata = pd.read_excel(
-        File_name, sheet_name=sheet_name, skiprows=CqcConfig.BLANK_ROWS
+        File_name, sheet_name=sheet_name, skiprows=CqcConfig.blank_rows
     )
     return CQCdata
 
@@ -51,7 +51,7 @@ def add_sector_data(data):
 
 def get_main_service(row):
     service = Values.service_not_found
-    service_types = list(CqcCategories.SERVICE_DICT.keys())
+    service_types = list(CqcCategories.services_dict.keys())
 
     for service_type in service_types:
         if row[service_type] == Values.yes:
@@ -66,7 +66,7 @@ def add_service_data(data):
     data.loc[:, Columns.main_service] = data.apply(get_main_service, axis=1)
 
     data[Columns.main_service_group] = data[Columns.main_service].map(
-        CqcCategories.SERVICE_DICT
+        CqcCategories.services_dict
     )
 
     return data
@@ -74,7 +74,7 @@ def add_service_data(data):
 
 def save_CQC_file(df):
     print("saving file")
-    save_location = CqcConfig.DIRECTORY / CqcConfig.NEW_FILE_NAME
+    save_location = CqcConfig.directory / CqcConfig.new_file_name
     df.to_excel(save_location, sheet_name=CqcConfig.new_sheet_name, index=False)
 
 
