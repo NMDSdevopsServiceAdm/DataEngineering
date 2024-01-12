@@ -20,7 +20,7 @@ from utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio imp
 
 
 def main(
-    direct_payments_joined_source,
+    direct_payments_merged_source,
     destination,
     summary_destination,
 ):
@@ -29,7 +29,7 @@ def main(
     ).getOrCreate()
 
     direct_payments_df: DataFrame = spark.read.parquet(
-        direct_payments_joined_source
+        direct_payments_merged_source
     ).select(
         DP.LA_AREA,
         DP.YEAR,
@@ -63,12 +63,12 @@ def main(
 
 if __name__ == "__main__":
     (
-        direct_payments_joined_source,
+        direct_payments_merged_source,
         destination,
         summary_destination,
     ) = utils.collect_arguments(
         (
-            "--direct_payments_joined_source",
+            "--direct_payments_merged_source",
             "Source s3 directory for direct payments prepared dataset",
         ),
         ("--destination", "A destination directory for outputting dpr data."),
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     )
 
     main(
-        direct_payments_joined_source,
+        direct_payments_merged_source,
         destination,
         summary_destination,
     )

@@ -14,7 +14,7 @@ from tests.test_file_data import CalculatePaRatioData as Data
 class TestCalculatePARatio(unittest.TestCase):
     def setUp(self):
         self.spark = SparkSession.builder.appName(
-            "test_calculate_pa_ratio"
+            "test_dpr_calculate_pa_ratio"
         ).getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
