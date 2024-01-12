@@ -268,7 +268,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), 
+                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
