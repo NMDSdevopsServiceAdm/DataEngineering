@@ -30,12 +30,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
 
     def test_determine_areas_including_carers_on_adass_completes(self):
         rows = [
-            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
-            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, 0.5),
+            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, 100.0, 25.0, None),
+            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
+            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
+            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
+            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
         ]
         test_schema = StructType(
             [
@@ -45,7 +45,6 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
                 StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.IMD_SCORE, FloatType(), True),
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
@@ -255,12 +254,12 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
         self,
     ):
         rows = [
-            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, None, 100.0, 25.0, None),
-            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
-            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, 0.5),
-            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, None, 100.0, 50.0, None),
+            ("area_1", 2021, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, 0.5),
+            ("area_2", 2021, 300.0, 50.0, 100.0, 10.0, 100.0, 25.0, None),
+            ("area_3", 2020, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
+            ("area_4", 2020, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
+            ("area_5", 2019, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, 0.5),
+            ("area_6", 2019, 300.0, 50.0, 200.0, 5.0, 100.0, 50.0, None),
         ]
         test_schema = StructType(
             [
@@ -269,8 +268,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
                 StructField(DP.SERVICE_USER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.CARER_DPRS_DURING_YEAR, FloatType(), True),
                 StructField(DP.SERVICE_USER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), True),
-                StructField(DP.IMD_SCORE, FloatType(), True),
+                StructField(DP.CARER_DPRS_AT_YEAR_END, FloatType(), 
                 StructField(DP.DPRS_ADASS, FloatType(), True),
                 StructField(DP.DPRS_EMPLOYING_STAFF_ADASS, FloatType(), True),
                 StructField(DP.PROPORTION_IMPORTED, FloatType(), True),
