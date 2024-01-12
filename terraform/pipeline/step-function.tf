@@ -40,7 +40,6 @@ resource "aws_sfn_state_machine" "direct-payments-state-machine" {
     data_engineering_crawler_name     = module.data_engineering_crawler.crawler_name
     dataset_bucket_uri                = module.datasets_bucket.bucket_uri
     run_crawler_state_machine_arn     = aws_sfn_state_machine.run_crawler.arn
-  
   })
 
   logging_configuration {
