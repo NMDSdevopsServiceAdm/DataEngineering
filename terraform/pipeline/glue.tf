@@ -102,7 +102,7 @@ module "ingest_direct_payments_external_data_job" {
 
   job_parameters = {
     "--external_data_source"      = ""
-    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=1.0.0/"
+    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2023.01/"
   }
 }
 
@@ -116,7 +116,7 @@ module "ingest_direct_payments_survey_data_job" {
 
   job_parameters = {
     "--survey_data_source"      = ""
-    "--survey_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=1.0.0/"
+    "--survey_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2023.01/"
   }
 }
 
@@ -173,8 +173,8 @@ module "prepare_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=1.0.0/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=1.0.0/"
+    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2023.01/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=2023.01/"
   }
 }
 
@@ -186,9 +186,9 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_joined_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=1.0.0/"
-    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=1.0.0/"
-    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=1.0.0/"
+    "--direct_payments_joined_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=2023.01/"
+    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
+    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2023.01/"
   }
 }
 
@@ -200,9 +200,9 @@ module "prepare_direct_payments_survey_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=1.0.0/"
-    "--survey_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=1.0.0/"
-    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=1.0.0/"
+    "--direct_payments_prepared_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_prepared/version=2023.01/"
+    "--survey_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2023.01/"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=2023.01/"
   }
 }
 
