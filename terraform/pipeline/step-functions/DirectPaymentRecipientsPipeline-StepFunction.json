@@ -1,0 +1,108 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Prepare data in paralell",
+    "States": {
+      "Prepare data in paralell": {
+        "Type": "Parallel",
+        "Next": "Run data engineering crawler",
+        "Branches": [
+          {
+            "StartAt": "Prepare DPR survey data",
+            "States": {
+              "Prepare DPR survey data": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "main-prepare_dpr_survey_data_job",
+                  "Arguments": {
+                    "--survey_data_source": "s3://sfc-main-datasets/domain=DPR/dataset=direct_payments_survey/version=2023.01/",
+                    "--destination": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "Prepare DPR external data",
+            "States": {
+              "Prepare DPR external data": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "main-prepare_dpr_external_data_job",
+                  "Arguments": {
+                    "--direct_payments_source": "s3://sfc-main-datasets/domain=DPR/dataset=direct_payments_external/version=2023.01/",
+                    "--destination": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_external_prepared/version=2023.01/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ]
+      },
+      "Run data engineering crawler": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+        "Parameters": {
+          "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+          "Input": {
+            "crawler_name": "main-data_engineering_data_engineering",
+            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+          }
+        },
+        "Next": "Merge DPR data"
+      },
+      "Merge DPR data": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "main-merge_dpr_data_job",
+          "Arguments": {
+            "--direct_payments_external_data_source": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_external_prepared/version=2023.01/",
+            "--direct_payments_survey_data_source": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/",
+            "--destination": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
+          }
+        },
+        "Next": "Run data engineering crawler (1)"
+      },
+      "Run data engineering crawler (1)": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+        "Parameters": {
+          "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+          "Input": {
+            "crawler_name": "main-data_engineering_data_engineering",
+            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+          }
+        },
+        "Next": "estimate direct payments"
+      },
+      "estimate direct payments": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "main-estimate_direct_payments_job",
+          "Arguments": {
+            "--direct_payments_merged_source": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/",
+            "--destination": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/",
+            "--summary_destination": "s3://sfc-main-datasets/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2023.01/"
+          }
+        },
+        "Next": "Run data engineering crawler (2)"
+      },
+      "Run data engineering crawler (2)": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+        "Parameters": {
+          "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+          "Input": {
+            "crawler_name": "main-data_engineering_data_engineering",
+            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+          }
+        },
+        "End": true
+      }
+    }
+  }
