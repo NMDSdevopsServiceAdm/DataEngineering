@@ -27,7 +27,7 @@ def main(
         pa_ratio_df,
         destination,
         append=True,
-        partitionKeys=[DP.YEAR],
+        partitionKeys=[DP.YEAR_AS_INTEGER],
     )
 
 
