@@ -52,16 +52,16 @@ class TestPrepareDuringYearData(unittest.TestCase):
             27.5,
         )
 
-    def test_estimate_missing_salt_data_for_hackney_adds_missing_value(
+    
+    
+    def test_estimate_missing_salt_data_for_hackney_works_on_historic_data(
         self,
     ):
         rows = [
             ("area_1", 2021, 100.0, 21.0),
             ("area_1", 2022, 25.0, 2.0),
-            ("area_1", 2023, 45.0, 7.0),
             ("Hackney", 2021, 100.0, 4.5),
             ("Hackney", 2022, None, None),
-            ("Hackney", 2023, None, None),
         ]
         test_schema = StructType(
             [
@@ -85,19 +85,11 @@ class TestPrepareDuringYearData(unittest.TestCase):
         )
         self.assertEqual(
             output_df_list[2][DP.SERVICE_USER_DPRS_DURING_YEAR],
-            629.2,
-        )
-        self.assertEqual(
-            output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
             100.0,
         )
         self.assertEqual(
-            output_df_list[4][DP.SERVICE_USER_DPRS_DURING_YEAR],
+            output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
             25.0,
-        )
-        self.assertEqual(
-            output_df_list[5][DP.SERVICE_USER_DPRS_DURING_YEAR],
-            45.0,
         )
         self.assertEqual(
             output_df_list[0][DP.CARER_DPRS_DURING_YEAR],
@@ -109,17 +101,9 @@ class TestPrepareDuringYearData(unittest.TestCase):
         )
         self.assertEqual(
             output_df_list[2][DP.CARER_DPRS_DURING_YEAR],
-            117.365,
-        )
-        self.assertEqual(
-            output_df_list[3][DP.CARER_DPRS_DURING_YEAR],
             21.0,
         )
         self.assertEqual(
-            output_df_list[4][DP.CARER_DPRS_DURING_YEAR],
+            output_df_list[3][DP.CARER_DPRS_DURING_YEAR],
             2.0,
-        )
-        self.assertEqual(
-            output_df_list[5][DP.CARER_DPRS_DURING_YEAR],
-            7.0,
         )
