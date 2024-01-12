@@ -85,7 +85,7 @@ class TestPrepareDuringYearData(unittest.TestCase):
         )
         self.assertEqual(
             output_df_list[2][DP.SERVICE_USER_DPRS_DURING_YEAR],
-            0,
+            629.2,
         )
         self.assertEqual(
             output_df_list[3][DP.SERVICE_USER_DPRS_DURING_YEAR],
@@ -109,7 +109,7 @@ class TestPrepareDuringYearData(unittest.TestCase):
         )
         self.assertEqual(
             output_df_list[2][DP.CARER_DPRS_DURING_YEAR],
-            0,
+            117.365,
         )
         self.assertEqual(
             output_df_list[3][DP.CARER_DPRS_DURING_YEAR],

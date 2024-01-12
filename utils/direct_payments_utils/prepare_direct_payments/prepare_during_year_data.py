@@ -22,8 +22,8 @@ def calculate_total_dprs_during_year(df: DataFrame) -> DataFrame:
 
 def estimate_missing_salt_data_for_hackney(df: DataFrame) -> DataFrame:
     # Hackney is the only LA missing SALT data. The values in this function are based on a regression in excel of previous data points for Hackney in the SALT data.
-    missing_service_user_dprs: float = {"2022": 580.5, "2023": 0}
-    missing_carer_dprs: float = {"2022": 140.85, "2023": 0}
+    missing_service_user_dprs: float = {"2022": 580.5, "2023": 629.2}
+    missing_carer_dprs: float = {"2022": 140.85, "2023": 117.365}
 
     df = df.withColumn(
         DP.SERVICE_USER_DPRS_DURING_YEAR,
