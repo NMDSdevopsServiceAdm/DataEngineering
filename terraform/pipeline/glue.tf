@@ -340,8 +340,8 @@ module "merge_dpr_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2023.01/"
-    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2023.01/"
+    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2023.01/"
+    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/"
     "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
   }
 }
