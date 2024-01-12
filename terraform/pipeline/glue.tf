@@ -186,7 +186,7 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_joined_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_joined/version=2023.01/"
+    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
     "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
     "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2023.01/"
   }
@@ -202,6 +202,20 @@ module "prepare_direct_payments_survey_data_job" {
   job_parameters = {
     "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2023.01/"
     "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/"
+  }
+}
+
+module "merge_direct_payments_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_direct_payments_external_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+  job_parameters = {
+    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2023.01/"
+    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2023.01/"
+    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
   }
 }
 
