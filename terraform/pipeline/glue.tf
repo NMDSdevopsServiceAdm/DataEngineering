@@ -278,9 +278,9 @@ module "bulk_cqc_locations_download_job" {
 }
 
 
-module "ingest_direct_payments_external_data_job" {
+module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "ingest_direct_payments_external_data.py"
+  script_name     = "ingest_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -292,9 +292,9 @@ module "ingest_direct_payments_external_data_job" {
   }
 }
 
-module "ingest_direct_payments_survey_data_job" {
+module "ingest_dpr_survey_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "ingest_direct_payments_survey_data.py"
+  script_name     = "ingest_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -306,9 +306,9 @@ module "ingest_direct_payments_survey_data_job" {
   }
 }
 
-module "prepare_direct_payments_external_data_job" {
+module "prepare_dpr_external_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_direct_payments_external_data.py"
+  script_name     = "prepare_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -319,9 +319,9 @@ module "prepare_direct_payments_external_data_job" {
   }
 }
 
-module "prepare_direct_payments_survey_data_job" {
+module "prepare_dpr_survey_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_direct_payments_survey_data.py"
+  script_name     = "prepare_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -332,9 +332,9 @@ module "prepare_direct_payments_survey_data_job" {
   }
 }
 
-module "merge_direct_payments_data_job" {
+module "merge_dpr_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "merge_direct_payments_data.py"
+  script_name     = "merge_dpr_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
