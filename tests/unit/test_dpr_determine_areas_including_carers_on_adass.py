@@ -304,7 +304,7 @@ class TestDetermineAreasIncludingCarers(unittest.TestCase):
             output_df_list[5][DP.PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF],
             0.5001596807238414,
         )
-        self.assertEqual(len(output_df.columns), 20)
+        self.assertEqual(len(output_df.columns), 19)
 
     def test_add_column_with_year_as_integer_adds_same_value_as_integer(self):
         rows = [
