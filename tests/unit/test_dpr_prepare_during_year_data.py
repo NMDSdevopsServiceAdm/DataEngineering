@@ -52,7 +52,7 @@ class TestPrepareDuringYearData(unittest.TestCase):
             27.5,
         )
 
-    def test_estimate_missing_salt_data_for_hackney_adds_missing_value(
+    def test_estimate_missing_salt_data_for_hackney_works_on_historic_data(
         self,
     ):
         rows = [
