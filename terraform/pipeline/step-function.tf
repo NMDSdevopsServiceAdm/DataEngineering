@@ -27,6 +27,54 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "direct-payments-state-machine" {
+  name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/DirectPaymentRecipientsPipeline-StepFunction.json", {
+    prepare_dpr_external_job_name     = module.prepare_dpr_external_data_job.job_name
+    prepare_dpr_survey_job_name       = module.prepare_dpr_survey_data_job.job_name
+    merge_dpr_data_job_name           = module.merge_dpr_data_job.job_name
+    estimate_direct_payments_job_name = module.estimate_direct_payments_job.job_name
+    data_engineering_crawler_name     = module.data_engineering_crawler.crawler_name
+    dataset_bucket_uri                = module.datasets_bucket.bucket_uri
+    run_crawler_state_machine_arn     = aws_sfn_state_machine.run_crawler.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "historic-direct-payments-state-machine" {
+  name     = "${local.workspace_prefix}-HistoricDirectPaymentRecipientsPipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/HistoricDirectPaymentRecipientsPipeline-StepFunction.json", {
+    prepare_dpr_external_job_name     = module.prepare_dpr_external_data_job.job_name
+    estimate_direct_payments_job_name = module.estimate_direct_payments_job.job_name
+    data_engineering_crawler_name     = module.data_engineering_crawler.crawler_name
+    dataset_bucket_uri                = module.datasets_bucket.bucket_uri
+    run_crawler_state_machine_arn     = aws_sfn_state_machine.run_crawler.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
 resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   name     = "${local.workspace_prefix}-IngestASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
