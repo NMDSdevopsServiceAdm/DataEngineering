@@ -1,83 +1,83 @@
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType
 
+from utils.ind_cqc_pipeline_column_names import CqcCareDirectoryColumns as ColNames
+
 CQC_CARE_DIRECTORY_SCHEMA = StructType(
     fields=[
-        StructField("locationid", StringType(), True),
-        StructField("registrationdate", StringType(), True),
-        StructField("carehome", StringType(), True),
-        StructField("name", StringType(), True),
-        StructField("type", StringType(), True),
-        StructField("mainphonenumber", StringType(), True),
-        StructField("registered_manager_name", StringType(), True),
-        StructField("website", StringType(), True),
-        StructField("numberofbeds", IntegerType(), True),
-        StructField("region", StringType(), True),
-        StructField("localauthority", StringType(), True),
-        StructField("postaladdressline1", StringType(), True),
-        StructField("postaladdressline2", StringType(), True),
-        StructField("postaladdresstowncity", StringType(), True),
-        StructField("postaladdresscounty", StringType(), True),
-        StructField("postalcode", StringType(), True),
-        StructField("provider_brandid", StringType(), True),
-        StructField("provider_brandname", StringType(), True),
-        StructField("providerid", StringType(), True),
-        StructField("provider_name", StringType(), True),
-        StructField("provider_mainphonenumber", StringType(), True),
-        StructField("provider_website", StringType(), True),
-        StructField("provider_postaladdressline1", StringType(), True),
-        StructField("provider_postaladdressline2", StringType(), True),
-        StructField("provider_postaladdresstowncity", StringType(), True),
-        StructField("provider_postaladdresscounty", StringType(), True),
-        StructField("provider_postalcode", StringType(), True),
-        StructField("provider_nominated_individual_name", StringType(), True),
+        StructField(ColNames.location_id, StringType(), True),
+        StructField(ColNames.registration_date, StringType(), True),
+        StructField(ColNames.care_home, StringType(), True),
+        StructField(ColNames.name, StringType(), True),
+        StructField(ColNames.type, StringType(), True),
+        StructField(ColNames.phone_number, StringType(), True),
+        StructField(ColNames.registered_manager_name, StringType(), True),
+        StructField(ColNames.website, StringType(), True),
+        StructField(ColNames.number_of_beds, IntegerType(), True),
+        StructField(ColNames.region, StringType(), True),
+        StructField(ColNames.local_authority, StringType(), True),
+        StructField(ColNames.address_line_one, StringType(), True),
+        StructField(ColNames.address_line_two, StringType(), True),
+        StructField(ColNames.town_or_city, StringType(), True),
+        StructField(ColNames.county, StringType(), True),
+        StructField(ColNames.postcode, StringType(), True),
+        StructField(ColNames.Provider.brand_id, StringType(), True),
+        StructField(ColNames.Provider.brand_name, StringType(), True),
+        StructField(ColNames.Provider.provider_id, StringType(), True),
+        StructField(ColNames.Provider.name, StringType(), True),
+        StructField(ColNames.Provider.phone_number, StringType(), True),
+        StructField(ColNames.Provider.website, StringType(), True),
+        StructField(ColNames.Provider.address_line_one, StringType(), True),
+        StructField(ColNames.Provider.adderss_line_two, StringType(), True),
+        StructField(ColNames.Provider.town_or_city, StringType(), True),
+        StructField(ColNames.Provider.county, StringType(), True),
+        StructField(ColNames.Provider.postcode, StringType(), True),
+        StructField(ColNames.Provider.nominated_individual, StringType(), True),
         StructField(
-            "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
+            ColNames.RegulatedActivity.accommodation_and_care_in_further_education,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
+            ColNames.RegulatedActivity.accommodation_and_care,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
+            ColNames.RegulatedActivity.accommodation_for_substance_misuse,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
+            ColNames.RegulatedActivity.assessment_under_mental_health_act,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Diagnostic_and_screening_procedures", StringType(), True
+            ColNames.RegulatedActivity.diagnostic_procedures, StringType(), True
         ),
-        StructField("Regulated_activity_Family_planning", StringType(), True),
+        StructField(ColNames.RegulatedActivity.family_planning, StringType(), True),
         StructField(
-            "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
+            ColNames.RegulatedActivity.management_of_blood_products,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Maternity_and_midwifery_services", StringType(), True
+            ColNames.RegulatedActivity.maternity_and_midwifery, StringType(), True
         ),
-        StructField("Regulated_activity_Nursing_care", StringType(), True),
-        StructField("Regulated_activity_Personal_care", StringType(), True),
+        StructField(ColNames.RegulatedActivity.nursing_care, StringType(), True),
+        StructField(ColNames.RegulatedActivity.personal_care, StringType(), True),
+        StructField(ColNames.RegulatedActivity.slimming_clinics, StringType(), True),
+        StructField(ColNames.RegulatedActivity.surgical_procedures, StringType(), True),
         StructField(
-            "Regulated_activity_Services_in_slimming_clinics", StringType(), True
-        ),
-        StructField("Regulated_activity_Surgical_procedures", StringType(), True),
-        StructField(
-            "Regulated_activity_Termination_of_pregnancies", StringType(), True
+            ColNames.RegulatedActivity.termination_of_pregnancies, StringType(), True
         ),
         StructField(
-            "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
+            ColNames.RegulatedActivity.transport_services,
             StringType(),
             True,
         ),
         StructField(
-            "Regulated_activity_Treatment_of_disease_disorder_or_injury",
+            ColNames.RegulatedActivity.treatment_of_disease,
             StringType(),
             True,
         ),
