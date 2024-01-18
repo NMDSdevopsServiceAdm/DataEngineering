@@ -1,6 +1,6 @@
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType
 
-from utils.ind_cqc_pipeline_column_names import CqcCareDirectoryColumns as ColNames
+from utils.ind_cqc_column_names.cqc_care_directory_columns import CqcCareDirectoryColumns as ColNames
 
 CQC_CARE_DIRECTORY_SCHEMA = StructType(
     fields=[
