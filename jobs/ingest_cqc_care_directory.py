@@ -6,6 +6,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType
 
 from utils import utils, cqc_care_directory_dictionaries
+from utils.ind_cqc_column_names.cqc_care_directory_columns import CqcCareDirectoryColumns as CareDirCols
 from schemas import cqc_location_schema, cqc_provider_schema
 
 
@@ -27,8 +28,8 @@ def get_cqc_care_directory(source):
     df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
     df = df.filter("type=='Social Care Org'")
-    df = df.withColumnRenamed("providerid", "providerId").withColumnRenamed(
-        "locationid", "locationId"
+    df = df.withColumnRenamed(CareDirCols.Provider.provider_id, CareDirCols.Cleaned.provider_id).withColumnRenamed(
+        CareDirCols.location_id, CareDirCols.Cleaned.location_id
     )
 
     return df
