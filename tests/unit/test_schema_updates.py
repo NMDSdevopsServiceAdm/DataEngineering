@@ -4,7 +4,7 @@ import warnings
 from pyspark.sql import SparkSession
 from pyspark.sql.types import ArrayType, FloatType, StructField, StructType, StringType, IntegerType
 
-from schemas import cqc_pir_csv_schema as job
+from schemas import cqc_provider_schema as job
 
 class TestNewSchema(unittest.TestCase):
     def setUp(self):
@@ -17,9 +17,9 @@ class TestNewSchema(unittest.TestCase):
         pass
 
     def test_schema(self):
-        old_schema = job.PIR_CSV_OLD
+        old_schema = job.PROVIDER_SCHEMA_OLD
 
-        new_schema = job.PIR_CSV
+        new_schema = job.PROVIDER_SCHEMA
         old_df = self.spark.createDataFrame([], old_schema)
         new_df = self.spark.createDataFrame([], new_schema)
         old_columns = old_df.columns
