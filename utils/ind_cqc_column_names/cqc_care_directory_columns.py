@@ -108,7 +108,5 @@ class CqcCareDirectoryColumns:
         sensory_impairment:str = "Service_user_band_Sensory_Impairment"
         whole_population:str = "Service_user_band_Whole_Population"
         younger_adults:str = "Service_user_band_Younger_Adults"
-    @dataclass
-    class Cleaned:
-        location_id:str = "locationId"
-        provider_id:str = "providerId"
+    
+
