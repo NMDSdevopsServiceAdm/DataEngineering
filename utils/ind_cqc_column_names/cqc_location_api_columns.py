@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class CqcLocationApiColumns:
-    location_id: str = "locationid"
-    provider_id: str = "providerid"
+    location_id: str = "locationId"
+    provider_id: str = "providerId"
     organisation_type:str = "organisationType"
     type: str = "type"
     name: str = "name"
