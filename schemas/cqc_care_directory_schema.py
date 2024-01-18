@@ -82,98 +82,98 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
             True,
         ),
         StructField(
-            "Service_type_Acute_services_with_overnight_beds", StringType(), True
+            ColNames.ServiceType.acute_with_overnight_beds, StringType(), True
         ),
         StructField(
-            "Service_type_Acute_services_without_overnight_beds__listed_acute_services_with_or_without_overnight_beds",
+            ColNames.ServiceType.acute_without_overnight_beds,
             StringType(),
             True,
         ),
-        StructField("Service_type_Ambulance_service", StringType(), True),
-        StructField("Service_type_Blood_and_Transplant_service", StringType(), True),
-        StructField("Service_type_Care_home_service_with_nursing", StringType(), True),
+        StructField(ColNames.ServiceType.ambulance, StringType(), True),
+        StructField(ColNames.ServiceType.blood_and_transplant, StringType(), True),
+        StructField(ColNames.ServiceType.care_home_with_nursing, StringType(), True),
         StructField(
-            "Service_type_Care_home_service_without_nursing", StringType(), True
+            ColNames.ServiceType.care_home_without_nursing, StringType(), True
         ),
         StructField(
-            "Service_type_Community_based_services_for_people_who_misuse_substances",
-            StringType(),
-            True,
-        ),
-        StructField(
-            "Service_type_Community_based_services_for_people_with_a_learning_disability",
+            ColNames.ServiceType.community_substance_misuse,
             StringType(),
             True,
         ),
         StructField(
-            "Service_type_Community_based_services_for_people_with_mental_health_needs",
+            ColNames.ServiceType.community_learning_disability,
             StringType(),
             True,
         ),
         StructField(
-            "Service_type_Community_health_care_services_Nurses_Agency_only",
-            StringType(),
-            True,
-        ),
-        StructField("Service_type_Community_healthcare_service", StringType(), True),
-        StructField("Service_type_Dental_service", StringType(), True),
-        StructField(
-            "Service_type_Diagnostic_andor_screening_service", StringType(), True
-        ),
-        StructField(
-            "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers",
-            StringType(),
-            True,
-        ),
-        StructField("Service_type_Doctors_consultation_service", StringType(), True),
-        StructField("Service_type_Doctors_treatment_service", StringType(), True),
-        StructField("Service_type_Domiciliary_care_service", StringType(), True),
-        StructField("Service_type_Extra_Care_housing_services", StringType(), True),
-        StructField("Service_type_Hospice_services", StringType(), True),
-        StructField("Service_type_Hospice_services_at_home", StringType(), True),
-        StructField(
-            "Service_type_Hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_problems_with_substance_misuse",
-            StringType(),
-            True,
-        ),
-        StructField("Service_type_Hyperbaric_Chamber", StringType(), True),
-        StructField("Service_type_Long_term_conditions_services", StringType(), True),
-        StructField("Service_type_Mobile_doctors_service", StringType(), True),
-        StructField("Service_type_Prison_Healthcare_Services", StringType(), True),
-        StructField("Service_type_Rehabilitation_services", StringType(), True),
-        StructField("Service_type_Remote_clinical_advice_service", StringType(), True),
-        StructField(
-            "Service_type_Residential_substance_misuse_treatment_andor_rehabilitation_service",
-            StringType(),
-            True,
-        ),
-        StructField("Service_type_Shared_Lives", StringType(), True),
-        StructField("Service_type_Specialist_college_service", StringType(), True),
-        StructField("Service_type_Supported_living_service", StringType(), True),
-        StructField("Service_type_Urgent_care_services", StringType(), True),
-        StructField("Service_user_band_Children_0-18_years", StringType(), True),
-        StructField("Service_user_band_Dementia", StringType(), True),
-        StructField(
-            "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
-            StringType(),
-            True,
-        ),
-        StructField("Service_user_band_Mental_Health", StringType(), True),
-        StructField("Service_user_band_Older_People", StringType(), True),
-        StructField(
-            "Service_user_band_People_detained_under_the_Mental_Health_Act",
+            ColNames.ServiceType.community_mental_health,
             StringType(),
             True,
         ),
         StructField(
-            "Service_user_band_People_who_misuse_drugs_and_alcohol", StringType(), True
+            ColNames.ServiceType.nursing_agency,
+            StringType(),
+            True,
+        ),
+        StructField(ColNames.ServiceType.community_healthcare, StringType(), True),
+        StructField(ColNames.ServiceType.dental, StringType(), True),
+        StructField(
+            ColNames.ServiceType.diagnostics, StringType(), True
         ),
         StructField(
-            "Service_user_band_People_with_an_eating_disorder", StringType(), True
+            ColNames.ServiceType.diagnositc_sessional,
+            StringType(),
+            True,
         ),
-        StructField("Service_user_band_Physical_Disability", StringType(), True),
-        StructField("Service_user_band_Sensory_Impairment", StringType(), True),
-        StructField("Service_user_band_Whole_Population", StringType(), True),
-        StructField("Service_user_band_Younger_Adults", StringType(), True),
+        StructField(ColNames.ServiceType.doctors_consultation, StringType(), True),
+        StructField(ColNames.ServiceType.doctors_treatment, StringType(), True),
+        StructField(ColNames.ServiceType.domiciliary_care, StringType(), True),
+        StructField(ColNames.ServiceType.extra_care_housing, StringType(), True),
+        StructField(ColNames.ServiceType.hospice, StringType(), True),
+        StructField(ColNames.ServiceType.hospice_at_home, StringType(), True),
+        StructField(
+            ColNames.ServiceType.hospital_for_mental_health_learning_disability,
+            StringType(),
+            True,
+        ),
+        StructField(ColNames.ServiceType.hyperbaric_chamber, StringType(), True),
+        StructField(ColNames.ServiceType.long_term_conditions, StringType(), True),
+        StructField(ColNames.ServiceType.mobile_doctors, StringType(), True),
+        StructField(ColNames.ServiceType.prison_healthcare, StringType(), True),
+        StructField(ColNames.ServiceType.rehabilitation, StringType(), True),
+        StructField(ColNames.ServiceType.remote_clinical_advice, StringType(), True),
+        StructField(
+            ColNames.ServiceType.residential_substance_misuse,
+            StringType(),
+            True,
+        ),
+        StructField(ColNames.ServiceType.shared_lives, StringType(), True),
+        StructField(ColNames.ServiceType.speciallist_college, StringType(), True),
+        StructField(ColNames.ServiceType.supported_living, StringType(), True),
+        StructField(ColNames.ServiceType.urgent_care, StringType(), True),
+        StructField(ColNames.ServiceUserBand.children, StringType(), True),
+        StructField(ColNames.ServiceUserBand.dementia, StringType(), True),
+        StructField(
+            ColNames.ServiceUserBand.learning_disabilities_autism,
+            StringType(),
+            True,
+        ),
+        StructField(ColNames.ServiceUserBand.mental_health, StringType(), True),
+        StructField(ColNames.ServiceUserBand.older_people, StringType(), True),
+        StructField(
+            ColNames.ServiceUserBand.mental_health_act,
+            StringType(),
+            True,
+        ),
+        StructField(
+            ColNames.ServiceUserBand.misuse_drugs_alcohol, StringType(), True
+        ),
+        StructField(
+            ColNames.ServiceUserBand.eating_disorder, StringType(), True
+        ),
+        StructField(ColNames.ServiceUserBand.physical_disability, StringType(), True),
+        StructField(ColNames.ServiceUserBand.sensory_impairment, StringType(), True),
+        StructField(ColNames.ServiceUserBand.whole_population, StringType(), True),
+        StructField(ColNames.ServiceUserBand.younger_adults, StringType(), True),
     ]
 )
