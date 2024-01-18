@@ -5,8 +5,46 @@ from pyspark.sql.types import (
     IntegerType,
 )
 
+from utils.ind_cqc_column_names.cqc_pir_columns import (
+    CqcPirColumns as ColNames,
+)
+
 
 PIR_CSV = StructType(
+    fields=[
+        StructField(ColNames.location_id, StringType(), False),
+        StructField(ColNames.location_name, StringType(), False),
+        StructField(ColNames.pir_type, StringType(), False),
+        StructField(ColNames.pir_submission_date, StringType(), False),
+        StructField(
+            ColNames.people_directly_employed,
+            IntegerType(),
+            True,
+        ),
+        StructField(
+            ColNames.staff_leavers,
+            IntegerType(),
+            True,
+        ),
+        StructField(ColNames.staff_vacancies, IntegerType(), True),
+        StructField(
+            ColNames.shared_lives_leavers,
+            IntegerType(),
+            True,
+        ),
+        StructField(
+            ColNames.shared_lives_vacancies, IntegerType(), True
+        ),
+        StructField(ColNames.primary_inspection_category, StringType(), False),
+        StructField(ColNames.region, StringType(), False),
+        StructField(ColNames.local_authority, StringType(), False),
+        StructField(ColNames.number_of_beds, IntegerType(), False),
+        StructField(ColNames.domiciliary_care, StringType(), True),
+        StructField(ColNames.location_status, StringType(), False),
+    ]
+)
+
+PIR_CSV_OLD = StructType(
     fields=[
         StructField("Location_ID", StringType(), False),
         StructField("Location_name", StringType(), False),
