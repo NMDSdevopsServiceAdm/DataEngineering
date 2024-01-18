@@ -1,194 +1,240 @@
 import unittest
+import warnings
 
-from pyspark.sql.types import StructField, StructType, StringType, IntegerType
+from pyspark.sql import SparkSession
+from pyspark.sql.types import ArrayType, FloatType, StructField, StructType, StringType, IntegerType
 
-from schemas import cqc_care_directory_schema as job
+from schemas import cqc_location_schema as job
 
 class TestNewSchema(unittest.TestCase):
     def setUp(self):
-        pass
+        self.spark = SparkSession.builder.appName(
+            "test"
+        ).getOrCreate()
 
+        warnings.simplefilter("ignore", ResourceWarning)
     def tearDown(self):
         pass
 
     def test_schema(self):
         old_schema = StructType(
             fields=[
-                StructField("locationid", StringType(), True),
-                StructField("registrationdate", StringType(), True),
-                StructField("carehome", StringType(), True),
-                StructField("name", StringType(), True),
+                StructField("locationId", StringType(), True),
+                StructField("providerId", StringType(), True),
+                StructField("organisationType", StringType(), True),
                 StructField("type", StringType(), True),
-                StructField("mainphonenumber", StringType(), True),
-                StructField("registered_manager_name", StringType(), True),
+                StructField("name", StringType(), True),
+                StructField("onspdCcgCode", StringType(), True),
+                StructField("onspdCcgName", StringType(), True),
+                StructField("odsCode", StringType(), True),
+                StructField("uprn", StringType(), True),
+                StructField("registrationStatus", StringType(), True),
+                StructField("registrationDate", StringType(), True),
+                StructField("deregistrationDate", StringType(), True),
+                StructField("dormancy", StringType(), True),
+                StructField("numberOfBeds", IntegerType(), True),
                 StructField("website", StringType(), True),
-                StructField("numberofbeds", IntegerType(), True),
+                StructField("postalAddressLine1", StringType(), True),
+                StructField("postalAddressTownCity", StringType(), True),
+                StructField("postalAddressCounty", StringType(), True),
                 StructField("region", StringType(), True),
-                StructField("localauthority", StringType(), True),
-                StructField("postaladdressline1", StringType(), True),
-                StructField("postaladdressline2", StringType(), True),
-                StructField("postaladdresstowncity", StringType(), True),
-                StructField("postaladdresscounty", StringType(), True),
-                StructField("postalcode", StringType(), True),
-                StructField("provider_brandid", StringType(), True),
-                StructField("provider_brandname", StringType(), True),
-                StructField("providerid", StringType(), True),
-                StructField("provider_name", StringType(), True),
-                StructField("provider_mainphonenumber", StringType(), True),
-                StructField("provider_website", StringType(), True),
-                StructField("provider_postaladdressline1", StringType(), True),
-                StructField("provider_postaladdressline2", StringType(), True),
-                StructField("provider_postaladdresstowncity", StringType(), True),
-                StructField("provider_postaladdresscounty", StringType(), True),
-                StructField("provider_postalcode", StringType(), True),
-                StructField("provider_nominated_individual_name", StringType(), True),
+                StructField("postalCode", StringType(), True),
+                StructField("onspdLatitude", FloatType(), True),
+                StructField("onspdLongitude", FloatType(), True),
+                StructField("careHome", StringType(), True),
+                StructField("inspectionDirectorate", StringType(), True),
+                StructField("mainPhoneNumber", StringType(), True),
+                StructField("constituency", StringType(), True),
+                StructField("localAuthority", StringType(), True),
                 StructField(
-                    "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector",
-                    StringType(),
+                    "lastInspection",
+                    StructType([StructField("date", StringType(), True)]),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care",
-                    StringType(),
+                    "lastReport",
+                    StructType([StructField("publicationDate", StringType(), True)]),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse",
-                    StringType(),
+                    "relationships",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("relatedLocationId", StringType(), True),
+                                StructField("relatedLocationName", StringType(), True),
+                                StructField("type", StringType(), True),
+                                StructField("reason", StringType(), True),
+                            ]
+                        )
+                    ),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983",
-                    StringType(),
+                    "regulatedActivities",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("name", StringType(), True),
+                                StructField("code", StringType(), True),
+                                StructField(
+                                    "contacts",
+                                    ArrayType(
+                                        StructType(
+                                            [
+                                                StructField("personTitle", StringType(), True),
+                                                StructField(
+                                                    "personGivenName", StringType(), True
+                                                ),
+                                                StructField(
+                                                    "personFamilyName", StringType(), True
+                                                ),
+                                                StructField("personRoles", StringType(), True),
+                                            ]
+                                        )
+                                    ),
+                                    True,
+                                ),
+                            ]
+                        )
+                    ),
+                ),
+                StructField(
+                    "gacServiceTypes",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("name", StringType(), True),
+                                StructField("description", StringType(), True),
+                            ]
+                        )
+                    ),
+                ),
+                StructField(
+                    "inspectionCategories",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("code", StringType(), True),
+                                StructField("primary", StringType(), True),
+                                StructField("name", StringType(), True),
+                            ]
+                        )
+                    ),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Diagnostic_and_screening_procedures", StringType(), True
-                ),
-                StructField("Regulated_activity_Family_planning", StringType(), True),
-                StructField(
-                    "Regulated_activity_Management_of_supply_of_blood_and_blood_derived_products",
-                    StringType(),
+                    "specialisms",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("name", StringType(), True),
+                            ]
+                        )
+                    ),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Maternity_and_midwifery_services", StringType(), True
-                ),
-                StructField("Regulated_activity_Nursing_care", StringType(), True),
-                StructField("Regulated_activity_Personal_care", StringType(), True),
-                StructField(
-                    "Regulated_activity_Services_in_slimming_clinics", StringType(), True
-                ),
-                StructField("Regulated_activity_Surgical_procedures", StringType(), True),
-                StructField(
-                    "Regulated_activity_Termination_of_pregnancies", StringType(), True
-                ),
-                StructField(
-                    "Regulated_activity_Transport_services_triage_and_medical_advice_provided_remotely",
-                    StringType(),
+                    "currentRatings",
+                    StructType(
+                        [
+                            StructField(
+                                "overall",
+                                StructType(
+                                    [
+                                        StructField("rating", StringType(), True),
+                                        StructField("reportDate", StringType(), True),
+                                        StructField("reportLinkId", StringType(), True),
+                                        StructField(
+                                            "keyQuestionRatings",
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField("name", StringType(), True),
+                                                        StructField(
+                                                            "rating", StringType(), True
+                                                        ),
+                                                        StructField(
+                                                            "reportDate", StringType(), True
+                                                        ),
+                                                        StructField(
+                                                            "reportLinkId", StringType(), True
+                                                        ),
+                                                    ]
+                                                )
+                                            ),
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            )
+                        ]
+                    ),
                     True,
                 ),
                 StructField(
-                    "Regulated_activity_Treatment_of_disease_disorder_or_injury",
-                    StringType(),
+                    "historicRatings",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("organisationId", StringType(), True),
+                                StructField("reportLinkId", StringType(), True),
+                                StructField("reportDate", StringType(), True),
+                                StructField(
+                                    "overall",
+                                    StructType(
+                                        [
+                                            StructField("rating", StringType(), True),
+                                            StructField(
+                                                "keyQuestionRatings",
+                                                ArrayType(
+                                                    StructType(
+                                                        [
+                                                            StructField(
+                                                                "name", StringType(), True
+                                                            ),
+                                                            StructField(
+                                                                "rating", StringType(), True
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    True,
+                                                ),
+                                                True,
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                            ]
+                        ),
+                        True,
+                    ),
+                ),
+                StructField(
+                    "reports",
+                    ArrayType(
+                        StructType(
+                            [
+                                StructField("linkId", StringType(), True),
+                                StructField("reportDate", StringType(), True),
+                                StructField("reportUri", StringType(), True),
+                                StructField("firstVisitDate", StringType(), True),
+                                StructField("reportType", StringType(), True),
+                            ]
+                        )
+                    ),
                     True,
                 ),
-                StructField(
-                    "Service_type_Acute_services_with_overnight_beds", StringType(), True
-                ),
-                StructField(
-                    "Service_type_Acute_services_without_overnight_beds__listed_acute_services_with_or_without_overnight_beds",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_type_Ambulance_service", StringType(), True),
-                StructField("Service_type_Blood_and_Transplant_service", StringType(), True),
-                StructField("Service_type_Care_home_service_with_nursing", StringType(), True),
-                StructField(
-                    "Service_type_Care_home_service_without_nursing", StringType(), True
-                ),
-                StructField(
-                    "Service_type_Community_based_services_for_people_who_misuse_substances",
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    "Service_type_Community_based_services_for_people_with_a_learning_disability",
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    "Service_type_Community_based_services_for_people_with_mental_health_needs",
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    "Service_type_Community_health_care_services_Nurses_Agency_only",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_type_Community_healthcare_service", StringType(), True),
-                StructField("Service_type_Dental_service", StringType(), True),
-                StructField(
-                    "Service_type_Diagnostic_andor_screening_service", StringType(), True
-                ),
-                StructField(
-                    "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_type_Doctors_consultation_service", StringType(), True),
-                StructField("Service_type_Doctors_treatment_service", StringType(), True),
-                StructField("Service_type_Domiciliary_care_service", StringType(), True),
-                StructField("Service_type_Extra_Care_housing_services", StringType(), True),
-                StructField("Service_type_Hospice_services", StringType(), True),
-                StructField("Service_type_Hospice_services_at_home", StringType(), True),
-                StructField(
-                    "Service_type_Hospital_services_for_people_with_mental_health_needs_learning_disabilities_and_problems_with_substance_misuse",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_type_Hyperbaric_Chamber", StringType(), True),
-                StructField("Service_type_Long_term_conditions_services", StringType(), True),
-                StructField("Service_type_Mobile_doctors_service", StringType(), True),
-                StructField("Service_type_Prison_Healthcare_Services", StringType(), True),
-                StructField("Service_type_Rehabilitation_services", StringType(), True),
-                StructField("Service_type_Remote_clinical_advice_service", StringType(), True),
-                StructField(
-                    "Service_type_Residential_substance_misuse_treatment_andor_rehabilitation_service",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_type_Shared_Lives", StringType(), True),
-                StructField("Service_type_Specialist_college_service", StringType(), True),
-                StructField("Service_type_Supported_living_service", StringType(), True),
-                StructField("Service_type_Urgent_care_services", StringType(), True),
-                StructField("Service_user_band_Children_0-18_years", StringType(), True),
-                StructField("Service_user_band_Dementia", StringType(), True),
-                StructField(
-                    "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder",
-                    StringType(),
-                    True,
-                ),
-                StructField("Service_user_band_Mental_Health", StringType(), True),
-                StructField("Service_user_band_Older_People", StringType(), True),
-                StructField(
-                    "Service_user_band_People_detained_under_the_Mental_Health_Act",
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    "Service_user_band_People_who_misuse_drugs_and_alcohol", StringType(), True
-                ),
-                StructField(
-                    "Service_user_band_People_with_an_eating_disorder", StringType(), True
-                ),
-                StructField("Service_user_band_Physical_Disability", StringType(), True),
-                StructField("Service_user_band_Sensory_Impairment", StringType(), True),
-                StructField("Service_user_band_Whole_Population", StringType(), True),
-                StructField("Service_user_band_Younger_Adults", StringType(), True),
             ]
         )
-        new_schema = job.CQC_CARE_DIRECTORY_SCHEMA
 
+        new_schema = job.LOCATION_SCHEMA
+        old_df = self.spark.createDataFrame([], old_schema)
+        new_df = self.spark.createDataFrame([], new_schema)
+        old_columns = old_df.columns
+        new_columns = new_df.columns
+        number_of_cols = len(old_columns)
+        for col in range(number_of_cols):
+            self.assertEqual(old_columns[col], new_columns[col])
         self.assertEqual(old_schema, new_schema)
