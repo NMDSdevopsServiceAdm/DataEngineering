@@ -4,6 +4,9 @@ import shutil
 from pyspark.sql import SparkSession, Row
 
 from utils import utils
+from utils.ind_cqc_column_names.cqc_care_directory_columns import CqcCareDirectoryColumns as CareDirCols
+from utils.ind_cqc_column_names.cqc_provider_api_columns import CqcProviderApiColumns as ProviderApiCols
+from utils.ind_cqc_column_names.cqc_location_api_columns import CqcLocationApiColumns as LocationApiCols
 import jobs.ingest_cqc_care_directory as job
 from tests.test_file_generator import (
     generate_raw_cqc_care_directory_csv_file,
@@ -94,11 +97,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         self.assertEqual(df.count(), 1)
         self.assertEqual(
-            df.columns, ["locationId", "registrationdate", "name", "type", "providerId"]
+            df.columns, [LocationApiCols.location_id, CareDirCols.registration_date, CareDirCols.name, CareDirCols.type, ProviderApiCols.provider_id]
         )
 
         collected_df = df.collect()
-        self.assertEqual(collected_df[0]["name"], "Location 1")
+        self.assertEqual(collected_df[0][CareDirCols.name], "Location 1")
 
     def test_unique_providerids_with_array_of_their_locationids(self):
         spark = utils.get_spark()
@@ -110,18 +113,18 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
         self.assertEqual(locations_at_prov_df.count(), 2)
-        self.assertEqual(locations_at_prov_df.columns, ["providerId", "locationIds"])
+        self.assertEqual(locations_at_prov_df.columns, [ProviderApiCols.provider_id, ProviderApiCols.location_ids])
 
         provider1check_df = locations_at_prov_df.filter(
-            "providerId=='1-000000001'"
-        ).select("locationIds")
+            locations_at_prov_df[ProviderApiCols.provider_id]=='1-000000001'
+        ).select(ProviderApiCols.location_ids)
         self.assertEqual(
             provider1check_df.collect(), [Row(locationIds=["1-000000001"])]
         )
 
         locations_at_prov_df = locations_at_prov_df.collect()
         self.assertEqual(
-            sorted(locations_at_prov_df[1]["locationIds"]),
+            sorted(locations_at_prov_df[1][ProviderApiCols.location_ids]),
             ["1-000000002", "1-000000003"],
         )
 
@@ -136,15 +139,15 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(
             distinct_prov_df.columns,
             [
-                "providerId",
-                "name",
-                "mainPhoneNumber",
-                "postalAddressLine1",
-                "postalAddressTownCity",
-                "postalAddressCounty",
-                "postalCode",
-                "organisationType",
-                "registrationStatus",
+                ProviderApiCols.provider_id,
+                ProviderApiCols.name,
+                ProviderApiCols.phone_number,
+                ProviderApiCols.address_line_one,
+                ProviderApiCols.town_or_city,
+                ProviderApiCols.county,
+                ProviderApiCols.postcode,
+                ProviderApiCols.organisation_type,
+                ProviderApiCols.registration_status,
             ],
         )
 
@@ -159,23 +162,23 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(
             location_df.columns,
             [
-                "locationId",
-                "providerId",
-                "type",
-                "name",
-                "registrationDate",
-                "numberOfBeds",
-                "website",
-                "postalAddressLine1",
-                "postalAddressTownCity",
-                "postalAddressCounty",
-                "region",
-                "postalCode",
-                "careHome",
-                "mainPhoneNumber",
-                "localAuthority",
-                "organisationType",
-                "registrationStatus",
+                LocationApiCols.location_id,
+                LocationApiCols.provider_id,
+                LocationApiCols.type,
+                LocationApiCols.name,
+                LocationApiCols.registration_date,
+                LocationApiCols.number_of_beds,
+                LocationApiCols.website,
+                LocationApiCols.address_line_one,
+                LocationApiCols.town_or_city,
+                LocationApiCols.county,
+                LocationApiCols.region,
+                LocationApiCols.postcode,
+                LocationApiCols.care_home,
+                LocationApiCols.phone_number,
+                LocationApiCols.local_authority,
+                LocationApiCols.organisation_type,
+                LocationApiCols.registration_status,
             ],
         )
 
@@ -184,24 +187,25 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         df = spark.read.csv(self.TEST_MULTIPLE_BOOLEAN_COLUMNS, header=True)
 
+        new_column_name = "new_alias"
         services_df = job.convert_multiple_boolean_columns_into_single_array(
-            df, self.REFORMAT_DICT, "new_alias"
+            df, self.REFORMAT_DICT, new_column_name
         )
 
         self.assertEqual(services_df.count(), 3)
-        self.assertEqual(services_df.columns, ["locationId", "new_alias"])
+        self.assertEqual(services_df.columns, [LocationApiCols.location_id, new_column_name])
 
         services_df = services_df.collect()
         self.assertEqual(
-            sorted(services_df[0]["new_alias"]),
+            sorted(services_df[0][new_column_name]),
             [["name A"], ["name B", "description B"], ["name C"]],
         )
         self.assertEqual(
-            sorted(services_df[1]["new_alias"]),
+            sorted(services_df[1][new_column_name]),
             [["name B", "description B"], ["name D", "description D"]],
         )
         self.assertEqual(
-            sorted(services_df[2]["new_alias"]), [["name E", "description E"]]
+            sorted(services_df[2][new_column_name]), [["name E", "description E"]]
         )
 
     def test_create_contacts_from_registered_manager_name(self):
@@ -212,11 +216,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.create_contacts_from_registered_manager_name(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, ["locationId", "contacts"])
+        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.contacts])
 
         collected_df = df.collect()
         self.assertEqual(
-            collected_df[0]["contacts"],
+            collected_df[0][LocationApiCols.contacts],
             [
                 Row(
                     personTitle="M",
@@ -227,7 +231,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            collected_df[1]["contacts"],
+            collected_df[1][LocationApiCols.contacts],
             [
                 Row(
                     personTitle="M",
@@ -238,7 +242,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            collected_df[2]["contacts"],
+            collected_df[2][LocationApiCols.contacts],
             [
                 Row(
                     personTitle=None,
@@ -249,7 +253,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_convert_gac_service_types_to_struct(self):
+    def test_convert_gac_service_types_to_struct(self): #TODO
         spark = utils.get_spark()
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
@@ -257,7 +261,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.convert_gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, ["locationId", "gacservicetypes"])
+        self.assertEqual(df.columns, [LocationApiCols.location_id, "gacservicetypes"])
 
         collected_df = df.collect()
         self.assertEqual(
@@ -292,22 +296,22 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.convert_specialisms_to_struct(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, ["locationId", "specialisms"])
+        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.specialisms])
 
         collected_df = df.collect()
         self.assertEqual(
-            collected_df[0]["specialisms"],
+            collected_df[0][LocationApiCols.specialisms],
             [
                 Row(name="The name"),
                 Row(name="The name 2"),
             ],
         )
         self.assertEqual(
-            collected_df[1]["specialisms"],
+            collected_df[1][LocationApiCols.specialisms],
             [Row(name="Another name")],
         )
         self.assertEqual(
-            collected_df[2]["specialisms"],
+            collected_df[2][LocationApiCols.specialisms],
             [],
         )
 
@@ -322,28 +326,28 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(
             provider_df.columns,
             [
-                "providerId",
-                "locationIds",
-                "organisationType",
-                "ownershipType",
-                "type",
-                "uprn",
-                "name",
-                "registrationStatus",
-                "registrationDate",
-                "deregistrationDate",
-                "postalAddressLine1",
-                "postalAddressTownCity",
-                "postalAddressCounty",
-                "region",
-                "postalCode",
-                "onspdLatitude",
-                "onspdLongitude",
-                "mainPhoneNumber",
-                "companiesHouseNumber",
-                "inspectionDirectorate",
-                "constituency",
-                "localAuthority",
+                ProviderApiCols.provider_id,
+                ProviderApiCols.location_ids,
+                ProviderApiCols.organisation_type,
+                ProviderApiCols.ownership_type,
+                ProviderApiCols.type,
+                ProviderApiCols.uprn,
+                ProviderApiCols.name,
+                ProviderApiCols.registration_status,
+                ProviderApiCols.registration_date,
+                ProviderApiCols.deregistration_date,
+                ProviderApiCols.address_line_one,
+                ProviderApiCols.town_or_city,
+                ProviderApiCols.county,
+                ProviderApiCols.region,
+                ProviderApiCols.postcode,
+                ProviderApiCols.latitude,
+                ProviderApiCols.longitude,
+                ProviderApiCols.phone_number,
+                ProviderApiCols.companies_house_number,
+                ProviderApiCols.inspection_directorate,
+                ProviderApiCols.constituency,
+                ProviderApiCols.local_authority,
             ],
         )
 
@@ -358,43 +362,43 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         self.assertEqual(
             location_df.columns,
             [
-                "locationId",
-                "providerId",
-                "organisationType",
-                "type",
-                "name",
-                "onspdCcgCode",
-                "onspdCcgName",
-                "odsCode",
-                "uprn",
-                "registrationStatus",
-                "registrationDate",
-                "deregistrationDate",
-                "dormancy",
-                "numberOfBeds",
-                "website",
-                "postalAddressLine1",
-                "postalAddressTownCity",
-                "postalAddressCounty",
-                "region",
-                "postalCode",
-                "onspdLatitude",
-                "onspdLongitude",
-                "careHome",
-                "inspectionDirectorate",
-                "mainPhoneNumber",
-                "constituency",
-                "localAuthority",
-                "lastInspection",
-                "lastReport",
-                "relationships",
-                "regulatedActivities",
+                LocationApiCols.location_id,
+                LocationApiCols.provider_id,
+                LocationApiCols.organisation_type,
+                LocationApiCols.type,
+                LocationApiCols.name,
+                LocationApiCols.ccg_code,
+                LocationApiCols.ccg_name,
+                LocationApiCols.ods_code,
+                LocationApiCols.uprn,
+                LocationApiCols.registration_status,
+                LocationApiCols.registration_date,
+                LocationApiCols.deregistration_date,
+                LocationApiCols.dormancy,
+                LocationApiCols.number_of_beds,
+                LocationApiCols.website,
+                LocationApiCols.address_line_one,
+                LocationApiCols.town_or_city,
+                LocationApiCols.county,
+                LocationApiCols.region,
+                LocationApiCols.postcode,
+                LocationApiCols.latitude,
+                LocationApiCols.longitude,
+                LocationApiCols.care_home,
+                LocationApiCols.inspection_directorate,
+                LocationApiCols.phone_number,
+                LocationApiCols.constituancy,
+                LocationApiCols.local_authority,
+                LocationApiCols.last_inspection,
+                LocationApiCols.last_report,
+                LocationApiCols.relationships,
+                LocationApiCols.regulated_activities,
                 "gacServiceTypes",
-                "inspectionCategories",
-                "specialisms",
-                "currentRatings",
-                "historicRatings",
-                "reports",
+                LocationApiCols.inspection_categories,
+                LocationApiCols.specialisms,
+                LocationApiCols.current_ratings,
+                LocationApiCols.historic_ratings,
+                LocationApiCols.reports,
             ],
         )
 
