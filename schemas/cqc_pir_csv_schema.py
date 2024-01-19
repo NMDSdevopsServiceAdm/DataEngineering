@@ -32,9 +32,7 @@ PIR_CSV = StructType(
             IntegerType(),
             True,
         ),
-        StructField(
-            ColNames.shared_lives_vacancies, IntegerType(), True
-        ),
+        StructField(ColNames.shared_lives_vacancies, IntegerType(), True),
         StructField(ColNames.primary_inspection_category, StringType(), False),
         StructField(ColNames.region, StringType(), False),
         StructField(ColNames.local_authority, StringType(), False),

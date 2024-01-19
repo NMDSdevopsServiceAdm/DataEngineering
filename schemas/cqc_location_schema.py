@@ -138,21 +138,29 @@ LOCATION_SCHEMA = StructType(
                             [
                                 StructField(ColNames.rating, StringType(), True),
                                 StructField(ColNames.report_date, StringType(), True),
-                                StructField(ColNames.report_link_id, StringType(), True),
+                                StructField(
+                                    ColNames.report_link_id, StringType(), True
+                                ),
                                 StructField(
                                     ColNames.key_question_ratings,
                                     ArrayType(
                                         StructType(
                                             [
-                                                StructField(ColNames.name, StringType(), True),
+                                                StructField(
+                                                    ColNames.name, StringType(), True
+                                                ),
                                                 StructField(
                                                     ColNames.rating, StringType(), True
                                                 ),
                                                 StructField(
-                                                    ColNames.report_date, StringType(), True
+                                                    ColNames.report_date,
+                                                    StringType(),
+                                                    True,
                                                 ),
                                                 StructField(
-                                                    ColNames.report_link_id, StringType(), True
+                                                    ColNames.report_link_id,
+                                                    StringType(),
+                                                    True,
                                                 ),
                                             ]
                                         )
@@ -185,10 +193,14 @@ LOCATION_SCHEMA = StructType(
                                             StructType(
                                                 [
                                                     StructField(
-                                                        ColNames.name, StringType(), True
+                                                        ColNames.name,
+                                                        StringType(),
+                                                        True,
                                                     ),
                                                     StructField(
-                                                        ColNames.rating, StringType(), True
+                                                        ColNames.rating,
+                                                        StringType(),
+                                                        True,
                                                     ),
                                                 ]
                                             ),

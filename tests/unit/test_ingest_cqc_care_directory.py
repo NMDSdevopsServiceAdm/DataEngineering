@@ -4,9 +4,15 @@ import shutil
 from pyspark.sql import SparkSession, Row
 
 from utils import utils
-from utils.ind_cqc_column_names.cqc_care_directory_columns import CqcCareDirectoryColumns as CareDirCols
-from utils.ind_cqc_column_names.cqc_provider_api_columns import CqcProviderApiColumns as ProviderApiCols
-from utils.ind_cqc_column_names.cqc_location_api_columns import CqcLocationApiColumns as LocationApiCols
+from utils.ind_cqc_column_names.cqc_care_directory_columns import (
+    CqcCareDirectoryColumns as CareDirCols,
+)
+from utils.ind_cqc_column_names.cqc_provider_api_columns import (
+    CqcProviderApiColumns as ProviderApiCols,
+)
+from utils.ind_cqc_column_names.cqc_location_api_columns import (
+    CqcLocationApiColumns as LocationApiCols,
+)
 import jobs.ingest_cqc_care_directory as job
 from tests.test_file_generator import (
     generate_raw_cqc_care_directory_csv_file,
@@ -97,7 +103,14 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
         self.assertEqual(df.count(), 1)
         self.assertEqual(
-            df.columns, [LocationApiCols.location_id, CareDirCols.registration_date, CareDirCols.name, CareDirCols.type, ProviderApiCols.provider_id]
+            df.columns,
+            [
+                LocationApiCols.location_id,
+                CareDirCols.registration_date,
+                CareDirCols.name,
+                CareDirCols.type,
+                ProviderApiCols.provider_id,
+            ],
         )
 
         collected_df = df.collect()
@@ -113,10 +126,13 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
         self.assertEqual(locations_at_prov_df.count(), 2)
-        self.assertEqual(locations_at_prov_df.columns, [ProviderApiCols.provider_id, ProviderApiCols.location_ids])
+        self.assertEqual(
+            locations_at_prov_df.columns,
+            [ProviderApiCols.provider_id, ProviderApiCols.location_ids],
+        )
 
         provider1check_df = locations_at_prov_df.filter(
-            locations_at_prov_df[ProviderApiCols.provider_id]=='1-000000001'
+            locations_at_prov_df[ProviderApiCols.provider_id] == "1-000000001"
         ).select(ProviderApiCols.location_ids)
         self.assertEqual(
             provider1check_df.collect(), [Row(locationIds=["1-000000001"])]
@@ -193,7 +209,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         )
 
         self.assertEqual(services_df.count(), 3)
-        self.assertEqual(services_df.columns, [LocationApiCols.location_id, new_column_name])
+        self.assertEqual(
+            services_df.columns, [LocationApiCols.location_id, new_column_name]
+        )
 
         services_df = services_df.collect()
         self.assertEqual(
@@ -216,7 +234,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.create_contacts_from_registered_manager_name(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.contacts])
+        self.assertEqual(
+            df.columns, [LocationApiCols.location_id, LocationApiCols.contacts]
+        )
 
         collected_df = df.collect()
         self.assertEqual(
@@ -261,7 +281,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.convert_gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.gac_service_types])
+        self.assertEqual(
+            df.columns, [LocationApiCols.location_id, LocationApiCols.gac_service_types]
+        )
 
         collected_df = df.collect()
         self.assertEqual(
@@ -296,7 +318,9 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.convert_specialisms_to_struct(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.specialisms])
+        self.assertEqual(
+            df.columns, [LocationApiCols.location_id, LocationApiCols.specialisms]
+        )
 
         collected_df = df.collect()
         self.assertEqual(

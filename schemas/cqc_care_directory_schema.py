@@ -1,6 +1,8 @@
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType
 
-from utils.ind_cqc_column_names.cqc_care_directory_columns import CqcCareDirectoryColumns as ColNames
+from utils.ind_cqc_column_names.cqc_care_directory_columns import (
+    CqcCareDirectoryColumns as ColNames,
+)
 
 CQC_CARE_DIRECTORY_SCHEMA = StructType(
     fields=[
@@ -81,9 +83,7 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
             StringType(),
             True,
         ),
-        StructField(
-            ColNames.ServiceType.acute_with_overnight_beds, StringType(), True
-        ),
+        StructField(ColNames.ServiceType.acute_with_overnight_beds, StringType(), True),
         StructField(
             ColNames.ServiceType.acute_without_overnight_beds,
             StringType(),
@@ -92,9 +92,7 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
         StructField(ColNames.ServiceType.ambulance, StringType(), True),
         StructField(ColNames.ServiceType.blood_and_transplant, StringType(), True),
         StructField(ColNames.ServiceType.care_home_with_nursing, StringType(), True),
-        StructField(
-            ColNames.ServiceType.care_home_without_nursing, StringType(), True
-        ),
+        StructField(ColNames.ServiceType.care_home_without_nursing, StringType(), True),
         StructField(
             ColNames.ServiceType.community_substance_misuse,
             StringType(),
@@ -117,9 +115,7 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
         ),
         StructField(ColNames.ServiceType.community_healthcare, StringType(), True),
         StructField(ColNames.ServiceType.dental, StringType(), True),
-        StructField(
-            ColNames.ServiceType.diagnostics, StringType(), True
-        ),
+        StructField(ColNames.ServiceType.diagnostics, StringType(), True),
         StructField(
             ColNames.ServiceType.diagnositc_sessional,
             StringType(),
@@ -165,12 +161,8 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
             StringType(),
             True,
         ),
-        StructField(
-            ColNames.ServiceUserBand.misuse_drugs_alcohol, StringType(), True
-        ),
-        StructField(
-            ColNames.ServiceUserBand.eating_disorder, StringType(), True
-        ),
+        StructField(ColNames.ServiceUserBand.misuse_drugs_alcohol, StringType(), True),
+        StructField(ColNames.ServiceUserBand.eating_disorder, StringType(), True),
         StructField(ColNames.ServiceUserBand.physical_disability, StringType(), True),
         StructField(ColNames.ServiceUserBand.sensory_impairment, StringType(), True),
         StructField(ColNames.ServiceUserBand.whole_population, StringType(), True),

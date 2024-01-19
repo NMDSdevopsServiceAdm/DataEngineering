@@ -2,17 +2,24 @@ import unittest
 import warnings
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import ArrayType, FloatType, StructField, StructType, StringType, IntegerType
+from pyspark.sql.types import (
+    ArrayType,
+    FloatType,
+    StructField,
+    StructType,
+    StringType,
+    IntegerType,
+)
 
 from schemas import cqc_provider_schema as job
 
+
 class TestNewSchema(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test"
-        ).getOrCreate()
+        self.spark = SparkSession.builder.appName("test").getOrCreate()
 
         warnings.simplefilter("ignore", ResourceWarning)
+
     def tearDown(self):
         pass
 
