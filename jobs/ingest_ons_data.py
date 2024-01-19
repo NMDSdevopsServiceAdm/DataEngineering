@@ -63,7 +63,9 @@ def get_previous_import_dates(spark, destination):
     except AnalysisException:
         return None
 
-    return df.select(F.col(ColNames.import_date).alias("already_imported_date")).distinct()
+    return df.select(
+        F.col(ColNames.import_date).alias("already_imported_date")
+    ).distinct()
 
 
 if __name__ == "__main__":
