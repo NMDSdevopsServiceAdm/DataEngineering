@@ -159,6 +159,11 @@ tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 ### Installing AWS CLI
 AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it. 
 
+### Creating Credentials for AWS CLI
+With the AWS CLI installed and configured, you will now need access to the Skills for Care AWS
+1. Request access from the team to the AWS Console.
+2. Once this access is granted, follow the steps here to [setup your access and secret key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+
 ### Deploying Terraform
 
 1. Set up your AWS crendentials as terraform variables
@@ -237,6 +242,8 @@ terraform workspace delete <workspace_name>
 ----
 
 ## Spinning up a notebook
+> ❗ **You will need to request access from the team to AWS Console to complete these steps**, if you've not done this already.
+
 We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are the steps required to get this environment running.
 
 1. Head over to AWS [EMR](https://eu-west-2.console.aws.amazon.com/elasticmapreduce/home?region=eu-west-2)
