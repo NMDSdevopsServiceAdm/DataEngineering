@@ -184,7 +184,7 @@ def convert_specialisms_to_struct(df):
 
 def convert_gac_service_types_to_struct(df):
     df = df.withColumn(
-        "gacservicetypes", #TODO
+        LocationApiCols.gac_service_types,
         F.expr(
             "transform(gacservicetypes, x-> named_struct('name',x[0], 'description',x[1]))"
         ),

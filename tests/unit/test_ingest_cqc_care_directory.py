@@ -253,7 +253,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_convert_gac_service_types_to_struct(self): #TODO
+    def test_convert_gac_service_types_to_struct(self):
         spark = utils.get_spark()
 
         df = spark.read.parquet(self.TEST_CARE_DIRECTORY_GAC_SERVICE_TYPES)
@@ -261,11 +261,11 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
         df = job.convert_gac_service_types_to_struct(df)
 
         self.assertEqual(df.count(), 3)
-        self.assertEqual(df.columns, [LocationApiCols.location_id, "gacservicetypes"])
+        self.assertEqual(df.columns, [LocationApiCols.location_id, LocationApiCols.gac_service_types])
 
         collected_df = df.collect()
         self.assertEqual(
-            collected_df[0]["gacservicetypes"],
+            collected_df[0][LocationApiCols.gac_service_types],
             [
                 Row(name="The name", description="description"),
                 Row(
@@ -275,7 +275,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            collected_df[1]["gacservicetypes"],
+            collected_df[1][LocationApiCols.gac_service_types],
             [
                 Row(
                     name="Another name",
@@ -284,7 +284,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            collected_df[2]["gacservicetypes"],
+            collected_df[2][LocationApiCols.gac_service_types],
             [],
         )
 
@@ -393,7 +393,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 LocationApiCols.last_report,
                 LocationApiCols.relationships,
                 LocationApiCols.regulated_activities,
-                "gacServiceTypes",
+                LocationApiCols.gac_service_types,
                 LocationApiCols.inspection_categories,
                 LocationApiCols.specialisms,
                 LocationApiCols.current_ratings,
