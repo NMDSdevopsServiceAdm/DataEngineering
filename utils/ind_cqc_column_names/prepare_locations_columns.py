@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class PrepareLocationsColumns:
     ascwds_workplace_import_date: str = "ascwds_workplace_import_date"
-    carehome: str = "carehome"
+    care_home: str = "carehome"
     clinical_commisioning_group: str = "clinical_commisioning_group"
     constituency: str = "constituency"
     country: str = "country"
@@ -21,7 +21,7 @@ class PrepareLocationsColumns:
     local_authority: str = "local_authority"
     location_name: str = "location_name"
     location_type: str = "location_type"
-    locationid: str = "locationid"
+    location_id: str = "locationid"
     lsoa: str = "lsoa"
     msoa: str = "msoa"
     nhs_england_region: str = "nhs_england_region"
