@@ -86,7 +86,7 @@ class CqcCareDirectoryColumns:
         community_healthcare: str = "Service_type_Community_healthcare_service"
         dental: str = "Service_type_Dental_service"
         diagnostics: str = "Service_type_Diagnostic_andor_screening_service"
-        diagnositc_sessional: str = "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers"
+        diagnostic_sessional: str = "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers"
         doctors_consultation: str = "Service_type_Doctors_consultation_service"
         doctors_treatment: str = "Service_type_Doctors_treatment_service"
         domiciliary_care: str = "Service_type_Domiciliary_care_service"

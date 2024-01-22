@@ -117,7 +117,7 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
         StructField(ColNames.ServiceType.dental, StringType(), True),
         StructField(ColNames.ServiceType.diagnostics, StringType(), True),
         StructField(
-            ColNames.ServiceType.diagnositc_sessional,
+            ColNames.ServiceType.diagnostic_sessional,
             StringType(),
             True,
         ),
