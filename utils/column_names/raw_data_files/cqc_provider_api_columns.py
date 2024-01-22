@@ -25,4 +25,3 @@ class CqcProviderApiColumns:
     town_or_city: str = "postalAddressTownCity"
     type: str = "type"
     uprn: str = "uprn"
-

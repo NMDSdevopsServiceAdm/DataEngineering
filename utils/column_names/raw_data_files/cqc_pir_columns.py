@@ -20,4 +20,3 @@ class CqcPirColumns:
     shared_lives_vacancies: str = "How_many_Shared_Lives_worker_vacancies_do_you_have"
     staff_leavers: str = "How_many_staff_have_left_your_service_in_the_past_12_months"
     staff_vacancies: str = "How_many_staff_vacancies_do_you_have"
-

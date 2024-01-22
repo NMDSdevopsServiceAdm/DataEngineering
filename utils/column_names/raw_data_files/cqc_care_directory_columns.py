@@ -20,7 +20,6 @@ class CqcCareDirectoryColumns:
     type: str = "type"
     website: str = "website"
 
-
     @dataclass
     class Provider:
         address_line_two: str = "provider_postaladdressline2"
@@ -35,7 +34,6 @@ class CqcCareDirectoryColumns:
         provider_id: str = "providerid"
         town_or_city: str = "provider_postaladdresstowncity"
         website: str = "provider_website"
-
 
     @dataclass
     class RegulatedActivity:

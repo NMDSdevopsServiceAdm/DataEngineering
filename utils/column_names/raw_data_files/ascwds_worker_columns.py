@@ -116,7 +116,9 @@ class AscwdsWorkerColumns:
     job_role_45_flag: str = "jr45flag"
     la_permission: str = "lapermission"
     level_non_social_care_qualification_held: str = "levelnonscqheld"
-    level_non_social_care_qualification_held_change_date: str = "levelnonscqheld_changedate"
+    level_non_social_care_qualification_held_change_date: str = (
+        "levelnonscqheld_changedate"
+    )
     level_non_social_care_qualification_held_save_date: str = "levelnonscqheld_savedate"
     level_social_care_qualification_held: str = "levelscqheld"
     level_social_care_qualification_held_change_date: str = "levelscqheld_changedate"
@@ -700,4 +702,3 @@ class AscwdsWorkerColumns:
     zero_hours: str = "zerohours"
     zero_hours_change_date: str = "zerohours_changedate"
     zero_hours_save_date: str = "zerohours_savedate"
-

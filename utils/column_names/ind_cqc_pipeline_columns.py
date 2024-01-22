@@ -48,6 +48,7 @@ class PrepareLocationsColumns:
     stp: str = "stp"
     version: str = "version"
 
+
 @dataclass
 class PrepareLocationsCleanedColumns:
     care_home = PrepareLocationsColumns.care_home
@@ -57,11 +58,11 @@ class PrepareLocationsCleanedColumns:
     job_count_unfiltered_source = PrepareLocationsColumns.job_count_unfiltered_source
     local_authority = PrepareLocationsColumns.local_authority
     location_id = PrepareLocationsColumns.location_id
-    number_of_beds =PrepareLocationsColumns.number_of_beds
+    number_of_beds = PrepareLocationsColumns.number_of_beds
     ons_region = PrepareLocationsColumns.ons_region
     people_directly_employed = PrepareLocationsColumns.people_directly_employed
     primary_service_type = PrepareLocationsColumns.primary_service_type
-    registration_status =PrepareLocationsColumns.registration_status
+    registration_status = PrepareLocationsColumns.registration_status
     rui_2011: str = "rui_2011"
     run_day: str = "run_day"
     run_month: str = "run_month"
@@ -72,6 +73,7 @@ class PrepareLocationsCleanedColumns:
     snapshot_month = PrepareLocationsColumns.snapshot_month
     snapshot_year = PrepareLocationsColumns.snapshot_year
     version = PrepareLocationsColumns.version
+
 
 @dataclass
 class FeatureEngineeringColumns:
@@ -88,6 +90,7 @@ class FeatureEngineeringColumns:
     snapshot_month = PrepareLocationsCleanedColumns.snapshot_month
     snapshot_year = PrepareLocationsCleanedColumns.snapshot_year
 
+
 @dataclass
 class EstimateJobsColumns:
     care_home_model: str = "care_home_model"
@@ -98,7 +101,9 @@ class EstimateJobsColumns:
     interpolation_model: str = "interpolation_model"
     job_count = PrepareLocationsCleanedColumns.job_count
     job_count_unfiltered = PrepareLocationsCleanedColumns.job_count_unfiltered
-    job_count_unfiltered_source = PrepareLocationsCleanedColumns.job_count_unfiltered_source
+    job_count_unfiltered_source = (
+        PrepareLocationsCleanedColumns.job_count_unfiltered_source
+    )
     local_authority = PrepareLocationsCleanedColumns.local_authority
     location_id = PrepareLocationsCleanedColumns.location_id
     non_res_with_pir_model: str = "non_res_with_pir_model"
