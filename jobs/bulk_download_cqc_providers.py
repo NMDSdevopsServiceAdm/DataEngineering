@@ -4,7 +4,7 @@ from datetime import date
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api as cqc
 from utils import utils
-from utils.ind_cqc_column_names.cqc_provider_api_columns import (
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 

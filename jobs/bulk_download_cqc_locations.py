@@ -4,7 +4,7 @@ from datetime import date
 from utils import cqc_api as cqc
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
-from utils.ind_cqc_column_names.cqc_location_api_columns import (
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
 

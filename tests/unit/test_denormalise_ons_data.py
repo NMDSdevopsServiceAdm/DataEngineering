@@ -49,7 +49,7 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
     ):
         import_date = partitions[0] + partitions[1] + partitions[2]
         # fmt: off
-        columns = [ColNames.pcd, ColNames.rgn, ColNames.nhser, ColNames.ccg, ColNames.ctry, ColNames.imd, ColNames.lsoa11, ColNames.msoa11, ColNames.oslaua, ColNames.ru11ind, ColNames.stp] + self.PARTITION_COLS
+        columns = [ColNames.postcode_seven_characters, ColNames.region, ColNames.nhs_england_region, ColNames.clinical_commissioning_group, ColNames.country, ColNames.index_of_multiple_deprivation, ColNames.census_lower_layer_super_output_area_2011, ColNames.census_middle_layer_super_output_area_2011, ColNames.local_or_unitary_authority, ColNames.rural_urban_indicator_2011, ColNames.sustainability_and_transformation_partnership] + self.PARTITION_COLS
         partitions = (*partitions, import_date)
         rows = [
             ("SW9 0LL", "E12000001", "E40000003", "E38000006", "E92000001", "E01021988", "95AA01S1", "E02000001", "E06000001", "B1", "E54000009") + partitions,
@@ -73,16 +73,16 @@ class TestDenormaliseONSDataTests(unittest.TestCase):
 
     def generate_lookups(self):
         # fmt: off
-        self.create_lookup_df(("E12000001", "North East"), ["RGN20CD", "RGN20NM"], ColNames.rgn)
-        self.create_lookup_df(("E40000003", "London"), ["NHSER19CD", "NHSER19NM"], ColNames.nhser)
-        self.create_lookup_df(("E38000006", "NHS Barnsley CCG"), ["ccg21cd", "ccg21nm"], ColNames.ccg)
-        self.create_lookup_df(("E92000001", "England"), ["ctry12cd", "ctry12nm"], ColNames.ctry)
-        self.create_lookup_df(("E01021988", "Tendring 018A"), ["lsoa11cd", "lsoa11nm"], ColNames.imd)
-        self.create_lookup_df(("95AA01S1", "Aldergrove 1"), ["lsoa11cd", "lsoa11nm"], ColNames.lsoa11)
-        self.create_lookup_df(("E02000001", "City of London 001"), ["msoa11cd", "msoa11nm"], ColNames.msoa11)
-        self.create_lookup_df(("E06000001", "Hartlepool"), ["lad21cd", "lad21nm"], ColNames.oslaua)
-        self.create_lookup_df(("B1", "(England/Wales) Urban minor conurbation"), ["RU11IND", "RU11NM"], ColNames.ru11ind)
-        self.create_lookup_df(("E54000009", "South Yorkshire and Bassetlaw"), ["stp21cd", "stp21nm"], ColNames.stp)
+        self.create_lookup_df(("E12000001", "North East"), ["RGN20CD", "RGN20NM"], ColNames.region)
+        self.create_lookup_df(("E40000003", "London"), ["NHSER19CD", "NHSER19NM"], ColNames.nhs_england_region)
+        self.create_lookup_df(("E38000006", "NHS Barnsley CCG"), ["ccg21cd", "ccg21nm"], ColNames.clinical_commissioning_group)
+        self.create_lookup_df(("E92000001", "England"), ["ctry12cd", "ctry12nm"], ColNames.country)
+        self.create_lookup_df(("E01021988", "Tendring 018A"), ["lsoa11cd", "lsoa11nm"], ColNames.index_of_multiple_deprivation)
+        self.create_lookup_df(("95AA01S1", "Aldergrove 1"), ["lsoa11cd", "lsoa11nm"], ColNames.census_lower_layer_super_output_area_2011)
+        self.create_lookup_df(("E02000001", "City of London 001"), ["msoa11cd", "msoa11nm"], ColNames.census_middle_layer_super_output_area_2011)
+        self.create_lookup_df(("E06000001", "Hartlepool"), ["lad21cd", "lad21nm"], ColNames.local_or_unitary_authority)
+        self.create_lookup_df(("B1", "(England/Wales) Urban minor conurbation"), ["RU11IND", "RU11NM"], ColNames.rural_urban_indicator_2011)
+        self.create_lookup_df(("E54000009", "South Yorkshire and Bassetlaw"), ["stp21cd", "stp21nm"], ColNames.sustainability_and_transformation_partnership)
 
         # fmt: on
 

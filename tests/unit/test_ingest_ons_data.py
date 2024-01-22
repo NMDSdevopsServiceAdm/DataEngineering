@@ -7,6 +7,9 @@ from pyspark.sql import SparkSession
 from unittest.mock import patch
 
 import jobs.ingest_ons_data as job
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ColNames,
+)
 
 
 class IngestIngestONSDataTests(unittest.TestCase):
@@ -35,7 +38,12 @@ class IngestIngestONSDataTests(unittest.TestCase):
     def generate_ons_test_csv_file(
         self, output_destination, partitions=("2021", "02", "01")
     ):
-        columns = ["pcd", "nhser", "year", "month", "day", "import_date"]
+        columns = [ColNames.postcode_seven_characters, 
+                   ColNames.nhs_england_region, 
+                   ColNames.year, 
+                   ColNames.month, 
+                   ColNames.day, 
+                   ColNames.import_date]
         # fmt: off
         rows = [
             ("SW9 0LL", "E40000003", partitions[0], partitions[1], partitions[2], partitions[0] + partitions[1] + partitions[2]),
@@ -47,7 +55,7 @@ class IngestIngestONSDataTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, columns)
         if output_destination:
             df.coalesce(1).write.option("header", True).mode("overwrite").partitionBy(
-                "year", "month", "day", "import_date"
+                ColNames.year, ColNames.month, ColNames.day, ColNames.import_date
             ).csv(output_destination)
 
     def write_csv(self, path, lines):
@@ -135,7 +143,7 @@ class IngestIngestONSDataTests(unittest.TestCase):
             f"{self.DESTINATION}/dataset=postcode-directory/"
         )
         self.assertEqual(ons_data.count(), 6)
-        ons_data_partitions = ons_data.select("import_date").distinct().collect()
+        ons_data_partitions = ons_data.select(ColNames.import_date).distinct().collect()
         self.assertEqual(len(ons_data_partitions), 2)
 
     @patch("utils.utils.get_s3_sub_folders_for_path")

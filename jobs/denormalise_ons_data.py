@@ -15,16 +15,16 @@ def main(ons_source, lookup_source, destination):
     ons_data = get_previously_unimported_data(spark, ons_source, destination)
     field_replacement_col_info = [
         # field_name, coded_column_name, named_column_name
-        (ColNames.rgn, "RGN20CD", "RGN20NM"),
-        (ColNames.nhser, "NHSER19CD", "NHSER19NM"),
-        (ColNames.ccg, "ccg21cd", "ccg21nm"),
-        (ColNames.ctry, "ctry12cd", "ctry12nm"),
-        (ColNames.imd, "lsoa11cd", "lsoa11nm"),
-        (ColNames.lsoa11, "lsoa11cd", "lsoa11nm"),
-        (ColNames.msoa11, "msoa11cd", "msoa11nm"),
-        (ColNames.oslaua, "lad21cd", "lad21nm"),
-        (ColNames.ru11ind, "RU11IND", "RU11NM"),
-        (ColNames.stp, "stp21cd", "stp21nm"),
+        (ColNames.region, "RGN20CD", "RGN20NM"),
+        (ColNames.nhs_england_region, "NHSER19CD", "NHSER19NM"),
+        (ColNames.clinical_commissioning_group, "ccg21cd", "ccg21nm"),
+        (ColNames.country, "ctry12cd", "ctry12nm"),
+        (ColNames.index_of_multiple_deprivation, "lsoa11cd", "lsoa11nm"),
+        (ColNames.census_lower_layer_super_output_area_2011, "lsoa11cd", "lsoa11nm"),
+        (ColNames.census_middle_layer_super_output_area_2011, "msoa11cd", "msoa11nm"),
+        (ColNames.local_or_unitary_authority, "lad21cd", "lad21nm"),
+        (ColNames.rural_urban_indicator_2011, "RU11IND", "RU11NM"),
+        (ColNames.sustainability_and_transformation_partnership, "stp21cd", "stp21nm"),
     ]
     for col_info in field_replacement_col_info:
         ons_data = replace_field_from_lookup(
@@ -32,13 +32,13 @@ def main(ons_source, lookup_source, destination):
         )
 
     ons_data = ons_data.withColumn(
-        ColNames.lsoa, F.struct(ons_data.lsoa11.alias("year_2011"))
+        ColNames.lower_super_output_area, F.struct(ons_data.lsoa11.alias("year_2011"))
     )
     ons_data = ons_data.withColumn(
-        ColNames.msoa, F.struct(ons_data.msoa11.alias("year_2011"))
+        ColNames.middle_super_output_area, F.struct(ons_data.msoa11.alias("year_2011"))
     )
     ons_data = ons_data.withColumn(
-        ColNames.ru_ind, F.struct(ons_data.ru11ind.alias("year_2011"))
+        ColNames.rural_urban_indicator, F.struct(ons_data.ru11ind.alias("year_2011"))
     )
 
     ons_data.write.mode("append").partitionBy(
