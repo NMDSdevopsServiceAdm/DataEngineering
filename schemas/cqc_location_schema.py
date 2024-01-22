@@ -7,7 +7,7 @@ from pyspark.sql.types import (
     IntegerType,
 )
 
-from utils.ind_cqc_column_names.cqc_location_api_columns import (
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
 
