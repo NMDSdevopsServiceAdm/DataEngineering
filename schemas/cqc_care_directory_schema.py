@@ -29,7 +29,7 @@ CQC_CARE_DIRECTORY_SCHEMA = StructType(
         StructField(ColNames.Provider.phone_number, StringType(), True),
         StructField(ColNames.Provider.website, StringType(), True),
         StructField(ColNames.Provider.address_line_one, StringType(), True),
-        StructField(ColNames.Provider.adderss_line_two, StringType(), True),
+        StructField(ColNames.Provider.address_line_two, StringType(), True),
         StructField(ColNames.Provider.town_or_city, StringType(), True),
         StructField(ColNames.Provider.county, StringType(), True),
         StructField(ColNames.Provider.postcode, StringType(), True),

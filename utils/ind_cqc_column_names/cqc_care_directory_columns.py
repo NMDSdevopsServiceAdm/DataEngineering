@@ -3,42 +3,44 @@ from dataclasses import dataclass
 
 @dataclass
 class CqcCareDirectoryColumns:
-    location_id: str = "locationid"
-    registration_date: str = "registrationdate"
-    care_home: str = "carehome"
-    name: str = "name"
-    type: str = "type"
-    phone_number: str = "mainphonenumber"
-    registered_manager_name: str = "registered_manager_name"
-    website: str = "website"
-    number_of_beds: str = "numberofbeds"
-    region: str = "region"
-    local_authority: str = "localauthority"
     address_line_one: str = "postaladdressline1"
     address_line_two: str = "postaladdressline2"
-    town_or_city: str = "postaladdresstowncity"
+    care_home: str = "carehome"
     county: str = "postaladdresscounty"
+    local_authority: str = "localauthority"
+    location_id: str = "locationid"
+    name: str = "name"
+    number_of_beds: str = "numberofbeds"
+    phone_number: str = "mainphonenumber"
     postcode: str = "postalcode"
+    region: str = "region"
+    registered_manager_name: str = "registered_manager_name"
+    registration_date: str = "registrationdate"
+    town_or_city: str = "postaladdresstowncity"
+    type: str = "type"
+    website: str = "website"
+
 
     @dataclass
     class Provider:
+        address_line_two: str = "provider_postaladdressline2"
+        address_line_one: str = "provider_postaladdressline1"
         brand_id: str = "provider_brandid"
         brand_name: str = "provider_brandname"
-        provider_id: str = "providerid"
-        name: str = "provider_name"
-        phone_number: str = "provider_mainphonenumber"
-        website: str = "provider_website"
-        address_line_one: str = "provider_postaladdressline1"
-        adderss_line_two: str = "provider_postaladdressline2"
-        town_or_city: str = "provider_postaladdresstowncity"
         county: str = "provider_postaladdresscounty"
-        postcode: str = "provider_postalcode"
+        name: str = "provider_name"
         nominated_individual: str = "provider_nominated_individual_name"
+        phone_number: str = "provider_mainphonenumber"
+        postcode: str = "provider_postalcode"
+        provider_id: str = "providerid"
+        town_or_city: str = "provider_postaladdresstowncity"
+        website: str = "provider_website"
+
 
     @dataclass
     class RegulatedActivity:
-        accommodation_and_care_in_further_education: str = "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector"
         accommodation_and_care: str = "Regulated_activity_Accommodation_for_persons_who_require_nursing_or_personal_care"
+        accommodation_and_care_in_further_education: str = "Regulated_activity_Accommodation_and_nursing_or_personal_care_in_the_further_education_sector"
         accommodation_for_substance_misuse: str = "Regulated_activity_Accommodation_for_persons_who_require_treatment_for_substance_misuse"
         assessment_under_mental_health_act: str = "Regulated_activity_Assessment_or_medical_treatment_for_persons_detained_under_the_Mental_Health_Act_1983"
         diagnostic_procedures: str = (
@@ -73,17 +75,14 @@ class CqcCareDirectoryColumns:
         care_home_without_nursing: str = (
             "Service_type_Care_home_service_without_nursing"
         )
-        community_substance_misuse: str = (
-            "Service_type_Community_based_services_for_people_who_misuse_substances"
-        )
-        community_learning_disability: str = "Service_type_Community_based_services_for_people_with_a_learning_disability"
+        community_healthcare: str = "Service_type_Community_healthcare_service"
         community_mental_health: str = (
             "Service_type_Community_based_services_for_people_with_mental_health_needs"
         )
-        nursing_agency: str = (
-            "Service_type_Community_health_care_services_Nurses_Agency_only"
+        community_learning_disability: str = "Service_type_Community_based_services_for_people_with_a_learning_disability"
+        community_substance_misuse: str = (
+            "Service_type_Community_based_services_for_people_who_misuse_substances"
         )
-        community_healthcare: str = "Service_type_Community_healthcare_service"
         dental: str = "Service_type_Dental_service"
         diagnostics: str = "Service_type_Diagnostic_andor_screening_service"
         diagnostic_sessional: str = "Service_type_Diagnostic_andor_screening_service_single_handed_sessional_providers"
@@ -97,6 +96,9 @@ class CqcCareDirectoryColumns:
         hyperbaric_chamber: str = "Service_type_Hyperbaric_Chamber"
         long_term_conditions: str = "Service_type_Long_term_conditions_services"
         mobile_doctors: str = "Service_type_Mobile_doctors_service"
+        nursing_agency: str = (
+            "Service_type_Community_health_care_services_Nurses_Agency_only"
+        )
         prison_healthcare: str = "Service_type_Prison_Healthcare_Services"
         rehabilitation: str = "Service_type_Rehabilitation_services"
         remote_clinical_advice: str = "Service_type_Remote_clinical_advice_service"
@@ -110,18 +112,20 @@ class CqcCareDirectoryColumns:
     class ServiceUserBand:
         children: str = "Service_user_band_Children_0-18_years"
         dementia: str = "Service_user_band_Dementia"
+        eating_disorder: str = "Service_user_band_People_with_an_eating_disorder"
         learning_disabilities_autism: str = (
             "Service_user_band_Learning_disabilities_or_autistic_spectrum_disorder"
         )
         mental_health: str = "Service_user_band_Mental_Health"
-        older_people: str = "Service_user_band_Older_People"
+
         mental_health_act: str = (
             "Service_user_band_People_detained_under_the_Mental_Health_Act"
         )
         misuse_drugs_alcohol: str = (
             "Service_user_band_People_who_misuse_drugs_and_alcohol"
         )
-        eating_disorder: str = "Service_user_band_People_with_an_eating_disorder"
+        older_people: str = "Service_user_band_Older_People"
+
         physical_disability: str = "Service_user_band_Physical_Disability"
         sensory_impairment: str = "Service_user_band_Sensory_Impairment"
         whole_population: str = "Service_user_band_Whole_Population"
