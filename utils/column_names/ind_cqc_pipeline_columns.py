@@ -22,17 +22,17 @@ class PrepareLocationsColumns:
     location_name: str = "location_name"
     location_type: str = "location_type"
     location_id: str = "locationid"
-    lsoa: str = "lsoa"
-    msoa: str = "msoa"
+    lower_super_output_area: str = "lsoa"
+    middle_super_output_area: str = "msoa"
     nhs_england_region: str = "nhs_england_region"
     number_of_beds: str = "number_of_beds"
     ons_import_date: str = "ons_import_date"
     ons_region: str = "ons_region"
     organisation_type: str = "organisation_type"
     orgid: str = "orgid"
-    oslaua: str = "oslaua"
+    local_or_unitary_authority: str = "oslaua"
     people_directly_employed: str = "people_directly_employed"
-    postal_code: str = "postal_code"
+    postcode: str = "postal_code"
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     providerid: str = "providerid"
@@ -45,7 +45,7 @@ class PrepareLocationsColumns:
     snapshot_day: str = "snapshot_day"
     snapshot_month: str = "snapshot_month"
     snapshot_year: str = "snapshot_year"
-    stp: str = "stp"
+    sustainability_and_transformation_partnership: str = "stp"
     version: str = "version"
 
 
@@ -63,7 +63,7 @@ class PrepareLocationsCleanedColumns:
     people_directly_employed = PrepareLocationsColumns.people_directly_employed
     primary_service_type = PrepareLocationsColumns.primary_service_type
     registration_status = PrepareLocationsColumns.registration_status
-    rui_2011: str = "rui_2011"
+    rural_urban_indicator_2011: str = "rui_2011"
     run_day: str = "run_day"
     run_month: str = "run_month"
     run_year: str = "run_year"
