@@ -5,7 +5,7 @@ from pyspark.sql.utils import AnalysisException
 
 
 from utils import utils
-from utils.ind_cqc_column_names.ons_columns import (
+from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ColNames,
 )
 

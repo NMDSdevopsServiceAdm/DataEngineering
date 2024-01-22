@@ -6,13 +6,13 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType
 
 from utils import utils, cqc_care_directory_dictionaries
-from utils.ind_cqc_column_names.cqc_care_directory_columns import (
+from utils.column_names.raw_data_files.cqc_care_directory_columns import (
     CqcCareDirectoryColumns as CareDirCols,
 )
-from utils.ind_cqc_column_names.cqc_provider_api_columns import (
+from utils.column_names.cqc_provider_api_columns import (
     CqcProviderApiColumns as ProviderApiCols,
 )
-from utils.ind_cqc_column_names.cqc_location_api_columns import (
+from utils.column_names.cqc_location_api_columns import (
     CqcLocationApiColumns as LocationApiCols,
 )
 from schemas import cqc_location_schema, cqc_provider_schema

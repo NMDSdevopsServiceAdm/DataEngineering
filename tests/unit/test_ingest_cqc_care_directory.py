@@ -4,13 +4,13 @@ import shutil
 from pyspark.sql import SparkSession, Row
 
 from utils import utils
-from utils.ind_cqc_column_names.cqc_care_directory_columns import (
+from utils.column_names.raw_data_files.cqc_care_directory_columns import (
     CqcCareDirectoryColumns as CareDirCols,
 )
-from utils.ind_cqc_column_names.cqc_provider_api_columns import (
+from utils.column_names.cqc_provider_api_columns import (
     CqcProviderApiColumns as ProviderApiCols,
 )
-from utils.ind_cqc_column_names.cqc_location_api_columns import (
+from utils.column_names.cqc_location_api_columns import (
     CqcLocationApiColumns as LocationApiCols,
 )
 import jobs.ingest_cqc_care_directory as job
