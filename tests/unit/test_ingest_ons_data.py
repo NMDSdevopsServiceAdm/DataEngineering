@@ -38,12 +38,14 @@ class IngestIngestONSDataTests(unittest.TestCase):
     def generate_ons_test_csv_file(
         self, output_destination, partitions=("2021", "02", "01")
     ):
-        columns = [ColNames.postcode_seven_characters, 
-                   ColNames.nhs_england_region, 
-                   ColNames.year, 
-                   ColNames.month, 
-                   ColNames.day, 
-                   ColNames.import_date]
+        columns = [
+            ColNames.postcode_seven_characters,
+            ColNames.nhs_england_region,
+            ColNames.year,
+            ColNames.month,
+            ColNames.day,
+            ColNames.import_date,
+        ]
         # fmt: off
         rows = [
             ("SW9 0LL", "E40000003", partitions[0], partitions[1], partitions[2], partitions[0] + partitions[1] + partitions[2]),
