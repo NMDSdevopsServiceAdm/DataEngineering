@@ -4,6 +4,9 @@ from datetime import date
 from utils import cqc_api as cqc
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as ColNames,
+)
 
 
 def main(destination):
@@ -11,7 +14,7 @@ def main(destination):
     spark = utils.get_spark()
     df = None
     for paginated_locations in cqc.get_all_objects(
-        stream=True, object_type="locations", object_identifier="locationId"
+        stream=True, object_type="locations", object_identifier=ColNames.location_id
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
@@ -19,7 +22,7 @@ def main(destination):
         else:
             df = locations_df
 
-    df = df.dropDuplicates(["locationId"])
+    df = df.dropDuplicates([ColNames.location_id])
     utils.write_to_parquet(df, destination, True)
 
     print(f"Finished! Files can be found in {destination}")

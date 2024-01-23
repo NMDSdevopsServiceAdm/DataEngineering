@@ -4,6 +4,9 @@ from datetime import date
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api as cqc
 from utils import utils
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as ColNames,
+)
 
 
 def main(destination):
@@ -11,7 +14,7 @@ def main(destination):
     spark = utils.get_spark()
     df = None
     for paginated_providers in cqc.get_all_objects(
-        stream=True, object_type="providers", object_identifier="providerId"
+        stream=True, object_type="providers", object_identifier=ColNames.provider_id
     ):
         providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:
@@ -19,7 +22,7 @@ def main(destination):
         else:
             df = providers_df
 
-    df = df.dropDuplicates(["providerId"])
+    df = df.dropDuplicates([ColNames.provider_id])
     utils.write_to_parquet(df, destination, True)
 
     print(f"Finished! Files can be found in {destination}")

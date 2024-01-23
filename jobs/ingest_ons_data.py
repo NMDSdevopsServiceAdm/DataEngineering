@@ -5,6 +5,9 @@ from pyspark.sql.utils import AnalysisException
 
 
 from utils import utils
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ColNames,
+)
 
 POSTCODE_DIR_PREFIX = "dataset=postcode-directory"
 POSTCODE_LOOKUP_DIR_PREFIX = "dataset=postcode-directory-field-lookups"
@@ -49,7 +52,7 @@ def ingest_new_import_dates(spark, source, destination):
         ).where(previously_imported_dates.already_imported_date.isNull())
     print(f"Writing CSV to {destination}")
     data_to_import.write.mode("append").partitionBy(
-        "year", "month", "day", "import_date"
+        ColNames.year, ColNames.month, ColNames.day, ColNames.import_date
     ).parquet(destination)
     return data_to_import
 
@@ -60,7 +63,9 @@ def get_previous_import_dates(spark, destination):
     except AnalysisException:
         return None
 
-    return df.select(F.col("import_date").alias("already_imported_date")).distinct()
+    return df.select(
+        F.col(ColNames.import_date).alias("already_imported_date")
+    ).distinct()
 
 
 if __name__ == "__main__":

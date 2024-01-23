@@ -5,6 +5,9 @@ from pyspark.sql.utils import AnalysisException
 
 
 from utils import utils
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ColNames,
+)
 
 
 def main(ons_source, lookup_source, destination):
@@ -12,30 +15,34 @@ def main(ons_source, lookup_source, destination):
     ons_data = get_previously_unimported_data(spark, ons_source, destination)
     field_replacement_col_info = [
         # field_name, coded_column_name, named_column_name
-        ("rgn", "RGN20CD", "RGN20NM"),
-        ("nhser", "NHSER19CD", "NHSER19NM"),
-        ("ccg", "ccg21cd", "ccg21nm"),
-        ("ctry", "ctry12cd", "ctry12nm"),
-        ("imd", "lsoa11cd", "lsoa11nm"),
-        ("lsoa11", "lsoa11cd", "lsoa11nm"),
-        ("msoa11", "msoa11cd", "msoa11nm"),
-        ("oslaua", "lad21cd", "lad21nm"),
-        ("ru11ind", "RU11IND", "RU11NM"),
-        ("stp", "stp21cd", "stp21nm"),
+        (ColNames.region, "RGN20CD", "RGN20NM"),
+        (ColNames.nhs_england_region, "NHSER19CD", "NHSER19NM"),
+        (ColNames.clinical_commissioning_group, "ccg21cd", "ccg21nm"),
+        (ColNames.country, "ctry12cd", "ctry12nm"),
+        (ColNames.index_of_multiple_deprivation, "lsoa11cd", "lsoa11nm"),
+        (ColNames.census_lower_layer_super_output_area_2011, "lsoa11cd", "lsoa11nm"),
+        (ColNames.census_middle_layer_super_output_area_2011, "msoa11cd", "msoa11nm"),
+        (ColNames.local_or_unitary_authority, "lad21cd", "lad21nm"),
+        (ColNames.rural_urban_indicator_2011, "RU11IND", "RU11NM"),
+        (ColNames.sustainability_and_transformation_partnership, "stp21cd", "stp21nm"),
     ]
     for col_info in field_replacement_col_info:
         ons_data = replace_field_from_lookup(
             spark, lookup_source, ons_data, col_info[0], col_info[1], col_info[2]
         )
 
-    ons_data = ons_data.withColumn("lsoa", F.struct(ons_data.lsoa11.alias("year_2011")))
-    ons_data = ons_data.withColumn("msoa", F.struct(ons_data.msoa11.alias("year_2011")))
     ons_data = ons_data.withColumn(
-        "ru_ind", F.struct(ons_data.ru11ind.alias("year_2011"))
+        ColNames.lower_super_output_area, F.struct(ons_data.lsoa11.alias("year_2011"))
+    )
+    ons_data = ons_data.withColumn(
+        ColNames.middle_super_output_area, F.struct(ons_data.msoa11.alias("year_2011"))
+    )
+    ons_data = ons_data.withColumn(
+        ColNames.rural_urban_indicator, F.struct(ons_data.ru11ind.alias("year_2011"))
     )
 
     ons_data.write.mode("append").partitionBy(
-        "year", "month", "day", "import_date"
+        ColNames.year, ColNames.month, ColNames.day, ColNames.import_date
     ).parquet(destination)
 
 
@@ -91,7 +98,9 @@ def get_previous_import_dates(spark, destination):
     except AnalysisException:
         return None
 
-    return df.select(F.col("import_date").alias("already_imported_date")).distinct()
+    return df.select(
+        F.col(ColNames.import_date).alias("already_imported_date")
+    ).distinct()
 
 
 if __name__ == "__main__":
