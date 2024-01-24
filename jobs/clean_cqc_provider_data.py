@@ -1,7 +1,5 @@
 import sys
 
-import pyspark.sql.functions as F
-
 import pyspark.sql.dataframe
 
 from utils import utils
