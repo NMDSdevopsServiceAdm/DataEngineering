@@ -1,27 +1,16 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from pyspark.sql import SparkSession
-
 import jobs.ingest_ascwds_worker_data as job
+
+from tests.test_file_generator import generate_worker_parquet
 
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     TEST_ASCWDS_WORKER_FILE = "tests/test_data/domain=ascwds/dataset=worker"
 
     def setUp(self) -> None:
-        self.spark = SparkSession.builder.appName(
-            "sfc_data_engineering_test_ingest_ascwds_dataset"
-        ).getOrCreate()
-
-        columns = ["locationid", "workerid", "mainjrid", "import_date"]
-
-        rows = [
-            ("1-000000001", "100", 1, "20220101"),
-            ("1-000000001", "101", 1, "20220101"),
-        ]
-
-        self.test_ascwds_worker_df = self.spark.createDataFrame(rows, columns)
+        self.test_ascwds_worker_df = generate_worker_parquet(None)
 
         self.spark_mock = Mock()
         type(self.spark_mock).read = self.spark_mock
