@@ -19,19 +19,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         rows = [
             ("1-000000001", "100", 1, "20220101"),
             ("1-000000001", "101", 1, "20220101"),
-            ("1-000000001", "102", 1, "20220101"),
-            ("1-000000001", "103", 1, "20220101"),
-            ("1-000000001", "104", 2, "20220101"),
-            ("1-000000001", "105", 3, "20220101"),
-            ("1-000000002", "106", 1, "20220101"),
-            ("1-000000002", "107", 3, "20220101"),
-            ("1-000000002", "108", 2, "20220101"),
-            ("1-000000003", "109", 1, "20220101"),
-            ("1-000000003", "110", 2, "20220101"),
-            ("1-000000003", "111", 3, "20220101"),
-            ("1-000000004", "112", 1, "20220101"),
-            ("1-000000004", "113", 2, "20220101"),
-            ("1-000000004", "114", 3, "20220101"),
         ]
 
         self.test_ascwds_worker_df = self.spark.createDataFrame(rows, columns)
@@ -53,7 +40,9 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         job.main("some source", "some destination")
 
         get_delimiter_for_csv_mock.assert_called_once_with("some source")
-        write_to_parquet_mock.assert_called_once_with(self.test_ascwds_worker_df, 'some destination')
+        write_to_parquet_mock.assert_called_once_with(
+            self.test_ascwds_worker_df, "some destination"
+        )
 
     @patch("utils.utils.read_partial_csv_content")
     def test_get_delimiter_for_csv(self, read_partial_csv_content_mock):
