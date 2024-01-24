@@ -368,7 +368,7 @@ module "clean_cqc_provider_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=providers-api/version=1.0.0/"
+    "--cqc_provider_source"  = "sfc-main-datasets/domain=data_engineering/dataset=providers-api/version=1.0.0/"
     "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=providers-api-cleaned/version=1.0.0/"
   }
 }
