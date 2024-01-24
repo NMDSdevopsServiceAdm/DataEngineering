@@ -9,9 +9,11 @@ from pyspark.sql.types import (
     DoubleType,
     TimestampType,
     LongType,
+    FloatType,
 )
 import pyspark.sql.functions as F
 
+from pyspark.sql import DataFrame
 from schemas import cqc_care_directory_schema
 from utils import utils
 
@@ -259,6 +261,127 @@ def generate_cqc_locations_file(output_destination):
         ("1-000000015", 12, "location", "Not social care", "name of organisation", "Registered", "2011-02-15", None, "N", 50, "South East", None, "Y", "Rochester and Strood", "Medway", [{"name": "Nursing homes", "description": "Care home service with nursing"}], "20220101"),
     ]
     # fmt: on
+
+    df = spark.createDataFrame(rows, schema)
+
+    if output_destination:
+        df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+
+    return df
+
+
+def generate_cqc_providers_full_file(output_destination=None) -> DataFrame:
+    """
+    Generates a synthetic cqc provider parquet file with EVERY column present
+
+    Parameters:
+        output_destination (str): [Optional] an output destination to persist parquet to
+
+    Returns:
+        df (pyspark.sql.DataFrame): A dataframe reflecting the appropriate column structure
+    """
+    spark = utils.get_spark()
+    schema = StructType(
+        fields=[
+            StructField("providerId", StringType(), True),
+            StructField("locationIds", ArrayType(StringType(), True), True),
+            StructField("organisationType", StringType(), True),
+            StructField("ownershipType", StringType(), True),
+            StructField("type", StringType(), True),
+            StructField("uprn", StringType(), True),
+            StructField("name", StringType(), True),
+            StructField("registrationStatus", StringType(), True),
+            StructField("registrationDate", StringType(), True),
+            StructField("deregistrationDate", StringType(), True),
+            StructField("postalAddressLine1", StringType(), True),
+            StructField("postalAddressTownCity", StringType(), True),
+            StructField("postalAddressCounty", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("postalCode", StringType(), True),
+            StructField("onspdLatitude", FloatType(), True),
+            StructField("onspdLongitude", FloatType(), True),
+            StructField("mainPhoneNumber", StringType(), True),
+            StructField("companiesHouseNumber", StringType(), True),
+            StructField("inspectionDirectorate", StringType(), True),
+            StructField("constituency", StringType(), True),
+            StructField("localAuthority", StringType(), True),
+        ]
+    )
+
+    rows = [
+        (
+            "1-10000000001",
+            ["1-12000000001"],
+            "Provider",
+            "Organisation",
+            "Independent Healthcare Org",
+            "10000000001",
+            "Care Solutions Direct Limited",
+            "Registered",
+            "2022-01-14",
+            None,
+            "Threefield House",
+            "Southampton",
+            None,
+            "South East",
+            "AA10 3LP",
+            50.93761444091797,
+            -1.452439546585083,
+            "0238206106",
+            "10000001",
+            "Adult social care",
+            "Southampton, Itchen",
+            "Southampton",
+        ),
+        (
+            "1-10000000002",
+            ["1-12000000002"],
+            "Provider",
+            "Partnership",
+            "Social Care Org",
+            "10000000002",
+            "Care Solutions Direct Limited",
+            "Registered",
+            "2022-01-14",
+            None,
+            "Threefield House",
+            "Southampton",
+            "Some County",
+            "South East",
+            "AA10 3LP",
+            50.93761444091797,
+            -1.452439546585083,
+            "0238206106",
+            "10000002",
+            "Adult social care",
+            "Southampton, Itchen",
+            "Southampton",
+        ),
+        (
+            "1-10000000003",
+            ["1-12000000003"],
+            "Provider",
+            "Individual",
+            "Social Care Org",
+            "10000000003",
+            "Care Solutions Direct Limited",
+            "Deregistered",
+            "2022-01-14",
+            "2022-03-07",
+            "Threefield House",
+            "Southampton",
+            None,
+            "South East",
+            "SO14 3LP",
+            50.93761444091797,
+            -1.452439546585083,
+            "0238206106",
+            "10000003",
+            "Adult social care",
+            "Southampton, Itchen",
+            "Southampton",
+        ),
+    ]
 
     df = spark.createDataFrame(rows, schema)
 
