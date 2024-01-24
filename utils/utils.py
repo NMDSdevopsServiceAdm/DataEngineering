@@ -27,7 +27,7 @@ class SetupSpark(object):
     def setupSpark(self) -> SparkSession:
         spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
-
+        spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
         return spark
 
 
