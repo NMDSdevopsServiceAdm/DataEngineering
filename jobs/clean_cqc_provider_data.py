@@ -24,7 +24,12 @@ def clean_cqc_provider_df(df_to_clean) -> pyspark.sql.DataFrame:
 
 
 def write_cleaned_provider_df_to_parquet(dataFrame, destination) -> None:
-    utils.write_to_parquet(dataFrame, destination)
+    utils.write_to_parquet(
+        dataFrame,
+        destination,
+        append=True,
+        partitionKeys=["year", "month", "day", "import_date"],
+    )
 
 
 def main(cqc_source: str, cleaned_cqc_destination: str):
