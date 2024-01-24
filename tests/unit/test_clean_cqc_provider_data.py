@@ -16,9 +16,7 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
     )
 
     def setUp(self) -> None:
-        self.test_cqc_providers_parquet = generate_cqc_providers_full_file(
-            self.TEST_FULL_CQC_PROVIDERS_FILE
-        )
+        self.test_cqc_providers_parquet = generate_cqc_providers_full_file(None)
         self.spark_mock = Mock()
         type(self.spark_mock).read = self.spark_mock
         self.spark_mock.option.return_value = self.spark_mock
