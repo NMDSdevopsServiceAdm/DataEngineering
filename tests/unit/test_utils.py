@@ -15,7 +15,6 @@ from pyspark.sql.types import (
     DateType,
     FloatType,
 )
-from pyspark.sql import functions as f
 
 import boto3
 from botocore.stub import Stubber
@@ -23,7 +22,6 @@ from botocore.response import StreamingBody
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
-from tests.test_helpers import create_spark_mock
 
 
 class StubberType(Enum):
@@ -105,7 +103,6 @@ class UtilsTests(unittest.TestCase):
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
-        self.spark_mock = create_spark_mock()
 
     def tearDown(self):
         try:
