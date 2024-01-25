@@ -30,6 +30,10 @@ from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AW,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -162,5 +166,17 @@ class CalculatePaRatioSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+
+
+@dataclass
+class ASCWDSWorkerSchemas:
+    worker_schema = StructType(
+        [
+            StructField(AW.location_id, StringType(), True),
+            StructField(AW.worker_id, StringType(), True),
+            StructField(AW.main_job_role_id, StringType(), True),
+            StructField(AW.import_date, StringType(), True),
         ]
     )

@@ -4,11 +4,17 @@ from unittest.mock import patch
 import jobs.ingest_ascwds_worker_data as job
 
 from tests.test_file_generator import generate_worker_parquet
+from tests.test_file_data import ASCWDSWorkerData
+from tests.test_file_schemas import ASCWDSWorkerSchemas
+from utils.utils import get_spark
 
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_ascwds_worker_df = generate_worker_parquet(None)
+        spark = get_spark()
+        self.test_ascwds_worker_df = spark.createDataFrame(
+            ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
+        )
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_csv")
