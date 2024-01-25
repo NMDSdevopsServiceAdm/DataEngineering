@@ -15,12 +15,6 @@ def main(source: str, destination: str):
     )
 
 
-def get_delimiter_for_csv(bucket: str, key: str):
-    file_sample = utils.read_partial_csv_content(bucket, key)
-    delimiter = utils.identify_csv_delimiter(file_sample)
-    return delimiter
-
-
 if __name__ == "__main__":
     print("Spark job 'ingest_ascwds_dataset' starting...")
     print(f"Job parameters: {sys.argv}")
