@@ -3,6 +3,9 @@ import sys
 import pyspark.sql.dataframe
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 def clean_cqc_location_df(df_to_clean) -> pyspark.sql.DataFrame:
     # Cleaning logic
@@ -17,7 +20,7 @@ def main(cqc_location_source: str, cleaned_cqc_location_destintion: str):
         cleaned_cqc_location_df,
         cleaned_cqc_location_destintion,
         append=True,
-        partitionKeys=["year", "month", "day", "import_date"],
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 
