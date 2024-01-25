@@ -1,6 +1,4 @@
 import sys
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
 
 from utils import utils
 
