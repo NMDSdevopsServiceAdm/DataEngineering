@@ -20,7 +20,10 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     source, destination = utils.collect_arguments(
-        ("--ascwds_worker_source", "Source s3 directory for csv ascwds worker dataset"),
+        (
+            "--ascwds_worker_source",
+            "Source s3 directory for parquet ascwds worker dataset",
+        ),
         (
             "--ascwds_worker_destination",
             "Destination s3 directory for cleaned parquet ascwds worker dataset",
