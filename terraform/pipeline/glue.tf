@@ -101,8 +101,8 @@ module "ingest_ascwds_worker_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
+    "--ascwds_worker_source"      = ""
+    "--ascwds_worker_destination" = ""
   }
 }
 
