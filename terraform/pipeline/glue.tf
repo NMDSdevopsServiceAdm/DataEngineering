@@ -360,6 +360,19 @@ module "estimate_direct_payments_job" {
   }
 }
 
+module "clean_cqc_provider_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_cqc_provider_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cqc_provider_source"  = "s3://sfc-main-datasets/domain=CQC/dataset=providers-api/"
+    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
@@ -406,3 +419,4 @@ module "dpr_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
+
