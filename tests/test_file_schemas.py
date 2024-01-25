@@ -30,6 +30,9 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as LocationCols,
+)
 
 
 @dataclass
@@ -193,5 +196,231 @@ class CQCProviderSchemas:
             StructField("inspectionDirectorate", StringType(), True),
             StructField("constituency", StringType(), True),
             StructField("localAuthority", StringType(), True),
+        ]
+    )
+
+@dataclass
+class CQCLocationsSchemas:
+    full_parquet_schema = StructType(
+        fields=[
+            StructField(LocationCols.location_id, StringType(), True),
+            StructField(LocationCols.provider_id, StringType(), True),
+            StructField(LocationCols.organisation_type, StringType(), True),
+            StructField(LocationCols.type, StringType(), True),
+            StructField(LocationCols.name, StringType(), True),
+            StructField(LocationCols.ccg_code, StringType(), True),
+            StructField(LocationCols.ccg_name, StringType(), True),
+            StructField(LocationCols.ods_code, StringType(), True),
+            StructField(LocationCols.uprn, StringType(), True),
+            StructField(LocationCols.registration_status, StringType(), True),
+            StructField(LocationCols.registration_date, StringType(), True),
+            StructField(LocationCols.deregistration_date, StringType(), True),
+            StructField(LocationCols.dormancy, StringType(), True),
+            StructField(LocationCols.number_of_beds, IntegerType(), True),
+            StructField(LocationCols.website, StringType(), True),
+            StructField(LocationCols.address_line_one, StringType(), True),
+            StructField(LocationCols.town_or_city, StringType(), True),
+            StructField(LocationCols.county, StringType(), True),
+            StructField(LocationCols.region, StringType(), True),
+            StructField(LocationCols.postcode, StringType(), True),
+            StructField(LocationCols.latitude, FloatType(), True),
+            StructField(LocationCols.longitude, FloatType(), True),
+            StructField(LocationCols.care_home, StringType(), True),
+            StructField(LocationCols.inspection_directorate, StringType(), True),
+            StructField(LocationCols.phone_number, StringType(), True),
+            StructField(LocationCols.constituancy, StringType(), True),
+            StructField(LocationCols.local_authority, StringType(), True),
+            StructField(
+                LocationCols.last_inspection,
+                StructType([StructField(LocationCols.date, StringType(), True)]),
+                True,
+            ),
+            StructField(
+                LocationCols.last_report,
+                StructType([StructField(LocationCols.publication_date, StringType(), True)]),
+                True,
+            ),
+            StructField(
+                LocationCols.relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.related_location_id, StringType(), True),
+                            StructField(LocationCols.related_location_name, StringType(), True),
+                            StructField(LocationCols.type, StringType(), True),
+                            StructField(LocationCols.reason, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                LocationCols.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.name, StringType(), True),
+                            StructField(LocationCols.code, StringType(), True),
+                            StructField(
+                                LocationCols.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(LocationCols.title, StringType(), True),
+                                            StructField(
+                                                LocationCols.given_name, StringType(), True
+                                            ),
+                                            StructField(
+                                                LocationCols.family_name, StringType(), True
+                                            ),
+                                            StructField(LocationCols.roles, StringType(), True),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
+            StructField(
+                LocationCols.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.name, StringType(), True),
+                            StructField(LocationCols.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(
+                LocationCols.inspection_categories,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.code, StringType(), True),
+                            StructField(LocationCols.primary, StringType(), True),
+                            StructField(LocationCols.name, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                LocationCols.specialisms,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.name, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                LocationCols.current_ratings,
+                StructType(
+                    [
+                        StructField(
+                            LocationCols.overall,
+                            StructType(
+                                [
+                                    StructField(LocationCols.rating, StringType(), True),
+                                    StructField(LocationCols.report_date, StringType(), True),
+                                    StructField(
+                                        LocationCols.report_link_id, StringType(), True
+                                    ),
+                                    StructField(
+                                        LocationCols.key_question_ratings,
+                                        ArrayType(
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        LocationCols.name, StringType(), True
+                                                    ),
+                                                    StructField(
+                                                        LocationCols.rating, StringType(), True
+                                                    ),
+                                                    StructField(
+                                                        LocationCols.report_date,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        LocationCols.report_link_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            )
+                                        ),
+                                    ),
+                                ]
+                            ),
+                            True,
+                        )
+                    ]
+                ),
+                True,
+            ),
+            StructField(
+                LocationCols.historic_ratings,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.organisation_id, StringType(), True),
+                            StructField(LocationCols.report_link_id, StringType(), True),
+                            StructField(LocationCols.report_date, StringType(), True),
+                            StructField(
+                                LocationCols.overall,
+                                StructType(
+                                    [
+                                        StructField(LocationCols.rating, StringType(), True),
+                                        StructField(
+                                            LocationCols.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            LocationCols.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            LocationCols.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+            ),
+            StructField(
+                LocationCols.reports,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(LocationCols.link_id, StringType(), True),
+                            StructField(LocationCols.report_date, StringType(), True),
+                            StructField(LocationCols.report_uri, StringType(), True),
+                            StructField(LocationCols.first_visit_date, StringType(), True),
+                            StructField(LocationCols.report_type, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
         ]
     )
