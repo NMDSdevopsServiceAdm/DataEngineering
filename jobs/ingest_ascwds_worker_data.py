@@ -7,8 +7,8 @@ from utils import utils
 
 def main(source: str, destination: str):
     delimiter = get_delimiter_for_csv(source)
-    ascwds_worker_df = read_ascwds_worker_csv(source, delimiter)
-    write_cleaned_provider_df_to_parquet(ascwds_worker_df, destination)
+    ascwds_worker_df = utils.read_csv(source, delimiter)
+    utils.write_to_parquet(ascwds_worker_df, destination)
 
 
 def get_delimiter_for_csv(source: str):
@@ -16,14 +16,6 @@ def get_delimiter_for_csv(source: str):
     file_sample = utils.read_partial_csv_content(bucket, key)
     delimiter = utils.identify_csv_delimiter(file_sample)
     return delimiter
-
-
-def read_ascwds_worker_csv(ascwds_worker_source: str, delimiter: str) -> DataFrame:
-    return utils.read_csv(ascwds_worker_source, delimiter)
-
-
-def write_cleaned_provider_df_to_parquet(dataFrame, destination) -> None:
-    utils.write_to_parquet(dataFrame, destination)
 
 
 if __name__ == "__main__":
