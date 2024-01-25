@@ -24,9 +24,8 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
 
     def test_clean_cqc_provider_df(self):
         # Test returned df is the same as the one passed in
-        returned_df = job.clean_cqc_provider_df(self.test_clean_cqc_provider_df)
-
-        self.assertEqual(self.test_clean_cqc_provider_df, returned_df)
+        returned_df = job.clean_cqc_provider_df(self.test_cqc_providers_parquet)
+        self.assertEqual(self.test_cqc_providers_parquet, returned_df)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
