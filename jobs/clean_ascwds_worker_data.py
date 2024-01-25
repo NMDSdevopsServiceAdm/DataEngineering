@@ -4,13 +4,15 @@ from utils import utils
 
 
 def main(source: str, destination: str):
-    bucket, key = utils.split_s3_uri(source)
-    delimiter = get_delimiter_for_csv(bucket, key)
-    ascwds_worker_df = utils.read_csv(source, delimiter)
+    ascwds_worker_df = utils.read_from_parquet(source)
 
-    new_destination = utils.construct_destination_path(destination, key)
-    print(f"Exporting as parquet to {new_destination}")
-    utils.write_to_parquet(ascwds_worker_df, new_destination)
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(
+        ascwds_worker_df,
+        destination,
+        True,
+        ["version", "year", "month", "day", "import_date"],
+    )
 
 
 def get_delimiter_for_csv(bucket: str, key: str):
