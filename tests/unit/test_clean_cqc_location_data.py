@@ -4,11 +4,11 @@ from unittest.mock import Mock, patch
 from pyspark.sql import SparkSession
 
 
-import jobs.clean_cqc_provider_data as job
+import jobs.clean_cqc_location_data as job
 
 import tests.test_helpers as helpers
-from tests.test_file_schemas import CQCProviderSchemas as Schemas
-from tests.test_file_data import CQCProviderData as Data
+from tests.test_file_schemas import CQCLocationsSchemas as Schemas
+from tests.test_file_data import CQCLocationsData as Data
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -27,11 +27,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=Schemas.full_parquet_schema
         )
 
-    def test_clean_cqc_provider_df(self):
+    def test_clean_cqc_location_df(self):
         # Test returned df is the same as the one passed in
-        returned_df = job.clean_cqc_provider_df(self.test_clean_cqc_provider_df)
+        returned_df = job.clean_cqc_location_df(self.test_clean_cqc_location_df)
 
-        self.assertEqual(self.test_clean_cqc_provider_df, returned_df)
+        self.assertEqual(self.test_clean_cqc_location_df, returned_df)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")

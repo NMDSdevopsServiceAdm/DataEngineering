@@ -8,7 +8,7 @@ class PartitionKeys:
     month: str = "month"
     year: str = "year"
 
-    
+
 @dataclass
 class PrepareLocationsColumns:
     ascwds_workplace_import_date: str = "ascwds_workplace_import_date"

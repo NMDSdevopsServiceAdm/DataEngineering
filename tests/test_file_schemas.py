@@ -199,6 +199,7 @@ class CQCProviderSchemas:
         ]
     )
 
+
 @dataclass
 class CQCLocationsSchemas:
     full_parquet_schema = StructType(
@@ -237,7 +238,9 @@ class CQCLocationsSchemas:
             ),
             StructField(
                 LocationCols.last_report,
-                StructType([StructField(LocationCols.publication_date, StringType(), True)]),
+                StructType(
+                    [StructField(LocationCols.publication_date, StringType(), True)]
+                ),
                 True,
             ),
             StructField(
@@ -245,8 +248,12 @@ class CQCLocationsSchemas:
                 ArrayType(
                     StructType(
                         [
-                            StructField(LocationCols.related_location_id, StringType(), True),
-                            StructField(LocationCols.related_location_name, StringType(), True),
+                            StructField(
+                                LocationCols.related_location_id, StringType(), True
+                            ),
+                            StructField(
+                                LocationCols.related_location_name, StringType(), True
+                            ),
                             StructField(LocationCols.type, StringType(), True),
                             StructField(LocationCols.reason, StringType(), True),
                         ]
@@ -266,14 +273,22 @@ class CQCLocationsSchemas:
                                 ArrayType(
                                     StructType(
                                         [
-                                            StructField(LocationCols.title, StringType(), True),
                                             StructField(
-                                                LocationCols.given_name, StringType(), True
+                                                LocationCols.title, StringType(), True
                                             ),
                                             StructField(
-                                                LocationCols.family_name, StringType(), True
+                                                LocationCols.given_name,
+                                                StringType(),
+                                                True,
                                             ),
-                                            StructField(LocationCols.roles, StringType(), True),
+                                            StructField(
+                                                LocationCols.family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                LocationCols.roles, StringType(), True
+                                            ),
                                         ]
                                     )
                                 ),
@@ -326,8 +341,12 @@ class CQCLocationsSchemas:
                             LocationCols.overall,
                             StructType(
                                 [
-                                    StructField(LocationCols.rating, StringType(), True),
-                                    StructField(LocationCols.report_date, StringType(), True),
+                                    StructField(
+                                        LocationCols.rating, StringType(), True
+                                    ),
+                                    StructField(
+                                        LocationCols.report_date, StringType(), True
+                                    ),
                                     StructField(
                                         LocationCols.report_link_id, StringType(), True
                                     ),
@@ -337,10 +356,14 @@ class CQCLocationsSchemas:
                                             StructType(
                                                 [
                                                     StructField(
-                                                        LocationCols.name, StringType(), True
+                                                        LocationCols.name,
+                                                        StringType(),
+                                                        True,
                                                     ),
                                                     StructField(
-                                                        LocationCols.rating, StringType(), True
+                                                        LocationCols.rating,
+                                                        StringType(),
+                                                        True,
                                                     ),
                                                     StructField(
                                                         LocationCols.report_date,
@@ -369,14 +392,20 @@ class CQCLocationsSchemas:
                 ArrayType(
                     StructType(
                         [
-                            StructField(LocationCols.organisation_id, StringType(), True),
-                            StructField(LocationCols.report_link_id, StringType(), True),
+                            StructField(
+                                LocationCols.organisation_id, StringType(), True
+                            ),
+                            StructField(
+                                LocationCols.report_link_id, StringType(), True
+                            ),
                             StructField(LocationCols.report_date, StringType(), True),
                             StructField(
                                 LocationCols.overall,
                                 StructType(
                                     [
-                                        StructField(LocationCols.rating, StringType(), True),
+                                        StructField(
+                                            LocationCols.rating, StringType(), True
+                                        ),
                                         StructField(
                                             LocationCols.key_question_ratings,
                                             ArrayType(
@@ -415,7 +444,9 @@ class CQCLocationsSchemas:
                             StructField(LocationCols.link_id, StringType(), True),
                             StructField(LocationCols.report_date, StringType(), True),
                             StructField(LocationCols.report_uri, StringType(), True),
-                            StructField(LocationCols.first_visit_date, StringType(), True),
+                            StructField(
+                                LocationCols.first_visit_date, StringType(), True
+                            ),
                             StructField(LocationCols.report_type, StringType(), True),
                         ]
                     )

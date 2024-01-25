@@ -7,6 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
+
 def clean_cqc_location_df(df_to_clean) -> pyspark.sql.DataFrame:
     # Cleaning logic
     return df_to_clean
