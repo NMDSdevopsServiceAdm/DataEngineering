@@ -10,6 +10,9 @@ from utils.utils import get_spark
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
+        self.TEST_SOURCE = "s3://some_bucket/some_source_key"
+        self.TEST_DESTINATION = "s3://some_bucket/some_destination_key"
+
         spark = get_spark()
         self.test_ascwds_worker_df = spark.createDataFrame(
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
@@ -24,12 +27,14 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         read_csv_mock.return_value = self.test_ascwds_worker_df
         get_delimiter_for_csv_mock.return_value = ","
 
-        job.main("some source", "some destination")
+        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
-        get_delimiter_for_csv_mock.assert_called_once_with("some source")
-        read_csv_mock.assert_called_once_with("some source", ",")
+        get_delimiter_for_csv_mock.assert_called_once_with(
+            "some_bucket", "some_source_key"
+        )
+        read_csv_mock.assert_called_once_with(self.TEST_SOURCE, ",")
         write_to_parquet_mock.assert_called_once_with(
-            self.test_ascwds_worker_df, "some destination"
+            self.test_ascwds_worker_df, "s3://some_bucket/"
         )
 
     @patch("utils.utils.read_partial_csv_content")
@@ -40,7 +45,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
         self.assertEqual(
             job.get_delimiter_for_csv(
-                "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=worker/"
+                "sfc-data-engineering-raw", "/domain=ASCWDS/dataset=worker/"
             ),
             ",",
         )
