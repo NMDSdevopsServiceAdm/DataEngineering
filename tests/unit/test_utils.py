@@ -23,6 +23,7 @@ from botocore.response import StreamingBody
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
+from tests.test_helpers import create_spark_mock
 
 
 class StubberType(Enum):
@@ -87,6 +88,7 @@ class UtilsTests(unittest.TestCase):
     example_csv_for_schema_tests_with_datetype = (
         "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
     )
+    example_parquet_path = "tests/test_data/example_parquet.parquet"
 
     # increase length of string to simulate realistic file size
     hundred_percent_string_boost = 100
@@ -103,6 +105,7 @@ class UtilsTests(unittest.TestCase):
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
+        self.spark_mock = create_spark_mock()
 
     def tearDown(self):
         try:
@@ -454,6 +457,38 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
         self.assertEqual(df.count(), 3)
+
+    def test_read_from_parquet(self):
+        df = utils.read_from_parquet(self.example_parquet_path)
+
+        self.assertEqual(
+            df.columns,
+            [
+                "providerId",
+                "locationIds",
+                "organisationType",
+                "ownershipType",
+                "type",
+                "uprn",
+                "name",
+                "registrationStatus",
+                "registrationDate",
+                "deregistrationDate",
+                "postalAddressLine1",
+                "postalAddressTownCity",
+                "postalAddressCounty",
+                "region",
+                "postalCode",
+                "onspdLatitude",
+                "onspdLongitude",
+                "mainPhoneNumber",
+                "companiesHouseNumber",
+                "inspectionDirectorate",
+                "constituency",
+                "localAuthority",
+            ],
+        )
+        self.assertEqual(df.count(), 2270)
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
