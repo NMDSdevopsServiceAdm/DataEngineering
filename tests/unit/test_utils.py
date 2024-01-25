@@ -4,6 +4,7 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
+from unittest.mock import Mock, patch
 
 from pyspark.shell import spark
 from pyspark.sql import SparkSession
@@ -461,6 +462,17 @@ class UtilsTests(unittest.TestCase):
 
         self.assertTrue(Path("tmp-out").is_dir())
         self.assertTrue(Path("tmp-out/_SUCCESS").exists())
+
+    @patch("utils.utils.get_spark")
+    def test_read_from_parquet(self, get_spark_mock):
+        mock_spark = Mock()
+        mock_spark.read = mock_spark
+        mock_spark.parquet.return_value = None
+        get_spark_mock.return_value = mock_spark
+
+        utils.read_from_parquet("data_source")
+
+        mock_spark.parquet.assert_called_once_with("data_source")
 
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
