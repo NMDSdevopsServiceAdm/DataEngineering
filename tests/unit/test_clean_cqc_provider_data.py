@@ -1,12 +1,10 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-from pyspark.sql import SparkSession
 from utils import utils
 
 import jobs.clean_cqc_provider_data as job
 
-import tests.test_helpers as helpers
 from tests.test_file_schemas import CQCProviderSchemas as Schemas
 from tests.test_file_data import CQCProviderData as Data
 
