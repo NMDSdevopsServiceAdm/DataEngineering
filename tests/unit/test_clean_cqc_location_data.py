@@ -19,7 +19,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_cqc_locations_parquet = self.spark.createDataFrame(
+        self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.sample_rows_full, schema=Schemas.full_parquet_schema
         )
 
@@ -31,10 +31,10 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(self, read_from_parquet_patch, write_to_parquet_patch):
-        read_from_parquet_patch.return_value = self.test_cqc_locations_parquet
+        read_from_parquet_patch.return_value = self.test_clean_cqc_location_df
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_locations_parquet,
+            self.test_clean_cqc_location_df,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,
