@@ -92,6 +92,20 @@ module "ingest_ascwds_dataset_job" {
   }
 }
 
+module "ingest_ascwds_dataset_job" {
+  source          = "../modules/glue-job"
+  script_name     = "ingest_ascwds_worker_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--source"      = ""
+    "--destination" = ""
+  }
+}
+
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
