@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import jobs.ingest_ascwds_worker_data as job
 
-from tests.test_file_generator import generate_worker_parquet
 from tests.test_file_data import ASCWDSWorkerData
 from tests.test_file_schemas import ASCWDSWorkerSchemas
 from utils.utils import get_spark
