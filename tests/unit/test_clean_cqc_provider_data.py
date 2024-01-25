@@ -1,49 +1,59 @@
 import unittest
 from unittest.mock import Mock, patch
-import shutil
-import warnings
-
-import jobs.clean_cqc_provider_data as job
 
 from pyspark.sql import SparkSession
 
-from tests.test_file_generator import generate_cqc_providers_full_file
+import jobs.clean_cqc_provider_data as job
+
+import tests.test_helpers as helpers
+from tests.test_file_schemas import CQCProviderSchemas as Schemas
+from tests.test_file_data import CQCProviderData as Data
 
 
 class CleanCQCProviderDatasetTests(unittest.TestCase):
-    TEST_FULL_CQC_PROVIDERS_FILE = (
-        "tests/test_data/domain=cqc/dataset=providers/format=parquet"
-    )
+    TEST_SOURCE = "some/directory"
+    TEST_DESTINATION = "some/other/directory"
+    partition_keys = ["year", "month", "day", "import_date"]
 
     def setUp(self) -> None:
-        self.test_cqc_providers_parquet = generate_cqc_providers_full_file(None)
-        self.spark_mock = Mock()
-        type(self.spark_mock).read = self.spark_mock
-        self.spark_mock.option.return_value = self.spark_mock
+        self.spark = SparkSession.builder.appName(
+            "test_clean_cqc_provider_data"
+        ).getOrCreate()
+        self.test_cqc_providers_parquet = self.spark.createDataFrame(
+            Data.sample_rows_full, schema=Schemas.full_parquet_schema
+        )
+        self.spark_mock = helpers.create_spark_mock()
         self.spark_mock.parquet.return_value = self.test_cqc_providers_parquet
 
     def test_get_cqc_provider_df(self):
-        df = job.get_cqc_provider_df(self.TEST_FULL_CQC_PROVIDERS_FILE, self.spark_mock)
+        df = job.get_cqc_provider_df(self.TEST_SOURCE, self.spark_mock)
 
+        # Ensure specific functionality is called once
         self.spark_mock.read.option.assert_called_once_with(
-            "basePath", self.TEST_FULL_CQC_PROVIDERS_FILE
+            "basePath", self.TEST_SOURCE
         )
-        self.spark_mock.parquet.assert_called_once_with(
-            self.TEST_FULL_CQC_PROVIDERS_FILE
-        )
+        self.spark_mock.parquet.assert_called_once_with(self.TEST_SOURCE)
 
+        # Test data read doesn't lose any data
         self.assertEqual(df.count(), self.test_cqc_providers_parquet.count())
 
-        # is it retrieving the file
-        # is the file empty or not?
-        # Are particular columns present?
-        # Does it return a dataframe?
+        # Schema structure preserved
 
     def test_clean_cqc_provider_df(self):
+        # Test returned df is the same as the one passed in
         self.assertTrue(False)
 
-    def test_write_cleaned_provider_df_to_parquet(self):
-        self.assertTrue(False)
+    @patch("utils.utils.write_to_parquet")
+    def test_write_cleaned_provider_df_to_parquet(self, write_to_parquet_mock):
+        job.write_cleaned_provider_df_to_parquet(
+            self.test_cqc_providers_parquet, self.TEST_DESTINATION
+        )
+        write_to_parquet_mock.assert_called_once_with(
+            self.test_cqc_providers_parquet,
+            self.TEST_DESTINATION,
+            append=True,
+            partitionKeys=self.partition_keys,
+        )
 
     def test_main(self):
         self.assertTrue(False)
