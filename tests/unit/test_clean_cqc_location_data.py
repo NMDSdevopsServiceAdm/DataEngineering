@@ -1,12 +1,8 @@
 import unittest
-from unittest.mock import Mock, patch
-
-from pyspark.sql import SparkSession
-
+from unittest.mock import patch
 
 import jobs.clean_cqc_location_data as job
 
-import tests.test_helpers as helpers
 from tests.test_file_schemas import CQCLocationsSchemas as Schemas
 from tests.test_file_data import CQCLocationsData as Data
 
@@ -27,15 +23,14 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=Schemas.full_parquet_schema
         )
 
-    def test_clean_cqc_location_df(self):
-        # Test returned df is the same as the one passed in
+    def test_clean_cqc_location_df_returns_the_same_dataframe_it_is_passed_in(self):
         returned_df = job.clean_cqc_location_df(self.test_clean_cqc_location_df)
 
         self.assertEqual(self.test_clean_cqc_location_df, returned_df)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
+    def test_main_runs(self, read_from_parquet_patch, write_to_parquet_patch):
         read_from_parquet_patch.return_value = self.test_cqc_locations_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
