@@ -9,11 +9,9 @@ from pyspark.sql.types import (
     DoubleType,
     TimestampType,
     LongType,
-    FloatType,
 )
 import pyspark.sql.functions as F
 
-from pyspark.sql import DataFrame
 from schemas import cqc_care_directory_schema
 from utils import utils
 
