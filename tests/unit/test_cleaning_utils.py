@@ -1,14 +1,9 @@
 import unittest
-import warnings
-
-from pyspark.sql import SparkSession
 
 from utils import utils
 
 import utils.cleaning_utils as job
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
-)
+
 from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
 from tests.test_file_data import CleaningUtilsData as Data
 
