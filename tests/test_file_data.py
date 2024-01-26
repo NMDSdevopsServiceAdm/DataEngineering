@@ -344,3 +344,11 @@ class CleaningUtilsData:
         "102": "Spanish",
         "103": "Portuguese",
     }
+
+    replace_labels_rows = [
+        ("1", "1", "1"),
+        ("2", "2", "2"),
+        ("3", None, None),
+        ("3", None, "1"),
+        ("5", "2", None),
+    ]

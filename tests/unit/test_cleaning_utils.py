@@ -18,7 +18,10 @@ class TestCleaningUtils(unittest.TestCase):
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
-        self.label_dicts = {"gender": Data.gender, "nationality": Data.nationality}
+        self.replace_labels_df = self.spark.createDataFrame(
+            Data.replace_labels_rows, schema=Schemas.replace_labels_schema
+        )
+        self.label_dicts = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
         self.expected_categorical_labels = {
             "gender_labels": ["male", "male", "female", "female", None, "female"],
             "nationality_labels": [
@@ -36,7 +39,7 @@ class TestCleaningUtils(unittest.TestCase):
             self.test_worker_df,
             self.label_dicts,
             [AWK.gender, AWK.nationality],
-            new_column=True,
+            add_as_new_column=True,
         )
 
         self.assertIsNotNone(returned_df)
@@ -45,7 +48,7 @@ class TestCleaningUtils(unittest.TestCase):
         self,
     ):
         returned_df = job.apply_categorical_labels(
-            self.test_worker_df, self.label_dicts, [AWK.gender], new_column=True
+            self.test_worker_df, self.label_dicts, [AWK.gender], add_as_new_column=True
         )
 
         expected_columns = len(self.test_worker_df.columns) + 1
@@ -59,7 +62,7 @@ class TestCleaningUtils(unittest.TestCase):
             self.test_worker_df,
             self.label_dicts,
             [AWK.gender, AWK.nationality],
-            new_column=True,
+            add_as_new_column=True,
         )
 
         expected_columns = len(self.test_worker_df.columns) + 2
@@ -73,7 +76,7 @@ class TestCleaningUtils(unittest.TestCase):
             self.test_worker_df,
             self.label_dicts,
             [AWK.gender, AWK.nationality],
-            new_column=True,
+            add_as_new_column=True,
         )
         returned_data = returned_df.collect()
 
@@ -128,7 +131,7 @@ class TestCleaningUtils(unittest.TestCase):
         self,
     ):
         returned_df = job.apply_categorical_labels(
-            self.test_worker_df, self.label_dicts, [AWK.gender], new_column=False
+            self.test_worker_df, self.label_dicts, [AWK.gender], add_as_new_column=False
         )
 
         expected_columns = len(self.test_worker_df.columns)
@@ -142,7 +145,7 @@ class TestCleaningUtils(unittest.TestCase):
             self.test_worker_df,
             self.label_dicts,
             [AWK.gender, AWK.nationality],
-            new_column=False,
+            add_as_new_column=False,
         )
 
         expected_columns = len(self.test_worker_df.columns)
@@ -156,7 +159,7 @@ class TestCleaningUtils(unittest.TestCase):
             self.test_worker_df,
             self.label_dicts,
             [AWK.gender, AWK.nationality],
-            new_column=False,
+            add_as_new_column=False,
         )
         returned_data = returned_df.collect()
         
@@ -283,3 +286,113 @@ class TestCleaningUtils(unittest.TestCase):
             returned_data[5]["nationality_labels"],
             self.expected_categorical_labels["nationality_labels"][5],
         )
+
+    def test_replace_labels_replaces_values_in_situe_when_new_column_name_is_null(self):
+        returned_df = job.replace_labels(
+            self.replace_labels_df,
+            self.label_dicts,
+            AWK.gender,
+        )
+        returned_data = returned_df.collect()
+
+        expected_columns = {
+            "gender": ["male", "female", None, None, "female"],
+            "gender_labels": ["1", "2", None, "1", None],
+        }
+       
+
+        self.assertEqual(
+            returned_data[0]["gender"], expected_columns["gender"][0]
+        )
+        self.assertEqual(
+            returned_data[1]["gender"], expected_columns["gender"][1]
+        )
+        self.assertEqual(
+            returned_data[2]["gender"], expected_columns["gender"][2]
+        )
+        self.assertEqual(
+            returned_data[3]["gender"], expected_columns["gender"][3]
+        )
+        self.assertEqual(
+            returned_data[4]["gender"], expected_columns["gender"][4]
+        )
+
+
+        self.assertEqual(
+            returned_data[0]["gender_labels"], expected_columns["gender_labels"][0]
+        )
+        self.assertEqual(
+            returned_data[1]["gender_labels"], expected_columns["gender_labels"][1]
+        )
+        self.assertEqual(
+            returned_data[2]["gender_labels"], expected_columns["gender_labels"][2]
+        )
+        self.assertEqual(
+            returned_data[3]["gender_labels"], expected_columns["gender_labels"][3]
+        )
+        self.assertEqual(
+            returned_data[4]["gender_labels"], expected_columns["gender_labels"][4]
+        )
+
+
+
+    def test_replace_labels_replaces_values_in_new_column_when_new_column_name_is_supplied(self):
+        returned_df = job.replace_labels(
+            self.replace_labels_df,
+            self.label_dicts,
+            AWK.gender,
+            new_column_name="gender_labels"
+        )
+        returned_data = returned_df.collect()
+
+        expected_columns = {
+            "gender": ["1", "2", None, None, "2"],
+            "gender_labels": ["male", "female", None, "male", None],
+        }
+       
+
+        self.assertEqual(
+            returned_data[0]["gender"], expected_columns["gender"][0]
+        )
+        self.assertEqual(
+            returned_data[1]["gender"], expected_columns["gender"][1]
+        )
+        self.assertEqual(
+            returned_data[2]["gender"], expected_columns["gender"][2]
+        )
+        self.assertEqual(
+            returned_data[3]["gender"], expected_columns["gender"][3]
+        )
+        self.assertEqual(
+            returned_data[4]["gender"], expected_columns["gender"][4]
+        )
+
+
+        self.assertEqual(
+            returned_data[0]["gender_labels"], expected_columns["gender_labels"][0]
+        )
+        self.assertEqual(
+            returned_data[1]["gender_labels"], expected_columns["gender_labels"][1]
+        )
+        self.assertEqual(
+            returned_data[2]["gender_labels"], expected_columns["gender_labels"][2]
+        )
+        self.assertEqual(
+            returned_data[3]["gender_labels"], expected_columns["gender_labels"][3]
+        )
+        self.assertEqual(
+            returned_data[4]["gender_labels"], expected_columns["gender_labels"][4]
+        )
+
+    
+    def test_add_label_column_adds_a_new_column_with_the_correct_name(self):
+        returned_df, returned_new_column_name = job.add_label_column(
+            self.test_worker_df,
+            AWK.gender,
+        )
+        returned_df.show()
+        print(returned_df.columns)
+        expected_columns = [AWK.worker_id, AWK.gender, AWK.nationality, "gender_labels"]
+
+        self.assertCountEqual(returned_df.columns, expected_columns)
+        self.assertEqual(returned_new_column_name, expected_columns[3])
