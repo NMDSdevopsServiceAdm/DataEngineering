@@ -6,7 +6,7 @@ from pyspark.sql.types import (
     StringType,
     IntegerType,
     FloatType,
-    ArrayType,
+    DateType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -33,6 +33,10 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
+)
+
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
 )
 
 
@@ -179,5 +183,23 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ASCWDSWorkplaceSchemas:
+    workplace_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.total_staff, StringType(), True),
+            StructField(AWP.worker_records, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWP.is_parent, StringType(), True),
+            StructField(AWP.parent_id, StringType(), True),
+            StructField(AWP.last_logged_in, StringType(), True),
         ]
     )
