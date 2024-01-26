@@ -38,3 +38,13 @@ class TestCleaningUtils(unittest.TestCase):
         expected_columns = len(self.test_worker_df.columns) + 2
 
         self.assertEqual(len(returned_df.columns), expected_columns)
+    
+    def test_apply_categorical_labels_adds_new_columns_with_replaced_values_when_new_column_is_set_to_true(self):
+        returned_df = job.apply_categorical_labels(self.test_worker_df, self.label_dicts, [AWK.gender, AWK.nationality], new_column=True)
+        returned_data = returned_df.collect()
+        expected_data = {"gender_labels" : ["male", "male", "female", "female"], "nationality_labels" : ["British", "French", "Spanish", "Portuguese"],}
+
+        self.assertEqual(returned_data[0]["gender_labels"], expected_data["gender_labels"][0])
+        self.assertEqual(returned_data[1]["gender_labels"], expected_data["gender_labels"][1])
+        self.assertEqual(returned_data[2]["gender_labels"], expected_data["gender_labels"][2])
+        self.assertEqual(returned_data[3]["gender_labels"], expected_data["gender_labels"][3])

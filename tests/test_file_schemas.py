@@ -187,7 +187,7 @@ class ASCWDSWorkerSchemas:
 class CleaningUtilsSchemas:
     worker_schema = StructType(
         [
-            StructField(AWK.location_id, StringType(), True),
+            StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.gender, StringType(), True),
             StructField(AWK.nationality, StringType(), True),
         ]
