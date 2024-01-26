@@ -320,3 +320,25 @@ class CQCLocationsData:
             ],
         ),
     ]
+
+
+@dataclass
+class CleaningUtilsData:
+    worker_rows = [
+        ("1-000000001", "1", "100"),
+        ("1-000000001", "1", "101"),
+        ("1-000000001", "2", "102"),
+        ("1-000000001", "2", "103"),
+    ]
+
+    gender_labels = {
+        "1" : "male",
+        "2" : "female",
+    }
+
+    nationality_labels = {
+        "100": "British",
+        "101": "French",
+        "102" : "Spanish",
+        "103" : "Portuguese",
+    }
