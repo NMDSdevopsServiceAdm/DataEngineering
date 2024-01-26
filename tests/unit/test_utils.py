@@ -16,7 +16,6 @@ from pyspark.sql.types import (
     DateType,
     FloatType,
 )
-from pyspark.sql import functions as f
 
 import boto3
 from botocore.stub import Stubber
@@ -24,6 +23,10 @@ from botocore.response import StreamingBody
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
+
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCColNames,
+)
 
 
 class StubberType(Enum):
@@ -88,6 +91,7 @@ class UtilsTests(unittest.TestCase):
     example_csv_for_schema_tests_with_datetype = (
         "tests/test_data/example_csv_for_schema_tests_with_datetype.csv"
     )
+    example_parquet_path = "tests/test_data/example_parquet.parquet"
 
     # increase length of string to simulate realistic file size
     hundred_percent_string_boost = 100
@@ -455,6 +459,38 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
         self.assertEqual(df.count(), 3)
+
+    def test_read_from_parquet(self):
+        df = utils.read_from_parquet(self.example_parquet_path)
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.address_line_one,
+                CQCColNames.companies_house_number,
+                CQCColNames.constituency,
+                CQCColNames.county,
+                CQCColNames.deregistration_date,
+                CQCColNames.inspection_directorate,
+                CQCColNames.latitude,
+                CQCColNames.local_authority,
+                CQCColNames.location_ids,
+                CQCColNames.longitude,
+                CQCColNames.name,
+                CQCColNames.organisation_type,
+                CQCColNames.ownership_type,
+                CQCColNames.phone_number,
+                CQCColNames.postcode,
+                CQCColNames.provider_id,
+                CQCColNames.region,
+                CQCColNames.registration_date,
+                CQCColNames.registration_status,
+                CQCColNames.town_or_city,
+                CQCColNames.type,
+                CQCColNames.uprn,
+            ],
+        )
+        self.assertEqual(df.count(), 2270)
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)

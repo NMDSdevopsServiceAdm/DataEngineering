@@ -2,6 +2,14 @@ from dataclasses import dataclass
 
 
 @dataclass
+class PartitionKeys:
+    day: str = "day"
+    import_date: str = "import_date"
+    month: str = "month"
+    year: str = "year"
+
+
+@dataclass
 class PrepareLocationsColumns:
     ascwds_workplace_import_date: str = "ascwds_workplace_import_date"
     care_home: str = "carehome"
