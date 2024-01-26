@@ -706,7 +706,7 @@ class AscwdsWorkerColumns:
 
 @dataclass
 class PartitionKeys:
-    day: AscwdsWorkerColumns.day
-    import_date: str = AscwdsWorkerColumns.import_date
-    month: str = AscwdsWorkerColumns.month
     year: str = AscwdsWorkerColumns.year
+    month: str = AscwdsWorkerColumns.month
+    day: str = AscwdsWorkerColumns.day
+    import_date: str = AscwdsWorkerColumns.import_date

@@ -30,7 +30,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             self.test_ascwds_worker_df,
             "s3://some_bucket/some_destination_key",
             True,
-            ["version", "year", "month", "day", "import_date"],
+            ["year", "month", "day", "import_date"],
         )
 
 
