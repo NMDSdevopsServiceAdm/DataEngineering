@@ -10,7 +10,7 @@ cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 def main(cqc_location_source: str, cleaned_cqc_location_destintion: str):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
-    print(cqc_location_df)
+
     utils.write_to_parquet(
         cqc_location_df,
         cleaned_cqc_location_destintion,
