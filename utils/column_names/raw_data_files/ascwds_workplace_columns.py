@@ -609,3 +609,10 @@ class AscwdsWorkplaceColumns:
     worker_update: str = "workerupdate"
     workplace_status: str = "wkplacestat"
     year: str = "year"
+
+@dataclass
+class PartitionKeys:
+    year: str = AscwdsWorkplaceColumns.year
+    month: str = AscwdsWorkplaceColumns.month
+    day: str = AscwdsWorkplaceColumns.day
+    import_date: str = AscwdsWorkplaceColumns.import_date
