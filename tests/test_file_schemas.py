@@ -30,9 +30,6 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as LocationCols,
-)
 
 
 @dataclass
