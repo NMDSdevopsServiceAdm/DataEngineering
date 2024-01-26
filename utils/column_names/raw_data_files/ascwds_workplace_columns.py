@@ -610,6 +610,7 @@ class AscwdsWorkplaceColumns:
     workplace_status: str = "wkplacestat"
     year: str = "year"
 
+
 @dataclass
 class PartitionKeys:
     year: str = AscwdsWorkplaceColumns.year
