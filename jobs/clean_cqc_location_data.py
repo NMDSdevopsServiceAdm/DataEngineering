@@ -8,7 +8,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-
 def main(cqc_location_source: str, cleaned_cqc_location_destintion: str):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     print(cqc_location_df)
