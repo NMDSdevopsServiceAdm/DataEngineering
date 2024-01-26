@@ -22,7 +22,7 @@ def main(source: str, destination: str):
 
 
 if __name__ == "__main__":
-    print("Spark job 'ingest_ascwds_dataset' starting...")
+    print("Spark job 'ingest_ascwds_worker_dataset' starting...")
     print(f"Job parameters: {sys.argv}")
 
     source, destination = utils.collect_arguments(
