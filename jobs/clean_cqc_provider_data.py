@@ -1,7 +1,5 @@
 import sys
 
-import pyspark.sql.dataframe
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
