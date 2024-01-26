@@ -6,7 +6,6 @@ from pyspark.sql.types import (
     StringType,
     IntegerType,
     FloatType,
-    ArrayType,
 )
 
 from utils.estimate_job_count.column_names import (
