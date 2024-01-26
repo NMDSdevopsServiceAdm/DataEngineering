@@ -16,8 +16,8 @@ class TestCleaningUtils(unittest.TestCase):
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
-        self.label_dicts = {"gender": Data.gender_labels, 
-                            "nationality": Data.nationality_labels}
+        self.label_dicts = {"gender": Data.gender, 
+                            "nationality": Data.nationality}
 
 
     def test_apply_categorical_labels_completes(self):
