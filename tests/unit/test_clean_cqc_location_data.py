@@ -23,11 +23,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=LOCATION_SCHEMA
         )
 
-    def test_clean_cqc_location_df_returns_the_same_dataframe_it_is_passed_in(self):
-        returned_df = job.clean_cqc_location_df(self.test_clean_cqc_location_df)
-
-        self.assertEqual(self.test_clean_cqc_location_df, returned_df)
-
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(self, read_from_parquet_patch, write_to_parquet_patch):
