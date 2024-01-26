@@ -24,10 +24,11 @@ class SetupSpark(object):
         self.spark = self.setupSpark()
         return self.spark
 
-    def setupSpark(self):
+    def setupSpark(self) -> SparkSession:
         spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
+        spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInRead=LEGACY")
         return spark
 
 
@@ -108,6 +109,7 @@ def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
 
 def read_csv(source, delimiter=","):
     spark = get_spark()
+
     df = spark.read.option("delimiter", delimiter).csv(source, header=True)
 
     return df

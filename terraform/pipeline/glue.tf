@@ -106,6 +106,20 @@ module "ingest_ascwds_dataset_job" {
   }
 }
 
+module "clean_ascwds_worker_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ascwds_worker_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--ascwds_worker_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--ascwds_worker_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+  }
+}
+
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
@@ -384,6 +398,19 @@ module "clean_cqc_provider_data_job" {
   job_parameters = {
     "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
     "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
+  }
+}
+
+module "clean_cqc_location_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_cqc_location_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
+    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
   }
 }
 
