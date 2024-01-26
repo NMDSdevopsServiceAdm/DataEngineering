@@ -6,13 +6,14 @@ from utils import utils
 import jobs.clean_cqc_provider_data as job
 
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_data import CQCProviderData as Data
 
 
 class CleanCQCProviderDatasetTests(unittest.TestCase):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
-    partition_keys = ["year", "month", "day", "import_date"]
+    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
