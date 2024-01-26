@@ -332,13 +332,13 @@ class CleaningUtilsData:
     ]
 
     gender_labels = {
-        "1" : "male",
-        "2" : "female",
+        "1": "male",
+        "2": "female",
     }
 
     nationality_labels = {
         "100": "British",
         "101": "French",
-        "102" : "Spanish",
-        "103" : "Portuguese",
+        "102": "Spanish",
+        "103": "Portuguese",
     }
