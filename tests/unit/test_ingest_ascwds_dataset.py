@@ -22,6 +22,7 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
             ("1-000000002", "2452", "Not important"),
             ("1-000000003", "308", "Test input"),
             ("1-000000004", "1234", "Something else"),
+            ("1-000000005", "31138", "A new test account"),
         ]
 
         df = self.spark.createDataFrame(rows, columns)
