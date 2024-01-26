@@ -5,16 +5,10 @@ import pyspark.sql.dataframe
 from utils import utils
 
 
-def clean_cqc_provider_df(df_to_clean) -> pyspark.sql.DataFrame:
-    # Cleaning logic
-    return df_to_clean
-
-
 def main(cqc_source: str, cleaned_cqc_destination: str):
     cqc_provider_df = utils.read_from_parquet(cqc_source)
-    cleaned_cqc_provider_df = clean_cqc_provider_df(cqc_provider_df)
     utils.write_to_parquet(
-        cleaned_cqc_provider_df,
+        cqc_provider_df,
         cleaned_cqc_destination,
         append=True,
         partitionKeys=["year", "month", "day", "import_date"],
