@@ -3,6 +3,9 @@ import sys
 import pyspark.sql.dataframe
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(cqc_source: str, cleaned_cqc_destination: str):
@@ -11,7 +14,7 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
         cqc_provider_df,
         cleaned_cqc_destination,
         append=True,
-        partitionKeys=["year", "month", "day", "import_date"],
+        partitionKeys=cqcPartitionKeys,
     )
 
 
