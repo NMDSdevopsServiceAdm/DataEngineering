@@ -203,3 +203,120 @@ class CQCProviderData:
             "Southampton",
         ),
     ]
+
+
+@dataclass
+class CQCLocationsData:
+    sample_rows_full = [
+        (
+            "location1",
+            "provider1",
+            "Location",
+            "Social Care Org",
+            "name of location",
+            "E00000001",
+            "NHS West Sussex CCG",
+            "ABC1D",
+            "123456789",
+            "Registered",
+            "2020-01-01",
+            None,
+            "N",
+            20,
+            "www.website.org",
+            "1 The Street",
+            "Leeds",
+            "West Yorkshire",
+            "Yorkshire",
+            "LS1 2AB",
+            50.123455,
+            -5.6789,
+            "Y",
+            "Adult social care",
+            "01234567891",
+            "Woking",
+            "Trafford",
+            {"date": "2021-01-15"},
+            {"publicationdate": "2021-02-15"},
+            [
+                {
+                    "relatedlocationid": "1-23456",
+                    "relatedlocationname": "CarePlace",
+                    "type": "HSCA Predecessor",
+                    "reason": "Location Move",
+                }
+            ],
+            [
+                {
+                    "name": "Personal care",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "persontitle": "Mr",
+                            "persongivenname": "John",
+                            "personfamilyname": "Doe",
+                            "personroles": ["Registered Manager"],
+                        }
+                    ],
+                }
+            ],
+            [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
+            [
+                {
+                    "code": "S2",
+                    "primary": "true",
+                    "name": "Community based adult social care services",
+                }
+            ],
+            [{"name": "Services for everyone"}],
+            {
+                "overall": {
+                    "rating": "Good",
+                    "reportdate": "2020-01-01",
+                    "reportlinkid": "1234abcd5678",
+                    "keyquestionratings": [
+                        {
+                            "name": "Safe",
+                            "rating": "Good",
+                            "reportdate": "2020-01-01",
+                            "reportlinkid": "1234abcd5678",
+                        },
+                        {
+                            "name": "Well-led",
+                            "rating": "Good",
+                            "reportdate": "2020-01-01",
+                            "reportlinkid": "1234abcd5678",
+                        },
+                        {
+                            "name": "Caring",
+                            "rating": "Good",
+                            "reportdate": "2020-01-01",
+                            "reportlinkid": "1234abcd5678",
+                        },
+                        {
+                            "name": "Responsive",
+                            "rating": "Good",
+                            "reportdate": "2020-01-01",
+                            "reportlinkid": "1234abcd5678",
+                        },
+                        {
+                            "name": "Effective",
+                            "rating": "Good",
+                            "reportdate": "2020-01-01",
+                            "reportlinkid": "1234abcd5678",
+                        },
+                    ],
+                }
+            },
+            None,
+            [
+                {
+                    "linkid": "zyx123",
+                    "reportdate": "2021-02-10",
+                    "reporturi": "/reports/zyx123",
+                    "firstvisitdate": "2020-01-01",
+                    "reporttype": "Location",
+                }
+            ],
+        ),
+    ]
