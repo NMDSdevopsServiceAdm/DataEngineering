@@ -101,7 +101,7 @@ module "clean_ascwds_worker_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--ascwds_worker_source"      = "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
+    "--ascwds_worker_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--ascwds_worker_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
   }
 }
