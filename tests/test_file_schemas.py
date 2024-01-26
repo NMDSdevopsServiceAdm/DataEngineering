@@ -32,7 +32,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 )
 
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AW,
+    AscwdsWorkerColumns as AWK,
 )
 
 
@@ -175,9 +175,9 @@ class CalculatePaRatioSchemas:
 class ASCWDSWorkerSchemas:
     worker_schema = StructType(
         [
-            StructField(AW.location_id, StringType(), True),
-            StructField(AW.worker_id, StringType(), True),
-            StructField(AW.main_job_role_id, StringType(), True),
-            StructField(AW.import_date, StringType(), True),
+            StructField(AWK.location_id, StringType(), True),
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.main_job_role_id, StringType(), True),
+            StructField(AWK.import_date, StringType(), True),
         ]
     )
