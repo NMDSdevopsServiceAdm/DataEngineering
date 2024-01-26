@@ -181,3 +181,14 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.import_date, StringType(), True),
         ]
     )
+
+
+@dataclass
+class CleaningUtilsData:
+    worker_schema = StructType(
+        [
+            StructField(AWK.location_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+        ]
+    )
