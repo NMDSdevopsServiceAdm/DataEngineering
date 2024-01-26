@@ -5,7 +5,7 @@ from utils import utils
 
 import jobs.clean_cqc_provider_data as job
 
-from tests.test_file_schemas import CQCProviderSchemas as Schemas
+from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from tests.test_file_data import CQCProviderData as Data
 
 
@@ -17,7 +17,7 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_cqc_providers_parquet = self.spark.createDataFrame(
-            Data.sample_rows_full, schema=Schemas.full_parquet_schema
+            Data.sample_rows_full, schema=PROVIDER_SCHEMA
         )
 
     def test_clean_cqc_provider_df(self):
