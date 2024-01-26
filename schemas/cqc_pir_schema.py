@@ -10,7 +10,7 @@ from utils.column_names.raw_data_files.cqc_pir_columns import (
 )
 
 
-PIR = StructType(
+PIR_SCHEMA = StructType(
     fields=[
         StructField(ColNames.location_id, StringType(), False),
         StructField(ColNames.location_name, StringType(), False),
