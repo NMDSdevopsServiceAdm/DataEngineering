@@ -19,7 +19,7 @@ class CreateJobEstimatesDiagnosticsData:
     ]
     prepare_capacity_tracker_care_home_rows = [
         ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
-        ("location_2", Values.non_residential,  None, None, None, None, None, None, 30.0,),
+        ("location_2", Values.non_residential, None, None, None, None, None, None, 30.0,),
     ]
     prepare_capacity_tracker_non_residential_rows = [
         ("location_1", Values.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
