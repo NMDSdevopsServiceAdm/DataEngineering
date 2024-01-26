@@ -72,8 +72,8 @@ module "clean_cqc_pir_data_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--cqc_pir_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--cqc_pir_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
+    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
   }
 }
 
