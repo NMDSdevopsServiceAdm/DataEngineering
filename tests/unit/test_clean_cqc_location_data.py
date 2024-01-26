@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import jobs.clean_cqc_location_data as job
 
-from tests.test_file_schemas import CQCLocationsSchemas as Schemas
+from schemas.cqc_location_schema import LOCATION_SCHEMA
 from tests.test_file_data import CQCLocationsData as Data
 
 from utils import utils
@@ -20,7 +20,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
-            Data.sample_rows_full, schema=Schemas.full_parquet_schema
+            Data.sample_rows_full, schema=LOCATION_SCHEMA
         )
 
     def test_clean_cqc_location_df_returns_the_same_dataframe_it_is_passed_in(self):
