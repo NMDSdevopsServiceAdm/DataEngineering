@@ -702,3 +702,11 @@ class AscwdsWorkerColumns:
     zero_hours: str = "zerohours"
     zero_hours_change_date: str = "zerohours_changedate"
     zero_hours_save_date: str = "zerohours_savedate"
+
+
+@dataclass
+class PartitionKeys:
+    day: AscwdsWorkerColumns.day
+    import_date: str = AscwdsWorkerColumns.import_date
+    month: str = AscwdsWorkerColumns.month
+    year: str = AscwdsWorkerColumns.year

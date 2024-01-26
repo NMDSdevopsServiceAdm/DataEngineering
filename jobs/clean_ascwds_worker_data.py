@@ -1,6 +1,7 @@
 import sys
 
 from utils import utils
+from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 
 
 def main(source: str, destination: str):
@@ -11,7 +12,12 @@ def main(source: str, destination: str):
         ascwds_worker_df,
         destination,
         True,
-        ["version", "year", "month", "day", "import_date"],
+        [
+            PartitionKeys.year,
+            PartitionKeys.month,
+            PartitionKeys.day,
+            PartitionKeys.import_date,
+        ],
     )
 
 
