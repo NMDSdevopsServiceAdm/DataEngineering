@@ -18,15 +18,6 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
     )
 
 
-def main(cqc_source: str, cleaned_cqc_destination: str):
-    spark = utils.get_spark()
-    cqc_provider_df = get_cqc_provider_df(cqc_source, spark)
-    cleaned_cqc_provider_df = clean_cqc_provider_df(cqc_provider_df)
-    write_cleaned_provider_df_to_parquet(
-        cleaned_cqc_provider_df, cleaned_cqc_destination
-    )
-
-
 if __name__ == "__main__":
     # Where we tell Glue how to run the file, and what to print out
     print("Spark job 'clean_cqc_provider_data' starting...")

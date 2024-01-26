@@ -22,19 +22,16 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         )
 
     @patch("utils.utils.write_to_parquet")
-    def test_write_cleaned_provider_df_to_parquet(self, write_to_parquet_mock):
-        job.write_cleaned_provider_df_to_parquet(
-            self.test_cqc_providers_parquet, self.TEST_DESTINATION
-        )
-        write_to_parquet_mock.assert_called_once_with(
+    @patch("utils.utils.read_from_parquet")
+    def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
+        read_from_parquet_patch.return_value = self.test_cqc_providers_parquet
+        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+        write_to_parquet_patch.assert_called_once_with(
             self.test_cqc_providers_parquet,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,
         )
-
-    def test_main(self):
-        self.assertTrue(False)
 
 
 if __name__ == "__main__":
