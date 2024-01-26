@@ -120,3 +120,97 @@ class TestCleaningUtils(unittest.TestCase):
             returned_data[5]["nationality_labels"],
             expected_data["nationality_labels"][5],
         )
+
+
+
+
+    def test_apply_categorical_labels_does_not_add_a_new_column_when_given_one_column_and_new_column_is_set_to_false(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.test_worker_df, self.label_dicts, [AWK.gender], new_column=False
+        )
+
+        expected_columns = len(self.test_worker_df.columns)
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+
+    def test_apply_categorical_labels_does_not_add_new_columns_when_given_two_columns_and_new_column_is_set_to_false(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.test_worker_df,
+            self.label_dicts,
+            [AWK.gender, AWK.nationality],
+            new_column=False,
+        )
+
+        expected_columns = len(self.test_worker_df.columns)
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+
+    def test_apply_categorical_labels_replaces_values_when_new_column_is_set_to_false(
+        self,
+    ):
+        returned_df = job.apply_categorical_labels(
+            self.test_worker_df,
+            self.label_dicts,
+            [AWK.gender, AWK.nationality],
+            new_column=False,
+        )
+        returned_data = returned_df.collect()
+        expected_data = {
+            "gender": ["male", "male", "female", "female", None, "female"],
+            "nationality": [
+                "British",
+                "French",
+                "Spanish",
+                "Portuguese",
+                "Portuguese",
+                None,
+            ],
+        }
+
+        self.assertEqual(
+            returned_data[0]["gender"], expected_data["gender"][0]
+        )
+        self.assertEqual(
+            returned_data[1]["gender"], expected_data["gender"][1]
+        )
+        self.assertEqual(
+            returned_data[2]["gender"], expected_data["gender"][2]
+        )
+        self.assertEqual(
+            returned_data[3]["gender"], expected_data["gender"][3]
+        )
+        self.assertEqual(
+            returned_data[4]["gender"], expected_data["gender"][4]
+        )
+        self.assertEqual(
+            returned_data[5]["gender"], expected_data["gender"][5]
+        )
+
+        self.assertEqual(
+            returned_data[0]["nationality"],
+            expected_data["nationality"][0],
+        )
+        self.assertEqual(
+            returned_data[1]["nationality"],
+            expected_data["nationality"][1],
+        )
+        self.assertEqual(
+            returned_data[2]["nationality"],
+            expected_data["nationality"][2],
+        )
+        self.assertEqual(
+            returned_data[3]["nationality"],
+            expected_data["nationality"][3],
+        )
+        self.assertEqual(
+            returned_data[4]["nationality"],
+            expected_data["nationality"][4],
+        )
+        self.assertEqual(
+            returned_data[5]["nationality"],
+            expected_data["nationality"][5],
+        )
