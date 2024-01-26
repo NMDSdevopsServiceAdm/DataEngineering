@@ -89,6 +89,16 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
     return output_dir
 
 
+def read_from_parquet(data_source) -> pyspark.sql.DataFrame:
+    """
+    Reads a parquet file from a provided source into a DataFrame
+    """
+    spark_session = get_spark()
+    print(f"Reading data from {data_source}")
+
+    return spark_session.read.parquet(data_source)
+
+
 def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
     if append:
         df.write.mode("append").partitionBy(*partitionKeys).parquet(output_dir)

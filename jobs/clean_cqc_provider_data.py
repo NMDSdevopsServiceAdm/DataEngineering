@@ -3,30 +3,18 @@ import sys
 import pyspark.sql.dataframe
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-def get_cqc_provider_df(cqc_provider_source, spark_session) -> pyspark.sql.DataFrame:
-    print(f"Reading CQC providers parquet from {cqc_provider_source}")
-    cqc_provider_df = spark_session.read.option(
-        "basePath", cqc_provider_source
-    ).parquet(  # used for partitioning
-        cqc_provider_source
-    )
-
-    return cqc_provider_df
-
-
-def clean_cqc_provider_df(df_to_clean) -> pyspark.sql.DataFrame:
-    # Cleaning logic
-    return df_to_clean
-
-
-def write_cleaned_provider_df_to_parquet(dataFrame, destination) -> None:
+def main(cqc_source: str, cleaned_cqc_destination: str):
+    cqc_provider_df = utils.read_from_parquet(cqc_source)
     utils.write_to_parquet(
-        dataFrame,
-        destination,
+        cqc_provider_df,
+        cleaned_cqc_destination,
         append=True,
-        partitionKeys=["year", "month", "day", "import_date"],
+        partitionKeys=cqcPartitionKeys,
     )
 
 
