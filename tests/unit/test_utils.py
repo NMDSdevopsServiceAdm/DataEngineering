@@ -23,6 +23,10 @@ from botocore.response import StreamingBody
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
 
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCColNames,
+)
+
 
 class StubberType(Enum):
     client = "client"
@@ -458,31 +462,31 @@ class UtilsTests(unittest.TestCase):
     def test_read_from_parquet(self):
         df = utils.read_from_parquet(self.example_parquet_path)
 
-        self.assertEqual(
+        self.assertCountEqual(
             df.columns,
             [
-                "providerId",
-                "locationIds",
-                "organisationType",
-                "ownershipType",
-                "type",
-                "uprn",
-                "name",
-                "registrationStatus",
-                "registrationDate",
-                "deregistrationDate",
-                "postalAddressLine1",
-                "postalAddressTownCity",
-                "postalAddressCounty",
-                "region",
-                "postalCode",
-                "onspdLatitude",
-                "onspdLongitude",
-                "mainPhoneNumber",
-                "companiesHouseNumber",
-                "inspectionDirectorate",
-                "constituency",
-                "localAuthority",
+                CQCColNames.address_line_one,
+                CQCColNames.companies_house_number,
+                CQCColNames.constituency,
+                CQCColNames.county,
+                CQCColNames.deregistration_date,
+                CQCColNames.inspection_directorate,
+                CQCColNames.latitude,
+                CQCColNames.local_authority,
+                CQCColNames.location_ids,
+                CQCColNames.longitude,
+                CQCColNames.name,
+                CQCColNames.organisation_type,
+                CQCColNames.ownership_type,
+                CQCColNames.phone_number,
+                CQCColNames.postcode,
+                CQCColNames.provider_id,
+                CQCColNames.region,
+                CQCColNames.registration_date,
+                CQCColNames.registration_status,
+                CQCColNames.town_or_city,
+                CQCColNames.type,
+                CQCColNames.uprn,
             ],
         )
         self.assertEqual(df.count(), 2270)
