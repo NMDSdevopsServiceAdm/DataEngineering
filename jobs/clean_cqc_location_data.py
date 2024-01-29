@@ -1,14 +1,20 @@
 import sys
 
 from utils import utils
+
+from pyspark.sql.dataframe import DataFrame
+
+import pyspark.sql.functions as F
+
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CleanedColumns,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns,
 )
-from pyspark.sql.dataframe import DataFrame
-import pyspark.sql.functions as F
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -32,7 +38,7 @@ def main(cqc_location_source: str, cleaned_cqc_location_destintion: str):
 
 def allocate_primary_service_type(df: DataFrame):
     return df.withColumn(
-        "primary_service_type",
+        CleanedColumns.primary_service_type,
         F.when(
             F.array_contains(
                 df[CqcLocationApiColumns.gac_service_types].description,
