@@ -200,4 +200,11 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    labels_schema = StructType(
+        [
+            StructField("key", StringType(), True),
+            StructField("value", StringType(), True),
+        ]
+    )
+
     

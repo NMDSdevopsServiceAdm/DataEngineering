@@ -21,7 +21,7 @@ class TestCleaningUtils(unittest.TestCase):
         self.replace_labels_df = self.spark.createDataFrame(
             Data.replace_labels_rows, schema=Schemas.replace_labels_schema
         )
-        self.label_dicts = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
+        self.label_df = self.spark.createDataFrame(Data.gender, Schemas.labels_schema)
         self.expected_categorical_labels = {
             "gender_labels": ["male", "male", "female", "female", None, "female"],
             "nationality_labels": [
@@ -297,8 +297,7 @@ class TestCleaningUtils(unittest.TestCase):
     def test_replace_labels_replaces_values_in_situe_when_new_column_name_is_null(self):
         returned_df = job.replace_labels(
             self.replace_labels_df,
-            self.spark,
-            self.label_dicts,
+            self.label_df,
             AWK.gender,
         )
         returned_data = returned_df.collect()
@@ -335,8 +334,7 @@ class TestCleaningUtils(unittest.TestCase):
     def test_replace_labels_replaces_values_in_new_column_when_new_column_name_is_supplied(self):
         returned_df = job.replace_labels(
             self.replace_labels_df,
-            self.spark,
-            self.label_dicts,
+            self.label_df,
             AWK.gender,
             new_column_name="gender_labels"
         )
