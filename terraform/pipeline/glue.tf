@@ -120,6 +120,20 @@ module "clean_ascwds_worker_job" {
   }
 }
 
+module "clean_ascwds_workplace_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ascwds_workplace_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+  }
+}
+
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
