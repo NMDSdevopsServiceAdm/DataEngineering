@@ -197,6 +197,7 @@ class CleaningUtilsSchemas:
         [
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.gender, StringType(), True),
-            StructField("gender_labels", StringType(), True),
         ]
     )
+
+    

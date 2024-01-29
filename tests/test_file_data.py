@@ -333,22 +333,22 @@ class CleaningUtilsData:
         ("6", "2", None),
     ]
 
-    gender = {
-        "1": "male",
-        "2": "female",
-    }
+    gender = [
+        ("1", "male"),
+        ("2", "female"),
+    ]
 
-    nationality = {
-        "100": "British",
-        "101": "French",
-        "102": "Spanish",
-        "103": "Portuguese",
-    }
+    nationality = [
+        ("100", "British"),
+        ("101", "French"),
+        ("102", "Spanish"),
+        ("103", "Portuguese"),
+    ]
 
     replace_labels_rows = [
-        ("1", "1", "1"),
-        ("2", "2", "2"),
-        ("3", None, None),
-        ("3", None, "1"),
-        ("5", "2", None),
+        ("1", "1"),
+        ("2", "2"),
+        ("3", None),
+        ("4", None),
+        ("5", "2"),
     ]
