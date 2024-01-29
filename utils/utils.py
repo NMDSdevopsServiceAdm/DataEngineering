@@ -97,7 +97,7 @@ def read_from_parquet(data_source) -> pyspark.sql.DataFrame:
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    return spark_session.read.parquet(data_source)
+    return spark_session.read.option("basePath", data_source).parquet(data_source)
 
 
 def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
