@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import ANY, patch
+import pyspark.sql.functions as F
 
 import jobs.clean_cqc_location_data as job
 
@@ -44,18 +45,20 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             schema=CQCLocationsSchema.primary_service_type_schema,
         )
 
-        new_df = job.allocate_primary_service_type(test_primary_service_df)
+        output_df = job.allocate_primary_service_type(test_primary_service_df)
 
-        self.assertTrue(PRIMARY_SERVICE_TYPE_COLUMN_NAME in new_df.columns)
+        self.assertTrue(PRIMARY_SERVICE_TYPE_COLUMN_NAME in output_df.columns)
 
-        rows = new_df.collect()
-        self.assertEqual(rows[0][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "non-residential")
-        self.assertEqual(
-            rows[1][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "Care home with nursing"
-        )
-        self.assertEqual(
-            rows[2][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "Care home without nursing"
-        )
+        primary_service_values = output_df.select(
+            F.collect_list(PRIMARY_SERVICE_TYPE_COLUMN_NAME)
+        ).first()[0]
+
+        self.assertEqual(len(primary_service_values), 5)
+        self.assertEqual(primary_service_values[0], job.NONE_RESIDENTIAL_IDENTIFIER)
+        self.assertEqual(primary_service_values[1], job.NURSING_HOME_IDENTIFIER)
+        self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
+        self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
+        self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
 
 
 if __name__ == "__main__":
