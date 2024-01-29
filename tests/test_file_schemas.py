@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     IntegerType,
     FloatType,
+    ArrayType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -32,6 +33,10 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
+)
+
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
 )
 
 
@@ -178,5 +183,26 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CQCLocationsSchema:
+    primary_service_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )

@@ -1,10 +1,11 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import jobs.clean_cqc_location_data as job
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from tests.test_file_data import CQCLocationsData as Data
+from tests.test_file_schemas import CQCLocationsSchema
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -29,10 +30,31 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         read_from_parquet_patch.return_value = self.test_clean_cqc_location_df
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            self.test_clean_cqc_location_df,
+            ANY,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,
+        )
+
+    def test_allocate_primary_service_type(self):
+        PRIMARY_SERVICE_TYPE_COLUMN_NAME = "primary_service_type"
+
+        test_primary_service_df = self.spark.createDataFrame(
+            Data.primary_service_type_rows,
+            schema=CQCLocationsSchema.primary_service_type_schema,
+        )
+
+        new_df = job.allocate_primary_service_type(test_primary_service_df)
+
+        self.assertTrue(PRIMARY_SERVICE_TYPE_COLUMN_NAME in new_df.columns)
+
+        rows = new_df.collect()
+        self.assertEqual(rows[0][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "non-residential")
+        self.assertEqual(
+            rows[1][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "Care home with nursing"
+        )
+        self.assertEqual(
+            rows[2][PRIMARY_SERVICE_TYPE_COLUMN_NAME], "Care home without nursing"
         )
 
 
