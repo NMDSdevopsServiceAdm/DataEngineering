@@ -206,5 +206,3 @@ class CleaningUtilsSchemas:
             StructField("value", StringType(), True),
         ]
     )
-
-    
