@@ -20,7 +20,7 @@ def apply_categorical_labels(
     add_as_new_column: bool = True,
 ) -> DataFrame:
     for column_name in column_names:
-        labels_df = convert_labels_dict_to_dataframe(labels, column_name, spark)
+        labels_df = convert_labels_dict_to_dataframe(labels[column_name], spark)
         if add_as_new_column == True:
             new_column_name = column_name + "_labels"
             df = replace_labels(df, labels_df, column_name, new_column_name)
@@ -43,21 +43,19 @@ def drop_unecessary_columns(
     if new_column_name == None:
         new_column_name = column_name
         df = df.drop(key, column_name)
-        df = df.withColumnRenamed(value, new_column_name)
     else:
-        df = df.withColumnRenamed(value, new_column_name)
         df = df.drop(key)
+    df = df.withColumnRenamed(value, new_column_name)
+
     return df
 
 
-def convert_labels_dict_to_dataframe(
-    labels: dict, column_name: str, spark: SparkSession
-) -> DataFrame:
+def convert_labels_dict_to_dataframe(labels: dict, spark: SparkSession) -> DataFrame:
     labels_schema = StructType(
         [
             StructField(key, StringType(), True),
             StructField(value, StringType(), True),
         ]
     )
-    labels_df = spark.createDataFrame(labels[column_name], labels_schema)
+    labels_df = spark.createDataFrame(labels, labels_schema)
     return labels_df

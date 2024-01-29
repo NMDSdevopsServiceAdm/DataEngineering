@@ -22,6 +22,7 @@ class TestCleaningUtils(unittest.TestCase):
             Data.replace_labels_rows, schema=Schemas.replace_labels_schema
         )
         self.label_df = self.spark.createDataFrame(Data.gender, Schemas.labels_schema)
+        self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
         self.expected_categorical_labels = {
             "gender_labels": ["male", "male", "female", "female", None, "female"],
             "nationality_labels": [
@@ -38,7 +39,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
@@ -51,7 +52,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender],
             add_as_new_column=True,
         )
@@ -66,7 +67,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
@@ -81,7 +82,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=True,
         )
@@ -143,7 +144,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender],
             add_as_new_column=False,
         )
@@ -158,7 +159,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=False,
         )
@@ -173,7 +174,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
             add_as_new_column=False,
         )
@@ -233,7 +234,7 @@ class TestCleaningUtils(unittest.TestCase):
         self,
     ):
         returned_df = job.apply_categorical_labels(
-            self.test_worker_df, self.spark, self.label_dicts, [AWK.gender]
+            self.test_worker_df, self.spark, self.label_dict, [AWK.gender]
         )
 
         expected_columns = len(self.test_worker_df.columns) + 1
@@ -246,7 +247,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
         )
 
@@ -260,7 +261,7 @@ class TestCleaningUtils(unittest.TestCase):
         returned_df = job.apply_categorical_labels(
             self.test_worker_df,
             self.spark,
-            self.label_dicts,
+            self.label_dict,
             [AWK.gender, AWK.nationality],
         )
         returned_data = returned_df.sort(AWK.worker_id).collect()
