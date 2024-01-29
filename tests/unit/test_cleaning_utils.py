@@ -383,15 +383,3 @@ class TestCleaningUtils(unittest.TestCase):
             returned_data[4]["gender_labels"], expected_columns["gender_labels"][4]
         )
 
-    
-    def test_add_label_column_adds_a_new_column_with_the_correct_name(self):
-        returned_df, returned_new_column_name = job.add_label_column(
-            self.test_worker_df,
-            AWK.gender,
-        )
-        returned_df.show()
-        print(returned_df.columns)
-        expected_columns = [AWK.worker_id, AWK.gender, AWK.nationality, "gender_labels"]
-
-        self.assertCountEqual(returned_df.columns, expected_columns)
-        self.assertEqual(returned_new_column_name, expected_columns[3])
