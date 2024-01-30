@@ -10,9 +10,12 @@ from tests.test_file_data import CleaningUtilsData as Data
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
+gender_labels:str ="gender_labels"
+nationality_labels:str = "nationality_labels"
 
 
 class TestCleaningUtils(unittest.TestCase):
+    
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_worker_df = self.spark.createDataFrame(
@@ -24,8 +27,8 @@ class TestCleaningUtils(unittest.TestCase):
         self.label_df = self.spark.createDataFrame(Data.gender, Schemas.labels_schema)
         self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
         self.expected_categorical_labels = {
-            "gender_labels": ["male", "male", "female", "female", None, "female"],
-            "nationality_labels": [
+            gender_labels: ["male", "male", "female", "female", None, "female"],
+            nationality_labels: [
                 "British",
                 "French",
                 "Spanish",
@@ -89,53 +92,53 @@ class TestCleaningUtils(unittest.TestCase):
         returned_data = returned_df.sort(AWK.worker_id).collect()
 
         self.assertEqual(
-            returned_data[0]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][0],
+            returned_data[0][gender_labels],
+            self.expected_categorical_labels[gender_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][1],
+            returned_data[1][gender_labels],
+            self.expected_categorical_labels[gender_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][2],
+            returned_data[2][gender_labels],
+            self.expected_categorical_labels[gender_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][3],
+            returned_data[3][gender_labels],
+            self.expected_categorical_labels[gender_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][4],
+            returned_data[4][gender_labels],
+            self.expected_categorical_labels[gender_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][5],
+            returned_data[5][gender_labels],
+            self.expected_categorical_labels[gender_labels][5],
         )
 
         self.assertEqual(
-            returned_data[0]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][0],
+            returned_data[0][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][1],
+            returned_data[1][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][2],
+            returned_data[2][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][3],
+            returned_data[3][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][4],
+            returned_data[4][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][5],
+            returned_data[5][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][5],
         )
 
     def test_apply_categorical_labels_does_not_add_a_new_column_when_given_one_column_and_new_column_is_set_to_false(
@@ -181,53 +184,53 @@ class TestCleaningUtils(unittest.TestCase):
         returned_data = returned_df.sort(AWK.worker_id).collect()
 
         self.assertEqual(
-            returned_data[0]["gender"],
-            self.expected_categorical_labels["gender_labels"][0],
+            returned_data[0][AWK.gender],
+            self.expected_categorical_labels[gender_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["gender"],
-            self.expected_categorical_labels["gender_labels"][1],
+            returned_data[1][AWK.gender],
+            self.expected_categorical_labels[gender_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["gender"],
-            self.expected_categorical_labels["gender_labels"][2],
+            returned_data[2][AWK.gender],
+            self.expected_categorical_labels[gender_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["gender"],
-            self.expected_categorical_labels["gender_labels"][3],
+            returned_data[3][AWK.gender],
+            self.expected_categorical_labels[gender_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["gender"],
-            self.expected_categorical_labels["gender_labels"][4],
+            returned_data[4][AWK.gender],
+            self.expected_categorical_labels[gender_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["gender"],
-            self.expected_categorical_labels["gender_labels"][5],
+            returned_data[5][AWK.gender],
+            self.expected_categorical_labels[gender_labels][5],
         )
 
         self.assertEqual(
-            returned_data[0]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][0],
+            returned_data[0][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][1],
+            returned_data[1][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][2],
+            returned_data[2][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][3],
+            returned_data[3][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][4],
+            returned_data[4][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["nationality"],
-            self.expected_categorical_labels["nationality_labels"][5],
+            returned_data[5][AWK.nationality],
+            self.expected_categorical_labels[nationality_labels][5],
         )
 
     def test_apply_categorical_labels_adds_a_new_column_when_given_one_column_and_new_column_is_undefined(
@@ -267,53 +270,53 @@ class TestCleaningUtils(unittest.TestCase):
         returned_data = returned_df.sort(AWK.worker_id).collect()
 
         self.assertEqual(
-            returned_data[0]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][0],
+            returned_data[0][gender_labels],
+            self.expected_categorical_labels[gender_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][1],
+            returned_data[1][gender_labels],
+            self.expected_categorical_labels[gender_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][2],
+            returned_data[2][gender_labels],
+            self.expected_categorical_labels[gender_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][3],
+            returned_data[3][gender_labels],
+            self.expected_categorical_labels[gender_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][4],
+            returned_data[4][gender_labels],
+            self.expected_categorical_labels[gender_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["gender_labels"],
-            self.expected_categorical_labels["gender_labels"][5],
+            returned_data[5][gender_labels],
+            self.expected_categorical_labels[gender_labels][5],
         )
 
         self.assertEqual(
-            returned_data[0]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][0],
+            returned_data[0][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][0],
         )
         self.assertEqual(
-            returned_data[1]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][1],
+            returned_data[1][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][1],
         )
         self.assertEqual(
-            returned_data[2]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][2],
+            returned_data[2][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][2],
         )
         self.assertEqual(
-            returned_data[3]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][3],
+            returned_data[3][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][3],
         )
         self.assertEqual(
-            returned_data[4]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][4],
+            returned_data[4][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][4],
         )
         self.assertEqual(
-            returned_data[5]["nationality_labels"],
-            self.expected_categorical_labels["nationality_labels"][5],
+            returned_data[5][nationality_labels],
+            self.expected_categorical_labels[nationality_labels][5],
         )
 
     def test_replace_labels_replaces_values_in_situe_when_new_column_name_is_null(self):
@@ -325,18 +328,18 @@ class TestCleaningUtils(unittest.TestCase):
         returned_data = returned_df.collect()
 
         expected_columns = {
-            "gender": ["male", "female", None, None, "female"],
+            AWK.gender: ["male", "female", None, None, "female"],
         }
 
         expected_columns_count = len(self.replace_labels_df.columns)
 
         self.assertEqual(len(returned_df.columns), expected_columns_count)
 
-        self.assertEqual(returned_data[0]["gender"], expected_columns["gender"][0])
-        self.assertEqual(returned_data[1]["gender"], expected_columns["gender"][1])
-        self.assertEqual(returned_data[2]["gender"], expected_columns["gender"][2])
-        self.assertEqual(returned_data[3]["gender"], expected_columns["gender"][3])
-        self.assertEqual(returned_data[4]["gender"], expected_columns["gender"][4])
+        self.assertEqual(returned_data[0][AWK.gender], expected_columns[AWK.gender][0])
+        self.assertEqual(returned_data[1][AWK.gender], expected_columns[AWK.gender][1])
+        self.assertEqual(returned_data[2][AWK.gender], expected_columns[AWK.gender][2])
+        self.assertEqual(returned_data[3][AWK.gender], expected_columns[AWK.gender][3])
+        self.assertEqual(returned_data[4][AWK.gender], expected_columns[AWK.gender][4])
 
     def test_replace_labels_replaces_values_in_new_column_when_new_column_name_is_supplied(
         self,
@@ -345,36 +348,36 @@ class TestCleaningUtils(unittest.TestCase):
             self.replace_labels_df,
             self.label_df,
             AWK.gender,
-            new_column_name="gender_labels",
+            new_column_name=gender_labels,
         )
         returned_data = returned_df.collect()
 
         expected_columns = {
-            "gender": ["1", "2", None, None, "2"],
-            "gender_labels": ["male", "female", None, None, "female"],
+            AWK.gender: ["1", "2", None, None, "2"],
+            gender_labels: ["male", "female", None, None, "female"],
         }
         expected_columns_count = len(self.replace_labels_df.columns) + 1
 
         self.assertEqual(len(returned_df.columns), expected_columns_count)
 
-        self.assertEqual(returned_data[0]["gender"], expected_columns["gender"][0])
-        self.assertEqual(returned_data[1]["gender"], expected_columns["gender"][1])
-        self.assertEqual(returned_data[2]["gender"], expected_columns["gender"][2])
-        self.assertEqual(returned_data[3]["gender"], expected_columns["gender"][3])
-        self.assertEqual(returned_data[4]["gender"], expected_columns["gender"][4])
+        self.assertEqual(returned_data[0][AWK.gender], expected_columns[AWK.gender][0])
+        self.assertEqual(returned_data[1][AWK.gender], expected_columns[AWK.gender][1])
+        self.assertEqual(returned_data[2][AWK.gender], expected_columns[AWK.gender][2])
+        self.assertEqual(returned_data[3][AWK.gender], expected_columns[AWK.gender][3])
+        self.assertEqual(returned_data[4][AWK.gender], expected_columns[AWK.gender][4])
 
         self.assertEqual(
-            returned_data[0]["gender_labels"], expected_columns["gender_labels"][0]
+            returned_data[0][gender_labels], expected_columns[gender_labels][0]
         )
         self.assertEqual(
-            returned_data[1]["gender_labels"], expected_columns["gender_labels"][1]
+            returned_data[1][gender_labels], expected_columns[gender_labels][1]
         )
         self.assertEqual(
-            returned_data[2]["gender_labels"], expected_columns["gender_labels"][2]
+            returned_data[2][gender_labels], expected_columns[gender_labels][2]
         )
         self.assertEqual(
-            returned_data[3]["gender_labels"], expected_columns["gender_labels"][3]
+            returned_data[3][gender_labels], expected_columns[gender_labels][3]
         )
         self.assertEqual(
-            returned_data[4]["gender_labels"], expected_columns["gender_labels"][4]
+            returned_data[4][gender_labels], expected_columns[gender_labels][4]
         )
