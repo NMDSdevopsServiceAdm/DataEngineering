@@ -40,8 +40,16 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
 
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
+)
+
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 
 
@@ -227,6 +235,21 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+        ]
+    )
+
+    small_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+        ]
+    )
+
+    join_provider_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCP.name, StringType(), True),
+            StructField(CQCLClean.sector, StringType(), True),
         ]
     )
 

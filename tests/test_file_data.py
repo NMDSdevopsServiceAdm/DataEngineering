@@ -566,6 +566,34 @@ class CQCLocationsData:
         ),
     ]
 
+    small_location_rows = [
+        (
+            "loc-1",
+            "prov-1",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+        ),
+    ]
+
+    join_provider_rows = [
+        (
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+        ),
+        (
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+        ),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
