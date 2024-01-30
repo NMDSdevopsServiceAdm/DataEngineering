@@ -6,7 +6,7 @@ import jobs.clean_cqc_location_data as job
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from tests.test_file_data import CQCLocationsData as Data
-from tests.test_file_schemas import CQCLocationsSchema
+from tests.test_file_schemas import CQCLocationsSchema as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -48,7 +48,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
         test_primary_service_df = self.spark.createDataFrame(
             Data.primary_service_type_rows,
-            schema=CQCLocationsSchema.primary_service_type_schema,
+            schema=Schemas.primary_service_type_schema,
         )
 
         output_df = job.allocate_primary_service_type(test_primary_service_df)
@@ -65,6 +65,17 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
+
+    def test_join_cqc_provider_data_adds_two_columns(self):
+        test_location_df = self.spark.createDataFrame(Data.small_location_rows, Schemas.small_location_schema)
+        test_provider_df = self.spark.createDataFrame(Data.join_provider_rows, Schemas.join_provider_schema)
+
+        returned_df = job.join_cqc_provider_data(test_location_df, test_provider_df)
+        new_columns = 2
+        expected_columns = len(test_location_df.columns) + new_columns
+
+        self.assertEqual(len(returned_df.columns), expected_columns)
+
 
 
 if __name__ == "__main__":
