@@ -54,7 +54,9 @@ from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
 from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 
 @dataclass
@@ -246,6 +248,7 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -255,6 +258,7 @@ class CQCLocationsSchema:
             StructField(CQCPClean.name, StringType(), True),
             StructField(CQCPClean.sector, StringType(), True),
             StructField(CQCPClean.region, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -264,6 +268,7 @@ class CQCLocationsSchema:
             StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCPClean.name, StringType(), True),
             StructField(CQCPClean.sector, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

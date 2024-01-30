@@ -570,14 +570,22 @@ class CQCLocationsData:
         (
             "loc-1",
             "prov-1",
+            "2020-01-01",
         ),
         (
             "loc-2",
             "prov-1",
+            "2020-01-01",
         ),
         (
             "loc-3",
             "prov-2",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "2021-01-01",
         ),
     ]
 
@@ -587,12 +595,14 @@ class CQCLocationsData:
             "Apple Tree Care Homes",
             "Local authority",
             "North East",
+            "2020-01-01",
         ),
         (
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
             "North West",
+            "2020-01-01",
         ),
     ]
 
@@ -602,18 +612,28 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
+            "2020-01-01",
         ),
         (
             "loc-2",
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
+            "2020-01-01",
         ),
         (
             "loc-3",
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            None,
+            None,
+            "2020-01-01",
         ),
     ]
 
