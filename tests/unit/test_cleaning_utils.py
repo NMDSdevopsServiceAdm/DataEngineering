@@ -10,12 +10,12 @@ from tests.test_file_data import CleaningUtilsData as Data
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-gender_labels:str ="gender_labels"
-nationality_labels:str = "nationality_labels"
+
+gender_labels: str = "gender_labels"
+nationality_labels: str = "nationality_labels"
 
 
 class TestCleaningUtils(unittest.TestCase):
-    
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_worker_df = self.spark.createDataFrame(
