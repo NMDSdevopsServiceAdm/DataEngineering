@@ -51,6 +51,10 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
+
 
 
 @dataclass
@@ -247,9 +251,18 @@ class CQCLocationsSchema:
 
     join_provider_schema = StructType(
         [
-            StructField(CQCP.provider_id, StringType(), True),
-            StructField(CQCP.name, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCPClean.sector, StringType(), True),
+        ]
+    )
+
+    expected_joined_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCPClean.sector, StringType(), True),
         ]
     )
 
