@@ -15,6 +15,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
@@ -80,11 +83,13 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     
     def test_join_cqc_provider_data_correctly_joins_data(self):
         returned_df = job.join_cqc_provider_data(self.test_location_df, self.test_provider_df)
-        returned_data = returned_df.sort(CQCL.location_id).collect()
+        returned_data = returned_df.select(sorted(returned_df.columns)).sort(CQCL.location_id).collect()
         expected_df = self.spark.createDataFrame(Data.expected_joined_rows, Schemas.expected_joined_schema)
-        expected_data = expected_df.sort(CQCL.location_id).collect()
+        expected_data = expected_df.select(sorted(expected_df.columns)).sort(CQCL.location_id).collect()
+        returned_df.show()
+        expected_df.show()
 
-        self.assertEqual(returned_data, expected_data)
+        self.assertCountEqual(returned_data, expected_data)
 
 
 

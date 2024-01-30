@@ -583,7 +583,7 @@ class CQCLocationsData:
             "2020-01-01",
         ),
         (
-            "loc-3",
+            "loc-4",
             "prov-2",
             "2021-01-01",
         ),
@@ -603,6 +603,13 @@ class CQCLocationsData:
             "Independent",
             "North West",
             "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "North East",
+            "2021-01-01",
         ),
     ]
 
@@ -629,11 +636,11 @@ class CQCLocationsData:
             "2020-01-01",
         ),
         (
-            "loc-3",
+            "loc-4",
             "prov-2",
-            None,
-            None,
-            "2020-01-01",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "2021-01-01",
         ),
     ]
 
