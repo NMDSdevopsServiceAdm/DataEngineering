@@ -586,11 +586,13 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
+            "North East",
         ),
         (
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
+            "North West",
         ),
     ]
 

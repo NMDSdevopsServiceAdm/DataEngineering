@@ -12,6 +12,9 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+)
 
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
@@ -25,6 +28,8 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.sample_rows_full, schema=LOCATION_SCHEMA
         )
+        self.test_location_df = self.spark.createDataFrame(Data.small_location_rows, Schemas.small_location_schema)
+        self.test_provider_df = self.spark.createDataFrame(Data.join_provider_rows, Schemas.join_provider_schema)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -67,14 +72,19 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
 
     def test_join_cqc_provider_data_adds_two_columns(self):
-        test_location_df = self.spark.createDataFrame(Data.small_location_rows, Schemas.small_location_schema)
-        test_provider_df = self.spark.createDataFrame(Data.join_provider_rows, Schemas.join_provider_schema)
-
-        returned_df = job.join_cqc_provider_data(test_location_df, test_provider_df)
+        returned_df = job.join_cqc_provider_data(self.test_location_df, self.test_provider_df)
         new_columns = 2
-        expected_columns = len(test_location_df.columns) + new_columns
+        expected_columns = len(self.test_location_df.columns) + new_columns
 
         self.assertEqual(len(returned_df.columns), expected_columns)
+    
+    def test_join_cqc_provider_data_correctly_joins_data(self):
+        returned_df = job.join_cqc_provider_data(self.test_location_df, self.test_provider_df)
+        returned_data = returned_df.sort(CQCL.location_id).collect()
+        expected_df = self.spark.createDataFrame(Data.expected_joined_rows, Schemas.expected_joined_schema)
+        expected_data = expected_df.sort(CQCL.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 

@@ -254,6 +254,7 @@ class CQCLocationsSchema:
             StructField(CQCPClean.provider_id, StringType(), True),
             StructField(CQCPClean.name, StringType(), True),
             StructField(CQCPClean.sector, StringType(), True),
+            StructField(CQCPClean.region, StringType(), True),
         ]
     )
 
