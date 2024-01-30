@@ -25,6 +25,16 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
             Data.sector_rows, schema=Schema.sector_schema
         )
 
+    def test_add_sector_column_adds_column_to_dataframe(self):
+        # dataframe that the function returns.
+        returned_df = job.add_sector_column(self.test_sector_df)
+
+        # dataframe that shows the expected output.
+        col_count_expected = len(self.test_sector_df.columns) + 1
+
+        # assert that one column has been addded to output.
+        self.assertEqual(len(returned_df.columns), col_count_expected)
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
