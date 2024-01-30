@@ -565,3 +565,69 @@ class CQCLocationsData:
             ],
         ),
     ]
+
+
+@dataclass
+class CleaningUtilsData:
+    worker_rows = [
+        ("1", "1", "100"),
+        ("2", "1", "101"),
+        ("3", "2", "102"),
+        ("4", "2", "103"),
+        ("5", None, "103"),
+        ("6", "2", None),
+    ]
+
+    gender = [
+        ("1", "male"),
+        ("2", "female"),
+    ]
+
+    nationality = [
+        ("100", "British"),
+        ("101", "French"),
+        ("102", "Spanish"),
+        ("103", "Portuguese"),
+    ]
+
+    replace_labels_rows = [
+        ("1", "1"),
+        ("2", "2"),
+        ("3", None),
+        ("4", None),
+        ("5", "2"),
+    ]
+
+    expected_rows_with_new_columns = [
+        ("1", "1", "100", "male", "British"),
+        ("2", "1", "101", "male", "French"),
+        ("3", "2", "102", "female", "Spanish"),
+        ("4", "2", "103", "female", "Portuguese"),
+        ("5", None, "103", None, "Portuguese"),
+        ("6", "2", None, "female", None),
+    ]
+
+    expected_rows_without_new_columns = [
+        ("1", "male", "British"),
+        ("2", "male", "French"),
+        ("3", "female", "Spanish"),
+        ("4", "female", "Portuguese"),
+        ("5", None, "Portuguese"),
+        ("6", "female", None),
+    ]
+
+    expected_rows_replace_labels_in_situe = [
+        ("1", "male"),
+        ("2", "female"),
+        ("3", None),
+        ("4", None),
+        ("5", "female"),
+    ]
+
+    expected_rows_replace_labels_with_new_column = [
+        ("1", "1", "male"),
+        ("2", "2", "female"),
+        ("3", None, None),
+        ("4", None, None),
+        ("5", "2", "female"),
+    ]
