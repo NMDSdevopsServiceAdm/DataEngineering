@@ -255,6 +255,7 @@ class ASCWDSWorkplaceData:
     ]
 
 
+@dataclass
 class CQCProviderData:
     sample_rows_full = [
         (
@@ -329,6 +330,13 @@ class CQCProviderData:
             "Southampton, Itchen",
             "Southampton",
         ),
+    ]
+
+    sector_rows = [
+        ("1-10000000003",),
+        ("1-10000000004",),
+        ("1-10000000005",),
+        ("1-10000000006",),
     ]
 
 
