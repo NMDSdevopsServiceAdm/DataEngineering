@@ -229,3 +229,12 @@ class CQCLocationsSchema:
             ),
         ]
     )
+
+
+@dataclass
+class CleanCqcProviderData:
+    sector_schema = StructType(
+        [
+            StructField(AWP.provider_id, StringType(), True),
+        ]
+    )
