@@ -64,15 +64,26 @@ def allocate_primary_service_type(df: DataFrame):
         .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
     )
 
-def join_cqc_provider_data(locations_df:DataFrame, provider_df:DataFrame):
-    provider_data_to_join_df = provider_df.select(provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"), 
-                                                  provider_df[CQCPClean.name], 
-                                                  provider_df[CQCPClean.sector], 
-                                                  provider_df[Keys.import_date].alias("import_date_to_drop"))
-    columns_to_join = [locations_df[CQCL.provider_id] == provider_data_to_join_df["provider_id_to_drop"], locations_df[Keys.import_date] == provider_data_to_join_df["import_date_to_drop"]]
-    joined_df = locations_df.join(provider_data_to_join_df, columns_to_join, how="left").drop("provider_id_to_drop", "import_date_to_drop")
+
+def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
+    provider_data_to_join_df = provider_df.select(
+        provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"),
+        provider_df[CQCPClean.name],
+        provider_df[CQCPClean.sector],
+        provider_df[Keys.import_date].alias("import_date_to_drop"),
+    )
+    columns_to_join = [
+        locations_df[CQCL.provider_id]
+        == provider_data_to_join_df["provider_id_to_drop"],
+        locations_df[Keys.import_date]
+        == provider_data_to_join_df["import_date_to_drop"],
+    ]
+    joined_df = locations_df.join(
+        provider_data_to_join_df, columns_to_join, how="left"
+    ).drop("provider_id_to_drop", "import_date_to_drop")
     joined_df.show()
     return joined_df
+
 
 if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")
