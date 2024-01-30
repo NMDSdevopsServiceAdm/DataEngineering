@@ -192,6 +192,7 @@ class ASCWDSWorkerSchemas:
     )
 
 
+@dataclass
 class ASCWDSWorkplaceSchemas:
     workplace_schema = StructType(
         [
