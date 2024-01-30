@@ -254,3 +254,21 @@ class CleaningUtilsSchemas:
             StructField("value", StringType(), True),
         ]
     )
+
+    expected_schema_with_new_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(AWK.nationality, StringType(), True),
+            StructField("gender_labels", StringType(), True),
+            StructField("nationality_labels", StringType(), True),
+        ]
+    )
+
+    expected_schema_replace_labels_with_new_columns = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField("gender_labels", StringType(), True),
+        ]
+    )
