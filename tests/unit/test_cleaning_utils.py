@@ -11,6 +11,12 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+)
+
 gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
 
@@ -325,21 +331,23 @@ class TestCleaningUtils(unittest.TestCase):
             self.label_df,
             AWK.gender,
         )
-        returned_data = returned_df.collect()
-
-        expected_columns = {
-            AWK.gender: ["male", "female", None, None, "female"],
-        }
-
-        expected_columns_count = len(self.replace_labels_df.columns)
-
-        self.assertEqual(len(returned_df.columns), expected_columns_count)
-
-        self.assertEqual(returned_data[0][AWK.gender], expected_columns[AWK.gender][0])
-        self.assertEqual(returned_data[1][AWK.gender], expected_columns[AWK.gender][1])
-        self.assertEqual(returned_data[2][AWK.gender], expected_columns[AWK.gender][2])
-        self.assertEqual(returned_data[3][AWK.gender], expected_columns[AWK.gender][3])
-        self.assertEqual(returned_data[4][AWK.gender], expected_columns[AWK.gender][4])
+        returned_data = returned_df.sort(AWK.worker_id).collect()
+        expected_rows = [
+            ("1", "male"),
+            ("2", "female"),
+            ("3", None),
+            ("4", None),
+            ("5", "female"),
+        ]
+        expected_schema = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+        ]
+    )
+        expected_df = self.spark.createDataFrame(expected_rows, expected_schema)
+        expected_data = expected_df.sort(AWK.worker_id).collect()
+        self.assertEqual(returned_data, expected_data)
 
     def test_replace_labels_replaces_values_in_new_column_when_new_column_name_is_supplied(
         self,
@@ -350,34 +358,23 @@ class TestCleaningUtils(unittest.TestCase):
             AWK.gender,
             new_column_name=gender_labels,
         )
-        returned_data = returned_df.collect()
+        returned_data = returned_df.sort(AWK.worker_id).collect()
+        expected_rows = [
+            ("1", "1", "male"),
+            ("2", "2", "female"),
+            ("3", None, None),
+            ("4", None, None),
+            ("5", "2", "female"),
+        ]
+        expected_schema = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.gender, StringType(), True),
+            StructField(gender_labels, StringType(), True),
+        ]
+    )
+        expected_df = self.spark.createDataFrame(expected_rows, expected_schema)
+        expected_data = expected_df.sort(AWK.worker_id).collect()
+        self.assertEqual(returned_data, expected_data)
 
-        expected_columns = {
-            AWK.gender: ["1", "2", None, None, "2"],
-            gender_labels: ["male", "female", None, None, "female"],
-        }
-        expected_columns_count = len(self.replace_labels_df.columns) + 1
 
-        self.assertEqual(len(returned_df.columns), expected_columns_count)
-
-        self.assertEqual(returned_data[0][AWK.gender], expected_columns[AWK.gender][0])
-        self.assertEqual(returned_data[1][AWK.gender], expected_columns[AWK.gender][1])
-        self.assertEqual(returned_data[2][AWK.gender], expected_columns[AWK.gender][2])
-        self.assertEqual(returned_data[3][AWK.gender], expected_columns[AWK.gender][3])
-        self.assertEqual(returned_data[4][AWK.gender], expected_columns[AWK.gender][4])
-
-        self.assertEqual(
-            returned_data[0][gender_labels], expected_columns[gender_labels][0]
-        )
-        self.assertEqual(
-            returned_data[1][gender_labels], expected_columns[gender_labels][1]
-        )
-        self.assertEqual(
-            returned_data[2][gender_labels], expected_columns[gender_labels][2]
-        )
-        self.assertEqual(
-            returned_data[3][gender_labels], expected_columns[gender_labels][3]
-        )
-        self.assertEqual(
-            returned_data[4][gender_labels], expected_columns[gender_labels][4]
-        )
