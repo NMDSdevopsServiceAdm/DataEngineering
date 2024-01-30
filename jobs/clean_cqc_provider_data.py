@@ -1,6 +1,8 @@
 import sys
 
 from pyspark.sql import DataFrame
+from pyspark.sql.types import StringType
+import pyspark.sql.functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -22,6 +24,7 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
 
 
 def add_sector_column(df: DataFrame) -> DataFrame:
+    df = df.withColumn("sector", F.lit(None).cast(StringType()))
     return df
 
 
