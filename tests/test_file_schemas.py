@@ -272,3 +272,11 @@ class CleaningUtilsSchemas:
             StructField("gender_labels", StringType(), True),
         ]
     )
+
+    scale_schema = StructType(
+        [
+            StructField("int", IntegerType(), True),
+            StructField("float", FloatType(), True),
+            StructField("non_scale", StringType(), True),
+        ]
+    )

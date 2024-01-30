@@ -631,3 +631,7 @@ class CleaningUtilsData:
         ("4", None, None),
         ("5", "2", "female"),
     ]
+
+    scale_data = [
+        (23, 10.1, "non scale"),
+    ]

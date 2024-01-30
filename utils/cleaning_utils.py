@@ -7,6 +7,7 @@ from pyspark.sql.types import (
     StructField,
     StringType,
 )
+import pyspark.sql.functions as F
 
 key: str = "key"
 value: str = "value"
@@ -59,3 +60,32 @@ def convert_labels_dict_to_dataframe(labels: dict, spark: SparkSession) -> DataF
     )
     labels_df = spark.createDataFrame(labels, labels_schema)
     return labels_df
+
+
+def set_column_bounds(
+    df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
+):
+    if lower_limit is None and upper_limit is None:
+        return df
+
+    if lower_limit > upper_limit:
+        raise Exception(
+            f"Lower limit ({lower_limit}) must be lower than upper limit ({upper_limit})"
+        )
+
+    new_df = df
+
+    if lower_limit is not None:
+        new_df = new_df.withColumn(
+            new_col_name,
+            F.when(F.col(col_name) >= lower_limit, F.col(col_name)).otherwise(None),
+        )
+        col_name = new_col_name
+
+    if upper_limit is not None:
+        new_df = new_df.withColumn(
+            new_col_name,
+            F.when(F.col(col_name) <= upper_limit, F.col(col_name)).otherwise(None),
+        )
+
+    return new_df
