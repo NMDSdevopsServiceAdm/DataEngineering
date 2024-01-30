@@ -604,7 +604,7 @@ class CleaningUtilsData:
         ("3", "2", "102", "female", "Spanish"),
         ("4", "2", "103", "female", "Portuguese"),
         ("5", None, "103", None, "Portuguese"),
-        ("6", "2", None, "female",None),
+        ("6", "2", None, "female", None),
     ]
 
     expected_rows_without_new_columns = [
@@ -613,7 +613,7 @@ class CleaningUtilsData:
         ("3", "female", "Spanish"),
         ("4", "female", "Portuguese"),
         ("5", None, "Portuguese"),
-        ("6", "female",None),
+        ("6", "female", None),
     ]
 
     expected_rows_replace_labels_in_situe = [
