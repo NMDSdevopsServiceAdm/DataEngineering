@@ -424,6 +424,7 @@ module "clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_cleaned"             = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
     "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
   }
 }

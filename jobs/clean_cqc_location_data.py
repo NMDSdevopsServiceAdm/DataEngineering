@@ -23,8 +23,13 @@ NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
 NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 
-def main(cqc_location_source: str, cleaned_cqc_location_destintion: str):
+def main(
+    cqc_location_source: str,
+    cleaned_provider_source: str,
+    cleaned_cqc_location_destintion: str,
+):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
+    cqc_provider_df = utils.read_from_parquet(cleaned_provider_source)
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
@@ -61,16 +66,24 @@ if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    cqc_location_source, cleaned_cqc_location_destination = utils.collect_arguments(
+    (
+        cqc_location_source,
+        cleaned_provider_source,
+        cleaned_cqc_location_destination,
+    ) = utils.collect_arguments(
         (
             "--cqc_location_source",
             "Source s3 directory for parquet CQC locations dataset",
+        ),
+        (
+            "--cqc_provider_cleaned",
+            "Source s3 directory for cleaned parquet CQC provider dataset",
         ),
         (
             "--cleaned_cqc_location_destination",
             "Destination s3 directory for cleaned parquet CQC locations dataset",
         ),
     )
-    main(cqc_location_source, cleaned_cqc_location_destination)
+    main(cqc_location_source, cleaned_provider_source, cleaned_cqc_location_destination)
 
     print("Spark job 'clean_cqc_location_data' complete")
