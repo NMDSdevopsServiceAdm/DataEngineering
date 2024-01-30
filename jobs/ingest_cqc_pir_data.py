@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from schemas.cqc_pir_csv_schema import PIR_CSV
+from schemas.cqc_pir_schema import PIR_SCHEMA
 from utils import utils
 
 
@@ -10,7 +10,7 @@ def main(source, destination):
         print("Single file provided to job. Handling single file.")
         bucket, key = utils.split_s3_uri(source)
         new_destination = utils.construct_destination_path(destination, key)
-        ingest_pir_dataset(source, new_destination, PIR_CSV)
+        ingest_pir_dataset(source, new_destination, PIR_SCHEMA)
         return
 
     print("Multiple files provided to job. Handling each file...")
@@ -23,7 +23,7 @@ def main(source, destination):
     for key in objects_list:
         new_source = utils.construct_s3_uri(bucket, key)
         new_destination = utils.construct_destination_path(destination, key)
-        ingest_pir_dataset(new_source, new_destination, PIR_CSV)
+        ingest_pir_dataset(new_source, new_destination, PIR_SCHEMA)
 
 
 def ingest_pir_dataset(source, destination, schema):

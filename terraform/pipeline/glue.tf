@@ -63,6 +63,20 @@ module "ingest_cqc_pir_data_job" {
   }
 }
 
+module "clean_cqc_pir_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_cqc_pir_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
+    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+  }
+}
+
 module "ingest_cqc_care_directory_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_cqc_care_directory.py"
@@ -103,6 +117,20 @@ module "clean_ascwds_worker_job" {
   job_parameters = {
     "--ascwds_worker_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
     "--ascwds_worker_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+  }
+}
+
+module "clean_ascwds_workplace_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ascwds_workplace_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
   }
 }
 
