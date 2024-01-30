@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     IntegerType,
     FloatType,
+    ArrayType,
     DateType,
 )
 
@@ -33,6 +34,10 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
+)
+
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
 )
 
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
@@ -201,5 +206,26 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CQCLocationsSchema:
+    primary_service_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
