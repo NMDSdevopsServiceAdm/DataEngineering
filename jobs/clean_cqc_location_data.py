@@ -61,6 +61,8 @@ def allocate_primary_service_type(df: DataFrame):
         .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
     )
 
+def join_cqc_provider_data(locations_df:DataFrame, provider_df:DataFrame):
+    return locations_df
 
 if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")
