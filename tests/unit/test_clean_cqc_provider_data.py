@@ -6,6 +6,7 @@ from utils import utils
 import jobs.clean_cqc_provider_data as job
 
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
+from tests.test_file_schemas import CleanCqcProviderData as Schema
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_data import CQCProviderData as Data
 
@@ -19,6 +20,9 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         self.spark = utils.get_spark()
         self.test_cqc_providers_parquet = self.spark.createDataFrame(
             Data.sample_rows_full, schema=PROVIDER_SCHEMA
+        )
+        self.test_sector_df = self.spark.createDataFrame(
+            Data.sector_rows, schema=Schema.sector_schema
         )
 
     @patch("utils.utils.write_to_parquet")
