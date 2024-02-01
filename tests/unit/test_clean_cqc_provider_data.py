@@ -10,6 +10,9 @@ from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_data import CQCProviderData as Data
 from tests.test_file_schemas import CQCProviderSchema as Schema
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 
 
 class CleanCQCProviderDatasetTests(unittest.TestCase):
@@ -32,7 +35,9 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
                 "1-100002",
             ]
         )
-        self.assertEqual(test_la_cqc_dataframe.columns, ["provider_id", "cqc_sector"])
+        self.assertEqual(
+            test_la_cqc_dataframe.columns, [CQCP.provider_id, "cqc_sector"]
+        )
 
         test_cqc_sector_list = test_la_cqc_dataframe.select(
             F.collect_list("cqc_sector")
@@ -53,11 +58,11 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         )
 
         returned_data = (
-            test_cqc_provider_with_sector.select("providerId", "cqc_sector")
-            .sort("providerId")
+            test_cqc_provider_with_sector.select(CQCP.provider_id, "cqc_sector")
+            .sort(CQCP.provider_id)
             .collect()
         )
-        expected_data = test_expected_dataframe.sort("providerId").collect()
+        expected_data = test_expected_dataframe.sort(CQCP.provider_id).collect()
 
         self.assertEqual(
             returned_data,

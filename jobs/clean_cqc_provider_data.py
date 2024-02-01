@@ -10,8 +10,10 @@ import pyspark.sql.functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -40,7 +42,7 @@ def create_dataframe_from_la_cqc_provider_list(la_providerids: list[str]) -> Dat
 
     la_providers_dataframe = spark.createDataFrame(
         la_providerids, StringType()
-    ).withColumnRenamed("value", "providerId")
+    ).withColumnRenamed("value", CQCP.provider_id)
 
     la_providers_dataframe = la_providers_dataframe.withColumn(
         "cqc_sector", F.lit("Local authority").cast(StringType())
@@ -54,7 +56,7 @@ def add_cqc_sector_column_to_cqc_provider_dataframe(
 ):
     cqc_provider_with_sector_column = cqc_provider_df.join(
         create_dataframe_from_la_cqc_provider_list(la_providerids),
-        "providerId",
+        CQCP.provider_id,
         "left",
     )
 
