@@ -216,7 +216,7 @@ class TestCleaningUtilsScale(unittest.TestCase):
 
     def test_set_column_bounds_no_int_outside_bound(self):
         returned_df = job.set_column_bounds(
-            self.test_scale_df, "int", "bound_int", 0, 100
+            self.test_scale_df, "int", "bound_int", -9999, 9999
         )
 
         returned_int_values = returned_df.select("bound_int").collect()
@@ -225,7 +225,7 @@ class TestCleaningUtilsScale(unittest.TestCase):
 
     def test_set_column_bounds_no_float_outside_bound(self):
         returned_df = job.set_column_bounds(
-            self.test_scale_df, "float", "bound_float", 0, 100
+            self.test_scale_df, "float", "bound_float", -9999, 9999
         )
 
         returned_float_values = returned_df.select("bound_float").collect()
