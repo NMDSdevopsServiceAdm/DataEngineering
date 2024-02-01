@@ -36,7 +36,7 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
     )
 
 
-def create_dataframe_from_la_cqc_provider_list(la_providerids: list[str]) -> DataFrame:
+def create_dataframe_from_la_cqc_provider_list(la_providerids: list) -> DataFrame:
     # Start a spark session.
     spark = utils.get_spark()
 
@@ -52,7 +52,7 @@ def create_dataframe_from_la_cqc_provider_list(la_providerids: list[str]) -> Dat
 
 
 def add_cqc_sector_column_to_cqc_provider_dataframe(
-    cqc_provider_df: DataFrame, la_providerids: list[str]
+    cqc_provider_df: DataFrame, la_providerids: list
 ):
     cqc_provider_with_sector_column = cqc_provider_df.join(
         create_dataframe_from_la_cqc_provider_list(la_providerids),
