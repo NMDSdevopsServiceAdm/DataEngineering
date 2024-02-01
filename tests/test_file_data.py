@@ -635,3 +635,7 @@ class CleaningUtilsData:
     scale_data = [
         (23, 10.1, "non scale"),
     ]
+
+    expected_scale_data = [
+        (23, 10.1, "non scale", 23, 10.1),
+    ]

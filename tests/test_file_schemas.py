@@ -280,3 +280,11 @@ class CleaningUtilsSchemas:
             StructField("non_scale", StringType(), True),
         ]
     )
+
+    expected_scale_schema = StructType(
+        [
+            *scale_schema,
+            StructField("bound_int", IntegerType(), True),
+            StructField("bound_float", FloatType(), True),
+        ]
+    )

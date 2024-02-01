@@ -307,3 +307,50 @@ class TestCleaningUtilsScale(unittest.TestCase):
         )
 
         self.assertEqual(returned_df, self.test_scale_df)
+
+    def test_set_column_bounds_does_not_alter_the_original_df(self):
+        copy_of_test_df = self.test_scale_df.alias("copy")
+        job.set_column_bounds(
+            self.test_scale_df,
+            "int",
+            "bound_int",
+            lower_limit=None,
+            upper_limit=None,
+        )
+
+        expected_data = copy_of_test_df.sort("int").collect()
+        returned_data = self.test_scale_df.sort("int").collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_set_bounds_for_columns_raises_error_if_columns_dont_match_names(self):
+        with self.assertRaises(Exception) as context:
+            job.set_bounds_for_columns(
+                self.test_scale_df,
+                ["int", "float"],
+                ["bound_int", "bound_float", "another_column"],
+                lower_limit=1,
+                upper_limit=100,
+            ),
+
+        self.assertTrue(
+            "Column list size (2) must match new column list size (3)"
+            in str(context.exception),
+        )
+
+    def test_set_bounds_for_columns_set_bounds_for_all_columns(self):
+        returned_df = job.set_bounds_for_columns(
+            self.test_scale_df,
+            ["int", "float"],
+            ["bound_int", "bound_float"],
+            lower_limit=1,
+            upper_limit=100,
+        )
+
+        returned_data = returned_df.sort("int").collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_scale_data, Schemas.expected_scale_schema
+        )
+        expected_data = expected_df.sort("int").collect()
+
+        self.assertEqual(returned_data, expected_data)
