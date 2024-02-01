@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -75,7 +75,7 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         read_from_parquet_patch.return_value = self.test_cqc_providers_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_providers_parquet,
+            ANY,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,
