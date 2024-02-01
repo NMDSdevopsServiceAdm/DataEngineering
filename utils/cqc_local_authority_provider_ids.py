@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class LocalAuthorityProviderIds:
-    known_ids: list = [
+    known_ids: list[str] = [
         "1-119231704",
         "1-101675941",
         "1-101668998",

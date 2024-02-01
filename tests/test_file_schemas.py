@@ -44,6 +44,10 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -232,9 +236,10 @@ class CQCLocationsSchema:
 
 
 @dataclass
-class CleanCqcProviderData:
-    sector_schema = StructType(
+class CQCProviderSchema:
+    expected_schema_with_cqc_sector_schema = StructType(
         [
-            StructField(AWP.provider_id, StringType(), True),
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField("cqc_sector", StringType(), True),
         ]
     )
