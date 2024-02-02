@@ -649,3 +649,17 @@ class CleaningUtilsData:
         ("4", None, None),
         ("5", "2", "female"),
     ]
+
+    scale_data = [
+        (23, 10.1, "non scale"),
+        (-1, 10.1, "non scale"),
+        (24, -20.345, "non scale"),
+        (-234, 999.99, "non scale"),
+    ]
+
+    expected_scale_data = [
+        (23, 10.1, "non scale", 23, 10.1),
+        (-1, 10.1, "non scale", None, 10.1),
+        (24, -20.345, "non scale", 24, None),
+        (-234, 999.99, "non scale", None, None),
+    ]

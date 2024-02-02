@@ -281,6 +281,22 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    scale_schema = StructType(
+        [
+            StructField("int", IntegerType(), True),
+            StructField("float", FloatType(), True),
+            StructField("non_scale", StringType(), True),
+        ]
+    )
+
+    expected_scale_schema = StructType(
+        [
+            *scale_schema,
+            StructField("bound_int", IntegerType(), True),
+            StructField("bound_float", FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
