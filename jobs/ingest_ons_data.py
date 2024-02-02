@@ -7,7 +7,9 @@ def main(source, destination):
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
         bucket, key = utils.split_s3_uri(source)
+        print(destination)
         new_destination = utils.construct_destination_path(destination, key)
+        print(new_destination)
         handle_job(source, bucket, key, new_destination)
         return
 

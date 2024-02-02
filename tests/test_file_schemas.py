@@ -43,6 +43,9 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 @dataclass
@@ -270,5 +273,16 @@ class CleaningUtilsSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.gender, StringType(), True),
             StructField("gender_labels", StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class IngestONSData:
+    sample_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.integrated_care_board, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
         ]
     )
