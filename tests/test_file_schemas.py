@@ -40,16 +40,25 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
 
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-)
-
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
 
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+
 from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
     CqcProviderCleanedColumns as CQCPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from schemas.cqc_location_schema import LOCATION_SCHEMA
+
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
 )
 
 
@@ -220,6 +229,12 @@ class ASCWDSWorkplaceSchemas:
 
 @dataclass
 class CQCLocationsSchema:
+    full_schema = StructType(
+        [
+            *LOCATION_SCHEMA,
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
     primary_service_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -235,6 +250,34 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+        ]
+    )
+
+    small_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    join_provider_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
+            StructField(CQCPClean.region, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    expected_joined_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.provider_name, StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

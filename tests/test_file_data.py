@@ -520,6 +520,7 @@ class CQCLocationsData:
                     "reporttype": "Location",
                 }
             ],
+            "2020-01-01",
         ),
     ]
 
@@ -581,6 +582,84 @@ class CQCLocationsData:
                     "description": "Fake service",
                 },
             ],
+        ),
+    ]
+
+    small_location_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "2021-01-01",
+        ),
+    ]
+
+    join_provider_rows = [
+        (
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "North East",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "North West",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "North East",
+            "2021-01-01",
+        ),
+    ]
+
+    expected_joined_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "2021-01-01",
         ),
     ]
 
