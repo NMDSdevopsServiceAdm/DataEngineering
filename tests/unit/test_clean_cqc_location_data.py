@@ -40,7 +40,10 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def test_main_runs(
         self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
     ):
-        read_from_parquet_patch.side_effect = [self.test_clean_cqc_location_df, self.test_provider_df]
+        read_from_parquet_patch.side_effect = [
+            self.test_clean_cqc_location_df,
+            self.test_provider_df,
+        ]
 
         job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
 

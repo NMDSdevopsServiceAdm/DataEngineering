@@ -520,7 +520,7 @@ class CQCLocationsData:
                     "reporttype": "Location",
                 }
             ],
-            "2020-01-01"
+            "2020-01-01",
         ),
     ]
 
