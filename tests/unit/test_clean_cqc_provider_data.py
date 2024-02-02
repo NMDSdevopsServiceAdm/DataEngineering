@@ -13,6 +13,10 @@ from tests.test_file_schemas import CQCProviderSchema as Schema
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPCleanValues,
+)
 
 
 class CleanCQCProviderDatasetTests(unittest.TestCase):
@@ -30,19 +34,24 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         self,
     ):
         test_la_cqc_dataframe = job.create_dataframe_from_la_cqc_provider_list(
-            [
-                "1-1000001",
-                "1-100002",
-            ]
+            Data.sector_rows
         )
         self.assertEqual(
-            test_la_cqc_dataframe.columns, [CQCP.provider_id, "cqc_sector"]
+            test_la_cqc_dataframe.columns, [CQCP.provider_id, CQCPClean.cqc_sector]
         )
 
         test_cqc_sector_list = test_la_cqc_dataframe.select(
-            F.collect_list("cqc_sector")
+            F.collect_list(CQCPClean.cqc_sector)
         ).first()[0]
-        self.assertEqual(test_cqc_sector_list, ["Local authority", "Local authority"])
+        self.assertEqual(
+            test_cqc_sector_list,
+            [
+                CQCPCleanValues.local_authority,
+                CQCPCleanValues.local_authority,
+                CQCPCleanValues.local_authority,
+                CQCPCleanValues.local_authority,
+            ],
+        )
 
     def test_add_cqc_sector_column_to_cqc_provider_dataframe(self):
         test_cqc_provider_with_sector = (
@@ -50,19 +59,19 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
                 self.test_cqc_providers_parquet, Data.sector_rows
             )
         )
-        self.assertTrue("cqc_sector" in test_cqc_provider_with_sector.columns)
+        self.assertTrue(CQCPClean.cqc_sector in test_cqc_provider_with_sector.columns)
 
         test_expected_dataframe = self.spark.createDataFrame(
-            Data.expected_schema_with_cqc_sector_columns,
-            Schema.expected_schema_with_cqc_sector_schema,
+            Data.expected_rows_with_cqc_sector,
+            Schema.expected_rows_with_cqc_sector_schema,
         )
+        expected_data = test_expected_dataframe.sort(CQCP.provider_id).collect()
 
         returned_data = (
-            test_cqc_provider_with_sector.select(CQCP.provider_id, "cqc_sector")
+            test_cqc_provider_with_sector.select(CQCP.provider_id, CQCPClean.cqc_sector)
             .sort(CQCP.provider_id)
             .collect()
         )
-        expected_data = test_expected_dataframe.sort(CQCP.provider_id).collect()
 
         self.assertEqual(
             returned_data,

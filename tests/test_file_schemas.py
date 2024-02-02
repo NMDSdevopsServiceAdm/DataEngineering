@@ -48,6 +48,10 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
 
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -237,9 +241,9 @@ class CQCLocationsSchema:
 
 @dataclass
 class CQCProviderSchema:
-    expected_schema_with_cqc_sector_schema = StructType(
+    expected_rows_with_cqc_sector_schema = StructType(
         [
             StructField(CQCP.provider_id, StringType(), True),
-            StructField("cqc_sector", StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )

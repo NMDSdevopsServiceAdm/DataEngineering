@@ -5,6 +5,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
@@ -339,10 +343,10 @@ class CQCProviderData:
         "1-10000000005",
     ]
 
-    expected_schema_with_cqc_sector_columns = [
-        ("1-10000000001", "Independent"),
-        ("1-10000000002", "Local authority"),
-        ("1-10000000003", "Local authority"),
+    expected_rows_with_cqc_sector = [
+        ("1-10000000001", CQCPValues.independent),
+        ("1-10000000002", CQCPValues.local_authority),
+        ("1-10000000003", CQCPValues.local_authority),
     ]
 
 

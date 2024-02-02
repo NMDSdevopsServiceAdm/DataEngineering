@@ -14,6 +14,10 @@ from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
+)
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -45,7 +49,7 @@ def create_dataframe_from_la_cqc_provider_list(la_providerids: list) -> DataFram
     ).withColumnRenamed("value", CQCP.provider_id)
 
     la_providers_dataframe = la_providers_dataframe.withColumn(
-        "cqc_sector", F.lit("Local authority").cast(StringType())
+        CQCPClean.cqc_sector, F.lit(CQCPValues.local_authority).cast(StringType())
     )
 
     return la_providers_dataframe
@@ -61,7 +65,7 @@ def add_cqc_sector_column_to_cqc_provider_dataframe(
     )
 
     cqc_provider_with_sector_column = cqc_provider_with_sector_column.fillna(
-        "Independent"
+        CQCPValues.independent
     )
 
     return cqc_provider_with_sector_column
