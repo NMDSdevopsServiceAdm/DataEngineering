@@ -1,19 +1,9 @@
 import sys
 import argparse
-import pyspark.sql.functions as F
-from pyspark.sql.utils import AnalysisException
-
 
 from utils import utils
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ColNames,
-)
-
-
-
 
 def main(source, destination):
-    spark = utils.get_spark()
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
         bucket, key = utils.split_s3_uri(source)
@@ -66,16 +56,6 @@ def collect_arguments():
     args, _ = parser.parse_known_args()
 
     return args.source, args.destination
-
-
-
-
-
-    
-
-
-
-
 
 if __name__ == "__main__":
     print("Spark job 'inges_ons_data' starting...")
