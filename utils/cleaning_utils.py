@@ -91,8 +91,8 @@ def set_column_bounds(
 
 def set_bounds_for_columns(
     df: DataFrame,
-    col_names: list[str],
-    new_col_names: list[str],
+    col_names: list,
+    new_col_names: list,
     lower_limit=None,
     upper_limit=None,
 ):
