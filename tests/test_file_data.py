@@ -5,6 +5,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
@@ -255,6 +259,7 @@ class ASCWDSWorkplaceData:
     ]
 
 
+@dataclass
 class CQCProviderData:
     sample_rows_full = [
         (
@@ -329,6 +334,19 @@ class CQCProviderData:
             "Southampton, Itchen",
             "Southampton",
         ),
+    ]
+
+    sector_rows = [
+        "1-10000000002",
+        "1-10000000003",
+        "1-10000000004",
+        "1-10000000005",
+    ]
+
+    expected_rows_with_cqc_sector = [
+        ("1-10000000001", CQCPValues.independent),
+        ("1-10000000002", CQCPValues.local_authority),
+        ("1-10000000003", CQCPValues.local_authority),
     ]
 
 

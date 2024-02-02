@@ -44,6 +44,14 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -286,5 +294,15 @@ class CleaningUtilsSchemas:
             *scale_schema,
             StructField("bound_int", IntegerType(), True),
             StructField("bound_float", FloatType(), True),
+        ]
+    )
+
+
+@dataclass
+class CQCProviderSchema:
+    expected_rows_with_cqc_sector_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )
