@@ -232,6 +232,28 @@ class TestCleaningUtilsScale(unittest.TestCase):
         original_float_values = self.test_scale_df.select("float").collect()
         self.assertEqual(returned_float_values, original_float_values)
 
+    def test_set_column_bounds_int_value_equals_bound(self):
+        returned_df = job.set_column_bounds(
+            self.test_scale_df, "int", "bound_int", 23, 23
+        )
+
+        returned_bounded_int = (
+            returned_df.where(F.col("int") == 23).select("bound_int").first()[0]
+        )
+        self.assertEqual(returned_bounded_int, 23)
+
+    def test_set_column_bounds_float_value_equals_bound(self):
+        returned_df = job.set_column_bounds(
+            self.test_scale_df, "float", "bound_float", 10.1, 10.2
+        )
+
+        returned_bounded_int = (
+            returned_df.where(F.round(F.col("float")) == 10)
+            .select("bound_float")
+            .first()[0]
+        )
+        self.assertAlmostEqual(returned_bounded_int, 10.1, 3)
+
     def test_set_column_bounds_int_below_lower_bound_are_set_to_null(self):
         returned_df = job.set_column_bounds(
             self.test_scale_df, "int", "bound_int", lower_limit=25, upper_limit=100
