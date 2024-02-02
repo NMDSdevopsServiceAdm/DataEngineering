@@ -34,6 +34,8 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_provider_source)
 
+    cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
+
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
     utils.write_to_parquet(
