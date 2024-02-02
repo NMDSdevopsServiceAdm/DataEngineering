@@ -48,12 +48,11 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
-
 from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
     CqcProviderCleanedColumns as CQCPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
@@ -276,7 +275,7 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCLClean.provider_name, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
         ]

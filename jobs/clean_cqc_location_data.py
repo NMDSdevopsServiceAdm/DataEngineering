@@ -18,6 +18,9 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -70,7 +73,7 @@ def allocate_primary_service_type(df: DataFrame):
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     provider_data_to_join_df = provider_df.select(
         provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"),
-        provider_df[CQCPClean.name],
+        provider_df[CQCPClean.name].alias(CQCLClean.provider_name),
         provider_df[CQCPClean.cqc_sector],
         provider_df[Keys.import_date].alias("import_date_to_drop"),
     )

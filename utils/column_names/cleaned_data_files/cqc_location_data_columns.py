@@ -12,3 +12,4 @@ from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values impo
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     primary_service_type: str = "primary_service_type"
     sector: str = CQCPClean.cqc_sector
+    provider_name:str = "provider_name"
