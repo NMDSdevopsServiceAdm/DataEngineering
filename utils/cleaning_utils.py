@@ -73,22 +73,20 @@ def set_column_bounds(
             f"Lower limit ({lower_limit}) must be lower than upper limit ({upper_limit})"
         )
 
-    new_df = df.alias("df_with_column_bound")
-
     if lower_limit is not None:
-        new_df = new_df.withColumn(
+        df = df.withColumn(
             new_col_name,
             F.when(F.col(col_name) >= lower_limit, F.col(col_name)).otherwise(None),
         )
         col_name = new_col_name
 
     if upper_limit is not None:
-        new_df = new_df.withColumn(
+        df = df.withColumn(
             new_col_name,
             F.when(F.col(col_name) <= upper_limit, F.col(col_name)).otherwise(None),
         )
 
-    return new_df
+    return df
 
 
 def set_bounds_for_columns(
@@ -103,8 +101,7 @@ def set_bounds_for_columns(
             f"Column list size ({len(col_names)}) must match new column list size ({len(new_col_names)})"
         )
 
-    new_df = df.alias("df_with_columns_bound")
     for col, new_col in zip(col_names, new_col_names):
-        new_df = set_column_bounds(new_df, col, new_col, lower_limit, upper_limit)
+        df = set_column_bounds(df, col, new_col, lower_limit, upper_limit)
 
-    return new_df
+    return df
