@@ -15,9 +15,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
 
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):

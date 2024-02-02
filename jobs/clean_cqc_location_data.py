@@ -15,7 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
 
@@ -69,7 +69,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     provider_data_to_join_df = provider_df.select(
         provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"),
         provider_df[CQCPClean.name],
-        provider_df[CQCPClean.sector],
+        provider_df[CQCPClean.cqc_sector],
         provider_df[Keys.import_date].alias("import_date_to_drop"),
     )
     columns_to_join = [
