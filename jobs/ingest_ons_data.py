@@ -1,5 +1,5 @@
 import sys
-
+import argparse
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
 
@@ -50,6 +50,23 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
 
+def collect_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--source",
+        help="A CSV file or directory of files used as job input",
+        required=True,
+    )
+    parser.add_argument(
+        "--destination",
+        help="A destination directory for outputting parquet files",
+        required=True,
+    )
+
+    args, _ = parser.parse_known_args()
+
+    return args.source, args.destination
+
 
 
 
@@ -64,8 +81,5 @@ if __name__ == "__main__":
     print("Spark job 'inges_ons_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    ons_source, ons_destination = utils.collect_arguments(
-        ("--source", "S3 path to the ONS raw data domain"),
-        ("--destination", "S3 path to save output data"),
-    )
+    ons_source, ons_destination = collect_arguments()
     main(ons_source, ons_destination)
