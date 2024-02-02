@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, patch
+from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
 
 import jobs.clean_cqc_location_data as job
@@ -15,7 +15,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
-    TEST_SOURCE = "some/directory"
+    TEST_LOC_SOURCE = "some/directory"
+    TEST_PROV_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -27,9 +28,14 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_runs(self, read_from_parquet_patch, write_to_parquet_patch):
+    def test_main_runs(
+        self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
+    ):
         read_from_parquet_patch.return_value = self.test_clean_cqc_location_df
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+
+        job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
+
+        self.assertEqual(read_from_parquet_patch.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
