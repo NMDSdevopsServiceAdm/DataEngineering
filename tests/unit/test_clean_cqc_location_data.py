@@ -4,7 +4,7 @@ import pyspark.sql.functions as F
 
 import jobs.clean_cqc_location_data as job
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+
 from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
 
@@ -26,7 +26,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
-            Data.sample_rows_full, schema=LOCATION_SCHEMA
+            Data.sample_rows_full, schema=Schemas.full_schema
         )
         self.test_location_df = self.spark.createDataFrame(
             Data.small_location_rows, Schemas.small_location_schema
@@ -40,7 +40,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def test_main_runs(
         self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
     ):
-        read_from_parquet_patch.return_value = self.test_clean_cqc_location_df
+        read_from_parquet_patch.side_effect = [self.test_clean_cqc_location_df, self.test_provider_df]
 
         job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
 

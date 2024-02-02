@@ -55,6 +55,7 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
+from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -229,6 +230,12 @@ class ASCWDSWorkplaceSchemas:
 
 @dataclass
 class CQCLocationsSchema:
+    full_schema = StructType(
+        [
+            *LOCATION_SCHEMA,
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
     primary_service_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),

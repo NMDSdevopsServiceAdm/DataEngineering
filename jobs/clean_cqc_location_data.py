@@ -83,7 +83,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     joined_df = locations_df.join(
         provider_data_to_join_df, columns_to_join, how="left"
     ).drop("provider_id_to_drop", "import_date_to_drop")
-    joined_df.show()
+
     return joined_df
 
 
