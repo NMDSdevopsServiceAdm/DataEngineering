@@ -282,7 +282,7 @@ class IngestONSData:
     sample_schema = StructType(
         [
             StructField(ONS.region, StringType(), True),
-            StructField(ONS.integrated_care_board, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
         ]
     )
