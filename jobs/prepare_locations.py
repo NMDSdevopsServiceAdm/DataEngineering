@@ -169,13 +169,13 @@ def main(
             "cqc_sector",
             "ons_region",
             "nhs_england_region",
-            #"country",
+            # "country",
             "lsoa",
             "msoa",
-            #"stp",
+            # "stp",
             "clinical_commisioning_group",
             "rural_urban_indicator",
-            #"oslaua",
+            # "oslaua",
         )
 
         if destination:
@@ -407,7 +407,7 @@ def get_ons_df(ons_source):
 
     print(f"Reading ONS data from {ons_source}")
     ons_df = spark.read.option("basePath", ons_source).parquet(ons_source)
-    #ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
+    # ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
     ons_df = ons_df.select(
         ons_df.HYBRID_POSTCODE.alias(OnsPostcodeDataAliases.ons_postcode),
         ons_df.Region.alias(OnsPostcodeDataAliases.region_alias),
@@ -416,14 +416,14 @@ def get_ons_df(ons_source):
         ons_df.msoa11.alias(OnsPostcodeDataAliases.msoa_alias),
         ons_df.CCG.alias(OnsPostcodeDataAliases.ccg_alias),
         ons_df.ru11ind.alias(OnsPostcodeDataAliases.rural_urban_indicator_alias),
-        #ons_df.stp,
-        #ons_df.oslaua,
+        # ons_df.stp,
+        # ons_df.oslaua,
         ons_df.year,
         ons_df.month,
         ons_df.day,
         ons_df.import_date.alias(OnsPostcodeDataAliases.import_date_alias),
     )
-    
+
     return ons_df
 
 
