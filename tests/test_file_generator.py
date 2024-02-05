@@ -14,6 +14,9 @@ import pyspark.sql.functions as F
 
 from schemas import cqc_care_directory_schema
 from utils import utils
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -348,31 +351,38 @@ def generate_ons_denormalised_data(output_destination):
     spark = utils.get_spark()
     # fmt: off
     schema = StructType([
-        StructField("pcd", StringType(), False),
-        StructField("oslaua", StringType(), False),
-        StructField("nhser", StringType(), False),
-        StructField("ctry", StringType(), False),
-        StructField("rgn", StringType(), False),
-        StructField("lsoa", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("msoa", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("ccg", StringType(), False),
-        StructField("ru_ind", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("stp", StringType(), False),
-        StructField("year", StringType(), False),
-        StructField("month", StringType(), False),
-        StructField("day", StringType(), False),
-        StructField("import_date", StringType(), False),
+        StructField(ONS.postcode, StringType(), False),
+        StructField(ONS.cssr, StringType(), False),
+        StructField(ONS.region, StringType(), False),
+        StructField(ONS.sub_icb, StringType(), True),
+        StructField(ONS.icb, StringType(), False),
+        StructField(ONS.icb_region, StringType(), False),
+        StructField(ONS.ccg, StringType(), False),
+        StructField(ONS.latitude, StringType(), False),
+        StructField(ONS.longitude, StringType(), False),
+        StructField(ONS.imd_score, StringType(), False),
+        StructField(ONS.lower_super_output_area_2011, StringType(), False),
+        StructField(ONS.middle_super_output_area_2011, StringType(), False),
+        StructField(ONS.rural_urban_indicator_2011, StringType(), False),
+        StructField(ONS.lower_super_output_area_2021, StringType(), False),
+        StructField(ONS.middle_super_output_area_2021, StringType(), False),
+        StructField(ONS.westminster_parliamentary_consitituency, StringType(), False),
+        StructField(ONS.year, StringType(), False),
+        StructField(ONS.month, StringType(), False),
+        StructField(ONS.day, StringType(), False),
+        StructField(ONS.import_date, StringType(), False),
     ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",), ("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
-        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
-        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501")
+        ("SW100AA", "Ealing", "London", None, "North West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501"),
+        ("SW10 0AB", "Ealing", "London", None, "North West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501"),
+        ("SW100AD", "Ealing", "London", None, "South West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501")
     ]
     # fmt: on
 
     df = spark.createDataFrame(rows, schema)
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
+    df.printSchema()
     return df
 
 
