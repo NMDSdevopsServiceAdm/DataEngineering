@@ -3,13 +3,13 @@ from dataclasses import dataclass
 
 @dataclass
 class OnsPostcodeDirectoryColumns:
-    postcode:str = "hybrid_postcode"
-    cssr:str = "cssr"
-    region:str = "region"
-    sub_icb:str = "sub_icb"
-    icb:str = "icb"
-    icb_region:str ="icb_region"
-    ccg:str = "ccg"
+    postcode:str = "HYBRID_POSTCODE"
+    cssr:str = "CSSR"
+    region:str = "Region"
+    sub_icb:str = "Sub_ICB"
+    icb:str = "ICB"
+    icb_region:str ="ICB_Region"
+    ccg:str = "CCG"
     latitude:str = "lat"
     longitude:str ="long"
     imd_score:str ="imd"
@@ -23,7 +23,7 @@ class OnsPostcodeDirectoryColumns:
     month:str ="month"
     day:str ="day"
     import_date:str = "import_date"
-    
+
 @dataclass
 class ONSPartitionKeys:
     year: str = OnsPostcodeDirectoryColumns.year
