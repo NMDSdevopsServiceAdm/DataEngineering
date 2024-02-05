@@ -407,6 +407,11 @@ def get_ons_df(ons_source):
 
     print(f"Reading ONS data from {ons_source}")
     ons_df = spark.read.option("basePath", ons_source).parquet(ons_source)
+    ons_df = ons_df.withColumnRenamed("Region", "region_alias")
+    ons_df = ons_df.withColumnRenamed("import_date", "ons_import_date")
+        ons_df.day,
+
+    """
     ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
     ons_df = ons_df.select(
         ons_df.pcd.alias(OnsPostcodeDataAliases.ons_postcode),
@@ -420,11 +425,9 @@ def get_ons_df(ons_source):
         ons_df.stp,
         ons_df.oslaua,
         ons_df.year,
-        ons_df.month,
-        ons_df.day,
         ons_df.import_date.alias(OnsPostcodeDataAliases.import_date_alias),
     )
-
+    """
     return ons_df
 
 
@@ -483,16 +486,16 @@ def add_geographical_data(locations_df, ons_df):
         "postal_code_ws_removed", F.regexp_replace(locations_df.postal_code, " ", "")
     )
     ons_df = ons_df.withColumn(
-        "ons_postcode", F.regexp_replace(ons_df.ons_postcode, " ", "")
+        "hybrid_postcode", F.regexp_replace(ons_df.hybrid_postcode, " ", "")
     )
     locations_df = locations_df.join(
         ons_df,
-        F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.ons_postcode),
+        F.upper(locations_df.postal_code_ws_removed) == F.upper(ons_df.hybrid_postcode),
         "left",
     )
 
     locations_df.drop("postal_code_ws_removed")
-    locations_df.drop("ons_postcode")
+    locations_df.drop("hybrid_postcode")
 
     return locations_df
 
