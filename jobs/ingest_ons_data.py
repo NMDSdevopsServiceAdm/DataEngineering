@@ -3,6 +3,7 @@ import argparse
 
 from utils import utils
 
+
 def main(source, destination):
     if utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
@@ -42,6 +43,7 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
 
+
 def collect_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -58,6 +60,7 @@ def collect_arguments():
     args, _ = parser.parse_known_args()
 
     return args.source, args.destination
+
 
 if __name__ == "__main__":
     print("Spark job 'inges_ons_data' starting...")

@@ -632,6 +632,7 @@ class CleaningUtilsData:
         ("5", "2", "female"),
     ]
 
+
 @dataclass
 class IngestONSData:
     sample_rows = [
