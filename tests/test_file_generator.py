@@ -382,7 +382,6 @@ def generate_ons_denormalised_data(output_destination):
     df = spark.createDataFrame(rows, schema)
     if output_destination:
         df.coalesce(1).write.mode("overwrite").parquet(output_destination)
-    df.printSchema()
     return df
 
 
