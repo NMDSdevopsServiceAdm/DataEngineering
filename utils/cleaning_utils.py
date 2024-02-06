@@ -7,6 +7,7 @@ from pyspark.sql.types import (
     StructField,
     StringType,
 )
+import pyspark.sql.functions as F
 
 key: str = "key"
 value: str = "value"
@@ -59,3 +60,48 @@ def convert_labels_dict_to_dataframe(labels: dict, spark: SparkSession) -> DataF
     )
     labels_df = spark.createDataFrame(labels, labels_schema)
     return labels_df
+
+
+def set_column_bounds(
+    df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
+):
+    if lower_limit is None and upper_limit is None:
+        return df
+
+    if lower_limit > upper_limit:
+        raise Exception(
+            f"Lower limit ({lower_limit}) must be lower than upper limit ({upper_limit})"
+        )
+
+    if lower_limit is not None:
+        df = df.withColumn(
+            new_col_name,
+            F.when(F.col(col_name) >= lower_limit, F.col(col_name)).otherwise(None),
+        )
+        col_name = new_col_name
+
+    if upper_limit is not None:
+        df = df.withColumn(
+            new_col_name,
+            F.when(F.col(col_name) <= upper_limit, F.col(col_name)).otherwise(None),
+        )
+
+    return df
+
+
+def set_bounds_for_columns(
+    df: DataFrame,
+    col_names: list,
+    new_col_names: list,
+    lower_limit=None,
+    upper_limit=None,
+):
+    if len(col_names) != len(new_col_names):
+        raise Exception(
+            f"Column list size ({len(col_names)}) must match new column list size ({len(new_col_names)})"
+        )
+
+    for col, new_col in zip(col_names, new_col_names):
+        df = set_column_bounds(df, col, new_col, lower_limit, upper_limit)
+
+    return df

@@ -5,6 +5,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
@@ -255,6 +259,7 @@ class ASCWDSWorkplaceData:
     ]
 
 
+@dataclass
 class CQCProviderData:
     sample_rows_full = [
         (
@@ -329,6 +334,19 @@ class CQCProviderData:
             "Southampton, Itchen",
             "Southampton",
         ),
+    ]
+
+    sector_rows = [
+        "1-10000000002",
+        "1-10000000003",
+        "1-10000000004",
+        "1-10000000005",
+    ]
+
+    expected_rows_with_cqc_sector = [
+        ("1-10000000001", CQCPValues.independent),
+        ("1-10000000002", CQCPValues.local_authority),
+        ("1-10000000003", CQCPValues.local_authority),
     ]
 
 
@@ -502,6 +520,7 @@ class CQCLocationsData:
                     "reporttype": "Location",
                 }
             ],
+            "2020-01-01",
         ),
     ]
 
@@ -563,6 +582,84 @@ class CQCLocationsData:
                     "description": "Fake service",
                 },
             ],
+        ),
+    ]
+
+    small_location_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "2021-01-01",
+        ),
+    ]
+
+    join_provider_rows = [
+        (
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "North East",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "North West",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "North East",
+            "2021-01-01",
+        ),
+    ]
+
+    expected_joined_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "2021-01-01",
         ),
     ]
 
@@ -630,6 +727,20 @@ class CleaningUtilsData:
         ("3", None, None),
         ("4", None, None),
         ("5", "2", "female"),
+    ]
+
+    scale_data = [
+        (23, 10.1, "non scale"),
+        (-1, 10.1, "non scale"),
+        (24, -20.345, "non scale"),
+        (-234, 999.99, "non scale"),
+    ]
+
+    expected_scale_data = [
+        (23, 10.1, "non scale", 23, 10.1),
+        (-1, 10.1, "non scale", None, 10.1),
+        (24, -20.345, "non scale", 24, None),
+        (-234, 999.99, "non scale", None, None),
     ]
 
 
