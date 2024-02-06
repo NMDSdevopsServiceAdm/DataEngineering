@@ -169,13 +169,10 @@ def main(
             "cqc_sector",
             "ons_region",
             "nhs_england_region",
-            # "country",
             "lsoa",
             "msoa",
-            # "stp",
             "clinical_commisioning_group",
             "rural_urban_indicator",
-            # "oslaua",
         )
 
         if destination:
@@ -416,8 +413,6 @@ def get_ons_df(ons_source):
         ons_df.msoa11.alias(OnsPostcodeDataAliases.msoa_alias),
         ons_df.CCG.alias(OnsPostcodeDataAliases.ccg_alias),
         ons_df.ru11ind.alias(OnsPostcodeDataAliases.rural_urban_indicator_alias),
-        # ons_df.stp,
-        # ons_df.oslaua,
         ons_df.year,
         ons_df.month,
         ons_df.day,

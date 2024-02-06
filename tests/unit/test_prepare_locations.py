@@ -117,13 +117,10 @@ class PrepareLocationsTests(unittest.TestCase):
                 "cqc_sector",
                 "ons_region",
                 "nhs_england_region",
-                # "country",
                 "lsoa",
                 "msoa",
-                # "stp",
                 "clinical_commisioning_group",
                 "rural_urban_indicator",
-                # "oslaua",
             ],
         )
 
