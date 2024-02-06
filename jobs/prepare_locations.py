@@ -407,7 +407,7 @@ def get_ons_df(ons_source):
 
     print(f"Reading ONS data from {ons_source}")
     ons_df = spark.read.option("basePath", ons_source).parquet(ons_source)
-    # ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
+    ons_df = utils.get_latest_partition(ons_df, partition_keys=("year", "month", "day"))
     ons_df = ons_df.select(
         ons_df.HYBRID_POSTCODE.alias(OnsPostcodeDataAliases.ons_postcode),
         ons_df.Region.alias(OnsPostcodeDataAliases.region_alias),
