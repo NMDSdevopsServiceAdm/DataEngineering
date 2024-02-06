@@ -44,27 +44,19 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     utils.write_to_parquet(df, destination)
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--source",
-        help="A CSV file or directory of files used as job input",
-        required=True,
-    )
-    parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting parquet files",
-        required=True,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return args.source, args.destination
-
-
 if __name__ == "__main__":
     print("Spark job 'inges_ons_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    ons_source, ons_destination = collect_arguments()
+    ons_source, ons_destination = utils.collect_arguments(
+        (
+            "--source",
+            "A CSV file or directory of csv files in s3 with ONS data to import",
+        ),
+        (
+            "--destination",
+            "Destination s3 directory for ONS postcode directory",
+        ),
+    )
     main(ons_source, ons_destination)
+    print("Spark job 'ingest_ons_data' complete")
