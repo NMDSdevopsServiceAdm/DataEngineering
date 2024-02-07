@@ -223,6 +223,9 @@ def remove_already_cleaned_data(
 
     last_processed_date = get_max_snapshot_partitions(destination)
 
+    if last_processed_date is None:
+        return df
+
     last_processed_import_date = (
         f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
     )

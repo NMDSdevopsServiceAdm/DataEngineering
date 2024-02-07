@@ -729,6 +729,23 @@ class UtilsTests(unittest.TestCase):
             expected_df.sort("import_date").collect(),
         )
 
+    @patch("utils.utils.get_max_snapshot_partitions")
+    def test_remove_already_cleaned_data_returns_the_same_df_if_there_is_no_snapshot_partitions(
+        self, get_max_snapshot_partitions_mock: Mock
+    ):
+        get_max_snapshot_partitions_mock.return_value = None
+
+        test_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        )
+
+        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
+
+        self.assertEqual(
+            returned_df.sort("import_date").collect(),
+            test_df.sort("import_date").collect(),
+        )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
