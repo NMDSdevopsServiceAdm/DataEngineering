@@ -221,16 +221,18 @@ def remove_already_cleaned_data(
     if "import_date" not in df.columns:
         raise Exception("Input dataframe must have import_date column")
 
-    last_processed_date = get_max_snapshot_partitions(destination)
+    cleaned_df = read_from_parquet(destination)
 
-    if last_processed_date is None:
+    latest_cleaned_df = get_latest_partition(cleaned_df, ("year", "month", "day"))
+
+    latest_cleaned_import_date = latest_cleaned_df.select(
+        F.max(latest_cleaned_df["import_date"])
+    ).first()[0]
+
+    if latest_cleaned_import_date is None:
         return df
 
-    last_processed_import_date = (
-        f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
-    )
-
-    df = df.filter(F.col("import_date") > last_processed_import_date)
+    df = df.filter(F.col("import_date") > latest_cleaned_import_date)
 
     return df
 

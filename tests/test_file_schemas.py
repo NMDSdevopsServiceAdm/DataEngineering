@@ -369,7 +369,9 @@ class IngestONSData:
 class FilterCleanedValuesSchema:
     sample_schema = StructType(
         [
-            StructField("test_string", StringType(), True),
+            StructField("year", StringType(), True),
+            StructField("month", StringType(), True),
+            StructField("day", StringType(), True),
             StructField("import_date", StringType(), True),
         ]
     )

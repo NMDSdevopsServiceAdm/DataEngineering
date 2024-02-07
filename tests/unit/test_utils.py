@@ -705,35 +705,14 @@ class UtilsTests(unittest.TestCase):
             "Input dataframe must have import_date column" in str(context.exception),
         )
 
-    @patch("utils.utils.get_max_snapshot_partitions")
-    def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
-        self, get_max_snapshot_partitions_mock: Mock
+    @patch("utils.utils.read_from_parquet")
+    def test_remove_already_cleaned_data_returns_the_same_df_if_there_is_no_cleaned_data(
+        self, read_from_parquet_mock: Mock
     ):
-        get_max_snapshot_partitions_mock.return_value = ("2021", "06", "05")
-
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
-
-        self.assertEqual(returned_df.count(), 2)
-
-        expected_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.expected_rows,
+        read_from_parquet_mock.return_value = self.spark.createDataFrame(
+            [],
             FilterCleanedValuesSchema.sample_schema,
         )
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            expected_df.sort("import_date").collect(),
-        )
-
-    @patch("utils.utils.get_max_snapshot_partitions")
-    def test_remove_already_cleaned_data_returns_the_same_df_if_there_is_no_snapshot_partitions(
-        self, get_max_snapshot_partitions_mock: Mock
-    ):
-        get_max_snapshot_partitions_mock.return_value = None
 
         test_df: DataFrame = self.spark.createDataFrame(
             FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
@@ -744,6 +723,31 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(
             returned_df.sort("import_date").collect(),
             test_df.sort("import_date").collect(),
+        )
+
+    @patch("utils.utils.read_from_parquet")
+    def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
+        self, read_from_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_cleaned_rows,
+            FilterCleanedValuesSchema.sample_schema,
+        )
+
+        test_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        )
+
+        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
+
+        expected_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.expected_rows,
+            FilterCleanedValuesSchema.sample_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort("import_date").collect(),
+            expected_df.sort("import_date").collect(),
         )
 
 
