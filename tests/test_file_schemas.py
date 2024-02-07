@@ -60,6 +60,9 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 @dataclass
@@ -347,5 +350,16 @@ class CQCProviderSchema:
         [
             StructField(CQCP.provider_id, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class IngestONSData:
+    sample_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
         ]
     )

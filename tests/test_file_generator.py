@@ -14,6 +14,9 @@ import pyspark.sql.functions as F
 
 from schemas import cqc_care_directory_schema
 from utils import utils
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 def generate_ethnicity_parquet(output_destination):
@@ -348,25 +351,31 @@ def generate_ons_denormalised_data(output_destination):
     spark = utils.get_spark()
     # fmt: off
     schema = StructType([
-        StructField("pcd", StringType(), False),
-        StructField("oslaua", StringType(), False),
-        StructField("nhser", StringType(), False),
-        StructField("ctry", StringType(), False),
-        StructField("rgn", StringType(), False),
-        StructField("lsoa", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("msoa", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("ccg", StringType(), False),
-        StructField("ru_ind", StructType([StructField("year_2011", StringType(), False)]), False),
-        StructField("stp", StringType(), False),
-        StructField("year", StringType(), False),
-        StructField("month", StringType(), False),
-        StructField("day", StringType(), False),
-        StructField("import_date", StringType(), False),
+        StructField(ONS.postcode, StringType(), False),
+        StructField(ONS.cssr, StringType(), False),
+        StructField(ONS.region, StringType(), False),
+        StructField(ONS.sub_icb, StringType(), True),
+        StructField(ONS.icb, StringType(), False),
+        StructField(ONS.icb_region, StringType(), False),
+        StructField(ONS.ccg, StringType(), False),
+        StructField(ONS.latitude, StringType(), False),
+        StructField(ONS.longitude, StringType(), False),
+        StructField(ONS.imd_score, StringType(), False),
+        StructField(ONS.lower_super_output_area_2011, StringType(), False),
+        StructField(ONS.middle_super_output_area_2011, StringType(), False),
+        StructField(ONS.rural_urban_indicator_2011, StringType(), False),
+        StructField(ONS.lower_super_output_area_2021, StringType(), False),
+        StructField(ONS.middle_super_output_area_2021, StringType(), False),
+        StructField(ONS.westminster_parliamentary_consitituency, StringType(), False),
+        StructField(ONS.year, StringType(), False),
+        StructField(ONS.month, StringType(), False),
+        StructField(ONS.day, StringType(), False),
+        StructField(ONS.import_date, StringType(), False),
     ])
     rows = [
-        ("SW100AA", "Hammersmith and Fulham", "London", "England", "London", ("Hammersmith and Fulham 023C",), ("Hammersmith and Fulham 023",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
-        ("SW10 0AB", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 021B",), ("Kensington and Chelsea 021",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501"),
-        ("SW100AD", "Kensington and Chelsea", "London", "England", "London", ("Kensington and Chelsea 020E",), ("Kensington and Chelsea 020",), "NHS North West London CCG", ("A1",), "South Yorkshire and Bassetlaw", "2022", "05", "01", "20220501")
+        ("SW100AA", "Ealing", "London", None, "North West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501"),
+        ("SW10 0AB", "Ealing", "London", None, "North West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501"),
+        ("SW100AD", "Ealing", "London", None, "South West London", "London", "NHS Ealing", "51.507582", "-.305451", "24623", "E01001386", "E02000268", "Urban major conurbation", "E01001386", "E02000268", "Ealing Central and Acton", "2022", "05", "01", "20220501")
     ]
     # fmt: on
 
@@ -870,14 +879,7 @@ def generate_prepared_locations_preclean_file_parquet(
             StructField("snapshot_day", StringType(), True),
             StructField("carehome", StringType(), True),
             StructField("cqc_sector", StringType(), True),
-            StructField(
-                "rural_urban_indicator",
-                StructType(
-                    [
-                        StructField("year_2011", StringType(), True),
-                    ]
-                ),
-            ),
+            StructField("rural_urban_indicator", StringType(), True),
             StructField("job_count_unfiltered_source", StringType(), True),
             StructField("registration_status", StringType(), True),
         ]
@@ -885,20 +887,20 @@ def generate_prepared_locations_preclean_file_parquet(
 
     # fmt: off
     rows = [
-        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_1", "Registered"),
-        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"}, "rule_2", "Registered"),
-        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3", "Registered"),
-        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1", "Registered"),
-        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_1", "Registered"),
-        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_3", "Registered"),
-        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural hamlet and isolated dwellings"}, "rule_2", "Registered"),
-        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Registered"),
-        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Rural town and fringe in a sparse setting"}, "rule_1", "Registered"),
-        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_2", "Registered"),
-        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1", "Registered"),
-        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Registered"),
-        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", {"year_2011": "(England/Wales) Urban city and town"}, "rule_1", "Registered"),
-        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", {"year_2011": "(England/Wales) Urban city and town"}, "rule_3", "Deregistered"),
+        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered"),
+        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered"),
+        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_3", "Registered"),
+        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_1", "Registered"),
+        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", "Rural hamlet and isolated dwellings", "rule_1", "Registered"),
+        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered"),
+        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered"),
+        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Registered"),
+        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered"),
+        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Urban city and town", "rule_2", "Registered"),
+        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", "Urban city and town", "rule_1", "Registered"),
+        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", "Urban city and town", "rule_3", "Registered"),
+        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", "Urban city and town", "rule_1", "Registered"),
+        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Deregistered"),
     ]
     # fmt: on
 

@@ -742,3 +742,12 @@ class CleaningUtilsData:
         (24, -20.345, "non scale", 24, None),
         (-234, 999.99, "non scale", None, None),
     ]
+
+
+@dataclass
+class IngestONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]

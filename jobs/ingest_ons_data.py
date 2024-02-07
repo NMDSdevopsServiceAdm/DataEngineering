@@ -1,71 +1,47 @@
 import sys
-
-import pyspark.sql.functions as F
-from pyspark.sql.utils import AnalysisException
-
+import argparse
 
 from utils import utils
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ColNames,
-)
-
-POSTCODE_DIR_PREFIX = "dataset=postcode-directory"
-POSTCODE_LOOKUP_DIR_PREFIX = "dataset=postcode-directory-field-lookups"
 
 
 def main(source, destination):
-    spark = utils.get_spark()
+    if utils.is_csv(source):
+        print("Single file provided to job. Handling single file.")
+        bucket, key = utils.split_s3_uri(source)
+        print(destination)
+        new_destination = utils.construct_destination_path(destination, key)
+        print(new_destination)
+        handle_job(source, bucket, key, new_destination)
+        return
 
-    ingest_new_import_dates(
-        spark, f"{source}{POSTCODE_DIR_PREFIX}/", f"{destination}{POSTCODE_DIR_PREFIX}/"
-    )
-    all_fields = utils.get_s3_sub_folders_for_path(
-        f"{source}{POSTCODE_LOOKUP_DIR_PREFIX}/"
-    )
+    print("Multiple files provided to job. Handling each file...")
+    bucket, prefix = utils.split_s3_uri(source)
+    objects_list = utils.get_s3_objects_list(bucket, prefix)
 
+    print("Objects list:")
+    print(objects_list)
+
+    for key in objects_list:
+        new_source = utils.construct_s3_uri(bucket, key)
+        new_destination = utils.construct_destination_path(destination, key)
+        handle_job(new_source, bucket, key, new_destination)
+
+
+def handle_job(source: str, source_bucket: str, source_key: str, destination: str):
+    file_sample = utils.read_partial_csv_content(source_bucket, source_key)
+    delimiter = utils.identify_csv_delimiter(file_sample)
+    ingest_dataset(source, destination, delimiter)
+
+
+def ingest_dataset(source: str, destination: str, delimiter: str):
     print(
-        f"found lookup tables for {all_fields} in {source}{POSTCODE_LOOKUP_DIR_PREFIX}"
+        f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
     )
+    df = utils.read_csv(source, delimiter)
+    df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
-    for field in all_fields:
-        print(f"Ingesting lookup table for {field}")
-        ingest_new_import_dates(
-            spark,
-            f"{source}{POSTCODE_LOOKUP_DIR_PREFIX}/{field}/",
-            f"{destination}{POSTCODE_LOOKUP_DIR_PREFIX}/{field}/",
-        )
-
-    return
-
-
-def ingest_new_import_dates(spark, source, destination):
-    print(f"Reading CSV from {source}")
-    data_to_import = spark.read.option("header", True).csv(source)
-    previously_imported_dates = get_previous_import_dates(spark, destination)
-
-    if previously_imported_dates:
-        data_to_import = data_to_import.join(
-            previously_imported_dates,
-            data_to_import.import_date
-            == previously_imported_dates.already_imported_date,
-            "leftouter",
-        ).where(previously_imported_dates.already_imported_date.isNull())
-    print(f"Writing CSV to {destination}")
-    data_to_import.write.mode("append").partitionBy(
-        ColNames.year, ColNames.month, ColNames.day, ColNames.import_date
-    ).parquet(destination)
-    return data_to_import
-
-
-def get_previous_import_dates(spark, destination):
-    try:
-        df = spark.read.parquet(destination)
-    except AnalysisException:
-        return None
-
-    return df.select(
-        F.col(ColNames.import_date).alias("already_imported_date")
-    ).distinct()
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(df, destination)
 
 
 if __name__ == "__main__":
@@ -73,7 +49,14 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     ons_source, ons_destination = utils.collect_arguments(
-        ("--source", "S3 path to the ONS raw data domain"),
-        ("--destination", "S3 path to save output data"),
+        (
+            "--source",
+            "A CSV file or directory of csv files in s3 with ONS data to import",
+        ),
+        (
+            "--destination",
+            "Destination s3 directory for ONS postcode directory",
+        ),
     )
     main(ons_source, ons_destination)
+    print("Spark job 'ingest_ons_data' complete")
