@@ -214,7 +214,7 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     return df
 
 
-def filter_out_cleaned_values(
+def remove_already_cleaned_data(
     df: pyspark.sql.DataFrame,
     destination: str,
 ):

@@ -690,21 +690,23 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_month, "03")
                 self.assertEqual(row.process_day, "05")
 
-    def test_filter_out_cleaned_values_throws_error_if_df_doesnt_have_import_date(self):
+    def test_remove_already_cleaned_data_throws_error_if_df_doesnt_have_import_date(
+        self,
+    ):
         test_df: DataFrame = self.spark.createDataFrame(
             FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
         )
 
         test_df = test_df.drop("import_date")
         with self.assertRaises(Exception) as context:
-            utils.filter_out_cleaned_values(test_df, "some destination")
+            utils.remove_already_cleaned_data(test_df, "some destination")
 
         self.assertTrue(
             "Input dataframe must have import_date column" in str(context.exception),
         )
 
     @patch("utils.utils.get_max_snapshot_partitions")
-    def test_filter_out_cleaned_values_filters_dates_older_than_last_clean_data(
+    def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
         self, get_max_snapshot_partitions_mock: Mock
     ):
         get_max_snapshot_partitions_mock.return_value = ("2021", "06", "05")
@@ -713,7 +715,7 @@ class UtilsTests(unittest.TestCase):
             FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
         )
 
-        returned_df = utils.filter_out_cleaned_values(test_df, "some destination")
+        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
 
         self.assertEqual(returned_df.count(), 2)
 
