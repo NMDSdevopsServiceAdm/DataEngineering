@@ -188,9 +188,7 @@ def get_max_snapshot_partitions(location=None):
     if not location:
         return None
 
-    spark = SparkSession.builder.appName(
-        "sfc_get_max_snapshot_partitions"
-    ).getOrCreate()
+    spark = get_spark()
 
     try:
         previous_snpashots = spark.read.option("basePath", location).parquet(location)
@@ -213,6 +211,24 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     df = df.where(df[partition_keys[1]] == max_month)
     max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
     df = df.where(df[partition_keys[2]] == max_day)
+    return df
+
+
+def filter_out_cleaned_values(
+    df: pyspark.sql.DataFrame,
+    destination: str,
+):
+    if "import_date" not in df.columns:
+        raise Exception("Input dataframe must have import_date column")
+
+    last_processed_date = get_max_snapshot_partitions(destination)
+
+    last_processed_import_date = (
+        f"{last_processed_date[0]}{last_processed_date[1]}{last_processed_date[2]}"
+    )
+
+    df = df.filter(F.col("import_date") > last_processed_import_date)
+
     return df
 
 
