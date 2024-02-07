@@ -221,7 +221,10 @@ def remove_already_cleaned_data(
     if "import_date" not in df.columns:
         raise Exception("Input dataframe must have import_date column")
 
-    cleaned_df = read_from_parquet(destination)
+    try:
+        cleaned_df = read_from_parquet(destination)
+    except pyspark.sql.utils.AnalysisException:
+        return df
 
     latest_cleaned_df = get_latest_partition(cleaned_df, ("year", "month", "day"))
 

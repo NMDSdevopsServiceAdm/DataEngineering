@@ -750,6 +750,20 @@ class UtilsTests(unittest.TestCase):
             expected_df.sort("import_date").collect(),
         )
 
+    def test_remove_already_cleaned_data_returns_original_when_destination_doesnt_exist(
+        self,
+    ):
+        test_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        )
+
+        returned_df = utils.remove_already_cleaned_data(test_df, "invalid destination")
+
+        self.assertEqual(
+            returned_df.sort("import_date").collect(),
+            test_df.sort("import_date").collect(),
+        )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
