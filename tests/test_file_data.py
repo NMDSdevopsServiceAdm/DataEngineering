@@ -751,3 +751,18 @@ class IngestONSData:
         ("Yorkshire & Humber", "York", "52.10101"),
         ("Yorkshire & Humber", "Hull", "53.10101"),
     ]
+
+
+@dataclass
+class FilterCleanedValuesData:
+    sample_rows = [
+        ("year 2023", "20230101"),
+        ("year 2021", "20210101"),
+        ("month 06", "20210601"),
+        ("day 06", "20210606"),
+    ]
+
+    expected_rows = [
+        ("year 2023", "20230101"),
+        ("day 06", "20210606"),
+    ]

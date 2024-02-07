@@ -4,6 +4,8 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
+from unittest.mock import Mock, patch
+from pyspark.sql.dataframe import DataFrame
 
 from pyspark.shell import spark
 from pyspark.sql import SparkSession
@@ -19,6 +21,8 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
+from tests.test_file_data import FilterCleanedValuesData
+from tests.test_file_schemas import FilterCleanedValuesSchema
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
@@ -685,6 +689,43 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_year, "2021")
                 self.assertEqual(row.process_month, "03")
                 self.assertEqual(row.process_day, "05")
+
+    def test_filter_out_cleaned_values_throws_error_if_df_doesnt_have_import_date(self):
+        test_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        )
+
+        test_df = test_df.drop("import_date")
+        with self.assertRaises(Exception) as context:
+            utils.filter_out_cleaned_values(test_df, "some destination")
+
+        self.assertTrue(
+            "Input dataframe must have import_date column" in str(context.exception),
+        )
+
+    @patch("utils.utils.get_max_snapshot_partitions")
+    def test_filter_out_cleaned_values_filters_dates_older_than_last_clean_data(
+        self, get_max_snapshot_partitions_mock: Mock
+    ):
+        get_max_snapshot_partitions_mock.return_value = ("2021", "06", "05")
+
+        test_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        )
+
+        returned_df = utils.filter_out_cleaned_values(test_df, "some destination")
+
+        self.assertEqual(returned_df.count(), 2)
+
+        expected_df: DataFrame = self.spark.createDataFrame(
+            FilterCleanedValuesData.expected_rows,
+            FilterCleanedValuesSchema.sample_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort("import_date").collect(),
+            expected_df.sort("import_date").collect(),
+        )
 
 
 if __name__ == "__main__":
