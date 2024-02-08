@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import jobs.clean_ascwds_worker_data as job
 
@@ -11,6 +11,7 @@ from utils.utils import get_spark
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
+    TEST_WORKPLACE_SOURCE = "s3://some_bucket/some_source_key"
     TEST_DESTINATION = "s3://some_bucket/some_destination_key"
     partition_keys = [
         PartitionKeys.year,
@@ -27,12 +28,13 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_mock, write_to_parquet_mock):
+    def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
         read_from_parquet_mock.return_value = self.test_ascwds_worker_df
 
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+        job.main(self.TEST_SOURCE, self.TEST_WORKPLACE_SOURCE, self.TEST_DESTINATION)
 
-        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
+        read_from_parquet_mock.assert_called_with(self.TEST_SOURCE)
+        read_from_parquet_mock.assert_called_with(self.TEST_WORKPLACE_SOURCE)
         write_to_parquet_mock.assert_called_once_with(
             self.test_ascwds_worker_df,
             self.TEST_DESTINATION,

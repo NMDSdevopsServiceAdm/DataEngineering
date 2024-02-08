@@ -115,8 +115,9 @@ module "clean_ascwds_worker_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--ascwds_worker_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--ascwds_worker_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+    "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--ascwds_workplace_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--ascwds_worker_destination"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
   }
 }
 
