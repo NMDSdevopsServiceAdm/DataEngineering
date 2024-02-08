@@ -41,7 +41,10 @@ def main(
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
-    registered_locations_df, deregistered_locations_df = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+    (
+        registered_locations_df,
+        deregistered_locations_df,
+    ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
 
     utils.write_to_parquet(
         registered_locations_df,
@@ -91,13 +94,25 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
 
     return joined_df
 
-def split_dataframe_into_registered_and_deregistered_rows(locations_df:DataFrame) -> DataFrame:
-    registered_df = locations_df.where(locations_df[CQCL.registration_status] == "Registered")
-    deregistered_df = locations_df.where(locations_df[CQCL.registration_status] == "Deregistered")
-    rows_without_registration_status = locations_df.where(locations_df[CQCL.registration_status].isNull()).count()
+
+def split_dataframe_into_registered_and_deregistered_rows(
+    locations_df: DataFrame,
+) -> DataFrame:
+    registered_df = locations_df.where(
+        locations_df[CQCL.registration_status] == "Registered"
+    )
+    deregistered_df = locations_df.where(
+        locations_df[CQCL.registration_status] == "Deregistered"
+    )
+    rows_without_registration_status = locations_df.where(
+        locations_df[CQCL.registration_status].isNull()
+    ).count()
     if rows_without_registration_status != 0:
-        print(f"{rows_without_registration_status} rows are missing a registration status and have been dropped.")
+        print(
+            f"{rows_without_registration_status} rows are missing a registration status and have been dropped."
+        )
     return registered_df, deregistered_df
+
 
 if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")

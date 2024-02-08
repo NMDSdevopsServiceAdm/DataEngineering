@@ -664,19 +664,34 @@ class CQCLocationsData:
     ]
 
     registration_status_rows = [
-        ("loc-1", "Registered",),
-        ("loc-2", "Deregistered",),
-        ("loc-3", None,),
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+        (
+            "loc-3",
+            None,
+        ),
     ]
 
     expected_deregistered_rows = [
-        ("loc-2", "Deregistered",),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
     ]
 
     expected_registered_rows = [
-        ("loc-1", "Registered",),
+        (
+            "loc-1",
+            "Registered",
+        ),
     ]
-    
+
 
 @dataclass
 class CleaningUtilsData:
