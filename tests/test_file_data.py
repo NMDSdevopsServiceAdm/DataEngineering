@@ -663,6 +663,22 @@ class CQCLocationsData:
         ),
     ]
 
+    test_invalid_postcode_data = [
+        ("loc-1", "B69 E3G"),
+        ("loc-2", "UB4 0EJ."),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
+    expected_invalid_postcode_data = [
+        ("loc-1", "B69 3EG"),
+        ("loc-2", "UB4 0EJ"),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:

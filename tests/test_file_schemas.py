@@ -284,6 +284,13 @@ class CQCLocationsSchema:
         ]
     )
 
+    invalid_postcode_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:
