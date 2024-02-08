@@ -235,9 +235,17 @@ def remove_already_cleaned_data(
     if latest_cleaned_import_date is None:
         return df
 
-    df = df.filter(F.col("import_date") > latest_cleaned_import_date)
+    df_with_cleaned_data_filtered = df.filter(
+        F.col("import_date") > latest_cleaned_import_date
+    )
 
-    return df
+    amount_of_new_rows = df_with_cleaned_data_filtered.count()
+    ignored_rows = df.count() - amount_of_new_rows
+    print(
+        f"Ignoring {ignored_rows} rows of already cleaned data, {amount_of_new_rows} new rows of data to be cleaned."
+    )
+
+    return df_with_cleaned_data_filtered
 
 
 def collect_arguments(*args):
