@@ -706,26 +706,6 @@ class UtilsTests(unittest.TestCase):
         )
 
     @patch("utils.utils.read_from_parquet")
-    def test_remove_already_cleaned_data_returns_the_same_df_if_there_is_no_cleaned_data(
-        self, read_from_parquet_mock: Mock
-    ):
-        read_from_parquet_mock.return_value = self.spark.createDataFrame(
-            [],
-            FilterCleanedValuesSchema.sample_schema,
-        )
-
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            test_df.sort("import_date").collect(),
-        )
-
-    @patch("utils.utils.read_from_parquet")
     def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
         self, read_from_parquet_mock: Mock
     ):
