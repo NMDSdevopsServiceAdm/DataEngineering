@@ -743,6 +743,25 @@ class CleaningUtilsData:
         (-234, 999.99, "non scale", None, None),
     ]
 
+    align_dates_primary_rows = [
+        (date(2020, 1, 1)),
+        (date(2020, 1, 8)),
+        (date(2021, 1, 1)),
+    ]
+
+    align_dates_secondary_rows = [
+        (date(2019, 1, 1)),
+        (date(2020, 1, 1)),
+        (date(2020, 2, 1)),
+        (date(2021, 1, 8)),
+    ]
+
+    expected_aligned_dates_rows = [
+        (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1)),
+        (date(2020, 1, 8), date(2020, 1, 8), date(2020, 1, 1)),
+        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1)),
+    ]
+
 
 @dataclass
 class IngestONSData:
