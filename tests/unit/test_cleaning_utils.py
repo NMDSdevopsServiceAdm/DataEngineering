@@ -35,9 +35,7 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         self.expected_df_without_new_columns = self.spark.createDataFrame(
             Data.expected_rows_without_new_columns, Schemas.worker_schema
         )
-        self.primary_df = self.spark.createDataFrame(Data.align_dates_primary_rows, Schemas.align_dates_schema)
-        self.secondary_df = self.spark.createDataFrame(Data.align_dates_secondary_rows, Schemas.align_dates_schema)
-        self.expected_alighned_dates = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
+        
 
 
     def test_apply_categorical_labels_completes(self):
@@ -380,3 +378,21 @@ class TestCleaningUtilsScale(unittest.TestCase):
         expected_data = expected_df.sort("int").collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class TestCleaningUtilsAlignDates(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.primary_df = self.spark.createDataFrame(Data.align_dates_primary_rows, Schemas.align_dates_schema)
+        self.secondary_df = self.spark.createDataFrame(Data.align_dates_secondary_rows, Schemas.align_dates_schema)
+        self.expected_aligned_dates = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
+
+    def test_align_import_dates_completes(self):
+        returned_df = job.align_import_dates(self.primary_df, self.secondary_df)
+        
+        self.assertTrue(returned_df)
+    
+    def test_join_on_misaligned_import_dates_completes(self):
+        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates)
+        
+        self.assertTrue(returned_df)

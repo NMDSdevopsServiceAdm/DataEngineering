@@ -9,6 +9,10 @@ from pyspark.sql.types import (
 )
 import pyspark.sql.functions as F
 
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    PartitionKeys as Keys,
+)
+
 key: str = "key"
 value: str = "value"
 
@@ -105,3 +109,12 @@ def set_bounds_for_columns(
         df = set_column_bounds(df, col, new_col, lower_limit, upper_limit)
 
     return df
+
+
+def align_import_dates(primary_df:DataFrame, secondary_df: DataFrame, primary_date_column:str=Keys.import_date, secondary_date_column:str=Keys.import_date) -> DataFrame:
+    aligned_dates_df = primary_df
+    return aligned_dates_df
+
+def join_on_misaligned_import_dates(primary_df:DataFrame, secondary_df: DataFrame, aligned_dates:DataFrame) -> DataFrame:
+    joined_df = primary_df
+    return joined_df
