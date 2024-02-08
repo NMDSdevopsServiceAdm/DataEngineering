@@ -28,21 +28,23 @@ if __name__ == "__main__":
     print("Spark job 'ingest_ascwds_worker_dataset' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    worker_source, cleaned_workplace_source, cleaned_worker_destination = (
-        utils.collect_arguments(
-            (
-                "--ascwds_worker_source",
-                "Source s3 directory for parquet ascwds worker dataset",
-            ),
-            (
-                "--ascwds_workplace_cleaned_source",
-                "Source s3 directory for parquet ascwds workplace cleaned dataset",
-            ),
-            (
-                "--ascwds_worker_destination",
-                "Destination s3 directory for cleaned parquet ascwds worker dataset",
-            ),
-        )
+    (
+        worker_source,
+        cleaned_workplace_source,
+        cleaned_worker_destination,
+    ) = utils.collect_arguments(
+        (
+            "--ascwds_worker_source",
+            "Source s3 directory for parquet ascwds worker dataset",
+        ),
+        (
+            "--ascwds_workplace_cleaned_source",
+            "Source s3 directory for parquet ascwds workplace cleaned dataset",
+        ),
+        (
+            "--ascwds_worker_destination",
+            "Destination s3 directory for cleaned parquet ascwds worker dataset",
+        ),
     )
     main(worker_source, cleaned_workplace_source, cleaned_worker_destination)
 
