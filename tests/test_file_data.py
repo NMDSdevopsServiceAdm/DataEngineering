@@ -666,6 +666,7 @@ class CQCLocationsData:
     registration_status_rows = [
         ("loc-1", "Registered",),
         ("loc-2", "Deregistered",),
+        ("loc-3", None,),
     ]
 
     expected_deregistered_rows = [

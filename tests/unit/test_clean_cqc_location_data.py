@@ -110,14 +110,16 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     
     def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(self):
         test_df = self.spark.createDataFrame(Data.registration_status_rows, Schemas.registration_status_schema)
-        
-        returned_registered_df, returned_deregistered_df = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
 
-        expected_registered_df = self.spark.createDataFrame(Data.expected_registered_rows, Schemas.registration_status_schema)
-        expected_deregistered_df = self.spark.createDataFrame(Data.expected_deregistered_rows, Schemas.registration_status_schema)
+        returned_registered_df, returned_deregistered_df = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_data = returned_registered_df.collect()
+        returned_deregistered_data = returned_deregistered_df.collect()
         
-        self.assertEqual(returned_registered_df, expected_registered_df)
-        self.assertEqual(returned_deregistered_df, expected_deregistered_df)
+        expected_registered_data = self.spark.createDataFrame(Data.expected_registered_rows, Schemas.registration_status_schema).collect()
+        expected_deregistered_data = self.spark.createDataFrame(Data.expected_deregistered_rows, Schemas.registration_status_schema).collect()
+        
+        self.assertEqual(returned_registered_data, expected_registered_data)
+        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
 
 
 if __name__ == "__main__":
