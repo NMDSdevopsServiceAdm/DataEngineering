@@ -37,7 +37,7 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_provider_source)
 
-    # cqc_location_df = remove_invalid_postcodes(cqc_location_df)
+    cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
