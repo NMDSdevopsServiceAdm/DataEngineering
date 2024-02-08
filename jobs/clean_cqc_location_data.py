@@ -41,8 +41,10 @@ def main(
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
+    registered_locations_df, deregistered_locations_df = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+
     utils.write_to_parquet(
-        cqc_location_df,
+        registered_locations_df,
         cleaned_cqc_location_destintion,
         append=True,
         partitionKeys=cqcPartitionKeys,
