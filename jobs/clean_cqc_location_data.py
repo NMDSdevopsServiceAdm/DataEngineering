@@ -53,7 +53,7 @@ def main(
 
 
 def remove_invalid_postcodes(df: DataFrame):
-    post_codes_mapping = InvalidPostcodes.invalid_postcodes
+    post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))

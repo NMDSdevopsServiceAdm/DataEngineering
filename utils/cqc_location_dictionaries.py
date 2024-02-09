@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class InvalidPostcodes:
-    invalid_postcodes = {
+    invalid_postcodes_map = {
         "B12 ODG": "B12 0DG",
         "B66 2FF": "B66 2AL",
         "B69 E3G": "B69 3EG",
