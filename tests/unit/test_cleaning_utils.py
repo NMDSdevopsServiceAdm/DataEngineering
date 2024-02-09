@@ -389,16 +389,16 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.merged_dates_df = self.spark.createDataFrame(Data.expected_merged_rows, Schemas.expected_merged_dates_schema)
 
     def test_align_import_dates_completes(self):
-        returned_df = job.align_import_dates(self.primary_df, self.secondary_df,"import_date", "import_date")
+        returned_df = job.align_import_dates(self.primary_df, self.secondary_df,"_primary", "_secondary")
         
         self.assertTrue(returned_df)
 
     def test_align_import_dates_aligns_dates_correctly(self):
-        returned_df = job.align_import_dates(self.primary_df, self.secondary_df,"import_date", "import_date")
-        returned_data = returned_df.sort("primary_date").collect()
+        returned_df = job.align_import_dates(self.primary_df, self.secondary_df, "_primary", "_secondary")
+        returned_data = returned_df.sort("import_date_primary").collect()
         returned_df.show()
-        self.expected_aligned_dates.sort("primary_date").show()
-        expected_data = self.expected_aligned_dates.sort("primary_date").collect()
+        self.expected_aligned_dates.sort("import_date_primary").show()
+        expected_data = self.expected_aligned_dates.sort("import_date_primary").collect()
         self.assertEqual(returned_data, expected_data)
     
     def test_join_on_misaligned_import_dates_completes(self):

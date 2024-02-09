@@ -112,27 +112,36 @@ def set_bounds_for_columns(
     return df
 
 
-def align_import_dates(primary_df:DataFrame, secondary_df: DataFrame, primary_column_name:str=Keys.import_date, secondary_column_name:str=Keys.import_date) -> DataFrame:
-    primary_date_column = "primary_date"
-    secondary_date_column = "secondary_date"
-    
-    primary_dates = primary_df.select(primary_column_name).withColumnRenamed(primary_column_name, primary_date_column).dropDuplicates()
-    secondary_dates = secondary_df.select(secondary_column_name).withColumnRenamed(secondary_column_name, secondary_date_column).dropDuplicates()
-    
-    possible_matches = primary_dates.crossJoin(secondary_dates)
-    
-    possible_matches = possible_matches.repartition(primary_date_column)
-    
-    possible_matches = possible_matches.withColumn("date_difference", F.datediff(primary_date_column, secondary_date_column))
-    possible_matches = possible_matches.where(possible_matches["date_difference"] >= 0)
-    
-    w = Window.partitionBy(primary_date_column).orderBy("date_difference")
-    possible_matches = possible_matches.withColumn("min_date_difference", F.min("date_difference").over(w))
-    
-    aligned_dates = possible_matches.where(possible_matches["min_date_difference"] == possible_matches["date_difference"])
-    
-    return aligned_dates.select(primary_date_column, secondary_date_column)
+def align_import_dates(primary_df:DataFrame,  secondary_df: DataFrame, primary_df_label:str, secondary_df_label:str,  primary_column_name:str=Keys.import_date, secondary_column_name:str=Keys.import_date) -> DataFrame:
+    primary_df, new_primary_column = apply_distinct_column_names(primary_df, primary_df_label, primary_column_name)
+    secondary_df, new_secondary_column = apply_distinct_column_names(secondary_df, secondary_df_label, secondary_column_name)
+    possible_matches = cross_join_unique_dates(primary_df, secondary_df, new_primary_column, new_secondary_column)
+    aligned_dates = determine_best_date_matches(possible_matches, new_primary_column, new_secondary_column)
+
+    return aligned_dates
 
 def join_on_misaligned_import_dates(primary_df:DataFrame, secondary_df: DataFrame, aligned_dates:DataFrame) -> DataFrame:
     joined_df = primary_df
     return joined_df
+
+def apply_distinct_column_names(df:DataFrame, df_label:str, column_name:str) -> tuple:
+    new_column = column_name + df_label
+    df = df.withColumnRenamed(column_name, new_column)
+    return df, new_column
+
+
+def determine_best_date_matches(possible_matches:DataFrame, primary_column:str, secondary_column:str) -> DataFrame:
+    date_diff:str = "date_diff"
+    min_date_diff:str = "min_date_diff"
+    possible_matches = possible_matches.withColumn(date_diff, F.datediff(primary_column, secondary_column))
+    possible_matches = possible_matches.where(possible_matches[date_diff] >= 0)
+    w = Window.partitionBy(primary_column).orderBy(date_diff)
+    possible_matches = possible_matches.withColumn(min_date_diff, F.min(date_diff).over(w))
+    aligned_dates = possible_matches.where(possible_matches[min_date_diff] == possible_matches[date_diff])
+    return aligned_dates.select(primary_column, secondary_column)
+
+def cross_join_unique_dates(primary_df:DataFrame, secondary_df:DataFrame, primary_column:str, secondary_column:str) -> DataFrame:
+    primary_dates = primary_df.select(primary_column).dropDuplicates()
+    secondary_dates = secondary_df.select(secondary_column).dropDuplicates()
+    possible_matches = primary_dates.crossJoin(secondary_dates).repartition(primary_column)
+    return possible_matches

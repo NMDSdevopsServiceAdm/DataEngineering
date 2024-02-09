@@ -352,16 +352,16 @@ class CleaningUtilsSchemas:
 
     expected_aligned_dates_schema = StructType(
         [
-            StructField("primary_date", DateType(), True),
-            StructField("secondary_date", DateType(), True),
+            StructField("import_date_primary", DateType(), True),
+            StructField("import_date_secondary", DateType(), True),
         ]
     )
 
     expected_merged_dates_schema = StructType(
         [
             StructField("snapshot_date", DateType(), True),
-            StructField("primaray_dataset_date", DateType(), True),
-            StructField("secondary_dataset_date", DateType(), True),
+            StructField("import_date_primary", DateType(), True),
+            StructField("import_date_secondary", DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
         ]
     )
