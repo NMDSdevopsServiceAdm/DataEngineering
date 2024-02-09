@@ -663,7 +663,7 @@ class CQCLocationsData:
         ),
     ]
 
-    registration_status_rows = [
+    registration_status_with_missing_data_rows = [
         (
             "loc-1",
             "Registered",
@@ -674,7 +674,18 @@ class CQCLocationsData:
         ),
         (
             "loc-3",
-            None,
+            "new value",
+        ),
+    ]
+
+    registration_status_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
         ),
     ]
 

@@ -1,4 +1,5 @@
 import sys
+import warnings
 
 from utils import utils
 
@@ -98,19 +99,22 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
 def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
 ) -> DataFrame:
+    invalid_rows = locations_df.where(
+        (locations_df[CQCL.registration_status] != "Registered") & (locations_df[CQCL.registration_status] != "Deregistered")
+    ).count()
+    
+    if invalid_rows != 0:
+        warnings.warn(
+            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
+        )
+
     registered_df = locations_df.where(
         locations_df[CQCL.registration_status] == "Registered"
     )
     deregistered_df = locations_df.where(
         locations_df[CQCL.registration_status] == "Deregistered"
     )
-    rows_without_registration_status = locations_df.where(
-        locations_df[CQCL.registration_status].isNull()
-    ).count()
-    if rows_without_registration_status != 0:
-        print(
-            f"{rows_without_registration_status} rows are missing a registration status and have been dropped."
-        )
+    
     return registered_df, deregistered_df
 
 
