@@ -100,9 +100,10 @@ def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
 ) -> DataFrame:
     invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != "Registered") & (locations_df[CQCL.registration_status] != "Deregistered")
+        (locations_df[CQCL.registration_status] != "Registered")
+        & (locations_df[CQCL.registration_status] != "Deregistered")
     ).count()
-    
+
     if invalid_rows != 0:
         warnings.warn(
             f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
@@ -114,7 +115,7 @@ def split_dataframe_into_registered_and_deregistered_rows(
     deregistered_df = locations_df.where(
         locations_df[CQCL.registration_status] == "Deregistered"
     )
-    
+
     return registered_df, deregistered_df
 
 

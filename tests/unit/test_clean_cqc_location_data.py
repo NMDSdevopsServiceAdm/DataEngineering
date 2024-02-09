@@ -131,12 +131,13 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
         self.assertEqual(returned_registered_data, expected_registered_data)
         self.assertEqual(returned_deregistered_data, expected_deregistered_data)
-    
+
     def test_split_dataframe_into_registered_and_deregistered_rows_raises_a_warning_if_any_rows_are_invalid(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.registration_status_with_missing_data_rows, Schemas.registration_status_schema
+            Data.registration_status_with_missing_data_rows,
+            Schemas.registration_status_schema,
         )
         (
             returned_registered_df,
@@ -154,7 +155,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
         self.assertEqual(returned_registered_data, expected_registered_data)
         self.assertEqual(returned_deregistered_data, expected_deregistered_data)
-   
+
         self.assertWarns(Warning)
 
     def test_split_dataframe_into_registered_and_deregistered_rows_does_not_raise_a_warning_if_all_rows_are_valid(
