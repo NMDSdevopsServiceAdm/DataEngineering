@@ -30,6 +30,8 @@ NURSING_HOME_IDENTIFIER = "Care home with nursing"
 NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
 NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
+DATE_COLUMN_IDENTIFIER = "registration_date"
+
 
 def main(
     cqc_location_source: str,
@@ -42,6 +44,12 @@ def main(
     cqc_location_df = utils.remove_already_cleaned_data(
         cqc_location_df,
         cleaned_cqc_location_destintion,
+    )
+
+    cqc_location_df = utils.format_date_fields(
+        cqc_location_df,
+        date_column_identifier=DATE_COLUMN_IDENTIFIER,
+        raw_date_format="yyyy-MM-dd",
     )
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
