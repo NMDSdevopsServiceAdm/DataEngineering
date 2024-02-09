@@ -386,6 +386,7 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.primary_df = self.spark.createDataFrame(Data.align_dates_primary_rows, Schemas.align_dates_schema)
         self.secondary_df = self.spark.createDataFrame(Data.align_dates_secondary_rows, Schemas.align_dates_schema)
         self.expected_aligned_dates = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
+        self.merged_dates_df = self.spark.createDataFrame(Data.expected_merged_rows, Schemas.expected_merged_dates_schema)
 
     def test_align_import_dates_completes(self):
         returned_df = job.align_import_dates(self.primary_df, self.secondary_df)

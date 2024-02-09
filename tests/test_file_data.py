@@ -744,22 +744,31 @@ class CleaningUtilsData:
     ]
 
     align_dates_primary_rows = [
-        (date(2020, 1, 1),),
-        (date(2020, 1, 8),),
-        (date(2021, 1, 1),),
+        (date(2020, 1, 1), "loc 1"),
+        (date(2020, 1, 8), "loc 1"),
+        (date(2021, 1, 1), "loc 1"),
+        (date(2021, 1, 1), "loc 2"),
     ]
 
     align_dates_secondary_rows = [
-        (date(2019, 1, 1),),
-        (date(2020, 1, 1),),
-        (date(2020, 2, 1),),
-        (date(2021, 1, 8),),
+        (date(2019, 1, 1),"loc 1"),
+        (date(2020, 1, 1),"loc 1"),
+        (date(2020, 2, 1),"loc 1"),
+        (date(2021, 1, 8),"loc 1"),
+        (date(2020, 2, 1),"loc 2"),
     ]
 
     expected_aligned_dates_rows = [
         (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1),),
-        (date(2020, 1, 8), date(2020, 1, 8), date(2020, 1, 1),),
+        (date(2020, 1, 8), date(2020, 1, 8), date(2020, 1, 1),), 
         (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1),),
+    ]
+
+    expected_merged_rows = [
+        (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1),"loc 1"),
+        (date(2020, 1, 8), date(2020, 1, 8), date(2020, 1, 1),"loc 1"), 
+        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1),"loc 1"),
+        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1),"loc 2"),
     ]
 
 
