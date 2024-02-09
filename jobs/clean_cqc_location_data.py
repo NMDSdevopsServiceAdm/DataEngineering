@@ -22,6 +22,7 @@ from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values impo
 from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.cqc_location_dictionaries import InvalidPostcodes
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -43,6 +44,8 @@ def main(
         cleaned_cqc_location_destintion,
     )
 
+    cqc_location_df = remove_invalid_postcodes(cqc_location_df)
+
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
@@ -58,6 +61,13 @@ def main(
         append=True,
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def remove_invalid_postcodes(df: DataFrame):
+    post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
+
+    map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
+    return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
 
 
 def allocate_primary_service_type(df: DataFrame):

@@ -62,6 +62,28 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+    def test_remove_invalid_postcodes(self):
+        test_invalid_postcode_df = self.spark.createDataFrame(
+            Data.test_invalid_postcode_data, Schemas.invalid_postcode_schema
+        )
+
+        df_with_invalid_postcodes_removed = job.remove_invalid_postcodes(
+            test_invalid_postcode_df
+        )
+
+        expected_postcode_df = self.spark.createDataFrame(
+            Data.expected_invalid_postcode_data, Schemas.invalid_postcode_schema
+        )
+
+        self.assertEqual(
+            df_with_invalid_postcodes_removed.columns, expected_postcode_df.columns
+        )
+
+        self.assertEqual(
+            df_with_invalid_postcodes_removed.sort(CQCL.location_id).collect(),
+            expected_postcode_df.sort(CQCL.location_id).collect(),
+        )
+
     def test_allocate_primary_service_type(self):
         PRIMARY_SERVICE_TYPE_COLUMN_NAME = "primary_service_type"
 
