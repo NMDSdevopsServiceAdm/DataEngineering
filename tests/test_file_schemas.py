@@ -352,9 +352,8 @@ class CleaningUtilsSchemas:
 
     expected_aligned_dates_schema = StructType(
         [
-            StructField("snapshot_date", DateType(), True),
-            StructField("primaray_dataset_date", DateType(), True),
-            StructField("secondary_dataset_date", DateType(), True),
+            StructField("primary_date", DateType(), True),
+            StructField("secondary_date", DateType(), True),
         ]
     )
 
