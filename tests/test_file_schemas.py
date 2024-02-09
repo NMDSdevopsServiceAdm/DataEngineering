@@ -284,6 +284,13 @@ class CQCLocationsSchema:
         ]
     )
 
+    registration_status_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:
