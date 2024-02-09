@@ -188,9 +188,7 @@ def get_max_snapshot_partitions(location=None):
     if not location:
         return None
 
-    spark = SparkSession.builder.appName(
-        "sfc_get_max_snapshot_partitions"
-    ).getOrCreate()
+    spark = get_spark()
 
     try:
         previous_snpashots = spark.read.option("basePath", location).parquet(location)
@@ -214,6 +212,40 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
     df = df.where(df[partition_keys[2]] == max_day)
     return df
+
+
+def remove_already_cleaned_data(
+    df: pyspark.sql.DataFrame,
+    destination: str,
+):
+    if "import_date" not in df.columns:
+        raise Exception("Input dataframe must have import_date column")
+
+    try:
+        cleaned_df = read_from_parquet(destination)
+    except pyspark.sql.utils.AnalysisException:
+        return df
+
+    latest_cleaned_df = get_latest_partition(cleaned_df, ("year", "month", "day"))
+
+    latest_cleaned_import_date = latest_cleaned_df.select(
+        F.max(latest_cleaned_df["import_date"])
+    ).first()[0]
+
+    if latest_cleaned_import_date is None:
+        return df
+
+    df_with_cleaned_data_filtered = df.filter(
+        F.col("import_date") > latest_cleaned_import_date
+    )
+
+    amount_of_new_rows = df_with_cleaned_data_filtered.count()
+    ignored_rows = df.count() - amount_of_new_rows
+    print(
+        f"Ignoring {ignored_rows} rows of already cleaned data, {amount_of_new_rows} new rows of data to be cleaned."
+    )
+
+    return df_with_cleaned_data_filtered
 
 
 def collect_arguments(*args):

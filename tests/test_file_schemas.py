@@ -370,3 +370,15 @@ class IngestONSData:
             StructField(ONS.longitude, StringType(), True),
         ]
     )
+
+
+@dataclass
+class FilterCleanedValuesSchema:
+    sample_schema = StructType(
+        [
+            StructField("year", StringType(), True),
+            StructField("month", StringType(), True),
+            StructField("day", StringType(), True),
+            StructField("import_date", StringType(), True),
+        ]
+    )
