@@ -679,6 +679,46 @@ class CQCLocationsData:
         ("loc-5", None),
     ]
 
+    registration_status_with_missing_data_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+        (
+            "loc-3",
+            "new value",
+        ),
+    ]
+
+    registration_status_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_deregistered_rows = [
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_registered_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:

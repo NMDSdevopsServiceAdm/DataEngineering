@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
 
@@ -134,6 +135,85 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
 
         self.assertCountEqual(returned_data, expected_data)
+
+    def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.registration_status_rows, Schemas.registration_status_schema
+        )
+
+        (
+            returned_registered_df,
+            returned_deregistered_df,
+        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_data = returned_registered_df.collect()
+        returned_deregistered_data = returned_deregistered_df.collect()
+
+        expected_registered_data = self.spark.createDataFrame(
+            Data.expected_registered_rows, Schemas.registration_status_schema
+        ).collect()
+        expected_deregistered_data = self.spark.createDataFrame(
+            Data.expected_deregistered_rows, Schemas.registration_status_schema
+        ).collect()
+
+        self.assertEqual(returned_registered_data, expected_registered_data)
+        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
+
+    def test_split_dataframe_into_registered_and_deregistered_rows_raises_a_warning_if_any_rows_are_invalid(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.registration_status_with_missing_data_rows,
+            Schemas.registration_status_schema,
+        )
+        (
+            returned_registered_df,
+            returned_deregistered_df,
+        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_data = returned_registered_df.collect()
+        returned_deregistered_data = returned_deregistered_df.collect()
+
+        expected_registered_data = self.spark.createDataFrame(
+            Data.expected_registered_rows, Schemas.registration_status_schema
+        ).collect()
+        expected_deregistered_data = self.spark.createDataFrame(
+            Data.expected_deregistered_rows, Schemas.registration_status_schema
+        ).collect()
+
+        self.assertEqual(returned_registered_data, expected_registered_data)
+        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
+
+        self.assertWarns(Warning)
+
+    def test_split_dataframe_into_registered_and_deregistered_rows_does_not_raise_a_warning_if_all_rows_are_valid(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.registration_status_rows, Schemas.registration_status_schema
+        )
+        with warnings.catch_warnings(record=True) as warnings_log:
+            (
+                returned_registered_df,
+                returned_deregistered_df,
+            ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+            """
+            returned_registered_data = returned_registered_df.collect()
+            returned_deregistered_data = returned_deregistered_df.collect()
+
+            expected_registered_data = self.spark.createDataFrame(
+                Data.expected_registered_rows, Schemas.registration_status_schema
+            ).collect()
+            expected_deregistered_data = self.spark.createDataFrame(
+                Data.expected_deregistered_rows, Schemas.registration_status_schema
+            ).collect()
+
+            self.assertEqual(returned_registered_data, expected_registered_data)
+            self.assertEqual(returned_deregistered_data, expected_deregistered_data)
+    
+            """
+
+            self.assertEqual(warnings_log, [])
 
 
 if __name__ == "__main__":

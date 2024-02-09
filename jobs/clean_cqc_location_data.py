@@ -1,4 +1,5 @@
 import sys
+import warnings
 
 from utils import utils
 
@@ -49,8 +50,13 @@ def main(
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
+    (
+        registered_locations_df,
+        deregistered_locations_df,
+    ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+
     utils.write_to_parquet(
-        cqc_location_df,
+        registered_locations_df,
         cleaned_cqc_location_destintion,
         append=True,
         partitionKeys=cqcPartitionKeys,
@@ -103,6 +109,29 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     ).drop("provider_id_to_drop", "import_date_to_drop")
 
     return joined_df
+
+
+def split_dataframe_into_registered_and_deregistered_rows(
+    locations_df: DataFrame,
+) -> DataFrame:
+    invalid_rows = locations_df.where(
+        (locations_df[CQCL.registration_status] != "Registered")
+        & (locations_df[CQCL.registration_status] != "Deregistered")
+    ).count()
+
+    if invalid_rows != 0:
+        warnings.warn(
+            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
+        )
+
+    registered_df = locations_df.where(
+        locations_df[CQCL.registration_status] == "Registered"
+    )
+    deregistered_df = locations_df.where(
+        locations_df[CQCL.registration_status] == "Deregistered"
+    )
+
+    return registered_df, deregistered_df
 
 
 if __name__ == "__main__":
