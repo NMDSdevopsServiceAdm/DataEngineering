@@ -423,13 +423,13 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
 
 
     def test_join_on_misaligned_import_dates_completes(self):
-        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates, "locationId")
+        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates)
         
         self.assertTrue(returned_df)
 
 
     def test_join_on_misaligned_dates_joins_correctly(self):
-        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates, "locationId")
+        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates)
         returned_data = returned_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").collect()
         returned_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").show()
         self.merged_dates_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").show()

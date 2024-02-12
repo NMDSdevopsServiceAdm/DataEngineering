@@ -143,12 +143,12 @@ def determine_best_date_matches(possible_matches:DataFrame, primary_column:str, 
     return aligned_dates.select(primary_column, secondary_column)
 
 
-def join_on_misaligned_import_dates(primary_df:DataFrame, secondary_df: DataFrame, aligned_dates:DataFrame, join_criteria:str) -> DataFrame:
-    primary_join_criteria = [aligned_dates.import_date_primary == primary_df.import_date] #, aligned_dates[join_criteria] == primary_df[join_criteria]]
+def join_on_misaligned_import_dates(primary_df:DataFrame, secondary_df: DataFrame, aligned_dates:DataFrame) -> DataFrame:
+    primary_join_criteria = "ascwds_workplace_import_date"
     print(primary_join_criteria)
     
-    primary_df_with_aligned_dates = primary_df.join(aligned_dates, primary_join_criteria, "left").drop(primary_df.import_date)
-    secondary_join_criteria = [primary_df_with_aligned_dates.import_date_secondary == secondary_df.import_date, primary_df_with_aligned_dates[join_criteria] == secondary_df[join_criteria]]
-    joined_df = primary_df_with_aligned_dates. join(secondary_df, secondary_join_criteria, "left").drop(secondary_df.import_date, secondary_df[join_criteria])
+    primary_df_with_aligned_dates = primary_df.join(aligned_dates, "ascwds_workplace_import_date", "left")
+    secondary_join_criteria = ["cqc_locations_import_date", "locationId"]
+    joined_df = primary_df_with_aligned_dates. join(secondary_df, secondary_join_criteria, "left").drop(secondary_df["cqc_locations_import_date"], secondary_df["locationId"])
     joined_df = joined_df.withColumn("snapshot_date", F.col("ascwds_workplace_import_date")) # Make this less specific
     return joined_df
