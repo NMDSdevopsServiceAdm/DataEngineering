@@ -388,10 +388,12 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.expected_aligned_dates = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
         self.merged_dates_df = self.spark.createDataFrame(Data.expected_merged_rows, Schemas.expected_merged_dates_schema)
 
+
     def test_align_import_dates_completes(self):
         returned_df = job.align_import_dates(self.primary_df, self.secondary_df,"_primary", "_secondary")
         
         self.assertTrue(returned_df)
+
 
     def test_align_import_dates_aligns_dates_correctly(self):
         returned_df = job.align_import_dates(self.primary_df, self.secondary_df, "_primary", "_secondary")
@@ -400,8 +402,18 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.expected_aligned_dates.sort("import_date_primary").show()
         expected_data = self.expected_aligned_dates.sort("import_date_primary").collect()
         self.assertEqual(returned_data, expected_data)
-    
+
+
     def test_join_on_misaligned_import_dates_completes(self):
         returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates)
         
         self.assertTrue(returned_df)
+
+
+    def test_join_on_misaligned_dates_joins_correctly(self):
+        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates, "locationId")
+        returned_data = returned_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").collect()
+        returned_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").show()
+        self.merged_dates_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").show()
+        expected_data = self.merged_dates_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").collect()
+        self.assertEqual(returned_data, expected_data)
