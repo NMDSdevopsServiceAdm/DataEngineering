@@ -372,7 +372,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-
     expected_aligned_dates_schema = StructType(
         [
             StructField(AWPClean.cleaned_import_date, DateType(), True),
