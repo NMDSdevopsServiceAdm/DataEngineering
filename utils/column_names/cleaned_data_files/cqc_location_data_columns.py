@@ -13,3 +13,4 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     primary_service_type: str = "primary_service_type"
     sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
+    cleaned_import_date:str = "cqc_locations_import_date"

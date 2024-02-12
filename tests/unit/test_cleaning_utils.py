@@ -11,6 +11,12 @@ from tests.test_file_data import CleaningUtilsData as Data
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_data_columns import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 
 
 gender_labels: str = "gender_labels"
@@ -383,37 +389,65 @@ class TestCleaningUtilsScale(unittest.TestCase):
 class TestCleaningUtilsAlignDates(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-        self.primary_df = self.spark.createDataFrame(Data.align_dates_primary_rows, Schemas.align_dates_schema)
-        self.secondary_df = self.spark.createDataFrame(Data.align_dates_secondary_rows, Schemas.align_dates_schema)
+        self.primary_df = self.spark.createDataFrame(Data.align_dates_primary_rows, Schemas.align_dates_primary_schema)
+        self.secondary_df = self.spark.createDataFrame(Data.align_dates_secondary_rows, Schemas.align_dates_secondary_schema)
         self.expected_aligned_dates = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
         self.merged_dates_df = self.spark.createDataFrame(Data.expected_merged_rows, Schemas.expected_merged_dates_schema)
-
+        self.expected_cross_join_df = self.spark.createDataFrame(Data.expected_cross_join_rows, Schemas.expected_aligned_dates_schema)
+        self.possible_matches = self.expected_cross_join_df
+        self.expected_best_matches = self.spark.createDataFrame(Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
+        self.later_secondary_df = self.spark.createDataFrame(Data.align_later_dates_secondary_rows, Schemas.align_dates_secondary_schema)
+        self.expected_later_aligned_dates = self.spark.createDataFrame(Data.expected_later_aligned_dates_rows, Schemas.expected_aligned_dates_schema)
 
     def test_align_import_dates_completes(self):
-        returned_df = job.align_import_dates(self.primary_df, self.secondary_df,"_primary", "_secondary")
+        returned_df = job.align_import_dates(self.primary_df, self.secondary_df, AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date)
         
         self.assertTrue(returned_df)
 
 
     def test_align_import_dates_aligns_dates_correctly(self):
-        returned_df = job.align_import_dates(self.primary_df, self.secondary_df, "_primary", "_secondary")
-        returned_data = returned_df.sort("import_date_primary").collect()
+        returned_df = job.align_import_dates(self.primary_df, self.secondary_df, AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date)
+        returned_data = returned_df.sort(AWPClean.cleaned_import_date).collect()
         returned_df.show()
-        self.expected_aligned_dates.sort("import_date_primary").show()
-        expected_data = self.expected_aligned_dates.sort("import_date_primary").collect()
+        self.expected_aligned_dates.sort(AWPClean.cleaned_import_date).show()
+        expected_data = self.expected_aligned_dates.sort(AWPClean.cleaned_import_date).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_align_import_dates_aligns_dates_correctly_when_secondary_data_starts_later_than_primary(self):
+        returned_df = job.align_import_dates(self.primary_df, self.later_secondary_df, AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date)
+        returned_data = returned_df.sort(AWPClean.cleaned_import_date).collect()
+        returned_df.show()
+        self.expected_later_aligned_dates.sort(AWPClean.cleaned_import_date).show()
+        expected_data = self.expected_later_aligned_dates.sort(AWPClean.cleaned_import_date).collect()
         self.assertEqual(returned_data, expected_data)
 
 
     def test_join_on_misaligned_import_dates_completes(self):
-        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates)
+        returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates, "locationId")
         
         self.assertTrue(returned_df)
 
 
     def test_join_on_misaligned_dates_joins_correctly(self):
         returned_df = job.join_on_misaligned_import_dates(self.primary_df, self.secondary_df, self.expected_aligned_dates, "locationId")
-        returned_data = returned_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").collect()
-        returned_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").show()
-        self.merged_dates_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").show()
-        expected_data = self.merged_dates_df.select("snapshot_date", "locationId", "import_date_primary", "import_date_secondary").sort("snapshot_date", "locationID").collect()
+        returned_data = returned_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").collect()
+        returned_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").show()
+        self.merged_dates_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").show()
+        expected_data = self.merged_dates_df.select("snapshot_date", "locationId", AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).sort("snapshot_date", "locationID").collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_cross_join_unique_dates_joins_correctly(self):
+        returned_df = job.cross_join_unique_dates(self.primary_df, self.secondary_df, AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date)
+        returned_data = returned_df.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).collect()
+        returned_df.show()
+        self.expected_cross_join_df.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).show()
+        expected_data = self.expected_cross_join_df.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).collect()
+        self.assertEqual(returned_data, expected_data)
+    
+    def test_determine_best_date_matches_selects_best_matches_correctly(self):
+        returned_df = job.determine_best_date_matches(self.possible_matches, AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date)
+        returned_data = returned_df.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).collect()
+        returned_df.show()
+        self.expected_cross_join_df.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).show()
+        expected_data = self.expected_best_matches.sort(AWPClean.cleaned_import_date, CQCLClean.cleaned_import_date).collect()
         self.assertEqual(returned_data, expected_data)

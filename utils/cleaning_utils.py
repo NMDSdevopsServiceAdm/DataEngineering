@@ -112,11 +112,11 @@ def set_bounds_for_columns(
     return df
 
 
-def align_import_dates(primary_df:DataFrame,  secondary_df: DataFrame) -> DataFrame:
-    primary_df, new_primary_column = apply_distinct_column_names(primary_df, "_primary")
-    secondary_df, new_secondary_column = apply_distinct_column_names(secondary_df, "_secondary")
-    possible_matches = cross_join_unique_dates(primary_df, secondary_df, new_primary_column, new_secondary_column)
-    aligned_dates = determine_best_date_matches(possible_matches, new_primary_column, new_secondary_column)
+def align_import_dates(primary_df:DataFrame,  secondary_df: DataFrame, primary_column:str, secondary_column:str) -> DataFrame:
+    #primary_df, new_primary_column = apply_distinct_column_names(primary_df, "_primary")
+    #secondary_df, new_secondary_column = apply_distinct_column_names(secondary_df, "_secondary")
+    possible_matches = cross_join_unique_dates(primary_df, secondary_df, primary_column, secondary_column)
+    aligned_dates = determine_best_date_matches(possible_matches, primary_column, secondary_column)
 
     return aligned_dates
 
@@ -150,5 +150,5 @@ def join_on_misaligned_import_dates(primary_df:DataFrame, secondary_df: DataFram
     primary_df_with_aligned_dates = primary_df.join(aligned_dates, primary_join_criteria, "left").drop(primary_df.import_date)
     secondary_join_criteria = [primary_df_with_aligned_dates.import_date_secondary == secondary_df.import_date, primary_df_with_aligned_dates[join_criteria] == secondary_df[join_criteria]]
     joined_df = primary_df_with_aligned_dates. join(secondary_df, secondary_join_criteria, "left").drop(secondary_df.import_date, secondary_df[join_criteria])
-    joined_df = joined_df.withColumn("snapshot_date", F.col("import_date_primary"))
+    joined_df = joined_df.withColumn("snapshot_date", F.col("ascwds_workplace_import_date")) # Make this less specific
     return joined_df
