@@ -742,7 +742,7 @@ class CleaningUtilsData:
         (24, -20.345, "non scale", 24, None),
         (-234, 999.99, "non scale", None, None),
     ]
-#
+    #
     align_dates_primary_rows = [
         (date(2020, 1, 1), "loc 1"),
         (date(2020, 1, 8), "loc 1"),
@@ -860,7 +860,6 @@ class CleaningUtilsData:
         (date(2020, 2, 1),),
     ]
     """
-    
 
     expected_merged_rows = [
         (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1), "loc 1"),

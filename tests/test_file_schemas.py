@@ -353,7 +353,7 @@ class CleaningUtilsSchemas:
             StructField(AWPClean.location_id, StringType(), True),
         ]
     )
-    
+
     align_dates_secondary_schema = StructType(
         [
             StructField(CQCLClean.cleaned_import_date, DateType(), True),

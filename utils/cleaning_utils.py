@@ -136,10 +136,10 @@ def cross_join_unique_dates(
     min_secondary_date = calculate_min_secondary_date(
         primary_dates, secondary_dates, primary_column, secondary_column
     )
-    if (min_secondary_date != None):
+    if min_secondary_date != None:
         secondary_dates = secondary_dates.where(
             secondary_dates[secondary_column] >= F.lit(min_secondary_date)
-        )  
+        )
     possible_matches = primary_dates.crossJoin(secondary_dates).repartition(
         primary_column
     )
@@ -169,26 +169,6 @@ def determine_best_date_matches(
     return aligned_dates.select(primary_column, secondary_column)
 
 
-def join_on_misaligned_import_dates(
-    primary_df: DataFrame,
-    secondary_df: DataFrame,
-    aligned_dates: DataFrame,
-    primary_column: str,
-    secondary_column: str,
-    other_join_columns: list,
-) -> DataFrame:
-    primary_df_with_aligned_dates = primary_df.join(
-        aligned_dates, primary_column, "left"
-    )
-    secondary_join_criteria = [secondary_column]
-    secondary_join_criteria = secondary_join_criteria + other_join_columns
-    joined_df = primary_df_with_aligned_dates.join(
-        secondary_df, secondary_join_criteria, "left"
-    ).drop(secondary_df[secondary_column], secondary_df["locationId"])
-    joined_df = joined_df.withColumn("snapshot_date", F.col(primary_column))
-    return joined_df
-
-
 def calculate_min_secondary_date(
     primary_dates: DataFrame,
     secondary_dates: DataFrame,
@@ -208,3 +188,22 @@ def calculate_min_secondary_date(
     ).collect()[0][0]
 
     return min_secondary_date
+
+
+def join_on_misaligned_import_dates(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    aligned_dates: DataFrame,
+    primary_column: str,
+    secondary_column: str,
+    other_join_column: str,
+) -> DataFrame:
+    primary_df_with_aligned_dates = primary_df.join(
+        aligned_dates, primary_column, "left"
+    )
+    secondary_join_criteria = [secondary_column] + [other_join_column]
+    joined_df = primary_df_with_aligned_dates.join(
+        secondary_df, secondary_join_criteria, "left"
+    ).drop(secondary_df[secondary_column], secondary_df[other_join_column])
+    joined_df = joined_df.withColumn("snapshot_date", F.col(primary_column))
+    return joined_df
