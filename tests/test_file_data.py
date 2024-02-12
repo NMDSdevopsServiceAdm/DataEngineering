@@ -861,12 +861,17 @@ class CleaningUtilsData:
     ]
 
     expected_later_aligned_dates_rows = [
-        (date(2020, 1, 1), None),
-        (date(2020, 1, 8), None),
         (
             date(2021, 1, 1),
             date(2020, 2, 1),
         ),
+    ]
+
+    expected_later_merged_rows = [
+        (date(2020, 1, 1), date(2020, 1, 1), None, "loc 1"),
+        (date(2020, 1, 8), date(2020, 1, 8), None, "loc 1"),
+        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
     ]
 
 

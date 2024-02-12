@@ -1,5 +1,3 @@
-from datetime import date
-
 from pyspark.sql import (
     DataFrame,
     SparkSession,
@@ -11,10 +9,6 @@ from pyspark.sql.types import (
     StringType,
 )
 import pyspark.sql.functions as F
-
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    PartitionKeys as Keys,
-)
 
 key: str = "key"
 value: str = "value"
@@ -123,6 +117,7 @@ def align_import_dates(
     possible_matches = cross_join_unique_dates(
         primary_df, secondary_df, primary_column, secondary_column
     )
+
     aligned_dates = determine_best_date_matches(
         possible_matches, primary_column, secondary_column
     )
@@ -141,9 +136,10 @@ def cross_join_unique_dates(
     min_secondary_date = calculate_min_secondary_date(
         primary_dates, secondary_dates, primary_column, secondary_column
     )
-    secondary_dates = secondary_dates.where(
-        secondary_dates[secondary_column] >= F.lit(min_secondary_date)
-    )
+    if (min_secondary_date != None):
+        secondary_dates = secondary_dates.where(
+            secondary_dates[secondary_column] >= F.lit(min_secondary_date)
+        )  
     possible_matches = primary_dates.crossJoin(secondary_dates).repartition(
         primary_column
     )
@@ -158,14 +154,18 @@ def determine_best_date_matches(
     possible_matches = possible_matches.withColumn(
         date_diff, F.datediff(primary_column, secondary_column)
     )
+
     possible_matches = possible_matches.where(possible_matches[date_diff] >= 0)
+
     w = Window.partitionBy(primary_column).orderBy(date_diff)
     possible_matches = possible_matches.withColumn(
         min_date_diff, F.min(date_diff).over(w)
     )
+
     aligned_dates = possible_matches.where(
         possible_matches[min_date_diff] == possible_matches[date_diff]
     )
+
     return aligned_dates.select(primary_column, secondary_column)
 
 
@@ -198,10 +198,13 @@ def calculate_min_secondary_date(
     min_primary_date = primary_dates.select(
         F.min(primary_dates[primary_column])
     ).collect()[0][0]
+
     earlier_secondary_dates = secondary_dates.where(
         secondary_dates[secondary_column] < min_primary_date
     )
+
     min_secondary_date = earlier_secondary_dates.select(
         F.max(secondary_dates[secondary_column])
     ).collect()[0][0]
+
     return min_secondary_date
