@@ -115,8 +115,9 @@ module "clean_ascwds_worker_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--ascwds_worker_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--ascwds_worker_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+    "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--ascwds_workplace_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--ascwds_worker_destination"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
   }
 }
 
@@ -148,19 +149,6 @@ module "ingest_ons_data_job" {
   }
 }
 
-module "denormalise_ons_data_job" {
-  source          = "../modules/glue-job"
-  script_name     = "denormalise_ons_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  job_parameters = {
-    "--ons_source"    = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
-    "--lookup_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory-field-lookups/"
-    "--destination"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory-denormalised/"
-  }
-}
-
 module "prepare_locations_job" {
   source            = "../modules/glue-job"
   script_name       = "prepare_locations.py"
@@ -175,7 +163,7 @@ module "prepare_locations_job" {
     "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
     "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
     "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory-denormalised/"
+    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
     "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
   }
 }
@@ -424,6 +412,7 @@ module "clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
+    "--cqc_provider_cleaned"             = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
     "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
   }
 }
@@ -456,16 +445,6 @@ module "ons_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
   exclusions                   = ["dataset=postcode-directory-field-lookups/**"]
-}
-
-module "ons_lookups_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "ONS"
-  name_postfix                 = "_lookups"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-  exclusions                   = ["dataset=postcode-directory/**", "dataset=postcode-directory-denormalised/**"]
-  table_level                  = 4
 }
 
 module "dpr_crawler" {

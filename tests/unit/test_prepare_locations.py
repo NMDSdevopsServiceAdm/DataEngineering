@@ -117,13 +117,10 @@ class PrepareLocationsTests(unittest.TestCase):
                 "cqc_sector",
                 "ons_region",
                 "nhs_england_region",
-                "country",
                 "lsoa",
                 "msoa",
-                "stp",
                 "clinical_commisioning_group",
                 "rural_urban_indicator",
-                "oslaua",
             ],
         )
 
@@ -200,14 +197,14 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(data_type_of_column, "int")
 
     def test_get_ons_df(self):
-        pir_df = job.get_ons_df(self.TEST_ONS_FILE)
+        ons_df = job.get_ons_df(self.TEST_ONS_FILE)
 
-        self.assertEqual(pir_df.count(), 3)
-        self.assertEqual(len(pir_df.columns), 14)
+        self.assertEqual(ons_df.count(), 3)
+        self.assertEqual(len(ons_df.columns), 11)
 
-        self.assertIn("nhs_england_region", pir_df.columns)
-        self.assertIn("ons_region", pir_df.columns)
-        self.assertIn("ons_import_date", pir_df.columns)
+        self.assertIn("nhs_england_region", ons_df.columns)
+        self.assertIn("ons_region", ons_df.columns)
+        self.assertIn("ons_import_date", ons_df.columns)
 
     def test_map_illegitimate_postcodes_is_replacing_wrong_postcodes(self):
         df = job.map_illegitimate_postcodes(self.cqc_loc_df, "postalCode")
@@ -369,7 +366,7 @@ class PrepareLocationsTests(unittest.TestCase):
         self.assertEqual(location_three.ons_region, "London")
 
         location_four = df.where(df.locationid == "1-000000004").first()
-        self.assertEqual(location_four.oslaua, "Kensington and Chelsea")
+        self.assertEqual(location_four.nhs_england_region, "London")
 
     def test_purge_workplaces(self):
         columns = ["locationid", "import_date", "orgid", "isparent", "mupddate"]

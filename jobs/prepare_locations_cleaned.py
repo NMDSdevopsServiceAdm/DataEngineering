@@ -10,6 +10,7 @@ from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
     null_job_count_outliers,
 )
 
+
 COLUMNS_TO_IMPORT = [
     "locationid",
     "snapshot_date",
@@ -18,7 +19,7 @@ COLUMNS_TO_IMPORT = [
     "snapshot_year",
     "local_authority",
     "ons_region",
-    "rural_urban_indicator.year_2011 AS rui_2011",
+    "rural_urban_indicator AS rui_2011",
     "services_offered",
     "carehome",
     "primary_service_type",

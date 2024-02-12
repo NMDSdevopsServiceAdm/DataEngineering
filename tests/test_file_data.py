@@ -5,6 +5,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
@@ -255,6 +259,7 @@ class ASCWDSWorkplaceData:
     ]
 
 
+@dataclass
 class CQCProviderData:
     sample_rows_full = [
         (
@@ -329,6 +334,19 @@ class CQCProviderData:
             "Southampton, Itchen",
             "Southampton",
         ),
+    ]
+
+    sector_rows = [
+        "1-10000000002",
+        "1-10000000003",
+        "1-10000000004",
+        "1-10000000005",
+    ]
+
+    expected_rows_with_cqc_sector = [
+        ("1-10000000001", CQCPValues.independent),
+        ("1-10000000002", CQCPValues.local_authority),
+        ("1-10000000003", CQCPValues.local_authority),
     ]
 
 
@@ -502,5 +520,310 @@ class CQCLocationsData:
                     "reporttype": "Location",
                 }
             ],
+            "2020-01-01",
         ),
+    ]
+
+    primary_service_type_rows = [
+        (
+            "location1",
+            "provider1",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
+        ),
+        (
+            "location2",
+            "provider2",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                }
+            ],
+        ),
+        (
+            "location3",
+            "provider3",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                }
+            ],
+        ),
+        (
+            "location4",
+            "provider4",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            "location5",
+            "provider5",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Fake",
+                    "description": "Fake service",
+                },
+            ],
+        ),
+    ]
+
+    small_location_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "2021-01-01",
+        ),
+    ]
+
+    join_provider_rows = [
+        (
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "North East",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "North West",
+            "2020-01-01",
+        ),
+        (
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "North East",
+            "2021-01-01",
+        ),
+    ]
+
+    expected_joined_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "Apple Tree Care Homes",
+            "Local authority",
+            "2020-01-01",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            "Sunshine Domestic Care",
+            "Independent",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            "Sunny Days Domestic Care",
+            "Independent",
+            "2021-01-01",
+        ),
+    ]
+
+    test_invalid_postcode_data = [
+        ("loc-1", "B69 E3G"),
+        ("loc-2", "UB4 0EJ."),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
+    expected_invalid_postcode_data = [
+        ("loc-1", "B69 3EG"),
+        ("loc-2", "UB4 0EJ"),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
+    registration_status_with_missing_data_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+        (
+            "loc-3",
+            "new value",
+        ),
+    ]
+
+    registration_status_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_deregistered_rows = [
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_registered_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+    ]
+
+
+@dataclass
+class CleaningUtilsData:
+    worker_rows = [
+        ("1", "1", "100"),
+        ("2", "1", "101"),
+        ("3", "2", "102"),
+        ("4", "2", "103"),
+        ("5", None, "103"),
+        ("6", "2", None),
+    ]
+
+    gender = [
+        ("1", "male"),
+        ("2", "female"),
+    ]
+
+    nationality = [
+        ("100", "British"),
+        ("101", "French"),
+        ("102", "Spanish"),
+        ("103", "Portuguese"),
+    ]
+
+    replace_labels_rows = [
+        ("1", "1"),
+        ("2", "2"),
+        ("3", None),
+        ("4", None),
+        ("5", "2"),
+    ]
+
+    expected_rows_with_new_columns = [
+        ("1", "1", "100", "male", "British"),
+        ("2", "1", "101", "male", "French"),
+        ("3", "2", "102", "female", "Spanish"),
+        ("4", "2", "103", "female", "Portuguese"),
+        ("5", None, "103", None, "Portuguese"),
+        ("6", "2", None, "female", None),
+    ]
+
+    expected_rows_without_new_columns = [
+        ("1", "male", "British"),
+        ("2", "male", "French"),
+        ("3", "female", "Spanish"),
+        ("4", "female", "Portuguese"),
+        ("5", None, "Portuguese"),
+        ("6", "female", None),
+    ]
+
+    expected_rows_replace_labels_in_situe = [
+        ("1", "male"),
+        ("2", "female"),
+        ("3", None),
+        ("4", None),
+        ("5", "female"),
+    ]
+
+    expected_rows_replace_labels_with_new_column = [
+        ("1", "1", "male"),
+        ("2", "2", "female"),
+        ("3", None, None),
+        ("4", None, None),
+        ("5", "2", "female"),
+    ]
+
+    scale_data = [
+        (23, 10.1, "non scale"),
+        (-1, 10.1, "non scale"),
+        (24, -20.345, "non scale"),
+        (-234, 999.99, "non scale"),
+    ]
+
+    expected_scale_data = [
+        (23, 10.1, "non scale", 23, 10.1),
+        (-1, 10.1, "non scale", None, 10.1),
+        (24, -20.345, "non scale", 24, None),
+        (-234, 999.99, "non scale", None, None),
+    ]
+
+
+@dataclass
+class IngestONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+
+@dataclass
+class FilterCleanedValuesData:
+    sample_rows = [
+        ("2023", "01", "01", "20230101"),
+        ("2021", "01", "01", "20210101"),
+        ("2021", "06", "01", "20210601"),
+        ("2021", "06", "06", "20210606"),
+    ]
+
+    sample_cleaned_rows = [
+        ("2021", "01", "01", "20210101"),
+        ("2021", "06", "01", "20210601"),
+    ]
+
+    expected_rows = [
+        ("2023", "01", "01", "20230101"),
+        ("2021", "06", "06", "20210606"),
     ]
