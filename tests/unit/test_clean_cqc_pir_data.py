@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 from utils import utils
 
 import jobs.clean_cqc_pir_data as job
 
-from schemas.cqc_pir_schema import PIR_SCHEMA
+from tests.test_file_schemas import CQCPIRSchema as Schemas
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_data import CQCpirData as Data
 
@@ -18,7 +18,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_cqc_pir_parquet = self.spark.createDataFrame(
-            Data.sample_rows_full, schema=PIR_SCHEMA
+            Data.sample_rows_full, schema=Schemas.sample_schema
         )
 
     @patch("utils.utils.write_to_parquet")
@@ -27,7 +27,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet,
+            ANY,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,

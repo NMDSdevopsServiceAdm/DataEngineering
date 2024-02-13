@@ -347,6 +347,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000002",
@@ -371,6 +372,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000003",
@@ -395,6 +397,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
     ]
 
@@ -431,6 +434,7 @@ class CQCpirData:
             0,
             "Y",
             "Active",
+            "20230201",
         ),
         (
             "1-10000000002",
@@ -448,6 +452,7 @@ class CQCpirData:
             53,
             None,
             "Active",
+            "20230201",
         ),
         (
             "1-10000000003",
@@ -465,6 +470,7 @@ class CQCpirData:
             50,
             None,
             "Active",
+            "20230201",
         ),
     ]
 
@@ -881,6 +887,13 @@ class CleaningUtilsData:
         (-1, 10.1, "non scale", None, 10.1),
         (24, -20.345, "non scale", 24, None),
         (-234, 999.99, "non scale", None, None),
+    ]
+
+    column_to_date_data = [
+        ("20230102", date(2023, 1, 2)),
+        ("20220504", date(2022, 5, 4)),
+        ("20191207", date(2019, 12, 7)),
+        ("19081205", date(1908, 12, 5)),
     ]
 
 
