@@ -70,6 +70,21 @@ def main(
         deregistered_locations_df,
     ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
 
+    # Rows to test the date alignment functions - if you see this in the PR please get me to delete this section!
+    from utils.cleaning_utils import (
+        align_import_dates,
+        join_on_misaligned_import_dates,
+    )
+    workplace_df = utils.read_from_parquet("s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/")
+
+
+    cqc_and_ascwds_alignment = align_import_dates(registered_locations_df, workplace_df, "cqc_location_import_date", Keys.import_date) 
+
+
+    registered_locations_df = join_on_misaligned_import_dates(registered_locations_df, workplace_df, cqc_and_ascwds_alignment, "cqc_location_import_date", Keys.import_date, CQCL.location_id)
+
+    # End of rows to test data alignment functions
+
     utils.write_to_parquet(
         registered_locations_df,
         cleaned_cqc_location_destintion,
