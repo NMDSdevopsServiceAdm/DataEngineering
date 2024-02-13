@@ -417,6 +417,22 @@ module "clean_cqc_location_data_job" {
   }
 }
 
+module "merge_ind_cqc_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "merge_ind_cqc_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
+    "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=workplace_cleaned/"
+    "--ons_postcode_directory_source"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory//"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=merged_ind_cqc_data/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
