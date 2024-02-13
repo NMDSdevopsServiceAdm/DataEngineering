@@ -9,29 +9,24 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-
-
 def main(
     cleaned_cqc_location_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ascwds_workplace_source: str,
     ons_postcode_directory_source: str,
-    destination:str,
+    destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(cleaned_cqc_location_source)
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
     ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
     ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
-
-    
     utils.write_to_parquet(
         cqc_location_df,
         destination,
         append=True,
         partitionKeys=PartitionKeys,
     )
-
 
 
 if __name__ == "__main__":

@@ -15,7 +15,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-
 class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_CQC_PIR_SOURCE = "some/other/directory"
@@ -39,8 +38,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
-
-
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -52,10 +49,16 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             self.test_clean_cqc_location_df,
             self.test_clean_cqc_pir_df,
             self.test_clean_ascwds_workplace_df,
-            self.test_ons_postcode_directory_df
+            self.test_ons_postcode_directory_df,
         ]
 
-        job.main(self.TEST_CQC_LOCATION_SOURCE, self.TEST_CQC_PIR_SOURCE, self.TEST_ASCWDS_WORKPLACE_SOURCE, self. TEST_ONS_POSTCODE_DIRECTORY_SOURCE, self.TEST_DESTINATION)
+        job.main(
+            self.TEST_CQC_LOCATION_SOURCE,
+            self.TEST_CQC_PIR_SOURCE,
+            self.TEST_ASCWDS_WORKPLACE_SOURCE,
+            self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.TEST_DESTINATION,
+        )
 
         self.assertEqual(read_from_parquet_patch.call_count, 4)
 
@@ -65,8 +68,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             append=True,
             partitionKeys=self.partition_keys,
         )
-
-
 
 
 if __name__ == "__main__":

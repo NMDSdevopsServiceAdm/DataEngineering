@@ -493,6 +493,7 @@ class FilterCleanedValuesSchema:
         ]
     )
 
+
 @dataclass
 class MergeIndCQCData:
     clean_cqc_location_schema = CQCLocationsSchema.full_schema

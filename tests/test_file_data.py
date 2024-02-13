@@ -925,6 +925,7 @@ class FilterCleanedValuesData:
         ("2021", "06", "06", "20210606"),
     ]
 
+
 @dataclass
 class MergeIndCQCData:
     clean_cqc_location_rows = CQCLocationsData.sample_rows_full
