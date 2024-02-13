@@ -4,7 +4,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
-
 PROVIDER_SCHEMA = StructType(
     fields=[
         StructField(ColNames.provider_id, StringType(), True),
