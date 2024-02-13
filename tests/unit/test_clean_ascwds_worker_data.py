@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import jobs.clean_ascwds_worker_data as job
 
@@ -38,7 +38,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         read_from_parquet_mock.assert_called_with(self.TEST_WORKER_SOURCE)
         read_from_parquet_mock.assert_called_with(self.TEST_WORKPLACE_SOURCE)
         write_to_parquet_mock.assert_called_once_with(
-            self.test_ascwds_worker_df,
+            ANY,
             self.TEST_DESTINATION,
             True,
             self.partition_keys,
