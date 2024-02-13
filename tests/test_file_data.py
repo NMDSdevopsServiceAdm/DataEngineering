@@ -799,6 +799,13 @@ class CleaningUtilsData:
         (-234, 999.99, "non scale", None, None),
     ]
 
+    column_to_date_data = [
+        ("20230102", date(2023, 1, 2)),
+        ("20220504", date(2022, 5, 4)),
+        ("20191207", date(2019, 12, 7)),
+        ("19081205", date(1908, 12, 5)),
+    ]
+
 
 @dataclass
 class IngestONSData:

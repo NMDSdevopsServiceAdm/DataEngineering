@@ -357,6 +357,13 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    sample_col_to_date_schema = StructType(
+        [
+            StructField("input_string", StringType(), True),
+            StructField("expected_value", DateType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:

@@ -376,3 +376,36 @@ class TestCleaningUtilsScale(unittest.TestCase):
         expected_data = expected_df.sort("int").collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class TestCleaningUtilsColumnToDate(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.sample_df = self.spark.createDataFrame(
+            Data.column_to_date_data, Schemas.sample_col_to_date_schema
+        )
+
+    def test_changes_data_type_to_date(self):
+        returned_df = job.column_to_date(self.sample_df, "input_string")
+        self.assertEqual(returned_df.dtypes[0], ("input_string", "date"))
+
+    def test_inserts_new_column_if_specified(self):
+        returned_df = job.column_to_date(self.sample_df, "input_string", "new_column")
+        self.assertTrue("new_column" in returned_df.columns)
+        self.assertEqual(returned_df.dtypes[2], ("new_column", "date"))
+
+    def test_old_column_is_untouched_if_new_col_given(self):
+        returned_df = job.column_to_date(self.sample_df, "input_string", "new_column")
+        self.assertEqual(
+            self.sample_df.select("input_string").collect(),
+            returned_df.select("input_string").collect(),
+        )
+
+    def test_new_value_is_equal_to_expected_value(self):
+        returned_df = job.column_to_date(self.sample_df, "input_string", "new_column")
+        self.assertEqual(
+            self.sample_df.select("expected_value")
+            .withColumnRenamed("expected_value", "new_column")
+            .collect(),
+            returned_df.select("new_column").collect(),
+        )
