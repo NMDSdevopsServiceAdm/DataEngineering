@@ -213,7 +213,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
             self.assertEqual(returned_registered_data, expected_registered_data)
             self.assertEqual(returned_deregistered_data, expected_deregistered_data)
-    
+
             """
 
             self.assertEqual(warnings_log, [])
