@@ -258,6 +258,68 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
+    cast_to_int_rows = [
+        (
+            "loc 1",
+            "20",
+            "18",
+        ),
+    ]
+
+    cast_to_int_errors_rows = [
+        (
+            "loc 1",
+            "20",
+            "18",
+        ),
+        (
+            "loc 2",
+            "ZO",
+            "18",
+        ),
+        (
+            "loc 3",
+            "20",
+            "IB",
+        ),
+        (
+            "loc 4",
+            "ZO",
+            "IB",
+        ),
+    ]
+
+    cast_to_int_expected_rows = [
+        (
+            "loc 1",
+            20,
+            18,
+        ),
+    ]
+
+    cast_to_int_errors_expected_rows = [
+        (
+            "loc 1",
+            20,
+            18,
+        ),
+        (
+            "loc 2",
+            None,
+            18,
+        ),
+        (
+            "loc 3",
+            20,
+            None,
+        ),
+        (
+            "loc 4",
+            None,
+            None,
+        ),
+    ]
+
 
 @dataclass
 class CQCProviderData:
@@ -285,6 +347,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000002",
@@ -309,6 +372,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000003",
@@ -333,6 +397,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
     ]
 
@@ -369,6 +434,7 @@ class CQCpirData:
             0,
             "Y",
             "Active",
+            "20230201",
         ),
         (
             "1-10000000002",
@@ -386,6 +452,7 @@ class CQCpirData:
             53,
             None,
             "Active",
+            "20230201",
         ),
         (
             "1-10000000003",
@@ -403,6 +470,7 @@ class CQCpirData:
             50,
             None,
             "Active",
+            "20230201",
         ),
     ]
 
@@ -663,6 +731,84 @@ class CQCLocationsData:
         ),
     ]
 
+    test_invalid_postcode_data = [
+        ("loc-1", "B69 E3G"),
+        ("loc-2", "UB4 0EJ."),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
+    expected_invalid_postcode_data = [
+        ("loc-1", "B69 3EG"),
+        ("loc-2", "UB4 0EJ"),
+        ("loc-3", "PO20 3BD"),
+        ("loc-4", "HP20 1SN"),
+        ("loc-5", None),
+    ]
+
+    registration_status_with_missing_data_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+        (
+            "loc-3",
+            "new value",
+        ),
+    ]
+
+    registration_status_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_deregistered_rows = [
+        (
+            "loc-2",
+            "Deregistered",
+        ),
+    ]
+
+    expected_registered_rows = [
+        (
+            "loc-1",
+            "Registered",
+        ),
+    ]
+
+    social_care_org_rows = [
+        (
+            "loc-1",
+            "Any none ASC org",
+        ),
+        (
+            "loc-2",
+            "Social Care Org",
+        ),
+        (
+            "loc-3",
+            None,
+        ),
+    ]
+
+    expected_social_care_org_rows = [
+        (
+            "loc-2",
+            "Social Care Org",
+        ),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
@@ -873,6 +1019,13 @@ class CleaningUtilsData:
         (date(2020, 1, 8), date(2020, 1, 8), None, "loc 1"),
         (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
         (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
+    ]
+
+    column_to_date_data = [
+        ("20230102", date(2023, 1, 2)),
+        ("20220504", date(2022, 5, 4)),
+        ("20191207", date(2019, 12, 7)),
+        ("19081205", date(1908, 12, 5)),
     ]
 
 
