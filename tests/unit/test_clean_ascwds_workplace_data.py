@@ -27,7 +27,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         self.test_ascwds_worker_df = self.spark.createDataFrame(
             Data.workplace_rows, Schemas.workplace_schema
         )
-        
+
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
     @patch("utils.utils.write_to_parquet")
@@ -61,7 +61,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         self.assertEqual(expected_data, returned_data)
 
     def test_cast_to_int_returns_strings_not_formatted_as_ints_as_none(self):
-        
         cast_to_int_with_errors_df = self.spark.createDataFrame(
             Data.cast_to_int_errors_rows, Schemas.cast_to_int_schema
         )
@@ -72,7 +71,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         returned_df = job.cast_to_int(
             cast_to_int_with_errors_df, self.filled_posts_columns
         )
-        
+
         returned_data = returned_df.sort(AWP.location_id).collect()
         expected_data = cast_to_int_with_errors_expected_df.sort(
             AWP.location_id
