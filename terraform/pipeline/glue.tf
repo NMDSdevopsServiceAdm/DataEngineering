@@ -427,7 +427,7 @@ module "merge_ind_cqc_data_job" {
   job_parameters = {
     "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
     "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
-    "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=workplace_cleaned/"
+    "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--ons_postcode_directory_source"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory//"
     "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=merged-ind-cqc-data/"
   }
