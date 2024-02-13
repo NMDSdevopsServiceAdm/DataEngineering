@@ -35,6 +35,5 @@ PROVIDER_SCHEMA = StructType(
         StructField(ColNames.inspection_directorate, StringType(), True),
         StructField(ColNames.constituency, StringType(), True),
         StructField(ColNames.local_authority, StringType(), True),
-        StructField(Keys.import_date, StringType(), True),
     ]
 )

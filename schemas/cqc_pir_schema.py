@@ -41,6 +41,5 @@ PIR_SCHEMA = StructType(
         StructField(ColNames.number_of_beds, IntegerType(), False),
         StructField(ColNames.domiciliary_care, StringType(), True),
         StructField(ColNames.location_status, StringType(), False),
-        StructField(Keys.import_date, StringType(), True),
     ]
 )
