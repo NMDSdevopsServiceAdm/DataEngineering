@@ -1,11 +1,16 @@
 import sys
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
 
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
+
+    ascwds_workplace_df = cUtils.column_to_date(
+        ascwds_workplace_df, PartitionKeys.import_date, "ascwds_workplace_import_date"
+    )
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(
