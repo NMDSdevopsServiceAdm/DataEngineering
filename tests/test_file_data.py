@@ -927,4 +927,7 @@ class FilterCleanedValuesData:
 
 @dataclass
 class MergeIndCQCData:
-    
+    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
+    clean_cqc_pir_rows = CQCpirData.sample_rows_full
+    clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
+    ons_postcode_directory_rows = IngestONSData.sample_rows
