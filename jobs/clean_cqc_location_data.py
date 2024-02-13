@@ -35,11 +35,11 @@ DATE_COLUMN_IDENTIFIER = "registration_date"
 
 def main(
     cqc_location_source: str,
-    cleaned_provider_source: str,
+    cleaned_cqc_provider_source: str,
     cleaned_cqc_location_destintion: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
-    cqc_provider_df = utils.read_from_parquet(cleaned_provider_source)
+    cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
 
     cqc_location_df = utils.remove_already_cleaned_data(
         cqc_location_df,
@@ -51,6 +51,8 @@ def main(
         date_column_identifier=DATE_COLUMN_IDENTIFIER,
         raw_date_format="yyyy-MM-dd",
     )
+
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
@@ -69,6 +71,10 @@ def main(
         append=True,
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def remove_non_social_care_locations(df: DataFrame):
+    return df.where(df[CQCL.type] == "Social Care Org")
 
 
 def remove_invalid_postcodes(df: DataFrame):
@@ -148,7 +154,7 @@ if __name__ == "__main__":
 
     (
         cqc_location_source,
-        cleaned_provider_source,
+        cleaned_cqc_provider_source,
         cleaned_cqc_location_destination,
     ) = utils.collect_arguments(
         (
@@ -156,7 +162,7 @@ if __name__ == "__main__":
             "Source s3 directory for parquet CQC locations dataset",
         ),
         (
-            "--cqc_provider_cleaned",
+            "--cleaned_cqc_provider_source",
             "Source s3 directory for cleaned parquet CQC provider dataset",
         ),
         (
@@ -164,6 +170,10 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet CQC locations dataset",
         ),
     )
-    main(cqc_location_source, cleaned_provider_source, cleaned_cqc_location_destination)
+    main(
+        cqc_location_source,
+        cleaned_cqc_provider_source,
+        cleaned_cqc_location_destination,
+    )
 
     print("Spark job 'clean_cqc_location_data' complete")
