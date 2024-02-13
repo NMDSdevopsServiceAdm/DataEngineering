@@ -4,6 +4,8 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
 PROVIDER_SCHEMA = StructType(
     fields=[
         StructField(ColNames.provider_id, StringType(), True),
@@ -33,5 +35,6 @@ PROVIDER_SCHEMA = StructType(
         StructField(ColNames.inspection_directorate, StringType(), True),
         StructField(ColNames.constituency, StringType(), True),
         StructField(ColNames.local_authority, StringType(), True),
+        StructField(Keys.import_date, StringType(), True),
     ]
 )

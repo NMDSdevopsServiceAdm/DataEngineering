@@ -285,6 +285,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000002",
@@ -309,6 +310,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
         (
             "1-10000000003",
@@ -333,6 +335,7 @@ class CQCProviderData:
             "Adult social care",
             "Southampton, Itchen",
             "Southampton",
+            "20230405",
         ),
     ]
 
