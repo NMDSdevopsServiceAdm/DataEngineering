@@ -52,6 +52,8 @@ def main(
         raw_date_format="yyyy-MM-dd",
     )
 
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
+
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
@@ -69,6 +71,10 @@ def main(
         append=True,
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def remove_non_social_care_locations(df: DataFrame):
+    return df.where(df[CQCL.type] == "Social Care Org")
 
 
 def remove_invalid_postcodes(df: DataFrame):
