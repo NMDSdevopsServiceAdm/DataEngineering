@@ -4,7 +4,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PROVIDER_SCHEMA = StructType(
     fields=[
