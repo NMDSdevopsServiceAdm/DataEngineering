@@ -233,6 +233,22 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    cast_to_int_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, StringType(), True),
+            StructField(AWP.worker_records, StringType(), True),
+        ]
+    )
+
+    cast_to_int_expected_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, IntegerType(), True),
+            StructField(AWP.worker_records, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCLocationsSchema:
@@ -299,6 +315,13 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+
+    social_care_org_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
         ]
     )
 

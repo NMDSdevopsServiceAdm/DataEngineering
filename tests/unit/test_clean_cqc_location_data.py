@@ -65,6 +65,22 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+    def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.social_care_org_rows, Schemas.social_care_org_schema
+        )
+
+        returned_social_care_df = job.remove_non_social_care_locations(test_df)
+        returned_social_care_data = returned_social_care_df.collect()
+
+        expected_social_care_data = self.spark.createDataFrame(
+            Data.expected_social_care_org_rows, Schemas.social_care_org_schema
+        ).collect()
+
+        self.assertEqual(returned_social_care_data, expected_social_care_data)
+
     def test_remove_invalid_postcodes(self):
         test_invalid_postcode_df = self.spark.createDataFrame(
             Data.test_invalid_postcode_data, Schemas.invalid_postcode_schema
@@ -200,21 +216,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
                 returned_registered_df,
                 returned_deregistered_df,
             ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
-            """
-            returned_registered_data = returned_registered_df.collect()
-            returned_deregistered_data = returned_deregistered_df.collect()
-
-            expected_registered_data = self.spark.createDataFrame(
-                Data.expected_registered_rows, Schemas.registration_status_schema
-            ).collect()
-            expected_deregistered_data = self.spark.createDataFrame(
-                Data.expected_deregistered_rows, Schemas.registration_status_schema
-            ).collect()
-
-            self.assertEqual(returned_registered_data, expected_registered_data)
-            self.assertEqual(returned_deregistered_data, expected_deregistered_data)
-    
-            """
 
             self.assertEqual(warnings_log, [])
 
