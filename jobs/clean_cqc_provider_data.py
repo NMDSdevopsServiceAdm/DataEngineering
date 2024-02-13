@@ -3,12 +3,12 @@ import sys
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
     StringType,
-    StructType,
-    StructField,
 )
 import pyspark.sql.functions as F
 
 from utils import utils
+import utils.cleaning_utils as cUtils
+
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
@@ -27,6 +27,10 @@ known_la_providerids = LocalAuthorityProviderIds.known_ids
 
 def main(cqc_source: str, cleaned_cqc_destination: str):
     cqc_provider_df = utils.read_from_parquet(cqc_source)
+
+    cqc_provider_df = cUtils.column_to_date(
+        cqc_provider_df, Keys.import_date, "cqc_provider_import_date"
+    )
 
     cqc_provider_df = add_cqc_sector_column_to_cqc_provider_dataframe(
         cqc_provider_df, known_la_providerids

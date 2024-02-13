@@ -105,3 +105,17 @@ def set_bounds_for_columns(
         df = set_column_bounds(df, col, new_col, lower_limit, upper_limit)
 
     return df
+
+
+def column_to_date(
+    df: DataFrame,
+    column_to_format: str,
+    new_column: str = None,
+    string_format: str = "yyyyMMdd",
+) -> DataFrame:
+    if new_column is None:
+        new_column = column_to_format
+
+    new_df = df.withColumn(new_column, F.to_date(column_to_format, string_format))
+
+    return new_df

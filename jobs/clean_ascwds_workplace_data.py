@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
@@ -12,6 +13,10 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
+
+    ascwds_workplace_df = cUtils.column_to_date(
+        ascwds_workplace_df, PartitionKeys.import_date, "ascwds_workplace_import_date"
+    )
 
     ascwds_workplace_df = cast_to_int(
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]

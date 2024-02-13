@@ -44,6 +44,10 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
 
+from utils.column_names.raw_data_files.cqc_pir_columns import (
+    CqcPirColumns as CQCPIR,
+)
+
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -380,6 +384,13 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    sample_col_to_date_schema = StructType(
+        [
+            StructField("input_string", StringType(), True),
+            StructField("expected_value", DateType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
@@ -387,6 +398,75 @@ class CQCProviderSchema:
         [
             StructField(CQCP.provider_id, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
+        ]
+    )
+
+    full_schema = StructType(
+        fields=[
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField(
+                CQCP.location_ids,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
+            StructField(CQCP.organisation_type, StringType(), True),
+            StructField(CQCP.ownership_type, StringType(), True),
+            StructField(CQCP.type, StringType(), True),
+            StructField(CQCP.uprn, StringType(), True),
+            StructField(CQCP.name, StringType(), True),
+            StructField(CQCP.registration_status, StringType(), True),
+            StructField(CQCP.registration_date, StringType(), True),
+            StructField(CQCP.deregistration_date, StringType(), True),
+            StructField(CQCP.address_line_one, StringType(), True),
+            StructField(CQCP.town_or_city, StringType(), True),
+            StructField(CQCP.county, StringType(), True),
+            StructField(CQCP.region, StringType(), True),
+            StructField(CQCP.postcode, StringType(), True),
+            StructField(CQCP.latitude, FloatType(), True),
+            StructField(CQCP.longitude, FloatType(), True),
+            StructField(CQCP.phone_number, StringType(), True),
+            StructField(CQCP.companies_house_number, StringType(), True),
+            StructField(CQCP.inspection_directorate, StringType(), True),
+            StructField(CQCP.constituency, StringType(), True),
+            StructField(CQCP.local_authority, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CQCPIRSchema:
+    sample_schema = StructType(
+        fields=[
+            StructField(CQCPIR.location_id, StringType(), False),
+            StructField(CQCPIR.location_name, StringType(), False),
+            StructField(CQCPIR.pir_type, StringType(), False),
+            StructField(CQCPIR.pir_submission_date, StringType(), False),
+            StructField(
+                CQCPIR.people_directly_employed,
+                IntegerType(),
+                True,
+            ),
+            StructField(
+                CQCPIR.staff_leavers,
+                IntegerType(),
+                True,
+            ),
+            StructField(CQCPIR.staff_vacancies, IntegerType(), True),
+            StructField(
+                CQCPIR.shared_lives_leavers,
+                IntegerType(),
+                True,
+            ),
+            StructField(CQCPIR.shared_lives_vacancies, IntegerType(), True),
+            StructField(CQCPIR.primary_inspection_category, StringType(), False),
+            StructField(CQCPIR.region, StringType(), False),
+            StructField(CQCPIR.local_authority, StringType(), False),
+            StructField(CQCPIR.number_of_beds, IntegerType(), False),
+            StructField(CQCPIR.domiciliary_care, StringType(), True),
+            StructField(CQCPIR.location_status, StringType(), False),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

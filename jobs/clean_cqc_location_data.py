@@ -2,6 +2,7 @@ import sys
 import warnings
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -44,6 +45,10 @@ def main(
     cqc_location_df = utils.remove_already_cleaned_data(
         cqc_location_df,
         cleaned_cqc_location_destintion,
+    )
+
+    cqc_location_df = cUtils.column_to_date(
+        cqc_location_df, Keys.import_date, "cqc_location_import_date"
     )
 
     cqc_location_df = utils.format_date_fields(
