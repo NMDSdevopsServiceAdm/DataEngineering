@@ -200,21 +200,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
                 returned_registered_df,
                 returned_deregistered_df,
             ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
-            """
-            returned_registered_data = returned_registered_df.collect()
-            returned_deregistered_data = returned_deregistered_df.collect()
-
-            expected_registered_data = self.spark.createDataFrame(
-                Data.expected_registered_rows, Schemas.registration_status_schema
-            ).collect()
-            expected_deregistered_data = self.spark.createDataFrame(
-                Data.expected_deregistered_rows, Schemas.registration_status_schema
-            ).collect()
-
-            self.assertEqual(returned_registered_data, expected_registered_data)
-            self.assertEqual(returned_deregistered_data, expected_deregistered_data)
-
-            """
 
             self.assertEqual(warnings_log, [])
 
