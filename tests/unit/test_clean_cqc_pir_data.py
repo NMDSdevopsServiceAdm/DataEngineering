@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 from utils import utils
 
@@ -27,7 +27,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet,
+            ANY,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,

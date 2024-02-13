@@ -9,6 +9,8 @@ from utils.column_names.raw_data_files.cqc_pir_columns import (
     CqcPirColumns as ColNames,
 )
 
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
 
 PIR_SCHEMA = StructType(
     fields=[
@@ -39,5 +41,6 @@ PIR_SCHEMA = StructType(
         StructField(ColNames.number_of_beds, IntegerType(), False),
         StructField(ColNames.domiciliary_care, StringType(), True),
         StructField(ColNames.location_status, StringType(), False),
+        StructField(Keys.import_date, StringType(), True),
     ]
 )

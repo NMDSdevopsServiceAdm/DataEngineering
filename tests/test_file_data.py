@@ -369,6 +369,7 @@ class CQCpirData:
             0,
             "Y",
             "Active",
+            "20230201",
         ),
         (
             "1-10000000002",
@@ -386,6 +387,7 @@ class CQCpirData:
             53,
             None,
             "Active",
+            "20230201",
         ),
         (
             "1-10000000003",
@@ -403,6 +405,7 @@ class CQCpirData:
             50,
             None,
             "Active",
+            "20230201",
         ),
     ]
 
