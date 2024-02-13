@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import DataFrame
+
 from utils import utils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
@@ -19,6 +21,9 @@ def main(source: str, destination: str):
             PartitionKeys.import_date,
         ],
     )
+
+def cast_to_int(df:DataFrame, column_names:list) -> DataFrame:
+    return df
 
 
 if __name__ == "__main__":
