@@ -298,6 +298,13 @@ class CQCLocationsSchema:
         ]
     )
 
+    social_care_org_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:

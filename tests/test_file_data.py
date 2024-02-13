@@ -719,6 +719,28 @@ class CQCLocationsData:
         ),
     ]
 
+    social_care_org_rows = [
+        (
+            "loc-1",
+            "Any none ASC org",
+        ),
+        (
+            "loc-2",
+            "Social Care Org",
+        ),
+        (
+            "loc-3",
+            None,
+        ),
+    ]
+
+    expected_social_care_org_rows = [
+        (
+            "loc-2",
+            "Social Care Org",
+        ),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
