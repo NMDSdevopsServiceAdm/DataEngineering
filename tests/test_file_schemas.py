@@ -412,3 +412,10 @@ class FilterCleanedValuesSchema:
             StructField("import_date", StringType(), True),
         ]
     )
+
+@dataclass
+class MergeIndCQCData:
+    clean_cqc_location_schema = CQCLocationsSchema.full_schema
+    clean_cqc_pir_schema = 
+    clean_ascwds_workplace_schema = 
+    ons_postcode_directory_schema = 

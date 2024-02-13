@@ -911,3 +911,7 @@ class FilterCleanedValuesData:
         ("2023", "01", "01", "20230101"),
         ("2021", "06", "06", "20210606"),
     ]
+
+@dataclass
+class MergeIndCQCData:
+    
