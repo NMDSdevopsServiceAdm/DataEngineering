@@ -258,6 +258,17 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
+    cast_to_int_rows = [
+        ("loc 1", "20", "18",),
+    ]
+
+    cast_to_int_errors_rows = [
+        ("loc 1", "20", "18",),
+        ("loc 2", "ZO", "18",),
+        ("loc 3", "20", "IB",),
+        ("loc 4", "ZO", "IB",),
+    ]
+
 
 @dataclass
 class CQCProviderData:
