@@ -48,7 +48,29 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
 
 
 def purge_outdated_workplaces(df: DataFrame) -> DataFrame:
-    return df.withColumn("purge_data", F.lit(None))
+    df_with_purge_date = df.withColumn(
+        "purge_date",
+        F.add_months(F.col("ascwds_workplace_import_date"), -24),
+    )
+
+    org_df_with_latest_updates = df_with_purge_date.groupBy(
+        "orgid", "ascwds_workplace_import_date"
+    ).agg(F.max("mupddate").alias("latest_org_mapddate"))
+
+    df_with_org_updates = df_with_purge_date.join(
+        org_df_with_latest_updates, ["orgid", "ascwds_workplace_import_date"], "left"
+    )
+
+    df_with_latest_update = df_with_org_updates.withColumn(
+        "latest_update",
+        F.when((F.col("isparent") == "1"), F.col("latest_org_mapddate")).otherwise(
+            F.col("mupddate")
+        ),
+    ).drop("latest_org_mapddate")
+
+    return df_with_latest_update.withColumn(
+        "purge_data", F.col("latest_update") < F.col("purge_date")
+    ).drop("purge_date", "latest_update")
 
 
 if __name__ == "__main__":
