@@ -222,7 +222,7 @@ def remove_already_cleaned_data(
     and if there is no new data, returns input dataframe"""
 
     if "import_date" not in df.columns:
-        raise Exception("Input dataframe must have import_date column")
+        raise AnalysisException("Input dataframe must have import_date column")
 
     try:
         cleaned_df = read_from_parquet(destination)
