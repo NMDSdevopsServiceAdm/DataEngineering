@@ -249,6 +249,16 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    purge_outdated_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWP.is_parent, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCLocationsSchema:
