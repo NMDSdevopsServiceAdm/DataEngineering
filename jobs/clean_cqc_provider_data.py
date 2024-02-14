@@ -14,7 +14,7 @@ from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
 )

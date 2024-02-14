@@ -5,7 +5,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
 
