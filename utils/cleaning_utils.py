@@ -12,6 +12,8 @@ import pyspark.sql.functions as F
 key: str = "key"
 value: str = "value"
 
+YYYYMMDD_FORMAT = "yyyyMMdd"
+
 
 def apply_categorical_labels(
     df: DataFrame,
@@ -111,7 +113,7 @@ def column_to_date(
     df: DataFrame,
     column_to_format: str,
     new_column: str = None,
-    string_format: str = "yyyyMMdd",
+    string_format: str = YYYYMMDD_FORMAT,
 ) -> DataFrame:
     if new_column is None:
         new_column = column_to_format
