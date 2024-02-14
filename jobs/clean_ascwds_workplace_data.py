@@ -3,6 +3,8 @@ import sys
 from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
+import pyspark.sql.functions as F
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
@@ -43,6 +45,10 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     for column in column_names:
         df = df.withColumn(column, df[column].cast(IntegerType()))
     return df
+
+
+def purge_outdated_workplaces(df: DataFrame) -> DataFrame:
+    return df.withColumn("purge_data", F.lit(None))
 
 
 if __name__ == "__main__":

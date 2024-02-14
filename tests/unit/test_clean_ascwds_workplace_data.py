@@ -30,6 +30,12 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
+
+class MainTests(IngestASCWDSWorkerDatasetTests):
+
+    def setUp(self) -> None:
+        super().setUp()
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock, write_to_parquet_mock):
@@ -44,6 +50,11 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             True,
             self.partition_keys,
         )
+
+
+class CastToIntTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_cast_to_int_returns_strings_formatted_as_ints_to_ints(self):
         cast_to_int_df = self.spark.createDataFrame(
@@ -78,6 +89,17 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         ).collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_true(self):
+        returned_df = job.purge_outdated_workplaces(self.test_ascwds_worker_df)
+        original_cols = self.test_ascwds_worker_df.columns
+        expected_cols = original_cols + ["purge_data"]
+        self.assertEqual(returned_df.columns, expected_cols)
 
 
 if __name__ == "__main__":
