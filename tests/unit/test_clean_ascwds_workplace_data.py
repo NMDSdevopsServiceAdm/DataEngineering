@@ -111,13 +111,17 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
 
     def test_returned_df_has_new_purge_data_column(self):
-        returned_df = job.purge_outdated_workplaces(self.test_purge_outdated_df)
+        returned_df = job.purge_outdated_workplaces(
+            self.test_purge_outdated_df, "ascwds_workplace_import_date"
+        )
         original_cols = self.test_purge_outdated_df.columns
         expected_cols = original_cols + ["purge_data"]
         self.assertCountEqual(returned_df.columns, expected_cols)
 
     def test_returned_df_purge_data_col_is_boolean(self):
-        returned_df = job.purge_outdated_workplaces(self.test_purge_outdated_df)
+        returned_df = job.purge_outdated_workplaces(
+            self.test_purge_outdated_df, "ascwds_workplace_import_date"
+        )
         self.assertEqual(
             returned_df.select("purge_data").dtypes, [("purge_data", "boolean")]
         )
@@ -125,14 +129,18 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
     def test_adds_correct_value_for_non_parent_workplaces(self):
         input_df = self.test_purge_outdated_df.where("isparent == 0")
 
-        returned_df = job.purge_outdated_workplaces(input_df)
+        returned_df = job.purge_outdated_workplaces(
+            input_df, "ascwds_workplace_import_date"
+        )
 
         purge_data_list = [row.purge_data for row in returned_df.collect()]
         expected_purge_list = [False, True, False, True]
         self.assertEqual(purge_data_list, expected_purge_list)
 
     def test_adds_correct_value_for_parent_workplaces(self):
-        returned_df = job.purge_outdated_workplaces(self.test_purge_outdated_df)
+        returned_df = job.purge_outdated_workplaces(
+            self.test_purge_outdated_df, "ascwds_workplace_import_date"
+        )
 
         returned_df_parents = returned_df.where("isparent == 1")
         purge_data_list = [row.purge_data for row in returned_df_parents.collect()]
@@ -155,7 +163,9 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
         self.input_df = self.test_purge_outdated_df.union(self.org_child)
 
-        returned_df = job.purge_outdated_workplaces(self.input_df)
+        returned_df = job.purge_outdated_workplaces(
+            self.input_df, "ascwds_workplace_import_date"
+        )
 
         returned_df_parents = returned_df.where("isparent == 1")
         purge_data_list = [row.purge_data for row in returned_df_parents.collect()]
