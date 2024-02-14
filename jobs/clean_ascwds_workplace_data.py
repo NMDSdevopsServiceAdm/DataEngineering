@@ -27,6 +27,10 @@ def main(source: str, destination: str):
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
 
+    ascwds_workplace_df = purge_outdated_workplaces(
+        ascwds_workplace_df, "ascwds_workplace_import_date"
+    )
+
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(
         ascwds_workplace_df,
