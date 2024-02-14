@@ -47,24 +47,24 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     return df
 
 
-def purge_outdated_workplaces(df: DataFrame) -> DataFrame:
+def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFrame:
     df_with_purge_date = df.withColumn(
         "purge_date",
-        F.add_months(F.col("ascwds_workplace_import_date"), -24),
+        F.add_months(F.col(comparison_date_col), -24),
     )
 
     org_df_with_latest_updates = df_with_purge_date.groupBy(
-        "orgid", "ascwds_workplace_import_date"
-    ).agg(F.max("mupddate").alias("latest_org_mapddate"))
+        AWP.organisation_id, comparison_date_col
+    ).agg(F.max(AWP.master_update_date).alias("latest_org_mapddate"))
 
     df_with_org_updates = df_with_purge_date.join(
-        org_df_with_latest_updates, ["orgid", "ascwds_workplace_import_date"], "left"
+        org_df_with_latest_updates, [AWP.organisation_id, comparison_date_col], "left"
     )
 
     df_with_latest_update = df_with_org_updates.withColumn(
         "latest_update",
-        F.when((F.col("isparent") == "1"), F.col("latest_org_mapddate")).otherwise(
-            F.col("mupddate")
+        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mapddate")).otherwise(
+            F.col(AWP.master_update_date)
         ),
     ).drop("latest_org_mapddate")
 
