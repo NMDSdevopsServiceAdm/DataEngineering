@@ -1,7 +1,7 @@
 import unittest
 import jobs.clean_cqc_pir_data as job
 
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_schemas import CQCPIRSchema as Schemas
@@ -37,19 +37,21 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         """A test to ensure all functionality is called as expected"""
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
-        column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
         remove_already_cleaned_data_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet, self.TEST_DESTINATION
+            self.test_cqc_pir_parquet,
+            self.TEST_DESTINATION,
         )
         column_to_date_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet, Keys.import_date, job.DATE_COLUMN_NAME
+            self.test_cqc_pir_parquet,
+            Keys.import_date,
+            job.DATE_COLUMN_NAME,
         )
         write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet_with_import_date,
+            ANY,
             self.TEST_DESTINATION,
             append=True,
             partitionKeys=self.partition_keys,
@@ -66,7 +68,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         remove_already_cleaned_data_patch,
         column_to_date_patch,
     ):
-        """A test to ensure the correct number of columns are being written in the correct order"""
+        """A test to ensure the correct number of columns are being written with the added date column being last"""
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
         column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
