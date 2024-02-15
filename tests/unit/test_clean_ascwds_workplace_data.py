@@ -34,7 +34,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
 
 class MainTests(IngestASCWDSWorkerDatasetTests):
-
     def setUp(self) -> None:
         super().setUp()
 
