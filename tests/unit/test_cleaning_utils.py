@@ -598,3 +598,38 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
             .collect()
         )
         self.assertEqual(returned_data, expected_data)
+
+    def test_join_on_misaligned_dates_returns_the_correct_number_of_rows(
+        self,
+    ):
+        returned_df = job.join_on_misaligned_import_dates(
+            self.primary_df,
+            self.later_secondary_df,
+            self.expected_later_aligned_dates,
+            self.primary_column,
+            self.secondary_column,
+            self.single_join_column,
+        )
+        returned_rows = returned_df.count()
+        
+        expected_rows = self.primary_df.count()
+        
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_join_on_misaligned_dates_returns_the_correct_number_of_columns(
+        self,
+    ):
+        returned_df = job.join_on_misaligned_import_dates(
+            self.primary_df,
+            self.later_secondary_df,
+            self.expected_later_aligned_dates,
+            self.primary_column,
+            self.secondary_column,
+            self.single_join_column,
+        )
+        returned_columns = len(returned_df.columns)
+        returned_df.show()
+        
+        expected_columns = len(self.later_merged_dates_df.columns)
+        
+        self.assertEqual(returned_columns, expected_columns)

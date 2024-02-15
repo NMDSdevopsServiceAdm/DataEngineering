@@ -218,6 +218,6 @@ def join_on_misaligned_import_dates(
     secondary_join_criteria = [secondary_column] + [other_join_column]
     joined_df = primary_df_with_aligned_dates.join(
         secondary_df, secondary_join_criteria, "left"
-    ).drop(secondary_df[secondary_column], secondary_df[other_join_column])
+    )
     joined_df = joined_df.withColumn("snapshot_date", F.col(primary_column))
     return joined_df

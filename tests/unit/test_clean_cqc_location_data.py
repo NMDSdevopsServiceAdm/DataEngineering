@@ -36,8 +36,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.join_provider_rows, Schemas.join_provider_schema
         )
     
-    # Removed test to test the date alignment functions in branch - if you see this in the PR please get me to reinstate this section!
-    """
+
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
@@ -66,7 +65,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             append=True,
             partitionKeys=self.partition_keys,
         )
-    """
+
     def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
         self,
     ):
