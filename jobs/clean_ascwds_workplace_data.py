@@ -29,7 +29,7 @@ def main(source: str, destination: str):
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
 
-    ascwds_workplace_df = purge_outdated_workplaces(
+    ascwds_workplace_df = add_purge_outdated_workplaces_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
 
@@ -53,15 +53,21 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     return df
 
 
-def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFrame:
+def add_purge_outdated_workplaces_column(
+    df: DataFrame, comparison_date_col: str
+) -> DataFrame:
+    MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
+
     df_with_purge_date = df.withColumn(
         "purge_date",
-        F.add_months(F.col(comparison_date_col), -24),
+        F.add_months(
+            F.col(comparison_date_col), -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE
+        ),
     )
 
     org_df_with_latest_updates = df_with_purge_date.groupBy(
         AWP.organisation_id, comparison_date_col
-    ).agg(F.max(AWP.master_update_date).alias("latest_org_mapddate"))
+    ).agg(F.max(AWP.master_update_date).alias("latest_org_mupddate"))
 
     df_with_org_updates = df_with_purge_date.join(
         org_df_with_latest_updates, [AWP.organisation_id, comparison_date_col], "left"
@@ -69,14 +75,20 @@ def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFr
 
     df_with_latest_update = df_with_org_updates.withColumn(
         "latest_update",
-        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mapddate")).otherwise(
+        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mupddate")).otherwise(
             F.col(AWP.master_update_date)
         ),
-    ).drop("latest_org_mapddate")
+    )
 
-    return df_with_latest_update.withColumn(
+    df_with_purge_data = df_with_latest_update.withColumn(
         "purge_data", F.col("latest_update") < F.col("purge_date")
-    ).drop("purge_date", "latest_update")
+    )
+
+    final_df = df_with_purge_data.drop(
+        "latest_org_mupddate", "purge_date", "latest_update"
+    )
+
+    return final_df
 
 
 if __name__ == "__main__":
