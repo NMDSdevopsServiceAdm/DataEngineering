@@ -5,7 +5,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
 
@@ -924,3 +924,11 @@ class FilterCleanedValuesData:
         ("2023", "01", "01", "20230101"),
         ("2021", "06", "06", "20210606"),
     ]
+
+
+@dataclass
+class MergeIndCQCData:
+    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
+    clean_cqc_pir_rows = CQCpirData.sample_rows_full
+    clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
+    ons_postcode_directory_rows = IngestONSData.sample_rows
