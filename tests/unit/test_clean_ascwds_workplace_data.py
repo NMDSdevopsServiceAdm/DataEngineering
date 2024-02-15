@@ -132,7 +132,9 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
             input_df, "ascwds_workplace_import_date"
         )
 
-        purge_data_list = [row.purge_data for row in returned_df.collect()]
+        purge_data_list = [
+            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
+        ]
         expected_purge_list = [False, True, False, True]
         self.assertEqual(purge_data_list, expected_purge_list)
 
@@ -142,7 +144,10 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
 
         returned_df_parents = returned_df.where("isparent == 1")
-        purge_data_list = [row.purge_data for row in returned_df_parents.collect()]
+        purge_data_list = [
+            row.purge_data
+            for row in returned_df_parents.sort(AWP.location_id).collect()
+        ]
         expected_purge_list = [False, True]
 
         self.assertEqual(purge_data_list, expected_purge_list)
