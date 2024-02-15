@@ -13,6 +13,7 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+    AscwdsWorkplaceCleanedValues as AWPValues,
 )
 
 
@@ -70,12 +71,13 @@ def add_purge_outdated_workplaces_column(
     )
 
     df_with_purge_data = df_with_latest_update.withColumn(
-        "purge_data", F.col("latest_update") < F.col("purge_date")
+        AWPClean.purge_data,
+        F.when(
+            (F.col("latest_update") < F.col("purge_date")), AWPValues.purge_delete
+        ).otherwise(AWPValues.purge_keep),
     )
 
-    final_df = df_with_purge_data.drop(
-        "latest_org_mupddate", "purge_date", "latest_update"
-    )
+    final_df = df_with_purge_data.drop("purge_date", "latest_update")
 
     return final_df
 
@@ -95,6 +97,8 @@ def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date
             F.col(AWP.master_update_date)
         ),
     )
+
+    df_with_latest_update = df_with_latest_update.drop("latest_org_mupddate")
 
     return df_with_latest_update
 

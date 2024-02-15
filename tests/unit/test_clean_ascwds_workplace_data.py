@@ -117,12 +117,12 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         expected_cols = original_cols + ["purge_data"]
         self.assertCountEqual(returned_df.columns, expected_cols)
 
-    def test_returned_df_purge_data_col_is_boolean(self):
+    def test_returned_df_purge_data_col_is_string(self):
         returned_df = job.add_purge_outdated_workplaces_column(
             self.test_purge_outdated_df, "ascwds_workplace_import_date"
         )
         self.assertEqual(
-            returned_df.select("purge_data").dtypes, [("purge_data", "boolean")]
+            returned_df.select("purge_data").dtypes, [("purge_data", "string")]
         )
 
     def test_adds_correct_value_for_non_parent_workplaces(self):
@@ -135,7 +135,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         purge_data_list = [
             row.purge_data for row in returned_df.sort(AWP.location_id).collect()
         ]
-        expected_purge_list = [False, True, False, True]
+        expected_purge_list = ["keep", "purge", "keep", "purge"]
         self.assertEqual(purge_data_list, expected_purge_list)
 
     def test_adds_correct_value_for_parent_workplaces(self):
@@ -148,7 +148,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
             row.purge_data
             for row in returned_df_parents.sort(AWP.location_id).collect()
         ]
-        expected_purge_list = [False, True]
+        expected_purge_list = ["keep", "purge"]
 
         self.assertEqual(purge_data_list, expected_purge_list)
 
@@ -176,7 +176,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
             row.purge_data
             for row in returned_df_parents.sort(AWP.location_id).collect()
         ]
-        expected_purge_list = [False, True]
+        expected_purge_list = ["keep", "purge"]
 
         self.assertEqual(purge_data_list, expected_purge_list)
 
