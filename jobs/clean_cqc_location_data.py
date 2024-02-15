@@ -8,19 +8,16 @@ from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
 
-from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
-    CqcLocationCleanedColumns as CleanedColumns,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
@@ -48,7 +45,7 @@ def main(
     )
 
     cqc_location_df = cUtils.column_to_date(
-        cqc_location_df, Keys.import_date, "cqc_location_import_date"
+        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
     cqc_location_df = utils.format_date_fields(
@@ -91,7 +88,7 @@ def remove_invalid_postcodes(df: DataFrame):
 
 def allocate_primary_service_type(df: DataFrame):
     return df.withColumn(
-        CleanedColumns.primary_service_type,
+        CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
                 df[CQCL.gac_service_types].description,

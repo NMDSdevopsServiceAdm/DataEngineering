@@ -52,10 +52,10 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from schemas.cqc_location_schema import LOCATION_SCHEMA

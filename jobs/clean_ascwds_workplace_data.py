@@ -9,13 +9,16 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
 
     ascwds_workplace_df = cUtils.column_to_date(
-        ascwds_workplace_df, PartitionKeys.import_date, "ascwds_workplace_import_date"
+        ascwds_workplace_df, PartitionKeys.import_date, AWPClean.import_date
     )
 
     ascwds_workplace_df = cast_to_int(
