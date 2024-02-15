@@ -34,7 +34,6 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         remove_already_cleaned_data_patch,
         column_to_date_patch,
     ):
-        """A test to ensure all functionality is called as expected"""
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
 
@@ -68,7 +67,6 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         remove_already_cleaned_data_patch,
         column_to_date_patch,
     ):
-        """A test to ensure the correct number of columns are being written with the added date column being last"""
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
         column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
