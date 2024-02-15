@@ -6,7 +6,7 @@ from io import BytesIO
 from enum import Enum
 from unittest.mock import Mock, patch
 from pyspark.sql.dataframe import DataFrame
-
+from pyspark.sql.utils import AnalysisException
 from pyspark.shell import spark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -698,7 +698,7 @@ class UtilsTests(unittest.TestCase):
         )
 
         test_df = test_df.drop("import_date")
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(AnalysisException) as context:
             utils.remove_already_cleaned_data(test_df, "some destination")
 
         self.assertTrue(
