@@ -65,19 +65,8 @@ def add_purge_outdated_workplaces_column(
         ),
     )
 
-    org_df_with_latest_updates = df_with_purge_date.groupBy(
-        AWP.organisation_id, comparison_date_col
-    ).agg(F.max(AWP.master_update_date).alias("latest_org_mupddate"))
-
-    df_with_org_updates = df_with_purge_date.join(
-        org_df_with_latest_updates, [AWP.organisation_id, comparison_date_col], "left"
-    )
-
-    df_with_latest_update = df_with_org_updates.withColumn(
-        "latest_update",
-        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mupddate")).otherwise(
-            F.col(AWP.master_update_date)
-        ),
+    df_with_latest_update = calculate_latest_update_to_workplace_location(
+        df_with_purge_date, comparison_date_col
     )
 
     df_with_purge_data = df_with_latest_update.withColumn(
@@ -89,6 +78,25 @@ def add_purge_outdated_workplaces_column(
     )
 
     return final_df
+
+
+def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date_col):
+    org_df_with_latest_updates = df.groupBy(
+        AWP.organisation_id, comparison_date_col
+    ).agg(F.max(AWP.master_update_date).alias("latest_org_mupddate"))
+
+    df_with_org_updates = df.join(
+        org_df_with_latest_updates, [AWP.organisation_id, comparison_date_col], "left"
+    )
+
+    df_with_latest_update = df_with_org_updates.withColumn(
+        "latest_update",
+        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mupddate")).otherwise(
+            F.col(AWP.master_update_date)
+        ),
+    )
+
+    return df_with_latest_update
 
 
 if __name__ == "__main__":
