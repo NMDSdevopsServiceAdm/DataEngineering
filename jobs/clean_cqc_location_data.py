@@ -8,9 +8,6 @@ from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
 
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedColumns as CleanedColumns,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -91,7 +88,7 @@ def remove_invalid_postcodes(df: DataFrame):
 
 def allocate_primary_service_type(df: DataFrame):
     return df.withColumn(
-        CleanedColumns.primary_service_type,
+        CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
                 df[CQCL.gac_service_types].description,

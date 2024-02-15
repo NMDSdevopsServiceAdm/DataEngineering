@@ -14,7 +14,7 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
-    CqcProviderCleanedValues as CQCPCleanValues,
+    CqcProviderCleanedValues as CQCPValues,
 )
 
 
@@ -45,10 +45,10 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         self.assertEqual(
             test_cqc_sector_list,
             [
-                CQCPCleanValues.local_authority,
-                CQCPCleanValues.local_authority,
-                CQCPCleanValues.local_authority,
-                CQCPCleanValues.local_authority,
+                CQCPValues.local_authority,
+                CQCPValues.local_authority,
+                CQCPValues.local_authority,
+                CQCPValues.local_authority,
             ],
         )
 
