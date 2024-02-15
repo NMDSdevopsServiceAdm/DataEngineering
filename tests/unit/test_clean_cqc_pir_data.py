@@ -4,6 +4,9 @@ import jobs.clean_cqc_pir_data as job
 from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcLPIRCleanedColumns as PIRClean,
+)
 from tests.test_file_schemas import CQCPIRSchema as Schemas
 from tests.test_file_data import CQCpirData as Data
 
@@ -20,7 +23,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=Schemas.sample_schema
         )
         self.test_cqc_pir_parquet_with_import_date = cleaning_utils.column_to_date(
-            self.test_cqc_pir_parquet, Keys.import_date, job.DATE_COLUMN_NAME
+            self.test_cqc_pir_parquet, Keys.import_date, PIRClean.cqc_pir_import_date
         )
 
     @patch("utils.cleaning_utils.column_to_date")
@@ -47,7 +50,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         column_to_date_patch.assert_called_once_with(
             self.test_cqc_pir_parquet,
             Keys.import_date,
-            job.DATE_COLUMN_NAME,
+            PIRClean.cqc_pir_import_date,
         )
         write_to_parquet_patch.assert_called_once_with(
             ANY,
@@ -85,7 +88,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         )
         self.assertTrue(
             self.test_cqc_pir_parquet_with_import_date.columns.index(
-                job.DATE_COLUMN_NAME
+                PIRClean.cqc_pir_import_date
             )
             == self.SCHEMA_LENGTH  # The last index of the df
         )
