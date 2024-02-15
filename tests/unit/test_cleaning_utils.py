@@ -611,9 +611,9 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
             self.single_join_column,
         )
         returned_rows = returned_df.count()
-        
+
         expected_rows = self.primary_df.count()
-        
+
         self.assertEqual(returned_rows, expected_rows)
 
     def test_join_on_misaligned_dates_returns_the_correct_number_of_columns(
@@ -629,7 +629,7 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         )
         returned_columns = len(returned_df.columns)
         returned_df.show()
-        
+
         expected_columns = len(self.later_merged_dates_df.columns)
-        
+
         self.assertEqual(returned_columns, expected_columns)

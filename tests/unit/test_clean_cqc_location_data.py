@@ -35,7 +35,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.test_provider_df = self.spark.createDataFrame(
             Data.join_provider_rows, Schemas.join_provider_schema
         )
-    
 
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.remove_already_cleaned_data")
