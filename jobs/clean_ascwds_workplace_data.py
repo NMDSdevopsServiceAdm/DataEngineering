@@ -20,7 +20,9 @@ def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
 
     ascwds_workplace_df = cUtils.column_to_date(
-        ascwds_workplace_df, PartitionKeys.import_date, AWPClean.import_date
+        ascwds_workplace_df,
+        PartitionKeys.import_date,
+        AWPClean.ascwds_workplace_import_date,
     )
 
     ascwds_workplace_df = cast_to_int(
