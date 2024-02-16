@@ -58,6 +58,10 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 
@@ -399,6 +403,48 @@ class CleaningUtilsSchemas:
         [
             StructField("input_string", StringType(), True),
             StructField("expected_value", DateType(), True),
+        ]
+    )
+
+    align_dates_primary_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+        ]
+    )
+
+    align_dates_secondary_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+        ]
+    )
+
+    primary_dates_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+
+    secondary_dates_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    expected_aligned_dates_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    expected_merged_dates_schema = StructType(
+        [
+            StructField("snapshot_date", DateType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.location_id, StringType(), True),
         ]
     )
 

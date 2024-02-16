@@ -1,6 +1,7 @@
 from pyspark.sql import (
     DataFrame,
     SparkSession,
+    Window,
 )
 from pyspark.sql.types import (
     StructType,
@@ -120,3 +121,104 @@ def column_to_date(
     new_df = df.withColumn(new_column, F.to_date(column_to_format, string_format))
 
     return new_df
+
+
+def align_import_dates(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    primary_column: str,
+    secondary_column: str,
+) -> DataFrame:
+    possible_matches = cross_join_unique_dates(
+        primary_df, secondary_df, primary_column, secondary_column
+    )
+
+    aligned_dates = determine_best_date_matches(
+        possible_matches, primary_column, secondary_column
+    )
+
+    return aligned_dates
+
+
+def cross_join_unique_dates(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    primary_column: str,
+    secondary_column: str,
+) -> DataFrame:
+    primary_dates = primary_df.select(primary_column).dropDuplicates()
+    secondary_dates = secondary_df.select(secondary_column).dropDuplicates()
+    min_secondary_date = calculate_min_secondary_date(
+        primary_dates, secondary_dates, primary_column, secondary_column
+    )
+    if min_secondary_date != None:
+        secondary_dates = secondary_dates.where(
+            secondary_dates[secondary_column] >= F.lit(min_secondary_date)
+        )
+    possible_matches = primary_dates.crossJoin(secondary_dates).repartition(
+        primary_column
+    )
+    return possible_matches
+
+
+def determine_best_date_matches(
+    possible_matches: DataFrame, primary_column: str, secondary_column: str
+) -> DataFrame:
+    date_diff: str = "date_diff"
+    min_date_diff: str = "min_date_diff"
+    possible_matches = possible_matches.withColumn(
+        date_diff, F.datediff(primary_column, secondary_column)
+    )
+
+    possible_matches = possible_matches.where(possible_matches[date_diff] >= 0)
+
+    w = Window.partitionBy(primary_column).orderBy(date_diff)
+    possible_matches = possible_matches.withColumn(
+        min_date_diff, F.min(date_diff).over(w)
+    )
+
+    aligned_dates = possible_matches.where(
+        possible_matches[min_date_diff] == possible_matches[date_diff]
+    )
+
+    return aligned_dates.select(primary_column, secondary_column)
+
+
+def calculate_min_secondary_date(
+    primary_dates: DataFrame,
+    secondary_dates: DataFrame,
+    primary_column: str,
+    secondary_column: str,
+) -> str:
+    min_primary_date = primary_dates.select(
+        F.min(primary_dates[primary_column])
+    ).collect()[0][0]
+
+    earlier_secondary_dates = secondary_dates.where(
+        secondary_dates[secondary_column] < min_primary_date
+    )
+
+    min_secondary_date = earlier_secondary_dates.select(
+        F.max(secondary_dates[secondary_column])
+    ).collect()[0][0]
+
+    return min_secondary_date
+
+
+def join_on_misaligned_import_dates(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    aligned_dates: DataFrame,
+    primary_column: str,
+    secondary_column: str,
+    other_join_column: str,
+) -> DataFrame:
+    primary_df_with_aligned_dates = primary_df.join(
+        aligned_dates, primary_column, "left"
+    )
+    secondary_join_criteria = [secondary_column] + [other_join_column]
+    joined_df = primary_df_with_aligned_dates.join(
+        secondary_df, secondary_join_criteria, "left"
+    )
+    joined_df = joined_df.withColumn("snapshot_date", F.col(primary_column))
+    return joined_df
