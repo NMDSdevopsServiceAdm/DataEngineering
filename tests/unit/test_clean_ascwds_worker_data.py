@@ -1,11 +1,16 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
+from pyspark.sql.dataframe import DataFrame
+
 import jobs.clean_ascwds_worker_data as job
 
-from tests.test_file_data import ASCWDSWorkerData
-from tests.test_file_schemas import ASCWDSWorkerSchemas
+from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
+from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 from utils.utils import get_spark
 
 
@@ -21,9 +26,12 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     ]
 
     def setUp(self) -> None:
-        spark = get_spark()
-        self.test_ascwds_worker_df = spark.createDataFrame(
+        self.spark = get_spark()
+        self.test_ascwds_worker_df = self.spark.createDataFrame(
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
+        )
+        self.test_ascwds_workplace_df = self.spark.createDataFrame(
+            ASCWDSWorkplaceData.workplace_rows, ASCWDSWorkplaceSchemas.workplace_schema
         )
 
     @patch("utils.utils.write_to_parquet")
@@ -43,6 +51,30 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             True,
             self.partition_keys,
         )
+
+    def test_remove_invalid_worker_records_returns_df(self):
+        returned_df = job.remove_workers_without_workplaces(
+            self.test_ascwds_worker_df, self.test_ascwds_workplace_df
+        )
+
+        self.assertIsInstance(returned_df, DataFrame)
+
+    def test_remove_invalid_worker_records_removed_expected_workers(self):
+        returned_df = job.remove_workers_without_workplaces(
+            self.test_ascwds_worker_df, self.test_ascwds_workplace_df
+        )
+
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_worker_rows, ASCWDSWorkerSchemas.worker_schema
+        )
+
+        expected_rows = expected_df.orderBy(AWK.location_id).collect()
+        returned_rows = (
+            returned_df.select(*expected_df.columns).orderBy(AWK.location_id).collect()
+        )
+
+        self.assertCountEqual(returned_df.columns, self.test_ascwds_worker_df.columns)
+        self.assertEqual(expected_rows, returned_rows)
 
 
 if __name__ == "__main__":

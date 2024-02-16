@@ -1,10 +1,15 @@
 import sys
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
     AscwdsWorkerCleanedColumns as AWKClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 
 
@@ -13,6 +18,10 @@ def main(
 ):
     ascwds_worker_df = utils.read_from_parquet(worker_source)
     ascwds_workplace_cleaned_df = utils.read_from_parquet(cleaned_workplace_source)
+
+    ascwds_worker_df = remove_workers_without_workplaces(
+        ascwds_worker_df, ascwds_workplace_cleaned_df
+    )
 
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
@@ -29,6 +38,16 @@ def main(
             PartitionKeys.day,
             PartitionKeys.import_date,
         ],
+    )
+
+
+def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
+    workplace_df = workplace_df.select(
+        [AWPClean.import_date, AWPClean.establishment_id]
+    )
+
+    return worker_df.join(
+        workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
 
 
