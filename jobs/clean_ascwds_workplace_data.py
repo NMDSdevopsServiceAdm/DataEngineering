@@ -16,6 +16,8 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedValues as AWPValues,
 )
 
+DATE_COLUMN_IDENTIFIER = "date"
+
 
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
@@ -24,6 +26,18 @@ def main(source: str, destination: str):
         ascwds_workplace_df,
         PartitionKeys.import_date,
         AWPClean.ascwds_workplace_import_date,
+    )
+
+    ascwds_workplace_df = utils.format_date_fields(
+        ascwds_workplace_df,
+        date_column_identifier=DATE_COLUMN_IDENTIFIER,
+        raw_date_format="dd/MM/yyyy",
+    )
+
+    ascwds_workplace_df = utils.format_date_fields(
+        ascwds_workplace_df,
+        date_column_identifier=AWP.last_logged_in,
+        raw_date_format="dd/MM/yyyy",
     )
 
     ascwds_workplace_df = cast_to_int(
