@@ -19,6 +19,10 @@ def main(
     ascwds_worker_df = utils.read_from_parquet(worker_source)
     ascwds_workplace_cleaned_df = utils.read_from_parquet(cleaned_workplace_source)
 
+    ascwds_worker_df = remove_workers_without_workplaces(
+        ascwds_worker_df, ascwds_workplace_cleaned_df
+    )
+
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
     )
