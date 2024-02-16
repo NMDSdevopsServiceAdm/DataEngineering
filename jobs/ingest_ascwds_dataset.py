@@ -41,7 +41,6 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     df = filter_test_accounts(df)
     df = remove_white_space_from_nmdsid(df)
 
-
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
 

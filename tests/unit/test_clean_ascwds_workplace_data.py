@@ -1,6 +1,6 @@
 from datetime import date
 import unittest
-from unittest.mock import patch, ANY , Mock
+from unittest.mock import patch, ANY, Mock
 
 import jobs.clean_ascwds_workplace_data as job
 
@@ -43,13 +43,18 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     @patch("utils.utils.format_date_fields", wraps=format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock, format_date_fields_mock: Mock):
+    def test_main(
+        self,
+        read_from_parquet_mock: Mock,
+        write_to_parquet_mock: Mock,
+        format_date_fields_mock: Mock,
+    ):
         read_from_parquet_mock.return_value = self.test_ascwds_worker_df
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         self.assertEqual(format_date_fields_mock.call_count, 2)
-        
+
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         write_to_parquet_mock.assert_called_once_with(
             ANY,
