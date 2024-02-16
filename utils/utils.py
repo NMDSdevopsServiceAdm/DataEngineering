@@ -218,10 +218,22 @@ def remove_already_cleaned_data(
     df: pyspark.sql.DataFrame,
     destination: str,
 ) -> pyspark.sql.DataFrame:
-    """Return a filtered dataframe with the latest data,
-    and if there is no new data then an empty dataframe is returned.
-    If a file read is not possible, or the latest cleaned data import data is None,
-    then the original dataframe supplied is returned."""
+    """
+    Removes already cleaned data from an existing dataframe that contains an import_date column
+
+    Args:
+        df: A pyspark.sql.DataFrame you are checking
+        destination: The absolute path of the cleaned data source to be checked against
+
+    Returns:
+        Return a filter of a dataframe with the latest data,
+        and if there is no new data then an empty dataframe is returned.
+        If a file read is not possible, or the latest cleaned data import data is None,
+        then the original dataframe supplied is returned.
+
+    Raises:
+        AnalysisException: When import_date is not located within the dataframe as a column
+    """
 
     if "import_date" not in df.columns:
         raise AnalysisException("Input dataframe must have import_date column")
