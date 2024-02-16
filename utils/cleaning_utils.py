@@ -52,7 +52,18 @@ def drop_unecessary_columns(
     return df
 
 
-def convert_labels_dict_to_dataframe(labels: dict, spark: SparkSession) -> DataFrame:
+def convert_labels_dict_to_dataframe(labels: list, spark: SparkSession) -> DataFrame:
+    """
+    Takes a list of tuples representing rows for the new dataframe,
+    and applies a key-value schema to it to create a dataframe with column names "key" and "value"
+
+    Args:
+        labels: A list of tuples, i.e. [(-1, "Not known")]
+        spark: A pyspark.sql.SparkSession
+
+    Returns:
+        A 2 column DataFrame of labels and their values.
+    """
     labels_schema = StructType(
         [
             StructField(key, StringType(), True),
