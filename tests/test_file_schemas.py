@@ -209,6 +209,7 @@ class ASCWDSWorkerSchemas:
     worker_schema = StructType(
         [
             StructField(AWK.location_id, StringType(), True),
+            StructField(AWK.establishment_id, StringType(), True),
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),

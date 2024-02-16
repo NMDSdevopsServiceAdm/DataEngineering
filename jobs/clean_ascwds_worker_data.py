@@ -8,6 +8,9 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKey
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 
 def main(
@@ -35,7 +38,13 @@ def main(
 
 
 def remove_invalid_worker_records(worker_df: DataFrame, workplace_df: DataFrame):
-    return worker_df
+    workplace_df = workplace_df.select(
+        [AWPClean.import_date, AWPClean.establishment_id]
+    )
+
+    return worker_df.join(
+        workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
+    )
 
 
 if __name__ == "__main__":
