@@ -37,7 +37,7 @@ def main(
     )
 
 
-def remove_invalid_worker_records(worker_df: DataFrame, workplace_df: DataFrame):
+def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )

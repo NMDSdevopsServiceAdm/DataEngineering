@@ -53,14 +53,14 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         )
 
     def test_remove_invalid_worker_records_returns_df(self):
-        returned_df = job.remove_invalid_worker_records(
+        returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
         )
 
         self.assertIsInstance(returned_df, DataFrame)
 
     def test_remove_invalid_worker_records_removed_expected_workers(self):
-        returned_df = job.remove_invalid_worker_records(
+        returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
         )
 
