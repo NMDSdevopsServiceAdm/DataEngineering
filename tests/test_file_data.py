@@ -5,7 +5,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
 
@@ -317,6 +317,51 @@ class ASCWDSWorkplaceData:
             "loc 4",
             None,
             None,
+        ),
+    ]
+
+    purge_outdated_data = [
+        (
+            "1-000000001",
+            "20200101",
+            "1",
+            date(2020, 1, 1),
+            0,
+        ),
+        (
+            "1-000000002",
+            "20200101",
+            "2",
+            date(2000, 1, 1),
+            0,
+        ),
+        (
+            "1-000000003",
+            "20200101",
+            "1",
+            date(2018, 1, 1),
+            0,
+        ),
+        (
+            "1-000000004",
+            "20200101",
+            "2",
+            date(2017, 12, 31),
+            0,
+        ),
+        (
+            "1-000000005",
+            "20200101",
+            "1",
+            date(2015, 1, 1),
+            1,
+        ),
+        (
+            "1-000000006",
+            "20200101",
+            "2",
+            date(2013, 1, 1),
+            1,
         ),
     ]
 
@@ -1056,3 +1101,11 @@ class FilterCleanedValuesData:
         ("2023", "01", "01", "20230101"),
         ("2021", "06", "06", "20210606"),
     ]
+
+
+@dataclass
+class MergeIndCQCData:
+    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
+    clean_cqc_pir_rows = CQCpirData.sample_rows_full
+    clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
+    ons_postcode_directory_rows = IngestONSData.sample_rows

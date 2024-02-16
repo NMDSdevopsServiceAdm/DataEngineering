@@ -217,9 +217,14 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
 def remove_already_cleaned_data(
     df: pyspark.sql.DataFrame,
     destination: str,
-):
+) -> pyspark.sql.DataFrame:
+    """Return a filtered dataframe with the latest data,
+    and if there is no new data then an empty dataframe is returned.
+    If a file read is not possible, or the latest cleaned data import data is None,
+    then the original dataframe supplied is returned."""
+
     if "import_date" not in df.columns:
-        raise Exception("Input dataframe must have import_date column")
+        raise AnalysisException("Input dataframe must have import_date column")
 
     try:
         cleaned_df = read_from_parquet(destination)

@@ -14,7 +14,7 @@ from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_data_columns_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
 )
@@ -29,7 +29,7 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
     cqc_provider_df = utils.read_from_parquet(cqc_source)
 
     cqc_provider_df = cUtils.column_to_date(
-        cqc_provider_df, Keys.import_date, "cqc_provider_import_date"
+        cqc_provider_df, Keys.import_date, CQCPClean.cqc_provider_import_date
     )
 
     cqc_provider_df = add_cqc_sector_column_to_cqc_provider_dataframe(

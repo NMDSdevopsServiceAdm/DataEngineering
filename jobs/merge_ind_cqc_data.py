@@ -1,0 +1,72 @@
+import sys
+
+from utils import utils
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+
+
+def main(
+    cleaned_cqc_location_source: str,
+    cleaned_cqc_pir_source: str,
+    cleaned_ascwds_workplace_source: str,
+    ons_postcode_directory_source: str,
+    destination: str,
+):
+    cqc_location_df = utils.read_from_parquet(cleaned_cqc_location_source)
+    cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
+    ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
+    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
+
+    utils.write_to_parquet(
+        cqc_location_df,
+        destination,
+        append=True,
+        partitionKeys=PartitionKeys,
+    )
+
+
+if __name__ == "__main__":
+    print("Spark job 'merge_ind_cqc_data' starting...")
+    print(f"Job parameters: {sys.argv}")
+
+    (
+        cleaned_cqc_location_source,
+        cleaned_cqc_pir_source,
+        cleaned_ascwds_workplace_source,
+        ons_postcode_directory_source,
+        destination,
+    ) = utils.collect_arguments(
+        (
+            "--cleaned_cqc_location_source",
+            "Source s3 directory for parquet CQC locations cleaned dataset",
+        ),
+        (
+            "--cleaned_cqc_pir_source",
+            "Source s3 directory for parquet CQC pir cleaned dataset",
+        ),
+        (
+            "--cleaned_ascwds_workplace_source",
+            "Source s3 directory for parquet ASCWDS workplace cleaned dataset",
+        ),
+        (
+            "--ons_postcode_directory_source",
+            "Source s3 directory for parquet ONS postcode directory dataset",
+        ),
+        (
+            "--destination",
+            "Destination s3 directory for parquet",
+        ),
+    )
+    main(
+        cleaned_cqc_location_source,
+        cleaned_cqc_pir_source,
+        cleaned_ascwds_workplace_source,
+        ons_postcode_directory_source,
+        destination,
+    )
+
+    print("Spark job 'merge_ind_cqc_data' complete")
