@@ -7,7 +7,6 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 
 @dataclass
 class AscwdsWorkerValueLabelsMainjrid:
-
     main_job_role_id: str = AWK.main_job_role_id
     main_job_role_id_labeled: str = AWK.main_job_role_id + "_labeled"
 
