@@ -1,10 +1,12 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
+from pyspark.sql.dataframe import DataFrame
+
 import jobs.clean_ascwds_worker_data as job
 
-from tests.test_file_data import ASCWDSWorkerData
-from tests.test_file_schemas import ASCWDSWorkerSchemas
+from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
+from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.utils import get_spark
 
@@ -25,6 +27,9 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         self.test_ascwds_worker_df = spark.createDataFrame(
             ASCWDSWorkerData.worker_rows, ASCWDSWorkerSchemas.worker_schema
         )
+        self.test_ascwds_workplace_df = spark.createDataFrame(
+            ASCWDSWorkplaceData.workplace_rows, ASCWDSWorkplaceSchemas.workplace_schema
+        )
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -43,6 +48,13 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             True,
             self.partition_keys,
         )
+
+    def test_remove_invalid_worker_records_returns_df(self):
+        returned_df = job.remove_invalid_worker_records(
+            self.test_ascwds_worker_df, self.test_ascwds_workplace_df
+        )
+
+        self.assertIsInstance(returned_df, DataFrame)
 
 
 if __name__ == "__main__":

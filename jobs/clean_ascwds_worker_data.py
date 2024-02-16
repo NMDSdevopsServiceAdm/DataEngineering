@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
@@ -30,6 +32,10 @@ def main(
             PartitionKeys.import_date,
         ],
     )
+
+
+def remove_invalid_worker_records(worker_df: DataFrame, workplace_df: DataFrame):
+    return worker_df
 
 
 if __name__ == "__main__":
