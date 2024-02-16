@@ -63,3 +63,6 @@ Pipfile.lock
 
 # ------ lambda artefacts ---- #
 lambdas/**.zip
+
+# ------ sphinx artefacts ---- #
+docs/build
