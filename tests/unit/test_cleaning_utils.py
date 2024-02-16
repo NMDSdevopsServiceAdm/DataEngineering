@@ -13,10 +13,10 @@ from tests.test_file_data import CleaningUtilsData as Data
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_data_columns import (
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_data_columns import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
@@ -422,8 +422,8 @@ class TestCleaningUtilsColumnToDate(unittest.TestCase):
 class TestCleaningUtilsAlignDates(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-        self.primary_column = AWPClean.cleaned_import_date
-        self.secondary_column = CQCLClean.cleaned_import_date
+        self.primary_column = AWPClean.ascwds_workplace_import_date
+        self.secondary_column = CQCLClean.cqc_location_import_date
         self.single_join_column = AWPClean.location_id
         self.snapshot_date = "snapshot_date"
         self.primary_df = self.spark.createDataFrame(
