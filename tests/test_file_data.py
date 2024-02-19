@@ -526,6 +526,9 @@ class CQCpirData:
         ),
     ]
 
+    add_care_home_column_rows = []
+    expected_care_home_column_rows = []
+
 
 @dataclass
 class CQCLocationsData:

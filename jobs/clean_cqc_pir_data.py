@@ -7,7 +7,7 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
-    CqcLPIRCleanedColumns as PIRClean,
+    CqcPIRCleanedColumns as PIRClean,
 )
 
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]

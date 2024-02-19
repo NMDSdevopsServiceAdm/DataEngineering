@@ -25,8 +25,11 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         self.test_cqc_pir_parquet_with_import_date = cleaning_utils.column_to_date(
             self.test_cqc_pir_parquet, Keys.import_date, PIRClean.cqc_pir_import_date
         )
+        self.test_add_care_home_column_df = self.spark.createDataFrame(
+            Data.add_care_home_column_rows, Schemas.add_care_home_column_schema
+        )
         self.test_expected_care_home_column_df = self.spark.createDataFrame(
-            Data.expected_care_home_column_rows, Schemas.expected_care_home_columns_schema
+            Data.expected_care_home_column_rows, Schemas.expected_care_home_column_schema
         )
 
     @patch("utils.cleaning_utils.column_to_date")

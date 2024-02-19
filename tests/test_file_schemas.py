@@ -51,7 +51,9 @@ from utils.column_names.raw_data_files.cqc_pir_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
@@ -527,6 +529,19 @@ class CQCPIRSchema:
         ]
     )
 
+    add_care_home_column_schema = StructType(
+        [
+            StructField(CQCPIR.location_id , StringType(), True),
+            StructField(CQCPIR.pir_type, StringType(), True),
+        ]
+    )
+
+    expected_care_home_column_schema = StructType(
+        [
+            *add_care_home_column_schema,
+            StructField(CQCPIRClean.care_home, StringType(), True),
+        ]
+    )
 
 @dataclass
 class IngestONSData:
