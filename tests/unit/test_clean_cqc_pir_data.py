@@ -110,7 +110,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         
         self.assertCountEqual(expected_df.columns, returned_df.columns)
 
-    @unittest.skip("to do")
+
     def test_add_care_home_column_categorises_care_homes_correctly(self):
         returned_df = job.add_care_home_column(
             self.test_add_care_home_column_df
