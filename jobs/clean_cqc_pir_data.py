@@ -40,7 +40,7 @@ def add_care_home_column(df: DataFrame) -> DataFrame:
         F.when(
             F.col(PIRCleanCols.pir_type) == PIRCleanValues.residential,
             PIRCleanValues.yes,
-        ).otherwise(F.lit(PIRCleanValues.no)),
+        ).otherwise(PIRCleanValues.no),
     )
     return df
 
