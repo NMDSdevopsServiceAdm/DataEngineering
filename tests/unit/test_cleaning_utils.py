@@ -424,8 +424,6 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         self.spark = utils.get_spark()
         self.primary_column = AWPClean.ascwds_workplace_import_date
         self.secondary_column = CQCLClean.cqc_location_import_date
-        self.single_join_column = AWPClean.location_id
-        self.snapshot_date = "snapshot_date"
         self.primary_df = self.spark.createDataFrame(
             Data.align_dates_primary_rows, Schemas.align_dates_primary_schema
         )
@@ -448,8 +446,6 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
             Data.expected_later_aligned_dates_rows,
             Schemas.expected_aligned_dates_schema,
         )
-        self.primary_dates = self.primary_df.select(self.primary_column)
-        self.secondary_dates = self.secondary_df.select(self.secondary_column)
         self.merged_dates_df = self.spark.createDataFrame(
             Data.expected_merged_rows, Schemas.expected_merged_dates_schema
         )
