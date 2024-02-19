@@ -148,13 +148,7 @@ def cross_join_unique_dates(
 ) -> DataFrame:
     primary_dates = primary_df.select(primary_column).dropDuplicates()
     secondary_dates = secondary_df.select(secondary_column).dropDuplicates()
-    min_secondary_date = calculate_min_secondary_date(
-        primary_dates, secondary_dates, primary_column, secondary_column
-    )
-    if min_secondary_date != None:
-        secondary_dates = secondary_dates.where(
-            secondary_dates[secondary_column] >= F.lit(min_secondary_date)
-        )
+
     possible_matches = primary_dates.crossJoin(secondary_dates).repartition(
         primary_column
     )
@@ -182,27 +176,6 @@ def determine_best_date_matches(
     )
 
     return aligned_dates.select(primary_column, secondary_column)
-
-
-def calculate_min_secondary_date(
-    primary_dates: DataFrame,
-    secondary_dates: DataFrame,
-    primary_column: str,
-    secondary_column: str,
-) -> str:
-    min_primary_date = primary_dates.select(
-        F.min(primary_dates[primary_column])
-    ).collect()[0][0]
-
-    earlier_secondary_dates = secondary_dates.where(
-        secondary_dates[secondary_column] < min_primary_date
-    )
-
-    min_secondary_date = earlier_secondary_dates.select(
-        F.max(secondary_dates[secondary_column])
-    ).collect()[0][0]
-
-    return min_secondary_date
 
 
 def join_on_misaligned_import_dates(
