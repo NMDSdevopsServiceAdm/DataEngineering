@@ -531,16 +531,6 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_min_secondary_date(self):
-        returned_min_secondary_date = job.calculate_min_secondary_date(
-            self.primary_dates,
-            self.secondary_dates,
-            self.primary_column,
-            self.secondary_column,
-        )
-        expected_min_secondary_date = date(2019, 1, 1)
-        self.assertEqual(returned_min_secondary_date, expected_min_secondary_date)
-
     def test_join_on_misaligned_import_dates_completes(self):
         returned_df = job.join_on_misaligned_import_dates(
             self.primary_df,
@@ -628,7 +618,6 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
             self.single_join_column,
         )
         returned_columns = len(returned_df.columns)
-        returned_df.show()
 
         expected_columns = len(self.later_merged_dates_df.columns)
 

@@ -949,9 +949,6 @@ class CleaningUtilsData:
     ]
 
     align_dates_secondary_rows = [
-        (date(2015, 1, 1), "loc 1"),
-        (date(2016, 1, 1), "loc 1"),
-        (date(2017, 1, 1), "loc 1"),
         (date(2018, 1, 1), "loc 1"),
         (date(2019, 1, 1), "loc 1"),
         (date(2020, 1, 1), "loc 1"),
@@ -1037,27 +1034,19 @@ class CleaningUtilsData:
             date(2021, 1, 1),
             date(2021, 1, 8),
         ),
+        (
+            date(2020, 1, 1),
+            date(2018, 1, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2018, 1, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2018, 1, 1),
+        ),
     ]
-    """
-    primary_dates_rows = [
-        (date(2020, 1, 1),),
-        (date(2020, 1, 8),),
-        (date(2021, 1, 1),),
-        (date(2021, 1, 1),),
-    ]
-
-    secondary_dates_rows = [
-        (date(2015, 1, 1),),
-        (date(2016, 1, 1),),
-        (date(2017, 1, 1),),
-        (date(2018, 1, 1),),
-        (date(2019, 1, 1),),
-        (date(2020, 1, 1),),
-        (date(2020, 2, 1),),
-        (date(2021, 1, 8),),
-        (date(2020, 2, 1),),
-    ]
-    """
 
     expected_merged_rows = [
         (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1), "loc 1"),
