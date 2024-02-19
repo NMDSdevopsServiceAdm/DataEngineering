@@ -28,15 +28,13 @@ def main(source: str, destination: str):
         AWPClean.ascwds_workplace_import_date,
     )
 
-    ascwds_workplace_df = utils.format_date_fields(
-        ascwds_workplace_df,
-        date_column_identifier=DATE_COLUMN_IDENTIFIER,
-        raw_date_format="dd/MM/yyyy",
+    ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
+        AWP.last_logged_in, AWPClean.last_logged_in_date
     )
 
     ascwds_workplace_df = utils.format_date_fields(
         ascwds_workplace_df,
-        date_column_identifier=AWP.last_logged_in,
+        date_column_identifier=DATE_COLUMN_IDENTIFIER,
         raw_date_format="dd/MM/yyyy",
     )
 

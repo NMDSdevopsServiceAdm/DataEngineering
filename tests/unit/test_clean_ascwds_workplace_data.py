@@ -53,7 +53,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
-        self.assertEqual(format_date_fields_mock.call_count, 2)
+        self.assertEqual(format_date_fields_mock.call_count, 1)
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         write_to_parquet_mock.assert_called_once_with(
