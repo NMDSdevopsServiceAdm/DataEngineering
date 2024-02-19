@@ -457,8 +457,6 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
             Data.expected_later_merged_rows, Schemas.expected_merged_dates_schema
         )
         self.column_order_for_assertion = [
-            self.snapshot_date,
-            self.single_join_column,
             self.primary_column,
             self.secondary_column,
         ]
@@ -531,74 +529,62 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_join_on_misaligned_import_dates_completes(self):
-        returned_df = job.join_on_misaligned_import_dates(
+    def test_add_aligned_date_column_columns_completes(self):
+        returned_df = job.add_aligned_date_column(
             self.primary_df,
             self.secondary_df,
-            self.expected_aligned_dates,
             self.primary_column,
             self.secondary_column,
-            self.single_join_column,
         )
 
         self.assertTrue(returned_df)
 
-    def test_join_on_misaligned_dates_joins_correctly_when_secondary_data_starts_before_primary(
+    def test_add_aligned_date_column_joins_secondary_date_correctly(
         self,
     ):
-        returned_df = job.join_on_misaligned_import_dates(
+        returned_df = job.add_aligned_date_column(
             self.primary_df,
             self.secondary_df,
-            self.expected_aligned_dates,
             self.primary_column,
             self.secondary_column,
-            self.single_join_column,
         )
-        returned_data = (
-            returned_df.select(self.column_order_for_assertion)
-            .sort(self.snapshot_date, self.single_join_column)
-            .collect()
-        )
+        returned_data = returned_df.sort(self.primary_column).collect()
         expected_data = (
-            self.merged_dates_df.select(self.column_order_for_assertion)
-            .sort(self.snapshot_date, self.single_join_column)
+            self.merged_dates_df.select(returned_df.columns)
+            .sort(self.primary_column)
             .collect()
         )
         self.assertEqual(returned_data, expected_data)
 
-    def test_join_on_misaligned_dates_joins_correctly_when_secondary_data_start_later_than_primary(
+    def test_add_aligned_date_column_joins_correctly_when_secondary_data_start_later_than_primary(
         self,
     ):
-        returned_df = job.join_on_misaligned_import_dates(
+        returned_df = job.add_aligned_date_column(
             self.primary_df,
             self.later_secondary_df,
-            self.expected_later_aligned_dates,
             self.primary_column,
             self.secondary_column,
-            self.single_join_column,
         )
         returned_data = (
             returned_df.select(self.column_order_for_assertion)
-            .sort(self.snapshot_date, self.single_join_column)
+            .sort(self.primary_column)
             .collect()
         )
         expected_data = (
             self.later_merged_dates_df.select(self.column_order_for_assertion)
-            .sort(self.snapshot_date, self.single_join_column)
+            .sort(self.primary_column)
             .collect()
         )
         self.assertEqual(returned_data, expected_data)
 
-    def test_join_on_misaligned_dates_returns_the_correct_number_of_rows(
+    def test_add_aligned_date_column_returns_the_correct_number_of_rows(
         self,
     ):
-        returned_df = job.join_on_misaligned_import_dates(
+        returned_df = job.add_aligned_date_column(
             self.primary_df,
             self.later_secondary_df,
-            self.expected_later_aligned_dates,
             self.primary_column,
             self.secondary_column,
-            self.single_join_column,
         )
         returned_rows = returned_df.count()
 
@@ -606,16 +592,14 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
 
         self.assertEqual(returned_rows, expected_rows)
 
-    def test_join_on_misaligned_dates_returns_the_correct_number_of_columns(
+    def test_add_aligned_date_column_returns_the_correct_number_of_columns(
         self,
     ):
-        returned_df = job.join_on_misaligned_import_dates(
+        returned_df = job.add_aligned_date_column(
             self.primary_df,
             self.later_secondary_df,
-            self.expected_later_aligned_dates,
             self.primary_column,
             self.secondary_column,
-            self.single_join_column,
         )
         returned_columns = len(returned_df.columns)
 

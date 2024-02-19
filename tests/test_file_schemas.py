@@ -441,7 +441,6 @@ class CleaningUtilsSchemas:
 
     expected_merged_dates_schema = StructType(
         [
-            StructField("snapshot_date", DateType(), True),
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
