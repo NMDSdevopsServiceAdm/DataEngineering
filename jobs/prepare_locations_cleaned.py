@@ -61,7 +61,7 @@ def main(
     utils.write_to_parquet(
         locations_df,
         prepared_locations_cleaned_destination,
-        append=True,
+        mode="append",
         partitionKeys=["run_year", "run_month", "run_day"],
     )
 

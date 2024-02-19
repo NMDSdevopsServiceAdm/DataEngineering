@@ -55,7 +55,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            append=True,
+            mode="append",
             partitionKeys=self.partition_keys,
         )
 
@@ -79,7 +79,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         write_to_parquet_patch.assert_called_once_with(
             self.test_cqc_pir_parquet_with_import_date,
             self.TEST_DESTINATION,
-            append=True,
+            mode="append",
             partitionKeys=self.partition_keys,
         )
         self.assertEqual(

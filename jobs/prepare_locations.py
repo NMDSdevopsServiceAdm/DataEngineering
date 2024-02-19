@@ -184,7 +184,7 @@ def main(
             utils.write_to_parquet(
                 output_df,
                 destination,
-                append=True,
+                mode="append",
                 partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
             )
             if master_df is None:

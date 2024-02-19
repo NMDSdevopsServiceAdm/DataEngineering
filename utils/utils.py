@@ -6,6 +6,7 @@ import argparse
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
+from pyspark.sql.dataframe import DataFrame
 import pyspark.sql
 
 import boto3
@@ -99,11 +100,10 @@ def read_from_parquet(data_source) -> pyspark.sql.DataFrame:
     return spark_session.read.parquet(data_source)
 
 
-def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
-    if append:
-        df.write.mode("append").partitionBy(*partitionKeys).parquet(output_dir)
-    else:
-        df.write.partitionBy(*partitionKeys).parquet(output_dir)
+def write_to_parquet(
+    df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
+):
+    df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
 def read_csv(source, delimiter=","):

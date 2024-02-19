@@ -13,7 +13,7 @@ def main(
         external_data_source, EXTERNAL_DATA
     )
 
-    utils.write_to_parquet(external_df, external_data_destination, False)
+    utils.write_to_parquet(external_df, external_data_destination)
 
 
 def collect_arguments():

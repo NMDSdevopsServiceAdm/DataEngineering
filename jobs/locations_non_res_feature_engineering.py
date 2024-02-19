@@ -144,7 +144,7 @@ def main(prepared_locations_source, destination=None):
         utils.write_to_parquet(
             features_df,
             destination,
-            append=True,
+            mode="append",
             partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
         )
     return features_df
