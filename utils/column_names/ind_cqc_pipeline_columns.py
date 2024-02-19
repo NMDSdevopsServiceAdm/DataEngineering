@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 
 @dataclass
 class PartitionKeys:
@@ -7,6 +12,16 @@ class PartitionKeys:
     import_date: str = "import_date"
     month: str = "month"
     year: str = "year"
+
+
+@dataclass
+class MergeIndCqcColumns:
+    sector: str = CQCPClean.cqc_sector
+
+
+@dataclass
+class MergeIndCqcValues:
+    independent: str = CQCPValues.independent
 
 
 @dataclass
