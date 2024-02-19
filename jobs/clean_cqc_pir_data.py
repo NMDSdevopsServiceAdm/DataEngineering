@@ -25,7 +25,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     utils.write_to_parquet(
         cqc_pir_df,
         cleaned_cqc_pir_destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=pirPartitionKeys,
     )
 

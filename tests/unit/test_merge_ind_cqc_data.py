@@ -65,7 +65,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         write_to_parquet_patch.assert_called_once_with(
             self.test_clean_cqc_location_df,
             self.TEST_DESTINATION,
-            mode="append",
+            mode="overwrite",
             partitionKeys=self.partition_keys,
         )
 
