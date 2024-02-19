@@ -69,6 +69,22 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+    def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.cqc_sector_rows, Schemas.cqc_sector_schema
+        )
+
+        returned_ind_cqc_df = job.filter_df_to_independent_sector_only(test_df)
+        returned_ind_cqc_data = returned_ind_cqc_df.collect()
+
+        expected_ind_cqc_data = self.spark.createDataFrame(
+            Data.expected_cqc_sector_rows, Schemas.cqc_sector_schema
+        ).collect()
+
+        self.assertEqual(returned_ind_cqc_data, expected_ind_cqc_data)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
