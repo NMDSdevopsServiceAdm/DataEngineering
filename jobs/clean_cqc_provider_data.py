@@ -39,7 +39,7 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
     utils.write_to_parquet(
         cqc_provider_df,
         cleaned_cqc_destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
 
