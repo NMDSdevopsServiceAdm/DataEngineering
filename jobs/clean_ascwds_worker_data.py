@@ -12,14 +12,13 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.value_labels.ascwds_worker.worker_label_dictionary import (
-    ascwds_worker_label_dict
+    ascwds_worker_label_dict,
 )
 
 
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
-    spark = utils.get_spark()
     ascwds_worker_df = utils.read_from_parquet(worker_source)
     ascwds_workplace_cleaned_df = utils.read_from_parquet(cleaned_workplace_source)
 
@@ -27,7 +26,13 @@ def main(
         ascwds_worker_df, ascwds_workplace_cleaned_df
     )
 
-    ascwds_worker_df = cUtils.apply_categorical_labels(ascwds_worker_df, spark, ascwds_worker_label_dict, ascwds_worker_label_dict.keys(), add_as_new_column=True)
+    ascwds_worker_df = cUtils.apply_categorical_labels(
+        ascwds_worker_df,
+        utils.get_spark(),
+        ascwds_worker_label_dict,
+        ascwds_worker_label_dict.keys(),
+        add_as_new_column=True,
+    )
 
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
