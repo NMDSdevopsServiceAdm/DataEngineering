@@ -60,7 +60,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
-            PartitionKeys=self.partition_keys,
+            partitionKeys=self.partition_keys,
         )
 
 

@@ -49,7 +49,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
-            PartitionKeys=self.partition_keys,
+            partitionKeys=self.partition_keys,
         )
 
     def test_remove_invalid_worker_records_returns_df(self):
