@@ -1,9 +1,13 @@
 import sys
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    MergeIndCqcColumns,
+    MergeIndCqcValues,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -21,12 +25,18 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
     ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
+    ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
+
     utils.write_to_parquet(
-        cqc_location_df,
+        ind_cqc_location_df,
         destination,
         mode="append",
         partitionKeys=PartitionKeys,
     )
+
+
+def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
+    return df.where(df[MergeIndCqcColumns.sector] == MergeIndCqcValues.independent)
 
 
 if __name__ == "__main__":
