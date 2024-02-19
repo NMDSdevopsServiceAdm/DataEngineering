@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import DataFrame
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -22,12 +24,17 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cqc_pir_df, Keys.import_date, PIRClean.cqc_pir_import_date
     )
 
+
+
     utils.write_to_parquet(
         cqc_pir_df,
         cleaned_cqc_pir_destination,
         mode="append",
         partitionKeys=pirPartitionKeys,
     )
+
+def add_care_home_column(df:DataFrame) -> DataFrame:
+    return df
 
 
 if __name__ == "__main__":
