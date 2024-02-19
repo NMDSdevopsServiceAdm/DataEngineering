@@ -1105,3 +1105,25 @@ class MergeIndCQCData:
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
     clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
     ons_postcode_directory_rows = IngestONSData.sample_rows
+
+    cqc_sector_rows = [
+        (
+            "loc-1",
+            "Local Authority",
+        ),
+        (
+            "loc-2",
+            None,
+        ),
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]
+
+    expected_cqc_sector_rows = [
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]
