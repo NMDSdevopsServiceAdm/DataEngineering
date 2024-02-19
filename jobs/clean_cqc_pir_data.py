@@ -26,8 +26,6 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
     )
 
-
-
     utils.write_to_parquet(
         cqc_pir_df,
         cleaned_cqc_pir_destination,
@@ -36,13 +34,14 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     )
 
 
-def add_care_home_column(df:DataFrame) -> DataFrame:
+def add_care_home_column(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         PIRCleanCols.care_home,
         F.when(
             F.col(PIRCleanCols.pir_type) == PIRCleanValues.residential,
             PIRCleanValues.yes,
-        ).otherwise(F.lit(PIRCleanValues.no)))
+        ).otherwise(F.lit(PIRCleanValues.no)),
+    )
     return df
 
 

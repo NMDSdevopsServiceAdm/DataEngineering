@@ -29,7 +29,8 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Data.add_care_home_column_rows, Schemas.add_care_home_column_schema
         )
         self.test_expected_care_home_column_df = self.spark.createDataFrame(
-            Data.expected_care_home_column_rows, Schemas.expected_care_home_column_schema
+            Data.expected_care_home_column_rows,
+            Schemas.expected_care_home_column_schema,
         )
 
     @patch("utils.cleaning_utils.column_to_date")
@@ -99,27 +100,19 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             == self.SCHEMA_LENGTH  # The last index of the df
         )
 
-
     def test_add_care_home_column_adds_a_column(self):
-        returned_df = job.add_care_home_column(
-            self.test_add_care_home_column_df
-        )
+        returned_df = job.add_care_home_column(self.test_add_care_home_column_df)
 
         expected_df = self.test_expected_care_home_column_df
 
-        
         self.assertCountEqual(expected_df.columns, returned_df.columns)
 
-
     def test_add_care_home_column_categorises_care_homes_correctly(self):
-        returned_df = job.add_care_home_column(
-            self.test_add_care_home_column_df
-        )
+        returned_df = job.add_care_home_column(self.test_add_care_home_column_df)
         returned_data = returned_df.sort(PIRClean.location_id).collect()
         expected_df = self.test_expected_care_home_column_df
         expected_data = expected_df.sort(PIRClean.location_id).collect()
 
-        
         self.assertCountEqual(expected_data, returned_data)
 
 

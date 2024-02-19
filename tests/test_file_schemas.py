@@ -531,7 +531,7 @@ class CQCPIRSchema:
 
     add_care_home_column_schema = StructType(
         [
-            StructField(CQCPIR.location_id , StringType(), True),
+            StructField(CQCPIR.location_id, StringType(), True),
             StructField(CQCPIR.pir_type, StringType(), True),
         ]
     )
@@ -542,6 +542,7 @@ class CQCPIRSchema:
             StructField(CQCPIRClean.care_home, StringType(), True),
         ]
     )
+
 
 @dataclass
 class IngestONSData:
