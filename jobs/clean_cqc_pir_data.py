@@ -35,6 +35,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         partitionKeys=pirPartitionKeys,
     )
 
+
 def add_care_home_column(df:DataFrame) -> DataFrame:
     df = df.withColumn(
         PIRCleanCols.care_home,
