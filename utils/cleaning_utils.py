@@ -189,20 +189,18 @@ def determine_best_date_matches(
     return aligned_dates.select(primary_column, secondary_column)
 
 
-def join_on_misaligned_import_dates(
+def add_aligned_date_column(
     primary_df: DataFrame,
     secondary_df: DataFrame,
-    aligned_dates: DataFrame,
     primary_column: str,
     secondary_column: str,
-    other_join_column: str,
 ) -> DataFrame:
+    aligned_dates = align_import_dates(
+        primary_df, secondary_df, primary_column, secondary_column
+    )
+
     primary_df_with_aligned_dates = primary_df.join(
         aligned_dates, primary_column, "left"
     )
-    secondary_join_criteria = [secondary_column] + [other_join_column]
-    joined_df = primary_df_with_aligned_dates.join(
-        secondary_df, secondary_join_criteria, "left"
-    )
-    joined_df = joined_df.withColumn("snapshot_date", F.col(primary_column))
-    return joined_df
+
+    return primary_df_with_aligned_dates
