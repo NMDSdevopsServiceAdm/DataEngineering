@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
-    CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 
 
@@ -16,7 +18,8 @@ class PartitionKeys:
 
 @dataclass
 class MergeIndCqcColumns:
-    sector: str = CQCPClean.cqc_sector
+    location_id: str = CQCLClean.location_id
+    sector: str = CQCLClean.sector
 
 
 @dataclass
