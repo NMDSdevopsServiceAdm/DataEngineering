@@ -1049,17 +1049,17 @@ class CleaningUtilsData:
     ]
 
     expected_merged_rows = [
-        (date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1), "loc 1"),
-        (date(2020, 1, 8), date(2020, 1, 8), date(2020, 1, 1), "loc 1"),
-        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
-        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
+        (date(2020, 1, 1), date(2020, 1, 1), "loc 1"),
+        (date(2020, 1, 8), date(2020, 1, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
     ]
 
     expected_later_merged_rows = [
-        (date(2020, 1, 1), date(2020, 1, 1), None, "loc 1"),
-        (date(2020, 1, 8), date(2020, 1, 8), None, "loc 1"),
-        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
-        (date(2021, 1, 1), date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
+        (date(2020, 1, 1), None, "loc 1"),
+        (date(2020, 1, 8), None, "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
     ]
 
     column_to_date_data = [

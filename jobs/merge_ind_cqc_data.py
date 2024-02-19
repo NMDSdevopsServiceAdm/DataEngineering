@@ -30,7 +30,7 @@ def main(
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=PartitionKeys,
     )
 

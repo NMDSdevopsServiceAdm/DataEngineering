@@ -49,14 +49,14 @@ def main(
     utils.write_to_parquet(
         direct_payments_df,
         destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=[DP.YEAR],
     )
 
     utils.write_to_parquet(
         summary_direct_payments_df,
         summary_destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=[DP.YEAR],
     )
 

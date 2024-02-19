@@ -45,7 +45,7 @@ def main(
     utils.write_to_parquet(
         direct_payments_df,
         destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=[DP.YEAR],
     )
 

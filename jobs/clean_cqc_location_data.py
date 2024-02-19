@@ -70,7 +70,7 @@ def main(
     utils.write_to_parquet(
         registered_locations_df,
         cleaned_cqc_location_destintion,
-        mode="append",
+        mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
 

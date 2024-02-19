@@ -59,8 +59,8 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            "append",
-            self.partition_keys,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
         )
 
 
