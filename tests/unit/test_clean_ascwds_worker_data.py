@@ -48,8 +48,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            "overwrite",
-            self.partition_keys,
+            mode="overwrite",
+            PartitionKeys=self.partition_keys,
         )
 
     def test_remove_invalid_worker_records_returns_df(self):
