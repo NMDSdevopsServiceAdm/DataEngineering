@@ -5,7 +5,7 @@ from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
-    CqcLPIRCleanedColumns as PIRClean,
+    CqcPIRCleanedColumns as PIRClean,
 )
 from tests.test_file_schemas import CQCPIRSchema as Schemas
 from tests.test_file_data import CQCpirData as Data
