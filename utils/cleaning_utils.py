@@ -23,7 +23,7 @@ def apply_categorical_labels(
     add_as_new_column: bool = True,
 ) -> DataFrame:
     for column_name in column_names:
-        labels_df = convert_labels_dict_to_dataframe(labels[column_name], spark)
+        labels_df = convert_labels_to_dataframe(labels[column_name], spark)
         if add_as_new_column == True:
             new_column_name = column_name + "_labels"
             df = replace_labels(df, labels_df, column_name, new_column_name)
@@ -53,7 +53,18 @@ def drop_unecessary_columns(
     return df
 
 
-def convert_labels_dict_to_dataframe(labels: dict, spark: SparkSession) -> DataFrame:
+def convert_labels_to_dataframe(labels: list, spark: SparkSession) -> DataFrame:
+    """
+    Takes a list of length 2 tuples representing rows for the new labels dataframe,
+    and applies a key-value schema to it to create a dataframe with column names "key" and "value"
+
+    Args:
+        labels: A list of length 2 tuples, i.e. [(-1, "Not known")]
+        spark: A pyspark.sql.SparkSession
+
+    Returns:
+        A 2 column DataFrame of labels and their values.
+    """
     labels_schema = StructType(
         [
             StructField(key, StringType(), True),

@@ -3,6 +3,7 @@ from datetime import date
 
 import pyspark.sql.functions as F
 
+from unittest.mock import Mock, patch, ANY
 from utils import utils
 
 import utils.cleaning_utils as job
@@ -384,6 +385,30 @@ class TestCleaningUtilsScale(unittest.TestCase):
         expected_data = expected_df.sort("int").collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class TestConvertLabelsToDataframe(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.sample_list = Data.gender
+        self.sample_df = self.spark.createDataFrame(
+            self.sample_list, Schemas.labels_schema
+        )
+
+        self.spark_mock = Mock()
+        self.spark_mock.createDataFrame = self.spark_mock
+
+    def test_convert_labels_to_dataframe_structure(self):
+        output_df = job.convert_labels_to_dataframe(self.sample_list, self.spark)
+
+        self.assertEqual(output_df.schema, self.sample_df.schema)
+        self.assertEqual(output_df.count(), self.sample_df.count())
+        self.assertEqual(output_df.columns, self.sample_df.columns)
+
+    def test_convert_labels_to_dataframe_function_calls(self):
+        job.convert_labels_to_dataframe(self.sample_list, self.spark_mock)
+
+        self.spark_mock.createDataFrame.assert_called_once_with(self.sample_list, ANY)
 
 
 class TestCleaningUtilsColumnToDate(unittest.TestCase):
