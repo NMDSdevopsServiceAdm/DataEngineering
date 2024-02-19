@@ -31,8 +31,8 @@ def main(
     utils.write_to_parquet(
         ascwds_worker_df,
         cleaned_worker_destination,
-        "overwrite",
-        [
+        mode="overwrite",
+        partitionKeys=[
             PartitionKeys.year,
             PartitionKeys.month,
             PartitionKeys.day,
