@@ -48,7 +48,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            True,
+            "append",
             self.partition_keys,
         )
 

@@ -50,7 +50,7 @@ def main(source: str, destination: str):
     utils.write_to_parquet(
         ascwds_workplace_df,
         destination,
-        True,
+        "append",
         [
             PartitionKeys.year,
             PartitionKeys.month,

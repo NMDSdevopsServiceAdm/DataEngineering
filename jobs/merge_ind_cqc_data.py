@@ -24,7 +24,7 @@ def main(
     utils.write_to_parquet(
         cqc_location_df,
         destination,
-        append=True,
+        mode="append",
         partitionKeys=PartitionKeys,
     )
 

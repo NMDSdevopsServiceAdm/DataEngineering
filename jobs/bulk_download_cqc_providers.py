@@ -23,7 +23,7 @@ def main(destination):
             df = providers_df
 
     df = df.dropDuplicates([ColNames.provider_id])
-    utils.write_to_parquet(df, destination, True)
+    utils.write_to_parquet(df, destination, "append")
 
     print(f"Finished! Files can be found in {destination}")
 

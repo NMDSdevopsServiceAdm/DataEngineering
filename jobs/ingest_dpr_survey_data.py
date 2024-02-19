@@ -11,7 +11,7 @@ def main(
 ):
     survey_df = utils.read_csv_with_defined_schema(survey_data_source, SURVEY_DATA)
 
-    utils.write_to_parquet(survey_df, survey_data_destination, False)
+    utils.write_to_parquet(survey_df, survey_data_destination)
 
 
 def collect_arguments():

@@ -31,7 +31,7 @@ def ingest_pir_dataset(source, destination, schema):
     df = utils.read_csv_with_defined_schema(source, schema)
 
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(df, destination, False)
+    utils.write_to_parquet(df, destination)
 
 
 def collect_arguments():

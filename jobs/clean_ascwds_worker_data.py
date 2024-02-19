@@ -31,7 +31,7 @@ def main(
     utils.write_to_parquet(
         ascwds_worker_df,
         cleaned_worker_destination,
-        True,
+        "append",
         [
             PartitionKeys.year,
             PartitionKeys.month,
