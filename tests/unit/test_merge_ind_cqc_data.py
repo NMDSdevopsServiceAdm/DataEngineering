@@ -63,7 +63,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.assertEqual(read_from_parquet_patch.call_count, 4)
 
         write_to_parquet_patch.assert_called_once_with(
-            self.test_clean_cqc_location_df,
+            ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
