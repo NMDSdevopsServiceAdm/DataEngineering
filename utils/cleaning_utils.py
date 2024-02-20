@@ -22,13 +22,16 @@ def apply_categorical_labels(
     column_names: list,
     add_as_new_column: bool = True,
 ) -> DataFrame:
+    partitions = df.rdd.getNumPartitions()
     for column_name in column_names:
         labels_df = convert_labels_to_dataframe(labels[column_name], spark)
         if add_as_new_column == True:
             new_column_name = column_name + "_labels"
             df = replace_labels(df, labels_df, column_name, new_column_name)
+            df = df.coalesce(partitions)
         elif add_as_new_column == False:
             df = replace_labels(df, labels_df, column_name)
+            df = df.coalesce(partitions)
     return df
 
 
