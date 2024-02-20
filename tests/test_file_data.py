@@ -526,6 +526,17 @@ class CQCpirData:
         ),
     ]
 
+    add_care_home_column_rows = [
+        ("loc 1", "Residential"),
+        ("loc 2", None),
+        ("loc 3", "Other value"),
+    ]
+    expected_care_home_column_rows = [
+        ("loc 1", "Residential", "Y"),
+        ("loc 2", None, "N"),
+        ("loc 3", "Other value", "N"),
+    ]
+
 
 @dataclass
 class CQCLocationsData:

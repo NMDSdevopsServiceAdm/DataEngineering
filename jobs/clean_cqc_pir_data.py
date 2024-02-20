@@ -1,11 +1,15 @@
 import sys
 
+from pyspark.sql import DataFrame
+import pyspark.sql.functions as F
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
-    CqcLPIRCleanedColumns as PIRClean,
+    CqcPIRCleanedColumns as PIRCleanCols,
+    CqcPIRCleanedValues as PIRCleanValues,
 )
 
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -19,7 +23,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     )
 
     cqc_pir_df = cUtils.column_to_date(
-        cqc_pir_df, Keys.import_date, PIRClean.cqc_pir_import_date
+        cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
     )
 
     utils.write_to_parquet(
@@ -28,6 +32,17 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         mode="overwrite",
         partitionKeys=pirPartitionKeys,
     )
+
+
+def add_care_home_column(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
+        PIRCleanCols.care_home,
+        F.when(
+            F.col(PIRCleanCols.pir_type) == PIRCleanValues.residential,
+            PIRCleanValues.yes,
+        ).otherwise(PIRCleanValues.no),
+    )
+    return df
 
 
 if __name__ == "__main__":
