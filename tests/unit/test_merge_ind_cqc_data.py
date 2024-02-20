@@ -26,7 +26,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
-            Data.clean_cqc_location_rows, Schemas.clean_cqc_location_schema
+            Data.clean_cqc_location_rows, Schemas.clean_cqc_location_reduced_schema
         )
         self.test_clean_cqc_pir_df = self.spark.createDataFrame(
             Data.clean_cqc_pir_rows, Schemas.clean_cqc_pir_schema
