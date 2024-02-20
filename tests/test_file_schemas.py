@@ -575,8 +575,8 @@ class MergeIndCQCData:
 
     clean_cqc_location_reduced_schema = StructType(
         [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(MergeIndCqcColumns.location_id, StringType(), True),
+            StructField(MergeIndCqcColumns.sector, StringType(), True),
         ]
     )
 
