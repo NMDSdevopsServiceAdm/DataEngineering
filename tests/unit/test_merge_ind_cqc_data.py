@@ -69,7 +69,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
-    def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
+    def test_filter_df_to_independent_sector_only_only_keeps_independent_locations(
         self,
     ):
         test_df = self.spark.createDataFrame(
