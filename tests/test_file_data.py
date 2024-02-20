@@ -471,7 +471,7 @@ class CQCProviderData:
 class CQCpirData:
     sample_rows_full = [
         (
-            "1-10000000001",
+            "1-1000000001",
             "Location 1",
             "Community",
             "2024-01-01",
@@ -489,7 +489,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000002",
+            "1-1000000002",
             "Location 2",
             "Residential",
             "2024-01-01",
@@ -507,7 +507,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000003",
+            "1-1000000003",
             "Location 3",
             "Residential",
             "2024-01-01",
@@ -1112,10 +1112,28 @@ class FilterCleanedValuesData:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
     clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
     ons_postcode_directory_rows = IngestONSData.sample_rows
+
+    clean_cqc_location_rows = [
+        (
+            "1-000000001",
+            "Independent",
+        ),
+        (
+            "1-000000002",
+            "Local Authority",
+        ),
+        (
+            "1-000000005",
+            "Independent",
+        ),
+        (
+            "1-000000009",
+            "Independent",
+        ),
+    ]
 
     cqc_sector_rows = [
         (

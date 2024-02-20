@@ -569,10 +569,16 @@ class FilterCleanedValuesSchema:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_location_schema = CQCLocationsSchema.full_schema
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
     clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
     ons_postcode_directory_schema = IngestONSData.sample_schema
+
+    clean_cqc_location_reduced_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.sector, StringType(), True),
+        ]
+    )
 
     cqc_sector_schema = StructType(
         [
