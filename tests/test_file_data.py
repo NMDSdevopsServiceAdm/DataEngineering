@@ -800,7 +800,7 @@ class CQCLocationsData:
         ("loc-1", "B69 E3G"),
         ("loc-2", "UB4 0EJ."),
         ("loc-3", "PO20 3BD"),
-        ("loc-4", "HP20 1SN"),
+        ("loc-4", "PR! 9HL"),
         ("loc-5", None),
     ]
 
@@ -808,7 +808,7 @@ class CQCLocationsData:
         ("loc-1", "B69 3EG"),
         ("loc-2", "UB4 0EJ"),
         ("loc-3", "PO20 3BD"),
-        ("loc-4", "HP20 1SN"),
+        ("loc-4", "PR1 9HL"),
         ("loc-5", None),
     ]
 
