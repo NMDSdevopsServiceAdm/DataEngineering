@@ -38,12 +38,14 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
+    @patch("jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
+        filter_df_to_independent_sector_only: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -61,6 +63,10 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 4)
+
+        filter_df_to_independent_sector_only.assert_called_once_with(
+            self.test_clean_cqc_location_df
+        )
 
         write_to_parquet_patch.assert_called_once_with(
             ANY,
