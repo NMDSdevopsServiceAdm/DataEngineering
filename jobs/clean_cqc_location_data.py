@@ -34,10 +34,12 @@ DATE_COLUMN_IDENTIFIER = "registration_date"
 def main(
     cqc_location_source: str,
     cleaned_cqc_provider_source: str,
+    ons_postcode_directory_source: str,
     cleaned_cqc_location_destintion: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
+    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
@@ -152,6 +154,7 @@ if __name__ == "__main__":
     (
         cqc_location_source,
         cleaned_cqc_provider_source,
+        ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     ) = utils.collect_arguments(
         (
@@ -161,6 +164,10 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_provider_source",
             "Source s3 directory for cleaned parquet CQC provider dataset",
+        ),
+        (
+            "--ons_postcode_directory_source",
+            "Source s3 directory for parquet ONS postcode directory dataset",
         ),
         (
             "--cleaned_cqc_location_destination",
