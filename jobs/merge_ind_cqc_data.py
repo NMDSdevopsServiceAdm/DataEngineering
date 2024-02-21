@@ -1,5 +1,5 @@
 import sys
-
+import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -36,7 +36,7 @@ def main(
 
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(df[MergeIndCqcColumns.sector] == MergeIndCqcValues.independent)
+    return df.where(F.col(MergeIndCqcColumns.sector) == MergeIndCqcValues.independent)
 
 
 if __name__ == "__main__":
