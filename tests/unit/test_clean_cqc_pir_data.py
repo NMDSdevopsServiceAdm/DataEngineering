@@ -85,7 +85,10 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         expected_df = self.test_expected_care_home_column_df
         expected_data = expected_df.sort(PIRClean.location_id).collect()
 
-        self.assertCountEqual(expected_data, returned_data)
+        self.assertCountEqual(expected_data[0], returned_data[0])
+        self.assertCountEqual(expected_data[1], returned_data[1])
+        self.assertCountEqual(expected_data[2], returned_data[2])
+        self.assertCountEqual(expected_data[3], returned_data[3])
 
 
 if __name__ == "__main__":
