@@ -18,3 +18,4 @@ class CqcPIRCleanedValues:
     yes: str = "Y"
     no: str = "N"
     residential: str = "Residential"
+    community: str = "Community"

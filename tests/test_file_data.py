@@ -528,13 +528,15 @@ class CQCpirData:
 
     add_care_home_column_rows = [
         ("loc 1", "Residential"),
-        ("loc 2", None),
-        ("loc 3", "Other value"),
+        ("loc 2", "Shared Lives"),
+        ("loc 3", None),
+        ("loc 4", "Community"),
     ]
     expected_care_home_column_rows = [
         ("loc 1", "Residential", "Y"),
-        ("loc 2", None, "N"),
-        ("loc 3", "Other value", "N"),
+        ("loc 2", "Shared Lives", None),
+        ("loc 3", None, None),
+        ("loc 4", "Community", "N"),
     ]
 
 
