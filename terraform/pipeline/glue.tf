@@ -73,7 +73,7 @@ module "clean_cqc_pir_data_job" {
 
   job_parameters = {
     "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
   }
 }
 
@@ -160,10 +160,10 @@ module "prepare_locations_job" {
   glue_version      = "3.0"
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
-    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
+    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
     "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
+    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
     "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
   }
 }
@@ -398,8 +398,8 @@ module "clean_cqc_provider_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
-    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
+    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
+    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
   }
 }
 
@@ -411,9 +411,9 @@ module "clean_cqc_location_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
-    "--cleaned_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
-    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
+    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cleaned_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
 }
 
@@ -425,11 +425,11 @@ module "merge_ind_cqc_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
-    "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--ons_postcode_directory_source"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
-    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=merged-ind-cqc-data/"
+    "--ons_postcode_directory_source"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=merged_ind_cqc_data/"
   }
 }
 
