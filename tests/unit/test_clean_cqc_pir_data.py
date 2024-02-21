@@ -33,6 +33,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.expected_care_home_column_schema,
         )
 
+    @patch("add_care_home_column")
     @patch("utils.cleaning_utils.column_to_date")
     @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
@@ -43,9 +44,11 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         write_to_parquet_patch,
         remove_already_cleaned_data_patch,
         column_to_date_patch,
+        add_care_home_column,
     ):
         read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
         remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
+        column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
@@ -59,45 +62,14 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Keys.import_date,
             PIRClean.cqc_pir_import_date,
         )
+        add_care_home_column.assert_called_once_with(
+            self.test_cqc_pir_parquet_with_import_date
+        )
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
-        )
-
-    @patch("utils.cleaning_utils.column_to_date")
-    @patch("utils.utils.remove_already_cleaned_data")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
-    def test_correct_number_of_columns_written(
-        self,
-        read_from_parquet_patch,
-        write_to_parquet_patch,
-        remove_already_cleaned_data_patch,
-        column_to_date_patch,
-    ):
-        read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
-        remove_already_cleaned_data_patch.return_value = self.test_cqc_pir_parquet
-        column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
-
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
-
-        write_to_parquet_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet_with_import_date,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
-        )
-        self.assertEqual(
-            self.SCHEMA_LENGTH + 1,
-            len(self.test_cqc_pir_parquet_with_import_date.columns),
-        )
-        self.assertTrue(
-            self.test_cqc_pir_parquet_with_import_date.columns.index(
-                PIRClean.cqc_pir_import_date
-            )
-            == self.SCHEMA_LENGTH  # The last index of the df
         )
 
     def test_add_care_home_column_adds_a_column(self):
