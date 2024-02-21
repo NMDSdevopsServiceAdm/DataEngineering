@@ -33,7 +33,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.expected_care_home_column_schema,
         )
 
-    @patch("add_care_home_column")
+    @patch("jobs.clean_cqc_pir_data.add_care_home_column")
     @patch("utils.cleaning_utils.column_to_date")
     @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
