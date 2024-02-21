@@ -26,6 +26,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
     )
 
+    cqc_pir_df = add_care_home_column(cqc_pir_df)
+
     utils.write_to_parquet(
         cqc_pir_df,
         cleaned_cqc_pir_destination,
