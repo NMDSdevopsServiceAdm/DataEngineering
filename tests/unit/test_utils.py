@@ -4,9 +4,6 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from unittest.mock import Mock, patch
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.utils import AnalysisException
 from pyspark.shell import spark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -21,8 +18,6 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import FilterCleanedValuesData
-from tests.test_file_schemas import FilterCleanedValuesSchema
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
