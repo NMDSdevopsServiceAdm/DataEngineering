@@ -205,48 +205,59 @@ class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
             Data.expected_without_repeated_values_rows,
             Schemas.expected_without_repeated_values_schema,
         )
-
-    def test_repeated_values_in_new_column_are_as_expected(self):
         returned_df = job.create_column_with_repeated_values_removed(
             self.test_purge_outdated_df,
             column_to_clean="integer_column",
         )
+        self.OUTPUT_COLUMN = "integer_column_deduplicated"
 
-        returned_data = returned_df.sort(
+        self.returned_data = returned_df.sort(
             AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
         ).collect()
-        expected_data = self.expected_df_without_repeated_values_df.sort(
+        self.expected_data = self.expected_df_without_repeated_values_df.sort(
             AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
         ).collect()
 
+    def test_first_submitted_value_is_included_in_new_column(self):
         self.assertEqual(
-            returned_data[0],
-            expected_data[0],
-            "First value submitted is not in new column",
+            self.returned_data[0][self.OUTPUT_COLUMN],
+            self.expected_data[0][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[4][self.OUTPUT_COLUMN],
+            self.expected_data[4][self.OUTPUT_COLUMN],
         )
 
+    def test_submitted_value_is_included_if_it_wasnt_repeated(self):
         self.assertEqual(
-            returned_data[1],
-            expected_data[1],
-            "Non-repeated value is not in new column",
+            self.returned_data[1][self.OUTPUT_COLUMN],
+            self.expected_data[1][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[5][self.OUTPUT_COLUMN],
+            self.expected_data[5][self.OUTPUT_COLUMN],
         )
 
+    def test_repeated_value_entered_as_null_value(self):
         self.assertEqual(
-            returned_data[2],
-            expected_data[2],
-            "Repeated value is not being entered as null",
+            self.returned_data[2][self.OUTPUT_COLUMN],
+            self.expected_data[2][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[7][self.OUTPUT_COLUMN],
+            self.expected_data[7][self.OUTPUT_COLUMN],
         )
 
+    def test_value_which_has_appeared_before_but_isnt_a_repeat_is_included(self):
         self.assertEqual(
-            returned_data[6],
-            expected_data[6],
-            "Value which was previously submitted, but is not repeated, is not correct",
+            self.returned_data[6][self.OUTPUT_COLUMN],
+            self.expected_data[6][self.OUTPUT_COLUMN],
         )
 
+    def test_returned_df_matches_expected_df(self):
         self.assertEqual(
-            returned_data,
-            expected_data,
-            "Whole dataframe does not match expected dataframe",
+            self.returned_data,
+            self.expected_data,
         )
 
 
