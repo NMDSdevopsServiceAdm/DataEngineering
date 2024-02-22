@@ -62,6 +62,8 @@ def main(
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
+    cqc_location_df = remove_locations_with_duplicates(cqc_location_df)
+
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
