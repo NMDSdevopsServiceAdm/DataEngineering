@@ -39,11 +39,6 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
 
-    cqc_location_df = utils.remove_already_cleaned_data(
-        cqc_location_df,
-        cleaned_cqc_location_destintion,
-    )
-
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )

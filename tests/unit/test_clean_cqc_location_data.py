@@ -37,25 +37,21 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
 
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
-        remove_already_cleaned_data_patch: Mock,
         format_date_fields_mock: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_provider_df,
         ]
-        remove_already_cleaned_data_patch.return_value = self.test_clean_cqc_location_df
 
         job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
 
-        self.assertEqual(remove_already_cleaned_data_patch.call_count, 1)
         self.assertEqual(read_from_parquet_patch.call_count, 2)
         format_date_fields_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
