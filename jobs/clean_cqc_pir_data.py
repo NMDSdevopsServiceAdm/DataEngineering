@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, Column, Window
+from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -11,7 +11,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as PIRCleanCols,
     CqcPIRCleanedValues as PIRCleanValues,
 )
-from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns
 
 
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -29,7 +28,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     )
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df,
-        CqcPirColumns.pir_submission_date,
+        PIRCleanCols.pir_submission_date,
         PIRCleanCols.pir_submission_date_as_date,
         cUtils.pir_submission_date_uri_format,
     )
@@ -82,7 +81,7 @@ def filter_latest_submission_date(df: DataFrame) -> DataFrame:
     latest_submission_date_per_grouping_df = utils.latest_datefield_for_grouping(
         df,
         [
-            F.col(CqcPirColumns.location_id),
+            F.col(PIRCleanCols.location_id),
             F.col(PIRCleanCols.cqc_pir_import_date),
             F.col(PIRCleanCols.care_home),
         ],
@@ -90,7 +89,7 @@ def filter_latest_submission_date(df: DataFrame) -> DataFrame:
     )
     single_row_per_grouping_df = latest_submission_date_per_grouping_df.dropDuplicates(
         [
-            CqcPirColumns.location_id,
+            PIRCleanCols.location_id,
             PIRCleanCols.cqc_pir_import_date,
             PIRCleanCols.care_home,
             PIRCleanCols.pir_submission_date_as_date,
