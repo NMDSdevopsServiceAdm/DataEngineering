@@ -9,6 +9,7 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.utils import AnalysisException
 from pyspark.shell import spark
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -28,7 +29,12 @@ from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns,
+    CqcPIRCleanedValues,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+    CqcProviderCleanedColumns,
+)
+from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
@@ -768,8 +774,17 @@ class UtilsTests(unittest.TestCase):
             data=CQCPirCleanedData.subset_for_latest_submission_date_after_filter,
             schema=CQCPIRSchema.clean_subset_for_grouping_by,
         )
+        test_grouping_list = [
+            F.col(CqcPirColumns.location_id),
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        test_date_column = F.col(CqcPIRCleanedColumns.pir_submission_date_as_date)
 
-        test_df = utils.latest_datefield_for_grouping(test_df)
+        test_df = utils.latest_datefield_for_grouping(
+            test_df, test_grouping_list, test_date_column
+        )
+
         test_data: list = test_df.sort(
             CqcPIRCleanedColumns.cqc_pir_import_date
         ).collect()
