@@ -756,6 +756,20 @@ class CQCLocationsData:
         ),
     ]
 
+    location_rows_with_duplicates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "prov-10",
+            "2020-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-10",
+            "2021-01-01",
+        ),
+    ]
+
     join_provider_rows = [
         (
             "prov-1",

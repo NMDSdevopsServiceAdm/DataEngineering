@@ -2,6 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
+from pyspark.sql.dataframe import DataFrame
 
 import jobs.clean_cqc_location_data as job
 
@@ -41,6 +42,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
+
+class MainTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
@@ -75,6 +81,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+
+class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
         self,
     ):
@@ -90,6 +101,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         ).collect()
 
         self.assertEqual(returned_social_care_data, expected_social_care_data)
+
+
+class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_remove_invalid_postcodes(self):
         test_invalid_postcode_df = self.spark.createDataFrame(
@@ -113,6 +129,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             expected_postcode_df.sort(CQCL.location_id).collect(),
         )
 
+
+class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_allocate_primary_service_type(self):
         PRIMARY_SERVICE_TYPE_COLUMN_NAME = "primary_service_type"
 
@@ -135,6 +156,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
+
+
+class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_join_cqc_provider_data_adds_two_columns(self):
         returned_df = job.join_cqc_provider_data(
@@ -164,6 +190,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
 
         self.assertCountEqual(returned_data, expected_data)
+
+
+class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        return super().setUp()
 
     def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(
         self,
@@ -228,6 +259,31 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
 
             self.assertEqual(warnings_log, [])
+
+
+class RemoveLocationsWithDuplicatesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_duplicate_loc_df = self.spark.createDataFrame(
+            Data.location_rows_with_duplicates, Schemas.small_location_schema
+        )
+        self.returned_df = job.remove_locations_with_duplicates(self.test_location_df)
+
+    def test_returns_a_dataframe(self):
+        self.assertEqual(type(self.returned_df), DataFrame)
+
+    def test_returns_the_correct_columns(self):
+        self.assertCountEqual(
+            self.returned_df.columns, ["locationId", "providerId", "import_date"]
+        )
+
+    def test_does_not_remove_rows_if_no_duplicates(self):
+        self.assertEqual(self.returned_df.count(), self.test_location_df.count())
+        self.assertEqual(self.returned_df.collect(), self.test_location_df.collect())
+
+    def test_removes_duplicate_location_id_with_same_import_date(self):
+        filtered_df = job.remove_locations_with_duplicates(self.test_duplicate_loc_df)
+        self.assertLess(filtered_df.count(), self.test_duplicate_loc_df.count())
 
 
 if __name__ == "__main__":

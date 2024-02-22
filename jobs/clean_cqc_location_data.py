@@ -7,6 +7,7 @@ import utils.cleaning_utils as cUtils
 from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
+from pyspark.sql.window import Window
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -87,6 +88,18 @@ def remove_invalid_postcodes(df: DataFrame):
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+
+
+def remove_locations_with_duplicates(df: DataFrame):
+    loc_id_import_date_window = Window.partitionBy(CQCL.location_id, Keys.import_date)
+
+    df_with_count = df.withColumn(
+        "location_id_count", F.count(CQCL.location_id).over(loc_id_import_date_window)
+    )
+
+    df_without_duplicates = df_with_count.filter(F.col("location_id_count") == 1)
+
+    return df_without_duplicates.drop("location_id_count")
 
 
 def allocate_primary_service_type(df: DataFrame):
