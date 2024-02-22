@@ -763,7 +763,7 @@ class UtilsTests(unittest.TestCase):
     ):
         pass
 
-    def test_latest_datefield_for_grouping_returns_latest_date_df(
+    def test_latest_datefield_for_grouping_returns_latest_date_df_correctly(
         self,
     ):
         test_df: DataFrame = self.spark.createDataFrame(
@@ -777,18 +777,27 @@ class UtilsTests(unittest.TestCase):
         ]
         test_date_column = F.col(CqcPIRCleanedColumns.pir_submission_date_as_date)
 
-        test_df = utils.latest_datefield_for_grouping(
+        after_df = utils.latest_datefield_for_grouping(
             test_df, test_grouping_list, test_date_column
         )
 
-        # Ensure row removed is definitely the earlier submission date
-        self.assertFalse(
+        # Ensure row exists before and is removed
+        self.assertTrue(
             test_df.selectExpr(
                 'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
             )
             .collect()[0]
             .__getitem__("date_present")
         )
+        self.assertFalse(
+            after_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .__getitem__("date_present")
+        )
+        # No other removes are removed
+        self.assertEqual(after_df.count(), 4)
 
 
 if __name__ == "__main__":
