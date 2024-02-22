@@ -43,6 +43,9 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(
+        "jobs.clean_ascwds_workplace_data.create_column_with_repeated_values_removed"
+    )
     @patch("utils.utils.format_date_fields", wraps=format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -51,12 +54,14 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
+        create_column_with_repeated_values_removed_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_worker_df
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         self.assertEqual(format_date_fields_mock.call_count, 1)
+        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         write_to_parquet_mock.assert_called_once_with(
@@ -205,13 +210,13 @@ class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
             Data.expected_without_repeated_values_rows,
             Schemas.expected_without_repeated_values_schema,
         )
-        returned_df = job.create_column_with_repeated_values_removed(
+        self.returned_df = job.create_column_with_repeated_values_removed(
             self.test_purge_outdated_df,
             column_to_clean="integer_column",
         )
         self.OUTPUT_COLUMN = "integer_column_deduplicated"
 
-        self.returned_data = returned_df.sort(
+        self.returned_data = self.returned_df.sort(
             AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
         ).collect()
         self.expected_data = self.expected_df_without_repeated_values_df.sort(
@@ -259,6 +264,14 @@ class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
             self.returned_data,
             self.expected_data,
         )
+
+    def test_returned_df_has_one_additional_column(self):
+        self.assertEqual(
+            len(self.returned_df.columns), len(self.test_purge_outdated_df.columns) + 1
+        )
+
+    def test_returned_df_has_same_number_of_rows(self):
+        self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
 if __name__ == "__main__":

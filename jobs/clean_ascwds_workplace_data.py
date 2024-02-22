@@ -49,6 +49,15 @@ def main(source: str, destination: str):
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
 
+    ascwds_workplace_df = create_column_with_repeated_values_removed(
+        ascwds_workplace_df,
+        AWP.total_staff,
+    )
+    ascwds_workplace_df = create_column_with_repeated_values_removed(
+        ascwds_workplace_df,
+        AWP.worker_records,
+    )
+
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(
         ascwds_workplace_df,
