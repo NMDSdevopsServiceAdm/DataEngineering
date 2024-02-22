@@ -327,6 +327,70 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
+    small_location_rows = [
+        (
+            "loc-1",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-2",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-3",
+            "2020-01-01",
+            "2",
+        ),
+        (
+            "loc-4",
+            "2021-01-01",
+            "2",
+        ),
+    ]
+
+    location_rows_with_duplicates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "2020-01-01",
+            "10",
+        ),
+        (
+            "loc-4",
+            "2021-01-01",
+            "10",
+        ),
+    ]
+
+    location_rows_with_different_import_dates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "2021-01-01",
+            "10",
+        ),
+        (
+            "loc-4",
+            "2022-01-01",
+            "10",
+        ),
+    ]
+
+    expected_filtered_location_rows = [
+        (
+            "loc-1",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-2",
+            "2020-01-01",
+            "1",
+        ),
+    ]
+
     purge_outdated_data = [
         (
             "1-000000001",
@@ -753,47 +817,6 @@ class CQCLocationsData:
             "loc-4",
             "prov-2",
             "2021-01-01",
-        ),
-    ]
-
-    location_rows_with_duplicates = [
-        *small_location_rows,
-        (
-            "loc-3",
-            "prov-10",
-            "2020-01-01",
-        ),
-        (
-            "loc-4",
-            "prov-10",
-            "2021-01-01",
-        ),
-    ]
-
-    location_rows_with_different_import_dates = [
-        *small_location_rows,
-        (
-            "loc-3",
-            "prov-10",
-            "2021-01-01",
-        ),
-        (
-            "loc-4",
-            "prov-10",
-            "2022-01-01",
-        ),
-    ]
-
-    expected_filtered_location_rows = [
-        (
-            "loc-1",
-            "prov-1",
-            "2020-01-01",
-        ),
-        (
-            "loc-2",
-            "prov-1",
-            "2020-01-01",
         ),
     ]
 
