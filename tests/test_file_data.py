@@ -470,9 +470,15 @@ class CQCProviderData:
 @dataclass
 class IngestONSData:
     sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
+        ("Yorkshire & Humber", "Leeds", "50.10101", "20200101"),
+        ("Yorkshire & Humber", "York", "52.10101", "20200101"),
+        ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
+    ]
+
+    expected_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", None),
+        ("Yorkshire & Humber", "York", "52.10101", None),
+        ("Yorkshire & Humber", "Hull", "53.10101", None),
     ]
 
 

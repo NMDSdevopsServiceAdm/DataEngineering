@@ -10,6 +10,7 @@ from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -40,6 +41,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
+    @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -48,6 +50,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
         format_date_fields_mock: Mock,
+        column_to_date_mock: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -64,6 +67,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
+        self.assertEqual(column_to_date_mock.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

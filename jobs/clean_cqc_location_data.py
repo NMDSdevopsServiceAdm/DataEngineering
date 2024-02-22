@@ -30,6 +30,8 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
+ONS_FORMATTED_IMPORT_DATE_COL = "ons_postcode_import_date"
+
 
 def main(
     cqc_location_source: str,
@@ -40,6 +42,10 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
+
+    ons_postcode_directory_df = cUtils.column_to_date(
+        ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
+    )
 
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
