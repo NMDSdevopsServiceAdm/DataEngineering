@@ -21,11 +21,14 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import FilterCleanedValuesData
-from tests.test_file_schemas import FilterCleanedValuesSchema
+from tests.test_file_data import CQCPirCleanedData, FilterCleanedValuesData
+from tests.test_file_schemas import CQCPIRSchema, FilterCleanedValuesSchema
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcPIRCleanedColumns,
+)
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
@@ -743,6 +746,37 @@ class UtilsTests(unittest.TestCase):
             returned_df.sort("import_date").collect(),
             test_df.sort("import_date").collect(),
         )
+
+    def test_latest_datefield_for_grouping_raises_error_for_non_list_of_columns(
+        self,
+    ):
+        pass
+
+    def test_latest_datefield_for_grouping_raises_error_for_non_column_param(
+        self,
+    ):
+        pass
+
+    def test_latest_datefield_for_grouping_returns_latest_date_df(
+        self,
+    ):
+        test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPIRSchema.clean_subset_for_grouping_by,
+        )
+        expected_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_after_filter,
+            schema=CQCPIRSchema.clean_subset_for_grouping_by,
+        )
+
+        test_df = utils.latest_datefield_for_grouping(test_df)
+        test_data: list = test_df.sort(
+            CqcPIRCleanedColumns.cqc_pir_import_date
+        ).collect()
+        expected_data: list = expected_df.sort(
+            CqcPIRCleanedColumns.cqc_pir_import_date
+        ).collect()
+        self.assertCountEqual(test_data, expected_data)
 
 
 if __name__ == "__main__":

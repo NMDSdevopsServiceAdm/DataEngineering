@@ -1,12 +1,12 @@
 import os
+import sys
 import re
 import csv
 import argparse
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame, Column, Window
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
-from pyspark.sql.dataframe import DataFrame
 import pyspark.sql
 
 import boto3
@@ -265,3 +265,36 @@ def collect_arguments(*args):
     parsed_args, _ = parser.parse_known_args()
 
     return (vars(parsed_args)[arg[0][2:]] for arg in args)
+
+
+def latest_datefield_for_grouping(
+    df: DataFrame, grouping_column_list: list[Column], date_field_column: Column
+) -> DataFrame:
+    """
+    For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
+    Note that if the provided date_field_column has multiple of the same entries for a grouping_column_list, then this function will return those duplicates.
+
+    Args:
+        df: The DataFrame to be filtered
+        grouping_column_list: A list of pyspark.sql.Column variables representing the columns you wish to groupby, i.e. [F.col("column_name")]
+        date_field_column: A formatted pyspark.sql.Column of dates
+
+    Raises:
+        TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
+    """
+
+    if isinstance(date_field_column, Column) is False:
+        raise TypeError("Column must be of pyspark.sql.Column type")
+    for column in grouping_column_list:
+        if isinstance(column, Column) is False:
+            raise TypeError("List items must be of pyspark.sql.Column type")
+
+    window = Window.partitionBy(grouping_column_list).orderBy(date_field_column.desc())
+
+    latest_date_df = (
+        df.withColumn("rank", F.rank().over(window))
+        .filter(F.col("rank") == 1)
+        .drop(F.col("rank"))
+    )
+
+    return latest_date_df

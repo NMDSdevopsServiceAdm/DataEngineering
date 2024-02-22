@@ -542,6 +542,15 @@ class CQCPIRSchema:
         ]
     )
 
+    clean_subset_for_grouping_by = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, StringType(), True),
+            StructField(CQCPIRClean.pir_submission_date_as_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class IngestONSData:
