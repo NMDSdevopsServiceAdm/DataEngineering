@@ -23,7 +23,11 @@ import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from tests.test_file_data import CQCPirCleanedData, FilterCleanedValuesData
-from tests.test_file_schemas import CQCPIRSchema, FilterCleanedValuesSchema
+from tests.test_file_schemas import (
+    CQCPIRSchema,
+    CQCPPIRCleanSchema,
+    FilterCleanedValuesSchema,
+)
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
@@ -756,19 +760,55 @@ class UtilsTests(unittest.TestCase):
     def test_latest_datefield_for_grouping_raises_error_for_non_list_of_columns(
         self,
     ):
-        pass
+        test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+        )
+        bad_grouping_list = [
+            "location_id",
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        test_date_column = F.col(CqcPIRCleanedColumns.pir_submission_date_as_date)
+
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                test_df, bad_grouping_list, test_date_column
+            )
+
+        self.assertTrue(
+            "List items must be of pyspark.sql.Column type" in str(context.exception),
+        )
 
     def test_latest_datefield_for_grouping_raises_error_for_non_column_param(
         self,
     ):
-        pass
+        test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+        )
+        test_grouping_list = [
+            F.col(CqcPirColumns.location_id),
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        bad_date_column = CqcPIRCleanedColumns.pir_submission_date_as_date
+
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                test_df, test_grouping_list, bad_date_column
+            )
+
+        self.assertTrue(
+            "Column must be of pyspark.sql.Column type" in str(context.exception),
+        )
 
     def test_latest_datefield_for_grouping_returns_latest_date_df_correctly(
         self,
     ):
         test_df: DataFrame = self.spark.createDataFrame(
             data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPIRSchema.clean_subset_for_grouping_by,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
         )
         test_grouping_list = [
             F.col(CqcPirColumns.location_id),
