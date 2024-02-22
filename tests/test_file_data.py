@@ -475,6 +475,12 @@ class IngestONSData:
         ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
     ]
 
+    expected_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", None),
+        ("Yorkshire & Humber", "York", "52.10101", None),
+        ("Yorkshire & Humber", "Hull", "53.10101", None),
+    ]
+
 
 @dataclass
 class CQCpirData:
