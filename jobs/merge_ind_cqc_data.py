@@ -17,13 +17,11 @@ def main(
     cleaned_cqc_location_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ascwds_workplace_source: str,
-    ons_postcode_directory_source: str,
     destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(cleaned_cqc_location_source)
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
     ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
-    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
     ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
 
@@ -47,7 +45,6 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
-        ons_postcode_directory_source,
         destination,
     ) = utils.collect_arguments(
         (
@@ -61,10 +58,6 @@ if __name__ == "__main__":
         (
             "--cleaned_ascwds_workplace_source",
             "Source s3 directory for parquet ASCWDS workplace cleaned dataset",
-        ),
-        (
-            "--ons_postcode_directory_source",
-            "Source s3 directory for parquet ONS postcode directory dataset",
         ),
         (
             "--destination",

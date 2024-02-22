@@ -269,6 +269,17 @@ class ASCWDSWorkplaceSchemas:
 
 
 @dataclass
+class IngestONSData:
+    sample_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CQCLocationsSchema:
     full_schema = StructType(
         [
@@ -342,6 +353,8 @@ class CQCLocationsSchema:
             StructField(CQCL.type, StringType(), True),
         ]
     )
+
+    ons_postcode_directory_schema = IngestONSData.sample_schema
 
 
 @dataclass
@@ -545,21 +558,9 @@ class CQCPIRSchema:
 
 
 @dataclass
-class IngestONSData:
-    sample_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class MergeIndCQCData:
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
     clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
-    ons_postcode_directory_schema = IngestONSData.sample_schema
 
     clean_cqc_location_reduced_schema = StructType(
         [

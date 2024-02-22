@@ -468,6 +468,15 @@ class CQCProviderData:
 
 
 @dataclass
+class IngestONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+
+@dataclass
 class CQCpirData:
     sample_rows_full = [
         (
@@ -874,6 +883,8 @@ class CQCLocationsData:
         ),
     ]
 
+    ons_postcode_directory_rows = IngestONSData.sample_rows
+
 
 @dataclass
 class CleaningUtilsData:
@@ -1084,19 +1095,9 @@ class CleaningUtilsData:
 
 
 @dataclass
-class IngestONSData:
-    sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-
-@dataclass
 class MergeIndCQCData:
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
     clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-    ons_postcode_directory_rows = IngestONSData.sample_rows
 
     clean_cqc_location_rows = [
         (
