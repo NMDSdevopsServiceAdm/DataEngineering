@@ -545,15 +545,6 @@ class CQCPIRSchema:
 
 @dataclass
 class CQCPPIRCleanSchema:
-    full_schema = StructType(
-        [
-            *CQCPIRSchema.sample_schema,
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, StringType(), True),
-            StructField(CQCPIRClean.pir_submission_date_as_date, StringType(), True),
-        ]
-    )
-
     clean_subset_for_grouping_by = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),

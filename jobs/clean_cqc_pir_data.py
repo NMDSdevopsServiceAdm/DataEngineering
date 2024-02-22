@@ -12,7 +12,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedValues as PIRCleanValues,
 )
 
-
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
@@ -65,9 +64,9 @@ def filter_latest_submission_date(df: DataFrame) -> DataFrame:
     """
     For a given cleaned cqc pir DataFrame that contains:
      - location_id (String)
-     - cqc_pir_import_date (Dates as strings)
+     - cqc_pir_import_date (String[Date])
      - care_home (String)
-     - pir_submission_date_as_date (Dates as strings)
+     - pir_submission_date_as_date (String[Date])
     Filters the latest submission date per grouping of location, import date and care home status
 
     Args:
