@@ -558,18 +558,6 @@ class CQCPIRSchema:
 
 
 @dataclass
-class FilterCleanedValuesSchema:
-    sample_schema = StructType(
-        [
-            StructField("year", StringType(), True),
-            StructField("month", StringType(), True),
-            StructField("day", StringType(), True),
-            StructField("import_date", StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class MergeIndCQCData:
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
     clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
