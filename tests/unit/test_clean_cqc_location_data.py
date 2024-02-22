@@ -264,10 +264,11 @@ class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
 class RemoveLocationsWithDuplicatesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+        self.returned_df = job.remove_locations_with_duplicates(self.test_location_df)
+
         self.test_duplicate_loc_df = self.spark.createDataFrame(
             Data.location_rows_with_duplicates, Schemas.small_location_schema
         )
-        self.returned_df = job.remove_locations_with_duplicates(self.test_location_df)
 
     def test_returns_a_dataframe(self):
         self.assertEqual(type(self.returned_df), DataFrame)
@@ -283,7 +284,24 @@ class RemoveLocationsWithDuplicatesTests(CleanCQCLocationDatasetTests):
 
     def test_removes_duplicate_location_id_with_same_import_date(self):
         filtered_df = job.remove_locations_with_duplicates(self.test_duplicate_loc_df)
-        self.assertLess(filtered_df.count(), self.test_duplicate_loc_df.count())
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_location_rows, Schemas.small_location_schema
+        )
+        self.assertEqual(filtered_df.collect(), expected_df.collect())
+
+    def test_does_not_remove_duplicate_location_id_with_different_import_dates(self):
+        locations_with_different_import_dates_df = self.spark.createDataFrame(
+            Data.location_rows_with_different_import_dates,
+            Schemas.small_location_schema,
+        ).orderBy(CQCL.location_id)
+
+        filtered_df = job.remove_locations_with_duplicates(
+            locations_with_different_import_dates_df
+        ).orderBy(CQCL.location_id)
+
+        self.assertEqual(
+            filtered_df.collect(), locations_with_different_import_dates_df.collect()
+        )
 
 
 if __name__ == "__main__":

@@ -770,6 +770,33 @@ class CQCLocationsData:
         ),
     ]
 
+    location_rows_with_different_import_dates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "prov-10",
+            "2021-01-01",
+        ),
+        (
+            "loc-4",
+            "prov-10",
+            "2022-01-01",
+        ),
+    ]
+
+    expected_filtered_location_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            "2020-01-01",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            "2020-01-01",
+        ),
+    ]
+
     join_provider_rows = [
         (
             "prov-1",
