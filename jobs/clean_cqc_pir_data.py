@@ -18,10 +18,6 @@ pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     cqc_pir_df = utils.read_from_parquet(cqc_pir_source)
 
-    cqc_pir_df = utils.remove_already_cleaned_data(
-        cqc_pir_df, cleaned_cqc_pir_destination
-    )
-
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
     )

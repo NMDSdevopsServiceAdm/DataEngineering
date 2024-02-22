@@ -1093,26 +1093,6 @@ class IngestONSData:
 
 
 @dataclass
-class FilterCleanedValuesData:
-    sample_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-    sample_cleaned_rows = [
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-    ]
-
-    expected_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-
-@dataclass
 class MergeIndCQCData:
     clean_cqc_location_rows = CQCLocationsData.sample_rows_full
     clean_cqc_pir_rows = CQCpirData.sample_rows_full

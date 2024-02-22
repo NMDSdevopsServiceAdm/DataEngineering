@@ -555,18 +555,6 @@ class IngestONSData:
 
 
 @dataclass
-class FilterCleanedValuesSchema:
-    sample_schema = StructType(
-        [
-            StructField("year", StringType(), True),
-            StructField("month", StringType(), True),
-            StructField("day", StringType(), True),
-            StructField("import_date", StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class MergeIndCQCData:
     clean_cqc_location_schema = CQCLocationsSchema.full_schema
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
