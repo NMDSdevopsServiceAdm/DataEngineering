@@ -10,6 +10,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.utils import (
     get_spark,
     format_date_fields,
@@ -198,19 +201,53 @@ class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
         self.test_purge_outdated_df = self.spark.createDataFrame(
             Data.repeated_value_rows, Schemas.repeated_value_schema
         )
-        self.df_with_rank__df = self.spark.createDataFrame(
-            Data.ranked_rows, Schemas.rank_schema
-        )
-        self.df_with_lagged_value__df = self.spark.createDataFrame(
-            Data.lagged_value_rows, Schemas.lagged_value_schema
-        )
         self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
             Data.expected_without_repeated_values_rows,
             Schemas.expected_without_repeated_values_schema,
         )
 
-    def test_one(self):
-        pass
+    def test_repeated_values_in_new_column_are_as_expected(self):
+        returned_df = job.create_column_with_repeated_values_removed(
+            self.test_purge_outdated_df,
+            column_to_clean="integer_column",
+        )
+
+        returned_data = returned_df.sort(
+            AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
+        ).collect()
+        expected_data = self.expected_df_without_repeated_values_df.sort(
+            AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
+        ).collect()
+
+        self.assertEqual(
+            returned_data[0],
+            expected_data[0],
+            "First value submitted is not in new column",
+        )
+
+        self.assertEqual(
+            returned_data[1],
+            expected_data[1],
+            "Non-repeated value is not in new column",
+        )
+
+        self.assertEqual(
+            returned_data[2],
+            expected_data[2],
+            "Repeated value is not being entered as null",
+        )
+
+        self.assertEqual(
+            returned_data[6],
+            expected_data[6],
+            "Value which was previously submitted, but is not repeated, is not correct",
+        )
+
+        self.assertEqual(
+            returned_data,
+            expected_data,
+            "Whole dataframe does not match expected dataframe",
+        )
 
 
 if __name__ == "__main__":
