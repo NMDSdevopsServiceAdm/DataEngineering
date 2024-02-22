@@ -38,12 +38,12 @@ def main(source: str, destination: str):
         raw_date_format="dd/MM/yyyy",
     )
 
-    ascwds_workplace_df = cast_to_int(
-        ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
-    )
-
     ascwds_workplace_df = add_purge_outdated_workplaces_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
+    )
+
+    ascwds_workplace_df = cast_to_int(
+        ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
 
     print(f"Exporting as parquet to {destination}")
