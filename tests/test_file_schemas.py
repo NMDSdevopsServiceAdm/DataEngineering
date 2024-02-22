@@ -267,7 +267,7 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    df_with_repeated_value_schema = StructType(
+    repeated_value_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),
@@ -275,7 +275,7 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    df_with_rank_schema = StructType(
+    rank_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),
@@ -284,7 +284,7 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    df_with_lagged_value_schema = StructType(
+    lagged_value_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),
@@ -294,7 +294,7 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    expected_df_without_repeated_values_schema = StructType(
+    expected_without_repeated_values_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField("integer_column", IntegerType(), True),

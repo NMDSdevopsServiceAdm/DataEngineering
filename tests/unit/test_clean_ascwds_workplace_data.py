@@ -192,5 +192,26 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(purge_data_list, expected_purge_list)
 
 
+class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self):
+        super().setUp()
+        self.test_purge_outdated_df = self.spark.createDataFrame(
+            Data.repeated_value_rows, Schemas.repeated_value_schema
+        )
+        self.df_with_rank__df = self.spark.createDataFrame(
+            Data.ranked_rows, Schemas.rank_schema
+        )
+        self.df_with_lagged_value__df = self.spark.createDataFrame(
+            Data.lagged_value_rows, Schemas.lagged_value_schema
+        )
+        self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
+            Data.expected_without_repeated_values_rows,
+            Schemas.expected_without_repeated_values_schema,
+        )
+
+    def test_one(self):
+        pass
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

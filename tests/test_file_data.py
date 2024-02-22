@@ -372,7 +372,7 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
-    df_with_repeated_value_rows = [
+    repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),
         ("1", 2, date(2023, 3, 1)),
         ("1", 2, date(2023, 4, 1)),
@@ -383,7 +383,7 @@ class ASCWDSWorkplaceData:
         ("2", 2, date(2024, 2, 1)),
     ]
 
-    df_with_ranked_rows = [
+    ranked_rows = [
         ("1", 1, date(2023, 2, 1), 1),
         ("1", 2, date(2023, 3, 1), 2),
         ("1", 2, date(2023, 4, 1), 3),
@@ -394,7 +394,7 @@ class ASCWDSWorkplaceData:
         ("2", 2, date(2024, 2, 1), 4),
     ]
 
-    df_with_lagged_value_rows = [
+    lagged_value_rows = [
         ("1", 1, date(2023, 2, 1), 1, None),
         ("1", 2, date(2023, 3, 1), 2, 1),
         ("1", 2, date(2023, 4, 1), 3, 2),
@@ -405,7 +405,7 @@ class ASCWDSWorkplaceData:
         ("2", 2, date(2024, 2, 1), 4, 2),
     ]
 
-    expected_df_without_repeated_values_rows = [
+    expected_without_repeated_values_rows = [
         ("1", 1, date(2023, 2, 1), 1),
         ("1", 2, date(2023, 3, 1), 2),
         ("1", 2, date(2023, 4, 1), None),
