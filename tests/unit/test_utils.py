@@ -24,7 +24,6 @@ from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from tests.test_file_data import CQCPirCleanedData, FilterCleanedValuesData
 from tests.test_file_schemas import (
-    CQCPIRSchema,
     CQCPPIRCleanSchema,
     FilterCleanedValuesSchema,
 )
@@ -33,12 +32,7 @@ from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns,
-    CqcPIRCleanedValues,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
-    CqcProviderCleanedColumns,
-)
-from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
@@ -788,7 +782,7 @@ class UtilsTests(unittest.TestCase):
             schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
         )
         test_grouping_list = [
-            F.col(CqcPirColumns.location_id),
+            F.col(CqcPIRCleanedColumns.location_id),
             F.col(CqcPIRCleanedColumns.care_home),
             F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
         ]
@@ -811,7 +805,7 @@ class UtilsTests(unittest.TestCase):
             schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
         )
         test_grouping_list = [
-            F.col(CqcPirColumns.location_id),
+            F.col(CqcPIRCleanedColumns.location_id),
             F.col(CqcPIRCleanedColumns.care_home),
             F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
         ]
