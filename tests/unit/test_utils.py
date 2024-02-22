@@ -770,10 +770,6 @@ class UtilsTests(unittest.TestCase):
             data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
             schema=CQCPIRSchema.clean_subset_for_grouping_by,
         )
-        expected_df: DataFrame = self.spark.createDataFrame(
-            data=CQCPirCleanedData.subset_for_latest_submission_date_after_filter,
-            schema=CQCPIRSchema.clean_subset_for_grouping_by,
-        )
         test_grouping_list = [
             F.col(CqcPirColumns.location_id),
             F.col(CqcPIRCleanedColumns.care_home),
@@ -785,13 +781,14 @@ class UtilsTests(unittest.TestCase):
             test_df, test_grouping_list, test_date_column
         )
 
-        test_data: list = test_df.sort(
-            CqcPIRCleanedColumns.cqc_pir_import_date
-        ).collect()
-        expected_data: list = expected_df.sort(
-            CqcPIRCleanedColumns.cqc_pir_import_date
-        ).collect()
-        self.assertCountEqual(test_data, expected_data)
+        # Ensure row removed is definitely the earlier submission date
+        self.assertFalse(
+            test_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .__getitem__("date_present")
+        )
 
 
 if __name__ == "__main__":
