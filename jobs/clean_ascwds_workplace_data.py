@@ -1,6 +1,9 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    Window,
+)
 from pyspark.sql.types import IntegerType
 
 import pyspark.sql.functions as F
@@ -113,6 +116,27 @@ def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date
     df_with_latest_update = df_with_latest_update.drop("latest_org_mupddate")
 
     return df_with_latest_update
+
+
+def create_column_with_repeated_values_removed(
+    df: DataFrame, column_to_clean: str
+) -> DataFrame:
+    """
+    ASCWDS repeats data until it is changed. This function creates a new column which converts repeated values to nulls,
+    so we only see newly submitted values once.
+
+    For each workplace, this function iterates over the dataframe in date order and compares the value in the chosen to the
+    previously submitted value. If it is the first submitted value, or if the value differs from the previously submitted value
+    then enter that value into the new column. Otherwise null the value in the new column as it is a repeated value.
+
+    Args:
+        df: The dataframe to use
+        column_to_clean: The name of the column to convert
+
+    Returns:
+        A DataFrame with an addional column with repeated values changed to nulls.
+    """
+    return df
 
 
 if __name__ == "__main__":
