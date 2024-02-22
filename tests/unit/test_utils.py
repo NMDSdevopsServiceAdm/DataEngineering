@@ -817,14 +817,14 @@ class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
                 'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
             )
             .collect()[0]
-            .__getitem__("date_present")
+            .date_present
         )
         self.assertFalse(
             after_df.selectExpr(
                 'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
             )
             .collect()[0]
-            .__getitem__("date_present")
+            .date_present
         )
         # No other removes are removed
         self.assertEqual(after_df.count(), 4)
