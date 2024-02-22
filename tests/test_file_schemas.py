@@ -267,6 +267,42 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    df_with_repeated_value_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+
+    df_with_rank_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField("rank", IntegerType(), True),
+        ]
+    )
+
+    df_with_lagged_value_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField("rank", IntegerType(), True),
+            StructField("previous_integer_column", IntegerType(), True),
+        ]
+    )
+
+    expected_df_without_repeated_values_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class IngestONSData:
