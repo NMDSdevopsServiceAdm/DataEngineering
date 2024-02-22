@@ -26,7 +26,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
-            Data.clean_cqc_location_rows, Schemas.clean_cqc_location_schema
+            Data.clean_cqc_location_rows, Schemas.clean_cqc_location_reduced_schema
         )
         self.test_clean_cqc_pir_df = self.spark.createDataFrame(
             Data.clean_cqc_pir_rows, Schemas.clean_cqc_pir_schema
@@ -38,12 +38,14 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
+    @patch("jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
+        filter_df_to_independent_sector_only: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -62,12 +64,32 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 4)
 
+        filter_df_to_independent_sector_only.assert_called_once_with(
+            self.test_clean_cqc_location_df
+        )
+
         write_to_parquet_patch.assert_called_once_with(
-            self.test_clean_cqc_location_df,
+            ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
+
+    def test_filter_df_to_independent_sector_only_keeps_independent_locations(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.cqc_sector_rows, Schemas.cqc_sector_schema
+        )
+
+        returned_ind_cqc_df = job.filter_df_to_independent_sector_only(test_df)
+        returned_ind_cqc_data = returned_ind_cqc_df.collect()
+
+        expected_ind_cqc_data = self.spark.createDataFrame(
+            Data.expected_cqc_sector_rows, Schemas.cqc_sector_schema
+        ).collect()
+
+        self.assertEqual(returned_ind_cqc_data, expected_ind_cqc_data)
 
 
 if __name__ == "__main__":
