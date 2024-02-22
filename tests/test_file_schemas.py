@@ -275,25 +275,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    rank_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField("establishment_and_date_rank", IntegerType(), True),
-        ]
-    )
-
-    lagged_value_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField("establishment_and_date_rank", IntegerType(), True),
-            StructField("previously_submitted_value", IntegerType(), True),
-        ]
-    )
-
     expected_without_repeated_values_schema = StructType(
         [
             StructField(AWPClean.establishment_id, StringType(), True),
