@@ -118,6 +118,18 @@ class UtilsTests(unittest.TestCase):
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
+        self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+        )
+        self.test_grouping_list = [
+            F.col(CqcPIRCleanedColumns.location_id),
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        self.pir_cleaned_test_date_column = F.col(
+            CqcPIRCleanedColumns.pir_submission_date_as_date
+        )
 
     def tearDown(self):
         try:
@@ -751,23 +763,25 @@ class UtilsTests(unittest.TestCase):
             test_df.sort("import_date").collect(),
         )
 
+
+class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
+    def setup(self) -> None:
+        super(LatestDatefieldForGroupingTests, self).setUp()
+
     def test_latest_datefield_for_grouping_raises_error_for_non_list_of_columns(
         self,
     ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
-        )
         bad_grouping_list = [
             "location_id",
             F.col(CqcPIRCleanedColumns.care_home),
             F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
         ]
-        test_date_column = F.col(CqcPIRCleanedColumns.pir_submission_date_as_date)
 
         with self.assertRaises(TypeError) as context:
             utils.latest_datefield_for_grouping(
-                test_df, bad_grouping_list, test_date_column
+                self.pir_cleaned_test_df,
+                bad_grouping_list,
+                self.pir_cleaned_test_date_column,
             )
 
         self.assertTrue(
@@ -777,20 +791,11 @@ class UtilsTests(unittest.TestCase):
     def test_latest_datefield_for_grouping_raises_error_for_non_column_param(
         self,
     ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
-        )
-        test_grouping_list = [
-            F.col(CqcPIRCleanedColumns.location_id),
-            F.col(CqcPIRCleanedColumns.care_home),
-            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
-        ]
         bad_date_column = CqcPIRCleanedColumns.pir_submission_date_as_date
 
         with self.assertRaises(TypeError) as context:
             utils.latest_datefield_for_grouping(
-                test_df, test_grouping_list, bad_date_column
+                self.pir_cleaned_test_df, self.test_grouping_list, bad_date_column
             )
 
         self.assertTrue(
@@ -800,24 +805,15 @@ class UtilsTests(unittest.TestCase):
     def test_latest_datefield_for_grouping_returns_latest_date_df_correctly(
         self,
     ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
-        )
-        test_grouping_list = [
-            F.col(CqcPIRCleanedColumns.location_id),
-            F.col(CqcPIRCleanedColumns.care_home),
-            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
-        ]
-        test_date_column = F.col(CqcPIRCleanedColumns.pir_submission_date_as_date)
-
         after_df = utils.latest_datefield_for_grouping(
-            test_df, test_grouping_list, test_date_column
+            self.pir_cleaned_test_df,
+            self.test_grouping_list,
+            self.pir_cleaned_test_date_column,
         )
 
         # Ensure row exists before and is removed
         self.assertTrue(
-            test_df.selectExpr(
+            self.pir_cleaned_test_df.selectExpr(
                 'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
             )
             .collect()[0]
