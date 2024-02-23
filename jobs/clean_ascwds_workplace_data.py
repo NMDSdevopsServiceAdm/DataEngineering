@@ -5,8 +5,6 @@ from pyspark.sql import (
     Window,
 )
 from pyspark.sql.types import IntegerType
-
-from pyspark.sql.window import Window
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -50,7 +48,8 @@ def main(source: str, destination: str):
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
 
-<<<<<<< HEAD
+    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
+
     ascwds_workplace_df = create_column_with_repeated_values_removed(
         ascwds_workplace_df,
         AWP.total_staff,
@@ -58,12 +57,6 @@ def main(source: str, destination: str):
     ascwds_workplace_df = create_column_with_repeated_values_removed(
         ascwds_workplace_df,
         AWP.worker_records,
-=======
-    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
-
-    ascwds_workplace_df = add_purge_outdated_workplaces_column(
-        ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
->>>>>>> b8c09939bff31d6c47b8f96cdc006fb878f2f032
     )
 
     print(f"Exporting as parquet to {destination}")
