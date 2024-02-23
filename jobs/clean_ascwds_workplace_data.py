@@ -44,11 +44,11 @@ def main(source: str, destination: str):
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
 
+    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
+
     ascwds_workplace_df = cast_to_int(
         ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
     )
-
-    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
 
     ascwds_workplace_df = create_column_with_repeated_values_removed(
         ascwds_workplace_df,
