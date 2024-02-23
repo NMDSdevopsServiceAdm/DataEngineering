@@ -133,6 +133,20 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     return df
 
 
+def format_date_string(
+    df, new_date_format, date_column_identifier="date", raw_date_format=None
+):
+    date_columns = [column for column in df.columns if date_column_identifier in column]
+
+    for date_column in date_columns:
+        df = df.withColumn(
+            date_column,
+            F.date_format(F.to_date(date_column, raw_date_format), new_date_format),
+        )
+
+    return df
+
+
 def is_csv(filename):
     return filename.endswith(".csv")
 

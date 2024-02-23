@@ -1,5 +1,6 @@
 import unittest
 import shutil
+from unittest.mock import Mock, patch
 
 from pyspark.sql import SparkSession, Row
 
@@ -424,6 +425,13 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
                 LocationApiCols.historic_ratings,
                 LocationApiCols.reports,
             ],
+        )
+
+    def test_get_cqc_care_directory(self):
+        returned_df = job.get_cqc_care_directory(self.TEST_CQC_CARE_DIRECTORY_FILE)
+        self.assertEqual(
+            returned_df.select(CareDirCols.registration_date).dtypes,
+            [(CareDirCols.registration_date, "string")],
         )
 
 
