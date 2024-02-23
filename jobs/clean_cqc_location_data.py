@@ -30,18 +30,21 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
+ONS_FORMATTED_IMPORT_DATE_COL = "ons_postcode_import_date"
+
 
 def main(
     cqc_location_source: str,
     cleaned_cqc_provider_source: str,
+    ons_postcode_directory_source: str,
     cleaned_cqc_location_destintion: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
+    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
-    cqc_location_df = utils.remove_already_cleaned_data(
-        cqc_location_df,
-        cleaned_cqc_location_destintion,
+    ons_postcode_directory_df = cUtils.column_to_date(
+        ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
     )
 
     cqc_location_df = cUtils.column_to_date(
@@ -157,6 +160,7 @@ if __name__ == "__main__":
     (
         cqc_location_source,
         cleaned_cqc_provider_source,
+        ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     ) = utils.collect_arguments(
         (
@@ -166,6 +170,10 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_provider_source",
             "Source s3 directory for cleaned parquet CQC provider dataset",
+        ),
+        (
+            "--ons_postcode_directory_source",
+            "Source s3 directory for parquet ONS postcode directory dataset",
         ),
         (
             "--cleaned_cqc_location_destination",

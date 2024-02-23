@@ -4,11 +4,8 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from unittest.mock import Mock, patch
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.utils import AnalysisException
 from pyspark.shell import spark
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StructField,
@@ -22,10 +19,9 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import CQCPirCleanedData, FilterCleanedValuesData
+from tests.test_file_data import CQCPirCleanedData
 from tests.test_file_schemas import (
     CQCPPIRCleanSchema,
-    FilterCleanedValuesSchema,
 )
 
 from utils import utils
@@ -135,7 +131,7 @@ class UtilsTests(unittest.TestCase):
         try:
             shutil.rmtree(self.tmp_dir)
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-        except OSError as e:
+        except OSError:
             pass  # Ignore dir does not exist
 
     def test_get_s3_objects_list_returns_all_objects(self):
@@ -708,60 +704,6 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_year, "2021")
                 self.assertEqual(row.process_month, "03")
                 self.assertEqual(row.process_day, "05")
-
-    def test_remove_already_cleaned_data_throws_error_if_df_doesnt_have_import_date(
-        self,
-    ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        test_df = test_df.drop("import_date")
-        with self.assertRaises(AnalysisException) as context:
-            utils.remove_already_cleaned_data(test_df, "some destination")
-
-        self.assertTrue(
-            "Input dataframe must have import_date column" in str(context.exception),
-        )
-
-    @patch("utils.utils.read_from_parquet")
-    def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
-        self, read_from_parquet_mock: Mock
-    ):
-        read_from_parquet_mock.return_value = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_cleaned_rows,
-            FilterCleanedValuesSchema.sample_schema,
-        )
-
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
-
-        expected_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.expected_rows,
-            FilterCleanedValuesSchema.sample_schema,
-        )
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            expected_df.sort("import_date").collect(),
-        )
-
-    def test_remove_already_cleaned_data_returns_original_when_destination_doesnt_exist(
-        self,
-    ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        returned_df = utils.remove_already_cleaned_data(test_df, "invalid destination")
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            test_df.sort("import_date").collect(),
-        )
 
 
 class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):

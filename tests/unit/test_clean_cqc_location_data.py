@@ -10,6 +10,7 @@ from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -22,6 +23,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_PROV_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/directory"
+    TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -35,29 +37,37 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.test_provider_df = self.spark.createDataFrame(
             Data.join_provider_rows, Schemas.join_provider_schema
         )
+        self.test_ons_postcode_directory_df = self.spark.createDataFrame(
+            Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
+        )
 
+    @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
-        remove_already_cleaned_data_patch: Mock,
         format_date_fields_mock: Mock,
+        column_to_date_mock: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_provider_df,
+            self.test_ons_postcode_directory_df,
         ]
-        remove_already_cleaned_data_patch.return_value = self.test_clean_cqc_location_df
 
-        job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
+        job.main(
+            self.TEST_LOC_SOURCE,
+            self.TEST_PROV_SOURCE,
+            self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.TEST_DESTINATION,
+        )
 
-        self.assertEqual(remove_already_cleaned_data_patch.call_count, 1)
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
+        self.assertEqual(column_to_date_mock.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

@@ -468,10 +468,25 @@ class CQCProviderData:
 
 
 @dataclass
+class IngestONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", "20200101"),
+        ("Yorkshire & Humber", "York", "52.10101", "20200101"),
+        ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
+    ]
+
+    expected_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", None),
+        ("Yorkshire & Humber", "York", "52.10101", None),
+        ("Yorkshire & Humber", "Hull", "53.10101", None),
+    ]
+
+
+@dataclass
 class CQCpirData:
     sample_rows_full = [
         (
-            "1-10000000001",
+            "1-1000000001",
             "Location 1",
             "Community",
             "2024-01-01",
@@ -489,7 +504,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000002",
+            "1-1000000002",
             "Location 2",
             "Residential",
             "2024-01-01",
@@ -507,7 +522,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000003",
+            "1-1000000003",
             "Location 3",
             "Residential",
             "2024-01-01",
@@ -890,6 +905,8 @@ class CQCLocationsData:
         ),
     ]
 
+    ons_postcode_directory_rows = IngestONSData.sample_rows
+
 
 @dataclass
 class CleaningUtilsData:
@@ -1100,37 +1117,47 @@ class CleaningUtilsData:
 
 
 @dataclass
-class IngestONSData:
-    sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-
-@dataclass
-class FilterCleanedValuesData:
-    sample_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-    sample_cleaned_rows = [
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-    ]
-
-    expected_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-
-@dataclass
 class MergeIndCQCData:
-    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
     clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-    ons_postcode_directory_rows = IngestONSData.sample_rows
+
+    clean_cqc_location_rows = [
+        (
+            "1-000000001",
+            "Independent",
+        ),
+        (
+            "1-000000002",
+            "Local Authority",
+        ),
+        (
+            "1-000000005",
+            "Independent",
+        ),
+        (
+            "1-000000009",
+            "Independent",
+        ),
+    ]
+
+    cqc_sector_rows = [
+        (
+            "loc-1",
+            "Local Authority",
+        ),
+        (
+            "loc-2",
+            None,
+        ),
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]
+
+    expected_cqc_sector_rows = [
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]

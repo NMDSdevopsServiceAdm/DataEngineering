@@ -39,14 +39,12 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
     @patch("jobs.clean_cqc_pir_data.filter_latest_submission_date")
     @patch("jobs.clean_cqc_pir_data.add_care_home_column")
     @patch("utils.cleaning_utils.column_to_date")
-    @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_patch,
         write_to_parquet_patch,
-        remove_already_cleaned_data_patch,
         column_to_date_patch,
         add_care_home_column,
         filter_latest_submission_date_patch,
@@ -54,13 +52,10 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
-        remove_already_cleaned_data_patch.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-        )
         self.assertTrue(column_to_date_patch.call_count, 2)
         add_care_home_column.assert_called_once_with(ANY)
         filter_latest_submission_date_patch.assert_called_once_with(ANY)
+
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
