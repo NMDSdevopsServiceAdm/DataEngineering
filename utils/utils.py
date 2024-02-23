@@ -229,7 +229,7 @@ def collect_arguments(*args):
 
 
 def latest_datefield_for_grouping(
-    df: DataFrame, grouping_column_list: list[Column], date_field_column: Column
+    df: DataFrame, grouping_column_list: list, date_field_column: Column
 ) -> DataFrame:
     """
     For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
