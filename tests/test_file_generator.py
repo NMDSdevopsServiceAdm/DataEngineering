@@ -9,6 +9,7 @@ from pyspark.sql.types import (
     DoubleType,
     TimestampType,
     LongType,
+    DateType,
 )
 import pyspark.sql.functions as F
 
@@ -915,6 +916,61 @@ def generate_prepared_locations_preclean_file_parquet(
         df.write.mode(mode).partitionBy(
             "snapshot_year", "snapshot_month", "snapshot_day"
         ).parquet(output_destination)
+
+    return df
+
+
+def generate_ind_cqc_filled_posts_file_parquet(partitions=["2022", "03", "08"]):
+    spark = utils.get_spark()
+    schema = StructType(
+        [
+            StructField("locationId", StringType(), True),
+            StructField("import_date", StringType(), True),
+            StructField("ons_region", StringType(), True),
+            StructField("numberOfBeds", IntegerType(), True),
+            StructField(
+                "services_offered",
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField("primary_service_type", StringType(), True),
+            StructField("people_directly_employed", IntegerType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
+            StructField("localAuthority", StringType(), True),
+            StructField("year", StringType(), True),
+            StructField("month", StringType(), True),
+            StructField("day", StringType(), True),
+            StructField("carehome", StringType(), True),
+            StructField("cqc_sector", StringType(), True),
+            StructField("rural_urban_indicator", StringType(), True),
+            StructField("job_count_unfiltered_source", StringType(), True),
+            StructField("registrationStatus", StringType(), True),
+            StructField("cqc_location_import_date", DateType(), True),
+        ]
+    )
+
+    # fmt: off
+    rows = [
+        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", "Rural hamlet and isolated dwellings", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Urban city and town", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", "Urban city and town", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", "Urban city and town", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", "Urban city and town", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Deregistered", date(2020, 1, 1)),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, schema=schema)
 
     return df
 

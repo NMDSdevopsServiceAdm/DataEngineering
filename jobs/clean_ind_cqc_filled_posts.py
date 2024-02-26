@@ -5,7 +5,7 @@ import pyspark.sql
 import pyspark.sql.functions as F
 
 from utils import utils
-from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
+from utils.ind_cqc_filled_posts_utils.filter_job_count.filter_job_count import (
     null_job_count_outliers,
 )
 
@@ -16,18 +16,18 @@ COLUMNS_TO_IMPORT = [
     "day",
     "month",
     "year",
-    "local_authority",
-    "ons_region",
-    "rural_urban_indicator AS rui_2011",
-    "services_offered",
-    "carehome",
+    "localAuthority as local_authority",
+    # "ons_region",
+    # "rural_urban_indicator AS rui_2011",
+    # "services_offered",
+    "carehome as care_home",
     "primary_service_type",
     "cqc_sector",
-    "registration_status",
-    "number_of_beds",
-    "people_directly_employed",
-    "job_count_unfiltered_source",
-    "job_count_unfiltered",
+    "registrationStatus as registration_status",
+    "numberOfBeds as number_of_beds",
+    # "people_directly_employed",
+    # "job_count_unfiltered_source",
+    # "job_count_unfiltered",
 ]
 
 
@@ -36,11 +36,11 @@ def main(
     cqc_filled_posts_cleaned_destination: str,
 ) -> pyspark.sql.DataFrame:
 
-    spark = utils.get_spark()
-
     print("Cleaning cqc_filled_posts dataset...")
 
-    locations_df = spark.read.parquet(cqc_filled_posts_source).select(COLUMNS_TO_IMPORT)
+    locations_df = utils.read_from_parquet(cqc_filled_posts_source).selectExpr(
+        *COLUMNS_TO_IMPORT
+    )
 
     locations_df = remove_unwanted_data(locations_df)
 
@@ -57,7 +57,7 @@ def main(
         locations_df,
         cqc_filled_posts_cleaned_destination,
         mode="append",
-        partitionKeys=["run_year", "run_month", "run_day"],
+        partitionKeys=["import_date", "year", "month", "day"],
     )
 
 
