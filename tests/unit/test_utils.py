@@ -753,7 +753,7 @@ class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
             self.pir_cleaned_test_date_column,
         )
 
-        # Ensure row exists before and is removed
+        # Ensure earlier submission date row exists before and is removed
         self.assertTrue(
             self.pir_cleaned_test_df.selectExpr(
                 'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
@@ -768,8 +768,19 @@ class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
             .collect()[0]
             .date_present
         )
-        # No other removes are removed
-        self.assertEqual(after_df.count(), 4)
+        # Ensure different carehome indicator doesn't count as duplicate
+        self.assertTrue(
+            self.pir_cleaned_test_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        self.assertTrue(
+            after_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        # No other rows are removed
+        self.assertEqual(after_df.count(), 5)
 
 
 if __name__ == "__main__":
