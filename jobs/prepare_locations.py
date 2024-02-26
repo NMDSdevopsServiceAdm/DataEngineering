@@ -67,7 +67,7 @@ def main(
         ascwds_workplace_df = complete_ascwds_workplace_df.filter(
             F.col("import_date") == snapshot_date_row["asc_workplace_date"]
         )
-        ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)
+        ascwds_workplace_df = utils.format_import_date(ascwds_workplace_df)  #
         ascwds_workplace_df = utils.format_date_fields(
             ascwds_workplace_df,
             raw_date_format="dd/MM/yyyy",
