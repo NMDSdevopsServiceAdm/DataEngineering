@@ -43,18 +43,18 @@ def main(
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
 
+    cqc_location_df = utils.format_date_fields(
+        cqc_location_df,
+        date_column_identifier=DATE_COLUMN_IDENTIFIER,
+        raw_date_format="yyyy-MM-dd",
+    )
+
     ons_postcode_directory_df = cUtils.column_to_date(
         ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
     )
 
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
-    )
-
-    cqc_location_df = utils.format_date_fields(
-        cqc_location_df,
-        date_column_identifier=DATE_COLUMN_IDENTIFIER,
-        raw_date_format="yyyy-MM-dd",
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)

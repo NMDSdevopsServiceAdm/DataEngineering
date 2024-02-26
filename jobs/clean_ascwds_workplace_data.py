@@ -24,12 +24,6 @@ DATE_COLUMN_IDENTIFIER = "date"
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
 
-    ascwds_workplace_df = cUtils.column_to_date(
-        ascwds_workplace_df,
-        PartitionKeys.import_date,
-        AWPClean.ascwds_workplace_import_date,
-    )
-
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWP.last_logged_in, AWPClean.last_logged_in_date
     )
@@ -38,6 +32,12 @@ def main(source: str, destination: str):
         ascwds_workplace_df,
         date_column_identifier=DATE_COLUMN_IDENTIFIER,
         raw_date_format="dd/MM/yyyy",
+    )
+
+    ascwds_workplace_df = cUtils.column_to_date(
+        ascwds_workplace_df,
+        PartitionKeys.import_date,
+        AWPClean.ascwds_workplace_import_date,
     )
 
     ascwds_workplace_df = add_purge_outdated_workplaces_column(
