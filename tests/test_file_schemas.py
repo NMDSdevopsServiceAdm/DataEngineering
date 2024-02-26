@@ -590,6 +590,30 @@ class CQCPIRSchema:
 
 
 @dataclass
+class CQCPPIRCleanSchema:
+    clean_subset_for_grouping_by = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
+        ]
+    )
+
+
+@dataclass
+class FilterCleanedValuesSchema:
+    sample_schema = StructType(
+        [
+            StructField("year", StringType(), True),
+            StructField("month", StringType(), True),
+            StructField("day", StringType(), True),
+            StructField("import_date", StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class MergeIndCQCData:
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
     clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema

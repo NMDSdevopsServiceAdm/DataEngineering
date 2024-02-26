@@ -1,14 +1,17 @@
 import unittest
-import jobs.clean_cqc_pir_data as job
-
 from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as PIRClean,
 )
-from tests.test_file_schemas import CQCPIRSchema as Schemas
-from tests.test_file_data import CQCpirData as Data
+from tests.test_file_schemas import (
+    CQCPIRSchema as Schemas,
+    CQCPPIRCleanSchema as CleanSchemas,
+)
+from tests.test_file_data import CQCPirCleanedData as CleanedData, CQCpirData as Data
+
+import jobs.clean_cqc_pir_data as job
 
 
 class CleanCQCpirDatasetTests(unittest.TestCase):
@@ -33,6 +36,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.expected_care_home_column_schema,
         )
 
+    @patch("jobs.clean_cqc_pir_data.filter_latest_submission_date")
     @patch("jobs.clean_cqc_pir_data.add_care_home_column")
     @patch("utils.cleaning_utils.column_to_date")
     @patch("utils.utils.write_to_parquet")
@@ -43,21 +47,15 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         write_to_parquet_patch,
         column_to_date_patch,
         add_care_home_column,
+        filter_latest_submission_date_patch,
     ):
-        read_from_parquet_patch.return_value = self.test_cqc_pir_parquet
-        column_to_date_patch.return_value = self.test_cqc_pir_parquet_with_import_date
-
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
-        column_to_date_patch.assert_called_once_with(
-            self.test_cqc_pir_parquet,
-            Keys.import_date,
-            PIRClean.cqc_pir_import_date,
-        )
-        add_care_home_column.assert_called_once_with(
-            self.test_cqc_pir_parquet_with_import_date
-        )
+        self.assertTrue(column_to_date_patch.call_count, 2)
+        add_care_home_column.assert_called_once_with(ANY)
+        filter_latest_submission_date_patch.assert_called_once_with(ANY)
+
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
@@ -82,6 +80,32 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         self.assertCountEqual(expected_data[1], returned_data[1])
         self.assertCountEqual(expected_data[2], returned_data[2])
         self.assertCountEqual(expected_data[3], returned_data[3])
+
+    def test_filter_latest_submission_date_returns_single_row_per_submission_date(self):
+        test_df = self.spark.createDataFrame(
+            CleanedData.subset_for_latest_submission_date_before_filter,
+            CleanSchemas.clean_subset_for_grouping_by,
+        )
+        expected_df = self.spark.createDataFrame(
+            CleanedData.subset_for_latest_submission_date_after_filter_deduplication,
+            CleanSchemas.clean_subset_for_grouping_by,
+        )
+
+        test_df = job.filter_latest_submission_date(test_df)
+
+        returned_data = test_df.sort(PIRClean.cqc_pir_import_date).collect()
+        expected_data = expected_df.sort(PIRClean.cqc_pir_import_date).collect()
+
+        self.assertCountEqual(expected_data[0], returned_data[0])
+        self.assertCountEqual(expected_data[1], returned_data[1])
+        self.assertCountEqual(
+            expected_data[2],
+            returned_data[2],
+            "Row with Carehome indicator different has failed, and should not be removed",
+        )
+        self.assertCountEqual(expected_data[3], returned_data[3])
+
+        self.assertTrue(test_df.count(), expected_df.count())
 
 
 if __name__ == "__main__":

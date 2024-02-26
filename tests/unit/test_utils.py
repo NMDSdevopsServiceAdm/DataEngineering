@@ -5,7 +5,8 @@ import unittest
 from io import BytesIO
 from enum import Enum
 from pyspark.shell import spark
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -18,9 +19,16 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
+from tests.test_file_data import CQCPirCleanedData
+from tests.test_file_schemas import (
+    CQCPPIRCleanSchema,
+)
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcPIRCleanedColumns,
+)
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
@@ -106,12 +114,24 @@ class UtilsTests(unittest.TestCase):
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
+        self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+        )
+        self.test_grouping_list = [
+            F.col(CqcPIRCleanedColumns.location_id),
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        self.pir_cleaned_test_date_column = F.col(
+            CqcPIRCleanedColumns.pir_submission_date_as_date
+        )
 
     def tearDown(self):
         try:
             shutil.rmtree(self.tmp_dir)
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-        except OSError as e:
+        except OSError:
             pass  # Ignore dir does not exist
 
     def test_get_s3_objects_list_returns_all_objects(self):
@@ -684,6 +704,83 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_year, "2021")
                 self.assertEqual(row.process_month, "03")
                 self.assertEqual(row.process_day, "05")
+
+
+class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
+    def setup(self) -> None:
+        super(LatestDatefieldForGroupingTests, self).setUp()
+
+    def test_latest_datefield_for_grouping_raises_error_for_non_list_of_columns(
+        self,
+    ):
+        bad_grouping_list = [
+            "location_id",
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                self.pir_cleaned_test_df,
+                bad_grouping_list,
+                self.pir_cleaned_test_date_column,
+            )
+
+        self.assertTrue(
+            "List items must be of pyspark.sql.Column type" in str(context.exception),
+        )
+
+    def test_latest_datefield_for_grouping_raises_error_for_non_column_param(
+        self,
+    ):
+        bad_date_column = CqcPIRCleanedColumns.pir_submission_date_as_date
+
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                self.pir_cleaned_test_df, self.test_grouping_list, bad_date_column
+            )
+
+        self.assertTrue(
+            "Column must be of pyspark.sql.Column type" in str(context.exception),
+        )
+
+    def test_latest_datefield_for_grouping_returns_latest_date_df_correctly(
+        self,
+    ):
+        after_df = utils.latest_datefield_for_grouping(
+            self.pir_cleaned_test_df,
+            self.test_grouping_list,
+            self.pir_cleaned_test_date_column,
+        )
+
+        # Ensure earlier submission date row exists before and is removed
+        self.assertTrue(
+            self.pir_cleaned_test_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .date_present
+        )
+        self.assertFalse(
+            after_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .date_present
+        )
+        # Ensure different carehome indicator doesn't count as duplicate
+        self.assertTrue(
+            self.pir_cleaned_test_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        self.assertTrue(
+            after_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        # No other rows are removed
+        self.assertEqual(after_df.count(), 5)
 
 
 if __name__ == "__main__":
