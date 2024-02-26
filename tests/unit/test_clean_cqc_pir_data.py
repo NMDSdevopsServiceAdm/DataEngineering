@@ -98,7 +98,12 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
 
         self.assertCountEqual(expected_data[0], returned_data[0])
         self.assertCountEqual(expected_data[1], returned_data[1])
-        self.assertCountEqual(expected_data[2], returned_data[2])
+        self.assertCountEqual(
+            expected_data[2],
+            returned_data[2],
+            "Row with Carehome indicator different has failed, and should not be removed",
+        )
+        self.assertCountEqual(expected_data[3], returned_data[3])
 
         self.assertTrue(test_df.count(), expected_df.count())
 
