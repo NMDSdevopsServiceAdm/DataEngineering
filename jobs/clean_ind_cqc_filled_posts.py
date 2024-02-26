@@ -35,7 +35,6 @@ def main(
     cqc_filled_posts_source: str,
     cqc_filled_posts_cleaned_destination: str,
 ) -> pyspark.sql.DataFrame:
-
     spark = utils.get_spark()
 
     print("Cleaning cqc_filled_posts dataset...")
