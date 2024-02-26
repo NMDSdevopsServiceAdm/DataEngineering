@@ -120,12 +120,12 @@ if __name__ == "__main__":
         cqc_filled_posts_cleaned_destination,
     ) = utils.collect_arguments(
         (
-            "--ind_cqc-filled_posts_source",
-            "Source s3 directory for ind_cqc-filled_posts dataset",
+            "--ind_cqc_filled_posts_source",
+            "Source s3 directory for ind_cqc_filled_posts dataset",
         ),
         (
-            "--ind_cqc-filled_posts_cleaned_destination",
-            "A destination directory for outputting ind_cqc-filled_posts_cleaned",
+            "--ind_cqc_filled_posts_cleaned_destination",
+            "A destination directory for outputting ind_cqc_filled_posts_cleaned",
         ),
     )
 
