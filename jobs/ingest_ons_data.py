@@ -1,6 +1,6 @@
 import sys
 
-from utils import utils, cleaning_utils
+from utils import utils
 
 
 def main(source, destination):
