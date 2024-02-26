@@ -379,7 +379,14 @@ class CQCLocationsSchema:
         ]
     )
 
-    ons_postcode_directory_schema = IngestONSData.sample_schema
+    ons_postcode_directory_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
+            StructField(ONS.import_date, StringType(), True),
+        ]
+    )
 
 
 @dataclass
