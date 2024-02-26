@@ -300,7 +300,6 @@ class IngestONSData:
             StructField(ONS.region, StringType(), True),
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
-            StructField(ONS.import_date, StringType(), True),
         ]
     )
 
