@@ -183,6 +183,7 @@ if __name__ == "__main__":
     main(
         cqc_location_source,
         cleaned_cqc_provider_source,
+        ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     )
 
