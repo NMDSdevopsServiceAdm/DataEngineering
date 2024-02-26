@@ -427,7 +427,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
             ],
         )
 
-    def test_get_cqc_care_directory(self):
+    def test_get_cqc_care_directory_keeps_dates_as_strings(self):
         returned_df = job.get_cqc_care_directory(self.TEST_CQC_CARE_DIRECTORY_FILE)
         self.assertEqual(
             returned_df.select(CareDirCols.registration_date).dtypes,
