@@ -275,6 +275,23 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    repeated_value_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+
+    expected_without_repeated_values_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class IngestONSData:

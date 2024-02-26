@@ -436,6 +436,28 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
+    repeated_value_rows = [
+        ("1", 1, date(2023, 2, 1)),
+        ("1", 2, date(2023, 3, 1)),
+        ("1", 2, date(2023, 4, 1)),
+        ("1", 3, date(2023, 8, 1)),
+        ("2", 3, date(2023, 2, 1)),
+        ("2", 9, date(2023, 4, 1)),
+        ("2", 3, date(2024, 1, 1)),
+        ("2", 3, date(2024, 2, 1)),
+    ]
+
+    expected_without_repeated_values_rows = [
+        ("1", 1, date(2023, 2, 1), 1),
+        ("1", 2, date(2023, 3, 1), 2),
+        ("1", 2, date(2023, 4, 1), None),
+        ("1", 3, date(2023, 8, 1), 3),
+        ("2", 3, date(2023, 2, 1), 3),
+        ("2", 9, date(2023, 4, 1), 9),
+        ("2", 3, date(2024, 1, 1), 3),
+        ("2", 3, date(2024, 2, 1), None),
+    ]
+
 
 @dataclass
 class CQCProviderData:
