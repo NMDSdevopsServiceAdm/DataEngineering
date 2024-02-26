@@ -8,5 +8,5 @@ class GeneralLimits:
 
 @dataclass
 class AscwdsScaleVariableLimits(GeneralLimits):
-    total_staff_lower_limit = super.non_zero_lower_bound
-    worker_records_lower_limit = super.non_zero_lower_bound
+    total_staff_lower_limit = GeneralLimits.non_zero_lower_bound
+    worker_records_lower_limit = GeneralLimits.non_zero_lower_bound
