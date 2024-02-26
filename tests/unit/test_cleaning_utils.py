@@ -183,6 +183,23 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         returned_data = returned_df.sort(AWK.worker_id).collect()
         expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
         self.assertEqual(returned_data, expected_data)
+    
+    def test_apply_categorical_labels_maintains_number_of_partitions(self):
+        worker_df_with_set_partitions = self.test_worker_df.repartition(AWK.worker_id)
+
+        returned_df = job.apply_categorical_labels(
+            worker_df_with_set_partitions,
+            self.spark,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+        )
+
+        expected_df_with_set_partitions = self.expected_df_with_new_columns.repartition(AWK.worker_id)
+
+        expected_partitions = expected_df_with_set_partitions.rdd.getNumPartitions()
+        returned_partitions = returned_df.rdd.getNumPartitions()
+
+        self.assertEqual(expected_partitions, returned_partitions)
 
     def test_replace_labels_replaces_values_in_situe_when_new_column_name_is_null(self):
         returned_df = job.replace_labels(
