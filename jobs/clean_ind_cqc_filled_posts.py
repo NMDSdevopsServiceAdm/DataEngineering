@@ -12,10 +12,10 @@ from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
 
 COLUMNS_TO_IMPORT = [
     "locationid",
-    "snapshot_date",
-    "snapshot_day",
-    "snapshot_month",
-    "snapshot_year",
+    "cqc_location_import_date",
+    "day",
+    "month",
+    "year",
     "local_authority",
     "ons_region",
     "rural_urban_indicator AS rui_2011",
@@ -35,13 +35,12 @@ def main(
     cqc_filled_posts_source: str,
     cqc_filled_posts_cleaned_destination: str,
 ) -> pyspark.sql.DataFrame:
+
     spark = utils.get_spark()
 
     print("Cleaning cqc_filled_posts dataset...")
 
-    locations_df = spark.read.parquet(cqc_filled_posts_source).selectExpr(
-        *COLUMNS_TO_IMPORT
-    )
+    locations_df = spark.read.parquet(cqc_filled_posts_source).select(COLUMNS_TO_IMPORT)
 
     locations_df = remove_unwanted_data(locations_df)
 
