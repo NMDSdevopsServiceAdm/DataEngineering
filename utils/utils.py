@@ -128,7 +128,10 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
+        if "import_date" in date_column:
+            continue
+        else:
+            df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
 
