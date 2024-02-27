@@ -24,7 +24,10 @@ def main(
         cleaned_cqc_location_source, selected_columns=ImportColList.cqc_column_list
     )
 
-    ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
+    ascwds_workplace_df = utils.read_from_parquet(
+        cleaned_ascwds_workplace_source,
+        selected_columns=ImportColList.ascwds_column_list,
+    )
 
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
 
