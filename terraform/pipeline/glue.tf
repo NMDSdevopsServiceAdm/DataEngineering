@@ -240,6 +240,19 @@ module "prepare_locations_cleaned_job" {
   }
 }
 
+module "clean_ind_cqc_filled_posts" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ind_cqc_filled_posts.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+    "--ind_cqc_filled_posts_cleaned_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+  }
+}
+
 module "estimate_job_counts_job" {
   source          = "../modules/glue-job"
   script_name     = "estimate_job_counts.py"

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 import shutil
 import unittest
@@ -478,7 +478,12 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
         self.assertEqual(df.count(), 3)
 
-    def test_read_from_parquet(self):
+    def test_read_from_parquet_imports_all_rows(self):
+        df = utils.read_from_parquet(self.example_parquet_path)
+
+        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_imports_all_columns_when_column_list_is_None(self):
         df = utils.read_from_parquet(self.example_parquet_path)
 
         self.assertCountEqual(
@@ -508,7 +513,26 @@ class UtilsTests(unittest.TestCase):
                 CQCColNames.uprn,
             ],
         )
-        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_only_imports_selected_columns(self):
+        column_list = [
+            CQCColNames.provider_id,
+            CQCColNames.name,
+            CQCColNames.registration_status,
+        ]
+
+        df = utils.read_from_parquet(
+            self.example_parquet_path, selected_columns=column_list
+        )
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.provider_id,
+                CQCColNames.name,
+                CQCColNames.registration_status,
+            ],
+        )
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
@@ -520,7 +544,15 @@ class UtilsTests(unittest.TestCase):
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
         formatted_df = utils.format_date_fields(self.df, raw_date_format="dd/MM/yyyy")
-        self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28")
+        self.assertEqual(type(formatted_df.select("date_col").first()[0]), date)
+        self.assertEqual(formatted_df.select("date_col").first()[0], date(1993, 11, 28))
+
+    def test_format_date_string(self):
+        formatted_df = utils.format_date_string(
+            self.df, "yyyy-MM-dd", "date_col", "dd/MM/yyyy"
+        )
+        self.assertEqual(type(formatted_df.select("date_col").first()[0]), str)
+        self.assertEqual(formatted_df.select("date_col").first()[0], "1993-11-28")
 
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"

@@ -9,6 +9,7 @@ from pyspark.sql.types import (
     DoubleType,
     TimestampType,
     LongType,
+    DateType,
 )
 import pyspark.sql.functions as F
 
@@ -528,16 +529,16 @@ def generate_cqc_care_directory_file(output_destination):
     spark = utils.get_spark()
     # fmt: off
     rows = [
-        ("1-10000000001", date(2020, 12, 1), "Y", "Location 1", "Social Care Org", "7123456789", "*", "", 1, "Region 6", "LA 9", "7 main road", "", "", "", "AB4 5CD", "BD001", "BRAND NAME 1", "1-10000000001", "Provider 1", "", "www.website1.com", "1 ave", "", "", "", "AB1 2CD", "Surname1, First1", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y",),
-        ("1-10000000002", date(2021, 11, 4), "N", "Location 2", "Social Care Org", "7123456789", "Surname1, First1", "www.website.com", 0, "Region 4", "LA 8", "13 main road", "", "", "", "AB7 7CD", "-", "-", "1-10000000002", "Provider 2", "7123456789", "", "2 ave", "", "", "", "AB3 4CD", "Surname2, First2", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "",),
-        ("1-10000000003", date(2022, 10, 7), "Y", "Location 3", "Social Care Org", "7123456789", "Surname1, First1", "", 5, "Region 5", "LA 6", "6 main road", "", "", "", "AB6 3CD", "-", "-", "1-10000000002", "Provider 2", "7123456789", "", "2 ave", "", "", "", "AB3 4CD", "Surname2, First2", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "", "", "", "", "", "Y", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "",),
-        ("1-10000000004", date(2023, 9, 10), "N", "Location 4", "Social Care Org", "7123456789", "Surname2, First2", "www.website.com", 0, "Region 1", "LA 5", "95 main road", "", "", "", "AB8 4CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "", "Y", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "",),
-        ("1-10000000005", date(2024, 8, 13), "Y", "Location 5", "Social Care Org", "7123456789", "Surname3, First3", "", 10, "Region 4", "LA 4", "5 main road", "", "", "", "AB2 2CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "", "", "", "", "Y", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "",),
-        ("1-10000000006", date(2025, 7, 16), "N", "Location 6", "Social Care Org", "7123456789", "Surname4, First4", "www.website.com", 0, "Region 1", "LA 2", "2 main road", "", "", "", "AB7 2CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "", "", "Y", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "",),
-        ("1-10000000007", date(2026, 6, 19), "Y", "Location 7", "Social Care Org", "7123456789", "Surname5, First5", "", 50, "Region 4", "LA 1", "33 main road", "", "", "", "AB3 1CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "", "",),
-        ("1-10000000008", date(2017, 5, 22), "N", "Location 8", "Social Care Org", "", "Surname6, First6", "www.website.com", 0, "Region 6", "LA 8", "90 main road", "", "", "", "AB3 5CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "", "", "", "", "", "", "",),
-        ("1-10000000009", date(2018, 4, 25), "Y", "Location 9", "Social Care Org", "7123456789", "Surname7, First7", "", 100, "Region 4", "LA 10", "61 main road", "", "", "", "AB8 1CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "", "Y", "Y", "Y", "", "", "", "", "", "", "", "",),
-        ("1-10000000010", date(2029, 3, 28), "N", "Location 10", "Social Care Org", "7123456789", "*", "www.website.com", 0, "Region 2", "LA 6", "56 main road", "", "", "", "AB4 4CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "Y", "Y", "", "", "", "", "", "", "", "", "", "",),
+        ("1-10000000001", "01/12/2020", "Y", "Location 1", "Social Care Org", "7123456789", "*", "", 1, "Region 6", "LA 9", "7 main road", "", "", "", "AB4 5CD", "BD001", "BRAND NAME 1", "1-10000000001", "Provider 1", "", "www.website1.com", "1 ave", "", "", "", "AB1 2CD", "Surname1, First1", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y",),
+        ("1-10000000002", "01/11/2021", "N", "Location 2", "Social Care Org", "7123456789", "Surname1, First1", "www.website.com", 0, "Region 4", "LA 8", "13 main road", "", "", "", "AB7 7CD", "-", "-", "1-10000000002", "Provider 2", "7123456789", "", "2 ave", "", "", "", "AB3 4CD", "Surname2, First2", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "",),
+        ("1-10000000003", "07/10/2022", "Y", "Location 3", "Social Care Org", "7123456789", "Surname1, First1", "", 5, "Region 5", "LA 6", "6 main road", "", "", "", "AB6 3CD", "-", "-", "1-10000000002", "Provider 2", "7123456789", "", "2 ave", "", "", "", "AB3 4CD", "Surname2, First2", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "", "", "", "", "", "Y", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "",),
+        ("1-10000000004", "10/09/2023", "N", "Location 4", "Social Care Org", "7123456789", "Surname2, First2", "www.website.com", 0, "Region 1", "LA 5", "95 main road", "", "", "", "AB8 4CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "", "Y", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "",),
+        ("1-10000000005", "13/08/2024", "Y", "Location 5", "Social Care Org", "7123456789", "Surname3, First3", "", 10, "Region 4", "LA 4", "5 main road", "", "", "", "AB2 2CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "Y", "", "", "", "", "Y", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "",),
+        ("1-10000000006", "16/07/2025", "N", "Location 6", "Social Care Org", "7123456789", "Surname4, First4", "www.website.com", 0, "Region 1", "LA 2", "2 main road", "", "", "", "AB7 2CD", "-", "-", "1-10000000003", "Provider 3", "7123456788", "www.website2.com", "3 ave", "", "", "", "AB5 6CD", "*", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "Y", "", "", "Y", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "",),
+        ("1-10000000007", "19/06/2026", "Y", "Location 7", "Social Care Org", "7123456789", "Surname5, First5", "", 50, "Region 4", "LA 1", "33 main road", "", "", "", "AB3 1CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "", "", "", "", "", "",),
+        ("1-10000000008", "22/05/2017", "N", "Location 8", "Social Care Org", "", "Surname6, First6", "www.website.com", 0, "Region 6", "LA 8", "90 main road", "", "", "", "AB3 5CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "", "", "", "", "", "", "",),
+        ("1-10000000009", "25/04/2018", "Y", "Location 9", "Social Care Org", "7123456789", "Surname7, First7", "", 100, "Region 4", "LA 10", "61 main road", "", "", "", "AB8 1CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "", "Y", "Y", "Y", "", "", "", "", "", "", "", "",),
+        ("1-10000000010", "28/03/2029", "N", "Location 10", "Social Care Org", "7123456789", "*", "www.website.com", 0, "Region 2", "LA 6", "56 main road", "", "", "", "AB4 4CD", "BD002", "BRAND NAME 2", "1-10000000004", "Provider 4", "7123456787", "", "4 ave", "", "", "", "AB7 8CD", "Surname4, First4", "", "", "", "", "", "", "", "", "", "Y", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "", "Y", "Y", "", "", "", "", "", "", "", "", "", "",),
     ]
     # fmt: on
 
@@ -915,6 +916,61 @@ def generate_prepared_locations_preclean_file_parquet(
         df.write.mode(mode).partitionBy(
             "snapshot_year", "snapshot_month", "snapshot_day"
         ).parquet(output_destination)
+
+    return df
+
+
+def generate_ind_cqc_filled_posts_file_parquet(partitions=["2022", "03", "08"]):
+    spark = utils.get_spark()
+    schema = StructType(
+        [
+            StructField("locationId", StringType(), True),
+            StructField("import_date", StringType(), True),
+            StructField("ons_region", StringType(), True),
+            StructField("numberOfBeds", IntegerType(), True),
+            StructField(
+                "services_offered",
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField("primary_service_type", StringType(), True),
+            StructField("people_directly_employed", IntegerType(), True),
+            StructField("job_count_unfiltered", DoubleType(), True),
+            StructField("localAuthority", StringType(), True),
+            StructField("year", StringType(), True),
+            StructField("month", StringType(), True),
+            StructField("day", StringType(), True),
+            StructField("carehome", StringType(), True),
+            StructField("cqc_sector", StringType(), True),
+            StructField("rural_urban_indicator", StringType(), True),
+            StructField("job_count_unfiltered_source", StringType(), True),
+            StructField("registrationStatus", StringType(), True),
+            StructField("cqc_location_import_date", DateType(), True),
+        ]
+    )
+
+    # fmt: off
+    rows = [
+        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-348374832", "20220112", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-683746776", "20220101", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Rural hamlet and isolated dwellings", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10478686", "20220101", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", "Rural hamlet and isolated dwellings", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10235302415", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-1060912125", "20220112", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-107095666", "20220301", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-108369587", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10758359583", "20220308", None, 0, ["Mobile doctors service"], "non-residential", 17, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", "Urban city and town", "rule_2", "Registered", date(2020, 1, 1)),
+        ("1-000000001", "20220308", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", "Urban city and town", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-10894414510", "20220308", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", "Urban city and town", "rule_3", "Registered", date(2020, 1, 1)),
+        ("1-108950835", "20220315", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", "Urban city and town", "rule_1", "Registered", date(2020, 1, 1)),
+        ("1-108967195", "20220422", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "Urban city and town", "rule_3", "Deregistered", date(2020, 1, 1)),
+    ]
+    # fmt: on
+
+    df = spark.createDataFrame(rows, schema=schema)
 
     return df
 

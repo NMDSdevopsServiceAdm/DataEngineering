@@ -68,7 +68,6 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
-        ons_postcode_directory_source,
         destination,
     )
 
