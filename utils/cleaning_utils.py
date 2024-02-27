@@ -1,13 +1,8 @@
 from pyspark.sql import (
     DataFrame,
-    SparkSession,
     Window,
 )
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-)
+
 import pyspark.sql.functions as F
 
 key: str = "key"

@@ -1,9 +1,9 @@
 import unittest
-from datetime import date
+
 
 import pyspark.sql.functions as F
 
-from unittest.mock import Mock, patch, ANY
+
 from utils import utils
 
 import utils.cleaning_utils as job
@@ -35,7 +35,6 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         self.replace_labels_df = self.spark.createDataFrame(
             Data.replace_labels_rows, schema=Schemas.replace_labels_schema
         )
-       # self.label_df = self.spark.createDataFrame(Data.gender, Schemas.labels_schema)
         self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
         self.expected_df_with_new_columns = self.spark.createDataFrame(
             Data.expected_rows_with_new_columns,
