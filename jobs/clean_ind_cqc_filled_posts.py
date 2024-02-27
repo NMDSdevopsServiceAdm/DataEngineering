@@ -13,6 +13,7 @@ from utils.ind_cqc_filled_posts_utils.filter_job_count.filter_job_count import (
 COLUMNS_TO_IMPORT = [
     "locationid",
     "cqc_location_import_date",
+    "import_date",
     "day",
     "month",
     "year",
@@ -56,7 +57,7 @@ def main(
         locations_df,
         cqc_filled_posts_cleaned_destination,
         mode="append",
-        partitionKeys=["import_date", "year", "month", "day"],
+        partitionKeys=["run_year", "run_month", "run_day", "import_date"],
     )
 
 
