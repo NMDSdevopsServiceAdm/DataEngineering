@@ -41,25 +41,6 @@ class CleanIndFilledPostsTests(unittest.TestCase):
             partitionKeys=["year", "month", "day", "import_date"],
         )
 
-    def test_remove_unwanted_data(self):
-        columns = [
-            "locationid",
-            "cqc_sector",
-            "registration_status",
-        ]
-        rows = [
-            ("1-000000001", "Local authority", "Registered"),
-            ("1-000000002", "Independent", "Registered"),
-            ("1-000000003", "Independent", "Deregistered"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.remove_unwanted_data(df)
-        self.assertEqual(df.count(), 1)
-
-        df = df.collect()
-        self.assertEqual(df[0]["locationid"], "1-000000002")
-
     def test_replace_zero_beds_with_null(self):
         columns = [
             "locationid",

@@ -57,12 +57,6 @@ def main(
     )
 
 
-def remove_unwanted_data(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
-    df = df.where(F.col("cqc_sector") == "Independent")
-    df = df.where(F.col("registration_status") == "Registered")
-    return df
-
-
 def replace_zero_beds_with_null(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     return df.replace(0, None, "number_of_beds")
 
