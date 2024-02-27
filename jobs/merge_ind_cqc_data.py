@@ -3,12 +3,17 @@ import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-
+import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
 )
-
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     MergeIndCqcColumnsToImport as ImportColList,
@@ -46,6 +51,26 @@ def main(
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
     return df.where(F.col(CQCPClean.cqc_sector) == CQCPValues.independent)
+
+
+def join_ascwds_data_into_merged_df(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    primary_import_date_column: str,
+    secondary_import_date_column: str,
+) -> DataFrame:
+    primary_df_with_secondary_import_date = cUtils.add_aligned_date_column(
+        primary_df,
+        secondary_df,
+        primary_import_date_column,
+        secondary_import_date_column,
+    )
+
+    return primary_df_with_secondary_import_date.join(
+        secondary_df,
+        [secondary_import_date_column, AWPClean.location_id == CQCLClean.location_id],
+        how="left",
+    )
 
 
 if __name__ == "__main__":
