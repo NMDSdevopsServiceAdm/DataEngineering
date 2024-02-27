@@ -1,7 +1,7 @@
 import unittest
 import warnings
 from datetime import date
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
@@ -12,8 +12,8 @@ from utils import utils
 
 
 class CleanIndFilledPostsTests(unittest.TestCase):
-    IND_FILELD_POSTS_DIR = "tests/test_data/tmp/ind_filled_posts/"
-    IND_FILELD_POSTS_CLEANED_DIR = "tests/test_data/tmp/ind_filled_posts_cleaned/"
+    IND_FILELD_POSTS_DIR = "input_dir"
+    IND_FILELD_POSTS_CLEANED_DIR = "output_dir"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -22,41 +22,24 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    @patch("utils.utils.get_s3_sub_folders_for_path")
-    @patch("jobs.clean_ind_cqc_filled_posts.date")
-    def test_main_partitions_data_based_on_todays_date(
+    def test_main(
         self,
-        mock_date,
-        mock_get_s3_folders,
-        mock_read_from_parquet,
-        mock_write_to_parquet: Mock,
+        read_from_parquet_mock,
+        write_to_parquet_mock: Mock,
     ):
-        mock_read_from_parquet.return_value = self.test_df
-        mock_get_s3_folders.return_value = ["1.0.0"]
-        mock_date.today.return_value = date(2022, 6, 29)
-        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
+        read_from_parquet_mock.return_value = self.test_df
 
         job.main(
             self.IND_FILELD_POSTS_DIR,
             self.IND_FILELD_POSTS_CLEANED_DIR,
         )
 
-        cleaned_df: DataFrame = mock_write_to_parquet.call_args[0][0]
-
-        year_partition = cleaned_df.select("run_year")
-
-        self.assertIsNotNone(year_partition)
-        self.assertEqual(year_partition.collect()[0][0], "2022")
-
-        month_partition = cleaned_df.select("run_month")
-
-        self.assertIsNotNone(month_partition)
-        self.assertEqual(month_partition.collect()[0][0], "06")
-
-        day_partition = cleaned_df.select("run_day")
-
-        self.assertIsNotNone(day_partition)
-        self.assertEqual(day_partition.collect()[0][0], "29")
+        write_to_parquet_mock.assert_called_once_with(
+            ANY,
+            self.IND_FILELD_POSTS_CLEANED_DIR,
+            mode=ANY,
+            partitionKeys=["year", "month", "day", "import_date"],
+        )
 
     def test_remove_unwanted_data(self):
         columns = [

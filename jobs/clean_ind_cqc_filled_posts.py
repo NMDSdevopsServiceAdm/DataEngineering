@@ -42,14 +42,10 @@ def main(
         *COLUMNS_TO_IMPORT
     )
 
-    locations_df = remove_unwanted_data(locations_df)
-
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_carehome_number_of_beds(locations_df)
 
     locations_df = null_job_count_outliers(locations_df)
-
-    locations_df = create_partition_keys_based_on_todays_date(locations_df)
 
     print(f"Exporting as parquet to {cqc_filled_posts_cleaned_destination}")
 
@@ -57,7 +53,7 @@ def main(
         locations_df,
         cqc_filled_posts_cleaned_destination,
         mode="append",
-        partitionKeys=["run_year", "run_month", "run_day", "import_date"],
+        partitionKeys=["year", "month", "day", "import_date"],
     )
 
 
@@ -99,14 +95,6 @@ def average_beds_per_location(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFram
 def replace_null_beds_with_average(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     df = df.withColumn("number_of_beds", F.coalesce("number_of_beds", "avg_beds"))
     return df.drop("avg_beds")
-
-
-def create_partition_keys_based_on_todays_date(df):
-    today = date.today()
-    df = df.withColumn("run_year", F.lit(f"{today.year}"))
-    df = df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
-    df = df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
-    return df
 
 
 if __name__ == "__main__":
