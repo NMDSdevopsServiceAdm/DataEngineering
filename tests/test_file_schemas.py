@@ -219,6 +219,9 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
+            StructField(AWK.year, StringType(), True),
+            StructField(AWK.month, StringType(), True),
+            StructField(AWK.day, StringType(), True),
         ]
     )
 
