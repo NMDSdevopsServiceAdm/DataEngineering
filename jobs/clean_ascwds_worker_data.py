@@ -24,6 +24,9 @@ def main(
         AWKClean.import_date,
         AWKClean.establishment_id,
         AWKClean.main_job_role_id,
+        AWKClean.year,
+        AWKClean.month,
+        AWKClean.day,
     )
     ascwds_workplace_cleaned_df = utils.read_from_parquet(
         cleaned_workplace_source
