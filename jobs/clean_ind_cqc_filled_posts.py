@@ -35,7 +35,6 @@ def main(
     cqc_filled_posts_source: str,
     cqc_filled_posts_cleaned_destination: str,
 ) -> pyspark.sql.DataFrame:
-
     print("Cleaning cqc_filled_posts dataset...")
 
     locations_df = utils.read_from_parquet(cqc_filled_posts_source).selectExpr(
