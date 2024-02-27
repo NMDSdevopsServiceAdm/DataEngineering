@@ -52,16 +52,13 @@ def main(
 
 
 def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
-    worker_partitions = worker_df.rdd.getNumPartitions()
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )
 
-    worker_df = worker_df.join(
+    return worker_df.join(
         workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
-    worker_df = worker_df.coalesce(worker_partitions)
-    return worker_df
 
 
 if __name__ == "__main__":
