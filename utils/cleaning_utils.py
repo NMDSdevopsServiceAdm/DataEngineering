@@ -8,6 +8,7 @@ import pyspark.sql.functions as F
 key: str = "key"
 value: str = "value"
 import_date_s3_uri_format = "yyyyMMdd"
+pir_submission_date_uri_format = "dd-MMM-yy"
 
 
 def apply_categorical_labels(

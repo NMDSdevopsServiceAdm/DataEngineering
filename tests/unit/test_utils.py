@@ -1,14 +1,12 @@
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from unittest.mock import Mock, patch
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.utils import AnalysisException
 from pyspark.shell import spark
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -21,11 +19,16 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import FilterCleanedValuesData
-from tests.test_file_schemas import FilterCleanedValuesSchema
+from tests.test_file_data import CQCPirCleanedData
+from tests.test_file_schemas import (
+    CQCPPIRCleanSchema,
+)
 
 from utils import utils
 from tests.test_file_generator import generate_ascwds_workplace_file
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcPIRCleanedColumns,
+)
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
@@ -111,12 +114,24 @@ class UtilsTests(unittest.TestCase):
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
+        self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
+            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
+            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+        )
+        self.test_grouping_list = [
+            F.col(CqcPIRCleanedColumns.location_id),
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
+        self.pir_cleaned_test_date_column = F.col(
+            CqcPIRCleanedColumns.pir_submission_date_as_date
+        )
 
     def tearDown(self):
         try:
             shutil.rmtree(self.tmp_dir)
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
-        except OSError as e:
+        except OSError:
             pass  # Ignore dir does not exist
 
     def test_get_s3_objects_list_returns_all_objects(self):
@@ -463,7 +478,12 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
         self.assertEqual(df.count(), 3)
 
-    def test_read_from_parquet(self):
+    def test_read_from_parquet_imports_all_rows(self):
+        df = utils.read_from_parquet(self.example_parquet_path)
+
+        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_imports_all_columns_when_column_list_is_None(self):
         df = utils.read_from_parquet(self.example_parquet_path)
 
         self.assertCountEqual(
@@ -493,7 +513,26 @@ class UtilsTests(unittest.TestCase):
                 CQCColNames.uprn,
             ],
         )
-        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_only_imports_selected_columns(self):
+        column_list = [
+            CQCColNames.provider_id,
+            CQCColNames.name,
+            CQCColNames.registration_status,
+        ]
+
+        df = utils.read_from_parquet(
+            self.example_parquet_path, selected_columns=column_list
+        )
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.provider_id,
+                CQCColNames.name,
+                CQCColNames.registration_status,
+            ],
+        )
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
@@ -505,7 +544,15 @@ class UtilsTests(unittest.TestCase):
     def test_format_date_fields(self):
         self.assertEqual(self.df.select("date_col").first()[0], "28/11/1993")
         formatted_df = utils.format_date_fields(self.df, raw_date_format="dd/MM/yyyy")
-        self.assertEqual(str(formatted_df.select("date_col").first()[0]), "1993-11-28")
+        self.assertEqual(type(formatted_df.select("date_col").first()[0]), date)
+        self.assertEqual(formatted_df.select("date_col").first()[0], date(1993, 11, 28))
+
+    def test_format_date_string(self):
+        formatted_df = utils.format_date_string(
+            self.df, "yyyy-MM-dd", "date_col", "dd/MM/yyyy"
+        )
+        self.assertEqual(type(formatted_df.select("date_col").first()[0]), str)
+        self.assertEqual(formatted_df.select("date_col").first()[0], "1993-11-28")
 
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
@@ -690,59 +737,82 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_month, "03")
                 self.assertEqual(row.process_day, "05")
 
-    def test_remove_already_cleaned_data_throws_error_if_df_doesnt_have_import_date(
+
+class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
+    def setup(self) -> None:
+        super(LatestDatefieldForGroupingTests, self).setUp()
+
+    def test_latest_datefield_for_grouping_raises_error_for_non_list_of_columns(
         self,
     ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
+        bad_grouping_list = [
+            "location_id",
+            F.col(CqcPIRCleanedColumns.care_home),
+            F.col(CqcPIRCleanedColumns.cqc_pir_import_date),
+        ]
 
-        test_df = test_df.drop("import_date")
-        with self.assertRaises(AnalysisException) as context:
-            utils.remove_already_cleaned_data(test_df, "some destination")
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                self.pir_cleaned_test_df,
+                bad_grouping_list,
+                self.pir_cleaned_test_date_column,
+            )
 
         self.assertTrue(
-            "Input dataframe must have import_date column" in str(context.exception),
+            "List items must be of pyspark.sql.Column type" in str(context.exception),
         )
 
-    @patch("utils.utils.read_from_parquet")
-    def test_remove_already_cleaned_data_filters_dates_older_than_last_clean_data(
-        self, read_from_parquet_mock: Mock
-    ):
-        read_from_parquet_mock.return_value = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_cleaned_rows,
-            FilterCleanedValuesSchema.sample_schema,
-        )
-
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
-        )
-
-        returned_df = utils.remove_already_cleaned_data(test_df, "some destination")
-
-        expected_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.expected_rows,
-            FilterCleanedValuesSchema.sample_schema,
-        )
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            expected_df.sort("import_date").collect(),
-        )
-
-    def test_remove_already_cleaned_data_returns_original_when_destination_doesnt_exist(
+    def test_latest_datefield_for_grouping_raises_error_for_non_column_param(
         self,
     ):
-        test_df: DataFrame = self.spark.createDataFrame(
-            FilterCleanedValuesData.sample_rows, FilterCleanedValuesSchema.sample_schema
+        bad_date_column = CqcPIRCleanedColumns.pir_submission_date_as_date
+
+        with self.assertRaises(TypeError) as context:
+            utils.latest_datefield_for_grouping(
+                self.pir_cleaned_test_df, self.test_grouping_list, bad_date_column
+            )
+
+        self.assertTrue(
+            "Column must be of pyspark.sql.Column type" in str(context.exception),
         )
 
-        returned_df = utils.remove_already_cleaned_data(test_df, "invalid destination")
-
-        self.assertEqual(
-            returned_df.sort("import_date").collect(),
-            test_df.sort("import_date").collect(),
+    def test_latest_datefield_for_grouping_returns_latest_date_df_correctly(
+        self,
+    ):
+        after_df = utils.latest_datefield_for_grouping(
+            self.pir_cleaned_test_df,
+            self.test_grouping_list,
+            self.pir_cleaned_test_date_column,
         )
+
+        # Ensure earlier submission date row exists before and is removed
+        self.assertTrue(
+            self.pir_cleaned_test_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .date_present
+        )
+        self.assertFalse(
+            after_df.selectExpr(
+                'ANY(cqc_pir_submission_date="2023-05-12") as date_present'
+            )
+            .collect()[0]
+            .date_present
+        )
+        # Ensure different carehome indicator doesn't count as duplicate
+        self.assertTrue(
+            self.pir_cleaned_test_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        self.assertTrue(
+            after_df.selectExpr('ANY(carehome="N") as non_care_home')
+            .collect()[0]
+            .non_care_home
+        )
+        # No other rows are removed
+        self.assertEqual(after_df.count(), 5)
 
 
 if __name__ == "__main__":

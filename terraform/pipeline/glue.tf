@@ -73,7 +73,7 @@ module "clean_cqc_pir_data_job" {
 
   job_parameters = {
     "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cleaned_cqc_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
   }
 }
 
@@ -162,10 +162,10 @@ module "prepare_locations_job" {
   glue_version      = "3.0"
   job_parameters = {
     "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
-    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
+    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
     "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
+    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
     "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
   }
 }
@@ -239,6 +239,19 @@ module "prepare_locations_cleaned_job" {
   job_parameters = {
     "--prepared_locations_source"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
     "--prepared_locations_cleaned_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
+  }
+}
+
+module "clean_ind_cqc_filled_posts" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ind_cqc_filled_posts.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+    "--ind_cqc_filled_posts_cleaned_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
   }
 }
 
@@ -400,8 +413,8 @@ module "clean_cqc_provider_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api/"
-    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
+    "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
+    "--cqc_provider_cleaned" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
   }
 }
 
@@ -413,9 +426,10 @@ module "clean_cqc_location_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api/"
-    "--cleaned_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers-api-cleaned/"
-    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
+    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cleaned_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+    "--ons_postcode_directory_source"    = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
 }
 
@@ -427,11 +441,10 @@ module "merge_ind_cqc_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations-api-cleaned/"
-    "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir-cleaned/"
+    "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--ons_postcode_directory_source"   = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode-directory/"
-    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=merged-ind-cqc-data/"
+    "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
   }
 }
 
@@ -445,6 +458,13 @@ module "ascwds_crawler" {
 module "data_engineering_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "data_engineering"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
+module "ind_cqc_filled_posts_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "ind_cqc_filled_posts"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

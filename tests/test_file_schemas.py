@@ -69,6 +69,7 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    MergeIndCqcColumns,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -259,6 +260,14 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    location_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+        ]
+    )
+
     purge_outdated_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
@@ -266,6 +275,34 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.organisation_id, StringType(), True),
             StructField(AWP.master_update_date, DateType(), True),
             StructField(AWP.is_parent, StringType(), True),
+        ]
+    )
+
+    repeated_value_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+
+    expected_without_repeated_values_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class IngestONSData:
+    sample_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
         ]
     )
 
@@ -342,6 +379,15 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
+        ]
+    )
+
+    ons_postcode_directory_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
+            StructField(ONS.import_date, StringType(), True),
         ]
     )
 
@@ -547,12 +593,13 @@ class CQCPIRSchema:
 
 
 @dataclass
-class IngestONSData:
-    sample_schema = StructType(
+class CQCPPIRCleanSchema:
+    clean_subset_for_grouping_by = StructType(
         [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
         ]
     )
 
@@ -571,7 +618,19 @@ class FilterCleanedValuesSchema:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_location_schema = CQCLocationsSchema.full_schema
     clean_cqc_pir_schema = CQCPIRSchema.sample_schema
     clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
-    ons_postcode_directory_schema = IngestONSData.sample_schema
+
+    clean_cqc_location_reduced_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.sector, StringType(), True),
+        ]
+    )
+
+    cqc_sector_schema = StructType(
+        [
+            StructField(MergeIndCqcColumns.location_id, StringType(), True),
+            StructField(MergeIndCqcColumns.sector, StringType(), True),
+        ]
+    )

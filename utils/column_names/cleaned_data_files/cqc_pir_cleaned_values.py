@@ -10,6 +10,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 @dataclass
 class CqcPIRCleanedColumns(CqcPirColumns):
     cqc_pir_import_date: str = "cqc_pir_import_date"
+    pir_submission_date_as_date: str = "cqc_pir_submission_date"
+
     care_home: str = CqcLocationApiColumns.care_home
 
 
@@ -18,3 +20,4 @@ class CqcPIRCleanedValues:
     yes: str = "Y"
     no: str = "N"
     residential: str = "Residential"
+    community: str = "Community"

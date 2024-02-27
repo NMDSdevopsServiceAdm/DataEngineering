@@ -18,13 +18,19 @@ pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     cqc_pir_df = utils.read_from_parquet(cqc_pir_source)
 
-    cqc_pir_df = utils.remove_already_cleaned_data(
-        cqc_pir_df, cleaned_cqc_pir_destination
-    )
-
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
     )
+    cqc_pir_df = cUtils.column_to_date(
+        cqc_pir_df,
+        PIRCleanCols.pir_submission_date,
+        PIRCleanCols.pir_submission_date_as_date,
+        cUtils.pir_submission_date_uri_format,
+    )
+
+    cqc_pir_df = add_care_home_column(cqc_pir_df)
+
+    cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
 
     utils.write_to_parquet(
         cqc_pir_df,
@@ -40,9 +46,51 @@ def add_care_home_column(df: DataFrame) -> DataFrame:
         F.when(
             F.col(PIRCleanCols.pir_type) == PIRCleanValues.residential,
             PIRCleanValues.yes,
-        ).otherwise(F.lit(PIRCleanValues.no)),
+        )
+        .when(
+            F.col(PIRCleanCols.pir_type) == PIRCleanValues.community,
+            PIRCleanValues.no,
+        )
+        .otherwise(None),
     )
     return df
+
+
+def filter_latest_submission_date(df: DataFrame) -> DataFrame:
+    """
+    For a given cleaned cqc pir DataFrame that contains:
+     - location_id (String)
+     - cqc_pir_import_date (String[Date])
+     - care_home (String)
+     - pir_submission_date_as_date (String[Date])
+    Filters the latest submission date per grouping of location, import date and care home status
+
+    Args:
+        df (DataFrame): A cqc pir dataframe that must contain at least the columns above
+
+    Returns:
+        single_row_per_grouping_df (DataFrame): A filtered form of the input df,
+        where there is now only the latest submission date per grouping of the other 3 fields
+    """
+
+    latest_submission_date_per_grouping_df = utils.latest_datefield_for_grouping(
+        df,
+        [
+            F.col(PIRCleanCols.location_id),
+            F.col(PIRCleanCols.cqc_pir_import_date),
+            F.col(PIRCleanCols.care_home),
+        ],
+        F.col(PIRCleanCols.pir_submission_date_as_date),
+    )
+    single_row_per_grouping_df = latest_submission_date_per_grouping_df.dropDuplicates(
+        [
+            PIRCleanCols.location_id,
+            PIRCleanCols.cqc_pir_import_date,
+            PIRCleanCols.care_home,
+            PIRCleanCols.pir_submission_date_as_date,
+        ]
+    )
+    return single_row_per_grouping_df
 
 
 if __name__ == "__main__":

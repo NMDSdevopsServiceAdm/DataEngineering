@@ -2,6 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
+from pyspark.sql.dataframe import DataFrame
 
 import jobs.clean_cqc_location_data as job
 
@@ -10,6 +11,7 @@ from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -22,6 +24,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_PROV_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/directory"
+    TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -35,35 +38,53 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.test_provider_df = self.spark.createDataFrame(
             Data.join_provider_rows, Schemas.join_provider_schema
         )
+        self.test_ons_postcode_directory_df = self.spark.createDataFrame(
+            Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
+        )
 
+
+class MainTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.remove_already_cleaned_data")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
-        remove_already_cleaned_data_patch: Mock,
         format_date_fields_mock: Mock,
+        column_to_date_mock: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_provider_df,
+            self.test_ons_postcode_directory_df,
         ]
-        remove_already_cleaned_data_patch.return_value = self.test_clean_cqc_location_df
 
-        job.main(self.TEST_LOC_SOURCE, self.TEST_PROV_SOURCE, self.TEST_DESTINATION)
+        job.main(
+            self.TEST_LOC_SOURCE,
+            self.TEST_PROV_SOURCE,
+            self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.TEST_DESTINATION,
+        )
 
-        self.assertEqual(remove_already_cleaned_data_patch.call_count, 1)
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
+        self.assertEqual(column_to_date_mock.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
+
+
+class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
         self,
@@ -80,6 +101,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         ).collect()
 
         self.assertEqual(returned_social_care_data, expected_social_care_data)
+
+
+class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_remove_invalid_postcodes(self):
         test_invalid_postcode_df = self.spark.createDataFrame(
@@ -103,6 +129,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             expected_postcode_df.sort(CQCL.location_id).collect(),
         )
 
+
+class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_allocate_primary_service_type(self):
         PRIMARY_SERVICE_TYPE_COLUMN_NAME = "primary_service_type"
 
@@ -125,6 +156,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
         self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
+
+
+class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_join_cqc_provider_data_adds_two_columns(self):
         returned_df = job.join_cqc_provider_data(
@@ -154,6 +190,11 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
 
         self.assertCountEqual(returned_data, expected_data)
+
+
+class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        return super().setUp()
 
     def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(
         self,

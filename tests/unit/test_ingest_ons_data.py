@@ -25,6 +25,9 @@ class IngestONSDataTests(unittest.TestCase):
             "directory/path/some-other-other-data-file.csv",
         ]
         self.partial_csv_content = "Some, csv, content"
+        self.expected_ons_df = self.spark.createDataFrame(
+            Data.expected_rows, Schemas.sample_schema
+        )
 
     @patch("utils.utils.read_partial_csv_content")
     @patch("utils.utils.get_s3_objects_list")
@@ -46,9 +49,12 @@ class IngestONSDataTests(unittest.TestCase):
         self.assertEqual(get_s3_objects_list_patch.call_count, 0)
         self.assertEqual(read_csv_patch.call_count, 1)
         self.assertEqual(read_partial_csv_content_patch.call_count, 1)
-        write_to_parquet_patch.assert_called_once_with(
-            self.test_ons_df,
-            self.TEST_NEW_DESTINATION,
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][0].collect(),
+            self.expected_ons_df.collect(),
+        )
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
 
     @patch("utils.utils.read_partial_csv_content")
@@ -72,7 +78,10 @@ class IngestONSDataTests(unittest.TestCase):
         self.assertEqual(read_csv_patch.call_count, 2)
         self.assertEqual(read_partial_csv_content_patch.call_count, 2)
         self.assertEqual(write_to_parquet_patch.call_count, 2)
-        write_to_parquet_patch.assert_any_call(
-            self.test_ons_df,
-            self.TEST_NEW_DESTINATION,
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][0].collect(),
+            self.expected_ons_df.collect(),
+        )
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )

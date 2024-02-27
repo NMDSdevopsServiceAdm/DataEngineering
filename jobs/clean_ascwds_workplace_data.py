@@ -1,8 +1,10 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    Window,
+)
 from pyspark.sql.types import IntegerType
-
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -22,12 +24,6 @@ DATE_COLUMN_IDENTIFIER = "date"
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
 
-    ascwds_workplace_df = cUtils.column_to_date(
-        ascwds_workplace_df,
-        PartitionKeys.import_date,
-        AWPClean.ascwds_workplace_import_date,
-    )
-
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWP.last_logged_in, AWPClean.last_logged_in_date
     )
@@ -38,12 +34,29 @@ def main(source: str, destination: str):
         raw_date_format="dd/MM/yyyy",
     )
 
-    ascwds_workplace_df = cast_to_int(
-        ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
+    ascwds_workplace_df = cUtils.column_to_date(
+        ascwds_workplace_df,
+        PartitionKeys.import_date,
+        AWPClean.ascwds_workplace_import_date,
     )
 
     ascwds_workplace_df = add_purge_outdated_workplaces_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
+    )
+
+    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
+
+    ascwds_workplace_df = cast_to_int(
+        ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
+    )
+
+    ascwds_workplace_df = create_column_with_repeated_values_removed(
+        ascwds_workplace_df,
+        AWP.total_staff,
+    )
+    ascwds_workplace_df = create_column_with_repeated_values_removed(
+        ascwds_workplace_df,
+        AWP.worker_records,
     )
 
     print(f"Exporting as parquet to {destination}")
@@ -64,6 +77,20 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     for column in column_names:
         df = df.withColumn(column, df[column].cast(IntegerType()))
     return df
+
+
+def remove_locations_with_duplicates(df: DataFrame):
+    loc_id_import_date_window = Window.partitionBy(
+        AWP.location_id, PartitionKeys.import_date
+    )
+
+    df_with_count = df.withColumn(
+        "location_id_count", F.count(AWP.location_id).over(loc_id_import_date_window)
+    )
+
+    df_without_duplicates = df_with_count.filter(F.col("location_id_count") == 1)
+
+    return df_without_duplicates.drop("location_id_count")
 
 
 def add_purge_outdated_workplaces_column(
@@ -113,6 +140,54 @@ def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date
     df_with_latest_update = df_with_latest_update.drop("latest_org_mupddate")
 
     return df_with_latest_update
+
+
+def create_column_with_repeated_values_removed(
+    df: DataFrame,
+    column_to_clean: str,
+    new_column_name: str = None,
+) -> DataFrame:
+    """
+    ASCWDS repeats data until it is changed. This function creates a new column which converts repeated values to nulls,
+    so we only see newly submitted values once.
+
+    For each workplace, this function iterates over the dataframe in date order and compares the current column value to the
+    previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
+    Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
+
+    Args:
+        df: The dataframe to use
+        column_to_clean: The name of the column to convert
+        new_column_name: (optional) If not provided, "_deduplicated" will be appended onto the original column name
+
+    Returns:
+        A DataFrame with an addional column with repeated values changed to nulls.
+    """
+    PREVIOUS_VALUE: str = "previous_value"
+
+    if new_column_name is None:
+        new_column_name = column_to_clean + "_deduplicated"
+
+    w = Window.partitionBy(AWPClean.establishment_id).orderBy(
+        AWPClean.ascwds_workplace_import_date
+    )
+
+    df_with_previously_submitted_value = df.withColumn(
+        PREVIOUS_VALUE, F.lag(column_to_clean).over(w)
+    )
+
+    df_without_repeated_values = df_with_previously_submitted_value.withColumn(
+        new_column_name,
+        F.when(
+            (F.col(PREVIOUS_VALUE).isNull())
+            | (F.col(column_to_clean) != F.col(PREVIOUS_VALUE)),
+            F.col(column_to_clean),
+        ).otherwise(None),
+    )
+
+    df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
+
+    return df_without_repeated_values
 
 
 if __name__ == "__main__":
