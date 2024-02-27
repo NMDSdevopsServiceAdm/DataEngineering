@@ -103,7 +103,7 @@ def replace_null_beds_with_average(df: pyspark.sql.DataFrame) -> pyspark.sql.Dat
 
 def create_partition_keys_based_on_todays_date(df):
     today = date.today()
-    df = df.withColumn("run_year", F.lit(today.year))
+    df = df.withColumn("run_year", F.lit(f"{today.year}"))
     df = df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
     df = df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
     return df

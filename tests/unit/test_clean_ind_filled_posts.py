@@ -7,8 +7,7 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 import jobs.clean_ind_cqc_filled_posts as job
-from tests.test_file_generator import \
-    generate_ind_cqc_filled_posts_file_parquet
+from tests.test_file_generator import generate_ind_cqc_filled_posts_file_parquet
 from utils import utils
 
 
@@ -24,7 +23,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     @patch("utils.utils.get_s3_sub_folders_for_path")
-    @patch("jobs.prepare_locations_cleaned.date")
+    @patch("jobs.clean_ind_cqc_filled_posts.date")
     def test_main_partitions_data_based_on_todays_date(
         self,
         mock_date,
@@ -44,17 +43,17 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
         cleaned_df: DataFrame = mock_write_to_parquet.call_args[0][0]
 
-        year_partition = cleaned_df.select("year")
+        year_partition = cleaned_df.select("run_year")
 
         self.assertIsNotNone(year_partition)
         self.assertEqual(year_partition.collect()[0][0], "2022")
 
-        month_partition = cleaned_df.select("month")
+        month_partition = cleaned_df.select("run_month")
 
         self.assertIsNotNone(month_partition)
         self.assertEqual(month_partition.collect()[0][0], "06")
 
-        day_partition = cleaned_df.select("day")
+        day_partition = cleaned_df.select("run_day")
 
         self.assertIsNotNone(day_partition)
         self.assertEqual(day_partition.collect()[0][0], "29")
