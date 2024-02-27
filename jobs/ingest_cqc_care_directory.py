@@ -1,7 +1,6 @@
 import sys
 import argparse
 
-from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import StringType, IntegerType
 
@@ -33,7 +32,9 @@ def get_cqc_care_directory(source):
     df = utils.read_csv(source)
 
     print("Formatting date fields")
-    df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
+    df = utils.format_date_string(
+        df, "yyyy-MM-dd", date_column_identifier="date", raw_date_format="dd/MM/yyyy"
+    )
 
     df = df.filter(df[CareDirCols.type] == "Social Care Org")
     df = df.withColumnRenamed(
@@ -44,7 +45,7 @@ def get_cqc_care_directory(source):
 
 
 def convert_to_cqc_provider_api_format(df):
-    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+    spark = utils.get_spark()
 
     print("Create CQC provider parquet file")
     provider_df = unique_providerids_with_array_of_their_locationids(df)
@@ -100,7 +101,7 @@ def get_distinct_provider_info(df):
 
 
 def convert_to_cqc_location_api_format(df):
-    spark = SparkSession.builder.appName("test_ingest_cqc_care_directory").getOrCreate()
+    spark = utils.get_spark()
 
     print("Create CQC location parquet file")
     location_df = get_general_location_info(df)
