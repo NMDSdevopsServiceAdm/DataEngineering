@@ -884,17 +884,17 @@ class CleaningUtilsData:
         ("6", "2", None),
     ]
 
-    gender = [
-        ("1", "male"),
-        ("2", "female"),
-    ]
+    gender = {
+        "1": "male",
+        "2": "female",
+    }
 
-    nationality = [
-        ("100", "British"),
-        ("101", "French"),
-        ("102", "Spanish"),
-        ("103", "Portuguese"),
-    ]
+    nationality = {
+        "100": "British",
+        "101": "French",
+        "102": "Spanish",
+        "103": "Portuguese",
+    }
 
     replace_labels_rows = [
         ("1", "1"),
