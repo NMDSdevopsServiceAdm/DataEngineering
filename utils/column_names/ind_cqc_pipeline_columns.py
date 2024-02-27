@@ -6,6 +6,9 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 
 @dataclass
@@ -49,6 +52,17 @@ class MergeIndCqcColumnsToImport:
         PartitionKeys.month,
         PartitionKeys.day,
         PartitionKeys.import_date,
+    ]
+
+    ascwds_column_list = [
+        AWPClean.ascwds_workplace_import_date,
+        AWPClean.location_id,
+        AWPClean.establishment_id,
+        AWPClean.organisation_id,
+        AWPClean.total_staff,
+        AWPClean.total_staff_deduplicated,
+        AWPClean.worker_records,
+        AWPClean.worker_records_deduplicated,
     ]
 
 
