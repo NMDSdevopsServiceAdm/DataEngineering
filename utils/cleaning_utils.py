@@ -33,10 +33,6 @@ def apply_categorical_labels(
     return df
 
 
-
-
-
-
 def set_column_bounds(
     df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
 ):

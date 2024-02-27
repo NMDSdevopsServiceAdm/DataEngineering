@@ -75,9 +75,11 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
 
         self.assertCountEqual(returned_df.columns, self.test_ascwds_worker_df.columns)
         self.assertEqual(expected_rows, returned_rows)
-    
+
     def test_remove_invalid_worker_records_maintains_number_of_partitions(self):
-        worker_df_with_set_partitions = self.test_ascwds_worker_df.repartition(AWK.location_id)
+        worker_df_with_set_partitions = self.test_ascwds_worker_df.repartition(
+            AWK.location_id
+        )
 
         returned_df = job.remove_workers_without_workplaces(
             worker_df_with_set_partitions, self.test_ascwds_workplace_df
@@ -92,7 +94,6 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         returned_partitions = returned_df.rdd.getNumPartitions()
 
         self.assertEqual(expected_partitions, returned_partitions)
-
 
 
 if __name__ == "__main__":

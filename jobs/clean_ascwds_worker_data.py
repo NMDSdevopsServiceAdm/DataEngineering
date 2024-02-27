@@ -19,8 +19,15 @@ from utils.value_labels.ascwds_worker.worker_label_dictionary import (
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
-    ascwds_worker_df = utils.read_from_parquet(worker_source).select(AWKClean.location_id, AWKClean.import_date, AWKClean.establishment_id, AWKClean.main_job_role_id)
-    ascwds_workplace_cleaned_df = utils.read_from_parquet(cleaned_workplace_source).select(AWPClean.import_date, AWPClean.establishment_id)
+    ascwds_worker_df = utils.read_from_parquet(worker_source).select(
+        AWKClean.location_id,
+        AWKClean.import_date,
+        AWKClean.establishment_id,
+        AWKClean.main_job_role_id,
+    )
+    ascwds_workplace_cleaned_df = utils.read_from_parquet(
+        cleaned_workplace_source
+    ).select(AWPClean.import_date, AWPClean.establishment_id)
 
     ascwds_worker_df = remove_workers_without_workplaces(
         ascwds_worker_df, ascwds_workplace_cleaned_df

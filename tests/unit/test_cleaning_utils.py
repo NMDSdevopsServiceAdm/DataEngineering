@@ -173,8 +173,6 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         returned_data = returned_df.sort(AWK.worker_id).collect()
         expected_data = self.expected_df_with_new_columns.sort(AWK.worker_id).collect()
         self.assertEqual(returned_data, expected_data)
-    
-    
 
 
 class TestCleaningUtilsScale(unittest.TestCase):
@@ -346,8 +344,6 @@ class TestCleaningUtilsScale(unittest.TestCase):
         expected_data = expected_df.sort("int").collect()
 
         self.assertEqual(returned_data, expected_data)
-
-
 
 
 class TestCleaningUtilsColumnToDate(unittest.TestCase):
