@@ -53,6 +53,8 @@ def main(
         ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
     )
 
+    current_ons_postcode_directory_df = prepare_ons_data(ons_postcode_directory_df)
+
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
@@ -76,6 +78,28 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def prepare_ons_data(ons_df: DataFrame):
+    STRING_TO_PREPEND = "current_"
+
+    max_import_date = ons_df.agg({"import_date": "max"}).collect()[0][0]
+
+    ons_df = ons_df.filter(F.col("import_date") == max_import_date)
+
+    # COLS_TO_RENAME = ons_df.columns.remove("import_date")
+    COLS_TO_RENAME = ons_df.columns
+
+    new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
+
+    new_df = ons_df
+
+    for i in range(len(COLS_TO_RENAME)):
+        new_df = new_df.withColumnRenamed(COLS_TO_RENAME[i], new_ons_col_names[i])
+
+    new_df.show()
+
+    return new_df
 
 
 def remove_non_social_care_locations(df: DataFrame):

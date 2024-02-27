@@ -261,5 +261,14 @@ class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
             self.assertEqual(warnings_log, [])
 
 
+class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_a(self):
+        job.prepare_ons_data(self.test_ons_postcode_directory_df)
+        self.assertTrue(False)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
