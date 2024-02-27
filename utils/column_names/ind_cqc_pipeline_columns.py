@@ -28,6 +28,31 @@ class MergeIndCqcValues:
 
 
 @dataclass
+class MergeIndCqcColumnsToImport:
+    cqc_column_list = [
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.location_id,
+        CQCLClean.name,
+        CQCLClean.provider_id,
+        CQCLClean.provider_name,
+        CQCLClean.sector,
+        CQCLClean.registration_status,
+        CQCLClean.registration_date,
+        CQCLClean.dormancy,
+        CQCLClean.care_home,
+        CQCLClean.number_of_beds,
+        CQCLClean.regulated_activities,
+        CQCLClean.gac_service_types,
+        CQCLClean.specialisms,
+        CQCLClean.primary_service_type,
+        PartitionKeys.year,
+        PartitionKeys.month,
+        PartitionKeys.day,
+        PartitionKeys.import_date,
+    ]
+
+
+@dataclass
 class PrepareLocationsColumns:
     ascwds_workplace_import_date: str = "ascwds_workplace_import_date"
     care_home: str = "carehome"

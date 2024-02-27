@@ -8,6 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     MergeIndCqcColumns,
     MergeIndCqcValues,
+    MergeIndCqcColumnsToImport as ImportColList,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -19,9 +20,13 @@ def main(
     cleaned_ascwds_workplace_source: str,
     destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cleaned_cqc_location_source)
-    cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
+    cqc_location_df = utils.read_from_parquet(
+        cleaned_cqc_location_source, selected_columns=ImportColList.cqc_column_list
+    )
+
     ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
+
+    cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
 
     ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
 
