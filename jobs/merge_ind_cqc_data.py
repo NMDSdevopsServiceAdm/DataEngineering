@@ -4,10 +4,13 @@ from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+    CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
+)
+
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    MergeIndCqcColumns,
-    MergeIndCqcValues,
     MergeIndCqcColumnsToImport as ImportColList,
 )
 
@@ -42,7 +45,7 @@ def main(
 
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(F.col(MergeIndCqcColumns.sector) == MergeIndCqcValues.independent)
+    return df.where(F.col(CQCPClean.cqc_sector) == CQCPValues.independent)
 
 
 if __name__ == "__main__":

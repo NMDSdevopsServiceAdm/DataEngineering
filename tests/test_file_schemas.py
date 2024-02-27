@@ -69,7 +69,6 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    MergeIndCqcColumns,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -627,7 +626,7 @@ class MergeIndCQCData:
 
     cqc_sector_schema = StructType(
         [
-            StructField(MergeIndCqcColumns.location_id, StringType(), True),
-            StructField(MergeIndCqcColumns.sector, StringType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.sector, StringType(), True),
         ]
     )
