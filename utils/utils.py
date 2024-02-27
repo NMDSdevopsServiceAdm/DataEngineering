@@ -91,16 +91,24 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
 
 
 def read_from_parquet(
-    data_source, optional_columns_to_import=None
+    data_source: str, selected_columns: list[str] = None
 ) -> pyspark.sql.DataFrame:
     """
-    Reads a parquet file from a provided source into a DataFrame.
-    Optional to include a specified list of columns (None will import all columns).
+    Reads data from a parquet file and returns a DataFrame with all/selected columns.
+
+    Args:
+        data_source: Path to the Parquet file.
+        (optional) selected_columns: List of column names to select. Defaults to None (all columns).
     """
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    return spark_session.read.parquet(data_source, columns=optional_columns_to_import)
+    df = spark_session.read.parquet(data_source)
+
+    if selected_columns:
+        df = df.select(selected_columns)
+
+    return df
 
 
 def write_to_parquet(
