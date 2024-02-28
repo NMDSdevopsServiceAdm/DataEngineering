@@ -1,6 +1,7 @@
 import argparse
 import sys
 from dataclasses import dataclass
+from typing import List
 
 import pyspark
 import pyspark.sql.functions as F
@@ -105,7 +106,7 @@ def main(prepared_locations_source, destination=None):
         snapshot_date_col=features_from_prepare_locations.snapshot_date,
     )
 
-    list_for_vectorisation: list[str] = sorted(
+    list_for_vectorisation: List[str] = sorted(
         [
             new_cols_for_features.service_count,
             features_from_prepare_locations.people_directly_employed,

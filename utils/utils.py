@@ -3,6 +3,7 @@ import sys
 import re
 import csv
 import argparse
+from typing import List
 
 from pyspark.sql import SparkSession, DataFrame, Column, Window
 import pyspark.sql.functions as F
@@ -91,7 +92,7 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
 
 
 def read_from_parquet(
-    data_source: str, selected_columns: list[str] = None
+    data_source: str, selected_columns: List[str] = None
 ) -> pyspark.sql.DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
