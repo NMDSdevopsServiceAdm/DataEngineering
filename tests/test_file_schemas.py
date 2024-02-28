@@ -385,6 +385,17 @@ class CQCLocationsSchema:
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
             StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_processed_ons_schema = StructType(
+        [
+            StructField("current_" + ONS.region, StringType(), True),
+            StructField("current_" + ONS.icb, StringType(), True),
+            StructField("current_" + ONS.longitude, StringType(), True),
+            StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
         ]
     )
 

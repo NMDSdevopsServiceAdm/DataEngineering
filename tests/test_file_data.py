@@ -994,9 +994,14 @@ class CQCLocationsData:
     ]
 
     ons_postcode_directory_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101", "20200101"),
-        ("Yorkshire & Humber", "York", "52.10101", "20200101"),
-        ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
+        ("Yorkshire & Humber", "Leeds", "50.10101", "20210101", "LS1 2AB"),
+        ("Yorkshire & Humber", "York", "52.10101", "20210101", "B69 3EG"),
+        ("Yorkshire & Humber", "Hull", "53.10101", "20200101", "PR1 9HL"),
+    ]
+
+    expected_processed_ons_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", "20210101", "LS1 2AB"),
+        ("Yorkshire & Humber", "York", "52.10101", "20210101", "B69 3EG"),
     ]
 
 
