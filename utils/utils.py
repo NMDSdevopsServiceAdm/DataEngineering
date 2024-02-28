@@ -1,5 +1,4 @@
 import os
-import sys
 import re
 import csv
 import argparse
@@ -9,6 +8,7 @@ from pyspark.sql import SparkSession, DataFrame, Column, Window
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
 import pyspark.sql
+from typing import List
 
 import boto3
 
