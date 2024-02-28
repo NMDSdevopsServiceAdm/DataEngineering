@@ -1000,8 +1000,8 @@ class CQCLocationsData:
     ]
 
     expected_processed_ons_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101", "20210101", "LS1 2AB"),
-        ("Yorkshire & Humber", "York", "52.10101", "20210101", "B69 3EG"),
+        ("Yorkshire & Humber", "Leeds", "50.10101", "LS1 2AB"),
+        ("Yorkshire & Humber", "York", "52.10101", "B69 3EG"),
     ]
 
 

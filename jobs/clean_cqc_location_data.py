@@ -88,12 +88,10 @@ def main(
 
 
 def prepare_ons_data(ons_df: DataFrame):
-    STRING_TO_PREPEND = "current_"
-
-    max_import_date = ons_df.agg({ONS.import_date: "max"}).collect()[0][0]
-
+    max_import_date = ons_df.agg(F.max(ONS.import_date)).collect()[0][0]
     ons_df = ons_df.filter(F.col(ONS.import_date) == max_import_date)
 
+    STRING_TO_PREPEND = "current_"
     COLS_TO_RENAME = ons_df.columns
     COLS_TO_RENAME.remove(ONS.import_date)
     COLS_TO_RENAME.remove(ONS.postcode)
@@ -109,9 +107,7 @@ def prepare_ons_data(ons_df: DataFrame):
 
     current_ons_df = current_ons_df.withColumnRenamed(ONS.postcode, CQCL.postcode)
 
-    return current_ons_df.drop(
-        ONS.import_date, "current_" + ONS.ons_postcode_import_date
-    )
+    return current_ons_df.drop(ONS.import_date)
 
 
 def remove_non_social_care_locations(df: DataFrame):

@@ -394,8 +394,7 @@ class CQCLocationsSchema:
             StructField("current_" + ONS.region, StringType(), True),
             StructField("current_" + ONS.icb, StringType(), True),
             StructField("current_" + ONS.longitude, StringType(), True),
-            StructField(ONS.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
+            StructField(CQCL.postcode, StringType(), True),
         ]
     )
 
