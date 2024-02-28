@@ -41,6 +41,13 @@ def main(
 
     ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
 
+    ind_cqc_location_df = join_ascwds_data_into_merged_df(
+        ind_cqc_location_df,
+        ascwds_workplace_df,
+        CQCLClean.cqc_location_import_date,
+        AWPClean.ascwds_workplace_import_date,
+    )
+
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
