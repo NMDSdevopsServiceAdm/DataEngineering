@@ -76,12 +76,9 @@ def join_ascwds_data_into_merged_df(
     import_date_column_to_drop: str = secondary_import_date_column + "_to_drop"
     location_id_column_to_drop: str = AWPClean.location_id + "_to_drop"
 
-    secondary_df = secondary_df.withColumnsRenamed(
-        {
-            secondary_import_date_column: import_date_column_to_drop,
-            AWPClean.location_id: location_id_column_to_drop,
-        }
-    )
+    secondary_df = secondary_df.withColumnRenamed(
+        secondary_import_date_column, import_date_column_to_drop
+    ).withColumnRenamed(AWPClean.location_id, location_id_column_to_drop)
 
     merged_df = primary_df_with_secondary_import_date.join(
         secondary_df,
