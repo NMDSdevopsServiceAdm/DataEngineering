@@ -263,12 +263,16 @@ def latest_datefield_for_grouping(
     For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
     Note that if the provided date_field_column has multiple of the same entries for a grouping_column_list, then this function will return those duplicates.
 
-    Args:
+    :Args:
         df: The DataFrame to be filtered
         grouping_column_list: A list of pyspark.sql.Column variables representing the columns you wish to groupby, i.e. [F.col("column_name")]
         date_field_column: A formatted pyspark.sql.Column of dates
 
-    Raises:
+    :Returns:
+
+        latest_date_df: A dataframe with the latest value date_field_column only per grouping
+
+    :Raises:
         TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
     """
 

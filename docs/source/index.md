@@ -18,12 +18,8 @@ Read through the steps in the {ref}`Setting up` section to get started, and from
    
 walkthrough
 usage
-```
-
-# Main README
-
-```{include} ../../README.md
-:relative-images:
+currentReadme
+sample_docpage
 ```
 
 

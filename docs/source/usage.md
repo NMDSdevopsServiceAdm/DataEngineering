@@ -22,27 +22,29 @@ Check out the code in this file to see the magic.
 ### How it looks to manually type a google format docstring in rst format
 
 ```{eval-rst}
-.. function:: utils.utils.example_remove_already_cleaned_data(df, destination)
+.. function:: utils.utils.example_latest_datefield_for_grouping(df: DataFrame, grouping_column_list: list, date_field_column: Column)
 
-    Removes already cleaned data from an existing dataframe that contains an import_date column
+    For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
+    Note that if the provided date_field_column has multiple of the same entries for a grouping_column_list, then this function will return those duplicates.
 
     :Args:
-        df: A pyspark.sql.DataFrame you are checking
-        destination: The absolute path of the cleaned data source to be checked against
+        df: The DataFrame to be filtered
+        grouping_column_list: A list of pyspark.sql.Column variables representing the columns you wish to groupby, i.e. [F.col("column_name")]
+        date_field_column: A formatted pyspark.sql.Column of dates
 
-    :Returns: Return a filter of a dataframe with the latest data,
-        and if there is no new data then an empty dataframe is returned.
-        If a file read is not possible, or the latest cleaned data import data is None,
-        then the original dataframe supplied is returned.
+    :Returns:
+        latest_date_df: A dataframe with the latest value date_field_column only per grouping
 
-    :Raises: AnalysisException when import_date is not located within the dataframe as a column
+    :Raises: 
+        TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
+
 ```
 
 ### How it looks to automatically render it from source
-
 ```{eval-rst}
-.. autofunction:: utils.utils.remove_already_cleaned_data
+.. autofunction:: utils.utils.latest_datefield_for_grouping
 ```
+
 
 ## Setting a docstring convention.
 ### Resources

@@ -1,6 +1,6 @@
-# DataEngineering
+## DataEngineering
 
-## Welcome to the Skills for Care Data Engineering repository.
+### Welcome to the Skills for Care Data Engineering repository.
 
 This repository contains the following:
 - Terraform infrustructure as code for pipeline deployment on AWS
@@ -15,11 +15,11 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 <br>
 
 
-# Mission Statement
+## Mission Statement
 
 *"INSERT MISSION STATEMENT*
 
-# Building the project
+## Building the project
 
 ### Download the following prerequisite installs:
 Tool | Windows | Mac/Linux
@@ -30,7 +30,7 @@ Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
 Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
 java jdk8 (need to create an oracle account) | https://www.java.com/en/download/ | https://www.java.com/en/download/
 
-## Install Java (MacOS)
+### Install Java (MacOS)
 This project is using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
 ```
 brew update
@@ -38,11 +38,11 @@ brew install adoptopenjdk8
 ```
 
 
-## Clone the project
+### Clone the project
 ```
 git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
 ```
-## Create virtual environment and install dependencies
+### Create virtual environment and install dependencies
 ```
 cd DataEngineering
 pipenv install --dev
@@ -83,7 +83,7 @@ Watch all the tests and auto rerun the tests when there are any changes
 ```
 pytest-watch
 ```
-#### Run specific test within test file
+### Run specific test within test file
 ```
 python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test>
 ```
@@ -99,11 +99,11 @@ For verbose output add `-v` to the end of the command.
 <br>
 <br>
 
-# Infrastructure
+## Infrastructure
 
 So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
 
-## Our Continuous Depoyment Pipeline 
+### Our Continuous Depoyment Pipeline 
 ***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
 
 We utilise [CircleCI](https://circleci.com/docs/?utm_source=google&utm_medium=sem&utm_campaign=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand&utm_term=g_p-circleci_c__linux_20220513&utm_content=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand_keyword-text_eta-circleCI_phrase-&gclid=Cj0KCQjwhLKUBhDiARIsAMaTLnGUFcuTVX-Ux2Asd9rfD9z0kiZiIr69Aj-cSPmQAi7xtr6jkYzFVtwaAkj-EALw_wcB) to automate terraform deployments. <br>
@@ -118,8 +118,8 @@ So make sure you delete your branch after merging into main (this is good practi
 
 <br>
 
-## Continuous Integration
-***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
+### Continuous Integration
+#***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
 
 When you push to a remote git branch, we run some linting checks for Python and Terraform code as a part of the CircleCi workflow (mentioned above).
 If your branch fails either of these checks, you need to run the relevant linter to fix the errors.
@@ -139,7 +139,7 @@ black .
 
 ### Linting Terraform code
 
-Install Terraform following [the instructions below](#installing-terraform).
+#Install Terraform following [the instructions below](#installing-terraform).
 
 Ensure you are at the root of the repository, then run
 ```
@@ -229,7 +229,7 @@ terraform workspace select default
 terraform workspace delete <workspace_name>
 ```
 
-# Jupyter Notebooks
+## Jupyter Notebooks
 
 >The notebook extends the console-based approach to interactive computing in a qualitatively new direction, providing a web-based application suitable for capturing the whole computation process: developing, documenting, and executing code, as well as communicating the results. The Jupyter notebook combines two components:
 >
@@ -241,7 +241,7 @@ terraform workspace delete <workspace_name>
 
 ----
 
-## Spinning up a notebook
+### Spinning up a notebook
 > ❗ **You will need to request access from the team to AWS Console to complete these steps**, if you've not done this already.
 
 We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are the steps required to get this environment running.
@@ -263,6 +263,9 @@ We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are 
     - Navigate to *"Clusters"* from the left navigation column.
     - Select the running cluster
     - Click *"Terminate"*
+
+
+## Other Guidance
 
 ### Installing extra python libraries
 
@@ -289,7 +292,7 @@ aws s3 cp ./install-python-libraries-for-emr.sh s3://aws-emr-resources-344210435
 The libraries will be installed the next time a new cluster is cloned and started.
 
 
-## Notebook costs
+### Notebook costs
 An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
 The notebooks are free, but require a cluster to run on. 
 The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
@@ -298,7 +301,7 @@ The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/
 [aws_cli_docs]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 
-## Connect AWS Athena to Tableau
+### Connect AWS Athena to Tableau
 To visualise the data in Tableau we need to connect AWS Athena to Tableau. 
 
 1. Install JDBC driver on your pc, download from [here] (https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html): version JDBC 4.1 with AWS SDK.
@@ -307,11 +310,11 @@ To visualise the data in Tableau we need to connect AWS Athena to Tableau.
 4. This will open a screen where you need to add credentials into the fields - to get these go to *"F:\ASC-WDS Copy Files\Research & Analysis Team Folders\Analysis Team\c. Ongoing Work\Tanya\Data engineering"* in a file called *"Tableau Athena Access Key"*.
 5. Once connected select 'main-data-engineering-database' from the 'Database' dropdown in Tableau. All of the tables should now appear and are now available to analyse. Other databases can be selected.
 
-## AWS Buckets Versioning 
+### AWS Buckets Versioning 
 
 **Versioning** is a feature in AWS which lets us keep multiple variants of the same object in the same bucket. However, instead of just overriding and/or deleting the older version, S3 allows for the preservation, retrieval and archival of all object. 
 
-### Buckets come in three types:
+#### Buckets come in three types:
 	- Unversioned (default)
 	- Versioning-enabled
 	- Versioning-suspended
@@ -324,11 +327,11 @@ The versioning state applies to all objects that are in or enter the bucket. If 
 
 For more information about versioning see: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
 
-## Activating Versioning on a Bucket
+### Activating Versioning on a Bucket
 
 In AWS you can select a Bucket > click "Properties" > here we see "Bucket Versioning", click edit and make the relevant changes needed. 
 
-## Versioning by default 
+### Versioning by default 
 
 Inside our stack we have a terraforming config file ([s3.tf](https://github.com/NMDSdevopsServiceAdm/DataEngineering/tree/main/terraform/modules/s3-bucket)) which lays out and applies certain formatting when creating buckets. 
 
@@ -338,7 +341,7 @@ The directory path on your machine for this file:
 
 One thing to be aware of is that and bucket with the `sfc-` will have versioning on by default. If you run in to a situation when creating new buckets in the stack be aware that this prefix is applied automatically and correct accordingly.
 
-## Deleting and Restoring Objects
+### Deleting and Restoring Objects
 
 With versioning enabled, the previous versions of that object exist and can be viewed within the bucket by clicking on the `Show Version` slider. With a versioning enabled bucket we can see every version of the object which was previously hidden. You have the ability to download or view the older version, you can also see previous version and objects that have been deleted.
 
@@ -346,9 +349,9 @@ A new item appears in the list of objects; the **Delete Marker**. This gets adde
 
 
 
-## Linking Power BI to AWS
+### Linking Power BI to AWS
 
-### For Power BI
+#### For Power BI
 
 Install 64 bit ODBC driver (need admin rights) https://docs.aws.amazon.com/athena/latest/ug/connect-with-odbc.html
 
@@ -374,7 +377,7 @@ Test - hopefully successful!
 
 Open Power BI, click ‘get data’, search for ODBC, select whatever the name of your datasource is.
 
-### For Tableau
+#### For Tableau
 
 Download Driver: https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
 download JDBC 4.1 for with AWS SDK

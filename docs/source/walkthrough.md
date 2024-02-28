@@ -116,6 +116,62 @@ The theme is more modern than the default, and looks way better. It also allows 
 
 More themes in their [Themes Gallery](https://sphinx-themes.org/)
 
+### Google Docstring support
+For this we need to add the built in extension to the conf.py file as so:
+```
+"sphinx.ext.napoleon",
+```
+This adds support for reading google docstrings of the format as described below, and found on this [link](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#google-vs-numpy)
+
+
+#### [Google vs NumPy](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#google-vs-numpy "Link to this heading")
+
+Napoleon supports two styles of docstrings: [Google](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings) and [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard). The main difference between the two styles is that Google uses indentation to separate sections, whereas NumPy uses underlines.
+
+Google style:
+```
+def func(arg1, arg2):
+    """
+    Summary line.
+
+    Extended description of function.
+
+    Args:
+        arg1 (int): Description of arg1
+        arg2 (str): Description of arg2
+
+    Returns:
+        bool: Description of return value
+
+    """
+    return True
+```
+
+NumPy style:
+
+```
+def func(arg1, arg2):
+    """
+    Summary line.
+
+    Extended description of function.
+
+    Parameters
+    ----------
+    arg1 : int
+        Description of arg1
+    arg2 : str
+        Description of arg2
+
+    Returns
+    -------
+    bool
+        Description of return value
+
+    """
+    return True
+```
+
 ## Automatically generating documentation from code
 
 Starting from [this point in the video](https://youtu.be/qRSb299awB0?feature=shared&t=2996) he starts to discuss this.
@@ -163,9 +219,6 @@ Most of this is build content, so adding this to the .gitignore was enough:
 docs/build
 ```
 
-### Rendering new code / docstring changes
-Sphinx picks up on changes in the documentation when autobuilding, NOT code or docstrings. To force it to update this content, simply make a change on a document page and save it. That will make the autobuilder reconstruct everything rather than just check to see if documentation changed
-
 ### Automodule - potential further research
 There were a few stack overflow articles and sphinx tutorials I came across, such as https://stackoverflow.com/questions/2701998/automatically-document-all-modules-recursively-with-sphinx-autodoc, which mention automatically documenting all modules recursively, to save on manual definition of one function at a time... if that's something we wanted to consider as we build docs. Although I currently feel this would work best if the scripts were already configured to docstring standards and didn't need to be desribed in how they interact.
 
@@ -191,3 +244,18 @@ i.e. It would run 2 tests in the example above:
 my_function(2, 3) == 6
 
 my_function('a', 3) == 'aaa'
+
+### Correcting a Docstring and re-rendering it
+I noticed that making a change to a docstring didn't automatically update it in any auto-doc reference. Take the following example, imagine being contained within an eval-rst colon fence:
+```
+autofunction:: utils.utils.latest_datefield_for_grouping
+```
+
+The main steps I tried that seemed to work, revolved around the followingg steps:
+1. Closing the autobuild server down
+2. Deleting that autofunction entirely, saving the docs 
+3. Re-running autobuild 
+4. THEN put the autofunction back in re-save. 
+5. This seemed to eliminate the cache of the old variant and load the new one, and if not, try closing the browser too and repeating the steps above, then to re-open the browser.
+
+It is a little fiddly with the autodocs!
