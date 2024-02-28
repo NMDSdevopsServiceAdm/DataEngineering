@@ -478,7 +478,12 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c"])
         self.assertEqual(df.count(), 3)
 
-    def test_read_from_parquet(self):
+    def test_read_from_parquet_imports_all_rows(self):
+        df = utils.read_from_parquet(self.example_parquet_path)
+
+        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_imports_all_columns_when_column_list_is_None(self):
         df = utils.read_from_parquet(self.example_parquet_path)
 
         self.assertCountEqual(
@@ -508,7 +513,26 @@ class UtilsTests(unittest.TestCase):
                 CQCColNames.uprn,
             ],
         )
-        self.assertEqual(df.count(), 2270)
+
+    def test_read_from_parquet_only_imports_selected_columns(self):
+        column_list = [
+            CQCColNames.provider_id,
+            CQCColNames.name,
+            CQCColNames.registration_status,
+        ]
+
+        df = utils.read_from_parquet(
+            self.example_parquet_path, selected_columns=column_list
+        )
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.provider_id,
+                CQCColNames.name,
+                CQCColNames.registration_status,
+            ],
+        )
 
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
