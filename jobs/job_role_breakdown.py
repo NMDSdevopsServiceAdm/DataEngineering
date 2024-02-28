@@ -68,7 +68,7 @@ def main(job_estimates_source, worker_source, output_destination=None):
         utils.write_to_parquet(
             master_df,
             output_destination,
-            append=True,
+            mode="append",
             partitionKeys=["run_year", "run_month", "run_day"],
         )
     else:

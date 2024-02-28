@@ -124,7 +124,7 @@ def main(
     utils.write_to_parquet(
         residuals_df,
         residuals_destination,
-        append=True,
+        mode="append",
         partitionKeys=["run_year", "run_month", "run_day"],
     )
 
@@ -148,7 +148,7 @@ def main(
     utils.write_to_parquet(
         average_residuals_df,
         diagnostics_destination,
-        append=True,
+        mode="append",
         partitionKeys=["run_year", "run_month", "run_day"],
     )
 

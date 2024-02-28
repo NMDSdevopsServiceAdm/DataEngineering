@@ -26,7 +26,7 @@ def main(
     utils.write_to_parquet(
         pa_ratio_df,
         destination,
-        append=True,
+        mode="overwrite",
         partitionKeys=[DP.YEAR_AS_INTEGER],
     )
 

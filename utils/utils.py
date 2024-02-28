@@ -3,10 +3,11 @@ import re
 import csv
 import argparse
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame, Column, Window
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
 import pyspark.sql
+from typing import List
 
 import boto3
 
@@ -89,21 +90,31 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
     return output_dir
 
 
-def read_from_parquet(data_source) -> pyspark.sql.DataFrame:
+def read_from_parquet(
+    data_source: str, selected_columns: List[str] = None
+) -> pyspark.sql.DataFrame:
     """
-    Reads a parquet file from a provided source into a DataFrame
+    Reads data from a parquet file and returns a DataFrame with all/selected columns.
+
+    Args:
+        data_source: Path to the Parquet file.
+        (optional) selected_columns: List of column names to select. Defaults to None (all columns).
     """
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    return spark_session.read.parquet(data_source)
+    df = spark_session.read.parquet(data_source)
+
+    if selected_columns:
+        df = df.select(selected_columns)
+
+    return df
 
 
-def write_to_parquet(df, output_dir, append=False, partitionKeys=[]):
-    if append:
-        df.write.mode("append").partitionBy(*partitionKeys).parquet(output_dir)
-    else:
-        df.write.partitionBy(*partitionKeys).parquet(output_dir)
+def write_to_parquet(
+    df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
+):
+    df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
 def read_csv(source, delimiter=","):
@@ -128,7 +139,24 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
     for date_column in date_columns:
-        df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
+        if "import_date" in date_column:
+            continue
+        else:
+            df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
+
+    return df
+
+
+def format_date_string(
+    df, new_date_format, date_column_identifier="date", raw_date_format=None
+):
+    date_columns = [column for column in df.columns if date_column_identifier in column]
+
+    for date_column in date_columns:
+        df = df.withColumn(
+            date_column,
+            F.date_format(F.to_date(date_column, raw_date_format), new_date_format),
+        )
 
     return df
 
@@ -214,57 +242,6 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
     return df
 
 
-def remove_already_cleaned_data(
-    df: pyspark.sql.DataFrame,
-    destination: str,
-) -> pyspark.sql.DataFrame:
-    """
-    Removes already cleaned data from an existing dataframe that contains an import_date column
-
-    Args:
-        df: A pyspark.sql.DataFrame you are checking
-        destination: The absolute path of the cleaned data source to be checked against
-
-    Returns:
-        Return a filter of a dataframe with the latest data,
-        and if there is no new data then an empty dataframe is returned.
-        If a file read is not possible, or the latest cleaned data import data is None,
-        then the original dataframe supplied is returned.
-
-    Raises:
-        AnalysisException: When import_date is not located within the dataframe as a column
-    """
-
-    if "import_date" not in df.columns:
-        raise AnalysisException("Input dataframe must have import_date column")
-
-    try:
-        cleaned_df = read_from_parquet(destination)
-    except pyspark.sql.utils.AnalysisException:
-        return df
-
-    latest_cleaned_df = get_latest_partition(cleaned_df, ("year", "month", "day"))
-
-    latest_cleaned_import_date = latest_cleaned_df.select(
-        F.max(latest_cleaned_df["import_date"])
-    ).first()[0]
-
-    if latest_cleaned_import_date is None:
-        return df
-
-    df_with_cleaned_data_filtered = df.filter(
-        F.col("import_date") > latest_cleaned_import_date
-    )
-
-    amount_of_new_rows = df_with_cleaned_data_filtered.count()
-    ignored_rows = df.count() - amount_of_new_rows
-    print(
-        f"Ignoring {ignored_rows} rows of already cleaned data, {amount_of_new_rows} new rows of data to be cleaned."
-    )
-
-    return df_with_cleaned_data_filtered
-
-
 def collect_arguments(*args):
     parser = argparse.ArgumentParser()
     for arg in args:
@@ -277,3 +254,36 @@ def collect_arguments(*args):
     parsed_args, _ = parser.parse_known_args()
 
     return (vars(parsed_args)[arg[0][2:]] for arg in args)
+
+
+def latest_datefield_for_grouping(
+    df: DataFrame, grouping_column_list: list, date_field_column: Column
+) -> DataFrame:
+    """
+    For a particular column of dates, filter the latest of that date for a select grouping of other columns, returning a full dataset.
+    Note that if the provided date_field_column has multiple of the same entries for a grouping_column_list, then this function will return those duplicates.
+
+    Args:
+        df: The DataFrame to be filtered
+        grouping_column_list: A list of pyspark.sql.Column variables representing the columns you wish to groupby, i.e. [F.col("column_name")]
+        date_field_column: A formatted pyspark.sql.Column of dates
+
+    Raises:
+        TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
+    """
+
+    if isinstance(date_field_column, Column) is False:
+        raise TypeError("Column must be of pyspark.sql.Column type")
+    for column in grouping_column_list:
+        if isinstance(column, Column) is False:
+            raise TypeError("List items must be of pyspark.sql.Column type")
+
+    window = Window.partitionBy(grouping_column_list).orderBy(date_field_column.desc())
+
+    latest_date_df = (
+        df.withColumn("rank", F.rank().over(window))
+        .filter(F.col("rank") == 1)
+        .drop(F.col("rank"))
+    )
+
+    return latest_date_df

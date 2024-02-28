@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import pyspark
 import pyspark.sql.functions as F
+from typing import List
 
 from utils import utils
 from utils.feature_engineering_dictionaries import (
@@ -100,7 +101,7 @@ def main(prepared_locations_source, destination=None):
         snapshot_date_col=features_from_prepare_locations.snapshot_date,
     )
 
-    list_for_vectorisation: list[str] = sorted(
+    list_for_vectorisation: List[str] = sorted(
         [
             new_cols_for_features.service_count,
             features_from_prepare_locations.number_of_beds,
@@ -139,7 +140,7 @@ def main(prepared_locations_source, destination=None):
         utils.write_to_parquet(
             features_df,
             destination,
-            append=True,
+            mode="append",
             partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
         )
     return features_df

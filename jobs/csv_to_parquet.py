@@ -8,7 +8,7 @@ DEFAULT_DELIMITER = ","
 
 def main(source, destination, delimiter):
     df = utils.read_csv(source, delimiter)
-    utils.write_to_parquet(df, destination, False)
+    utils.write_to_parquet(df, destination)
 
 
 def collect_arguments():

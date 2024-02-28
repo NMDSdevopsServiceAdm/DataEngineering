@@ -123,13 +123,20 @@ class CalculatePaRatioData:
 @dataclass
 class ASCWDSWorkerData:
     worker_rows = [
-        ("1-000000001", "100", "1", "20220101"),
-        ("1-000000001", "101", "1", "20220101"),
-        ("1-000000001", "102", "1", "20220101"),
-        ("1-000000001", "103", "1", "20220101"),
-        ("1-000000001", "104", "2", "20220101"),
-        ("1-000000001", "105", "3", "20220101"),
-        ("1-000000002", "106", "1", "20220101"),
+        ("1-000000001", "101", "100", "1", "20200101"),
+        ("1-000000002", "102", "101", "1", "20200101"),
+        ("1-000000003", "103", "102", "1", "20200101"),
+        ("1-000000004", "104", "103", "1", "20190101"),
+        ("1-000000005", "104", "104", "2", "19000101"),
+        ("1-000000006", "invalid", "105", "3", "20200101"),
+        ("1-000000007", "999", "106", "1", "20200101"),
+    ]
+
+    expected_worker_rows = [
+        ("1-000000001", "101", "100", "1", "20200101"),
+        ("1-000000002", "102", "101", "1", "20200101"),
+        ("1-000000003", "103", "102", "1", "20200101"),
+        ("1-000000004", "104", "103", "1", "20190101"),
     ]
 
 
@@ -320,6 +327,137 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
+    small_location_rows = [
+        (
+            "loc-1",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-2",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-3",
+            "2020-01-01",
+            "2",
+        ),
+        (
+            "loc-4",
+            "2021-01-01",
+            "2",
+        ),
+    ]
+
+    location_rows_with_duplicates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "2020-01-01",
+            "10",
+        ),
+        (
+            "loc-4",
+            "2021-01-01",
+            "10",
+        ),
+    ]
+
+    location_rows_with_different_import_dates = [
+        *small_location_rows,
+        (
+            "loc-3",
+            "2021-01-01",
+            "10",
+        ),
+        (
+            "loc-4",
+            "2022-01-01",
+            "10",
+        ),
+    ]
+
+    expected_filtered_location_rows = [
+        (
+            "loc-1",
+            "2020-01-01",
+            "1",
+        ),
+        (
+            "loc-2",
+            "2020-01-01",
+            "1",
+        ),
+    ]
+
+    purge_outdated_data = [
+        (
+            "1-000000001",
+            "20200101",
+            "1",
+            date(2020, 1, 1),
+            0,
+        ),
+        (
+            "1-000000002",
+            "20200101",
+            "2",
+            date(2000, 1, 1),
+            0,
+        ),
+        (
+            "1-000000003",
+            "20200101",
+            "1",
+            date(2018, 1, 1),
+            0,
+        ),
+        (
+            "1-000000004",
+            "20200101",
+            "2",
+            date(2017, 12, 31),
+            0,
+        ),
+        (
+            "1-000000005",
+            "20200101",
+            "1",
+            date(2015, 1, 1),
+            1,
+        ),
+        (
+            "1-000000006",
+            "20200101",
+            "2",
+            date(2013, 1, 1),
+            1,
+        ),
+    ]
+
+    repeated_value_rows = [
+        ("1", 1, date(2023, 2, 1)),
+        ("1", 2, date(2023, 3, 1)),
+        ("1", 2, date(2023, 4, 1)),
+        ("1", 3, date(2023, 8, 1)),
+        ("2", 3, date(2023, 2, 1)),
+        ("2", 9, date(2023, 4, 1)),
+        ("2", 3, date(2024, 1, 1)),
+        ("2", 3, date(2024, 2, 1)),
+    ]
+
+    expected_without_repeated_values_rows = [
+        ("1", 1, date(2023, 2, 1), 1),
+        ("1", 2, date(2023, 3, 1), 2),
+        ("1", 2, date(2023, 4, 1), None),
+        ("1", 3, date(2023, 8, 1), 3),
+        ("2", 3, date(2023, 2, 1), 3),
+        ("2", 9, date(2023, 4, 1), 9),
+        ("2", 3, date(2024, 1, 1), 3),
+        ("2", 3, date(2024, 2, 1), None),
+    ]
+
 
 @dataclass
 class CQCProviderData:
@@ -416,10 +554,25 @@ class CQCProviderData:
 
 
 @dataclass
+class IngestONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+    expected_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+
+@dataclass
 class CQCpirData:
     sample_rows_full = [
         (
-            "1-10000000001",
+            "1-1000000001",
             "Location 1",
             "Community",
             "2024-01-01",
@@ -437,7 +590,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000002",
+            "1-1000000002",
             "Location 2",
             "Residential",
             "2024-01-01",
@@ -455,7 +608,7 @@ class CQCpirData:
             "20230201",
         ),
         (
-            "1-10000000003",
+            "1-1000000003",
             "Location 3",
             "Residential",
             "2024-01-01",
@@ -472,6 +625,37 @@ class CQCpirData:
             "Active",
             "20230201",
         ),
+    ]
+
+    add_care_home_column_rows = [
+        ("loc 1", "Residential"),
+        ("loc 2", "Shared Lives"),
+        ("loc 3", None),
+        ("loc 4", "Community"),
+    ]
+    expected_care_home_column_rows = [
+        ("loc 1", "Residential", "Y"),
+        ("loc 2", "Shared Lives", None),
+        ("loc 3", None, None),
+        ("loc 4", "Community", "N"),
+    ]
+
+
+@dataclass
+class CQCPirCleanedData:
+    subset_for_latest_submission_date_before_filter = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+    ]
+    subset_for_latest_submission_date_after_filter_deduplication = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
     ]
 
 
@@ -735,7 +919,7 @@ class CQCLocationsData:
         ("loc-1", "B69 E3G"),
         ("loc-2", "UB4 0EJ."),
         ("loc-3", "PO20 3BD"),
-        ("loc-4", "HP20 1SN"),
+        ("loc-4", "PR! 9HL"),
         ("loc-5", None),
     ]
 
@@ -743,7 +927,7 @@ class CQCLocationsData:
         ("loc-1", "B69 3EG"),
         ("loc-2", "UB4 0EJ"),
         ("loc-3", "PO20 3BD"),
-        ("loc-4", "HP20 1SN"),
+        ("loc-4", "PR1 9HL"),
         ("loc-5", None),
     ]
 
@@ -807,6 +991,12 @@ class CQCLocationsData:
             "loc-2",
             "Social Care Org",
         ),
+    ]
+
+    ons_postcode_directory_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101", "20200101"),
+        ("Yorkshire & Humber", "York", "52.10101", "20200101"),
+        ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
     ]
 
 
@@ -888,6 +1078,127 @@ class CleaningUtilsData:
         (24, -20.345, "non scale", 24, None),
         (-234, 999.99, "non scale", None, None),
     ]
+    #
+    align_dates_primary_rows = [
+        (date(2020, 1, 1), "loc 1"),
+        (date(2020, 1, 8), "loc 1"),
+        (date(2021, 1, 1), "loc 1"),
+        (date(2021, 1, 1), "loc 2"),
+    ]
+
+    align_dates_secondary_rows = [
+        (date(2018, 1, 1), "loc 1"),
+        (date(2019, 1, 1), "loc 1"),
+        (date(2020, 1, 1), "loc 1"),
+        (date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 8), "loc 1"),
+        (date(2020, 2, 1), "loc 2"),
+    ]
+
+    expected_aligned_dates_rows = [
+        (
+            date(2020, 1, 1),
+            date(2020, 1, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2020, 1, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2020, 2, 1),
+        ),
+    ]
+
+    align_later_dates_secondary_rows = [
+        (date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 8), "loc 1"),
+        (date(2020, 2, 1), "loc 2"),
+    ]
+
+    expected_later_aligned_dates_rows = [
+        (
+            date(2021, 1, 1),
+            date(2020, 2, 1),
+        ),
+    ]
+
+    expected_cross_join_rows = [
+        (
+            date(2020, 1, 1),
+            date(2019, 1, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2019, 1, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2019, 1, 1),
+        ),
+        (
+            date(2020, 1, 1),
+            date(2020, 1, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2020, 1, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2020, 1, 1),
+        ),
+        (
+            date(2020, 1, 1),
+            date(2020, 2, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2020, 2, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2020, 2, 1),
+        ),
+        (
+            date(2020, 1, 1),
+            date(2021, 1, 8),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2021, 1, 8),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2021, 1, 8),
+        ),
+        (
+            date(2020, 1, 1),
+            date(2018, 1, 1),
+        ),
+        (
+            date(2020, 1, 8),
+            date(2018, 1, 1),
+        ),
+        (
+            date(2021, 1, 1),
+            date(2018, 1, 1),
+        ),
+    ]
+
+    expected_merged_rows = [
+        (date(2020, 1, 1), date(2020, 1, 1), "loc 1"),
+        (date(2020, 1, 8), date(2020, 1, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
+    ]
+
+    expected_later_merged_rows = [
+        (date(2020, 1, 1), None, "loc 1"),
+        (date(2020, 1, 8), None, "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 1"),
+        (date(2021, 1, 1), date(2020, 2, 1), "loc 2"),
+    ]
 
     column_to_date_data = [
         ("20230102", date(2023, 1, 2)),
@@ -898,37 +1209,47 @@ class CleaningUtilsData:
 
 
 @dataclass
-class IngestONSData:
-    sample_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101"),
-        ("Yorkshire & Humber", "York", "52.10101"),
-        ("Yorkshire & Humber", "Hull", "53.10101"),
-    ]
-
-
-@dataclass
-class FilterCleanedValuesData:
-    sample_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-    sample_cleaned_rows = [
-        ("2021", "01", "01", "20210101"),
-        ("2021", "06", "01", "20210601"),
-    ]
-
-    expected_rows = [
-        ("2023", "01", "01", "20230101"),
-        ("2021", "06", "06", "20210606"),
-    ]
-
-
-@dataclass
 class MergeIndCQCData:
-    clean_cqc_location_rows = CQCLocationsData.sample_rows_full
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
     clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-    ons_postcode_directory_rows = IngestONSData.sample_rows
+
+    clean_cqc_location_rows = [
+        (
+            "1-000000001",
+            "Independent",
+        ),
+        (
+            "1-000000002",
+            "Local Authority",
+        ),
+        (
+            "1-000000005",
+            "Independent",
+        ),
+        (
+            "1-000000009",
+            "Independent",
+        ),
+    ]
+
+    cqc_sector_rows = [
+        (
+            "loc-1",
+            "Local Authority",
+        ),
+        (
+            "loc-2",
+            None,
+        ),
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]
+
+    expected_cqc_sector_rows = [
+        (
+            "loc-3",
+            "Independent",
+        ),
+    ]

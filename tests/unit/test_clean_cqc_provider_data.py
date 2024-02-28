@@ -85,7 +85,7 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
-            append=True,
+            mode="overwrite",
             partitionKeys=self.partition_keys,
         )
 

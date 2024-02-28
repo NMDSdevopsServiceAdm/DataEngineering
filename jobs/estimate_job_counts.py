@@ -175,7 +175,7 @@ def main(
     utils.write_to_parquet(
         locations_df,
         destination,
-        append=True,
+        mode="append",
         partitionKeys=["run_year", "run_month", "run_day"],
     )
 
@@ -236,7 +236,7 @@ def write_metrics_df(
     utils.write_to_parquet(
         df,
         metrics_destination,
-        append=True,
+        mode="append",
         partitionKeys=["model_name", "model_version"],
     )
 

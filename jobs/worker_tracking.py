@@ -53,7 +53,7 @@ def main(
         utils.write_to_parquet(
             start_worker_df,
             destination,
-            append=True,
+            mode="append",
             partitionKeys=["year", "month", "day", "end_period_import_date"],
         )
     else:

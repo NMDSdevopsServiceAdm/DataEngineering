@@ -1,6 +1,10 @@
 import unittest
-import pyspark.sql.functions as F
+from datetime import date
 
+import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
+
+from unittest.mock import Mock, patch, ANY
 from utils import utils
 
 import utils.cleaning_utils as job
@@ -10,6 +14,12 @@ from tests.test_file_data import CleaningUtilsData as Data
 
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 
 
@@ -281,7 +291,7 @@ class TestCleaningUtilsScale(unittest.TestCase):
     def test_set_column_bounds_float_raises_error_if_lower_limit_is_greater_than_upper(
         self,
     ):
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(ValueError) as context:
             job.set_column_bounds(
                 self.test_scale_df,
                 "float",
@@ -294,6 +304,20 @@ class TestCleaningUtilsScale(unittest.TestCase):
             "Lower limit (100) must be lower than upper limit (1)"
             in str(context.exception),
         )
+
+    def test_set_column_bounds_works_with_only_lower_limit_specified(
+        self,
+    ):
+        returned_df = (
+            job.set_column_bounds(
+                self.test_scale_df,
+                "int",
+                "bound_int",
+                lower_limit=0,
+            ),
+        )
+        self.assertTrue(type(returned_df), DataFrame)
+        self.assertTrue(len(returned_df), 2)
 
     def test_set_column_bounds_int_above_upper_bound_are_set_to_null(self):
         returned_df = job.set_column_bounds(
@@ -378,6 +402,30 @@ class TestCleaningUtilsScale(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
+class TestConvertLabelsToDataframe(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.sample_list = Data.gender
+        self.sample_df = self.spark.createDataFrame(
+            self.sample_list, Schemas.labels_schema
+        )
+
+        self.spark_mock = Mock()
+        self.spark_mock.createDataFrame = self.spark_mock
+
+    def test_convert_labels_to_dataframe_structure(self):
+        output_df = job.convert_labels_to_dataframe(self.sample_list, self.spark)
+
+        self.assertEqual(output_df.schema, self.sample_df.schema)
+        self.assertEqual(output_df.count(), self.sample_df.count())
+        self.assertEqual(output_df.columns, self.sample_df.columns)
+
+    def test_convert_labels_to_dataframe_function_calls(self):
+        job.convert_labels_to_dataframe(self.sample_list, self.spark_mock)
+
+        self.spark_mock.createDataFrame.assert_called_once_with(self.sample_list, ANY)
+
+
 class TestCleaningUtilsColumnToDate(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
@@ -409,3 +457,188 @@ class TestCleaningUtilsColumnToDate(unittest.TestCase):
             .collect(),
             returned_df.select("new_column").collect(),
         )
+
+
+class TestCleaningUtilsAlignDates(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.primary_column = AWPClean.ascwds_workplace_import_date
+        self.secondary_column = CQCLClean.cqc_location_import_date
+        self.primary_df = self.spark.createDataFrame(
+            Data.align_dates_primary_rows, Schemas.align_dates_primary_schema
+        )
+        self.secondary_df = self.spark.createDataFrame(
+            Data.align_dates_secondary_rows, Schemas.align_dates_secondary_schema
+        )
+        self.expected_aligned_dates = self.spark.createDataFrame(
+            Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema
+        )
+        self.expected_cross_join_df = self.spark.createDataFrame(
+            Data.expected_cross_join_rows, Schemas.expected_aligned_dates_schema
+        )
+        self.expected_best_matches = self.spark.createDataFrame(
+            Data.expected_aligned_dates_rows, Schemas.expected_aligned_dates_schema
+        )
+        self.later_secondary_df = self.spark.createDataFrame(
+            Data.align_later_dates_secondary_rows, Schemas.align_dates_secondary_schema
+        )
+        self.expected_later_aligned_dates = self.spark.createDataFrame(
+            Data.expected_later_aligned_dates_rows,
+            Schemas.expected_aligned_dates_schema,
+        )
+        self.merged_dates_df = self.spark.createDataFrame(
+            Data.expected_merged_rows, Schemas.expected_merged_dates_schema
+        )
+        self.later_merged_dates_df = self.spark.createDataFrame(
+            Data.expected_later_merged_rows, Schemas.expected_merged_dates_schema
+        )
+        self.column_order_for_assertion = [
+            self.primary_column,
+            self.secondary_column,
+        ]
+
+    def test_align_import_dates_completes(self):
+        returned_df = job.align_import_dates(
+            self.primary_df,
+            self.secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+
+        self.assertTrue(returned_df)
+
+    def test_align_import_dates_aligns_dates_correctly_when_secondary_data_starts_before_primary(
+        self,
+    ):
+        returned_df = job.align_import_dates(
+            self.primary_df,
+            self.secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = returned_df.sort(self.primary_column).collect()
+        expected_data = self.expected_aligned_dates.sort(self.primary_column).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_align_import_dates_aligns_dates_correctly_when_secondary_data_starts_later_than_primary(
+        self,
+    ):
+        returned_df = job.align_import_dates(
+            self.primary_df,
+            self.later_secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = returned_df.sort(self.primary_column).collect()
+
+        expected_data = self.expected_later_aligned_dates.sort(
+            self.primary_column
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_cross_join_unique_dates_joins_correctly(self):
+        returned_df = job.cross_join_unique_dates(
+            self.primary_df,
+            self.secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = returned_df.sort(
+            self.primary_column, self.secondary_column
+        ).collect()
+        expected_data = self.expected_cross_join_df.sort(
+            self.primary_column, self.secondary_column
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_determine_best_date_matches_selects_best_matches_correctly(self):
+        returned_df = job.determine_best_date_matches(
+            self.expected_cross_join_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = returned_df.sort(
+            self.primary_column, self.secondary_column
+        ).collect()
+        expected_data = self.expected_best_matches.sort(
+            self.primary_column, self.secondary_column
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_add_aligned_date_column_columns_completes(self):
+        returned_df = job.add_aligned_date_column(
+            self.primary_df,
+            self.secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+
+        self.assertTrue(returned_df)
+
+    def test_add_aligned_date_column_joins_secondary_date_correctly(
+        self,
+    ):
+        returned_df = job.add_aligned_date_column(
+            self.primary_df,
+            self.secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = returned_df.sort(self.primary_column).collect()
+        expected_data = (
+            self.merged_dates_df.select(returned_df.columns)
+            .sort(self.primary_column)
+            .collect()
+        )
+        self.assertEqual(returned_data, expected_data)
+
+    def test_add_aligned_date_column_joins_correctly_when_secondary_data_start_later_than_primary(
+        self,
+    ):
+        returned_df = job.add_aligned_date_column(
+            self.primary_df,
+            self.later_secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_data = (
+            returned_df.select(self.column_order_for_assertion)
+            .sort(self.primary_column)
+            .collect()
+        )
+        expected_data = (
+            self.later_merged_dates_df.select(self.column_order_for_assertion)
+            .sort(self.primary_column)
+            .collect()
+        )
+        self.assertEqual(returned_data, expected_data)
+
+    def test_add_aligned_date_column_returns_the_correct_number_of_rows(
+        self,
+    ):
+        returned_df = job.add_aligned_date_column(
+            self.primary_df,
+            self.later_secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_rows = returned_df.count()
+
+        expected_rows = self.primary_df.count()
+
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_add_aligned_date_column_returns_the_correct_number_of_columns(
+        self,
+    ):
+        returned_df = job.add_aligned_date_column(
+            self.primary_df,
+            self.later_secondary_df,
+            self.primary_column,
+            self.secondary_column,
+        )
+        returned_columns = len(returned_df.columns)
+
+        expected_columns = len(self.later_merged_dates_df.columns)
+
+        self.assertEqual(returned_columns, expected_columns)
