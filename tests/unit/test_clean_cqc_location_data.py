@@ -3,6 +3,8 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
+from dataclasses import asdict
+
 
 import jobs.clean_cqc_location_data as job
 
@@ -17,6 +19,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLCleaned,
 )
 
 
@@ -80,6 +85,11 @@ class MainTests(CleanCQCLocationDatasetTests):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
+
+        final_df: DataFrame = write_to_parquet_patch.call_args[0][0]
+        expected_cols = list(asdict(CQCLCleaned()).values())
+        for col in final_df.columns:
+            self.assertIn(col, expected_cols)
 
 
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
