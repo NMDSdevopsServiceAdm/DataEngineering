@@ -62,6 +62,10 @@ def main(
 
 
 def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
+    workplace_df = workplace_df.select(
+        [AWPClean.import_date, AWPClean.establishment_id]
+    )
+
     return worker_df.join(
         workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
