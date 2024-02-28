@@ -19,16 +19,10 @@ def apply_categorical_labels(
 ) -> DataFrame:
     for column_name in column_names:
         labels_dict = labels[column_name]
-        print(labels_dict)
-        print(column_name)
         if add_as_new_column == True:
             new_column_name = column_name + "_labels"
-            print(new_column_name)
-            df.show()
             df = df.withColumn(new_column_name, F.col(column_name))
-            df.show()
             df = df.replace(labels_dict, subset=new_column_name)
-            df.show()
         elif add_as_new_column == False:
             df = df.replace(labels_dict, subset=column_name)
     return df
