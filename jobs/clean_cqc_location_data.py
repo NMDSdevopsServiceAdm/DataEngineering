@@ -76,6 +76,10 @@ def main(
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
+    cqc_location_df = cqc_location_df.withColumn(
+        CQCL.postcode, F.trim(F.col(CQCL.postcode))
+    )
+
     cqc_location_df = join_current_ons_postcode_data(
         cqc_location_df, current_ons_postcode_directory_df
     )
