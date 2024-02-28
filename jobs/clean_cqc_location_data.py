@@ -44,7 +44,17 @@ def main(
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
-    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
+    ons_postcode_directory_df = utils.read_from_parquet(
+        ons_postcode_directory_source,
+        selected_columns=[
+            ONS.import_date,
+            ONS.cssr,
+            ONS.region,
+            ONS.icb,
+            ONS.rural_urban_indicator_2011,
+            ONS.postcode,
+        ],
+    )
 
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
