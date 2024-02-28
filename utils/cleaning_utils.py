@@ -78,14 +78,15 @@ def convert_labels_to_dataframe(labels: list, spark: SparkSession) -> DataFrame:
 
 def set_column_bounds(
     df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
-):
+) -> DataFrame:
     if lower_limit is None and upper_limit is None:
         return df
 
-    if lower_limit > upper_limit:
-        raise Exception(
-            f"Lower limit ({lower_limit}) must be lower than upper limit ({upper_limit})"
-        )
+    elif lower_limit is not None and upper_limit is not None:
+        if lower_limit > upper_limit:
+            raise ValueError(
+                f"Lower limit ({lower_limit}) must be lower than upper limit ({upper_limit})"
+            )
 
     if lower_limit is not None:
         df = df.withColumn(
