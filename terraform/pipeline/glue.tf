@@ -110,8 +110,8 @@ module "clean_ascwds_worker_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_worker_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.2X"
-  number_of_workers = 6
+  worker_type       = "G.1X"
+  number_of_workers = 3
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
   glue_version      = "3.0"
