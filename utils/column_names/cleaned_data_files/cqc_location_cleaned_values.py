@@ -5,6 +5,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
 )
 
 
@@ -14,3 +15,8 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
+
+
+@dataclass
+class CqcLocationCleanedValues:
+    independent: str = CQCPValues.independent
