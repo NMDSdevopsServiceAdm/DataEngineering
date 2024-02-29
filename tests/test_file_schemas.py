@@ -398,7 +398,7 @@ class CQCLocationsSchema:
                 "current_" + ONS.rural_urban_indicator_2011, StringType(), True
             ),
             StructField(CQCL.postcode, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
         ]
     )
 

@@ -19,11 +19,6 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
-
-
-@dataclass
-class CqcLocationCleanedValues:
-    independent: str = CQCPValues.independent
     current_cssr: str = "current_" + ONS.cssr
     current_region: str = "current_" + ONS.region
     current_icb: str = "current_" + ONS.icb
@@ -31,6 +26,11 @@ class CqcLocationCleanedValues:
         "current_" + ONS.rural_urban_indicator_2011
     )
     ons_import_date: str = "ons_postcode_import_date"
+
+
+@dataclass
+class CqcLocationCleanedValues:
+    independent: str = CQCPValues.independent
 
 
 ons_cols_to_import = [
