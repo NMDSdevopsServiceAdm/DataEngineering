@@ -17,8 +17,10 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedColumns as AWPClean,
     AscwdsWorkplaceCleanedValues as AWPValues,
 )
+from utils.scale_variable_limits import AscwdsScaleVariableLimits
 
 DATE_COLUMN_IDENTIFIER = "date"
+COLUMNS_TO_BOUND = [AWP.total_staff, AWP.worker_records]
 
 
 def main(source: str, destination: str):
@@ -46,8 +48,20 @@ def main(source: str, destination: str):
 
     ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
 
-    ascwds_workplace_df = cast_to_int(
-        ascwds_workplace_df, [AWP.total_staff, AWP.worker_records]
+    ascwds_workplace_df = cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
+
+    ascwds_workplace_df = cUtils.set_column_bounds(
+        ascwds_workplace_df,
+        AWP.total_staff,
+        AWPClean.total_staff_bounded,
+        AscwdsScaleVariableLimits.total_staff_lower_limit,
+    )
+
+    ascwds_workplace_df = cUtils.set_column_bounds(
+        ascwds_workplace_df,
+        AWP.worker_records,
+        AWPClean.worker_records_bounded,
+        AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
 
     ascwds_workplace_df = create_column_with_repeated_values_removed(
