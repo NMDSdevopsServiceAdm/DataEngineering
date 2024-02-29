@@ -3,11 +3,18 @@ import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    MergeIndCqcColumns,
-    MergeIndCqcValues,
+    MergeIndCqcColumnsToImport as ImportColList,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -19,11 +26,25 @@ def main(
     cleaned_ascwds_workplace_source: str,
     destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cleaned_cqc_location_source)
+    cqc_location_df = utils.read_from_parquet(
+        cleaned_cqc_location_source, selected_columns=ImportColList.cqc_column_list
+    )
+
+    ascwds_workplace_df = utils.read_from_parquet(
+        cleaned_ascwds_workplace_source,
+        selected_columns=ImportColList.ascwds_column_list,
+    )
+
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
-    ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
 
     ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
+
+    ind_cqc_location_df = join_ascwds_data_into_merged_df(
+        ind_cqc_location_df,
+        ascwds_workplace_df,
+        CQCLClean.cqc_location_import_date,
+        AWPClean.ascwds_workplace_import_date,
+    )
 
     utils.write_to_parquet(
         ind_cqc_location_df,
@@ -34,7 +55,45 @@ def main(
 
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(F.col(MergeIndCqcColumns.sector) == MergeIndCqcValues.independent)
+    return df.where(F.col(CQCLClean.cqc_sector) == CQCLValues.independent)
+
+
+def join_ascwds_data_into_merged_df(
+    primary_df: DataFrame,
+    secondary_df: DataFrame,
+    primary_import_date_column: str,
+    secondary_import_date_column: str,
+) -> DataFrame:
+    primary_df_with_secondary_import_date = cUtils.add_aligned_date_column(
+        primary_df,
+        secondary_df,
+        primary_import_date_column,
+        secondary_import_date_column,
+    )
+
+    secondary_import_date_column_to_drop: str = (
+        secondary_import_date_column + "_to_drop"
+    )
+    secondary_location_id_to_drop: str = AWPClean.location_id + "_to_drop"
+
+    secondary_df = secondary_df.withColumnRenamed(
+        secondary_import_date_column, secondary_import_date_column_to_drop
+    ).withColumnRenamed(AWPClean.location_id, secondary_location_id_to_drop)
+
+    merged_df = primary_df_with_secondary_import_date.join(
+        secondary_df,
+        (
+            primary_df_with_secondary_import_date[secondary_import_date_column]
+            == secondary_df[secondary_import_date_column_to_drop]
+        )
+        & (
+            primary_df_with_secondary_import_date[CQCLClean.location_id]
+            == secondary_df[secondary_location_id_to_drop]
+        ),
+        how="left",
+    ).drop(secondary_import_date_column_to_drop, secondary_location_id_to_drop)
+
+    return merged_df
 
 
 if __name__ == "__main__":

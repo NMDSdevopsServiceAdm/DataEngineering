@@ -5,6 +5,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -15,7 +16,7 @@ from utils.column_names.raw_data_files.ons_columns import (
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     import_date: str = "import_date"
     primary_service_type: str = "primary_service_type"
-    sector: str = CQCPClean.cqc_sector
+    cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
     current_cssr: str = "current_" + ONS.cssr
@@ -35,3 +36,8 @@ ons_cols_to_import = [
     ONS.rural_urban_indicator_2011,
     ONS.postcode,
 ]
+
+
+@dataclass
+class CqcLocationCleanedValues:
+    independent: str = CQCPValues.independent

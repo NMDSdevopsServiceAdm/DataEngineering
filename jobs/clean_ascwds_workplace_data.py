@@ -66,11 +66,13 @@ def main(source: str, destination: str):
 
     ascwds_workplace_df = create_column_with_repeated_values_removed(
         ascwds_workplace_df,
-        AWP.total_staff,
+        AWPClean.total_staff_bounded,
+        AWPClean.total_staff_deduplicated,
     )
     ascwds_workplace_df = create_column_with_repeated_values_removed(
         ascwds_workplace_df,
-        AWP.worker_records,
+        AWPClean.worker_records_bounded,
+        AWPClean.worker_records_deduplicated,
     )
 
     print(f"Exporting as parquet to {destination}")
