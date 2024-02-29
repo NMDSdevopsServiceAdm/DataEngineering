@@ -66,7 +66,9 @@ def main(
         ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
     )
 
-    current_ons_postcode_directory_df = prepare_ons_data(ons_postcode_directory_df)
+    current_ons_postcode_directory_df = prepare_current_ons_data(
+        ons_postcode_directory_df
+    )
 
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
@@ -99,7 +101,7 @@ def main(
     )
 
 
-def prepare_ons_data(ons_df: DataFrame):
+def prepare_current_ons_data(ons_df: DataFrame):
     max_import_date = ons_df.agg(F.max(ONS.import_date)).collect()[0][0]
     ons_df = ons_df.filter(F.col(ONS.import_date) == max_import_date)
 
