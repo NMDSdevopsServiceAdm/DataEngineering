@@ -7,7 +7,6 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
     AscwdsWorkerCleanedColumns as AWKClean,
-    CleanAscwdsWorkerDataColumnListsForImport,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -16,17 +15,32 @@ from utils.value_labels.ascwds_worker.worker_label_dictionary import (
     ascwds_worker_labels_dict,
 )
 
+WORKER_COLUMNS = [
+    AWKClean.location_id,
+    AWKClean.import_date,
+    AWKClean.establishment_id,
+    AWKClean.main_job_role_id,
+    AWKClean.year,
+    AWKClean.month,
+    AWKClean.day,
+]
+
+WORKPLACE_COLUMNS = [
+    AWPClean.import_date,
+    AWPClean.establishment_id,
+]
+
 
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
     ascwds_worker_df = utils.read_from_parquet(
         worker_source,
-        CleanAscwdsWorkerDataColumnListsForImport.worker_columns_for_clean_ascwds_worker_data_job,
+        WORKER_COLUMNS,
     )
     ascwds_workplace_cleaned_df = utils.read_from_parquet(
         cleaned_workplace_source,
-        CleanAscwdsWorkerDataColumnListsForImport.workplace_columns_for_clean_ascwds_worker_data_job,
+        WORKPLACE_COLUMNS,
     )
 
     ascwds_worker_df = remove_workers_without_workplaces(
