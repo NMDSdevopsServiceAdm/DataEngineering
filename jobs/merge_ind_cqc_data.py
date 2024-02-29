@@ -14,10 +14,41 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    MergeIndCqcColumnsToImport as ImportColList,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+
+cqc_columns_to_import = [
+    CQCLClean.cqc_location_import_date,
+    CQCLClean.location_id,
+    CQCLClean.name,
+    CQCLClean.provider_id,
+    CQCLClean.provider_name,
+    CQCLClean.cqc_sector,
+    CQCLClean.registration_status,
+    CQCLClean.registration_date,
+    CQCLClean.dormancy,
+    CQCLClean.care_home,
+    CQCLClean.number_of_beds,
+    CQCLClean.regulated_activities,
+    CQCLClean.gac_service_types,
+    CQCLClean.specialisms,
+    CQCLClean.primary_service_type,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+ascwds_columns_to_import = [
+    AWPClean.ascwds_workplace_import_date,
+    AWPClean.location_id,
+    AWPClean.establishment_id,
+    AWPClean.organisation_id,
+    AWPClean.total_staff,
+    AWPClean.total_staff_deduplicated,
+    AWPClean.worker_records,
+    AWPClean.worker_records_deduplicated,
+]
 
 
 def main(
@@ -27,12 +58,12 @@ def main(
     destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
-        cleaned_cqc_location_source, selected_columns=ImportColList.cqc_column_list
+        cleaned_cqc_location_source, selected_columns=cqc_columns_to_import
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
-        selected_columns=ImportColList.ascwds_column_list,
+        selected_columns=ascwds_columns_to_import,
     )
 
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
