@@ -25,3 +25,13 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
         "current_" + ONS.rural_urban_indicator_2011
     )
     current_ons_import_date: str = "current_ons_postcode_import_date"
+
+
+ons_cols_to_import = [
+    ONS.import_date,
+    ONS.cssr,
+    ONS.region,
+    ONS.icb,
+    ONS.rural_urban_indicator_2011,
+    ONS.postcode,
+]
