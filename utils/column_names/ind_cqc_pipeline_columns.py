@@ -51,6 +51,13 @@ class MergeIndCqcColumnsToImport:
         AWPClean.worker_records_deduplicated,
     ]
 
+    pir_column_list = [
+        CQCPIRClean.care_home,
+        CQCPIRClean.cqc_pir_import_date,
+        CQCPIRClean.location_id,
+        CQCPIRClean.people_directly_employed,
+    ]
+
 
 @dataclass
 class PrepareLocationsColumns:
