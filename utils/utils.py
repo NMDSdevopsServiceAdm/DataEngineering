@@ -97,8 +97,8 @@ def read_from_parquet(
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
 
     Args:
-        data_source: Path to the Parquet file.
-        (optional) selected_columns: List of column names to select. Defaults to None (all columns).
+        data_source (str): Path to the Parquet file.
+        selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
     """
     spark_session = get_spark()
     print(f"Reading data from {data_source}")

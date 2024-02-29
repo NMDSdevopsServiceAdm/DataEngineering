@@ -14,3 +14,8 @@
 Could put a diagram here of the pipeline at this level?
 
 Maybe reference individual functions?
+
+```{eval-rst}
+.. automodule:: utils.utils
+   :members:
+```
