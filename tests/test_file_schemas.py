@@ -381,9 +381,24 @@ class CQCLocationsSchema:
     ons_postcode_directory_schema = StructType(
         [
             StructField(ONS.region, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
             StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
             StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_processed_ons_schema = StructType(
+        [
+            StructField("current_" + ONS.region, StringType(), True),
+            StructField("current_" + ONS.cssr, StringType(), True),
+            StructField("current_" + ONS.icb, StringType(), True),
+            StructField(
+                "current_" + ONS.rural_urban_indicator_2011, StringType(), True
+            ),
+            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
         ]
     )
 

@@ -19,6 +19,10 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
+    ons_cols_to_import,
+)
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 
@@ -41,7 +45,9 @@ def main(
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
-    ons_postcode_directory_df = utils.read_from_parquet(ons_postcode_directory_source)
+    ons_postcode_directory_df = utils.read_from_parquet(
+        ons_postcode_directory_source, selected_columns=ons_cols_to_import
+    )
 
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -51,6 +57,10 @@ def main(
 
     ons_postcode_directory_df = cUtils.column_to_date(
         ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
+    ).drop(ONS.import_date)
+
+    current_ons_postcode_directory_df = prepare_current_ons_data(
+        ons_postcode_directory_df
     )
 
     cqc_location_df = cUtils.column_to_date(
@@ -60,6 +70,12 @@ def main(
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
+
+    cqc_location_df = utils.normalise_column_values(cqc_location_df, CQCL.postcode)
+
+    cqc_location_df = join_current_ons_postcode_data(
+        cqc_location_df, current_ons_postcode_directory_df
+    )
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
@@ -78,6 +94,29 @@ def main(
     )
 
 
+def prepare_current_ons_data(ons_df: DataFrame):
+    max_import_date = ons_df.agg(F.max(ONS_FORMATTED_IMPORT_DATE_COL)).collect()[0][0]
+    ons_df = ons_df.filter(F.col(ONS_FORMATTED_IMPORT_DATE_COL) == max_import_date)
+
+    STRING_TO_PREPEND = "current_"
+    COLS_TO_RENAME = ons_df.columns
+    COLS_TO_RENAME.remove(ONS_FORMATTED_IMPORT_DATE_COL)
+    COLS_TO_RENAME.remove(ONS.postcode)
+
+    new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
+
+    current_ons_df = ons_df
+
+    for i in range(len(COLS_TO_RENAME)):
+        current_ons_df = current_ons_df.withColumnRenamed(
+            COLS_TO_RENAME[i], new_ons_col_names[i]
+        )
+
+    current_ons_df = current_ons_df.withColumnRenamed(ONS.postcode, CQCL.postcode)
+
+    return current_ons_df
+
+
 def remove_non_social_care_locations(df: DataFrame):
     return df.where(df[CQCL.type] == "Social Care Org")
 
@@ -87,6 +126,14 @@ def remove_invalid_postcodes(df: DataFrame):
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+
+
+def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFrame):
+    return cqc_loc_df.join(
+        current_ons_df,
+        CQCL.postcode,
+        "left",
+    )
 
 
 def allocate_primary_service_type(df: DataFrame):
