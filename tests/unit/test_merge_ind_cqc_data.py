@@ -119,6 +119,26 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(returned_data, expected_data)
 
+    def test_join_pir_data_into_merged_df(self):
+        returned_df = job.join_pir_data_into_merged_df(
+            self.test_clean_cqc_location_df,
+            self.test_clean_cqc_pir_df,
+        )
+
+        expected_merged_df = self.spark.createDataFrame(
+            Data.expected_merged_cqc_and_pir,
+            Schemas.expected_cqc_and_pir_merged_schema,
+        )
+
+        returned_data = returned_df.sort(
+            CQCLClean.cqc_location_import_date, CQCLClean.location_id
+        ).collect()
+        expected_data = expected_merged_df.sort(
+            CQCLClean.cqc_location_import_date, CQCLClean.location_id
+        ).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
