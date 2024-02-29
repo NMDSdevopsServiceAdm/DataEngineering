@@ -41,7 +41,10 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         )
 
     @patch("jobs.merge_ind_cqc_data.join_ascwds_data_into_merged_df")
-    @patch("jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only")
+    @patch(
+        "jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only",
+        wraps=job.filter_df_to_independent_sector_only,
+    )
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -53,8 +56,8 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
-            self.test_clean_cqc_pir_df,
             self.test_clean_ascwds_workplace_df,
+            self.test_clean_cqc_pir_df,
         ]
 
         job.main(
