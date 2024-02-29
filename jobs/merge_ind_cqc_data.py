@@ -74,11 +74,13 @@ def join_pir_data_into_merged_df(ind_df: DataFrame, pir_df: DataFrame):
         PIRClean.location_id, CQCLClean.location_id
     ).withColumnRenamed(PIRClean.care_home, CQCLClean.care_home)
 
-    return ind_df_with_pir_import_date.join(
+    ind_df_with_pir_data = ind_df_with_pir_import_date.join(
         formatted_pir_df,
         [PIRClean.cqc_pir_import_date, CQCLClean.location_id, CQCLClean.care_home],
         "left",
-    ).drop(PIRClean.cqc_pir_import_date)
+    )
+
+    return ind_df_with_pir_data.drop(PIRClean.cqc_pir_import_date)
 
 
 def join_ascwds_data_into_merged_df(
