@@ -79,6 +79,22 @@ def convert_labels_to_dataframe(labels: list, spark: SparkSession) -> DataFrame:
 def set_column_bounds(
     df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
 ) -> DataFrame:
+    """
+    Creates a new column based on a previous column, dropping values that exist outside of the lower and upper limits, where provided.
+
+        Args:
+            df: The DataFrame containing the column to bound
+            col_name: The name of the column to be bounded, as a string
+            new_col_name: What the newly created column will be called, as a string
+            lower_limit: The value of the lower limit. Must be an integer or float value if provided, and is otherwise defaulted to None
+            upper_limit: The value of the upper limit. Must be an integer or float value if provided, and is otherwise defaulted to None
+
+        Returns:
+            df: The DataFrame with the new column only containing numerical values that fell within the bounds.
+
+        Raises:
+            ValueError: If both limits are comparable numerical types, and the upper limit is lower than the lower limit.
+    """
     if lower_limit is None and upper_limit is None:
         return df
 
