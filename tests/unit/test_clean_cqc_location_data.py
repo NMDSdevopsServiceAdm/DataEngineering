@@ -277,16 +277,25 @@ class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
         self.expected_processed_ons_df = self.spark.createDataFrame(
             Data.expected_processed_ons_rows, Schemas.expected_processed_ons_schema
         )
+        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
+            self.test_ons_postcode_directory_df,
+            Keys.import_date,
+            "ons_postcode_import_date",
+        ).drop(Keys.import_date)
 
     def test_columns_are_renamed_correctly(self):
-        returned_df = job.prepare_current_ons_data(self.test_ons_postcode_directory_df)
+        returned_df = job.prepare_current_ons_data(
+            self.test_ons_postcode_directory_with_date_df
+        )
 
         expected_columns = self.expected_processed_ons_df.columns
 
         self.assertEqual(expected_columns, returned_df.columns)
 
     def test_only_most_recent_rows_are_kept(self):
-        returned_df = job.prepare_current_ons_data(self.test_ons_postcode_directory_df)
+        returned_df = job.prepare_current_ons_data(
+            self.test_ons_postcode_directory_with_date_df
+        )
 
         self.assertEqual(
             self.expected_processed_ons_df.collect(), returned_df.collect()
