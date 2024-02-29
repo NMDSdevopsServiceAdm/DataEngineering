@@ -1023,14 +1023,6 @@ class CleaningUtilsData:
         "103": "Portuguese",
     }
 
-    replace_labels_rows = [
-        ("1", "1"),
-        ("2", "2"),
-        ("3", None),
-        ("4", None),
-        ("5", "2"),
-    ]
-
     expected_rows_with_new_columns = [
         ("1", "1", "100", "male", "British"),
         ("2", "1", "101", "male", "French"),
@@ -1047,22 +1039,6 @@ class CleaningUtilsData:
         ("4", "female", "Portuguese"),
         ("5", None, "Portuguese"),
         ("6", "female", None),
-    ]
-
-    expected_rows_replace_labels_in_situe = [
-        ("1", "male"),
-        ("2", "female"),
-        ("3", None),
-        ("4", None),
-        ("5", "female"),
-    ]
-
-    expected_rows_replace_labels_with_new_column = [
-        ("1", "1", "male"),
-        ("2", "2", "female"),
-        ("3", None, None),
-        ("4", None, None),
-        ("5", "2", "female"),
     ]
 
     scale_data = [

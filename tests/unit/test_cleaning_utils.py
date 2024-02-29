@@ -32,9 +32,6 @@ class TestCleaningUtilsCategorical(unittest.TestCase):
         self.test_worker_df = self.spark.createDataFrame(
             Data.worker_rows, schema=Schemas.worker_schema
         )
-        self.replace_labels_df = self.spark.createDataFrame(
-            Data.replace_labels_rows, schema=Schemas.replace_labels_schema
-        )
         self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
         self.expected_df_with_new_columns = self.spark.createDataFrame(
             Data.expected_rows_with_new_columns,
