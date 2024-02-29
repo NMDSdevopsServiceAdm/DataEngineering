@@ -28,6 +28,11 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     ons_import_date: str = "ons_postcode_import_date"
 
 
+@dataclass
+class CqcLocationCleanedValues:
+    independent: str = CQCPValues.independent
+
+
 ons_cols_to_import = [
     ONS.import_date,
     ONS.cssr,
@@ -36,8 +41,3 @@ ons_cols_to_import = [
     ONS.rural_urban_indicator_2011,
     ONS.postcode,
 ]
-
-
-@dataclass
-class CqcLocationCleanedValues:
-    independent: str = CQCPValues.independent

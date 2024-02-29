@@ -2,7 +2,6 @@ import os
 import re
 import csv
 import argparse
-from typing import List
 
 from pyspark.sql import SparkSession, DataFrame, Column, Window
 import pyspark.sql.functions as F
