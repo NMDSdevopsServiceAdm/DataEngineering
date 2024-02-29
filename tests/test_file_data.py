@@ -1305,13 +1305,11 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
-    # fmt: off
     cqc_sector_rows = [
         ("loc-1", "Local Authority"),
         ("loc-2", None),
-        ("loc-3", "Independent",),
+        ("loc-3", "Independent"),
     ]
     expected_cqc_sector_rows = [
-        ("loc-3", "Independent",),
+        ("loc-3", "Independent"),
     ]
-    # fmt: on
