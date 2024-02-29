@@ -2,6 +2,7 @@ import unittest
 
 
 import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
 
 
 from utils import utils
@@ -246,7 +247,7 @@ class TestCleaningUtilsScale(unittest.TestCase):
     def test_set_column_bounds_float_raises_error_if_lower_limit_is_greater_than_upper(
         self,
     ):
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(ValueError) as context:
             job.set_column_bounds(
                 self.test_scale_df,
                 "float",
@@ -259,6 +260,20 @@ class TestCleaningUtilsScale(unittest.TestCase):
             "Lower limit (100) must be lower than upper limit (1)"
             in str(context.exception),
         )
+
+    def test_set_column_bounds_works_with_only_lower_limit_specified(
+        self,
+    ):
+        returned_df = (
+            job.set_column_bounds(
+                self.test_scale_df,
+                "int",
+                "bound_int",
+                lower_limit=0,
+            ),
+        )
+        self.assertTrue(type(returned_df), DataFrame)
+        self.assertTrue(len(returned_df), 2)
 
     def test_set_column_bounds_int_above_upper_bound_are_set_to_null(self):
         returned_df = job.set_column_bounds(
