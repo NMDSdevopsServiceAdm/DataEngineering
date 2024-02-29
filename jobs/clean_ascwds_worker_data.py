@@ -26,6 +26,7 @@ WORKER_COLUMNS = [
 ]
 WORKPLACE_COLUMNS = [AWPClean.import_date, AWPClean.establishment_id]
 
+
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
