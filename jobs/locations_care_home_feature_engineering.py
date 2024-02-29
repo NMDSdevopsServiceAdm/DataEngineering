@@ -1,7 +1,6 @@
 import argparse
 import sys
 from dataclasses import dataclass
-from typing import List
 
 import pyspark
 import pyspark.sql.functions as F
