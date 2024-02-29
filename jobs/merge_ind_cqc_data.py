@@ -45,8 +45,10 @@ ascwds_columns_to_import = [
     AWPClean.establishment_id,
     AWPClean.organisation_id,
     AWPClean.total_staff,
+    AWPClean.total_staff_bounded,
     AWPClean.total_staff_deduplicated,
     AWPClean.worker_records,
+    AWPClean.worker_records_bounded,
     AWPClean.worker_records_deduplicated,
 ]
 
