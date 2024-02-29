@@ -43,8 +43,12 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             self.TEST_WORKER_SOURCE, self.TEST_WORKPLACE_SOURCE, self.TEST_DESTINATION
         )
 
-        read_from_parquet_mock.assert_any_call(self.TEST_WORKER_SOURCE, job.WORKER_COLUMNS)
-        read_from_parquet_mock.assert_any_call(self.TEST_WORKPLACE_SOURCE, job.WORKPLACE_COLUMNS)
+        read_from_parquet_mock.assert_any_call(
+            self.TEST_WORKER_SOURCE, job.WORKER_COLUMNS
+        )
+        read_from_parquet_mock.assert_any_call(
+            self.TEST_WORKPLACE_SOURCE, job.WORKPLACE_COLUMNS
+        )
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,

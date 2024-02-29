@@ -12,6 +12,7 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 class AscwdsWorkerCleanedColumns(AscwdsWorkerColumns):
     ascwds_worker_import_date: str = "ascwds_worker_import_date"
 
+
 @dataclass
 class CleanAscwdsWorkerDataColumnListsForImport:
     worker_columns_for_clean_ascwds_worker_data_job = [
@@ -24,4 +25,7 @@ class CleanAscwdsWorkerDataColumnListsForImport:
         AscwdsWorkerColumns.day,
     ]
 
-    workplace_columns_for_clean_ascwds_worker_data_job = [AscwdsWorkplaceColumns.import_date, AscwdsWorkplaceColumns.establishment_id]
+    workplace_columns_for_clean_ascwds_worker_data_job = [
+        AscwdsWorkplaceColumns.import_date,
+        AscwdsWorkplaceColumns.establishment_id,
+    ]

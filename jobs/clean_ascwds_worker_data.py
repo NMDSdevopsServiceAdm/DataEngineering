@@ -17,13 +17,16 @@ from utils.value_labels.ascwds_worker.worker_label_dictionary import (
 )
 
 
-
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
-    ascwds_worker_df = utils.read_from_parquet(worker_source, CleanAscwdsWorkerDataColumnListsForImport.worker_columns_for_clean_ascwds_worker_data_job)
+    ascwds_worker_df = utils.read_from_parquet(
+        worker_source,
+        CleanAscwdsWorkerDataColumnListsForImport.worker_columns_for_clean_ascwds_worker_data_job,
+    )
     ascwds_workplace_cleaned_df = utils.read_from_parquet(
-        cleaned_workplace_source, CleanAscwdsWorkerDataColumnListsForImport.workplace_columns_for_clean_ascwds_worker_data_job
+        cleaned_workplace_source,
+        CleanAscwdsWorkerDataColumnListsForImport.workplace_columns_for_clean_ascwds_worker_data_job,
     )
 
     ascwds_worker_df = remove_workers_without_workplaces(
