@@ -78,7 +78,7 @@ def join_pir_data_into_merged_df(ind_df: DataFrame, pir_df: DataFrame):
         formatted_pir_df,
         [PIRClean.cqc_pir_import_date, CQCLClean.location_id, CQCLClean.care_home],
         "left",
-    )
+    ).drop(PIRClean.cqc_pir_import_date)
 
 
 def join_ascwds_data_into_merged_df(
