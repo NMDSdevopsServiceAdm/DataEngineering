@@ -133,9 +133,11 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         returned_data = returned_df.sort(
             CQCLClean.cqc_location_import_date, CQCLClean.location_id
         ).collect()
-        expected_data = expected_merged_df.sort(
-            CQCLClean.cqc_location_import_date, CQCLClean.location_id
-        ).collect()
+        expected_data = (
+            expected_merged_df.select(returned_df.columns)
+            .sort(CQCLClean.cqc_location_import_date, CQCLClean.location_id)
+            .collect()
+        )
 
         self.assertEqual(returned_data, expected_data)
 
