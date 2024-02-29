@@ -5,7 +5,6 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
-    CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
@@ -57,7 +56,7 @@ def main(
 
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(F.col(CQCPClean.cqc_sector) == CQCPValues.independent)
+    return df.where(F.col(CQCLClean.cqc_sector) == CQCPValues.independent)
 
 
 def join_ascwds_data_into_merged_df(

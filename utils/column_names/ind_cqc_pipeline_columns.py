@@ -24,7 +24,7 @@ class MergeIndCqcColumnsToImport:
         CQCLClean.name,
         CQCLClean.provider_id,
         CQCLClean.provider_name,
-        CQCLClean.sector,
+        CQCLClean.cqc_sector,
         CQCLClean.registration_status,
         CQCLClean.registration_date,
         CQCLClean.dormancy,

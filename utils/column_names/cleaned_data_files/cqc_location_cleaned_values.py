@@ -11,6 +11,6 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 @dataclass
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     primary_service_type: str = "primary_service_type"
-    sector: str = CQCPClean.cqc_sector
+    cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"

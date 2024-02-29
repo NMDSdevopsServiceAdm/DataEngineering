@@ -620,7 +620,7 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
         ]
@@ -639,7 +639,7 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
@@ -651,6 +651,6 @@ class MergeIndCQCData:
     cqc_sector_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
