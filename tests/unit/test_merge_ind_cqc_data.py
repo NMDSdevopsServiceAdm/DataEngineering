@@ -41,7 +41,10 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         )
 
     @patch("jobs.merge_ind_cqc_data.join_ascwds_data_into_merged_df")
-    @patch("jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only")
+    @patch(
+        "jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only",
+        wraps=job.filter_df_to_independent_sector_only,
+    )
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -53,8 +56,8 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
-            self.test_clean_cqc_pir_df,
             self.test_clean_ascwds_workplace_df,
+            self.test_clean_cqc_pir_df,
         ]
 
         job.main(
@@ -113,6 +116,28 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         expected_data = expected_merged_df.sort(
             CQCLClean.cqc_location_import_date, CQCLClean.location_id
         ).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_join_pir_data_into_merged_df(self):
+        returned_df = job.join_pir_data_into_merged_df(
+            self.test_clean_cqc_location_df,
+            self.test_clean_cqc_pir_df,
+        )
+
+        expected_merged_df = self.spark.createDataFrame(
+            Data.expected_merged_cqc_and_pir,
+            Schemas.expected_cqc_and_pir_merged_schema,
+        )
+
+        returned_data = returned_df.sort(
+            CQCLClean.cqc_location_import_date, CQCLClean.location_id
+        ).collect()
+        expected_data = (
+            expected_merged_df.select(returned_df.columns)
+            .sort(CQCLClean.cqc_location_import_date, CQCLClean.location_id)
+            .collect()
+        )
 
         self.assertEqual(returned_data, expected_data)
 
