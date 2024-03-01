@@ -141,7 +141,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        locations_df,
+        features_df,
         care_home_features_ind_cqc_filled_posts_destination,
         mode="overwrite",
         partitionKeys=["year", "month", "day", "import_date"],
