@@ -12,7 +12,6 @@ from utils.feature_engineering_dictionaries import (
     RURAL_URBAN_INDICATOR_LOOKUP,
 )
 from utils.features.helper import (
-    filter_records_since_snapshot_date,
     vectorise_dataframe,
     column_expansion_with_dict,
     get_list_of_distinct_ons_regions,
@@ -61,13 +60,6 @@ def main(
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
-
-    """
-    max_snapshot = utils.get_max_snapshot_partitions(
-        care_home_features_ind_cqc_filled_posts_destination
-    )
-    locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
-    """
 
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,
