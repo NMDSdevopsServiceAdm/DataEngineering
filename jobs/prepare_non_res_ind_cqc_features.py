@@ -2,9 +2,8 @@ import argparse
 import sys
 from dataclasses import dataclass
 
-import pyspark
 import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame 
+from pyspark.sql.dataframe import DataFrame
 from typing import List
 
 from utils import utils
@@ -46,7 +45,7 @@ class FeatureNames:
     care_home: str = "features"
 
 
-def main(prepared_locations_source, destination=None):
+def main(cleaned_cqc_ind_source, destination):
     spark = utils.get_spark()
 
     features_from_prepare_locations = ColNamesFromPrepareLocations()
@@ -54,8 +53,8 @@ def main(prepared_locations_source, destination=None):
     services_dict = SERVICES_LOOKUP
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
-    locations_df = spark.read.option("basePath", prepared_locations_source).parquet(
-        prepared_locations_source
+    locations_df = spark.read.option("basePath", cleaned_cqc_ind_source).parquet(
+        cleaned_cqc_ind_source
     )
     max_snapshot = utils.get_max_snapshot_partitions(destination)
     locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
@@ -171,13 +170,13 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--prepared_locations_source",
-        help="Source S3 directory for data engineering prepared locations dataset",
+        "---cleaned_cqc_ind_source",
+        help="Source S3 directory for cleaned cqc ind data",
         required=True,
     )
     parser.add_argument(
-        "--destination",
-        help="A destination directory for outputting locations dataset after feature engineering and vectorizing",
+        "--prepared_non_res_ind_cqc_destination",
+        help="A destination directory for outputting prepared non res ind cqc data",
         required=True,
     )
     args, _ = parser.parse_known_args()
@@ -186,11 +185,11 @@ def collect_arguments():
 
 
 if __name__ == "__main__":
-    print("Spark job 'locations_feature_engineering' starting...")
+    print("Spark job 'prepare_non_res_ind_cqc_features' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (prepared_locations_source, destination) = collect_arguments()
+    (cleaned_cqc_ind_source, destination) = collect_arguments()
 
-    main(prepared_locations_source, destination)
+    main(cleaned_cqc_ind_source, destination)
 
-    print("Spark job 'locations_feature_engineering' complete")
+    print("Spark job 'prepare_non_res_ind_cqc_features' complete")
