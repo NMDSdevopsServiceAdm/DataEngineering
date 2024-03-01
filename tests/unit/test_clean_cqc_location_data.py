@@ -321,7 +321,7 @@ class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
             self.test_ons_for_contemporary_join_df,
         )
 
-        self.assertIsInstance(returned_df)
+        self.assertIsInstance(returned_df, DataFrame)
 
     def test_join_contemporary_ons_postcode_data_correctly_joins_data(self):
         returned_df = job.join_contemporary_ons_postcode_data(
@@ -342,6 +342,8 @@ class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
             .sort(CQCL.location_id)
             .collect()
         )
+        returned_df.show()
+        expected_df.show()
 
         self.assertCountEqual(returned_data, expected_data)
 

@@ -421,7 +421,7 @@ class CQCLocationsSchema:
             StructField(ONS.cssr, StringType(), True),
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-            StructField(ONS.import_date, DateType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
             StructField(ONS.postcode, StringType(), True),
         ]
     )
@@ -438,7 +438,7 @@ class CQCLocationsSchema:
             StructField(
                 CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True
             ),
-            StructField(ONS.import_date, DateType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
         ]
     )
 
