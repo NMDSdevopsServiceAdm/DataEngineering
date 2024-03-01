@@ -30,14 +30,7 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
 
 @dataclass
 class CqcLocationCleanedValues:
+    care_home_with_nursing: str = "Care home with nursing"
+    care_home_only: str = "Care home without nursing"
+    non_residential: str = "non-residential"
     independent: str = CQCPValues.independent
-
-
-ons_cols_to_import = [
-    ONS.import_date,
-    ONS.cssr,
-    ONS.region,
-    ONS.icb,
-    ONS.rural_urban_indicator_2011,
-    ONS.postcode,
-]

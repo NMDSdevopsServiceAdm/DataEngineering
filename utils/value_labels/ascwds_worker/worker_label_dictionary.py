@@ -3,6 +3,6 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 )
 
 
-ascwds_worker_label_dict = {
-    AscwdsWorkerValueLabelsMainjrid.column_name: AscwdsWorkerValueLabelsMainjrid.labels_list
+ascwds_worker_labels_dict = {
+    AscwdsWorkerValueLabelsMainjrid.column_name: AscwdsWorkerValueLabelsMainjrid.labels_dict
 }

@@ -219,6 +219,9 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
+            StructField(AWK.year, StringType(), True),
+            StructField(AWK.month, StringType(), True),
+            StructField(AWK.day, StringType(), True),
         ]
     )
 
@@ -413,20 +416,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    replace_labels_schema = StructType(
-        [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-        ]
-    )
-
-    labels_schema = StructType(
-        [
-            StructField("key", StringType(), True),
-            StructField("value", StringType(), True),
-        ]
-    )
-
     expected_schema_with_new_columns = StructType(
         [
             StructField(AWK.worker_id, StringType(), True),
@@ -434,14 +423,6 @@ class CleaningUtilsSchemas:
             StructField(AWK.nationality, StringType(), True),
             StructField("gender_labels", StringType(), True),
             StructField("nationality_labels", StringType(), True),
-        ]
-    )
-
-    expected_schema_replace_labels_with_new_columns = StructType(
-        [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-            StructField("gender_labels", StringType(), True),
         ]
     )
 
@@ -666,12 +647,12 @@ class MergeIndCQCData:
 
     expected_cqc_and_ascwds_merged_schema = StructType(
         [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
         ]
