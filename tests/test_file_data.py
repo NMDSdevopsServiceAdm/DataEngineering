@@ -1259,17 +1259,19 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
+    # fmt: off
     expected_merged_cqc_and_pir = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None),
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
     ]
+    # fmt: on
 
     # fmt: off
     expected_cqc_and_ascwds_merged_rows = [

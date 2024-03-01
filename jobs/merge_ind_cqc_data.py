@@ -124,7 +124,7 @@ def join_pir_data_into_merged_df(ind_df: DataFrame, pir_df: DataFrame):
         "left",
     )
 
-    return ind_df_with_pir_data.drop(CQCPIRClean.cqc_pir_import_date)
+    return ind_df_with_pir_data
 
 
 def join_ascwds_data_into_merged_df(

@@ -642,6 +642,7 @@ class MergeIndCQCData:
         [
             *clean_cqc_location_for_merge_schema,
             StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
 
