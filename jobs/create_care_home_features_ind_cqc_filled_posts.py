@@ -12,9 +12,7 @@ def main(
 
     print("Creating care home features dataset...")
 
-    locations_df = utils.read_from_parquet(
-        ind_cqc_filled_posts_cleaned_source
-    ).selectExpr(*COLUMNS_TO_IMPORT)
+    locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
     print(
         f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
