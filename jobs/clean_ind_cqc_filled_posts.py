@@ -13,6 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+average_number_of_beds: str = "avg_beds"
 
 
 def main(
@@ -62,19 +63,21 @@ def filter_to_care_homes_with_known_beds(
 
 def average_beds_per_location(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     df = df.groupBy(IndCqcColumns.location_id).agg(
-        F.avg(IndCqcColumns.number_of_beds).alias("avg_beds")
+        F.avg(IndCqcColumns.number_of_beds).alias(average_number_of_beds)
     )
-    df = df.withColumn("avg_beds", F.col("avg_beds").cast("int"))
-    df = df.select(IndCqcColumns.location_id, "avg_beds")
+    df = df.withColumn(
+        average_number_of_beds, F.col(average_number_of_beds).cast("int")
+    )
+    df = df.select(IndCqcColumns.location_id, average_number_of_beds)
     return df
 
 
 def replace_null_beds_with_average(df: pyspark.sql.DataFrame) -> pyspark.sql.DataFrame:
     df = df.withColumn(
         IndCqcColumns.number_of_beds,
-        F.coalesce(IndCqcColumns.number_of_beds, "avg_beds"),
+        F.coalesce(IndCqcColumns.number_of_beds, average_number_of_beds),
     )
-    return df.drop("avg_beds")
+    return df.drop(average_number_of_beds)
 
 
 if __name__ == "__main__":

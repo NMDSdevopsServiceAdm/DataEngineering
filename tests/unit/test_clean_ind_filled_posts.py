@@ -145,12 +145,16 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.sort(IndCqcColumns.location_id).collect()
-        self.assertEqual(df[0]["avg_beds"], 1)
-        self.assertEqual(df[1]["avg_beds"], 2)
-        self.assertEqual(df[2]["avg_beds"], 3)
+        self.assertEqual(df[0][job.average_number_of_beds], 1)
+        self.assertEqual(df[1][job.average_number_of_beds], 2)
+        self.assertEqual(df[2][job.average_number_of_beds], 3)
 
     def test_replace_null_beds_with_average(self):
-        columns = [IndCqcColumns.location_id, IndCqcColumns.number_of_beds, "avg_beds"]
+        columns = [
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
+            job.average_number_of_beds,
+        ]
         rows = [
             ("1-000000001", None, None),
             ("1-000000002", None, 1),
@@ -167,7 +171,11 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df[2][IndCqcColumns.number_of_beds], 2)
 
     def test_replace_null_beds_with_average_doesnt_change_known_beds(self):
-        columns = [IndCqcColumns.location_id, IndCqcColumns.number_of_beds, "avg_beds"]
+        columns = [
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
+            job.average_number_of_beds,
+        ]
         rows = [
             ("1-000000001", 1, 2),
         ]
