@@ -3,7 +3,6 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType, DateType
 
 import jobs.clean_ind_cqc_filled_posts as job
