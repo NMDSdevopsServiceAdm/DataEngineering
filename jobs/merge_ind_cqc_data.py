@@ -55,7 +55,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.worker_records_deduplicated,
 ]
 
-pir_columns_to_import = [
+cleaned_cqc_pir_columns_to_import = [
     CQCPIRClean.care_home,
     CQCPIRClean.cqc_pir_import_date,
     CQCPIRClean.location_id,
@@ -80,7 +80,7 @@ def main(
     )
 
     cqc_pir_df = utils.read_from_parquet(
-        cleaned_cqc_pir_source, selected_columns=pir_columns_to_import
+        cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
 
     ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
