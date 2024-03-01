@@ -1039,7 +1039,7 @@ class CQCLocationsData:
         ),
     ]
 
-    locations_for_contemporary_ons_join_rows =[
+    locations_for_contemporary_ons_join_rows = [
         (
             "loc-1",
             "prov-1",
@@ -1109,7 +1109,6 @@ class CQCLocationsData:
             "Hull",
             "Urban city and town",
             date(2019, 1, 1),
-
         ),
         (
             "loc-4",

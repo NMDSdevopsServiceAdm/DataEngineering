@@ -435,7 +435,9 @@ class CQCLocationsSchema:
             StructField(CQCLClean.contemporary_region, StringType(), True),
             StructField(CQCLClean.contemporary_cssr, StringType(), True),
             StructField(CQCLClean.contemporary_icb, StringType(), True),
-            StructField(CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True),
+            StructField(
+                CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True
+            ),
             StructField(ONS.import_date, DateType(), True),
         ]
     )
