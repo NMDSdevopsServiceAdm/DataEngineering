@@ -1,4 +1,6 @@
 import sys
+import pyspark.sql.functions as F
+from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -45,10 +47,22 @@ def main(
 
     # join in ASCWDS data (import_date and locationid)
 
+    # get all locationids that have ever existed
+    entire_location_id_history_df = get_all_location_ids(cqc_location_api_source)
+
     # all the formatting steps for Support team
 
     # save single and subs file
     # save parent file
+
+
+def get_all_location_ids(cqc_location_source: str) -> DataFrame:
+    all_location_ids_df = (
+        utils.read_from_parquet(cqc_location_source)
+        .select(CQCLClean.location_id)
+        .distinct()
+    )
+    return all_location_ids_df.withColumn("ever_existed", F.lit("yes"))
 
 
 if __name__ == "__main__":
