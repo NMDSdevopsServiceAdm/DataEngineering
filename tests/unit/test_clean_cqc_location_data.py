@@ -22,6 +22,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLCleaned,
+    CqcLocationCleanedValues as CQCLValues,
 )
 
 
@@ -161,11 +162,11 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
         ).first()[0]
 
         self.assertEqual(len(primary_service_values), 5)
-        self.assertEqual(primary_service_values[0], job.NONE_RESIDENTIAL_IDENTIFIER)
-        self.assertEqual(primary_service_values[1], job.NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
+        self.assertEqual(primary_service_values[0], CQCLValues.non_residential)
+        self.assertEqual(primary_service_values[1], CQCLValues.care_home_with_nursing)
+        self.assertEqual(primary_service_values[2], CQCLValues.care_home_only)
+        self.assertEqual(primary_service_values[3], CQCLValues.care_home_with_nursing)
+        self.assertEqual(primary_service_values[4], CQCLValues.care_home_only)
 
 
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
