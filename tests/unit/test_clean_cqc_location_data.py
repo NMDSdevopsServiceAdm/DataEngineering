@@ -302,6 +302,40 @@ class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
             self.expected_processed_ons_df.collect(), returned_df.collect()
         )
 
+class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_location__for_contemporary_ons_join_df = self.spark.createDataFrame(Data.locations_for_contemporary_ons_join_rows, Schemas.locations_for_contemporary_ons_join_schema)
+        self.test_ons_for_contemporary_join_df = self.spark.createDataFrame(Data.ons_for_contemporary_ons_join_rows, Schemas.ons_for_contemporary_ons_join_schema)
+
+
+    def test_join_contemporary_ons_postcode_data_completes(self):
+        returned_df = job.join_contemporary_ons_postcode_data(
+            self.test_location__for_contemporary_ons_join_df, self.test_ons_for_contemporary_join_df
+        )
+
+        self.assertIsInstance(returned_df)
+
+    def test_join_contemporary_ons_postcode_data_correctly_joins_data(self):
+        returned_df = job.join_contemporary_ons_postcode_data(
+            self.test_location__for_contemporary_ons_join_df, self.test_ons_for_contemporary_join_df
+        )
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_contemporary_ons_join_rows, Schemas.expected_contemporary_ons_join_schema
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
+        )
+
+        self.assertCountEqual(returned_data, expected_data)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

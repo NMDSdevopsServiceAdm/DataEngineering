@@ -406,6 +406,40 @@ class CQCLocationsSchema:
         ]
     )
 
+    locations_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+        ]
+    )
+
+    ons_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+            StructField(ONS.import_date, DateType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCLClean.contemporary_region, StringType(), True),
+            StructField(CQCLClean.contemporary_cssr, StringType(), True),
+            StructField(CQCLClean.contemporary_icb, StringType(), True),
+            StructField(CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True),
+            StructField(ONS.import_date, DateType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:
