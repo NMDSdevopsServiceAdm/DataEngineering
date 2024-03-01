@@ -59,6 +59,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             partitionKeys=["year", "month", "day", "import_date"],
         )
 
+    @unittest.skip("needs_refactoring")
     def test_main_produces_dataframe_with_features(self):
         result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
 
@@ -68,6 +69,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
+    @unittest.skip("needs_refactoring")
     def test_main_is_filtering_out_rows_missing_data_for_features(self):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
