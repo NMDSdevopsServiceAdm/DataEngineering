@@ -426,10 +426,11 @@ module "clean_cqc_location_data_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
-    "--cleaned_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
-    "--ons_postcode_directory_source"    = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--cleaned_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+    "--ons_postcode_directory_source"         = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--deregistered_cqc_location_destination" = "TODO - decide where to save"
   }
 }
 
