@@ -29,7 +29,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_PROV_SOURCE = "some/other/directory"
-    TEST_DESTINATION = "some/other/directory"
+    TEST_CLEANED_DESTINATION = "some/other/directory"
+    TEST_DEREGISTERED_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -74,15 +75,22 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_LOC_SOURCE,
             self.TEST_PROV_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
-            self.TEST_DESTINATION,
+            self.TEST_CLEANED_DESTINATION,
+            self.TEST_DEREGISTERED_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 2)
-        write_to_parquet_patch.assert_called_once_with(
+        write_to_parquet_patch.assert_called_with(
             ANY,
-            self.TEST_DESTINATION,
+            self.TEST_CLEANED_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
+        write_to_parquet_patch.assert_called_with(
+            ANY,
+            self.TEST_DEREGISTERED_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
