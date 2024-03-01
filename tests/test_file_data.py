@@ -1027,7 +1027,6 @@ class CQCLocationsData:
             "Leeds",
             "Urban city and town",
             "LS1 2AB",
-            date(2021, 1, 1),
         ),
         (
             "Yorkshire & Humber",
@@ -1035,7 +1034,6 @@ class CQCLocationsData:
             "York",
             "Urban city and town",
             "B69 3EG",
-            date(2021, 1, 1),
         ),
     ]
 
@@ -1328,45 +1326,53 @@ class CleaningUtilsData:
 @dataclass
 class MergeIndCQCData:
     clean_cqc_pir_rows = CQCpirData.sample_rows_full
-    clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
 
-    clean_cqc_location_rows = [
-        (
-            "1-000000001",
-            "Independent",
-        ),
-        (
-            "1-000000002",
-            "Local Authority",
-        ),
-        (
-            "1-000000005",
-            "Independent",
-        ),
-        (
-            "1-000000009",
-            "Independent",
-        ),
+    # fmt: off
+    clean_cqc_location_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
     ]
+    # fmt: on
 
+    # fmt: off
+    clean_ascwds_workplace_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", "1", 1,),
+        (date(2024, 1, 1), "1-000000003", "3", 2,),
+        (date(2024, 1, 5), "1-000000001", "1", 3,),
+        (date(2024, 1, 9), "1-000000001", "1", 4,),
+        (date(2024, 1, 9), "1-000000003", "3", 5,),
+        (date(2024, 3, 1), "1-000000003", "4", 6,),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_cqc_and_ascwds_merged_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
+        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4,),
+        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5,),
+        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None,),
+        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6,),
+    ]
+    # fmt: on
+
+    # fmt: off
     cqc_sector_rows = [
-        (
-            "loc-1",
-            "Local Authority",
-        ),
-        (
-            "loc-2",
-            None,
-        ),
-        (
-            "loc-3",
-            "Independent",
-        ),
+        ("loc-1", "Local Authority",),
+        ("loc-2", None,),
+        ("loc-3", "Independent",),
     ]
-
     expected_cqc_sector_rows = [
-        (
-            "loc-3",
-            "Independent",
-        ),
+        ("loc-3", "Independent",),
     ]
+    # fmt: on

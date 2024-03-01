@@ -122,7 +122,7 @@ def main(
 
 def prepare_current_ons_data(ons_df: DataFrame):
     max_import_date = ons_df.agg(F.max(CQCLClean.ons_import_date)).collect()[0][0]
-    current_ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date)
+    current_ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date).drop(CQCLClean.ons_import_date)
 
     STRING_TO_PREPEND = "current_"
     COLS_TO_RENAME = current_ons_df.columns
