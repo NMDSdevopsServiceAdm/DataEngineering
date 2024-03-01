@@ -52,8 +52,6 @@ def main(
 
     print("Creating care home features dataset...")
 
-    spark = utils.get_spark()
-
     features_from_prepare_locations = ColNamesFromPrepareLocations()
     new_cols_for_features = NewColNames()
     services_dict = SERVICES_LOOKUP
