@@ -18,7 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-cqc_columns_to_import = [
+cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
@@ -39,7 +39,7 @@ cqc_columns_to_import = [
     Keys.day,
     Keys.import_date,
 ]
-ascwds_columns_to_import = [
+cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.location_id,
     AWPClean.establishment_id,
@@ -60,12 +60,13 @@ def main(
     destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
-        cleaned_cqc_location_source, selected_columns=cqc_columns_to_import
+        cleaned_cqc_location_source,
+        selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
-        selected_columns=ascwds_columns_to_import,
+        selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
     cqc_pir_df = utils.read_from_parquet(cleaned_cqc_pir_source)
