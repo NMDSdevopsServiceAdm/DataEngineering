@@ -215,6 +215,19 @@ module "locations_non_res_feature_engineering_job" {
   }
 }
 
+module "prepare_non_res_ind_cqc_features_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_non_res_ind_cqc_features.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cleaned_cqc_ind_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--prepared_non_res_ind_cqc_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=prepared_non_res_ind_cqc_data/"
+  }
+}
+
 module "job_role_breakdown_job" {
   source          = "../modules/glue-job"
   script_name     = "job_role_breakdown.py"
