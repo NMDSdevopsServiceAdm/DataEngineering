@@ -46,16 +46,12 @@ class FeatureNames:
 
 
 def main(cleaned_cqc_ind_source, destination):
-    spark = utils.get_spark()
-
     features_from_prepare_locations = ColNamesFromPrepareLocations()
     new_cols_for_features = NewColNames()
     services_dict = SERVICES_LOOKUP
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
-    locations_df = spark.read.option("basePath", cleaned_cqc_ind_source).parquet(
-        cleaned_cqc_ind_source
-    )
+    locations_df = utils.read_from_parquet(cleaned_cqc_ind_source)
     max_snapshot = utils.get_max_snapshot_partitions(destination)
     locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
 
@@ -103,7 +99,7 @@ def main(cleaned_cqc_ind_source, destination):
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
         new_col_name=new_cols_for_features.date_diff,
-        snapshot_date_col=features_from_prepare_locations.snapshot_date,
+        snapshot_date_col="date",
     )
 
     list_for_vectorisation: List[str] = sorted(
@@ -122,13 +118,13 @@ def main(cleaned_cqc_ind_source, destination):
     )
     features_df = vectorised_dataframe.select(
         "locationid",
-        "snapshot_date",
+        "date",
         "ons_region",
         "number_of_beds",
         "people_directly_employed",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
+        "year",
+        "month",
+        "day",
         "carehome",
         "features",
         "job_count",
@@ -146,7 +142,7 @@ def main(cleaned_cqc_ind_source, destination):
             features_df,
             destination,
             mode="append",
-            partitionKeys=["snapshot_year", "snapshot_month", "snapshot_day"],
+            partitionKeys=["year", "month", "day"],
         )
     return features_df
 

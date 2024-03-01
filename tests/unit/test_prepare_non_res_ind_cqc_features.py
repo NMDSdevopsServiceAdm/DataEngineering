@@ -1,43 +1,25 @@
 import datetime
 import shutil
 import unittest
+from unittest.mock import Mock, patch
 import warnings
 
 from pyspark.ml.linalg import SparseVector
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-import jobs.locations_non_res_feature_engineering as job
-from tests.test_file_generator import (
-    generate_prepared_locations_file_parquet,
-)
+import jobs.prepare_non_res_ind_cqc_features as job
+from tests.test_file_generator import generate_cleaned_cqc_ind_data
 from utils.features.helper import add_date_diff_into_df
+from utils import utils
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
-    PREPARED_LOCATIONS_TEST_DATA = (
-        "tests/test_data/domain=data_engineering/dataset=prepared_locations"
-    )
-    OUTPUT_DESTINATION = (
-        "tests/test_data/domain=data_engineering/dataset=locations_features"
-    )
+    CLEANED_IND_CQC_TEST_DATA = "some/source"
+    OUTPUT_DESTINATION = "some/destination"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_locations_feature_engineering"
-        ).getOrCreate()
-        self.test_df = generate_prepared_locations_file_parquet(
-            self.PREPARED_LOCATIONS_TEST_DATA
-        )
+        self.spark = utils.get_spark()
+        self.test_df = generate_cleaned_cqc_ind_data()
         warnings.simplefilter("ignore", ResourceWarning)
-        return super().setUp()
-
-    def tearDown(self) -> None:
-        try:
-            shutil.rmtree(self.PREPARED_LOCATIONS_TEST_DATA)
-            shutil.rmtree(self.OUTPUT_DESTINATION)
-        except OSError:
-            pass
-        return super().tearDown()
 
     def test_add_date_diff_into_df(self):
         df = self.spark.createDataFrame(
@@ -65,25 +47,34 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             actual_diff[0].diff, expected_diff_between_max_date_and_other_date
         )
 
-    def test_main_produces_dataframe_with_features(self):
+    @patch("utils.utils.read_from_parquet")
+    def test_main_produces_dataframe_with_features(self, read_from_parquet_mock: Mock):
+        read_from_parquet_mock.return_value = self.test_df
+
         result = job.main(
-            self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION
+            self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION
         ).orderBy(F.col("locationid"))
 
         self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
         expected_features = SparseVector(
             46, [0, 3, 13, 15, 18, 19, 45], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
         )
+        result.show()
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
-    def test_main_is_filtering_out_rows_missing_data_for_features(self):
+    @patch("utils.utils.read_from_parquet")
+    def test_main_is_filtering_out_rows_missing_data_for_features(
+        self, read_from_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
         input_df_length = self.test_df.count()
-        self.assertTrue(input_df_length, 14)
+        self.assertEqual(input_df_length, 14)
 
-        result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
+        result = job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
-        self.assertTrue(result.count() == 7)
+        self.assertEqual(result.count(), 7)
 
     def test_filter_locations_df_for_non_res_care_home_data(self):
         cols = ["carehome", "cqc_sector"]
