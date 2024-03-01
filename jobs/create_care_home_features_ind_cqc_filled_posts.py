@@ -1,7 +1,8 @@
 import sys
 from dataclasses import dataclass
-import pyspark.sql.functions as F
+from typing import List
 
+import pyspark.sql.functions as F
 import pyspark.sql
 
 from utils import utils

@@ -4,6 +4,7 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import functions as F
+from pyspark.ml.linalg import SparseVector
 
 import jobs.create_care_home_features_ind_cqc_filled_posts as job
 from utils import utils
