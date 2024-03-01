@@ -1226,7 +1226,13 @@ class CleaningUtilsData:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_rows = CQCpirData.sample_rows_full
+    clean_cqc_pir_rows = [
+        ("1-000000001", "Y", date(2024, 1, 1), 10),
+        ("1-000000002", "N", date(2024, 1, 1), 20),
+        ("1-000000003", "Y", date(2024, 1, 1), 30),
+        ("1-000000001", "Y", date(2024, 2, 1), 1),
+        ("1-000000002", "N", date(2024, 2, 1), 4),
+    ]
 
     # fmt: off
     clean_cqc_location_for_merge_rows = [
@@ -1250,6 +1256,20 @@ class MergeIndCQCData:
         (date(2024, 1, 9), "1-000000001", "1", 4,),
         (date(2024, 1, 9), "1-000000003", "3", 5,),
         (date(2024, 3, 1), "1-000000003", "4", 6,),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merged_cqc_and_pir = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
     ]
     # fmt: on
 

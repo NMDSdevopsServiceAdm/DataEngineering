@@ -610,7 +610,14 @@ class FilterCleanedValuesSchema:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_schema = CQCPIRSchema.sample_schema
+    clean_cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), False),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+        ]
+    )
 
     clean_cqc_location_for_merge_schema = StructType(
         [
@@ -628,6 +635,14 @@ class MergeIndCQCData:
             StructField(AWPClean.location_id, StringType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    expected_cqc_and_pir_merged_schema = StructType(
+        [
+            *clean_cqc_location_for_merge_schema,
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
 

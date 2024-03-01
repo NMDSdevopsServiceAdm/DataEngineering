@@ -3,7 +3,7 @@ from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
-    CqcPIRCleanedColumns as PIRClean,
+    CqcPIRCleanedColumns as CQCPIRClean,
 )
 from tests.test_file_schemas import (
     CQCPIRSchema as Schemas,
@@ -26,7 +26,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=Schemas.sample_schema
         )
         self.test_cqc_pir_parquet_with_import_date = cleaning_utils.column_to_date(
-            self.test_cqc_pir_parquet, Keys.import_date, PIRClean.cqc_pir_import_date
+            self.test_cqc_pir_parquet, Keys.import_date, CQCPIRClean.cqc_pir_import_date
         )
         self.test_add_care_home_column_df = self.spark.createDataFrame(
             Data.add_care_home_column_rows, Schemas.add_care_home_column_schema
@@ -72,9 +72,9 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
 
     def test_add_care_home_column_categorises_care_homes_correctly(self):
         returned_df = job.add_care_home_column(self.test_add_care_home_column_df)
-        returned_data = returned_df.sort(PIRClean.location_id).collect()
+        returned_data = returned_df.sort(CQCPIRClean.location_id).collect()
         expected_df = self.test_expected_care_home_column_df
-        expected_data = expected_df.sort(PIRClean.location_id).collect()
+        expected_data = expected_df.sort(CQCPIRClean.location_id).collect()
 
         self.assertCountEqual(expected_data[0], returned_data[0])
         self.assertCountEqual(expected_data[1], returned_data[1])
@@ -93,8 +93,8 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
 
         test_df = job.filter_latest_submission_date(test_df)
 
-        returned_data = test_df.sort(PIRClean.cqc_pir_import_date).collect()
-        expected_data = expected_df.sort(PIRClean.cqc_pir_import_date).collect()
+        returned_data = test_df.sort(CQCPIRClean.cqc_pir_import_date).collect()
+        expected_data = expected_df.sort(CQCPIRClean.cqc_pir_import_date).collect()
 
         self.assertCountEqual(expected_data[0], returned_data[0])
         self.assertCountEqual(expected_data[1], returned_data[1])
