@@ -3,17 +3,26 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType, DateType
 
 import jobs.clean_ind_cqc_filled_posts as job
 from tests.test_file_generator import generate_ind_cqc_filled_posts_file_parquet
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns,
+)
 
 
 class CleanIndFilledPostsTests(unittest.TestCase):
     IND_FILELD_POSTS_DIR = "input_dir"
     IND_FILELD_POSTS_CLEANED_DIR = "output_dir"
+    partition_keys = [
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
+    ]
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -38,13 +47,13 @@ class CleanIndFilledPostsTests(unittest.TestCase):
             ANY,
             self.IND_FILELD_POSTS_CLEANED_DIR,
             mode=ANY,
-            partitionKeys=["year", "month", "day", "import_date"],
+            partitionKeys=self.partition_keys,
         )
 
     def test_replace_zero_beds_with_null(self):
         columns = [
-            "locationid",
-            "number_of_beds",
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
         ]
         rows = [
             ("1-000000001", None),
@@ -57,48 +66,50 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0]["number_of_beds"], None)
-        self.assertEqual(df[1]["number_of_beds"], None)
-        self.assertEqual(df[2]["number_of_beds"], 1)
+        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
+        self.assertEqual(df[1][IndCqcColumns.number_of_beds], None)
+        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 1)
 
-    def test_populate_missing_carehome_number_of_beds(self):
+    def test_populate_missing_care_home_number_of_beds(self):
         schema = StructType(
             [
-                StructField("locationId", StringType(), True),
-                StructField("snapshot_date", StringType(), True),
-                StructField("carehome", StringType(), True),
-                StructField("number_of_beds", IntegerType(), True),
+                StructField(IndCqcColumns.location_id, StringType(), True),
+                StructField(IndCqcColumns.cqc_location_import_date, DateType(), True),
+                StructField(IndCqcColumns.care_home, StringType(), True),
+                StructField(IndCqcColumns.number_of_beds, IntegerType(), True),
             ]
         )
 
         input_rows = [
-            ("1-000000001", "2023-01-01", "Y", None),
-            ("1-000000002", "2023-01-01", "N", None),
-            ("1-000000003", "2023-01-01", "Y", 1),
-            ("1-000000003", "2023-02-01", "Y", None),
-            ("1-000000003", "2023-03-01", "Y", 1),
-            ("1-000000004", "2023-01-01", "Y", 1),
-            ("1-000000004", "2023-02-01", "Y", 3),
+            ("1-000000001", date(2023, 1, 1), "Y", None),
+            ("1-000000002", date(2023, 1, 1), "N", None),
+            ("1-000000003", date(2023, 1, 1), "Y", 1),
+            ("1-000000003", date(2023, 2, 1), "Y", None),
+            ("1-000000003", date(2023, 3, 1), "Y", 1),
+            ("1-000000004", date(2023, 1, 1), "Y", 1),
+            ("1-000000004", date(2023, 2, 1), "Y", 3),
         ]
         input_df = self.spark.createDataFrame(input_rows, schema=schema)
 
-        df = job.populate_missing_carehome_number_of_beds(input_df)
+        df = job.populate_missing_care_home_number_of_beds(input_df)
         self.assertEqual(df.count(), 7)
 
-        df = df.sort("locationid", "snapshot_date").collect()
-        self.assertEqual(df[0]["number_of_beds"], None)
-        self.assertEqual(df[1]["number_of_beds"], None)
-        self.assertEqual(df[2]["number_of_beds"], 1)
-        self.assertEqual(df[3]["number_of_beds"], 1)
-        self.assertEqual(df[4]["number_of_beds"], 1)
-        self.assertEqual(df[5]["number_of_beds"], 1)
-        self.assertEqual(df[6]["number_of_beds"], 3)
+        df = df.sort(
+            IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date
+        ).collect()
+        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
+        self.assertEqual(df[1][IndCqcColumns.number_of_beds], None)
+        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[3][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[4][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[5][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[6][IndCqcColumns.number_of_beds], 3)
 
-    def test_filter_to_carehomes_with_known_beds(self):
+    def test_filter_to_care_homes_with_known_beds(self):
         columns = [
-            "locationid",
-            "carehome",
-            "number_of_beds",
+            IndCqcColumns.location_id,
+            IndCqcColumns.care_home,
+            IndCqcColumns.number_of_beds,
         ]
         rows = [
             ("1-000000001", "Y", None),
@@ -108,16 +119,16 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, columns)
 
-        df = job.filter_to_carehomes_with_known_beds(df)
+        df = job.filter_to_care_homes_with_known_beds(df)
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["locationid"], "1-000000003")
+        self.assertEqual(df[0][IndCqcColumns.location_id], "1-000000003")
 
     def test_average_beds_per_location(self):
         columns = [
-            "locationid",
-            "number_of_beds",
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
         ]
         rows = [
             ("1-000000001", 1),
@@ -132,13 +143,17 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         df = job.average_beds_per_location(df)
         self.assertEqual(df.count(), 3)
 
-        df = df.sort("locationid").collect()
-        self.assertEqual(df[0]["avg_beds"], 1)
-        self.assertEqual(df[1]["avg_beds"], 2)
-        self.assertEqual(df[2]["avg_beds"], 3)
+        df = df.sort(IndCqcColumns.location_id).collect()
+        self.assertEqual(df[0][job.average_number_of_beds], 1)
+        self.assertEqual(df[1][job.average_number_of_beds], 2)
+        self.assertEqual(df[2][job.average_number_of_beds], 3)
 
     def test_replace_null_beds_with_average(self):
-        columns = ["locationid", "number_of_beds", "avg_beds"]
+        columns = [
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
+            job.average_number_of_beds,
+        ]
         rows = [
             ("1-000000001", None, None),
             ("1-000000002", None, 1),
@@ -150,12 +165,16 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0]["number_of_beds"], None)
-        self.assertEqual(df[1]["number_of_beds"], 1)
-        self.assertEqual(df[2]["number_of_beds"], 2)
+        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
+        self.assertEqual(df[1][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 2)
 
     def test_replace_null_beds_with_average_doesnt_change_known_beds(self):
-        columns = ["locationid", "number_of_beds", "avg_beds"]
+        columns = [
+            IndCqcColumns.location_id,
+            IndCqcColumns.number_of_beds,
+            job.average_number_of_beds,
+        ]
         rows = [
             ("1-000000001", 1, 2),
         ]
@@ -165,7 +184,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0]["number_of_beds"], 1)
+        self.assertEqual(df[0][IndCqcColumns.number_of_beds], 1)
 
 
 if __name__ == "__main__":
