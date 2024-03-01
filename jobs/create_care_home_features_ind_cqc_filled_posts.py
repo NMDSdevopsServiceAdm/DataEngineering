@@ -1,4 +1,6 @@
 import sys
+from dataclasses import dataclass
+import pyspark.sql.functions as F
 
 import pyspark.sql
 
@@ -20,6 +22,29 @@ from utils.features.helper import (
 )
 
 
+@dataclass
+class ColNamesFromPrepareLocations:
+    ons_region: str = "ons_region"
+    services_offered: str = "services_offered"
+    cqc_sector: str = "cqc_sector"
+    rui_indicator: str = "rui_2011"
+    number_of_beds: str = "number_of_beds"
+    people_directly_employed: str = "people_directly_employed"
+    carehome: str = "carehome"
+    snapshot_date: str = "snapshot_date"
+
+
+@dataclass
+class NewColNames:
+    service_count: str = "service_count"
+    date_diff: str = "date_diff"
+
+
+@dataclass
+class FeatureNames:
+    care_home: str = "features"
+
+
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
     care_home_features_ind_cqc_filled_posts_destination: str,
@@ -36,8 +61,12 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    max_snapshot = utils.get_max_snapshot_partitions(destination)
+    """
+    max_snapshot = utils.get_max_snapshot_partitions(
+        care_home_features_ind_cqc_filled_posts_destination
+    )
     locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
+    """
 
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,

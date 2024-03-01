@@ -1,6 +1,9 @@
+import shutil
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
+
+from pyspark.sql import functions as F
 
 import jobs.create_care_home_features_ind_cqc_filled_posts as job
 from utils import utils
@@ -13,6 +16,10 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
     PREPARED_LOCATIONS_TEST_DATA = (
         "tests/test_data/domain=data_engineering/dataset=prepared_locations"
+    )
+
+    OUTPUT_DESTINATION = (
+        "tests/test_data/domain=data_engineering/dataset=locations_features"
     )
 
     def setUp(self):
