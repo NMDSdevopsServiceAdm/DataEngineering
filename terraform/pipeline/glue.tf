@@ -446,6 +446,19 @@ module "merge_ind_cqc_data_job" {
   }
 }
 
+module "create_care_home_features_ind_cqc_filled_posts" {
+  source          = "../modules/glue-job"
+  script_name     = "create_care_home_features_ind_cqc_filled_posts.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_filled_posts_cleaned_source"                 = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--care_home_features_ind_cqc_filled_posts_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_features/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
