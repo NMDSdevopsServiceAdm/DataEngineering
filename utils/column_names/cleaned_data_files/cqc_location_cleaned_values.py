@@ -5,6 +5,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
+    CqcProviderCleanedValues as CQCPValues,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -15,7 +16,7 @@ from utils.column_names.raw_data_files.ons_columns import (
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     import_date: str = "import_date"
     primary_service_type: str = "primary_service_type"
-    sector: str = CQCPClean.cqc_sector
+    cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
     current_cssr: str = "current_" + ONS.cssr
@@ -32,3 +33,4 @@ class CqcLocationCleanedValues:
     care_home_with_nursing: str = "Care home with nursing"
     care_home_only: str = "Care home without nursing"
     non_residential: str = "non-residential"
+    independent: str = CQCPValues.independent
