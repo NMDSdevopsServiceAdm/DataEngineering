@@ -8,6 +8,11 @@ from utils import utils
 from utils.ind_cqc_filled_posts_utils.filter_job_count.filter_job_count import (
     null_job_count_outliers,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 COLUMNS_TO_IMPORT = [
@@ -33,12 +38,12 @@ COLUMNS_TO_IMPORT = [
 
 
 def main(
-    cqc_filled_posts_source: str,
-    cqc_filled_posts_cleaned_destination: str,
+    merged_ind_cqc_source: str,
+    cleaned_ind_cqc_destination: str,
 ) -> pyspark.sql.DataFrame:
     print("Cleaning cqc_filled_posts dataset...")
 
-    locations_df = utils.read_from_parquet(cqc_filled_posts_source).selectExpr(
+    locations_df = utils.read_from_parquet(merged_ind_cqc_source).selectExpr(
         *COLUMNS_TO_IMPORT
     )
 
@@ -47,13 +52,13 @@ def main(
 
     locations_df = null_job_count_outliers(locations_df)
 
-    print(f"Exporting as parquet to {cqc_filled_posts_cleaned_destination}")
+    print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.write_to_parquet(
         locations_df,
-        cqc_filled_posts_cleaned_destination,
-        mode="append",
-        partitionKeys=["year", "month", "day", "import_date"],
+        cleaned_ind_cqc_destination,
+        mode="overwrite",
+        partitionKeys=PartitionKeys,
     )
 
 
@@ -96,20 +101,20 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        cqc_filled_posts_source,
-        cqc_filled_posts_cleaned_destination,
+        merged_ind_cqc_source,
+        cleaned_ind_cqc_destination,
     ) = utils.collect_arguments(
         (
-            "--ind_cqc_filled_posts_source",
-            "Source s3 directory for ind_cqc_filled_posts dataset",
+            "--merged_ind_cqc_source",
+            "Source s3 directory for merge_ind_cqc_data dataset",
         ),
         (
-            "--ind_cqc_filled_posts_cleaned_destination",
-            "A destination directory for outputting ind_cqc_filled_posts_cleaned",
+            "--cleaned_ind_cqc_destination",
+            "A destination directory for outputting cleaned_ind_cqc_destination",
         ),
     )
 
     main(
-        cqc_filled_posts_source,
-        cqc_filled_posts_cleaned_destination,
+        merged_ind_cqc_source,
+        cleaned_ind_cqc_destination,
     )
