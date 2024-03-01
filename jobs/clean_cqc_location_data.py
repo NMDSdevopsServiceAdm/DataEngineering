@@ -19,7 +19,6 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
-    ons_cols_to_import,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -35,6 +34,16 @@ NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
 ONS_FORMATTED_IMPORT_DATE_COL = "ons_postcode_import_date"
+
+
+ons_cols_to_import = [
+    ONS.import_date,
+    ONS.cssr,
+    ONS.region,
+    ONS.icb,
+    ONS.rural_urban_indicator_2011,
+    ONS.postcode,
+]
 
 
 def main(
