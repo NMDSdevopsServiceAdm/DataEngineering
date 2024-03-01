@@ -62,7 +62,9 @@ def main(
     ons_postcode_directory_source: str,
     cleaned_cqc_location_destintion: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_api_cols_to_import)
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, cqc_location_api_cols_to_import
+    )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
         ons_postcode_directory_source, selected_columns=ons_cols_to_import
@@ -163,7 +165,6 @@ def join_contemporary_ons_postcode_data(
     formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
         ONS.postcode, CQCLClean.postcode
     )
-
 
     cqc_location_df = cqc_location_df.join(
         formatted_ons_postcode_directory_df,

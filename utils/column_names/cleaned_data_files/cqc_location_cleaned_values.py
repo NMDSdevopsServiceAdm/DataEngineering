@@ -31,7 +31,6 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     contemporary_rural_urban_indicator_2011: str = ONS.rural_urban_indicator_2011
 
 
-
 @dataclass
 class CqcLocationCleanedValues:
     care_home_with_nursing: str = "Care home with nursing"
