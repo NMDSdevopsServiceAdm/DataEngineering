@@ -1027,7 +1027,6 @@ class CQCLocationsData:
             "Leeds",
             "Urban city and town",
             "LS1 2AB",
-            date(2021, 1, 1),
         ),
         (
             "Yorkshire & Humber",
@@ -1035,7 +1034,6 @@ class CQCLocationsData:
             "York",
             "Urban city and town",
             "B69 3EG",
-            date(2021, 1, 1),
         ),
     ]
 

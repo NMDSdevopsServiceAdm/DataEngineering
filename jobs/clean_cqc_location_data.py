@@ -63,7 +63,7 @@ def main(
     cleaned_cqc_location_destintion: str,
 ):
     cqc_location_df = utils.read_from_parquet(
-        cqc_location_source, cqc_location_api_cols_to_import
+        cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
@@ -92,25 +92,26 @@ def main(
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
+
     cqc_location_df = join_contemporary_ons_postcode_data(
         cqc_location_df, ons_postcode_directory_df
     )
-
+    cqc_location_df.printSchema()
     cqc_location_df = utils.normalise_column_values(cqc_location_df, CQCL.postcode)
-
+    
     cqc_location_df = join_current_ons_postcode_data(
         cqc_location_df, current_ons_postcode_directory_df
     )
-
+    cqc_location_df.printSchema()
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
-
+    
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
-
+    
     (
         registered_locations_df,
         deregistered_locations_df,
     ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
-
+    
     utils.write_to_parquet(
         registered_locations_df,
         cleaned_cqc_location_destintion,
@@ -121,16 +122,13 @@ def main(
 
 def prepare_current_ons_data(ons_df: DataFrame):
     max_import_date = ons_df.agg(F.max(CQCLClean.ons_import_date)).collect()[0][0]
-    ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date)
+    current_ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date).drop(CQCLClean.ons_import_date)
 
     STRING_TO_PREPEND = "current_"
-    COLS_TO_RENAME = ons_df.columns
-    COLS_TO_RENAME.remove(CQCLClean.ons_import_date)
+    COLS_TO_RENAME = current_ons_df.columns
     COLS_TO_RENAME.remove(ONS.postcode)
 
     new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
-
-    current_ons_df = ons_df
 
     for i in range(len(COLS_TO_RENAME)):
         current_ons_df = current_ons_df.withColumnRenamed(
