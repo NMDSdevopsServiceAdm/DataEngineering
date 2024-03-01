@@ -5,6 +5,7 @@ import pyspark
 from pyspark.sql import functions as F
 from pyspark.ml.feature import VectorAssembler
 
+
 # This functions will not be needed in the new pipeline
 def filter_records_since_snapshot_date(locations_df, max_snapshot):
     if not max_snapshot:

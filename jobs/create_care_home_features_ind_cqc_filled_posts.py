@@ -49,7 +49,6 @@ def main(
     ind_cqc_filled_posts_cleaned_source: str,
     care_home_features_ind_cqc_filled_posts_destination: str,
 ) -> pyspark.sql.DataFrame:
-
     print("Creating care home features dataset...")
 
     features_from_prepare_locations = ColNamesFromPrepareLocations()
