@@ -25,3 +25,10 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
         "current_" + ONS.rural_urban_indicator_2011
     )
     ons_import_date: str = "ons_postcode_import_date"
+
+
+@dataclass
+class CqcLocationCleanedValues:
+    care_home_with_nursing: str = "Care home with nursing"
+    care_home_only: str = "Care home without nursing"
+    non_residential: str = "non-residential"

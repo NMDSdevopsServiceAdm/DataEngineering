@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -26,10 +27,6 @@ from utils.column_names.raw_data_files.ons_columns import (
 from utils.cqc_location_dictionaries import InvalidPostcodes
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
-NURSING_HOME_IDENTIFIER = "Care home with nursing"
-NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
-NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
 
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
@@ -153,16 +150,16 @@ def allocate_primary_service_type(df: DataFrame):
                 df[CQCL.gac_service_types].description,
                 "Care home service with nursing",
             ),
-            NURSING_HOME_IDENTIFIER,
+            CQCLValues.care_home_with_nursing,
         )
         .when(
             F.array_contains(
                 df[CQCL.gac_service_types].description,
                 "Care home service without nursing",
             ),
-            NONE_NURSING_HOME_IDENTIFIER,
+            CQCLValues.care_home_only,
         )
-        .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
+        .otherwise(CQCLValues.non_residential),
     )
 
 
