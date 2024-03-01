@@ -4,7 +4,7 @@ import warnings
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, Window
 
 import pyspark.sql.functions as F
 
@@ -97,8 +97,12 @@ def main(
         partitionKeys=cqcPartitionKeys,
     )
 
+    deduped_deregistered_locations_df = (
+        only_keep_first_instance_of_deregistered_locations(deregistered_locations_df)
+    )
+
     utils.write_to_parquet(
-        deregistered_locations_df,
+        deduped_deregistered_locations_df,
         deregistered_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
@@ -209,6 +213,22 @@ def split_dataframe_into_registered_and_deregistered_rows(
     )
 
     return registered_df, deregistered_df
+
+
+def only_keep_first_instance_of_deregistered_locations(
+    df_with_duplicates: DataFrame,
+) -> DataFrame:
+    # TODO write test
+    row_number: str = "row_number"
+    window = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+    df_without_duplicates = (
+        df_with_duplicates.withColumn(row_number, F.row_number().over(window))
+        .filter(F.col(row_number) == 1)
+        .drop(F.col(row_number))
+    )
+    return df_without_duplicates
 
 
 if __name__ == "__main__":
