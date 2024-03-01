@@ -44,7 +44,7 @@ def main(
     cqc_location_source: str,
     cleaned_cqc_provider_source: str,
     ons_postcode_directory_source: str,
-    cleaned_cqc_location_destintion: str,
+    cleaned_cqc_location_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
@@ -91,7 +91,7 @@ def main(
 
     utils.write_to_parquet(
         registered_locations_df,
-        cleaned_cqc_location_destintion,
+        cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
@@ -184,8 +184,8 @@ def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
 ) -> DataFrame:
     invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != "Registered")
-        & (locations_df[CQCL.registration_status] != "Deregistered")
+        (locations_df[CQCL.registration_status] != CQCLValues.registered)
+        & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
     ).count()
 
     if invalid_rows != 0:
@@ -194,10 +194,10 @@ def split_dataframe_into_registered_and_deregistered_rows(
         )
 
     registered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == "Registered"
+        locations_df[CQCL.registration_status] == CQCLValues.registered
     )
     deregistered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == "Deregistered"
+        locations_df[CQCL.registration_status] == CQCLValues.deregistered
     )
 
     return registered_df, deregistered_df

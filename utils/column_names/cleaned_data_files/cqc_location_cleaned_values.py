@@ -34,3 +34,5 @@ class CqcLocationCleanedValues:
     care_home_only: str = "Care home without nursing"
     non_residential: str = "non-residential"
     independent: str = CQCPValues.independent
+    registered: str = "Registered"
+    deregistered: str = "Deregistered"
