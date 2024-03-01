@@ -39,6 +39,22 @@ ons_cols_to_import = [
     ONS.postcode,
 ]
 
+cqc_location_api_cols_to_import = [
+    CQCL.care_home,
+    CQCL.gac_service_types,
+    CQCL.location_id,
+    CQCL.provider_id,
+    CQCL.name,
+    CQCL.number_of_beds,
+    CQCL.postcode,
+    CQCL.registration_status,
+    CQCL.type,
+    Keys.import_date,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+]
+
 
 def main(
     cqc_location_source: str,
@@ -46,7 +62,7 @@ def main(
     ons_postcode_directory_source: str,
     cleaned_cqc_location_destintion: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source)
+    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_api_cols_to_import)
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
         ons_postcode_directory_source, selected_columns=ons_cols_to_import
