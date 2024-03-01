@@ -4,7 +4,7 @@ import pyspark.sql
 
 from utils import utils
 
-# test commit
+# test
 
 
 def main(
