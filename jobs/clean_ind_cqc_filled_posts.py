@@ -14,37 +14,13 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-COLUMNS_TO_IMPORT = [
-    "locationid",
-    "cqc_location_import_date",
-    "import_date",
-    "day",
-    "month",
-    "year",
-    "localAuthority as local_authority",
-    # "ons_region",
-    # "rural_urban_indicator AS rui_2011",
-    # "services_offered",
-    "carehome as care_home",
-    "primary_service_type",
-    "cqc_sector",
-    "registrationStatus as registration_status",
-    "numberOfBeds as number_of_beds",
-    # "people_directly_employed",
-    # "job_count_unfiltered_source",
-    # "job_count_unfiltered",
-]
-
-
 def main(
     merged_ind_cqc_source: str,
     cleaned_ind_cqc_destination: str,
 ) -> pyspark.sql.DataFrame:
     print("Cleaning cqc_filled_posts dataset...")
 
-    locations_df = utils.read_from_parquet(merged_ind_cqc_source).selectExpr(
-        *COLUMNS_TO_IMPORT
-    )
+    locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_carehome_number_of_beds(locations_df)
