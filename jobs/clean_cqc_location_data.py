@@ -95,13 +95,13 @@ def main(
     cqc_location_df = join_contemporary_ons_postcode_data(
         cqc_location_df, ons_postcode_directory_df
     )
-    cqc_location_df.printSchema()
+
     cqc_location_df = utils.normalise_column_values(cqc_location_df, CQCL.postcode)
 
     cqc_location_df = join_current_ons_postcode_data(
         cqc_location_df, current_ons_postcode_directory_df
     )
-    cqc_location_df.printSchema()
+
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
