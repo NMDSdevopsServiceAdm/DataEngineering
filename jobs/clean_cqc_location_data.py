@@ -121,7 +121,7 @@ def prepare_current_ons_data(ons_df: DataFrame):
 
 
 def remove_non_social_care_locations(df: DataFrame):
-    return df.where(df[CQCL.type] == "Social Care Org")
+    return df.where(df[CQCL.type] == CQCLValues.social_care_identifier)
 
 
 def remove_invalid_postcodes(df: DataFrame):

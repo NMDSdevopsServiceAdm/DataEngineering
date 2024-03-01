@@ -36,3 +36,4 @@ class CqcLocationCleanedValues:
     independent: str = CQCPValues.independent
     registered: str = "Registered"
     deregistered: str = "Deregistered"
+    social_care_identifier: str = "Social Care Org"
