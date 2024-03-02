@@ -1,15 +1,15 @@
 import datetime
-import shutil
 import unittest
-from unittest.mock import Mock, patch
 import warnings
+from unittest.mock import Mock, patch
 
 from pyspark.ml.linalg import SparseVector
 from pyspark.sql import functions as F
+
 import jobs.prepare_non_res_ind_cqc_features as job
 from tests.test_file_generator import generate_cleaned_cqc_ind_data
-from utils.features.helper import add_date_diff_into_df
 from utils import utils
+from utils.features.helper import add_date_diff_into_df
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
@@ -47,13 +47,16 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             actual_diff[0].diff, expected_diff_between_max_date_and_other_date
         )
 
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_produces_dataframe_with_features(self, read_from_parquet_mock: Mock):
+    def test_main_produces_dataframe_with_features(
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    ):
         read_from_parquet_mock.return_value = self.test_df
 
-        result = job.main(
-            self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION
-        ).orderBy(F.col("locationid"))
+        job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
+
+        result = write_to_parquet_mock.call_args[0][0].orderBy(F.col("locationid"))
 
         self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
         expected_features = SparseVector(
@@ -63,16 +66,19 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_is_filtering_out_rows_missing_data_for_features(
-        self, read_from_parquet_mock: Mock
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
         read_from_parquet_mock.return_value = self.test_df
 
         input_df_length = self.test_df.count()
         self.assertEqual(input_df_length, 14)
 
-        result = job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
+        job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
+
+        result = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(result.count(), 7)
 

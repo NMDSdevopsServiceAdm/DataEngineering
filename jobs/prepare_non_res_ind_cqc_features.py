@@ -1,25 +1,25 @@
 import argparse
 import sys
 from dataclasses import dataclass
+from typing import List
 
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
-from typing import List
 
 from utils import utils
 from utils.feature_engineering_dictionaries import (
-    SERVICES_LOOKUP,
     RURAL_URBAN_INDICATOR_LOOKUP,
+    SERVICES_LOOKUP,
 )
 from utils.features.helper import (
+    add_date_diff_into_df,
+    add_rui_data_data_frame,
     add_service_count_to_data,
     column_expansion_with_dict,
-    add_rui_data_data_frame,
-    get_list_of_distinct_ons_regions,
     explode_column_from_distinct_values,
-    add_date_diff_into_df,
-    vectorise_dataframe,
     filter_records_since_snapshot_date,
+    get_list_of_distinct_ons_regions,
+    vectorise_dataframe,
 )
 
 
@@ -136,15 +136,13 @@ def main(cleaned_cqc_ind_source, destination):
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
-    if destination:
-        print(f"Exporting as parquet to {destination}")
-        utils.write_to_parquet(
-            features_df,
-            destination,
-            mode="append",
-            partitionKeys=["year", "month", "day"],
-        )
-    return features_df
+    print(f"Exporting as parquet to {destination}")
+    utils.write_to_parquet(
+        features_df,
+        destination,
+        mode="append",
+        partitionKeys=["year", "month", "day"],
+    )
 
 
 def convert_col_to_integer_col(df, col_name):
