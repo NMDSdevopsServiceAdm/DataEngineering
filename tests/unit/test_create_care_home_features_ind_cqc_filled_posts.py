@@ -48,7 +48,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
 
     def test_create_care_home_features_produces_dataframe_with_features(self):
-        result = job.create_care_home_features(self.test_df, job.ColNamesFromPrepareLocations, job.NewColNames, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
+        result = job.create_care_home_features(self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
 
         expected_features = SparseVector(
             43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]

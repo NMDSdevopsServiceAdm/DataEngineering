@@ -12,38 +12,17 @@ from utils.feature_engineering_dictionaries import (
     SERVICES_LOOKUP,
     RURAL_URBAN_INDICATOR_LOOKUP,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
-    get_list_of_distinct_ons_regions,
     add_service_count_to_data,
     add_rui_data_data_frame,
     explode_column_from_distinct_values,
     add_date_diff_into_df,
 )
-
-
-@dataclass
-class ColNamesFromPrepareLocations:
-    ons_region: str = "ons_region"
-    services_offered: str = "services_offered"
-    cqc_sector: str = "cqc_sector"
-    rui_indicator: str = "rui_2011"
-    number_of_beds: str = "number_of_beds"
-    people_directly_employed: str = "people_directly_employed"
-    carehome: str = "carehome"
-    snapshot_date: str = "snapshot_date"
-
-
-@dataclass
-class NewColNames:
-    service_count: str = "service_count"
-    date_diff: str = "date_diff"
-
-
-@dataclass
-class FeatureNames:
-    care_home: str = "features"
 
 
 def main(
@@ -52,14 +31,12 @@ def main(
 ) -> pyspark.sql.DataFrame:
     print("Creating care home features dataset...")
 
-    known_features = ColNamesFromPrepareLocations()
-    new_features = NewColNames()
     services_dict = SERVICES_LOOKUP
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    features_df = create_care_home_features(locations_df, known_features, new_features, services_dict, rural_urban_indicator_dict)
+    features_df = create_care_home_features(locations_df, services_dict, rural_urban_indicator_dict)
 
     
 
@@ -74,53 +51,52 @@ def main(
         partitionKeys=["year", "month", "day", "import_date"],
     )
 
-def create_care_home_features(locations_df: DataFrame, known_features: dataclass, new_features: dataclass, services_dict: dict, rural_urban_indicator_dict:dict) -> DataFrame:
+def create_care_home_features(locations_df: DataFrame, services_dict: dict, rural_urban_indicator_dict:dict) -> DataFrame:
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,
-        carehome_col_name=known_features.carehome,
-        cqc_col_name=known_features.cqc_sector,
+        carehome_col_name=IndCQC.care_home,
+        cqc_col_name=IndCQC.cqc_sector,
     )
     data_with_service_count = add_service_count_to_data(
         df=filtered_loc_data,
-        new_col_name=new_features.service_count,
-        col_to_check=known_features.services_offered,
+        new_col_name=IndCQC.service_count,
+        col_to_check=IndCQC.services_offered,
     )
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
-        col_name=known_features.services_offered,
+        col_name=IndCQC.services_offered,
         lookup_dict=services_dict,
     )
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
-        rui_col_name=known_features.rui_indicator,
+        rui_col_name=IndCQC.current_rural_urban_indicator_2011,
         lookup_dict=rural_urban_indicator_dict,
     )
 
     distinct_regions = get_list_of_distinct_ons_regions(
         df=data_with_rui,
-        col_name=known_features.ons_region,
     )
 
     data_with_region_cols, regions = explode_column_from_distinct_values(
         df=data_with_rui,
-        column_name=known_features.ons_region,
+        column_name=IndCQC.current_region,
         col_prefix="ons_",
         col_list_set=set(distinct_regions),
     )
 
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
-        new_col_name=new_features.date_diff,
-        snapshot_date_col=known_features.snapshot_date,
+        new_col_name=IndCQC.date_diff,
+        snapshot_date_col=IndCQC.cqc_location_import_date,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
-            new_features.service_count,
-            known_features.number_of_beds,
-            new_features.date_diff,
+            IndCQC.service_count,
+            IndCQC.number_of_beds,
+            IndCQC.date_diff,
         ]
         + service_keys
         + regions
@@ -131,17 +107,14 @@ def create_care_home_features(locations_df: DataFrame, known_features: dataclass
         df=data_with_date_diff, list_for_vectorisation=list_for_vectorisation
     )
     features_df = vectorised_dataframe.select(
-        "locationid",
-        "snapshot_date",
-        "ons_region",
-        "number_of_beds",
-        "people_directly_employed",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-        "carehome",
-        "features",
-        "job_count",
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.current_region,
+        IndCQC.number_of_beds,
+        IndCQC.people_directly_employed,
+        IndCQC.care_home,
+        IndCQC.care_home_features,
+        IndCQC.job_count,
     )
     print("distinct_regions")
     print(distinct_regions)
@@ -160,6 +133,12 @@ def filter_locations_df_for_independent_care_home_data(
     )
     return independent_care_home_data
 
+def get_list_of_distinct_ons_regions(
+    df: pyspark.sql.DataFrame
+) -> List[str]:
+    distinct_regions = df.select(IndCQC.current_region).distinct().dropna().collect()
+    dis_regions_list = [str(row.current_Region) for row in distinct_regions]
+    return dis_regions_list
 
 if __name__ == "__main__":
     print("Spark job 'create_care_home_feature_ind_cqc_filled_posts' starting...")
