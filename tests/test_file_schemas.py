@@ -740,5 +740,6 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.current_rural_urban_indicator_2011, FloatType(), True),
             StructField(IndCQC.contemporary_rural_urban_indicator_2011, FloatType(), True),
             StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
