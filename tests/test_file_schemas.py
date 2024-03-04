@@ -63,6 +63,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    FeatureEngineeringColumns as FE,
+)
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
@@ -644,5 +647,43 @@ class MergeIndCQCData:
         [
             StructField(MergeIndCqcColumns.location_id, StringType(), True),
             StructField(MergeIndCqcColumns.sector, StringType(), True),
+        ]
+    )
+
+@dataclass
+class CareHomeFeaturesSchema:
+    columns = [
+        "locationid",
+        "snapshot_date",
+        "ons_region",
+        "number_of_beds",
+        "services_offered",
+        "primary_service_type",
+        "people_directly_employed",
+        "job_count_unfiltered",
+        "job_count",
+        "local_authority",
+        "snapshot_year",
+        "snapshot_month",
+        "snapshot_day",
+        "carehome",
+        "cqc_sector",
+        "rui_2011",
+        "job_count_unfiltered_source",
+    ]
+    clean_merged_data_schema = StructType(
+        [
+            StructField(FE.location_id, StringType(), True),
+            StructField(FE., StringType(), True),
+            StructField(FE.ons_region, StringType(), True),
+            StructField(FE.number_of_beds, IntegerType(), True),
+            StructField(FE.ons_region, StringType(), True),
+            StructField(FE.location_id, StringType(), True),
+            StructField(FE.ons_region, StringType(), True),
+            StructField(FE.location_id, StringType(), True),
+            StructField(FE.ons_region, StringType(), True),
+            StructField(FE.location_id, StringType(), True),
+            StructField(FE.ons_region, StringType(), True),
+
         ]
     )
