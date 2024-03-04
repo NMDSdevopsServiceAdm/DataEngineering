@@ -441,6 +441,18 @@ class CQCLocationsSchema:
         ]
     )
 
+    expected_services_offered_schema = StructType(
+        [
+            *primary_service_type_schema,
+            StructField(
+            CQCLClean.services_offered,
+            ArrayType(
+                StringType(),
+            ),
+        ),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:
