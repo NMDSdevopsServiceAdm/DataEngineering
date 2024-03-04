@@ -11,16 +11,47 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.value_labels.ascwds_worker.worker_label_dictionary import (
+    ascwds_worker_labels_dict,
+)
+
+WORKER_COLUMNS = [
+    AWKClean.location_id,
+    AWKClean.import_date,
+    AWKClean.establishment_id,
+    AWKClean.main_job_role_id,
+    AWKClean.year,
+    AWKClean.month,
+    AWKClean.day,
+]
+
+WORKPLACE_COLUMNS = [
+    AWPClean.import_date,
+    AWPClean.establishment_id,
+]
 
 
 def main(
     worker_source: str, cleaned_workplace_source: str, cleaned_worker_destination: str
 ):
-    ascwds_worker_df = utils.read_from_parquet(worker_source)
-    ascwds_workplace_cleaned_df = utils.read_from_parquet(cleaned_workplace_source)
+    ascwds_worker_df = utils.read_from_parquet(
+        worker_source,
+        WORKER_COLUMNS,
+    )
+    ascwds_workplace_cleaned_df = utils.read_from_parquet(
+        cleaned_workplace_source,
+        WORKPLACE_COLUMNS,
+    )
 
     ascwds_worker_df = remove_workers_without_workplaces(
         ascwds_worker_df, ascwds_workplace_cleaned_df
+    )
+
+    ascwds_worker_df = cUtils.apply_categorical_labels(
+        ascwds_worker_df,
+        ascwds_worker_labels_dict,
+        ascwds_worker_labels_dict.keys(),
+        add_as_new_column=True,
     )
 
     ascwds_worker_df = cUtils.column_to_date(

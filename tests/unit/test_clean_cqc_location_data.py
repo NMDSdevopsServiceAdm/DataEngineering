@@ -22,6 +22,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLCleaned,
+    CqcLocationCleanedValues as CQCLValues,
 )
 
 
@@ -140,6 +141,40 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
         )
 
 
+class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_services_offered_df = self.spark.createDataFrame(
+            Data.primary_service_type_rows,
+            schema=Schemas.primary_service_type_schema,
+        )
+
+    def test_allocate_primary_service_type_add_column(self):
+        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
+
+        self.assertTrue(CQCLCleaned.services_offered in returned_df.columns)
+
+    def test_allocate_primary_service_type_returns_correct_data(self):
+        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_services_offered_rows,
+            Schemas.expected_services_offered_schema,
+        )
+
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
+        self.assertEqual(returned_data, expected_data)
+
+
 class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
@@ -161,11 +196,11 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
         ).first()[0]
 
         self.assertEqual(len(primary_service_values), 5)
-        self.assertEqual(primary_service_values[0], job.NONE_RESIDENTIAL_IDENTIFIER)
-        self.assertEqual(primary_service_values[1], job.NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[2], job.NONE_NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[3], job.NURSING_HOME_IDENTIFIER)
-        self.assertEqual(primary_service_values[4], job.NONE_NURSING_HOME_IDENTIFIER)
+        self.assertEqual(primary_service_values[0], CQCLValues.non_residential)
+        self.assertEqual(primary_service_values[1], CQCLValues.care_home_with_nursing)
+        self.assertEqual(primary_service_values[2], CQCLValues.care_home_only)
+        self.assertEqual(primary_service_values[3], CQCLValues.care_home_with_nursing)
+        self.assertEqual(primary_service_values[4], CQCLValues.care_home_only)
 
 
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
@@ -300,6 +335,49 @@ class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
         self.assertEqual(
             self.expected_processed_ons_df.collect(), returned_df.collect()
         )
+
+
+class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_location__for_contemporary_ons_join_df = self.spark.createDataFrame(
+            Data.locations_for_contemporary_ons_join_rows,
+            Schemas.locations_for_contemporary_ons_join_schema,
+        )
+        self.test_ons_for_contemporary_join_df = self.spark.createDataFrame(
+            Data.ons_for_contemporary_ons_join_rows,
+            Schemas.ons_for_contemporary_ons_join_schema,
+        )
+
+    def test_join_contemporary_ons_postcode_data_completes(self):
+        returned_df = job.join_contemporary_ons_postcode_data(
+            self.test_location__for_contemporary_ons_join_df,
+            self.test_ons_for_contemporary_join_df,
+        )
+
+        self.assertIsInstance(returned_df, DataFrame)
+
+    def test_join_contemporary_ons_postcode_data_correctly_joins_data(self):
+        returned_df = job.join_contemporary_ons_postcode_data(
+            self.test_location__for_contemporary_ons_join_df,
+            self.test_ons_for_contemporary_join_df,
+        )
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_contemporary_ons_join_rows,
+            Schemas.expected_contemporary_ons_join_schema,
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
+        )
+
+        self.assertCountEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":

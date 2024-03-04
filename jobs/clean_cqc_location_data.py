@@ -19,7 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
-    ons_cols_to_import,
+    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -28,22 +28,47 @@ from utils.cqc_location_dictionaries import InvalidPostcodes
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-NURSING_HOME_IDENTIFIER = "Care home with nursing"
-NONE_NURSING_HOME_IDENTIFIER = "Care home without nursing"
-NONE_RESIDENTIAL_IDENTIFIER = "non-residential"
-
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
-ONS_FORMATTED_IMPORT_DATE_COL = "ons_postcode_import_date"
+ons_cols_to_import = [
+    ONS.import_date,
+    ONS.cssr,
+    ONS.region,
+    ONS.icb,
+    ONS.rural_urban_indicator_2011,
+    ONS.postcode,
+]
+
+cqc_location_api_cols_to_import = [
+    CQCL.care_home,
+    CQCL.dormancy,
+    CQCL.gac_service_types,
+    CQCL.location_id,
+    CQCL.provider_id,
+    CQCL.name,
+    CQCL.number_of_beds,
+    CQCL.postcode,
+    CQCL.registration_date,
+    CQCL.registration_status,
+    CQCL.regulated_activities,
+    CQCL.specialisms,
+    CQCL.type,
+    Keys.import_date,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+]
 
 
 def main(
     cqc_location_source: str,
     cleaned_cqc_provider_source: str,
     ons_postcode_directory_source: str,
-    cleaned_cqc_location_destintion: str,
+    cleaned_cqc_location_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source)
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, selected_columns=cqc_location_api_cols_to_import
+    )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
         ons_postcode_directory_source, selected_columns=ons_cols_to_import
@@ -56,7 +81,7 @@ def main(
     )
 
     ons_postcode_directory_df = cUtils.column_to_date(
-        ons_postcode_directory_df, Keys.import_date, ONS_FORMATTED_IMPORT_DATE_COL
+        ons_postcode_directory_df, Keys.import_date, CQCLClean.ons_import_date
     ).drop(ONS.import_date)
 
     current_ons_postcode_directory_df = prepare_current_ons_data(
@@ -71,6 +96,10 @@ def main(
 
     cqc_location_df = remove_invalid_postcodes(cqc_location_df)
 
+    cqc_location_df = join_contemporary_ons_postcode_data(
+        cqc_location_df, ons_postcode_directory_df
+    )
+
     cqc_location_df = utils.normalise_column_values(cqc_location_df, CQCL.postcode)
 
     cqc_location_df = join_current_ons_postcode_data(
@@ -78,6 +107,8 @@ def main(
     )
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
+
+    cqc_location_df = add_list_of_services_offered(cqc_location_df)
 
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
@@ -88,24 +119,21 @@ def main(
 
     utils.write_to_parquet(
         registered_locations_df,
-        cleaned_cqc_location_destintion,
+        cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
 
 
 def prepare_current_ons_data(ons_df: DataFrame):
-    max_import_date = ons_df.agg(F.max(ONS_FORMATTED_IMPORT_DATE_COL)).collect()[0][0]
-    ons_df = ons_df.filter(F.col(ONS_FORMATTED_IMPORT_DATE_COL) == max_import_date)
+    max_import_date = ons_df.agg(F.max(CQCLClean.ons_import_date)).collect()[0][0]
+    current_ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date)
 
     STRING_TO_PREPEND = "current_"
-    COLS_TO_RENAME = ons_df.columns
-    COLS_TO_RENAME.remove(ONS_FORMATTED_IMPORT_DATE_COL)
+    COLS_TO_RENAME = current_ons_df.columns
     COLS_TO_RENAME.remove(ONS.postcode)
 
     new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
-
-    current_ons_df = ons_df
 
     for i in range(len(COLS_TO_RENAME)):
         current_ons_df = current_ons_df.withColumnRenamed(
@@ -118,7 +146,7 @@ def prepare_current_ons_data(ons_df: DataFrame):
 
 
 def remove_non_social_care_locations(df: DataFrame):
-    return df.where(df[CQCL.type] == "Social Care Org")
+    return df.where(df[CQCL.type] == CQCLValues.social_care_identifier)
 
 
 def remove_invalid_postcodes(df: DataFrame):
@@ -126,6 +154,27 @@ def remove_invalid_postcodes(df: DataFrame):
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+
+
+def join_contemporary_ons_postcode_data(
+    cqc_location_df: DataFrame, ons_postcode_directory_df: DataFrame
+) -> DataFrame:
+    cqc_location_df = cUtils.add_aligned_date_column(
+        cqc_location_df,
+        ons_postcode_directory_df,
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.ons_import_date,
+    )
+    formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
+        ONS.postcode, CQCLClean.postcode
+    )
+
+    cqc_location_df = cqc_location_df.join(
+        formatted_ons_postcode_directory_df,
+        [CQCLClean.ons_import_date, CQCLClean.postcode],
+        "left",
+    )
+    return cqc_location_df
 
 
 def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFrame):
@@ -136,6 +185,13 @@ def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFr
     )
 
 
+def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
+    cqc_loc_df = cqc_loc_df.withColumn(
+        CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
+    )
+    return cqc_loc_df
+
+
 def allocate_primary_service_type(df: DataFrame):
     return df.withColumn(
         CQCLClean.primary_service_type,
@@ -144,16 +200,16 @@ def allocate_primary_service_type(df: DataFrame):
                 df[CQCL.gac_service_types].description,
                 "Care home service with nursing",
             ),
-            NURSING_HOME_IDENTIFIER,
+            CQCLValues.care_home_with_nursing,
         )
         .when(
             F.array_contains(
                 df[CQCL.gac_service_types].description,
                 "Care home service without nursing",
             ),
-            NONE_NURSING_HOME_IDENTIFIER,
+            CQCLValues.care_home_only,
         )
-        .otherwise(NONE_RESIDENTIAL_IDENTIFIER),
+        .otherwise(CQCLValues.non_residential),
     )
 
 
@@ -181,8 +237,8 @@ def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
 ) -> DataFrame:
     invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != "Registered")
-        & (locations_df[CQCL.registration_status] != "Deregistered")
+        (locations_df[CQCL.registration_status] != CQCLValues.registered)
+        & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
     ).count()
 
     if invalid_rows != 0:
@@ -191,10 +247,10 @@ def split_dataframe_into_registered_and_deregistered_rows(
         )
 
     registered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == "Registered"
+        locations_df[CQCL.registration_status] == CQCLValues.registered
     )
     deregistered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == "Deregistered"
+        locations_df[CQCL.registration_status] == CQCLValues.deregistered
     )
 
     return registered_df, deregistered_df

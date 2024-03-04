@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
-    CqcProviderCleanedValues as CQCPValues,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+    CqcPIRCleanedColumns as CQCPIRClean,
 )
 
 
@@ -17,16 +19,37 @@ class PartitionKeys:
 
 
 @dataclass
-class MergeIndCqcColumns:
+class IndCqcColumns:
+    cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     location_id: str = CQCLClean.location_id
-    sector: str = CQCLClean.sector
+    name: str = CQCLClean.name
+    provider_id: str = CQCLClean.provider_id
+    provider_name: str = CQCLClean.provider_name
+    cqc_sector: str = CQCLClean.cqc_sector
+    registration_status: str = CQCLClean.registration_status
+    registration_date: str = CQCLClean.registration_date
+    dormancy: str = CQCLClean.dormancy
+    care_home: str = CQCLClean.care_home
+    number_of_beds: str = CQCLClean.number_of_beds
+    regulated_activities: str = CQCLClean.regulated_activities
+    gac_service_types: str = CQCLClean.gac_service_types
+    specialisms: str = CQCLClean.specialisms
+    primary_service_type: str = CQCLClean.primary_service_type
+    ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
+    establishment_id: str = AWPClean.establishment_id
+    organisation_id: str = AWPClean.organisation_id
+    total_staff: str = AWPClean.total_staff
+    total_staff_bounded: str = AWPClean.total_staff_bounded
+    total_staff_deduplicated: str = AWPClean.total_staff_deduplicated
+    worker_records: str = AWPClean.worker_records
+    worker_records_bounded: str = AWPClean.worker_records_bounded
+    worker_records_deduplicated: str = AWPClean.worker_records_deduplicated
+    cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
+    people_directly_employed: str = CQCPIRClean.people_directly_employed
 
 
-@dataclass
-class MergeIndCqcValues:
-    independent: str = CQCPValues.independent
-
-
+# DONT IMPORT FROM BELOW THIS LINE
+# WE'LL BE REMOVING THESE WHEN PREPARE LOCATIONS SCRIPT GOES
 @dataclass
 class PrepareLocationsColumns:
     ascwds_workplace_import_date: str = "ascwds_workplace_import_date"

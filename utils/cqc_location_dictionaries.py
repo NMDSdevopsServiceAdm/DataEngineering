@@ -18,7 +18,7 @@ class InvalidPostcodes:
         "CCT8 8SA": "CT8 8SA",
         "CH1 4QL": "CH1 4QN",
         "CH1 6BS": "CH1 5RE",
-        "CH4 0NR": "CH4 8RQ",
+        "CH4 0NR": "CH4 9AF",
         "CH4 0RG": "CH4 7QJ",
         "CH4 8RQ": "CH4 8BJ",
         "CH41 1UE": "CH41 1EU",
