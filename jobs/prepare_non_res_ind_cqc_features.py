@@ -52,7 +52,7 @@ def main(cleaned_cqc_ind_source, destination):
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
     locations_df = utils.read_from_parquet(cleaned_cqc_ind_source)
-    max_snapshot = utils.get_max_snapshot_partitions(destination)
+    max_snapshot = utils.get_max_snapshot_partitions(destination, ['year', 'month', 'day'])
     locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
 
     filtered_loc_data = filter_locations_df_for_independent_non_res_care_home_data(
@@ -71,12 +71,14 @@ def main(cleaned_cqc_ind_source, destination):
         new_col_name=new_cols_for_features.service_count,
         col_to_check=features_from_prepare_locations.services_offered,
     )
+
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
         col_name=features_from_prepare_locations.services_offered,
         lookup_dict=services_dict,
     )
+
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
