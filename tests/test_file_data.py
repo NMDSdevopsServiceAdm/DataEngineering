@@ -554,7 +554,7 @@ class CQCProviderData:
 
 
 @dataclass
-class IngestONSData:
+class ONSData:
     sample_rows = [
         ("Yorkshire & Humber", "Leeds", "50.10101"),
         ("Yorkshire & Humber", "York", "52.10101"),

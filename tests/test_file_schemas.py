@@ -296,12 +296,37 @@ class ASCWDSWorkplaceSchemas:
 
 
 @dataclass
-class IngestONSData:
+class ONSData:
     sample_schema = StructType(
         [
             StructField(ONS.region, StringType(), True),
             StructField(ONS.icb, StringType(), True),
             StructField(ONS.longitude, StringType(), True),
+        ]
+    )
+
+    ons_schema = StructType(
+        [
+            StructField(ONS.postcode, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.sub_icb, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.icb_region, StringType(), True),
+            StructField(ONS.ccg, StringType(), True),
+            StructField(ONS.latitude, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
+            StructField(ONS.imd_score, StringType(), True),
+            StructField(ONS.lower_super_output_area_2011, StringType(), True),
+            StructField(ONS.middle_super_output_area_2011, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+            StructField(ONS.lower_super_output_area_2021, StringType(), True),
+            StructField(ONS.middle_super_output_area_2021, StringType(), True),
+            StructField(
+                ONS.westminster_parliamentary_consitituency, StringType(), True
+            ),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
