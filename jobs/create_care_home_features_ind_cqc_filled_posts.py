@@ -36,9 +36,9 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    features_df = create_care_home_features(locations_df, services_dict, rural_urban_indicator_dict)
-
-    
+    features_df = create_care_home_features(
+        locations_df, services_dict, rural_urban_indicator_dict
+    )
 
     print(
         f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
@@ -51,7 +51,10 @@ def main(
         partitionKeys=["year", "month", "day", "import_date"],
     )
 
-def create_care_home_features(locations_df: DataFrame, services_dict: dict, rural_urban_indicator_dict:dict) -> DataFrame:
+
+def create_care_home_features(
+    locations_df: DataFrame, services_dict: dict, rural_urban_indicator_dict: dict
+) -> DataFrame:
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,
         carehome_col_name=IndCQC.care_home,
@@ -133,12 +136,12 @@ def filter_locations_df_for_independent_care_home_data(
     )
     return independent_care_home_data
 
-def get_list_of_distinct_ons_regions(
-    df: pyspark.sql.DataFrame
-) -> List[str]:
+
+def get_list_of_distinct_ons_regions(df: pyspark.sql.DataFrame) -> List[str]:
     distinct_regions = df.select(IndCQC.current_region).distinct().dropna().collect()
     dis_regions_list = [str(row.current_Region) for row in distinct_regions]
     return dis_regions_list
+
 
 if __name__ == "__main__":
     print("Spark job 'create_care_home_feature_ind_cqc_filled_posts' starting...")

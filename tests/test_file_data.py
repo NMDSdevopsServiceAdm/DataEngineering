@@ -1468,15 +1468,48 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
+
 @dataclass
 class CareHomeFeaturesData:
-    # fmt: off
     clean_merged_data_rows = [
-        ("1-000000001", date(2022, 3, 8), "Yorkshire and The Humbler", 67, ["Care home service with nursing"],  None, None, "Y", "Local authority", "(England/Wales) Urban city and town"),
-        ("1-10894414510", date(2022, 3, 8), "Yorkshire and The Humbler", 10, ["Care home service with nursing"], 0, 25.0, "Y", "Independent",  "(England/Wales) Urban city and town"),
-        ("1-108967195", date(2022, 4, 22), "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], 11, None, "N", "Independent", "(England/Wales) Urban city and town"),
+        (
+            "1-000000001",
+            date(2022, 3, 8),
+            "Yorkshire and The Humbler",
+            67,
+            ["Care home service with nursing"],
+            None,
+            None,
+            "Y",
+            "Local authority",
+            "(England/Wales) Urban city and town",
+        ),
+        (
+            "1-10894414510",
+            date(2022, 3, 8),
+            "Yorkshire and The Humbler",
+            10,
+            ["Care home service with nursing"],
+            0,
+            25.0,
+            "Y",
+            "Independent",
+            "(England/Wales) Urban city and town",
+        ),
+        (
+            "1-108967195",
+            date(2022, 4, 22),
+            "(pseudo) Wales",
+            0,
+            ["Supported living service", "Acute services with overnight beds"],
+            11,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Urban city and town",
+        ),
     ]
-    # fmt: on
+
     filter_to_ind_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
         ("N", CQCLValues.independent),
@@ -1484,6 +1517,7 @@ class CareHomeFeaturesData:
         ("Y", ""),
         ("Y", None),
     ]
+
     expected_filtered_to_ind_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
     ]

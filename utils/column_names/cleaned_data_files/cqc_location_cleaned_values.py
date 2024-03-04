@@ -12,7 +12,6 @@ from utils.column_names.raw_data_files.ons_columns import (
 )
 
 
-
 @dataclass
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     import_date: str = "import_date"

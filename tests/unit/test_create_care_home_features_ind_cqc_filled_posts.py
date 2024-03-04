@@ -29,8 +29,12 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_df = self.spark.createDataFrame(Data.clean_merged_data_rows, Schemas.clean_merged_data_schema)
-        self.filter_to_ind_care_home_df = self.spark.createDataFrame(Data.filter_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema)
+        self.test_df = self.spark.createDataFrame(
+            Data.clean_merged_data_rows, Schemas.clean_merged_data_schema
+        )
+        self.filter_to_ind_care_home_df = self.spark.createDataFrame(
+            Data.filter_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema
+        )
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -53,9 +57,10 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             partitionKeys=["year", "month", "day", "import_date"],
         )
 
-
     def test_create_care_home_features_produces_dataframe_with_features(self):
-        result = job.create_care_home_features(self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
+        result = job.create_care_home_features(
+            self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP
+        )
 
         expected_features = SparseVector(
             43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]
@@ -63,12 +68,15 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
-
-    def test_create_care_home_features_is_filtering_out_rows_missing_data_for_features(self):
+    def test_create_care_home_features_is_filtering_out_rows_missing_data_for_features(
+        self,
+    ):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
 
-        result = job.create_care_home_features(self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
+        result = job.create_care_home_features(
+            self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP
+        )
 
         self.assertTrue(result.count() == 1)
 
@@ -76,7 +84,10 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         returned_df = job.filter_locations_df_for_independent_care_home_data(
             self.filter_to_ind_care_home_df, IndCQC.care_home, IndCQC.cqc_sector
         )
-        expected_df = self.spark.createDataFrame(Data.expected_filtered_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_to_ind_care_home_rows,
+            Schemas.filter_to_ind_care_home_schema,
+        )
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)

@@ -717,6 +717,7 @@ class MergeIndCQCData:
         ]
     )
 
+
 @dataclass
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
@@ -725,9 +726,13 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(
-                StringType(),
-            ), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(IndCQC.job_count, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
