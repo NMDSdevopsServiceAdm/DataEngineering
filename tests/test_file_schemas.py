@@ -394,13 +394,49 @@ class CQCLocationsSchema:
 
     expected_processed_ons_schema = StructType(
         [
-            StructField("current_" + ONS.region, StringType(), True),
-            StructField("current_" + ONS.cssr, StringType(), True),
-            StructField("current_" + ONS.icb, StringType(), True),
+            StructField(CQCLClean.current_region, StringType(), True),
+            StructField(CQCLClean.current_cssr, StringType(), True),
+            StructField(CQCLClean.current_icb, StringType(), True),
             StructField(
-                "current_" + ONS.rural_urban_indicator_2011, StringType(), True
+                CQCLClean.current_rural_urban_indicator_2011, StringType(), True
             ),
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.current_ons_import_date, DateType(), True),
+        ]
+    )
+
+    locations_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.postcode, StringType(), True),
+        ]
+    )
+
+    ons_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCLClean.contemporary_region, StringType(), True),
+            StructField(CQCLClean.contemporary_cssr, StringType(), True),
+            StructField(CQCLClean.contemporary_icb, StringType(), True),
+            StructField(
+                CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True
+            ),
             StructField(CQCLClean.ons_import_date, DateType(), True),
         ]
     )

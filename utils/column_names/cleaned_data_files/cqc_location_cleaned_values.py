@@ -26,6 +26,11 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
         "current_" + ONS.rural_urban_indicator_2011
     )
     ons_import_date: str = "ons_postcode_import_date"
+    current_ons_import_date: str = "current_" + ons_import_date
+    contemporary_cssr: str = ONS.cssr
+    contemporary_region: str = ONS.region
+    contemporary_icb: str = ONS.icb
+    contemporary_rural_urban_indicator_2011: str = ONS.rural_urban_indicator_2011
 
 
 @dataclass
