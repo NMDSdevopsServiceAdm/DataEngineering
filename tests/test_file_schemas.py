@@ -744,7 +744,7 @@ class CareHomeFeaturesSchema:
         ]
     )
 
-    clean_merged_data_schema = StructType(
+    clean_merged_data_schema_copy = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
