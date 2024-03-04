@@ -21,8 +21,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
     CqcLocationCleanedValues as CQCLValues,
 )
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 
@@ -31,12 +31,12 @@ cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
 ons_cols_to_import = [
-    ONS.import_date,
-    ONS.cssr,
-    ONS.region,
-    ONS.icb,
-    ONS.rural_urban_indicator_2011,
-    ONS.postcode,
+    ONSClean.ons_import_date,
+    ONSClean.cssr,
+    ONSClean.region,
+    ONSClean.icb,
+    ONSClean.rural_urban_indicator_2011,
+    ONSClean.postcode,
 ]
 
 cqc_location_api_cols_to_import = [
@@ -63,7 +63,7 @@ cqc_location_api_cols_to_import = [
 def main(
     cqc_location_source: str,
     cleaned_cqc_provider_source: str,
-    ons_postcode_directory_source: str,
+    cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
@@ -71,7 +71,7 @@ def main(
     )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
-        ons_postcode_directory_source, selected_columns=ons_cols_to_import
+        cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
 
     cqc_location_df = utils.format_date_fields(
@@ -79,10 +79,6 @@ def main(
         date_column_identifier=DATE_COLUMN_IDENTIFIER,
         raw_date_format="yyyy-MM-dd",
     )
-
-    ons_postcode_directory_df = cUtils.column_to_date(
-        ons_postcode_directory_df, Keys.import_date, CQCLClean.ons_import_date
-    ).drop(ONS.import_date)
 
     current_ons_postcode_directory_df = prepare_current_ons_data(
         ons_postcode_directory_df
@@ -129,7 +125,7 @@ def prepare_current_ons_data(ons_df: DataFrame):
 
     STRING_TO_PREPEND = "current_"
     COLS_TO_RENAME = current_ons_df.columns
-    COLS_TO_RENAME.remove(ONS.postcode)
+    COLS_TO_RENAME.remove(ONSClean.postcode)
 
     new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
 
@@ -138,7 +134,7 @@ def prepare_current_ons_data(ons_df: DataFrame):
             COLS_TO_RENAME[i], new_ons_col_names[i]
         )
 
-    current_ons_df = current_ons_df.withColumnRenamed(ONS.postcode, CQCL.postcode)
+    current_ons_df = current_ons_df.withColumnRenamed(ONSClean.postcode, CQCL.postcode)
 
     return current_ons_df
 
@@ -164,7 +160,7 @@ def join_contemporary_ons_postcode_data(
         CQCLClean.ons_import_date,
     )
     formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
-        ONS.postcode, CQCLClean.postcode
+        ONSClean.postcode, CQCLClean.postcode
     )
 
     cqc_location_df = cqc_location_df.join(
@@ -254,7 +250,7 @@ if __name__ == "__main__":
     (
         cqc_location_source,
         cleaned_cqc_provider_source,
-        ons_postcode_directory_source,
+        cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     ) = utils.collect_arguments(
         (
@@ -266,7 +262,7 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned parquet CQC provider dataset",
         ),
         (
-            "--ons_postcode_directory_source",
+            "--cleaned_ons_postcode_directory_source",
             "Source s3 directory for parquet ONS postcode directory dataset",
         ),
         (
@@ -277,7 +273,7 @@ if __name__ == "__main__":
     main(
         cqc_location_source,
         cleaned_cqc_provider_source,
-        ons_postcode_directory_source,
+        cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     )
 
