@@ -64,7 +64,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertEqual(actual_features, expected_features)
 
 
-    def test_main_is_filtering_out_rows_missing_data_for_features(self):
+    def test_create_care_home_features_is_filtering_out_rows_missing_data_for_features(self):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
 
