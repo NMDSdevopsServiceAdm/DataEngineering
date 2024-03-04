@@ -1039,6 +1039,173 @@ class CQCLocationsData:
         ),
     ]
 
+    locations_for_contemporary_ons_join_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            date(2020, 1, 1),
+            "PR1 9AB",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            date(2018, 1, 1),
+            "B69 3EG",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            date(2020, 1, 1),
+            "PR1 9HL",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            date(2021, 1, 1),
+            "LS1 2AB",
+        ),
+    ]
+
+    ons_for_contemporary_ons_join_rows = [
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            date(2021, 1, 1),
+            "LS1 2AB",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "York",
+            "Urban city and town",
+            date(2021, 1, 1),
+            "B69 3EG",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Hull",
+            "Urban city and town",
+            date(2019, 1, 1),
+            "PR1 9HL",
+        ),
+    ]
+
+    expected_contemporary_ons_join_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            date(2020, 1, 1),
+            "PR1 9AB",
+            None,
+            None,
+            None,
+            None,
+            date(2019, 1, 1),
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            date(2018, 1, 1),
+            "B69 3EG",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            date(2020, 1, 1),
+            "PR1 9HL",
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Hull",
+            "Urban city and town",
+            date(2019, 1, 1),
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            date(2021, 1, 1),
+            "LS1 2AB",
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            date(2021, 1, 1),
+        ),
+    ]
+
+    expected_services_offered_rows = [
+        (
+            "location1",
+            "provider1",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            ["Domiciliary care service"],
+        ),
+        (
+            "location2",
+            "provider2",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                }
+            ],
+            ["Care home service with nursing"],
+        ),
+        (
+            "location3",
+            "provider3",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                }
+            ],
+            ["Care home service without nursing"],
+        ),
+        (
+            "location4",
+            "provider4",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            ["Care home service with nursing", "Care home service without nursing"],
+        ),
+        (
+            "location5",
+            "provider5",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Fake",
+                    "description": "Fake service",
+                },
+            ],
+            ["Care home service without nursing", "Fake service"],
+        ),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
