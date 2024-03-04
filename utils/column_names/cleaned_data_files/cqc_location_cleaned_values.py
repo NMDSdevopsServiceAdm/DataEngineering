@@ -15,6 +15,7 @@ from utils.column_names.raw_data_files.ons_columns import (
 @dataclass
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     import_date: str = "import_date"
+    services_offered: str = "services_offered"
     primary_service_type: str = "primary_service_type"
     cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
