@@ -1297,3 +1297,27 @@ class MergeIndCQCData:
         ("loc-3", "Independent",),
     ]
     # fmt: on
+
+
+@dataclass
+class PrepareNonResData(object):
+    partitions = ["2022", "03", "08"]
+
+    # fmt: off
+    rows = [
+        ("1-1783948", "2022-02-01", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_1"),
+        ("1-1783948", "2022-01-01", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_2"),
+        ("1-348374832", "2022-01-12", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, 34.0, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-683746776", "2022-01-01", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, None, "Gloucestershire", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10478686", "2022-01-01", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1"),
+        ("1-10235302415", "2022-01-12", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3"),
+        ("1-1060912125", "2022-01-12", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, None, "Surrey", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_2"),
+        ("1-107095666", "2022-03-01", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Urban city and town", "rule_3"),
+        ("1-108369587", "2022-03-08", "South West", 0, ["Specialist college service"], "non-residential", 15, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Rural town and fringe in a sparse setting", "rule_1"),
+        ("1-10758359583", "2022-03-08", None, 0, ["Mobile doctors service"], "non-residential", 17, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Local authority", "(England/Wales) Urban city and town", "rule_2"),
+        ("1-000000001", "2022-03-08", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Local authority", "(England/Wales) Urban city and town", "rule_1"),
+        ("1-10894414510", "2022-03-08", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "Independent", "(England/Wales) Urban city and town", "rule_3"),
+        ("1-108950835", "2022-03-15", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "Y", "", "(England/Wales) Urban city and town", "rule_1"),
+        ("1-108967195", "2022-04-22", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "Lewisham", partitions[0], partitions[1], partitions[2], "N", "Independent", "(England/Wales) Urban city and town", "rule_3"),
+    ]
+    # fmt: on

@@ -7,7 +7,8 @@ from pyspark.ml.linalg import SparseVector
 from pyspark.sql import functions as F
 
 import jobs.prepare_non_res_ind_cqc_features as job
-from tests.test_file_generator import generate_cleaned_cqc_ind_data
+from tests.test_file_data import PrepareNonResData as Data
+from tests.test_file_schemas import PrepareNonResSchemas as Schemas
 from utils import utils
 from utils.features.helper import add_date_diff_into_df
 
@@ -18,7 +19,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_df = generate_cleaned_cqc_ind_data()
+        self.test_df = self.spark.createDataFrame(Data.rows, Schemas.basic_schema)
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_add_date_diff_into_df(self):

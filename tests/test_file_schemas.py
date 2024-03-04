@@ -665,3 +665,28 @@ class MergeIndCQCData:
             StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
+
+
+@dataclass
+class PrepareNonResSchemas(object):
+    basic_schema = StructType(
+        [
+            StructField("locationid", StringType()),
+            StructField("date", StringType()),
+            StructField("ons_region", StringType()),
+            StructField("number_of_beds", StringType()),
+            StructField("services_offered", ArrayType(StringType())),
+            StructField("primary_service_type", StringType()),
+            StructField("people_directly_employed", StringType()),
+            StructField("job_count_unfiltered", StringType()),
+            StructField("job_count", StringType()),
+            StructField("local_authority", StringType()),
+            StructField("year", StringType()),
+            StructField("month", StringType()),
+            StructField("day", StringType()),
+            StructField("carehome", StringType()),
+            StructField("cqc_sector", StringType()),
+            StructField("rui_2011", StringType()),
+            StructField("job_count_unfiltered_source", StringType()),
+        ]
+    )
