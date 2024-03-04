@@ -97,8 +97,12 @@ def main(
     )
 
     # temporary code to be replaced by job calculator (needed now so later jobs can be tested)
-    ind_cqc_location_df = ind_cqc_location_df.withColumn("job_count", F.lit(None).cast(FloatType()))
-    ind_cqc_location_df = ind_cqc_location_df.withColumn("job_count_source", F.lit(None).cast(StringType()))
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered_source", F.lit(None).cast(StringType())
+    )
     # end of temporary code
 
     utils.write_to_parquet(
