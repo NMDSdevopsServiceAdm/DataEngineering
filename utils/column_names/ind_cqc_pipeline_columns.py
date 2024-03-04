@@ -33,6 +33,7 @@ class IndCqcColumns:
     number_of_beds: str = CQCLClean.number_of_beds
     regulated_activities: str = CQCLClean.regulated_activities
     gac_service_types: str = CQCLClean.gac_service_types
+    services_offered:str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
     primary_service_type: str = CQCLClean.primary_service_type
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
