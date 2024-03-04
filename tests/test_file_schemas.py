@@ -64,7 +64,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    FeatureEngineeringColumns as FE,
+    IndCqcColumns as IndCQC,
 )
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
@@ -719,38 +719,26 @@ class MergeIndCQCData:
 
 @dataclass
 class CareHomeFeaturesSchema:
-    columns = [
-        "locationid",
-        "snapshot_date",
-        "ons_region",
-        "number_of_beds",
-        "services_offered",
-        "primary_service_type",
-        "people_directly_employed",
-        "job_count_unfiltered",
-        "job_count",
-        "local_authority",
-        "snapshot_year",
-        "snapshot_month",
-        "snapshot_day",
-        "carehome",
-        "cqc_sector",
-        "rui_2011",
-        "job_count_unfiltered_source",
-    ]
     clean_merged_data_schema = StructType(
         [
-            StructField(FE.location_id, StringType(), True),
-            StructField(FE., StringType(), True),
-            StructField(FE.ons_region, StringType(), True),
-            StructField(FE.number_of_beds, IntegerType(), True),
-            StructField(FE.ons_region, StringType(), True),
-            StructField(FE.location_id, StringType(), True),
-            StructField(FE.ons_region, StringType(), True),
-            StructField(FE.location_id, StringType(), True),
-            StructField(FE.ons_region, StringType(), True),
-            StructField(FE.location_id, StringType(), True),
-            StructField(FE.ons_region, StringType(), True),
-
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.contemporary_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.services_offered, ArrayType(
+                StringType(),
+            ), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
+            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.current_local_authority, StringType(), True),
+            StructField(IndCQC.contemporary_local_authority, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, IntegerType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, FloatType(), True),
+            StructField(IndCQC.contemporary_rural_urban_indicator_2011, FloatType(), True),
+            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
         ]
     )
