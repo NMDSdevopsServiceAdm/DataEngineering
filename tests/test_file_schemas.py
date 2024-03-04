@@ -445,11 +445,11 @@ class CQCLocationsSchema:
         [
             *primary_service_type_schema,
             StructField(
-            CQCLClean.services_offered,
-            ArrayType(
-                StringType(),
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
             ),
-        ),
         ]
     )
 

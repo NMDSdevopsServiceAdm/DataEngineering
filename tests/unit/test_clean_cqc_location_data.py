@@ -157,11 +157,23 @@ class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
     def test_allocate_primary_service_type_returns_correct_data(self):
         returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
 
-        expected_df = self.spark.createDataFrame(Data.expected_services_offered_rows, Schemas.expected_services_offered_schema)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_services_offered_rows,
+            Schemas.expected_services_offered_schema,
+        )
 
-        returned_data = returned_df.select(sorted(returned_df.columns)).sort(CQCLCleaned.location_id).collect()
-        expected_data = expected_df.select(sorted(expected_df.columns)).sort(CQCLCleaned.location_id).collect()
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
         self.assertEqual(returned_data, expected_data)
+
 
 class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
