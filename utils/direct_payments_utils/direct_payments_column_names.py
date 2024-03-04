@@ -82,9 +82,9 @@ class DirectPaymentColumnNames:
     ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: str = (
         "estimated_proportion_of_service_users_employing_staff_year_provided"
     )
-    PREVIOUS_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: (
-        str
-    ) = "previous_estimated_proportion_of_service_users_employing_staff_year_provided"
+    PREVIOUS_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: str = (
+        "previous_estimated_proportion_of_service_users_employing_staff_year_provided"
+    )
     NEXT_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF_YEAR_PROVIDED: str = (
         "next_estimated_proportion_of_service_users_employing_staff_year_provided"
     )
@@ -103,12 +103,10 @@ class DirectPaymentColumnNames:
     SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "sum_of_estimated_proportion_of_service_users_employing_staff"
     )
-    ROLLING_TOTAL_OF_COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: (
-        str
-    ) = "rolling_total_of_count_of_estimated_proportion_of_service_users_employing_staff"
-    ROLLING_TOTAL_OF_SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: (
-        str
-    ) = "rolling_total_of_sum_of_estimated_proportion_of_service_users_employing_staff"
+    ROLLING_TOTAL_OF_COUNT_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = "rolling_total_of_count_of_estimated_proportion_of_service_users_employing_staff"
+    ROLLING_TOTAL_OF_SUM_OF_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
+        "rolling_total_of_sum_of_estimated_proportion_of_service_users_employing_staff"
+    )
     ROLLING_AVERAGE_ESTIMATED_PROPORTION_OF_SERVICE_USERS_EMPLOYING_STAFF: str = (
         "rolling_average_estimated_proportion_of_service_users_employing_staff"
     )
