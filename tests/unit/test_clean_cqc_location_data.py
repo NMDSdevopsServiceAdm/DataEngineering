@@ -342,8 +342,6 @@ class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
             .sort(CQCL.location_id)
             .collect()
         )
-        returned_df.show()
-        expected_df.show()
 
         self.assertCountEqual(returned_data, expected_data)
 
