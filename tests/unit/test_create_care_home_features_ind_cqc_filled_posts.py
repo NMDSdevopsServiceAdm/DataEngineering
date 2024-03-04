@@ -8,35 +8,22 @@ from pyspark.ml.linalg import SparseVector
 
 import jobs.create_care_home_features_ind_cqc_filled_posts as job
 from utils import utils
-from tests.test_file_generator import generate_prepared_locations_file_parquet
+from utils.feature_engineering_dictionaries import (
+    SERVICES_LOOKUP,
+    RURAL_URBAN_INDICATOR_LOOKUP,
+)
+from tests.test_file_data import CareHomeFeaturesData as Data
+from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 
 
 class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
     IND_FILLED_POSTS_CLEANED_DIR = "source_dir"
     CARE_HOME_FEATURES_DIR = "destination_dir"
 
-    PREPARED_LOCATIONS_TEST_DATA = (
-        "tests/test_data/domain=data_engineering/dataset=prepared_locations"
-    )
-
-    OUTPUT_DESTINATION = (
-        "tests/test_data/domain=data_engineering/dataset=locations_features"
-    )
-
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_df = generate_prepared_locations_file_parquet(
-            self.PREPARED_LOCATIONS_TEST_DATA
-        )
-        warnings.filterwarnings("ignore", category=ResourceWarning)
+        self.test_df = self.spark.createDataFrame(Data.clean_merged_data_rows, Schemas.clean_merged_data_schema)
 
-    def tearDown(self) -> None:
-        try:
-            shutil.rmtree(self.PREPARED_LOCATIONS_TEST_DATA)
-            shutil.rmtree(self.OUTPUT_DESTINATION)
-        except OSError:
-            pass
-        return super().tearDown()
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -59,9 +46,9 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             partitionKeys=["year", "month", "day", "import_date"],
         )
 
-    @unittest.skip("needs_refactoring")
-    def test_main_produces_dataframe_with_features(self):
-        result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
+
+    def test_create_care_home_features_produces_dataframe_with_features(self):
+        result = job.create_care_home_features(self.test_df, job.ColNamesFromPrepareLocations, job.NewColNames, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
 
         expected_features = SparseVector(
             43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]

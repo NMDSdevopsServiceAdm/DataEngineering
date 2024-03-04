@@ -53,6 +53,9 @@ class IndCqcColumns:
     contemporary_local_authority: str = CQCLClean.contemporary_cssr
     current_rural_urban_indicator_2011: str = CQCLClean.current_rural_urban_indicator_2011
     contemporary_rural_urban_indicator_2011:str = CQCLClean.contemporary_rural_urban_indicator_2011
+    job_count:str = "job_count"
+    job_count_unfiltered:str = "job_count_unfiltered"
+    job_count_unfiltered_source:str = "job_count_unfiltered_source"
 
 # DONT IMPORT FROM BELOW THIS LINE
 # WE'LL BE REMOVING THESE WHEN PREPARE LOCATIONS SCRIPT GOES

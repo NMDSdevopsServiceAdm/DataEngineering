@@ -4,6 +4,7 @@ from typing import List
 
 import pyspark.sql.functions as F
 import pyspark.sql
+from pyspark.sql import DataFrame
 
 from utils import utils
 
@@ -51,59 +52,75 @@ def main(
 ) -> pyspark.sql.DataFrame:
     print("Creating care home features dataset...")
 
-    features_from_prepare_locations = ColNamesFromPrepareLocations()
-    new_cols_for_features = NewColNames()
+    known_features = ColNamesFromPrepareLocations()
+    new_features = NewColNames()
     services_dict = SERVICES_LOOKUP
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
+    features_df = create_care_home_features(locations_df, known_features, new_features, services_dict, rural_urban_indicator_dict)
+
+    
+
+    print(
+        f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
+    )
+
+    utils.write_to_parquet(
+        features_df,
+        care_home_features_ind_cqc_filled_posts_destination,
+        mode="overwrite",
+        partitionKeys=["year", "month", "day", "import_date"],
+    )
+
+def create_care_home_features(locations_df: DataFrame, known_features: dataclass, new_features: dataclass, services_dict: dict, rural_urban_indicator_dict:dict) -> DataFrame:
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,
-        carehome_col_name=features_from_prepare_locations.carehome,
-        cqc_col_name=features_from_prepare_locations.cqc_sector,
+        carehome_col_name=known_features.carehome,
+        cqc_col_name=known_features.cqc_sector,
     )
     data_with_service_count = add_service_count_to_data(
         df=filtered_loc_data,
-        new_col_name=new_cols_for_features.service_count,
-        col_to_check=features_from_prepare_locations.services_offered,
+        new_col_name=new_features.service_count,
+        col_to_check=known_features.services_offered,
     )
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
-        col_name=features_from_prepare_locations.services_offered,
+        col_name=known_features.services_offered,
         lookup_dict=services_dict,
     )
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
-        rui_col_name=features_from_prepare_locations.rui_indicator,
+        rui_col_name=known_features.rui_indicator,
         lookup_dict=rural_urban_indicator_dict,
     )
 
     distinct_regions = get_list_of_distinct_ons_regions(
         df=data_with_rui,
-        col_name=features_from_prepare_locations.ons_region,
+        col_name=known_features.ons_region,
     )
 
     data_with_region_cols, regions = explode_column_from_distinct_values(
         df=data_with_rui,
-        column_name=features_from_prepare_locations.ons_region,
+        column_name=known_features.ons_region,
         col_prefix="ons_",
         col_list_set=set(distinct_regions),
     )
 
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
-        new_col_name=new_cols_for_features.date_diff,
-        snapshot_date_col=features_from_prepare_locations.snapshot_date,
+        new_col_name=new_features.date_diff,
+        snapshot_date_col=known_features.snapshot_date,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
-            new_cols_for_features.service_count,
-            features_from_prepare_locations.number_of_beds,
-            new_cols_for_features.date_diff,
+            new_features.service_count,
+            known_features.number_of_beds,
+            new_features.date_diff,
         ]
         + service_keys
         + regions
@@ -126,23 +143,12 @@ def main(
         "features",
         "job_count",
     )
-
     print("distinct_regions")
     print(distinct_regions)
     print("number_of_features:")
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
-
-    print(
-        f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
-    )
-
-    utils.write_to_parquet(
-        features_df,
-        care_home_features_ind_cqc_filled_posts_destination,
-        mode="overwrite",
-        partitionKeys=["year", "month", "day", "import_date"],
-    )
+    return features_df
 
 
 def filter_locations_df_for_independent_care_home_data(
