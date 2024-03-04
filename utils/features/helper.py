@@ -36,6 +36,7 @@ def vectorise_dataframe(
     return loc_df
 
 
+# this function has been refactored into care home features as the column name is locked in
 def get_list_of_distinct_ons_regions(
     df: pyspark.sql.DataFrame, col_name: str
 ) -> List[str]:
