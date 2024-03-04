@@ -212,7 +212,10 @@ def get_max_snapshot_date(locations_df):
     return locations_df.select(F.max("snapshot_date").alias("max")).first().max
 
 
-def get_max_snapshot_partitions(location=None, partitions: List[str] = ["snapshot_year", "snapshot_month", "snapshot_day"]):
+def get_max_snapshot_partitions(
+    location=None,
+    partitions: List[str] = ["snapshot_year", "snapshot_month", "snapshot_day"],
+):
     if not location:
         return None
 
