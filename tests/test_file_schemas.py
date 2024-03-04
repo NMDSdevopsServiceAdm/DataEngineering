@@ -736,8 +736,8 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.job_count_unfiltered_source, StringType(), True), #
-            StructField(IndCQC.registration_status, StringType(), True), #
+           # StructField(IndCQC.job_count_unfiltered_source, StringType(), True), #
+           # StructField(IndCQC.registration_status, StringType(), True), #
         ]
     )
 
