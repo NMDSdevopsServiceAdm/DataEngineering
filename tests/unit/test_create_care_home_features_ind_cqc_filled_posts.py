@@ -56,12 +56,12 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         actual_features = result.select(F.col("features")).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
-    @unittest.skip("needs_refactoring")
+
     def test_main_is_filtering_out_rows_missing_data_for_features(self):
         input_df_length = self.test_df.count()
         self.assertTrue(input_df_length, 14)
 
-        result = job.main(self.PREPARED_LOCATIONS_TEST_DATA, self.OUTPUT_DESTINATION)
+        result = job.create_care_home_features(self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP)
 
         self.assertTrue(result.count() == 1)
 
