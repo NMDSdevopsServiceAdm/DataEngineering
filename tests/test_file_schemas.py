@@ -730,7 +730,7 @@ class CareHomeFeaturesSchema:
             ), True),
            # StructField(IndCQC.primary_service_type, StringType(), True), #
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.job_count_unfiltered, FloatType(), True), #
+           # StructField(IndCQC.job_count_unfiltered, FloatType(), True), #
             StructField(IndCQC.job_count, FloatType(), True),
             StructField(IndCQC.current_local_authority, StringType(), True), #
             StructField(IndCQC.care_home, StringType(), True),
