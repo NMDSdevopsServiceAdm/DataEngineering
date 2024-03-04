@@ -8,6 +8,9 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
 
 
 @dataclass
@@ -1485,3 +1488,13 @@ class CareHomeFeaturesData:
         ("1-108967195", date(2022, 4, 22), "(pseudo) Wales", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "Lewisham", "Lewisham", "N", "Independent", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_3", "Registered"),
     ]
     # fmt: on
+    filter_to_ind_care_home_rows = rows = [
+        ("Y", CQCLValues.independent),
+        ("N", CQCLValues.independent),
+        ("Y", CQCLValues.local_authority),
+        ("Y", ""),
+        ("Y", None),
+    ]
+    expected_filtered_to_ind_care_home_rows = rows = [
+        ("Y", CQCLValues.independent),
+    ]

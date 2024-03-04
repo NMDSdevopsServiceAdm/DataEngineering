@@ -12,6 +12,13 @@ from utils.feature_engineering_dictionaries import (
     SERVICES_LOOKUP,
     RURAL_URBAN_INDICATOR_LOOKUP,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
+
 from tests.test_file_data import CareHomeFeaturesData as Data
 from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 
@@ -23,7 +30,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(Data.clean_merged_data_rows, Schemas.clean_merged_data_schema)
-
+        self.filter_to_ind_care_home_df = self.spark.createDataFrame(Data.filter_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -66,25 +73,13 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertTrue(result.count() == 1)
 
     def test_filter_locations_df_for_independent_care_home_data(self):
-        cols = ["carehome", "cqc_sector"]
-        rows = [
-            ("Y", "Independent"),
-            ("N", "Independent"),
-            ("Y", "local authority"),
-            ("Y", ""),
-            ("Y", None),
-        ]
-
-        df = self.spark.createDataFrame(rows, cols)
-
-        result = job.filter_locations_df_for_independent_care_home_data(
-            df=df, carehome_col_name="carehome", cqc_col_name="cqc_sector"
+        returned_df = job.filter_locations_df_for_independent_care_home_data(
+            self.filter_to_ind_care_home_df, IndCQC.care_home, IndCQC.cqc_sector
         )
-        result_row = result.collect()
-        self.assertTrue(result.count() == 1)
-        self.assertEqual(
-            result_row[0].asDict(), {"carehome": "Y", "cqc_sector": "Independent"}
-        )
+        expected_df = self.spark.createDataFrame(Data.expected_filtered_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema)
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":

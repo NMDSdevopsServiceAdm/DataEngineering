@@ -12,6 +12,7 @@ from utils.column_names.raw_data_files.ons_columns import (
 )
 
 
+
 @dataclass
 class CqcLocationCleanedColumns(CqcLocationApiColumns):
     import_date: str = "import_date"
@@ -40,6 +41,7 @@ class CqcLocationCleanedValues:
     care_home_only: str = "Care home without nursing"
     non_residential: str = "non-residential"
     independent: str = CQCPValues.independent
+    local_authority: str = CQCPValues.local_authority
     registered: str = "Registered"
     deregistered: str = "Deregistered"
     social_care_identifier: str = "Social Care Org"

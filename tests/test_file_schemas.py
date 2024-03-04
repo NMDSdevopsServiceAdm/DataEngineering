@@ -743,3 +743,10 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
+
+    filter_to_ind_care_home_schema = StructType(
+        [
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
