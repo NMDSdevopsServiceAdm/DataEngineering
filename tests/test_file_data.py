@@ -567,6 +567,16 @@ class ONSData:
         ("Yorkshire & Humber", "Hull", "53.10101"),
     ]
 
+    # fmt: off
+    ons_sample_rows_full = [
+        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "20220101"),
+        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "20220101"),
+        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "20230101"),
+        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "20230101"),
+        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "20230101"),
+    ]
+    # fmt: on
+
 
 @dataclass
 class CQCpirData:

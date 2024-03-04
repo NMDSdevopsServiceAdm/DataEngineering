@@ -305,7 +305,7 @@ class ONSData:
         ]
     )
 
-    ons_schema = StructType(
+    full_schema = StructType(
         [
             StructField(ONS.postcode, StringType(), True),
             StructField(ONS.cssr, StringType(), True),

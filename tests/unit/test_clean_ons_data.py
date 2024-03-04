@@ -6,8 +6,8 @@ from utils import utils
 
 import jobs.clean_ons_data as job
 
-from tests.test_file_data import CQCProviderData as Data
-from tests.test_file_schemas import CQCProviderSchema as Schema
+from tests.test_file_data import ONSData as Data
+from tests.test_file_schemas import ONSData as Schema
 from utils.column_names.raw_data_files.ons_columns import (
     ONSPartitionKeys as Keys,
 )
@@ -16,7 +16,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 )
 
 
-class CleanCQCProviderDatasetTests(unittest.TestCase):
+class CleanONSDatasetTests(unittest.TestCase):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -24,7 +24,7 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_ons_parquet = self.spark.createDataFrame(
-            Data.sample_rows_full, schema=Schema.full_schema
+            Data.ons_sample_rows_full, schema=Schema.full_schema
         )
 
     @patch("utils.utils.write_to_parquet")
