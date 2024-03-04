@@ -309,7 +309,6 @@ class ONSData:
         [
             StructField(ONS.postcode, StringType(), True),
             StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
             StructField(ONS.region, StringType(), True),
             StructField(ONS.sub_icb, StringType(), True),
             StructField(ONS.icb, StringType(), True),
