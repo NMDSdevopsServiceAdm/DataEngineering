@@ -41,13 +41,17 @@ ons_cols_to_import = [
 
 cqc_location_api_cols_to_import = [
     CQCL.care_home,
+    CQCL.dormancy,
     CQCL.gac_service_types,
     CQCL.location_id,
     CQCL.provider_id,
     CQCL.name,
     CQCL.number_of_beds,
     CQCL.postcode,
+    CQCL.registration_date,
     CQCL.registration_status,
+    CQCL.regulated_activities,
+    CQCL.specialisms,
     CQCL.type,
     Keys.import_date,
     Keys.year,
