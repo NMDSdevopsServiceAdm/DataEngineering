@@ -9,8 +9,8 @@ import pyspark.sql.functions as F
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from utils.column_names.raw_data_files.ons_columns import (
-    ONSPartitionKeys as Keys,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
@@ -25,11 +25,58 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
     ons_df = cUtils.column_to_date(ons_df, Keys.import_date, ONSClean.ons_import_date)
 
+    refactored_ons_df = refactor_columns_as_struct_with_alias(
+        ons_df, ONSClean.contemporary
+    )
+
+    current_ons_df = prepare_current_ons_data(ons_df)
+
+    refactored_ons_with_current_ons_df = refactored_ons_df.join(
+        current_ons_df, ONSClean.postcode, "left"
+    )
+
     utils.write_to_parquet(
-        ons_df,
+        refactored_ons_with_current_ons_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
+    )
+
+
+def prepare_current_ons_data(df: DataFrame) -> DataFrame:
+    max_import_date = df.agg(F.max(ONSClean.ons_import_date)).collect()[0][0]
+    current_ons_df = df.filter(F.col(ONSClean.ons_import_date) == max_import_date)
+
+    refactored_df = refactor_columns_as_struct_with_alias(
+        current_ons_df, ONSClean.current
+    )
+
+    return refactored_df.withColumnRenamed(
+        ONSClean.ons_import_date, ONSClean.current_ons_import_date
+    )
+
+
+def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFrame:
+    return df.select(
+        ONSClean.postcode,
+        ONSClean.ons_import_date,
+        F.struct(
+            ONSClean.cssr,
+            ONSClean.region,
+            ONSClean.sub_icb,
+            ONSClean.icb,
+            ONSClean.icb_region,
+            ONSClean.ccg,
+            ONSClean.latitude,
+            ONSClean.longitude,
+            ONSClean.imd_score,
+            ONSClean.lower_super_output_area_2011,
+            ONSClean.middle_super_output_area_2011,
+            ONSClean.rural_urban_indicator_2011,
+            ONSClean.lower_super_output_area_2021,
+            ONSClean.middle_super_output_area_2021,
+            ONSClean.westminster_parliamentary_consitituency,
+        ).alias(alias),
     )
 
 
