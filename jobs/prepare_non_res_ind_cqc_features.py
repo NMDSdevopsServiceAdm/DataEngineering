@@ -7,6 +7,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
 from utils.feature_engineering_dictionaries import (
     RURAL_URBAN_INDICATOR_LOOKUP,
     SERVICES_LOOKUP,
@@ -24,17 +25,6 @@ from utils.features.helper import (
 
 
 @dataclass
-class ColNamesFromPrepareLocations:
-    ons_region: str = "ons_region"
-    services_offered: str = "services_offered"
-    cqc_sector: str = "cqc_sector"
-    rui_indicator: str = "rui_2011"
-    people_directly_employed: str = "people_directly_employed"
-    carehome: str = "carehome"
-    snapshot_date: str = "snapshot_date"
-
-
-@dataclass
 class NewColNames:
     service_count: str = "service_count"
     date_diff: str = "date_diff"
@@ -46,56 +36,51 @@ class FeatureNames:
 
 
 def main(cleaned_cqc_ind_source, destination):
-    features_from_prepare_locations = ColNamesFromPrepareLocations()
     new_cols_for_features = NewColNames()
     services_dict = SERVICES_LOOKUP
     rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
 
     locations_df = utils.read_from_parquet(cleaned_cqc_ind_source)
-    max_snapshot = utils.get_max_snapshot_partitions(
-        destination, ["year", "month", "day"]
-    )
-    locations_df = filter_records_since_snapshot_date(locations_df, max_snapshot)
 
     filtered_loc_data = filter_locations_df_for_independent_non_res_care_home_data(
         df=locations_df,
-        carehome_col_name=features_from_prepare_locations.carehome,
-        cqc_col_name=features_from_prepare_locations.cqc_sector,
+        carehome_col_name=INDCQC.care_home,
+        cqc_col_name=INDCQC.cqc_sector,
     )
 
     filtered_data_with_employee_col = convert_col_to_integer_col(
         df=filtered_loc_data,
-        col_name=features_from_prepare_locations.people_directly_employed,
+        col_name=INDCQC.people_directly_employed,
     )
 
     data_with_service_count = add_service_count_to_data(
         df=filtered_data_with_employee_col,
         new_col_name=new_cols_for_features.service_count,
-        col_to_check=features_from_prepare_locations.services_offered,
+        col_to_check=INDCQC.services_offered,
     )
 
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
-        col_name=features_from_prepare_locations.services_offered,
+        col_name=INDCQC.services_offered,
         lookup_dict=services_dict,
     )
 
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
-        rui_col_name=features_from_prepare_locations.rui_indicator,
+        rui_col_name=INDCQC.current_rural_urban_indicator_2011,
         lookup_dict=rural_urban_indicator_dict,
     )
 
     distinct_regions = get_list_of_distinct_ons_regions(
         df=data_with_rui,
-        col_name=features_from_prepare_locations.ons_region,
+        col_name=INDCQC.current_region,
     )
 
     data_with_region_cols, regions = explode_column_from_distinct_values(
         df=data_with_rui,
-        column_name=features_from_prepare_locations.ons_region,
+        column_name=INDCQC.current_region,
         col_prefix="ons_",
         col_list_set=set(distinct_regions),
     )
@@ -103,13 +88,13 @@ def main(cleaned_cqc_ind_source, destination):
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
         new_col_name=new_cols_for_features.date_diff,
-        snapshot_date_col="date",
+        snapshot_date_col=INDCQC.cqc_location_import_date,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
             new_cols_for_features.service_count,
-            features_from_prepare_locations.people_directly_employed,
+            INDCQC.people_directly_employed,
             new_cols_for_features.date_diff,
         ]
         + service_keys

@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
+
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as CQCPIRClean,
@@ -33,6 +34,7 @@ class IndCqcColumns:
     number_of_beds: str = CQCLClean.number_of_beds
     regulated_activities: str = CQCLClean.regulated_activities
     gac_service_types: str = CQCLClean.gac_service_types
+    services_offered: str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
     primary_service_type: str = CQCLClean.primary_service_type
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
@@ -46,6 +48,22 @@ class IndCqcColumns:
     worker_records_deduplicated: str = AWPClean.worker_records_deduplicated
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     people_directly_employed: str = CQCPIRClean.people_directly_employed
+    current_region: str = CQCLClean.current_region
+    contemporary_region: str = CQCLClean.contemporary_region
+    current_local_authority: str = CQCLClean.current_cssr
+    contemporary_local_authority: str = CQCLClean.contemporary_cssr
+    current_rural_urban_indicator_2011: str = (
+        CQCLClean.current_rural_urban_indicator_2011
+    )
+    contemporary_rural_urban_indicator_2011: str = (
+        CQCLClean.contemporary_rural_urban_indicator_2011
+    )
+    job_count: str = "job_count"
+    job_count_unfiltered: str = "job_count_unfiltered"
+    job_count_unfiltered_source: str = "job_count_unfiltered_source"
+    service_count: str = "service_count"
+    date_diff: str = "date_diff"
+    care_home_features: str = "features"  # make this string more specific once it works
 
 
 # DONT IMPORT FROM BELOW THIS LINE

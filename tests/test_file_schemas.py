@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from pyspark.sql.types import (
+    DoubleType,
     StructType,
     StructField,
     StringType,
@@ -73,6 +74,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
@@ -719,22 +721,22 @@ class MergeIndCQCData:
 class PrepareNonResSchemas(object):
     basic_schema = StructType(
         [
-            StructField("locationid", StringType()),
-            StructField("date", StringType()),
-            StructField("ons_region", StringType()),
-            StructField("number_of_beds", StringType()),
-            StructField("services_offered", ArrayType(StringType())),
-            StructField("primary_service_type", StringType()),
-            StructField("people_directly_employed", StringType()),
-            StructField("job_count_unfiltered", StringType()),
-            StructField("job_count", StringType()),
-            StructField("local_authority", StringType()),
-            StructField("year", StringType()),
-            StructField("month", StringType()),
-            StructField("day", StringType()),
-            StructField("carehome", StringType()),
-            StructField("cqc_sector", StringType()),
-            StructField("rui_2011", StringType()),
-            StructField("job_count_unfiltered_source", StringType()),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.services_offered, ArrayType(
+                StringType(),
+            ), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
+            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.current_local_authority, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
