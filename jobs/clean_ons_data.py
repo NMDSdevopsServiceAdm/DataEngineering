@@ -20,16 +20,14 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
-def main(cqc_source: str, cleaned_cqc_destination: str):
-    cqc_provider_df = utils.read_from_parquet(cqc_source)
+def main(ons_source: str, cleaned_ons_destination: str):
+    ons_df = utils.read_from_parquet(ons_source)
 
-    cqc_provider_df = cUtils.column_to_date(
-        cqc_provider_df, Keys.import_date, ONSClean.ons_import_date
-    )
+    ons_df = cUtils.column_to_date(ons_df, Keys.import_date, ONSClean.ons_import_date)
 
     utils.write_to_parquet(
-        cqc_provider_df,
-        cleaned_cqc_destination,
+        ons_df,
+        cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
     )
@@ -37,20 +35,20 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
 
 if __name__ == "__main__":
     # Where we tell Glue how to run the file, and what to print out
-    print("Spark job 'clean_cqc_provider_data' starting...")
+    print("Spark job 'clean_ons_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     source, destination = utils.collect_arguments(
         (
-            "--cqc_provider_source",
-            "Source s3 directory for parquet CQC providers dataset",
+            "--ons_source",
+            "Source s3 directory for parquet ONS postcode directory dataset",
         ),
         (
-            "--cqc_provider_cleaned",
-            "Destination s3 directory for cleaned parquet CQC providers dataset",
+            "--cleaned_ons_destination",
+            "Destination s3 directory for cleaned parquet ONS postcode directory dataset",
         ),
     )
     # Python logic ---> all in main
     main(source, destination)
 
-    print("Spark job 'clean_cqc_provider_data' complete")
+    print("Spark job 'clean_ons_data' complete")
