@@ -27,6 +27,11 @@ class CleanONSDatasetTests(unittest.TestCase):
             Data.ons_sample_rows_full, schema=Schema.full_schema
         )
 
+
+class MainTests(CleanONSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
