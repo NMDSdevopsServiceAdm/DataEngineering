@@ -47,7 +47,12 @@ class IndCqcColumns:
     worker_records_deduplicated: str = AWPClean.worker_records_deduplicated
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     people_directly_employed: str = CQCPIRClean.people_directly_employed
-
+    current_region: str = CQCLClean.current_region
+    contemporary_region:str = CQCLClean.contemporary_region
+    current_local_authority: str = CQCLClean.current_cssr
+    contemporary_local_authority: str = CQCLClean.contemporary_cssr
+    current_rural_urban_indicator_2011: str = CQCLClean.current_rural_urban_indicator_2011
+    contemporary_rural_urban_indicator_2011:str = CQCLClean.contemporary_rural_urban_indicator_2011
 
 # DONT IMPORT FROM BELOW THIS LINE
 # WE'LL BE REMOVING THESE WHEN PREPARE LOCATIONS SCRIPT GOES
