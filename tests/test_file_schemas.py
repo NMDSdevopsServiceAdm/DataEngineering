@@ -728,41 +728,11 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.services_offered, ArrayType(
                 StringType(),
             ), True),
-           # StructField(IndCQC.primary_service_type, StringType(), True), #
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-           # StructField(IndCQC.job_count_unfiltered, FloatType(), True), #
             StructField(IndCQC.job_count, FloatType(), True),
-           # StructField(IndCQC.current_local_authority, StringType(), True), #
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-           # StructField(IndCQC.job_count_unfiltered_source, StringType(), True), #
-           # StructField(IndCQC.registration_status, StringType(), True), #
-        ]
-    )
-
-    clean_merged_data_schema_copy = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(
-                StringType(),
-            ), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
-            StructField(IndCQC.job_count, FloatType(), True),
-            StructField(IndCQC.current_local_authority, StringType(), True),
-            StructField(IndCQC.contemporary_local_authority, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
 
