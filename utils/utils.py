@@ -212,7 +212,7 @@ def get_max_snapshot_date(locations_df):
     return locations_df.select(F.max("snapshot_date").alias("max")).first().max
 
 
-def get_max_snapshot_partitions(location=None):
+def get_max_snapshot_partitions(location=None, partitions: List[str] = ["snapshot_year", "snapshot_month", "snapshot_day"]):
     if not location:
         return None
 
@@ -223,11 +223,11 @@ def get_max_snapshot_partitions(location=None):
     except AnalysisException:
         return None
 
-    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
-    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
-    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
+    max_year = previous_snpashots.select(F.max(partitions[0])).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col(partitions[0]) == max_year)
+    max_month = previous_snpashots.select(F.max(partitions[1])).first()[0]
+    previous_snpashots = previous_snpashots.where(F.col(partitions[1]) == max_month)
+    max_day = previous_snpashots.select(F.max(partitions[2])).first()[0]
 
     return (f"{max_year}", f"{max_month:0>2}", f"{max_day:0>2}")
 
