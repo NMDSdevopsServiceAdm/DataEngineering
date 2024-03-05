@@ -79,7 +79,7 @@ class MainTests(CleanCQCLocationDatasetTests):
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
-        self.assertEqual(column_to_date_mock.call_count, 2)
+        self.assertEqual(column_to_date_mock.call_count, 1)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
