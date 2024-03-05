@@ -1,5 +1,4 @@
 import sys
-from dataclasses import dataclass
 from typing import List
 
 import pyspark.sql.functions as F
@@ -29,7 +28,7 @@ from utils.features.helper import (
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
     care_home_features_ind_cqc_filled_posts_destination: str,
-) -> pyspark.sql.DataFrame:
+) -> DataFrame:
     print("Creating care home features dataset...")
 
     services_dict = SERVICES_LOOKUP

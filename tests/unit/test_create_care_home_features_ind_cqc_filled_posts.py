@@ -1,6 +1,4 @@
-import shutil
 import unittest
-import warnings
 from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import functions as F
@@ -8,15 +6,9 @@ from pyspark.ml.linalg import SparseVector
 
 import jobs.create_care_home_features_ind_cqc_filled_posts as job
 from utils import utils
-from utils.feature_engineering_dictionaries import (
-    SERVICES_LOOKUP,
-    RURAL_URBAN_INDICATOR_LOOKUP,
-)
+
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedValues as CQCLValues,
 )
 
 from tests.test_file_data import CareHomeFeaturesData as Data
