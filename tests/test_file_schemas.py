@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from pyspark.sql.types import (
-    DoubleType,
     StructType,
     StructField,
     StringType,
