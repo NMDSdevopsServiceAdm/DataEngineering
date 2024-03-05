@@ -1,6 +1,7 @@
 import sys
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
+from pyspark.sql.types import FloatType, StringType
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -38,6 +39,8 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
+    CQCLClean.current_region,
+    CQCLClean.current_rural_urban_indicator_2011,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -94,6 +97,18 @@ def main(
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
+
+        # temporary code to be replaced by job calculator (needed now so later jobs can be tested)
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered_source", F.lit(None).cast(StringType())
+    )
+    # end of temporary code
 
     utils.write_to_parquet(
         ind_cqc_location_df,

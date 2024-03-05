@@ -7,7 +7,10 @@ import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+        IndCqcColumns as INDCQC,
+        PartitionKeys as Keys
+)
 from utils.feature_engineering_dictionaries import (
     RURAL_URBAN_INDICATOR_LOOKUP,
     SERVICES_LOOKUP,
@@ -112,6 +115,10 @@ def main(cleaned_cqc_ind_source, destination):
         INDCQC.care_home,
         INDCQC.care_home_features,
         INDCQC.job_count,
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
     )
 
     print("distinct_regions")
