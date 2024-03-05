@@ -4,7 +4,7 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql import functions as F
 from pyspark.ml.linalg import SparseVector
 
-import jobs.create_care_home_features_ind_cqc_filled_posts as job
+import jobs.prepare_care_home_ind_cqc_features as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (

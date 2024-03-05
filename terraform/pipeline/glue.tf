@@ -448,16 +448,16 @@ module "merge_ind_cqc_data_job" {
   }
 }
 
-module "create_care_home_features_ind_cqc_filled_posts" {
+module "prepare_care_home_ind_cqc_features_job" {
   source          = "../modules/glue-job"
-  script_name     = "create_care_home_features_ind_cqc_filled_posts.py"
+  script_name     = "prepare_care_home_ind_cqc_features.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_filled_posts_cleaned_source"                 = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--care_home_features_ind_cqc_filled_posts_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_features/"
+    "--ind_cqc_filled_posts_cleaned_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--care_home_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
   }
 }
 

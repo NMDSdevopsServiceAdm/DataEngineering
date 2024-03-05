@@ -27,7 +27,7 @@ from utils.features.helper import (
 
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
-    care_home_features_ind_cqc_filled_posts_destination: str,
+    care_home_ind_cqc_features_destination: str,
 ) -> DataFrame:
     print("Creating care home features dataset...")
 
@@ -111,12 +111,12 @@ def main(
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
     print(
-        f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
+        f"Exporting as parquet to {care_home_ind_cqc_features_destination}"
     )
 
     utils.write_to_parquet(
         features_df,
-        care_home_features_ind_cqc_filled_posts_destination,
+        care_home_ind_cqc_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
@@ -144,19 +144,19 @@ if __name__ == "__main__":
 
     (
         ind_cqc_filled_posts_cleaned_source,
-        care_home_features_ind_cqc_filled_posts_destination,
+        care_home_ind_cqc_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
             "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
         ),
         (
-            "--care_home_features_ind_cqc_filled_posts_destination",
+            "--care_home_ind_cqc_features_destination",
             "A destination directory for outputting care_home_features_ind_cqc_filled_posts",
         ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
-        care_home_features_ind_cqc_filled_posts_destination,
+        care_home_ind_cqc_features_destination,
     )
