@@ -1483,6 +1483,10 @@ class CareHomeFeaturesData:
             "Y",
             "Local authority",
             "(England/Wales) Urban city and town",
+            "2022",
+            "3",
+            "8",
+            "20220308",
         ),
         (
             "1-10894414510",
@@ -1495,6 +1499,10 @@ class CareHomeFeaturesData:
             "Y",
             "Independent",
             "(England/Wales) Urban city and town",
+            "2022",
+            "3",
+            "8",
+            "20220308",
         ),
         (
             "1-108967195",
@@ -1507,6 +1515,10 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "(England/Wales) Urban city and town",
+            "2024",
+            "4",
+            "22",
+            "20240422",
         ),
     ]
 

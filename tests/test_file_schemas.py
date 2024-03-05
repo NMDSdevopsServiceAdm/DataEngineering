@@ -738,6 +738,11 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+
         ]
     )
 
