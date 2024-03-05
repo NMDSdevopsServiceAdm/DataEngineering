@@ -8,8 +8,8 @@ from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-        IndCqcColumns as INDCQC,
-        PartitionKeys as Keys
+    IndCqcColumns as INDCQC,
+    PartitionKeys as Keys,
 )
 from utils.feature_engineering_dictionaries import (
     RURAL_URBAN_INDICATOR_LOOKUP,

@@ -741,5 +741,9 @@ class PrepareNonResSchemas(object):
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
