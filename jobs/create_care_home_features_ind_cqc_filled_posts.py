@@ -121,7 +121,7 @@ def create_care_home_features(
         IndCQC.job_count,
         Keys.year,
         Keys.month,
-        Keys.day, 
+        Keys.day,
         Keys.import_date,
     )
     print("distinct_regions")
