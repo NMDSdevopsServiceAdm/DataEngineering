@@ -100,6 +100,9 @@ def main(
 
     # temporary code to be replaced by job calculator (needed now so later jobs can be tested)
     ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
         "job_count_unfiltered", F.lit(None).cast(FloatType())
     )
     ind_cqc_location_df = ind_cqc_location_df.withColumn(
