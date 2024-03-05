@@ -18,7 +18,6 @@ from utils.features.helper import (  # get_list_of_distinct_ons_regions,
     add_service_count_to_data,
     column_expansion_with_dict,
     explode_column_from_distinct_values,
-    filter_records_since_snapshot_date,
     vectorise_dataframe,
 )
 
@@ -155,7 +154,7 @@ def collect_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "---cleaned_cqc_ind_source",
+        "--cleaned_cqc_ind_source",
         help="Source S3 directory for cleaned cqc ind data",
         required=True,
     )
@@ -166,7 +165,7 @@ def collect_arguments():
     )
     args, _ = parser.parse_known_args()
 
-    return args.prepared_locations_source, args.destination
+    return args.cleaned_cqc_ind_source, args.prepared_non_res_ind_cqc_destination
 
 
 if __name__ == "__main__":
