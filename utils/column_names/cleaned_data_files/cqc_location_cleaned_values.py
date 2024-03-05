@@ -20,7 +20,7 @@ class CqcLocationCleanedColumns(CqcLocationApiColumns):
     cqc_sector: str = CQCPClean.cqc_sector
     provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
-    ons_contemporary_import_date: str = ONSClean.ons_import_date
+    ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_contemporary_geographies: str = ONSClean.contemporary
     ons_current_import_date: str = ONSClean.current_ons_import_date
     ons_current_geographies: str = ONSClean.current

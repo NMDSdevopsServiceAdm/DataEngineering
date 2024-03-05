@@ -315,7 +315,7 @@ class JoinONSDataTests(CleanCQCLocationDatasetTests):
         )
 
     def test_join_ons_postcode_data_completes(self):
-        returned_df = job.join_ons_postcode_data(
+        returned_df = job.join_ons_postcode_data_into_cqc_df(
             self.test_location_for_ons_join_df,
             self.test_ons_postcode_directory_df,
         )
@@ -323,7 +323,7 @@ class JoinONSDataTests(CleanCQCLocationDatasetTests):
         self.assertIsInstance(returned_df, DataFrame)
 
     def test_join_ons_postcode_data_correctly_joins_data(self):
-        returned_df = job.join_ons_postcode_data(
+        returned_df = job.join_ons_postcode_data_into_cqc_df(
             self.test_location_for_ons_join_df,
             self.test_ons_postcode_directory_df,
         )

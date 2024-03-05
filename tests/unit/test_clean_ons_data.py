@@ -31,7 +31,7 @@ class CleanONSDatasetTests(unittest.TestCase):
         self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
             self.test_ons_parquet,
             Keys.import_date,
-            ONSClean.ons_import_date,
+            ONSClean.contemporary_ons_import_date,
         )
 
 
