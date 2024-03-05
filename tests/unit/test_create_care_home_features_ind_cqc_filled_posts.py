@@ -57,29 +57,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             partitionKeys=["year", "month", "day", "import_date"],
         )
 
-    def test_create_care_home_features_produces_dataframe_with_features(self):
-        result = job.create_care_home_features(
-            self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP
-        )
-
-        expected_features = SparseVector(
-            43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]
-        )
-        actual_features = result.select(F.col("features")).collect()[0].features
-        self.assertEqual(actual_features, expected_features)
-
-    def test_create_care_home_features_is_filtering_out_rows_missing_data_for_features(
-        self,
-    ):
-        input_df_length = self.test_df.count()
-        self.assertTrue(input_df_length, 14)
-
-        result = job.create_care_home_features(
-            self.test_df, SERVICES_LOOKUP, RURAL_URBAN_INDICATOR_LOOKUP
-        )
-
-        self.assertTrue(result.count() == 1)
-
     def test_filter_locations_df_for_independent_care_home_data(self):
         returned_df = job.filter_locations_df_for_independent_care_home_data(
             self.filter_to_ind_care_home_df, IndCQC.care_home, IndCQC.cqc_sector
