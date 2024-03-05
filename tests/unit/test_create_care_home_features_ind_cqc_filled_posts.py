@@ -92,7 +92,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_produces_dataframe_with_features(
@@ -128,6 +127,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         result = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(result.count(), 1)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

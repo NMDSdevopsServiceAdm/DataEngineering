@@ -742,7 +742,6 @@ class CareHomeFeaturesSchema:
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-
         ]
     )
 
