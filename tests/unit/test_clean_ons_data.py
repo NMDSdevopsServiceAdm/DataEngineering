@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import ANY, patch
 from pyspark.sql.dataframe import DataFrame
+from datetime import date
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -27,6 +28,11 @@ class CleanONSDatasetTests(unittest.TestCase):
         self.test_ons_parquet = self.spark.createDataFrame(
             Data.ons_sample_rows_full, schema=Schema.full_schema
         )
+        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
+            self.test_ons_parquet,
+            Keys.import_date,
+            ONSClean.ons_import_date,
+        ).drop(Keys.import_date)
 
 
 class MainTests(CleanONSDatasetTests):
@@ -49,11 +55,6 @@ class MainTests(CleanONSDatasetTests):
 class RefactorColumnsAsStructTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
-            self.test_ons_parquet,
-            Keys.import_date,
-            ONSClean.ons_import_date,
-        ).drop(Keys.import_date)
         self.returned_df = job.refactor_columns_as_struct_with_alias(
             self.test_ons_postcode_directory_with_date_df, ONSClean.contemporary
         )
@@ -64,6 +65,22 @@ class RefactorColumnsAsStructTests(CleanONSDatasetTests):
 
     def test_refactored_schema_matches_expected_schema(self):
         self.assertEqual(self.returned_df.schema, Schema.expected_refactored_schema)
+
+
+class PrepareCurrentONSTests(CleanONSDatasetTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_only_most_recent_rows_for_max_date_are_kept(self):
+        returned_df = job.prepare_current_ons_data(
+            self.test_ons_postcode_directory_with_date_df
+        )
+        self.assertEqual(returned_df.count(), 3)
+
+        returned_data = returned_df.collect()
+        self.assertEqual(
+            returned_data[0][ONSClean.current_ons_import_date], date(2023, 1, 1)
+        )
 
 
 if __name__ == "__main__":
