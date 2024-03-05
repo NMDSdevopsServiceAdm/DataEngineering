@@ -39,20 +39,17 @@ def main(cleaned_cqc_ind_source, destination):
         carehome_col_name=INDCQC.care_home,
         cqc_col_name=INDCQC.cqc_sector,
     )
-    filtered_loc_data.show()
 
     filtered_data_with_employee_col = convert_col_to_integer_col(
         df=filtered_loc_data,
         col_name=INDCQC.people_directly_employed,
     )
-    filtered_data_with_employee_col.show()
 
     data_with_service_count = add_service_count_to_data(
         df=filtered_data_with_employee_col,
         new_col_name=new_cols_for_features.service_count,
         col_to_check=INDCQC.services_offered,
     )
-    data_with_service_count.show()
 
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
@@ -60,7 +57,6 @@ def main(cleaned_cqc_ind_source, destination):
         col_name=INDCQC.services_offered,
         lookup_dict=services_dict,
     )
-    data_with_expanded_services.show()
 
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
@@ -68,7 +64,6 @@ def main(cleaned_cqc_ind_source, destination):
         rui_col_name=INDCQC.current_rural_urban_indicator_2011,
         lookup_dict=rural_urban_indicator_dict,
     )
-    data_with_rui.show()
 
     distinct_regions = get_list_of_distinct_ons_regions(
         df=data_with_rui,
@@ -81,14 +76,12 @@ def main(cleaned_cqc_ind_source, destination):
         col_prefix="ons_",
         col_list_set=set(distinct_regions),
     )
-    data_with_region_cols.show()
 
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
         new_col_name=new_cols_for_features.date_diff,
         snapshot_date_col=INDCQC.cqc_location_import_date,
     )
-    data_with_date_diff.show()
 
     list_for_vectorisation: List[str] = sorted(
         [
@@ -115,7 +108,6 @@ def main(cleaned_cqc_ind_source, destination):
         INDCQC.job_count,
     )
 
-    features_df.show()
 
     print("distinct_regions")
     print(distinct_regions)

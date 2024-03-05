@@ -1468,8 +1468,6 @@ class MergeIndCQCData:
 
 @dataclass
 class PrepareNonResData(object):
-    partitions = ["2022", "03", "08"]
-
     # fmt: off
     rows = [
         ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "Surrey", "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered"),

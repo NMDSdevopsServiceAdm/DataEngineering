@@ -11,6 +11,7 @@ from tests.test_file_data import PrepareNonResData as Data
 from tests.test_file_schemas import PrepareNonResSchemas as Schemas
 from utils import utils
 from utils.features.helper import add_date_diff_into_df
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
@@ -20,6 +21,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(Data.rows, Schemas.basic_schema)
+
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_add_date_diff_into_df(self):
@@ -57,15 +59,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
-        result = write_to_parquet_mock.call_args[0][0].orderBy(F.col("locationid"))
+        result = write_to_parquet_mock.call_args[0][0].orderBy(F.col(INDCQC.location_id))
 
         self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
         expected_features = SparseVector(
             46, [0, 3, 13, 15, 18, 19, 45], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
         )
         actual_features = result.select(F.col("features")).collect()[0].features
-        print(actual_features)
-        print(expected_features)
         self.assertEqual(actual_features, expected_features)
 
     @patch("utils.utils.write_to_parquet")
