@@ -9,5 +9,6 @@ from utils.column_names.raw_data_files.ons_columns import (
 class OnsCleanedColumns(ONScol):
     ons_import_date: str = "ons_import_date"
     current_ons_import_date: str = "current_" + ons_import_date
+    contemporary_ons_import_date: str = "contemporary_" + ons_import_date
     current: str = "current"
     contemporary: str = "contemporary"

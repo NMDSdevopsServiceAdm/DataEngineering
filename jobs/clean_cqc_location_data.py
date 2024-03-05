@@ -130,7 +130,7 @@ def join_ons_postcode_data(
         cqc_location_df,
         ons_postcode_directory_df,
         CQCLClean.cqc_location_import_date,
-        ONSClean.ons_import_date,
+        ONSClean.contemporary_ons_import_date,
     )
     formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
         ONSClean.postcode, CQCLClean.postcode
@@ -138,7 +138,7 @@ def join_ons_postcode_data(
 
     cqc_location_df = cqc_location_df.join(
         formatted_ons_postcode_directory_df,
-        [ONSClean.ons_import_date, CQCLClean.postcode],
+        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
         "left",
     )
     return cqc_location_df

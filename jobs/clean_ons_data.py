@@ -32,6 +32,12 @@ def main(ons_source: str, cleaned_ons_destination: str):
         current_ons_df, ONSClean.postcode, "left"
     )
 
+    refactored_ons_with_current_ons_df = (
+        refactored_ons_with_current_ons_df.withColumnRenamed(
+            ONSClean.ons_import_date, ONSClean.contemporary_ons_import_date
+        )
+    )
+
     utils.write_to_parquet(
         refactored_ons_with_current_ons_df,
         cleaned_ons_destination,

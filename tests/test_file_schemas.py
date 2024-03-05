@@ -464,7 +464,7 @@ class CQCLocationsSchema:
     ons_postcode_directory_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
-            StructField(ONSClean.ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(
                 ONSClean.contemporary,
                 ArrayType(
@@ -493,7 +493,7 @@ class CQCLocationsSchema:
 
     expected_ons_join_schema = StructType(
         [
-            StructField(ONSClean.ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(CQCL.postcode, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
