@@ -333,7 +333,7 @@ class ONSData:
     expected_refactored_schema = StructType(
         [
             StructField(ONS.postcode, StringType(), True),
-            StructField(ONSClean.ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(
                 ONSClean.contemporary,
                 StructType(
