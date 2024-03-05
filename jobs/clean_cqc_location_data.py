@@ -105,7 +105,6 @@ def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
 def join_ons_postcode_data_into_cqc_df(
     cqc_df: DataFrame, ons_df: DataFrame
 ) -> DataFrame:
-
     cqc_df = amend_invalid_postcodes(cqc_df)
 
     cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
