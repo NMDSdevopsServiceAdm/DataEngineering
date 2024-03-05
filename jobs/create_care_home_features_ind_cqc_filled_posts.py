@@ -14,6 +14,7 @@ from utils.feature_engineering_dictionaries import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+    PartitionKeys as Keys,
 )
 from utils.features.helper import (
     vectorise_dataframe,
@@ -48,7 +49,7 @@ def main(
         features_df,
         care_home_features_ind_cqc_filled_posts_destination,
         mode="overwrite",
-        partitionKeys=["year", "month", "day", "import_date"],
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 
@@ -118,6 +119,10 @@ def create_care_home_features(
         IndCQC.care_home,
         IndCQC.care_home_features,
         IndCQC.job_count,
+        Keys.year,
+        Keys.month,
+        Keys.day, 
+        Keys.import_date,
     )
     print("distinct_regions")
     print(distinct_regions)
