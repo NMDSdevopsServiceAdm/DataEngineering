@@ -35,6 +35,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.number_of_beds,
     CQCLClean.regulated_activities,
     CQCLClean.gac_service_types,
+    CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
     Keys.year,

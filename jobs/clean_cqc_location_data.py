@@ -83,6 +83,8 @@ def main(
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
+    cqc_location_df = add_list_of_services_offered(cqc_location_df)
+
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
     (
@@ -148,6 +150,13 @@ def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFr
         CQCL.postcode,
         "left",
     )
+
+
+def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
+    cqc_loc_df = cqc_loc_df.withColumn(
+        CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
+    )
+    return cqc_loc_df
 
 
 def allocate_primary_service_type(df: DataFrame):
