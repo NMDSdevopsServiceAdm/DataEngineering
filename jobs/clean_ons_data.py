@@ -54,26 +54,22 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
 
 
 def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFrame:
+    columns_to_exclude_from_struct = [
+        ONSClean.postcode,
+        ONSClean.ons_import_date,
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
+    ]
+    columns_to_refactor = [
+        col for col in df.columns if col not in columns_to_exclude_from_struct
+    ]
+
     return df.select(
         ONSClean.postcode,
         ONSClean.ons_import_date,
-        F.struct(
-            ONSClean.cssr,
-            ONSClean.region,
-            ONSClean.sub_icb,
-            ONSClean.icb,
-            ONSClean.icb_region,
-            ONSClean.ccg,
-            ONSClean.latitude,
-            ONSClean.longitude,
-            ONSClean.imd_score,
-            ONSClean.lower_super_output_area_2011,
-            ONSClean.middle_super_output_area_2011,
-            ONSClean.rural_urban_indicator_2011,
-            ONSClean.lower_super_output_area_2021,
-            ONSClean.middle_super_output_area_2021,
-            ONSClean.westminster_parliamentary_consitituency,
-        ).alias(alias),
+        F.struct(columns_to_refactor).alias(alias),
     )
 
 
