@@ -110,9 +110,7 @@ def main(
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
-    print(
-        f"Exporting as parquet to {care_home_ind_cqc_features_destination}"
-    )
+    print(f"Exporting as parquet to {care_home_ind_cqc_features_destination}")
 
     utils.write_to_parquet(
         features_df,
