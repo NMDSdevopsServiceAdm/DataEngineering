@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import ANY, patch
-import pyspark.sql.functions as F
+from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 
 import jobs.clean_ons_data as job
 
@@ -43,6 +44,26 @@ class MainTests(CleanONSDatasetTests):
             mode="overwrite",
             partitionKeys=self.onsPartitionKeys,
         )
+
+
+class RefactorColumnsAsStructTests(CleanONSDatasetTests):
+    def setUp(self):
+        super().setUp()
+        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
+            self.test_ons_parquet,
+            Keys.import_date,
+            ONSClean.ons_import_date,
+        ).drop(Keys.import_date)
+        self.returned_df = job.refactor_columns_as_struct_with_alias(
+            self.test_ons_postcode_directory_with_date_df, ONSClean.contemporary
+        )
+
+    def test_refactor_columns_as_struct_returns_df_with_correct_number_of_rows(self):
+        self.assertIsInstance(self.returned_df, DataFrame)
+        self.assertEqual(self.returned_df.count(), 5)
+
+    def test_refactored_schema_matches_expected_schema(self):
+        self.assertEqual(self.returned_df.schema, Schema.expected_refactored_schema)
 
 
 if __name__ == "__main__":
