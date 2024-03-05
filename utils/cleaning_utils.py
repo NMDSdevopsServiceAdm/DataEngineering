@@ -1,13 +1,8 @@
 from pyspark.sql import (
     DataFrame,
-    SparkSession,
     Window,
 )
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-)
+
 import pyspark.sql.functions as F
 
 key: str = "key"
@@ -18,67 +13,40 @@ pir_submission_date_uri_format = "dd-MMM-yy"
 
 def apply_categorical_labels(
     df: DataFrame,
-    spark: SparkSession,
     labels: dict,
     column_names: list,
     add_as_new_column: bool = True,
 ) -> DataFrame:
     for column_name in column_names:
-        labels_df = convert_labels_to_dataframe(labels[column_name], spark)
+        labels_dict = labels[column_name]
         if add_as_new_column == True:
             new_column_name = column_name + "_labels"
-            df = replace_labels(df, labels_df, column_name, new_column_name)
+            df = df.withColumn(new_column_name, F.col(column_name))
+            df = df.replace(labels_dict, subset=new_column_name)
         elif add_as_new_column == False:
-            df = replace_labels(df, labels_df, column_name)
+            df = df.replace(labels_dict, subset=column_name)
     return df
-
-
-def replace_labels(
-    df: DataFrame, labels_df: DataFrame, column_name: str, new_column_name: str = None
-) -> DataFrame:
-    df = df.join(labels_df, [df[column_name] == labels_df[key]], how="left")
-    df = drop_unecessary_columns(df, column_name, new_column_name)
-    return df
-
-
-def drop_unecessary_columns(
-    df: DataFrame, column_name: str, new_column_name: str = None
-) -> DataFrame:
-    if new_column_name == None:
-        new_column_name = column_name
-        df = df.drop(key, column_name)
-    else:
-        df = df.drop(key)
-    df = df.withColumnRenamed(value, new_column_name)
-
-    return df
-
-
-def convert_labels_to_dataframe(labels: list, spark: SparkSession) -> DataFrame:
-    """
-    Takes a list of length 2 tuples representing rows for the new labels dataframe,
-    and applies a key-value schema to it to create a dataframe with column names "key" and "value"
-
-    Args:
-        labels: A list of length 2 tuples, i.e. [(-1, "Not known")]
-        spark: A pyspark.sql.SparkSession
-
-    Returns:
-        A 2 column DataFrame of labels and their values.
-    """
-    labels_schema = StructType(
-        [
-            StructField(key, StringType(), True),
-            StructField(value, StringType(), True),
-        ]
-    )
-    labels_df = spark.createDataFrame(labels, labels_schema)
-    return labels_df
 
 
 def set_column_bounds(
     df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
 ) -> DataFrame:
+    """
+    Creates a new column based on a previous column, dropping values that exist outside of the lower and upper limits, where provided.
+
+        Args:
+            df: The DataFrame containing the column to bound
+            col_name: The name of the column to be bounded, as a string
+            new_col_name: What the newly created column will be called, as a string
+            lower_limit: The value of the lower limit. Must be an integer or float value if provided, and is otherwise defaulted to None
+            upper_limit: The value of the upper limit. Must be an integer or float value if provided, and is otherwise defaulted to None
+
+        Returns:
+            df: The DataFrame with the new column only containing numerical values that fell within the bounds.
+
+        Raises:
+            ValueError: If both limits are comparable numerical types, and the upper limit is lower than the lower limit.
+    """
     if lower_limit is None and upper_limit is None:
         return df
 

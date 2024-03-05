@@ -48,6 +48,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     @patch(
         "jobs.clean_ascwds_workplace_data.create_column_with_repeated_values_removed"
     )
+    @patch("utils.cleaning_utils.set_column_bounds")
     @patch("utils.utils.format_date_fields", wraps=format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -56,6 +57,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
+        set_column_bounds_mock: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
@@ -64,6 +66,7 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
 
         self.assertEqual(format_date_fields_mock.call_count, 1)
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
+        self.assertEqual(set_column_bounds_mock.call_count, 2)
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         write_to_parquet_mock.assert_called_once_with(

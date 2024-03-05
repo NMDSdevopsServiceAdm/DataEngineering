@@ -107,12 +107,14 @@ module "ingest_ascwds_dataset_job" {
 }
 
 module "clean_ascwds_worker_job" {
-  source          = "../modules/glue-job"
-  script_name     = "clean_ascwds_worker_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  source            = "../modules/glue-job"
+  script_name       = "clean_ascwds_worker_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  worker_type       = "G.1X"
+  number_of_workers = 2
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "3.0"
 
   job_parameters = {
     "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
@@ -248,8 +250,8 @@ module "clean_ind_cqc_filled_posts" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
-    "--ind_cqc_filled_posts_cleaned_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+    "--cleaned_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
   }
 }
 

@@ -69,7 +69,6 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    MergeIndCqcColumns,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
@@ -220,6 +219,9 @@ class ASCWDSWorkerSchemas:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.main_job_role_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
+            StructField(AWK.year, StringType(), True),
+            StructField(AWK.month, StringType(), True),
+            StructField(AWK.day, StringType(), True),
         ]
     )
 
@@ -382,9 +384,72 @@ class CQCLocationsSchema:
     ons_postcode_directory_schema = StructType(
         [
             StructField(ONS.region, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
             StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
             StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_processed_ons_schema = StructType(
+        [
+            StructField(CQCLClean.current_region, StringType(), True),
+            StructField(CQCLClean.current_cssr, StringType(), True),
+            StructField(CQCLClean.current_icb, StringType(), True),
+            StructField(
+                CQCLClean.current_rural_urban_indicator_2011, StringType(), True
+            ),
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.current_ons_import_date, DateType(), True),
+        ]
+    )
+
+    locations_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+        ]
+    )
+
+    ons_for_contemporary_ons_join_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+
+    expected_contemporary_ons_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCLClean.contemporary_region, StringType(), True),
+            StructField(CQCLClean.contemporary_cssr, StringType(), True),
+            StructField(CQCLClean.contemporary_icb, StringType(), True),
+            StructField(
+                CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True
+            ),
+            StructField(CQCLClean.ons_import_date, DateType(), True),
+        ]
+    )
+
+    expected_services_offered_schema = StructType(
+        [
+            *primary_service_type_schema,
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
 
@@ -399,20 +464,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    replace_labels_schema = StructType(
-        [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-        ]
-    )
-
-    labels_schema = StructType(
-        [
-            StructField("key", StringType(), True),
-            StructField("value", StringType(), True),
-        ]
-    )
-
     expected_schema_with_new_columns = StructType(
         [
             StructField(AWK.worker_id, StringType(), True),
@@ -420,14 +471,6 @@ class CleaningUtilsSchemas:
             StructField(AWK.nationality, StringType(), True),
             StructField("gender_labels", StringType(), True),
             StructField("nationality_labels", StringType(), True),
-        ]
-    )
-
-    expected_schema_replace_labels_with_new_columns = StructType(
-        [
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.gender, StringType(), True),
-            StructField("gender_labels", StringType(), True),
         ]
     )
 
@@ -615,19 +658,58 @@ class FilterCleanedValuesSchema:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_schema = CQCPIRSchema.sample_schema
-    clean_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
+    clean_cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), False),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+        ]
+    )
 
-    clean_cqc_location_reduced_schema = StructType(
+    clean_cqc_location_for_merge_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    clean_ascwds_workplace_for_merge_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    expected_cqc_and_pir_merged_schema = StructType(
+        [
+            *clean_cqc_location_for_merge_schema,
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+        ]
+    )
+
+    expected_cqc_and_ascwds_merged_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.sector, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
         ]
     )
 
     cqc_sector_schema = StructType(
         [
-            StructField(MergeIndCqcColumns.location_id, StringType(), True),
-            StructField(MergeIndCqcColumns.sector, StringType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )

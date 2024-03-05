@@ -123,20 +123,20 @@ class CalculatePaRatioData:
 @dataclass
 class ASCWDSWorkerData:
     worker_rows = [
-        ("1-000000001", "101", "100", "1", "20200101"),
-        ("1-000000002", "102", "101", "1", "20200101"),
-        ("1-000000003", "103", "102", "1", "20200101"),
-        ("1-000000004", "104", "103", "1", "20190101"),
-        ("1-000000005", "104", "104", "2", "19000101"),
-        ("1-000000006", "invalid", "105", "3", "20200101"),
-        ("1-000000007", "999", "106", "1", "20200101"),
+        ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
+        ("1-000000002", "102", "101", "1", "20200101", "2020", "01", "01"),
+        ("1-000000003", "103", "102", "1", "20200101", "2020", "01", "01"),
+        ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
+        ("1-000000005", "104", "104", "2", "19000101", "1900", "01", "01"),
+        ("1-000000006", "invalid", "105", "3", "20200101", "2020", "01", "01"),
+        ("1-000000007", "999", "106", "1", "20200101", "2020", "01", "01"),
     ]
 
     expected_worker_rows = [
-        ("1-000000001", "101", "100", "1", "20200101"),
-        ("1-000000002", "102", "101", "1", "20200101"),
-        ("1-000000003", "103", "102", "1", "20200101"),
-        ("1-000000004", "104", "103", "1", "20190101"),
+        ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
+        ("1-000000002", "102", "101", "1", "20200101", "2020", "01", "01"),
+        ("1-000000003", "103", "102", "1", "20200101", "2020", "01", "01"),
+        ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
     ]
 
 
@@ -994,9 +994,216 @@ class CQCLocationsData:
     ]
 
     ons_postcode_directory_rows = [
-        ("Yorkshire & Humber", "Leeds", "50.10101", "20200101"),
-        ("Yorkshire & Humber", "York", "52.10101", "20200101"),
-        ("Yorkshire & Humber", "Hull", "53.10101", "20200101"),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            "20210101",
+            "LS1 2AB",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "York",
+            "Urban city and town",
+            "20210101",
+            "B69 3EG",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Hull",
+            "Urban city and town",
+            "20200101",
+            "PR1 9HL",
+        ),
+    ]
+
+    expected_processed_ons_rows = [
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            "LS1 2AB",
+            date(2021, 1, 1),
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "York",
+            "Urban city and town",
+            "B69 3EG",
+            date(2021, 1, 1),
+        ),
+    ]
+
+    locations_for_contemporary_ons_join_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            date(2020, 1, 1),
+            "PR1 9AB",
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            date(2018, 1, 1),
+            "B69 3EG",
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            date(2020, 1, 1),
+            "PR1 9HL",
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            date(2021, 1, 1),
+            "LS1 2AB",
+        ),
+    ]
+
+    ons_for_contemporary_ons_join_rows = [
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            date(2021, 1, 1),
+            "LS1 2AB",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "York",
+            "Urban city and town",
+            date(2021, 1, 1),
+            "B69 3EG",
+        ),
+        (
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Hull",
+            "Urban city and town",
+            date(2019, 1, 1),
+            "PR1 9HL",
+        ),
+    ]
+
+    expected_contemporary_ons_join_rows = [
+        (
+            "loc-1",
+            "prov-1",
+            date(2020, 1, 1),
+            "PR1 9AB",
+            None,
+            None,
+            None,
+            None,
+            date(2019, 1, 1),
+        ),
+        (
+            "loc-2",
+            "prov-1",
+            date(2018, 1, 1),
+            "B69 3EG",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "loc-3",
+            "prov-2",
+            date(2020, 1, 1),
+            "PR1 9HL",
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Hull",
+            "Urban city and town",
+            date(2019, 1, 1),
+        ),
+        (
+            "loc-4",
+            "prov-2",
+            date(2021, 1, 1),
+            "LS1 2AB",
+            "Yorkshire & Humber",
+            "Hertfordshire",
+            "Leeds",
+            "Urban city and town",
+            date(2021, 1, 1),
+        ),
+    ]
+
+    expected_services_offered_rows = [
+        (
+            "location1",
+            "provider1",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            ["Domiciliary care service"],
+        ),
+        (
+            "location2",
+            "provider2",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                }
+            ],
+            ["Care home service with nursing"],
+        ),
+        (
+            "location3",
+            "provider3",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                }
+            ],
+            ["Care home service without nursing"],
+        ),
+        (
+            "location4",
+            "provider4",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            ["Care home service with nursing", "Care home service without nursing"],
+        ),
+        (
+            "location5",
+            "provider5",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Fake",
+                    "description": "Fake service",
+                },
+            ],
+            ["Care home service without nursing", "Fake service"],
+        ),
     ]
 
 
@@ -1011,25 +1218,17 @@ class CleaningUtilsData:
         ("6", "2", None),
     ]
 
-    gender = [
-        ("1", "male"),
-        ("2", "female"),
-    ]
+    gender = {
+        "1": "male",
+        "2": "female",
+    }
 
-    nationality = [
-        ("100", "British"),
-        ("101", "French"),
-        ("102", "Spanish"),
-        ("103", "Portuguese"),
-    ]
-
-    replace_labels_rows = [
-        ("1", "1"),
-        ("2", "2"),
-        ("3", None),
-        ("4", None),
-        ("5", "2"),
-    ]
+    nationality = {
+        "100": "British",
+        "101": "French",
+        "102": "Spanish",
+        "103": "Portuguese",
+    }
 
     expected_rows_with_new_columns = [
         ("1", "1", "100", "male", "British"),
@@ -1047,22 +1246,6 @@ class CleaningUtilsData:
         ("4", "female", "Portuguese"),
         ("5", None, "Portuguese"),
         ("6", "female", None),
-    ]
-
-    expected_rows_replace_labels_in_situe = [
-        ("1", "male"),
-        ("2", "female"),
-        ("3", None),
-        ("4", None),
-        ("5", "female"),
-    ]
-
-    expected_rows_replace_labels_with_new_column = [
-        ("1", "1", "male"),
-        ("2", "2", "female"),
-        ("3", None, None),
-        ("4", None, None),
-        ("5", "2", "female"),
     ]
 
     scale_data = [
@@ -1210,46 +1393,74 @@ class CleaningUtilsData:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_rows = CQCpirData.sample_rows_full
-    clean_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-
-    clean_cqc_location_rows = [
-        (
-            "1-000000001",
-            "Independent",
-        ),
-        (
-            "1-000000002",
-            "Local Authority",
-        ),
-        (
-            "1-000000005",
-            "Independent",
-        ),
-        (
-            "1-000000009",
-            "Independent",
-        ),
+    clean_cqc_pir_rows = [
+        ("1-000000001", "Y", date(2024, 1, 1), 10),
+        ("1-000000002", "N", date(2024, 1, 1), 20),
+        ("1-000000003", "Y", date(2024, 1, 1), 30),
+        ("1-000000001", "Y", date(2024, 2, 1), 1),
+        ("1-000000002", "N", date(2024, 2, 1), 4),
     ]
 
+    # fmt: off
+    clean_cqc_location_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
+    ]
+    # fmt: on
+
+    # fmt: off
+    clean_ascwds_workplace_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", "1", 1,),
+        (date(2024, 1, 1), "1-000000003", "3", 2,),
+        (date(2024, 1, 5), "1-000000001", "1", 3,),
+        (date(2024, 1, 9), "1-000000001", "1", 4,),
+        (date(2024, 1, 9), "1-000000003", "3", 5,),
+        (date(2024, 3, 1), "1-000000003", "4", 6,),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merged_cqc_and_pir = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_cqc_and_ascwds_merged_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
+        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4,),
+        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5,),
+        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None,),
+        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None,),
+        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6,),
+    ]
+    # fmt: on
+
+    # fmt: off
     cqc_sector_rows = [
-        (
-            "loc-1",
-            "Local Authority",
-        ),
-        (
-            "loc-2",
-            None,
-        ),
-        (
-            "loc-3",
-            "Independent",
-        ),
+        ("loc-1", "Local Authority",),
+        ("loc-2", None,),
+        ("loc-3", "Independent",),
     ]
-
     expected_cqc_sector_rows = [
-        (
-            "loc-3",
-            "Independent",
-        ),
+        ("loc-3", "Independent",),
     ]
+    # fmt: on
