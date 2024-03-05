@@ -64,6 +64,8 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             46, [0, 3, 13, 15, 18, 19, 45], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
         )
         actual_features = result.select(F.col("features")).collect()[0].features
+        print(actual_features)
+        print(expected_features)
         self.assertEqual(actual_features, expected_features)
 
     @patch("utils.utils.write_to_parquet")

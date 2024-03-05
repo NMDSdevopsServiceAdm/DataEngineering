@@ -725,9 +725,13 @@ class PrepareNonResSchemas(object):
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(
-                StringType(),
-            ), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(IndCQC.job_count_unfiltered, FloatType(), True),
