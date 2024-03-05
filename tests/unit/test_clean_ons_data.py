@@ -81,6 +81,12 @@ class PrepareCurrentONSTests(CleanONSDatasetTests):
         self.assertEqual(
             returned_data[0][ONSClean.current_ons_import_date], date(2023, 1, 1)
         )
+        self.assertEqual(
+            returned_data[1][ONSClean.current_ons_import_date], date(2023, 1, 1)
+        )
+        self.assertEqual(
+            returned_data[2][ONSClean.current_ons_import_date], date(2023, 1, 1)
+        )
 
 
 if __name__ == "__main__":
