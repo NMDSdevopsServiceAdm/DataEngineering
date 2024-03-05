@@ -30,15 +30,6 @@ cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 DATE_COLUMN_IDENTIFIER = "registration_date"
 
-ons_cols_to_import = [
-    ONSClean.ons_import_date,
-    ONSClean.cssr,
-    ONSClean.region,
-    ONSClean.icb,
-    ONSClean.rural_urban_indicator_2011,
-    ONSClean.postcode,
-]
-
 cqc_location_api_cols_to_import = [
     CQCL.care_home,
     CQCL.dormancy,
@@ -71,7 +62,7 @@ def main(
     )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
-        cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
+        cleaned_ons_postcode_directory_source
     )
 
     cqc_location_df = utils.format_date_fields(
@@ -80,26 +71,14 @@ def main(
         raw_date_format="yyyy-MM-dd",
     )
 
-    current_ons_postcode_directory_df = prepare_current_ons_data(
-        ons_postcode_directory_df
-    )
-
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
-    cqc_location_df = remove_invalid_postcodes(cqc_location_df)
-
-    cqc_location_df = join_contemporary_ons_postcode_data(
+    cqc_location_df = join_ons_postcode_data_into_cqc_df(
         cqc_location_df, ons_postcode_directory_df
-    )
-
-    cqc_location_df = utils.normalise_column_values(cqc_location_df, CQCL.postcode)
-
-    cqc_location_df = join_current_ons_postcode_data(
-        cqc_location_df, current_ons_postcode_directory_df
     )
 
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
@@ -119,45 +98,38 @@ def main(
     )
 
 
-def prepare_current_ons_data(ons_df: DataFrame):
-    max_import_date = ons_df.agg(F.max(CQCLClean.ons_import_date)).collect()[0][0]
-    current_ons_df = ons_df.filter(F.col(CQCLClean.ons_import_date) == max_import_date)
-
-    STRING_TO_PREPEND = "current_"
-    COLS_TO_RENAME = current_ons_df.columns
-    COLS_TO_RENAME.remove(ONSClean.postcode)
-
-    new_ons_col_names = [STRING_TO_PREPEND + col for col in COLS_TO_RENAME]
-
-    for i in range(len(COLS_TO_RENAME)):
-        current_ons_df = current_ons_df.withColumnRenamed(
-            COLS_TO_RENAME[i], new_ons_col_names[i]
-        )
-
-    current_ons_df = current_ons_df.withColumnRenamed(ONSClean.postcode, CQCL.postcode)
-
-    return current_ons_df
-
-
-def remove_non_social_care_locations(df: DataFrame):
+def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == CQCLValues.social_care_identifier)
 
 
-def remove_invalid_postcodes(df: DataFrame):
+def join_ons_postcode_data_into_cqc_df(
+    cqc_df: DataFrame, ons_df: DataFrame
+) -> DataFrame:
+
+    cqc_df = amend_invalid_postcodes(cqc_df)
+
+    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
+
+    cqc_with_ons_df = join_ons_postcode_data(cqc_df, ons_df)
+
+    return cqc_with_ons_df
+
+
+def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
 
 
-def join_contemporary_ons_postcode_data(
+def join_ons_postcode_data(
     cqc_location_df: DataFrame, ons_postcode_directory_df: DataFrame
 ) -> DataFrame:
     cqc_location_df = cUtils.add_aligned_date_column(
         cqc_location_df,
         ons_postcode_directory_df,
         CQCLClean.cqc_location_import_date,
-        CQCLClean.ons_import_date,
+        ONSClean.ons_import_date,
     )
     formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
         ONSClean.postcode, CQCLClean.postcode
@@ -165,7 +137,7 @@ def join_contemporary_ons_postcode_data(
 
     cqc_location_df = cqc_location_df.join(
         formatted_ons_postcode_directory_df,
-        [CQCLClean.ons_import_date, CQCLClean.postcode],
+        [ONSClean.ons_import_date, CQCLClean.postcode],
         "left",
     )
     return cqc_location_df
