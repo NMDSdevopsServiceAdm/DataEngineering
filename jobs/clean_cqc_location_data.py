@@ -111,9 +111,19 @@ def join_ons_postcode_data_into_cqc_df(
 
     cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
 
-    cqc_with_ons_df = join_ons_postcode_data(cqc_df, ons_df)
+    cqc_df = cUtils.add_aligned_date_column(
+        cqc_df,
+        ons_df,
+        CQCLClean.cqc_location_import_date,
+        ONSClean.contemporary_ons_import_date,
+    )
+    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postcode)
 
-    return cqc_with_ons_df
+    return cqc_df.join(
+        ons_df,
+        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
+        "left",
+    )
 
 
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
@@ -121,27 +131,6 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
-
-
-def join_ons_postcode_data(
-    cqc_location_df: DataFrame, ons_postcode_directory_df: DataFrame
-) -> DataFrame:
-    cqc_location_df = cUtils.add_aligned_date_column(
-        cqc_location_df,
-        ons_postcode_directory_df,
-        CQCLClean.cqc_location_import_date,
-        ONSClean.contemporary_ons_import_date,
-    )
-    formatted_ons_postcode_directory_df = ons_postcode_directory_df.withColumnRenamed(
-        ONSClean.postcode, CQCLClean.postcode
-    )
-
-    cqc_location_df = cqc_location_df.join(
-        formatted_ons_postcode_directory_df,
-        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
-        "left",
-    )
-    return cqc_location_df
 
 
 def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFrame):
