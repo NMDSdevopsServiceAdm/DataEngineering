@@ -118,12 +118,12 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_remove_invalid_postcodes(self):
+    def test_amend_invalid_postcodes(self):
         test_invalid_postcode_df = self.spark.createDataFrame(
             Data.test_invalid_postcode_data, Schemas.invalid_postcode_schema
         )
 
-        df_with_invalid_postcodes_removed = job.remove_invalid_postcodes(
+        df_with_invalid_postcodes_removed = job.amend_invalid_postcodes(
             test_invalid_postcode_df
         )
 
@@ -272,61 +272,26 @@ class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
             self.assertEqual(warnings_log, [])
 
 
-class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
-    def setUp(self):
-        super().setUp()
-        self.expected_processed_ons_df = self.spark.createDataFrame(
-            Data.expected_processed_ons_rows, Schemas.expected_processed_ons_schema
-        )
-        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
-            self.test_ons_postcode_directory_df,
-            Keys.import_date,
-            "ons_postcode_import_date",
-        ).drop(Keys.import_date)
-
-    def test_columns_are_renamed_correctly(self):
-        returned_df = job.prepare_current_ons_data(
-            self.test_ons_postcode_directory_with_date_df
-        )
-
-        expected_columns = self.expected_processed_ons_df.columns
-
-        self.assertEqual(expected_columns, returned_df.columns)
-
-    def test_only_most_recent_rows_are_kept(self):
-        returned_df = job.prepare_current_ons_data(
-            self.test_ons_postcode_directory_with_date_df
-        )
-
-        self.assertEqual(
-            self.expected_processed_ons_df.collect(), returned_df.collect()
-        )
-
-
-class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
+class JoinONSDataTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_location__for_contemporary_ons_join_df = self.spark.createDataFrame(
-            Data.locations_for_contemporary_ons_join_rows,
-            Schemas.locations_for_contemporary_ons_join_schema,
-        )
-        self.test_ons_for_contemporary_join_df = self.spark.createDataFrame(
-            Data.ons_for_contemporary_ons_join_rows,
-            Schemas.ons_for_contemporary_ons_join_schema,
+        self.test_location_for_ons_join_df = self.spark.createDataFrame(
+            Data.locations_for_ons_join_rows,
+            Schemas.locations_for_ons_join_schema,
         )
 
-    def test_join_contemporary_ons_postcode_data_completes(self):
-        returned_df = job.join_contemporary_ons_postcode_data(
-            self.test_location__for_contemporary_ons_join_df,
-            self.test_ons_for_contemporary_join_df,
+    def test_join_ons_postcode_data_completes(self):
+        returned_df = job.join_ons_postcode_data(
+            self.test_location_for_ons_join_df,
+            self.test_ons_postcode_directory_df,
         )
 
         self.assertIsInstance(returned_df, DataFrame)
 
-    def test_join_contemporary_ons_postcode_data_correctly_joins_data(self):
-        returned_df = job.join_contemporary_ons_postcode_data(
-            self.test_location__for_contemporary_ons_join_df,
-            self.test_ons_for_contemporary_join_df,
+    def test_join_ons_postcode_data_correctly_joins_data(self):
+        returned_df = job.join_ons_postcode_data(
+            self.test_location_for_ons_join_df,
+            self.test_ons_postcode_directory_df,
         )
         returned_data = (
             returned_df.select(sorted(returned_df.columns))
@@ -334,8 +299,8 @@ class JoinONSContemporaryDataTests(CleanCQCLocationDatasetTests):
             .collect()
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_contemporary_ons_join_rows,
-            Schemas.expected_contemporary_ons_join_schema,
+            Data.expected_ons_join_rows,
+            Schemas.expected_ons_join_schema,
         )
         expected_data = (
             expected_df.select(sorted(expected_df.columns))

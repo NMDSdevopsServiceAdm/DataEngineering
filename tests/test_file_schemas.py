@@ -31,23 +31,18 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
-
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-
 from utils.column_names.raw_data_files.cqc_pir_columns import (
     CqcPirColumns as CQCPIR,
 )
-
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
@@ -63,15 +58,18 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
 )
 
 
@@ -405,63 +403,75 @@ class CQCLocationsSchema:
         ]
     )
 
+    locations_for_ons_join_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.postcode, StringType(), True),
+        ]
+    )
+
     ons_postcode_directory_schema = StructType(
         [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-            StructField(ONS.import_date, StringType(), True),
-            StructField(ONS.postcode, StringType(), True),
-        ]
-    )
-
-    expected_processed_ons_schema = StructType(
-        [
-            StructField(CQCLClean.current_region, StringType(), True),
-            StructField(CQCLClean.current_cssr, StringType(), True),
-            StructField(CQCLClean.current_icb, StringType(), True),
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.ons_import_date, DateType(), True),
             StructField(
-                CQCLClean.current_rural_urban_indicator_2011, StringType(), True
+                ONSClean.contemporary,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(ONSClean.cssr, StringType(), True),
+                            StructField(ONSClean.region, StringType(), True),
+                        ]
+                    )
+                ),
             ),
-            StructField(CQCLClean.postcode, StringType(), True),
-            StructField(CQCLClean.current_ons_import_date, DateType(), True),
+            StructField(ONSClean.current_ons_import_date, DateType(), True),
+            StructField(
+                ONSClean.current,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(ONSClean.cssr, StringType(), True),
+                            StructField(ONSClean.region, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
 
-    locations_for_contemporary_ons_join_schema = StructType(
+    expected_ons_join_schema = StructType(
         [
+            StructField(ONSClean.ons_import_date, DateType(), True),
+            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCL.postcode, StringType(), True),
-        ]
-    )
-
-    ons_for_contemporary_ons_join_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-            StructField(CQCLClean.ons_import_date, DateType(), True),
-            StructField(ONS.postcode, StringType(), True),
-        ]
-    )
-
-    expected_contemporary_ons_join_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCL.postcode, StringType(), True),
-            StructField(CQCLClean.contemporary_region, StringType(), True),
-            StructField(CQCLClean.contemporary_cssr, StringType(), True),
-            StructField(CQCLClean.contemporary_icb, StringType(), True),
             StructField(
-                CQCLClean.contemporary_rural_urban_indicator_2011, StringType(), True
+                ONSClean.contemporary,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(ONSClean.cssr, StringType(), True),
+                            StructField(ONSClean.region, StringType(), True),
+                        ]
+                    )
+                ),
             ),
-            StructField(CQCLClean.ons_import_date, DateType(), True),
+            StructField(ONSClean.current_ons_import_date, DateType(), True),
+            StructField(
+                ONSClean.current,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(ONSClean.cssr, StringType(), True),
+                            StructField(ONSClean.region, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
 
