@@ -1,9 +1,6 @@
 import sys
 
 from pyspark.sql import DataFrame
-from pyspark.sql.types import (
-    StringType,
-)
 import pyspark.sql.functions as F
 
 from utils import utils
