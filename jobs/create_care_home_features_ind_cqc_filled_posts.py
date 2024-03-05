@@ -37,25 +37,6 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    features_df = create_care_home_features(
-        locations_df, services_dict, rural_urban_indicator_dict
-    )
-
-    print(
-        f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
-    )
-
-    utils.write_to_parquet(
-        features_df,
-        care_home_features_ind_cqc_filled_posts_destination,
-        mode="overwrite",
-        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
-    )
-
-
-def create_care_home_features(
-    locations_df: DataFrame, services_dict: dict, rural_urban_indicator_dict: dict
-) -> DataFrame:
     filtered_loc_data = filter_locations_df_for_independent_care_home_data(
         df=locations_df,
         carehome_col_name=IndCQC.care_home,
@@ -129,12 +110,22 @@ def create_care_home_features(
     print("number_of_features:")
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
-    return features_df
+
+    print(
+        f"Exporting as parquet to {care_home_features_ind_cqc_filled_posts_destination}"
+    )
+
+    utils.write_to_parquet(
+        features_df,
+        care_home_features_ind_cqc_filled_posts_destination,
+        mode="overwrite",
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
+    )
 
 
 def filter_locations_df_for_independent_care_home_data(
-    df: pyspark.sql.DataFrame, carehome_col_name: str, cqc_col_name: str
-) -> pyspark.sql.DataFrame:
+    df: DataFrame, carehome_col_name: str, cqc_col_name: str
+) -> DataFrame:
     care_home_data = df.filter(F.col(carehome_col_name) == "Y")
     independent_care_home_data = care_home_data.filter(
         F.col(cqc_col_name) == "Independent"
@@ -142,7 +133,7 @@ def filter_locations_df_for_independent_care_home_data(
     return independent_care_home_data
 
 
-def get_list_of_distinct_ons_regions(df: pyspark.sql.DataFrame) -> List[str]:
+def get_list_of_distinct_ons_regions(df: DataFrame) -> List[str]:
     distinct_regions = df.select(IndCQC.current_region).distinct().dropna().collect()
     dis_regions_list = [str(row.current_Region) for row in distinct_regions]
     return dis_regions_list
