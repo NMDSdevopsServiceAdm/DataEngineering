@@ -323,6 +323,9 @@ class ONSData:
             StructField(
                 ONS.westminster_parliamentary_consitituency, StringType(), True
             ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -366,6 +369,10 @@ class ONSData:
                 ),
                 False,
             ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

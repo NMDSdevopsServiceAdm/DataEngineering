@@ -32,7 +32,7 @@ class CleanONSDatasetTests(unittest.TestCase):
             self.test_ons_parquet,
             Keys.import_date,
             ONSClean.ons_import_date,
-        ).drop(Keys.import_date)
+        )
 
 
 class MainTests(CleanONSDatasetTests):

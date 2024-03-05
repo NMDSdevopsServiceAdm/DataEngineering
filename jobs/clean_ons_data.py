@@ -48,9 +48,11 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         current_ons_df, ONSClean.current
     )
 
-    return refactored_df.withColumnRenamed(
+    refactored_df = refactored_df.withColumnRenamed(
         ONSClean.ons_import_date, ONSClean.current_ons_import_date
     )
+
+    return refactored_df.drop(Keys.year, Keys.month, Keys.day, Keys.import_date)
 
 
 def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFrame:
@@ -74,6 +76,10 @@ def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFram
             ONSClean.middle_super_output_area_2021,
             ONSClean.westminster_parliamentary_consitituency,
         ).alias(alias),
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
     )
 
 
