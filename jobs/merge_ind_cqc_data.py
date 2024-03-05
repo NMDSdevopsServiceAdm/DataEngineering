@@ -39,6 +39,8 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
+    CQCLClean.current_region,
+    CQCLClean.current_rural_urban_indicator_2011,
     Keys.year,
     Keys.month,
     Keys.day,
