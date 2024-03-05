@@ -12,7 +12,7 @@ from utils.feature_engineering_dictionaries import (
     RURAL_URBAN_INDICATOR_LOOKUP,
     SERVICES_LOOKUP,
 )
-from utils.features.helper import (  # get_list_of_distinct_ons_regions,
+from utils.features.helper import (
     add_date_diff_into_df,
     add_rui_data_data_frame,
     add_service_count_to_data,
