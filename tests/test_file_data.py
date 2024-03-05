@@ -1008,7 +1008,7 @@ class CQCLocationsData:
 
     ons_postcode_directory_rows = [
         (
-            "LS1 2AB",
+            "LS12AB",
             date(2021, 1, 1),
             [
                 {
@@ -1025,7 +1025,7 @@ class CQCLocationsData:
             ],
         ),
         (
-            "B69 3EG",
+            "B693EG",
             date(2021, 1, 1),
             [
                 {
@@ -1042,7 +1042,7 @@ class CQCLocationsData:
             ],
         ),
         (
-            "PR1 9HL",
+            "PR19HL",
             date(2019, 1, 1),
             [
                 {
@@ -1090,7 +1090,7 @@ class CQCLocationsData:
     expected_ons_join_rows = [
         (
             date(2019, 1, 1),
-            "PR1 9AB",
+            "PR19AB",
             date(2020, 1, 1),
             "loc-1",
             "prov-1",
@@ -1100,7 +1100,7 @@ class CQCLocationsData:
         ),
         (
             None,
-            "B69 3EG",
+            "B693EG",
             date(2018, 1, 1),
             "loc-2",
             "prov-1",
@@ -1110,7 +1110,7 @@ class CQCLocationsData:
         ),
         (
             date(2019, 1, 1),
-            "PR1 9HL",
+            "PR19HL",
             date(2020, 1, 1),
             "loc-3",
             "prov-2",
@@ -1130,7 +1130,7 @@ class CQCLocationsData:
         ),
         (
             date(2021, 1, 1),
-            "LS1 2AB",
+            "LS12AB",
             date(2021, 1, 1),
             "loc-4",
             "prov-2",
