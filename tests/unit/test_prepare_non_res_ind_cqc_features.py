@@ -59,7 +59,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
 
         job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
-        result = write_to_parquet_mock.call_args[0][0].orderBy(F.col(INDCQC.location_id))
+        result = write_to_parquet_mock.call_args[0][0].orderBy(
+            F.col(INDCQC.location_id)
+        )
 
         self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
         expected_features = SparseVector(

@@ -9,11 +9,18 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
 from utils.feature_engineering_dictionaries import (
-    RURAL_URBAN_INDICATOR_LOOKUP, SERVICES_LOOKUP)
+    RURAL_URBAN_INDICATOR_LOOKUP,
+    SERVICES_LOOKUP,
+)
 from utils.features.helper import (  # get_list_of_distinct_ons_regions,
-    add_date_diff_into_df, add_rui_data_data_frame, add_service_count_to_data,
-    column_expansion_with_dict, explode_column_from_distinct_values,
-    filter_records_since_snapshot_date, vectorise_dataframe)
+    add_date_diff_into_df,
+    add_rui_data_data_frame,
+    add_service_count_to_data,
+    column_expansion_with_dict,
+    explode_column_from_distinct_values,
+    filter_records_since_snapshot_date,
+    vectorise_dataframe,
+)
 
 
 @dataclass
@@ -107,7 +114,6 @@ def main(cleaned_cqc_ind_source, destination):
         INDCQC.care_home_features,
         INDCQC.job_count,
     )
-
 
     print("distinct_regions")
     print(distinct_regions)
