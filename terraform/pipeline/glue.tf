@@ -224,7 +224,7 @@ module "prepare_non_res_ind_cqc_features_job" {
 
   job_parameters = {
     "--cleaned_cqc_ind_source"               = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--prepared_non_res_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=prepared_non_res_ind_cqc_data/"
+    "--prepared_non_res_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features/"
   }
 }
 
