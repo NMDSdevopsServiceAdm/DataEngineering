@@ -49,6 +49,13 @@ cqc_location_api_cols_to_import = [
     Keys.month,
     Keys.day,
 ]
+ons_cols_to_import = [
+    ONSClean.postcode,
+    ONSClean.contemporary_ons_import_date,
+    ONSClean.contemporary,
+    ONSClean.current_ons_import_date,
+    ONSClean.current,
+]
 
 
 def main(
@@ -62,7 +69,7 @@ def main(
     )
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     ons_postcode_directory_df = utils.read_from_parquet(
-        cleaned_ons_postcode_directory_source
+        cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
@@ -127,14 +134,6 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
-
-
-def join_current_ons_postcode_data(cqc_loc_df: DataFrame, current_ons_df: DataFrame):
-    return cqc_loc_df.join(
-        current_ons_df,
-        CQCL.postcode,
-        "left",
-    )
 
 
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
