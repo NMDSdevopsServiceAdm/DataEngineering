@@ -110,6 +110,23 @@ def remove_locations_with_duplicates(df: DataFrame):
 
 
 def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFrame:
+    """
+    For a given ascwds_workplace_df, based on the import date, returns a filtered dataframe with only the latest updates
+
+    The rough steps are outlined below:
+    - Adds a column of purge dates which is a number of months before the comparison_date_col
+    - Calculates the latest update using an external function
+    - Compares this latest update date to the purge date, and marks the row accordingly, and clears the date information
+    - Based on those marks, filters only rows marked to keep
+
+    Args:
+        df (DataFrame): An ascwds_workplace_df that must contain at least the comparison_date_col
+        comparison_date_col (str): The data column name to make comparisons on
+
+    Returns:
+        final_df (DataFrame): a filtered dataframe where only rows marked based on the criteria for keeping are retained
+
+    """
     MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
     df_with_purge_date = df.withColumn(
@@ -130,9 +147,9 @@ def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFr
         ).otherwise(AWPValues.purge_keep),
     )
 
-    df_without_purge_date = df_with_purge_data.drop("purge_date", "latest_update")
+    df_without_added_dates = df_with_purge_data.drop("purge_date", "latest_update")
 
-    final_df = df_without_purge_date.filter(
+    final_df = df_without_added_dates.filter(
         F.col(AWPClean.purge_data) == AWPValues.purge_keep
     )
 
