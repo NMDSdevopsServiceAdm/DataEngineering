@@ -1,4 +1,3 @@
-import datetime
 import unittest
 import warnings
 from unittest.mock import Mock, patch
@@ -10,7 +9,6 @@ import jobs.prepare_non_res_ind_cqc_features as job
 from tests.test_file_data import PrepareNonResData as Data
 from tests.test_file_schemas import PrepareNonResSchemas as Schemas
 from utils import utils
-from utils.features.helper import add_date_diff_into_df
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
 
 
@@ -23,32 +21,6 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.test_df = self.spark.createDataFrame(Data.rows, Schemas.basic_schema)
 
         warnings.simplefilter("ignore", ResourceWarning)
-
-    def test_add_date_diff_into_df(self):
-        df = self.spark.createDataFrame(
-            [["01-10-2013"], ["01-10-2023"]], ["test_input"]
-        )
-        df = df.select(
-            F.col("test_input"),
-            F.to_date(F.col("test_input"), "MM-dd-yyyy").alias("import_date"),
-        )
-        result = add_date_diff_into_df(
-            df=df, new_col_name="diff", snapshot_date_col="import_date"
-        )
-        expected_max_date = datetime.date(2023, 1, 10)
-        actual_max_date = result.agg(F.max("import_date")).first()[0]
-
-        expected_diff_between_max_date_and_other_date = 3652
-        actual_diff = (
-            result.filter(F.col("test_input") == "01-10-2013")
-            .select(F.col("diff"))
-            .collect()
-        )
-
-        self.assertEqual(actual_max_date, expected_max_date)
-        self.assertEqual(
-            actual_diff[0].diff, expected_diff_between_max_date_and_other_date
-        )
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
