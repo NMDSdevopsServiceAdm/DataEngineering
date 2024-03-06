@@ -24,18 +24,18 @@ def main(ons_source: str, cleaned_ons_destination: str):
         contemporary_ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
 
-    contemporary_ons_df = refactor_columns_as_struct_with_alias(
+    refactored_contemporary_ons_df = refactor_columns_as_struct_with_alias(
         contemporary_ons_df, ONSClean.contemporary
     )
 
-    current_ons_df = prepare_current_ons_data(contemporary_ons_df)
+    refactored_current_ons_df = prepare_current_ons_data(contemporary_ons_df)
 
-    contemporary_ons_with_current_ons_df = join_current_ons_df_into_contemporary_df(
-        contemporary_ons_df, current_ons_df
+    contemporary_with_current_ons_df = join_current_ons_df_into_contemporary_df(
+        refactored_contemporary_ons_df, refactored_current_ons_df
     )
 
     utils.write_to_parquet(
-        contemporary_ons_with_current_ons_df,
+        contemporary_with_current_ons_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
