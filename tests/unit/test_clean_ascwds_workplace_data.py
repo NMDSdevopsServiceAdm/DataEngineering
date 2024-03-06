@@ -1,4 +1,5 @@
 from datetime import date
+import datetime
 import unittest
 from unittest.mock import patch, ANY, Mock
 
@@ -150,17 +151,28 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
 
     def test_adds_correct_value_for_non_parent_workplaces(self):
+        """
+        Tests nonparent rows return but also that the boundary edge date for the test data, which is 24 months previous to 2020-01-01, (2018-01-01), is also included.
+        Equally makes sure anything less than or equal to 2017-12-31 is thus not in the output data.
+        """
         input_df = self.test_purge_outdated_df.where("isparent == 0")
 
         returned_df = job.purge_outdated_workplaces(
             input_df, "ascwds_workplace_import_date"
         )
+        returned_df.show()
 
         purge_data_list = [
             row.purge_data for row in returned_df.sort(AWP.location_id).collect()
         ]
-        expected_purge_list = ["keep", "purge", "keep", "purge"]
+        date_list = [
+            row.mupddate for row in returned_df.sort(AWP.location_id).collect()
+        ]
+
+        expected_purge_list = ["keep", "keep"]
         self.assertEqual(purge_data_list, expected_purge_list)
+        for mupddate in date_list:
+            self.assertTrue(mupddate >= datetime.date(2018, 1, 1))
 
     def test_adds_correct_value_for_parent_workplaces(self):
         returned_df = job.purge_outdated_workplaces(
@@ -168,16 +180,18 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
 
         returned_df_parents = returned_df.where("isparent == 1")
-        purge_data_list = [
-            row.purge_data
-            for row in returned_df_parents.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = ["keep", "purge"]
 
-        self.assertEqual(purge_data_list, expected_purge_list)
+        date_to_check = returned_df_parents.collect()[0][3]
+        purge_data_check = returned_df_parents.collect()[0][5]
+
+        expected_date_value = datetime.date(2015, 1, 1)
+        expected_purge_value = "keep"
+
+        self.assertEqual(date_to_check, expected_date_value)
+        self.assertEqual(purge_data_check, expected_purge_value)
 
     def test_does_not_use_org_children_with_different_import_dates(self):
-        self.org_child = self.spark.createDataFrame(
+        org_child = self.spark.createDataFrame(
             [
                 (
                     "1-000000007",
@@ -189,10 +203,10 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
             ],
             Schemas.purge_outdated_schema,
         )
-        self.input_df = self.test_purge_outdated_df.union(self.org_child)
+        input_df = self.test_purge_outdated_df.union(org_child)
 
         returned_df = job.purge_outdated_workplaces(
-            self.input_df, "ascwds_workplace_import_date"
+            input_df, "ascwds_workplace_import_date"
         )
 
         returned_df_parents = returned_df.where("isparent == 1")
@@ -200,7 +214,7 @@ class PurgeOutdatedWorkplacesTests(IngestASCWDSWorkerDatasetTests):
             row.purge_data
             for row in returned_df_parents.sort(AWP.location_id).collect()
         ]
-        expected_purge_list = ["keep", "purge"]
+        expected_purge_list = ["keep"]
 
         self.assertEqual(purge_data_list, expected_purge_list)
 
