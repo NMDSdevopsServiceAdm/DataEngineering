@@ -5,8 +5,8 @@ from unittest.mock import patch, Mock
 import jobs.ingest_ons_data as job
 
 from utils import utils
-from tests.test_file_data import IngestONSData as Data
-from tests.test_file_schemas import IngestONSData as Schemas
+from tests.test_file_data import ONSData as Data
+from tests.test_file_schemas import ONSData as Schemas
 
 
 class IngestONSDataTests(unittest.TestCase):
