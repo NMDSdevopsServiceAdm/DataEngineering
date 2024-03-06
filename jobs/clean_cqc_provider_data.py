@@ -76,7 +76,6 @@ def add_cqc_sector_column_to_cqc_provider_dataframe(
 
 
 if __name__ == "__main__":
-    # Where we tell Glue how to run the file, and what to print out
     print("Spark job 'clean_cqc_provider_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
@@ -90,7 +89,6 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet CQC providers dataset",
         ),
     )
-    # Python logic ---> all in main
     main(source, destination)
 
     print("Spark job 'clean_cqc_provider_data' complete")

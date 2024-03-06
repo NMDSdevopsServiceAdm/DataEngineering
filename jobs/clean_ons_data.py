@@ -96,7 +96,6 @@ def join_current_ons_df_into_contemporary_df(
 
 
 if __name__ == "__main__":
-    # Where we tell Glue how to run the file, and what to print out
     print("Spark job 'clean_ons_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
@@ -110,7 +109,6 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet ONS postcode directory dataset",
         ),
     )
-    # Python logic ---> all in main
     main(source, destination)
 
     print("Spark job 'clean_ons_data' complete")
