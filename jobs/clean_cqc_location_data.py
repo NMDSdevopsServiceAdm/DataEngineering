@@ -61,32 +61,26 @@ def main(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
-
-    cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
-
-    ons_postcode_directory_df = utils.read_from_parquet(
-        cleaned_ons_postcode_directory_source
-    )
-
+    cqc_location_df = add_list_of_services_offered(cqc_location_df)
+    cqc_location_df = allocate_primary_service_type(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
         date_column_identifier=DATE_COLUMN_IDENTIFIER,
         raw_date_format="yyyy-MM-dd",
     )
-
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
+    ons_postcode_directory_df = utils.read_from_parquet(
+        cleaned_ons_postcode_directory_source
+    )
     cqc_location_df = join_ons_postcode_data_into_cqc_df(
         cqc_location_df, ons_postcode_directory_df
     )
 
+    cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
     cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
-
-    cqc_location_df = add_list_of_services_offered(cqc_location_df)
-
-    cqc_location_df = allocate_primary_service_type(cqc_location_df)
 
     (
         registered_locations_df,
