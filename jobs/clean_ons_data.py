@@ -18,24 +18,24 @@ onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(ons_source: str, cleaned_ons_destination: str):
-    ons_df = utils.read_from_parquet(ons_source)
+    contemporary_ons_df = utils.read_from_parquet(ons_source)
 
-    ons_df = cUtils.column_to_date(
-        ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
+    contemporary_ons_df = cUtils.column_to_date(
+        contemporary_ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
 
-    refactored_ons_df = refactor_columns_as_struct_with_alias(
-        ons_df, ONSClean.contemporary
+    contemporary_ons_df = refactor_columns_as_struct_with_alias(
+        contemporary_ons_df, ONSClean.contemporary
     )
 
-    current_ons_df = prepare_current_ons_data(ons_df)
+    current_ons_df = prepare_current_ons_data(contemporary_ons_df)
 
-    refactored_ons_with_current_ons_df = join_current_ons_df_into_contemporary_df(
-        refactored_ons_df, current_ons_df
+    contemporary_ons_with_current_ons_df = join_current_ons_df_into_contemporary_df(
+        contemporary_ons_df, current_ons_df
     )
 
     utils.write_to_parquet(
-        refactored_ons_with_current_ons_df,
+        contemporary_ons_with_current_ons_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
@@ -90,9 +90,9 @@ def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFram
 
 
 def join_current_ons_df_into_contemporary_df(
-    refactored_ons_df: DataFrame, current_ons_df: DataFrame
+    contemporary_ons_df: DataFrame, current_ons_df: DataFrame
 ) -> DataFrame:
-    return refactored_ons_df.join(current_ons_df, ONSClean.postcode, "left")
+    return contemporary_ons_df.join(current_ons_df, ONSClean.postcode, "left")
 
 
 if __name__ == "__main__":
