@@ -30,8 +30,8 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
     current_ons_df = prepare_current_ons_data(ons_df)
 
-    refactored_ons_with_current_ons_df = refactored_ons_df.join(
-        current_ons_df, ONSClean.postcode, "left"
+    refactored_ons_with_current_ons_df = join_current_ons_df_into_contemporary_df(
+        refactored_ons_df, current_ons_df
     )
 
     utils.write_to_parquet(
@@ -87,6 +87,12 @@ def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFram
         Keys.day,
         Keys.import_date,
     )
+
+
+def join_current_ons_df_into_contemporary_df(
+    refactored_ons_df: DataFrame, current_ons_df: DataFrame
+) -> DataFrame:
+    return refactored_ons_df.join(current_ons_df, ONSClean.postcode, "left")
 
 
 if __name__ == "__main__":
