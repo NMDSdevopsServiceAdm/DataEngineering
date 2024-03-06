@@ -64,6 +64,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     date_diff: str = "date_diff"
     care_home_features: str = "features"  # make this string more specific once it works
+    non_res_features: str = "features"  # make this string more specific once it works"
 
 
 # DONT IMPORT FROM BELOW THIS LINE
