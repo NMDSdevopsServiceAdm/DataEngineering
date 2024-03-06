@@ -60,7 +60,10 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
+
     cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
+
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source
     )
@@ -74,8 +77,6 @@ def main(
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
-
-    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     cqc_location_df = join_ons_postcode_data_into_cqc_df(
         cqc_location_df, ons_postcode_directory_df
