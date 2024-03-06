@@ -42,7 +42,7 @@ def main(source: str, destination: str):
         AWPClean.ascwds_workplace_import_date,
     )
 
-    ascwds_workplace_df = add_purge_outdated_workplaces_column(
+    ascwds_workplace_df = purge_outdated_workplaces(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
 
@@ -109,9 +109,7 @@ def remove_locations_with_duplicates(df: DataFrame):
     return df_without_duplicates.drop("location_id_count")
 
 
-def add_purge_outdated_workplaces_column(
-    df: DataFrame, comparison_date_col: str
-) -> DataFrame:
+def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFrame:
     MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
     df_with_purge_date = df.withColumn(
@@ -132,7 +130,11 @@ def add_purge_outdated_workplaces_column(
         ).otherwise(AWPValues.purge_keep),
     )
 
-    final_df = df_with_purge_data.drop("purge_date", "latest_update")
+    df_without_purge_date = df_with_purge_data.drop("purge_date", "latest_update")
+
+    final_df = df_without_purge_date.filter(
+        F.col(AWPClean.purge_data) == AWPValues.purge_keep
+    )
 
     return final_df
 
