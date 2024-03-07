@@ -6,6 +6,7 @@ from pyspark.sql import functions as F
 from pyspark.ml.feature import VectorAssembler
 
 
+# This functions will not be needed in the new pipeline
 def filter_records_since_snapshot_date(locations_df, max_snapshot):
     if not max_snapshot:
         return locations_df
@@ -35,6 +36,7 @@ def vectorise_dataframe(
     return loc_df
 
 
+# this function has been refactored into care home features as the column name is locked in
 def get_list_of_distinct_ons_regions(
     df: pyspark.sql.DataFrame, col_name: str
 ) -> List[str]:

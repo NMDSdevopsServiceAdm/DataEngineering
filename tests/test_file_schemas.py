@@ -64,6 +64,9 @@ from utils.column_names.raw_data_files.ons_columns import (
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
@@ -768,5 +771,40 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CareHomeFeaturesSchema:
+    clean_merged_data_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    filter_to_ind_care_home_schema = StructType(
+        [
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
