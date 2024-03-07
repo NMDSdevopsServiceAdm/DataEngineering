@@ -13,6 +13,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
 )
 
+CURRENT_PREFIX:str = "current_"
+CONTEMPORARY_PREFIX:str = "contemporary_"
+
 
 onsPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -24,8 +27,8 @@ def main(ons_source: str, cleaned_ons_destination: str):
         contemporary_ons_df, Keys.import_date, ONSClean.contemporary_ons_import_date
     )
 
-    refactored_contemporary_ons_df = refactor_columns_as_struct_with_alias(
-        contemporary_ons_df, ONSClean.contemporary
+    refactored_contemporary_ons_df = refactor_columns_with_prefix(
+        contemporary_ons_df, CONTEMPORARY_PREFIX
     )
 
     refactored_current_ons_df = prepare_current_ons_data(contemporary_ons_df)
@@ -50,43 +53,63 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         F.col(ONSClean.contemporary_ons_import_date) == max_import_date
     )
 
-    refactored_df = refactor_columns_as_struct_with_alias(
-        current_ons_df, ONSClean.current
-    )
-
-    refactored_df = refactored_df.withColumnRenamed(
-        ONSClean.contemporary_ons_import_date, ONSClean.current_ons_import_date
+    refactored_df = refactor_columns_with_prefix(
+        current_ons_df, CURRENT_PREFIX
     )
 
     return refactored_df.drop(Keys.year, Keys.month, Keys.day, Keys.import_date)
 
 
-def refactor_columns_as_struct_with_alias(df: DataFrame, alias: str) -> DataFrame:
-    return df.select(
-        ONSClean.postcode,
-        ONSClean.contemporary_ons_import_date,
-        F.struct(
-            ONSClean.cssr,
-            ONSClean.region,
-            ONSClean.sub_icb,
-            ONSClean.icb,
-            ONSClean.icb_region,
-            ONSClean.ccg,
-            ONSClean.latitude,
-            ONSClean.longitude,
-            ONSClean.imd_score,
-            ONSClean.lower_super_output_area_2011,
-            ONSClean.middle_super_output_area_2011,
-            ONSClean.rural_urban_indicator_2011,
-            ONSClean.lower_super_output_area_2021,
-            ONSClean.middle_super_output_area_2021,
-            ONSClean.westminster_parliamentary_consitituency,
-        ).alias(alias),
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    )
+def refactor_columns_with_prefix(df: DataFrame, prefix: str) -> DataFrame:
+    if (prefix == "contemporary"):
+        df = df.select(
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.cssr.alias(ONSClean.contemporary_cssr),
+            ONSClean.region.alias(ONSClean.contemporary_region),
+            ONSClean.sub_icb.alias(ONSClean.contemporary_sub_icb),
+            ONSClean.icb.alias(ONSClean.contemporary_icb),
+            ONSClean.icb_region.alias(ONSClean.contemporary_icb_region),
+            ONSClean.ccg.alias(ONSClean.contemporary_ccg),
+            ONSClean.latitude.alias(ONSClean.contemporary_latitude),
+            ONSClean.longitude.alias(ONSClean.contemporary_longitude),
+            ONSClean.imd_score.alias(ONSClean.contemporary_imd_score),
+            ONSClean.lower_super_output_area_2011.alias(ONSClean.contemporary_lsoa11),
+            ONSClean.middle_super_output_area_2011.alias(ONSClean.contemporary_msoa11),
+            ONSClean.rural_urban_indicator_2011.alias(ONSClean.contemporary_rural_urban_ind_11),
+            ONSClean.lower_super_output_area_2021.alias(ONSClean.contemporary_lsoa21),
+            ONSClean.middle_super_output_area_2021.alias(ONSClean.contemporary_msoa21),
+            ONSClean.westminster_parliamentary_consitituency.alias(ONSClean.contemporary_constituancy),
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
+        )
+    elif (prefix == "current"):
+        df = df.select(
+            ONSClean.postcode,
+            ONSClean.contemporary_ons_import_date.alias(ONSClean.current_ons_import_date),
+            ONSClean.cssr.alias(ONSClean.current_cssr),
+            ONSClean.region.alias(ONSClean.current_region),
+            ONSClean.sub_icb.alias(ONSClean.current_sub_icb),
+            ONSClean.icb.alias(ONSClean.current_icb),
+            ONSClean.icb_region.alias(ONSClean.current_icb_region),
+            ONSClean.ccg.alias(ONSClean.current_ccg),
+            ONSClean.latitude.alias(ONSClean.current_latitude),
+            ONSClean.longitude.alias(ONSClean.current_longitude),
+            ONSClean.imd_score.alias(ONSClean.current_imd_score),
+            ONSClean.lower_super_output_area_2011.alias(ONSClean.current_lsoa11),
+            ONSClean.middle_super_output_area_2011.alias(ONSClean.current_msoa11),
+            ONSClean.rural_urban_indicator_2011.alias(ONSClean.current_rural_urban_ind_11),
+            ONSClean.lower_super_output_area_2021.alias(ONSClean.current_lsoa21),
+            ONSClean.middle_super_output_area_2021.alias(ONSClean.current_msoa21),
+            ONSClean.westminster_parliamentary_consitituency.alias(ONSClean.current_constituancy),
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
+        )
+    return df
 
 
 def join_current_ons_df_into_contemporary_df(
