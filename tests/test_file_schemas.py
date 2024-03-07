@@ -417,7 +417,7 @@ class CQCLocationsSchema:
             StructField(CQCPClean.name, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
             StructField(CQCPClean.region, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
         ]
     )
 
@@ -427,7 +427,8 @@ class CQCLocationsSchema:
             StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCLClean.provider_name, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
         ]
     )
 
