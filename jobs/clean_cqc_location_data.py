@@ -23,6 +23,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
+    contemporary_geography_columns,
+    current_geography_columns,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 
@@ -53,6 +55,8 @@ ons_cols_to_import = [
     ONSClean.postcode,
     ONSClean.contemporary_ons_import_date,
     ONSClean.current_ons_import_date,
+    *contemporary_geography_columns,
+    *current_geography_columns,
 ]
 
 

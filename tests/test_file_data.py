@@ -1010,53 +1010,29 @@ class CQCLocationsData:
         (
             "LS12AB",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "Leeds",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Leeds",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "Leeds",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Leeds",
+            "Yorkshire & Humber",
         ),
         (
             "B693EG",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "York",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "York",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "York",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "York",
+            "Yorkshire & Humber",
         ),
         (
             "PR19HL",
             date(2019, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "Hull",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Hull",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "East Riding of Yorkshire",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "East Riding of Yorkshire",
+            "Yorkshire & Humber",
         ),
     ]
 
@@ -1097,6 +1073,8 @@ class CQCLocationsData:
             None,
             None,
             None,
+            None,
+            None,
         ),
         (
             None,
@@ -1107,6 +1085,8 @@ class CQCLocationsData:
             None,
             None,
             None,
+            None,
+            None,
         ),
         (
             date(2019, 1, 1),
@@ -1114,19 +1094,11 @@ class CQCLocationsData:
             date(2020, 1, 1),
             "loc-3",
             "prov-2",
-            [
-                {
-                    ONSClean.cssr: "Hull",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Hull",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "East Riding of Yorkshire",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "East Riding of Yorkshire",
+            "Yorkshire & Humber",
         ),
         (
             date(2021, 1, 1),
@@ -1134,19 +1106,11 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "loc-4",
             "prov-2",
-            [
-                {
-                    ONSClean.cssr: "Leeds",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Leeds",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
-            [
-                {
-                    ONSClean.cssr: "Leeds",
-                    ONSClean.region: "Yorkshire & Humber",
-                }
-            ],
+            "Leeds",
+            "Yorkshire & Humber",
         ),
     ]
 
