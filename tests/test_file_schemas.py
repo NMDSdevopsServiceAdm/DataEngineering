@@ -332,43 +332,64 @@ class ONSData:
 
     expected_refactored_schema = StructType(
         [
-            StructField(ONS.postcode, StringType(), True),
+            StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_region, StringType(), True),
+            StructField(ONSClean.contemporary_sub_icb, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+            StructField(ONSClean.contemporary_icb_region, StringType(), True),
+            StructField(ONSClean.contemporary_ccg, StringType(), True),
+            StructField(ONSClean.contemporary_latitude, StringType(), True),
+            StructField(ONSClean.contemporary_longitude, StringType(), True),
+            StructField(ONSClean.contemporary_imd_score, StringType(), True),
             StructField(
-                ONSClean.contemporary,
-                StructType(
-                    [
-                        StructField(ONS.cssr, StringType(), True),
-                        StructField(ONS.region, StringType(), True),
-                        StructField(ONS.sub_icb, StringType(), True),
-                        StructField(ONS.icb, StringType(), True),
-                        StructField(ONS.icb_region, StringType(), True),
-                        StructField(ONS.ccg, StringType(), True),
-                        StructField(ONS.latitude, StringType(), True),
-                        StructField(ONS.longitude, StringType(), True),
-                        StructField(ONS.imd_score, StringType(), True),
-                        StructField(
-                            ONS.lower_super_output_area_2011, StringType(), True
-                        ),
-                        StructField(
-                            ONS.middle_super_output_area_2011, StringType(), True
-                        ),
-                        StructField(ONS.rural_urban_indicator_2011, StringType(), True),
-                        StructField(
-                            ONS.lower_super_output_area_2021, StringType(), True
-                        ),
-                        StructField(
-                            ONS.middle_super_output_area_2021, StringType(), True
-                        ),
-                        StructField(
-                            ONS.westminster_parliamentary_consitituency,
-                            StringType(),
-                            True,
-                        ),
-                    ]
-                ),
-                False,
+                ONSClean.contemporary_lsoa11, StringType(), True
             ),
+            StructField(
+                ONSClean.contemporary_msoa11, StringType(), True
+            ),
+            StructField(ONSClean.contemporary_rural_urban_ind_11, StringType(), True),
+            StructField(
+                ONSClean.contemporary_lsoa21, StringType(), True
+            ),
+            StructField(
+                ONSClean.contemporary_msoa21, StringType(), True
+            ),
+            StructField(
+                ONSClean.contemporary_constituancy,
+                StringType(),
+                True,
+            ),
+            StructField(ONSClean.current_ons_import_date, DateType(), True),
+            StructField(ONSClean.current_cssr, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+            StructField(ONSClean.current_sub_icb, StringType(), True),
+            StructField(ONSClean.current_icb, StringType(), True),
+            StructField(ONSClean.current_icb_region, StringType(), True),
+            StructField(ONSClean.current_ccg, StringType(), True),
+            StructField(ONSClean.current_latitude, StringType(), True),
+            StructField(ONSClean.current_longitude, StringType(), True),
+            StructField(ONSClean.current_imd_score, StringType(), True),
+            StructField(
+                ONSClean.current_lsoa11, StringType(), True
+            ),
+            StructField(
+                ONSClean.current_msoa11, StringType(), True
+            ),
+            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(
+                ONSClean.current_lsoa21, StringType(), True
+            ),
+            StructField(
+                ONSClean.current_msoa21, StringType(), True
+            ),
+            StructField(
+                ONSClean.current_constituancy,
+                StringType(),
+                True,
+            ),
+                    
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -465,29 +486,12 @@ class CQCLocationsSchema:
         [
             StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(
-                ONSClean.contemporary,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(ONSClean.cssr, StringType(), True),
-                            StructField(ONSClean.region, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_region, StringType(), True),
             StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(
-                ONSClean.current,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(ONSClean.cssr, StringType(), True),
-                            StructField(ONSClean.region, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(ONSClean.current_cssr, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+                        
         ]
     )
 
@@ -498,29 +502,12 @@ class CQCLocationsSchema:
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
-            StructField(
-                ONSClean.contemporary,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(ONSClean.cssr, StringType(), True),
-                            StructField(ONSClean.region, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_region, StringType(), True),
             StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(
-                ONSClean.current,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(ONSClean.cssr, StringType(), True),
-                            StructField(ONSClean.region, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+            StructField(ONSClean.current_cssr, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+             
         ]
     )
 

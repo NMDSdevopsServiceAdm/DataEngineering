@@ -52,9 +52,7 @@ cqc_location_api_cols_to_import = [
 ons_cols_to_import = [
     ONSClean.postcode,
     ONSClean.contemporary_ons_import_date,
-    ONSClean.contemporary,
     ONSClean.current_ons_import_date,
-    ONSClean.current,
 ]
 
 
