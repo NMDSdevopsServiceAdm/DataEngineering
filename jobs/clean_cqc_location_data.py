@@ -165,28 +165,31 @@ def allocate_primary_service_type(df: DataFrame):
 
 
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
+    locations_df = cUtils.add_aligned_date_column(
+        locations_df,
+        provider_df,
+        CQCLClean.cqc_location_import_date,
+        CQCPClean.cqc_provider_import_date,
+    )
+
     provider_data_to_join_df = provider_df.select(
-        provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"),
+        provider_df[CQCPClean.provider_id].alias(CQCLClean.provider_id),
         provider_df[CQCPClean.name].alias(CQCLClean.provider_name),
         provider_df[CQCPClean.cqc_sector],
-        provider_df[Keys.import_date].alias("import_date_to_drop"),
+        provider_df[CQCPClean.cqc_provider_import_date],
     )
-    columns_to_join = [
-        locations_df[CQCL.provider_id]
-        == provider_data_to_join_df["provider_id_to_drop"],
-        locations_df[Keys.import_date]
-        == provider_data_to_join_df["import_date_to_drop"],
-    ]
-    joined_df = locations_df.join(
-        provider_data_to_join_df, columns_to_join, how="left"
-    ).drop("provider_id_to_drop", "import_date_to_drop")
 
+    joined_df = locations_df.join(
+        provider_data_to_join_df,
+        [CQCLClean.provider_id, CQCPClean.cqc_provider_import_date],
+        how="left",
+    )
     return joined_df
 
 
 def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
-) -> DataFrame:
+) -> tuple[DataFrame, DataFrame]:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
