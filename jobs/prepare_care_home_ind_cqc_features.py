@@ -2,7 +2,6 @@ import sys
 from typing import List
 
 import pyspark.sql.functions as F
-import pyspark.sql
 from pyspark.sql import DataFrame
 
 from utils import utils
@@ -97,7 +96,7 @@ def main(
         IndCQC.number_of_beds,
         IndCQC.people_directly_employed,
         IndCQC.care_home,
-        IndCQC.care_home_features,
+        IndCQC.features,
         IndCQC.job_count,
         Keys.year,
         Keys.month,

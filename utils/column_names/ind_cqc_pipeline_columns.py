@@ -89,7 +89,7 @@ class IndCqcColumns:
     job_count_unfiltered_source: str = "job_count_unfiltered_source"
     service_count: str = "service_count"
     date_diff: str = "date_diff"
-    care_home_features: str = "features"  # make this string more specific once it works
+    features: str = "features"
 
 
 # DONT IMPORT FROM BELOW THIS LINE
