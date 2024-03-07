@@ -48,7 +48,7 @@ if __name__ == "__main__":
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC",
-        dataset="locations-api",
+        dataset="locations_api",
         date=todays_date,
     )
 

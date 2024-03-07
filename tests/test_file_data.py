@@ -8,6 +8,9 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedValues as CQCLValues,
 )
@@ -557,7 +560,7 @@ class CQCProviderData:
 
 
 @dataclass
-class IngestONSData:
+class ONSData:
     sample_rows = [
         ("Yorkshire & Humber", "Leeds", "50.10101"),
         ("Yorkshire & Humber", "York", "52.10101"),
@@ -569,6 +572,16 @@ class IngestONSData:
         ("Yorkshire & Humber", "York", "52.10101"),
         ("Yorkshire & Humber", "Hull", "53.10101"),
     ]
+
+    # fmt: off
+    ons_sample_rows_full = [
+        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+    ]
+    # fmt: on
 
 
 @dataclass
@@ -998,51 +1011,59 @@ class CQCLocationsData:
 
     ons_postcode_directory_rows = [
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            "20210101",
-            "LS1 2AB",
+            "LS12AB",
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "Leeds",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "Leeds",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
         ),
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "York",
-            "Urban city and town",
-            "20210101",
-            "B69 3EG",
+            "B693EG",
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "York",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "York",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
         ),
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Hull",
-            "Urban city and town",
-            "20200101",
-            "PR1 9HL",
+            "PR19HL",
+            date(2019, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "Hull",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "East Riding of Yorkshire",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
         ),
     ]
 
-    expected_processed_ons_rows = [
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            "LS1 2AB",
-            date(2021, 1, 1),
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "York",
-            "Urban city and town",
-            "B69 3EG",
-            date(2021, 1, 1),
-        ),
-    ]
-
-    locations_for_contemporary_ons_join_rows = [
+    locations_for_ons_join_rows = [
         (
             "loc-1",
             "prov-1",
@@ -1069,77 +1090,66 @@ class CQCLocationsData:
         ),
     ]
 
-    ons_for_contemporary_ons_join_rows = [
+    expected_ons_join_rows = [
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            date(2021, 1, 1),
-            "LS1 2AB",
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "York",
-            "Urban city and town",
-            date(2021, 1, 1),
-            "B69 3EG",
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Hull",
-            "Urban city and town",
             date(2019, 1, 1),
-            "PR1 9HL",
-        ),
-    ]
-
-    expected_contemporary_ons_join_rows = [
-        (
+            "PR19AB",
+            date(2020, 1, 1),
             "loc-1",
             "prov-1",
-            date(2020, 1, 1),
-            "PR1 9AB",
             None,
             None,
             None,
-            None,
-            date(2019, 1, 1),
         ),
         (
+            None,
+            "B693EG",
+            date(2018, 1, 1),
             "loc-2",
             "prov-1",
-            date(2018, 1, 1),
-            "B69 3EG",
-            None,
-            None,
             None,
             None,
             None,
         ),
         (
+            date(2019, 1, 1),
+            "PR19HL",
+            date(2020, 1, 1),
             "loc-3",
             "prov-2",
-            date(2020, 1, 1),
-            "PR1 9HL",
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Hull",
-            "Urban city and town",
-            date(2019, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "Hull",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
+            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "East Riding of Yorkshire",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
         ),
         (
+            date(2021, 1, 1),
+            "LS12AB",
+            date(2021, 1, 1),
             "loc-4",
             "prov-2",
+            [
+                {
+                    ONSClean.cssr: "Leeds",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
             date(2021, 1, 1),
-            "LS1 2AB",
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            date(2021, 1, 1),
+            [
+                {
+                    ONSClean.cssr: "Leeds",
+                    ONSClean.region: "Yorkshire & Humber",
+                }
+            ],
         ),
     ]
 
