@@ -177,7 +177,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(purge_data_list, expected_purge_list)
 
     def test_does_not_use_org_children_with_different_import_dates(self):
-        self.org_child = self.spark.createDataFrame(
+        org_child = self.spark.createDataFrame(
             [
                 (
                     "1-000000007",
@@ -189,10 +189,10 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
             ],
             Schemas.purge_outdated_schema,
         )
-        self.input_df = self.test_purge_outdated_df.union(self.org_child)
+        input_df = self.test_purge_outdated_df.union(org_child)
 
         returned_df = job.add_purge_outdated_workplaces_column(
-            self.input_df, "ascwds_workplace_import_date"
+            input_df, "ascwds_workplace_import_date"
         )
 
         returned_df_parents = returned_df.where("isparent == 1")
@@ -203,6 +203,24 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         expected_purge_list = ["keep", "purge"]
 
         self.assertEqual(purge_data_list, expected_purge_list)
+
+
+class PurgeOutdatedWorkplacesColumn(AddPurgeOutdatedWorkplacesColumnTests):
+    def setUp(self):
+        super().setUp()
+        self.test_only_keep_df = job.add_purge_outdated_workplaces_column(
+            self.test_purge_outdated_df, "ascwds_workplace_import_date"
+        )
+
+    def test_data_correctly_purged(self):
+        returned_df = job.purge_outdated_workplaces(self.test_only_keep_df)
+
+        purge_data_list = [
+            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
+        ]
+        expected_list = ["keep", "keep", "keep"]
+        self.assertFalse("purge" in purge_data_list)
+        self.assertEqual(purge_data_list, expected_list)
 
 
 class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
