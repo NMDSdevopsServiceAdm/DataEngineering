@@ -42,9 +42,11 @@ def main(source: str, destination: str):
         AWPClean.ascwds_workplace_import_date,
     )
 
-    ascwds_workplace_df = purge_outdated_workplaces(
+    ascwds_workplace_df = add_purge_outdated_workplaces_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
+
+    ascwds_workplace_df = purge_outdated_workplaces(ascwds_workplace_df)
 
     ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
 
@@ -109,22 +111,23 @@ def remove_locations_with_duplicates(df: DataFrame):
     return df_without_duplicates.drop("location_id_count")
 
 
-def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFrame:
+def add_purge_outdated_workplaces_column(
+    df: DataFrame, comparison_date_col: str
+) -> DataFrame:
     """
-    For a given ascwds_workplace_df, based on the import date, returns a filtered dataframe with only the latest updates
+    For a given ascwds_workplace_df, based on the comparison_date_col, returns a dataframe where each row is marked to keep or purge in a new column
 
     The rough steps are outlined below:
     - Adds a column of purge dates which is a number of months before the comparison_date_col
     - Calculates the latest update using an external function
     - Compares this latest update date to the purge date, and marks the row accordingly, and clears the date information
-    - Based on those marks, filters only rows marked to keep
 
     Args:
         df (DataFrame): An ascwds_workplace_df that must contain at least the comparison_date_col
         comparison_date_col (str): The data column name to make comparisons on
 
     Returns:
-        final_df (DataFrame): a filtered dataframe where only rows marked based on the criteria for keeping are retained
+        final_df (DataFrame): a dataframe where each row is marked for keeping or purging
 
     """
     MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
@@ -147,11 +150,7 @@ def purge_outdated_workplaces(df: DataFrame, comparison_date_col: str) -> DataFr
         ).otherwise(AWPValues.purge_keep),
     )
 
-    df_without_added_dates = df_with_purge_data.drop("purge_date", "latest_update")
-
-    final_df = df_without_added_dates.filter(
-        F.col(AWPClean.purge_data) == AWPValues.purge_keep
-    )
+    final_df = df_with_purge_data.drop("purge_date", "latest_update")
 
     return final_df
 
@@ -223,6 +222,27 @@ def create_column_with_repeated_values_removed(
     df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
 
     return df_without_repeated_values
+
+
+def purge_outdated_workplaces(
+    ascwds_workplace_df_with_purge_marker: DataFrame,
+    purge_marker_col: str = AWPClean.purge_data,
+) -> DataFrame:
+    """
+    Takes an ascwds_workplace_df extended with a column that marks data for purging or keeping
+    (such as the output from add_purge_outdated_workplaces_column),
+    and filters the dataframe based on rows marked to keep
+
+    Args:
+        ascwds_workplace_df_with_purge_marker (DataFrame): As the name suggests, a DataFrame of workplace data with the purge marker present
+        purge_marker_col (str): (Default = AWPClean.purge_data) This is the name of the column where the purge marker is located
+
+    Returns:
+        The dataframe but now filtered to only rows where the marker indicated the row be kept.
+    """
+    return ascwds_workplace_df_with_purge_marker.filter(
+        F.col(purge_marker_col) == AWPValues.purge_keep
+    )
 
 
 if __name__ == "__main__":
