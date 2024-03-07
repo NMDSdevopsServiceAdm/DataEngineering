@@ -330,7 +330,7 @@ class ONSData:
         ]
     )
 
-    expected_refactored_schema = StructType(
+    expected_refactored_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
@@ -361,35 +361,6 @@ class ONSData:
                 StringType(),
                 True,
             ),
-            StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(ONSClean.current_cssr, StringType(), True),
-            StructField(ONSClean.current_region, StringType(), True),
-            StructField(ONSClean.current_sub_icb, StringType(), True),
-            StructField(ONSClean.current_icb, StringType(), True),
-            StructField(ONSClean.current_icb_region, StringType(), True),
-            StructField(ONSClean.current_ccg, StringType(), True),
-            StructField(ONSClean.current_latitude, StringType(), True),
-            StructField(ONSClean.current_longitude, StringType(), True),
-            StructField(ONSClean.current_imd_score, StringType(), True),
-            StructField(
-                ONSClean.current_lsoa11, StringType(), True
-            ),
-            StructField(
-                ONSClean.current_msoa11, StringType(), True
-            ),
-            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
-            StructField(
-                ONSClean.current_lsoa21, StringType(), True
-            ),
-            StructField(
-                ONSClean.current_msoa21, StringType(), True
-            ),
-            StructField(
-                ONSClean.current_constituancy,
-                StringType(),
-                True,
-            ),
-                    
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),

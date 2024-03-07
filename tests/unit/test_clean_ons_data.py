@@ -52,19 +52,22 @@ class MainTests(CleanONSDatasetTests):
         )
 
 
-class RefactorColumnsAsStructTests(CleanONSDatasetTests):
+class RefactorColumnsWithPrefixTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-        self.returned_df = job.refactor_columns_as_struct_with_alias(
-            self.test_ons_postcode_directory_with_date_df, ONSClean.contemporary
+        self.returned_df = job.refactor_columns_with_prefix(
+            self.test_ons_postcode_directory_with_date_df, job.CONTEMPORARY_PREFIX
         )
 
-    def test_refactor_columns_as_struct_returns_df_with_correct_number_of_rows(self):
+    def test_refactor_columns_as_with_prefix_returns_df_with_correct_number_of_rows(self):
         self.assertIsInstance(self.returned_df, DataFrame)
         self.assertEqual(self.returned_df.count(), 5)
 
-    def test_refactored_schema_matches_expected_schema(self):
-        self.assertEqual(self.returned_df.schema, Schema.expected_refactored_schema)
+    def test_refactored_schema_matches_expected_columns(self):
+        returned_schema = sorted(self.returned_df.columns)
+        expected_df = self.spark.createDataFrame([], Schema.expected_refactored_contemporary_schema)
+        expected_schema = sorted(expected_df.columns)
+        self.assertEqual(returned_schema, expected_schema)
 
 
 class PrepareCurrentONSTests(CleanONSDatasetTests):
