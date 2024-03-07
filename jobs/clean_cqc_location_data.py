@@ -1,5 +1,6 @@
 import sys
 import warnings
+from typing import Tuple
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -189,7 +190,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
 
 def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
-) -> tuple[DataFrame, DataFrame]:
+) -> Tuple[DataFrame, DataFrame]:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
