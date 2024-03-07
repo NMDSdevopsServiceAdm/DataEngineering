@@ -1,5 +1,4 @@
 from datetime import date
-import datetime
 import unittest
 from unittest.mock import patch, ANY, Mock
 
