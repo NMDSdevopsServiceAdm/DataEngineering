@@ -52,20 +52,20 @@ class MainTests(CleanONSDatasetTests):
         )
 
 
-class RefactorColumnsWithPrefixTests(CleanONSDatasetTests):
+class PrepareContemporaryOnsDataTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-        self.returned_df = job.refactor_columns_with_prefix(
-            self.test_ons_postcode_directory_with_date_df, job.CONTEMPORARY_PREFIX
+        self.returned_df = job.prepare_contemporary_ons_data(
+            self.test_ons_postcode_directory_with_date_df
         )
 
-    def test_refactor_columns_as_with_prefix_returns_df_with_correct_number_of_rows(
+    def test_prepare_contemporary_ons_data_returns_df_with_correct_number_of_rows(
         self,
     ):
         self.assertIsInstance(self.returned_df, DataFrame)
         self.assertEqual(self.returned_df.count(), 5)
 
-    def test_refactored_schema_matches_expected_columns(self):
+    def test_prepare_contemporary_ons_data_returns_expected_columns(self):
         returned_schema = sorted(self.returned_df.columns)
         expected_df = self.spark.createDataFrame(
             [], Schema.expected_refactored_contemporary_schema
@@ -74,17 +74,15 @@ class RefactorColumnsWithPrefixTests(CleanONSDatasetTests):
         self.assertEqual(returned_schema, expected_schema)
 
 
-class PrepareCurrentONSTests(CleanONSDatasetTests):
+class PrepareCurrentOnsDataTests(CleanONSDatasetTests):
     def setUp(self):
         super().setUp()
-
-    def test_only_most_recent_rows_for_max_date_are_kept(self):
-        returned_df = job.prepare_current_ons_data(
+        self.returned_df = job.prepare_current_ons_data(
             self.test_ons_postcode_directory_with_date_df
         )
-        self.assertEqual(returned_df.count(), 3)
 
-        returned_data = returned_df.collect()
+    def test_only_most_recent_rows_for_max_date_are_kept(self):
+        returned_data = self.returned_df.collect()
         self.assertEqual(
             returned_data[0][ONSClean.current_ons_import_date], date(2023, 1, 1)
         )
@@ -94,6 +92,20 @@ class PrepareCurrentONSTests(CleanONSDatasetTests):
         self.assertEqual(
             returned_data[2][ONSClean.current_ons_import_date], date(2023, 1, 1)
         )
+
+    def test_prepare_current_ons_data_returns_df_with_correct_number_of_rows(
+        self,
+    ):
+        self.assertIsInstance(self.returned_df, DataFrame)
+        self.assertEqual(self.returned_df.count(), 3)
+
+    def test_prepare_current_ons_data_returns_expected_columns(self):
+        returned_schema = sorted(self.returned_df.columns)
+        expected_df = self.spark.createDataFrame(
+            [], Schema.expected_refactored_current_schema
+        )
+        expected_schema = sorted(expected_df.columns)
+        self.assertEqual(returned_schema, expected_schema)
 
 
 if __name__ == "__main__":
