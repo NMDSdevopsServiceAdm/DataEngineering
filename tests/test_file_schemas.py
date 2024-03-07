@@ -343,19 +343,11 @@ class ONSData:
             StructField(ONSClean.contemporary_latitude, StringType(), True),
             StructField(ONSClean.contemporary_longitude, StringType(), True),
             StructField(ONSClean.contemporary_imd_score, StringType(), True),
-            StructField(
-                ONSClean.contemporary_lsoa11, StringType(), True
-            ),
-            StructField(
-                ONSClean.contemporary_msoa11, StringType(), True
-            ),
+            StructField(ONSClean.contemporary_lsoa11, StringType(), True),
+            StructField(ONSClean.contemporary_msoa11, StringType(), True),
             StructField(ONSClean.contemporary_rural_urban_ind_11, StringType(), True),
-            StructField(
-                ONSClean.contemporary_lsoa21, StringType(), True
-            ),
-            StructField(
-                ONSClean.contemporary_msoa21, StringType(), True
-            ),
+            StructField(ONSClean.contemporary_lsoa21, StringType(), True),
+            StructField(ONSClean.contemporary_msoa21, StringType(), True),
             StructField(
                 ONSClean.contemporary_constituancy,
                 StringType(),
@@ -462,7 +454,6 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
-                        
         ]
     )
 
@@ -478,7 +469,6 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
-             
         ]
     )
 

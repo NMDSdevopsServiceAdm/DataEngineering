@@ -19,10 +19,14 @@ class OnsCleanedColumns(ONScol):
     contemporary_imd_score: str = "contemporary_" + ONScol.imd_score
     contemporary_lsoa11: str = "contemporary_" + ONScol.lower_super_output_area_2011
     contemporary_msoa11: str = "contemporary_" + ONScol.middle_super_output_area_2011
-    contemporary_rural_urban_ind_11: str = "contemporary_" + ONScol.rural_urban_indicator_2011
+    contemporary_rural_urban_ind_11: str = (
+        "contemporary_" + ONScol.rural_urban_indicator_2011
+    )
     contemporary_lsoa21: str = "contemporary_" + ONScol.lower_super_output_area_2021
     contemporary_msoa21: str = "contemporary_" + ONScol.middle_super_output_area_2021
-    contemporary_constituancy: str = "contemporary_" + ONScol.westminster_parliamentary_consitituency
+    contemporary_constituancy: str = (
+        "contemporary_" + ONScol.westminster_parliamentary_consitituency
+    )
     current_ons_import_date: str = "current_ons_import_date"
     current_cssr: str = "current_" + ONScol.cssr
     current_region: str = "current_" + ONScol.region
@@ -38,9 +42,12 @@ class OnsCleanedColumns(ONScol):
     current_rural_urban_ind_11: str = "current_" + ONScol.rural_urban_indicator_2011
     current_lsoa21: str = "current_" + ONScol.lower_super_output_area_2021
     current_msoa21: str = "current_" + ONScol.middle_super_output_area_2021
-    current_constituancy: str = "current_" + ONScol.westminster_parliamentary_consitituency
+    current_constituancy: str = (
+        "current_" + ONScol.westminster_parliamentary_consitituency
+    )
 
-contemporary_geography_columns:list = [
+
+contemporary_geography_columns: list = [
     OnsCleanedColumns.contemporary_ons_import_date,
     OnsCleanedColumns.contemporary_cssr,
     OnsCleanedColumns.contemporary_region,
@@ -59,7 +66,7 @@ contemporary_geography_columns:list = [
     OnsCleanedColumns.contemporary_constituancy,
 ]
 
-current_geography_columns:list = [
+current_geography_columns: list = [
     OnsCleanedColumns.current_ons_import_date,
     OnsCleanedColumns.current_cssr,
     OnsCleanedColumns.current_region,

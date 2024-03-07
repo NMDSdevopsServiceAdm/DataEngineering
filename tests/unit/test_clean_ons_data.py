@@ -59,13 +59,17 @@ class RefactorColumnsWithPrefixTests(CleanONSDatasetTests):
             self.test_ons_postcode_directory_with_date_df, job.CONTEMPORARY_PREFIX
         )
 
-    def test_refactor_columns_as_with_prefix_returns_df_with_correct_number_of_rows(self):
+    def test_refactor_columns_as_with_prefix_returns_df_with_correct_number_of_rows(
+        self,
+    ):
         self.assertIsInstance(self.returned_df, DataFrame)
         self.assertEqual(self.returned_df.count(), 5)
 
     def test_refactored_schema_matches_expected_columns(self):
         returned_schema = sorted(self.returned_df.columns)
-        expected_df = self.spark.createDataFrame([], Schema.expected_refactored_contemporary_schema)
+        expected_df = self.spark.createDataFrame(
+            [], Schema.expected_refactored_contemporary_schema
+        )
         expected_schema = sorted(expected_df.columns)
         self.assertEqual(returned_schema, expected_schema)
 
