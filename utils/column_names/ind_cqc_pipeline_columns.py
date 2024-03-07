@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import(
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
 )
 
@@ -62,10 +62,12 @@ class IndCqcColumns:
     contemporary_imd_score: str = ONSClean.contemporary_imd_score
     contemporary_lsoa11: str = ONSClean.contemporary_lsoa11
     contemporary_msoa11: str = ONSClean.contemporary_msoa11
-    contemporary_rural_urban_indicator_2011: str = ONSClean.contemporary_rural_urban_ind_11
+    contemporary_rural_urban_indicator_2011: str = (
+        ONSClean.contemporary_rural_urban_ind_11
+    )
     contemporary_lsoa21: str = ONSClean.contemporary_lsoa21
     contemporary_msoa21: str = ONSClean.contemporary_msoa21
-    contemporary_constituancy:str = ONSClean.contemporary_constituancy
+    contemporary_constituancy: str = ONSClean.contemporary_constituancy
     current_ons_import_date: str = ONSClean.current_ons_import_date
     current_cssr: str = ONSClean.current_cssr
     current_region: str = ONSClean.current_region
