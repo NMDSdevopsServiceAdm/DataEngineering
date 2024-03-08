@@ -6,7 +6,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     selected_ascwds_job_count_is_at_least_the_min_permitted,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
-    JobCalculationConstants,
+    ASCWDSFilledPostCalculationConstants as calculation_constant,
 )
 
 
@@ -33,12 +33,12 @@ def calculate_jobcount_abs_difference_within_range(
                 & (
                     column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count(
                         col_name="abs_difference",
-                        min_abs_diff=JobCalculationConstants().MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+                        min_abs_diff=calculation_constant().MIN_ABS_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
                     )
                     | mean_abs_difference_less_than_min_pct_difference(
                         abs_dff_col="abs_difference",
                         comparison_col=total_staff_column,
-                        min_diff_val=JobCalculationConstants().MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
+                        min_diff_val=calculation_constant().MIN_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
                     )
                 )
             ),
