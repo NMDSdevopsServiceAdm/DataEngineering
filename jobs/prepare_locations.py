@@ -215,6 +215,9 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
         )
     )
 
+    workplace_df = utils.format_date_fields(
+        workplace_df, "mupddate", raw_date_format="dd/MM/yyyy"
+    )
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
 
