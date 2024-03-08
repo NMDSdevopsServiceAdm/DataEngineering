@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     FloatType,
     ArrayType,
     DateType,
+    DoubleType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -771,6 +772,31 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
+        ]
+    )
+
+    merged_schema_for_cleaning_job = StringType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCLClean.job_count_unfiltered, DoubleType(), True),
+            StructField(CQCLClean.current_cssr, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(CQCLClean.job_count_unfiltered_source, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
         ]
     )
 

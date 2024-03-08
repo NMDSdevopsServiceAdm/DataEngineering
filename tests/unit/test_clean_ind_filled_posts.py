@@ -6,7 +6,10 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType, DateType
 
 import jobs.clean_ind_cqc_filled_posts as job
-from tests.test_file_generator import generate_ind_cqc_filled_posts_file_parquet
+
+from tests.test_file_data import MergeIndCQCData as Data
+from tests.test_file_schemas import MergeIndCQCData as Schemas
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -26,7 +29,10 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_df = generate_ind_cqc_filled_posts_file_parquet()
+        self.merge_ind_cqc_test_df = self.spark.createDataFrame(
+            Data.merged_rows_for_cleaning_job,
+            Schemas.merged_schema_for_cleaning_job,
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
@@ -36,7 +42,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         read_from_parquet_mock,
         write_to_parquet_mock: Mock,
     ):
-        read_from_parquet_mock.return_value = self.test_df
+        read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
 
         job.main(
             self.IND_FILELD_POSTS_DIR,
