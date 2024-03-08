@@ -11,6 +11,10 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation
 
 absolute_difference = "absolute_difference"
 
+absolute_difference_within_range_source_description = (
+    "average of total staff and worker records as both were similar"
+)
+
 
 def calculate_ascwds_filled_posts_absolute_difference_within_range(
     input_df, total_staff_column: str, worker_records_column: str, output_column_name
