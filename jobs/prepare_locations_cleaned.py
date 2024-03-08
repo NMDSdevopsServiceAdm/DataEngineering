@@ -9,6 +9,9 @@ from utils import utils
 from utils.prepare_locations_utils.filter_job_count.filter_job_count import (
     null_job_count_outliers,
 )
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    calculate_jobcount,
+)
 
 
 COLUMNS_TO_IMPORT = [
@@ -27,8 +30,8 @@ COLUMNS_TO_IMPORT = [
     "registration_status",
     "number_of_beds",
     "people_directly_employed",
-    "job_count_unfiltered_source",
-    "job_count_unfiltered",
+    "total_staff",
+    "worker_record_count",
 ]
 
 
@@ -51,6 +54,10 @@ def main(
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_carehome_number_of_beds(locations_df)
+
+    locations_df = calculate_jobcount(
+        locations_df, "total_staff", "worker_record_count", "job_count_unfiltered"
+    )
 
     locations_df = null_job_count_outliers(locations_df)
 
