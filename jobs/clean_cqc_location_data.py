@@ -30,8 +30,6 @@ from utils.cqc_location_dictionaries import InvalidPostcodes
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-DATE_COLUMN_IDENTIFIER = "registration_date"
-
 cqc_location_api_cols_to_import = [
     CQCL.care_home,
     CQCL.dormancy,
@@ -77,7 +75,7 @@ def main(
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
-        date_column_identifier=DATE_COLUMN_IDENTIFIER,
+        date_column_identifier=CQCLClean.registration_date, # This will format both registration date and deregistration date
         raw_date_format="yyyy-MM-dd",
     )
     cqc_location_df = cUtils.column_to_date(
