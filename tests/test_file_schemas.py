@@ -74,6 +74,10 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
@@ -776,6 +780,38 @@ class MergeIndCQCData:
 
 
 @dataclass
+class NonResFeaturesSchema(object):
+    basic_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
+            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
         [
