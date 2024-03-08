@@ -5,7 +5,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count,
     selected_ascwds_job_count_is_at_least_the_min_permitted,
 )
-from utils.prepare_locations_utils.job_calculator.calculation_constants import (
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     JobCalculationConstants,
 )
 

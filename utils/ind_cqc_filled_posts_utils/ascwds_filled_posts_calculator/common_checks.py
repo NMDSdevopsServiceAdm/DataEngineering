@@ -1,7 +1,7 @@
 import pyspark
 import pyspark.sql.functions as F
 
-from utils.prepare_locations_utils.job_calculator.calculation_constants import (
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     JobCalculationConstants,
 )
 
