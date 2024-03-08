@@ -1,10 +1,16 @@
 import sys
 
 import pyspark.sql
+from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCqc,
+)
+# Update this once Gary's PR is in
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    update_dataframe_with_identifying_rule,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -150,15 +156,15 @@ def populate_estimate_jobs_when_job_count_known(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
+        IndCqc.estimate_job_count,
         F.when(
-            (F.col(ESTIMATE_JOB_COUNT).isNull() & (F.col(JOB_COUNT).isNotNull())),
-            F.col(JOB_COUNT),
-        ).otherwise(F.col(ESTIMATE_JOB_COUNT)),
+            (F.col(IndCqc.estimate_job_count).isNull() & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())),
+            F.col(IndCqc.ascwds_filled_posts_dedup_clean),
+        ).otherwise(F.col(IndCqc.estimate_job_count)),
     )
 
     df = update_dataframe_with_identifying_rule(
-        df, "ascwds_job_count", ESTIMATE_JOB_COUNT
+        df, "ascwds_job_count", IndCqc.estimate_job_count
     )
 
     return df

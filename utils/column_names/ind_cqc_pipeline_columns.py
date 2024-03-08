@@ -85,12 +85,15 @@ class IndCqcColumns:
     current_lsoa21: str = ONSClean.current_lsoa21
     current_msoa21: str = ONSClean.current_msoa21
     current_constituancy: str = ONSClean.current_constituancy
-    job_count: str = "job_count"
-    job_count_unfiltered: str = "job_count_unfiltered"
-    job_count_unfiltered_source: str = "job_count_unfiltered_source"
     service_count: str = "service_count"
     date_diff: str = "date_diff"
     features: str = "features"
+    estimate_job_count: str = "estimate_job_count"
+    estimate_job_count_source: str = "estimate_job_count_source"
+    ascwds_filled_posts: str = "ascwds_filled_posts"
+    ascwds_filled_posts_source: str = "ascwds_filled_posts_source"
+    ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
+    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
 
 
 # DONT IMPORT FROM BELOW THIS LINE

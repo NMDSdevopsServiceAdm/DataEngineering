@@ -796,13 +796,13 @@ class NonResFeaturesSchema(object):
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
-            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -827,7 +827,7 @@ class CareHomeFeaturesSchema:
                 True,
             ),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
@@ -859,14 +859,24 @@ class EstimateIndCQCFilledPostsSchemas:
             ), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
-            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, IntegerType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, FloatType(), True),
-            StructField(IndCQC.contemporary_rural_urban_indicator_2011, FloatType(), True),
-            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
     care_home_features_schema = []
     non_res_features_schema = []
+    populate_known_jobs_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.estimate_job_count, FloatType(), True),
+            StructField(IndCQC.estimate_job_count_source, StringType(), True),
+        ]
+    )

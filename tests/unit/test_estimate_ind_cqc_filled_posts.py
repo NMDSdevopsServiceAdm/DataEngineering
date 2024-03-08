@@ -32,8 +32,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema)
-        self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.care_home_features_schema)
-        self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.non_res_features_schema)   
+        #self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.care_home_features_schema)
+        #self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.non_res_features_schema)   
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @unittest.skip("not refactored test yet")
@@ -89,23 +89,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertIsNotNone(day_partition)
         self.assertEqual(day_partition.groups()[0], "29")
 
-    @unittest.skip("not refactored test yet")
+    #@unittest.skip("not refactored test yet")
     def test_populate_known_jobs_use_job_count_from_current_snapshot(self):
-        columns = [
-            "locationid",
-            "job_count",
-            "snapshot_date",
-            "estimate_job_count",
-            "estimate_job_count_source",
-        ]
-        rows = [
-            ("1-000000001", 1, "2022-03-04", None, None),
-            ("1-000000002", None, "2022-03-04", None, None),
-            ("1-000000003", 5, "2022-03-04", 4, "already_populated"),
-            ("1-000000004", 10, "2022-03-04", None, None),
-            ("1-000000002", 7, "2022-02-04", None, None),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
+        df = self.spark.createDataFrame(Data.populate_known_jobs_rows,Schemas.populate_known_jobs_schema)
 
         df = job.populate_estimate_jobs_when_job_count_known(df)
         self.assertEqual(df.count(), 5)
