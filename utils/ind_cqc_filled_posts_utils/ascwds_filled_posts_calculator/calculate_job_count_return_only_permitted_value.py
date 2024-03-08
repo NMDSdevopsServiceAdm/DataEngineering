@@ -1,6 +1,6 @@
 import pyspark.sql.functions as F
 
-from utils.prepare_locations_utils.job_calculator.common_checks import (
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
     job_count_from_ascwds_is_not_populated,
     selected_column_is_null,
     selected_ascwds_job_count_is_at_least_the_min_permitted,
