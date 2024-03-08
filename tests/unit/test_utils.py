@@ -547,7 +547,7 @@ class UtilsTests(unittest.TestCase):
 
     def test_format_date_fields_can_handle_timestamps_as_strings(self):
         test_rows = [
-            ("loc 1", "2011-01-19 00:00:00"), 
+            ("loc 1", "2011-01-19 00:00:00"),
             ("loc 2", "2011-01-19"),
         ]
         test_schema = StructType(
@@ -555,17 +555,25 @@ class UtilsTests(unittest.TestCase):
                 StructField("id", StringType(), True),
                 StructField("date_column", StringType(), True),
             ]
-        )   
+        )
         test_df = self.spark.createDataFrame(test_rows, test_schema)
         returned_df = utils.format_date_fields(test_df, raw_date_format="yyyy-MM-dd")
-        expected_rows = [("loc 1", date(2011, 1, 19),), ("loc 2", date(2011, 1,19))]
+        expected_rows = [
+            (
+                "loc 1",
+                date(2011, 1, 19),
+            ),
+            ("loc 2", date(2011, 1, 19)),
+        ]
         expected_schema = StructType(
             [
                 StructField("id", StringType(), True),
                 StructField("date_column", DateType(), True),
             ]
-        )  
-        expected_data = self.spark.createDataFrame(expected_rows, expected_schema).collect()
+        )
+        expected_data = self.spark.createDataFrame(
+            expected_rows, expected_schema
+        ).collect()
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
 
