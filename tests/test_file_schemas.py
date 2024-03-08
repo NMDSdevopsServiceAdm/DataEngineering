@@ -74,10 +74,6 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
