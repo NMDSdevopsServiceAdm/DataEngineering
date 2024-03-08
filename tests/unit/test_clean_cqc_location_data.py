@@ -206,12 +206,17 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_location_df = cUtils.column_to_date(
+            self.test_location_df,
+            Keys.import_date,
+            CQCLCleaned.cqc_location_import_date,
+        ).drop(CQCLCleaned.import_date)
 
-    def test_join_cqc_provider_data_adds_two_columns(self):
+    def test_join_cqc_provider_data_adds_three_columns(self):
         returned_df = job.join_cqc_provider_data(
             self.test_location_df, self.test_provider_df
         )
-        new_columns = 2
+        new_columns = 3
         expected_columns = len(self.test_location_df.columns) + new_columns
 
         self.assertEqual(len(returned_df.columns), expected_columns)
