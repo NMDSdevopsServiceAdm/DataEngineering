@@ -104,9 +104,7 @@ class UtilsTests(unittest.TestCase):
     smaller_string_boost = 35
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "sfc_data_engineering_csv_to_parquet"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
         self.test_workplace_df = generate_ascwds_workplace_file(
             self.TEST_ASCWDS_WORKPLACE_FILE
@@ -546,6 +544,38 @@ class UtilsTests(unittest.TestCase):
         formatted_df = utils.format_date_fields(self.df, raw_date_format="dd/MM/yyyy")
         self.assertEqual(type(formatted_df.select("date_col").first()[0]), date)
         self.assertEqual(formatted_df.select("date_col").first()[0], date(1993, 11, 28))
+
+    def test_format_date_fields_can_handle_timestamps_as_strings(self):
+        test_rows = [
+            ("loc 1", "2011-01-19 00:00:00"),
+            ("loc 2", "2011-01-19"),
+        ]
+        test_schema = StructType(
+            [
+                StructField("id", StringType(), True),
+                StructField("date_column", StringType(), True),
+            ]
+        )
+        test_df = self.spark.createDataFrame(test_rows, test_schema)
+        returned_df = utils.format_date_fields(test_df, raw_date_format="yyyy-MM-dd")
+        expected_rows = [
+            (
+                "loc 1",
+                date(2011, 1, 19),
+            ),
+            ("loc 2", date(2011, 1, 19)),
+        ]
+        expected_schema = StructType(
+            [
+                StructField("id", StringType(), True),
+                StructField("date_column", DateType(), True),
+            ]
+        )
+        expected_data = self.spark.createDataFrame(
+            expected_rows, expected_schema
+        ).collect()
+        returned_data = returned_df.collect()
+        self.assertEqual(expected_data, returned_data)
 
     def test_format_date_string(self):
         formatted_df = utils.format_date_string(
