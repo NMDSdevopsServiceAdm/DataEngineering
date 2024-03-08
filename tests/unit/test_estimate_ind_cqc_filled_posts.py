@@ -4,6 +4,8 @@ from unittest.mock import ANY, Mock, patch
 
 
 import jobs.estimate_ind_cqc_filled_posts as job
+from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
+from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -29,7 +31,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-
+        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema)
+        self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.care_home_features_schema)
+        self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.non_res_features_schema)   
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @unittest.skip("not refactored test yet")
@@ -132,7 +136,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             schema=feature_columns,
         )
 
-
+    """
     def generate_predictions_df(self):
         # fmt: off
         columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction"]
@@ -168,7 +172,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         ]
         # fmt: on
         return self.spark.createDataFrame(rows, columns)
-    
+    """
+        
     @unittest.skip("not refactored test yet")
     def test_write_metrics_df_creates_metrics_df(self):
         job.write_metrics_df(

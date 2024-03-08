@@ -811,7 +811,7 @@ class NonResFeaturesSchema(object):
         ]
     )
 
-
+@dataclass
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
         [
@@ -844,3 +844,29 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
+
+@dataclass
+class EstimateIndCQCFilledPostsSchemas:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.contemporary_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.services_offered, ArrayType(
+                StringType(),
+            ), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.job_count_unfiltered, FloatType(), True),
+            StructField(IndCQC.job_count, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, IntegerType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, FloatType(), True),
+            StructField(IndCQC.contemporary_rural_urban_indicator_2011, FloatType(), True),
+            StructField(IndCQC.job_count_unfiltered_source, StringType(), True),
+        ]
+    )
+    care_home_features_schema = []
+    non_res_features_schema = []
