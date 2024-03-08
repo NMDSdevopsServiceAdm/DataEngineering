@@ -1,5 +1,6 @@
 import sys
 import warnings
+from typing import Tuple
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -30,8 +31,6 @@ from utils.cqc_location_dictionaries import InvalidPostcodes
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-DATE_COLUMN_IDENTIFIER = "registration_date"
-
 cqc_location_api_cols_to_import = [
     CQCL.care_home,
     CQCL.dormancy,
@@ -56,6 +55,12 @@ ons_cols_to_import = [
     *contemporary_geography_columns,
     *current_geography_columns,
 ]
+cqc_provider_cols_to_import = [
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    CQCPClean.cqc_sector,
+    CQCPClean.cqc_provider_import_date,
+]
 
 
 def main(
@@ -67,7 +72,9 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
-    cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
+    cqc_provider_df = utils.read_from_parquet(
+        cleaned_cqc_provider_source, selected_columns=cqc_provider_cols_to_import
+    )
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
@@ -77,7 +84,7 @@ def main(
     cqc_location_df = allocate_primary_service_type(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
-        date_column_identifier=DATE_COLUMN_IDENTIFIER,
+        date_column_identifier=CQCLClean.registration_date,  # This will format both registration date and deregistration date
         raw_date_format="yyyy-MM-dd",
     )
     cqc_location_df = cUtils.column_to_date(
@@ -165,28 +172,31 @@ def allocate_primary_service_type(df: DataFrame):
 
 
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
-    provider_data_to_join_df = provider_df.select(
-        provider_df[CQCPClean.provider_id].alias("provider_id_to_drop"),
-        provider_df[CQCPClean.name].alias(CQCLClean.provider_name),
-        provider_df[CQCPClean.cqc_sector],
-        provider_df[Keys.import_date].alias("import_date_to_drop"),
+    locations_df = cUtils.add_aligned_date_column(
+        locations_df,
+        provider_df,
+        CQCLClean.cqc_location_import_date,
+        CQCPClean.cqc_provider_import_date,
     )
-    columns_to_join = [
-        locations_df[CQCL.provider_id]
-        == provider_data_to_join_df["provider_id_to_drop"],
-        locations_df[Keys.import_date]
-        == provider_data_to_join_df["import_date_to_drop"],
-    ]
-    joined_df = locations_df.join(
-        provider_data_to_join_df, columns_to_join, how="left"
-    ).drop("provider_id_to_drop", "import_date_to_drop")
 
+    provider_data_to_join_df = provider_df.withColumnsRenamed(
+        {
+            CQCPClean.provider_id: CQCLClean.provider_id,
+            CQCPClean.name: CQCLClean.provider_name,
+        }
+    )
+
+    joined_df = locations_df.join(
+        provider_data_to_join_df,
+        [CQCLClean.provider_id, CQCPClean.cqc_provider_import_date],
+        how="left",
+    )
     return joined_df
 
 
 def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
-) -> DataFrame:
+) -> Tuple[DataFrame, DataFrame]:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)

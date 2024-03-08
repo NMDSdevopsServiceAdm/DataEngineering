@@ -857,22 +857,22 @@ class CQCLocationsData:
         (
             "loc-1",
             "prov-1",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-2",
             "prov-1",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-3",
             "prov-2",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-4",
             "prov-2",
-            "2021-01-01",
+            "20210101",
         ),
     ]
 
@@ -881,22 +881,19 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "North East",
-            "2020-01-01",
+            date(2020, 1, 1),
         ),
         (
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
-            "North West",
-            "2020-01-01",
+            date(2020, 1, 1),
         ),
         (
-            "prov-2",
+            "prov-3",
             "Sunny Days Domestic Care",
             "Independent",
-            "North East",
-            "2021-01-01",
+            date(2020, 1, 1),
         ),
     ]
 
@@ -906,28 +903,32 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-2",
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-3",
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-4",
             "prov-2",
-            "Sunny Days Domestic Care",
+            "Sunshine Domestic Care",
             "Independent",
-            "2021-01-01",
+            date(2021, 1, 1),
+            date(2020, 1, 1),
         ),
     ]
 

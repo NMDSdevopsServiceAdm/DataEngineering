@@ -6,9 +6,6 @@ from pyspark.sql import DataFrame
 from pyspark.sql.types import IntegerType
 
 from utils import utils
-from utils.prepare_locations_utils.job_calculator.job_calculator import (
-    calculate_jobcount,
-)
 from utils.prepare_locations_utils.ons_postcode_aliases import OnsPostcodeDataAliases
 from utils.prepare_locations_utils.dataframe_utils import (
     add_three_columns_with_snapshot_date_substrings,
@@ -118,9 +115,6 @@ def main(
 
         output_df = output_df.join(pir_df, "locationid", "left")
         output_df = add_geographical_data(output_df, latest_ons_data)
-        output_df = calculate_jobcount(
-            output_df, "total_staff", "worker_record_count", "job_count_unfiltered"
-        )
 
         output_df = add_column_if_locationid_is_in_ascwds(output_df)
 
@@ -160,8 +154,8 @@ def main(
             "services_offered",
             "primary_service_type",
             "people_directly_employed",
-            "job_count_unfiltered",
-            "job_count_unfiltered_source",
+            "total_staff",
+            "worker_record_count",
             "region",
             "postal_code",
             "constituency",
@@ -215,6 +209,9 @@ def get_ascwds_workplace_df(workplace_source, since_date=None):
         )
     )
 
+    workplace_df = utils.format_date_fields(
+        workplace_df, "mupddate", raw_date_format="dd/MM/yyyy"
+    )
     workplace_df = workplace_df.drop_duplicates(subset=["locationid", "import_date"])
     workplace_df = clean(workplace_df)
 
