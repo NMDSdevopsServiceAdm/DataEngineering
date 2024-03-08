@@ -57,6 +57,12 @@ ons_cols_to_import = [
     *contemporary_geography_columns,
     *current_geography_columns,
 ]
+cqc_provider_cols_to_import = [
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    CQCPClean.cqc_sector,
+    CQCPClean.cqc_provider_import_date,
+]
 
 
 def main(
@@ -68,7 +74,9 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
-    cqc_provider_df = utils.read_from_parquet(cleaned_cqc_provider_source)
+    cqc_provider_df = utils.read_from_parquet(
+        cleaned_cqc_provider_source, selected_columns=cqc_provider_cols_to_import
+    )
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
@@ -173,11 +181,11 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
         CQCPClean.cqc_provider_import_date,
     )
 
-    provider_data_to_join_df = provider_df.select(
-        provider_df[CQCPClean.provider_id].alias(CQCLClean.provider_id),
-        provider_df[CQCPClean.name].alias(CQCLClean.provider_name),
-        provider_df[CQCPClean.cqc_sector],
-        provider_df[CQCPClean.cqc_provider_import_date],
+    provider_data_to_join_df = provider_df.withColumnsRenamed(
+        {
+            CQCPClean.provider_id: CQCLClean.provider_id,
+            CQCPClean.name: CQCLClean.provider_name,
+        }
     )
 
     joined_df = locations_df.join(
