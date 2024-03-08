@@ -1741,3 +1741,11 @@ class EstimateIndCQCFilledPostsData:
         ("1-000000004", 10.0, date(2022, 3, 4), None, None),
         ("1-000000002", 7.0, date(2022, 2, 4), None, None),
     ]
+
+    expected_populate_known_jobs_rows = [
+        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_job_count"),
+        ("1-000000002", None, date(2022, 3, 4), None, None),
+        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
+        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_job_count"),
+        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_job_count"),
+    ]

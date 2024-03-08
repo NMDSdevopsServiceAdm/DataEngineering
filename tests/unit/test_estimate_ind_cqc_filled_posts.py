@@ -89,21 +89,18 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertIsNotNone(day_partition)
         self.assertEqual(day_partition.groups()[0], "29")
 
-    #@unittest.skip("not refactored test yet")
-    def test_populate_known_jobs_use_job_count_from_current_snapshot(self):
-        df = self.spark.createDataFrame(Data.populate_known_jobs_rows,Schemas.populate_known_jobs_schema)
+    
+    def test_populate_known_jobs_use_job_count_from_current_date(self):
+        test_df = self.spark.createDataFrame(Data.populate_known_jobs_rows,Schemas.populate_known_jobs_schema)
 
-        df = job.populate_estimate_jobs_when_job_count_known(df)
-        self.assertEqual(df.count(), 5)
-
-        df = df.collect()
-        self.assertEqual(df[0]["estimate_job_count"], 1)
-        self.assertEqual(df[0]["estimate_job_count_source"], "ascwds_job_count")
-        self.assertEqual(df[1]["estimate_job_count"], None)
-        self.assertEqual(df[1]["estimate_job_count_source"], None)
-        self.assertEqual(df[2]["estimate_job_count"], 4)
-        self.assertEqual(df[2]["estimate_job_count_source"], "already_populated")
-        self.assertEqual(df[3]["estimate_job_count"], 10)
+        returned_df = job.populate_estimate_jobs_when_job_count_known(test_df)
+        expected_df = self.spark.createDataFrame(Data.expected_populate_known_jobs_rows, Schemas.populate_known_jobs_schema)
+    
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+        
+        self.assertEqual(returned_df.count(), expected_df.count())
+        self.assertEqual(expected_data, returned_data)
 
 
     def generate_features_df(self):
