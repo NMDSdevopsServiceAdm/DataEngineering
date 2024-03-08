@@ -881,21 +881,18 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "North East",
             date(2020, 1, 1),
         ),
         (
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
-            "North West",
             date(2020, 1, 1),
         ),
         (
             "prov-3",
             "Sunny Days Domestic Care",
             "Independent",
-            "North East",
             date(2020, 1, 1),
         ),
     ]
