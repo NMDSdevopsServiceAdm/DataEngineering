@@ -14,7 +14,8 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
+# Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
 
 def main(
     cleaned_ind_cqc_source: str,

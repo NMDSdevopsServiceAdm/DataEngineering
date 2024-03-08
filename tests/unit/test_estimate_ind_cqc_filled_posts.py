@@ -189,7 +189,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
 
-    @unittest.skip("not refactored test yet")
+
     def test_number_of_days_constant_is_eighty_eight(self):
         self.assertEqual(job.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 88)
 
