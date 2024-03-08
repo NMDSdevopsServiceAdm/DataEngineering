@@ -1,7 +1,7 @@
 import pyspark.sql.functions as F
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
-    job_count_from_ascwds_is_not_populated,
+    ascwds_filled_posts_is_null,
     selected_column_is_null,
     selected_ascwds_job_count_is_at_least_the_min_permitted,
     selected_ascwds_job_count_is_below_the_min_permitted,
@@ -15,7 +15,7 @@ def calculate_jobcount_select_only_value_which_is_at_least_minimum_job_count_per
         output_column_name,
         F.when(
             (
-                job_count_from_ascwds_is_not_populated(output_column_name)
+                ascwds_filled_posts_is_null()
                 & selected_ascwds_job_count_is_at_least_the_min_permitted(
                     permitted_column
                 )

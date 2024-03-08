@@ -2,7 +2,7 @@ import pyspark.sql
 from pyspark.sql import functions as F
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
-    job_count_from_ascwds_is_not_populated,
+    ascwds_filled_posts_is_null,
     column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
@@ -111,7 +111,7 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "bed_estimate_jobcount",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
+                ascwds_filled_posts_is_null("job_count_unfiltered")
                 & number_of_beds_in_location_exceeds_min_number_needed_for_calculation(
                     col_name="number_of_beds",
                     threshold=calculation_constant.BEDS_IN_WORKPLACE_THRESHOLD,
@@ -130,7 +130,7 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "job_count_unfiltered",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
+                ascwds_filled_posts_is_null("job_count_unfiltered")
                 & bed_estimated_job_count_is_populated("bed_estimate_jobcount")
                 & (
                     total_staff_diff_or_total_staff_pct_diff_within_tolerated_range()
@@ -146,7 +146,7 @@ def calculate_jobcount_estimate_from_beds(input_df):
         "job_count_unfiltered",
         F.when(
             (
-                job_count_from_ascwds_is_not_populated("job_count_unfiltered")
+                ascwds_filled_posts_is_null("job_count_unfiltered")
                 & bed_estimated_job_count_is_populated("bed_estimate_jobcount")
                 & (total_staff_diff_or_total_staff_pct_diff_within_tolerated_range())
             ),

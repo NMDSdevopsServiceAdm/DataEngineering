@@ -4,11 +4,11 @@ import pyspark.sql.functions as F
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     ASCWDSFilledPostCalculationConstants as calculation_constant,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 
 
-def job_count_from_ascwds_is_not_populated(col_name: str) -> pyspark.sql.Column:
-    result = F.col(col_name).isNull()
-    return result
+def ascwds_filled_posts_is_null():
+    return F.col(IndCqcColumns.ascwds_filled_posts).isNull()
 
 
 def selected_column_is_not_null(col_name: str):

@@ -1,7 +1,7 @@
 from pyspark.sql import functions as F
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
-    job_count_from_ascwds_is_not_populated,
+    ascwds_filled_posts_is_null,
     column_value_is_less_than_min_abs_difference_between_total_staff_and_worker_record_count,
     selected_ascwds_job_count_is_at_least_the_min_permitted,
 )
@@ -23,7 +23,7 @@ def calculate_jobcount_abs_difference_within_range(
         output_column_name,
         F.when(
             (
-                job_count_from_ascwds_is_not_populated(output_column_name)
+                ascwds_filled_posts_is_null()
                 & selected_ascwds_job_count_is_at_least_the_min_permitted(
                     total_staff_column
                 )
