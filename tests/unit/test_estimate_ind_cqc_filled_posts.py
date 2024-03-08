@@ -1,6 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
+from datetime import datetime
 
 
 import jobs.estimate_ind_cqc_filled_posts as job
@@ -156,9 +157,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         # fmt: on
         return self.spark.createDataFrame(rows, columns)
     """
-        
-    @unittest.skip("not refactored test yet")
-    def test_write_metrics_df_creates_metrics_df(self):
+    @patch("utils.utils.write_to_parquet")
+    def test_write_metrics_df_creates_metrics_df(self, write_to_parquet_mock: Mock):
         job.write_metrics_df(
             metrics_destination=self.METRICS_DESTINATION,
             r2=0.99,
@@ -169,7 +169,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             job_run_id="abc1234",
             job_name="estimate_job_counts",
         )
-        df = self.spark.read.parquet(self.METRICS_DESTINATION)
+        df = write_to_parquet_mock.call_args[0][0]
+
         expected_columns = [
             "r2",
             "percentage_data",
@@ -181,13 +182,14 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             "model_version",
         ]
 
-        self.assertEqual(expected_columns, df.columns)
+        self.assertEqual(sorted(expected_columns), sorted(df.columns))
         self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
         self.assertEqual(df.first()["model_version"], "1.0.0")
         self.assertEqual(df.first()["model_name"], "care_home_jobs_prediction")
         self.assertEqual(df.first()["latest_snapshot"], "20220601")
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
+
 
 
     def test_number_of_days_constant_is_eighty_eight(self):

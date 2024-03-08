@@ -177,19 +177,19 @@ def write_metrics_df(
     data_percentage,
     model_name,
     model_version,
-    latest_snapshot,
+    latest_snapshot, # Change this name
     job_run_id,
     job_name,
 ):
     spark = utils.get_spark()
     columns = [
-        "r2",
-        "percentage_data",
-        "latest_snapshot",
-        "job_run_id",
-        "job_name",
-        "model_name",
-        "model_version",
+        IndCqc.r2,
+        IndCqc.percentage_data,
+        IndCqc.latest_snapshot,
+        IndCqc.job_run_id,
+        IndCqc.job_name,
+        IndCqc.model_name,
+        IndCqc.model_version,
     ]
     row = [
         (
@@ -203,14 +203,13 @@ def write_metrics_df(
         )
     ]
     df = spark.createDataFrame(row, columns)
-    df = df.withColumn("generated_metric_date", F.current_timestamp())
-
+    df = df.withColumn(IndCqc.metrics_date, F.current_timestamp())
     print(f"Writing model metrics as parquet to {metrics_destination}")
     utils.write_to_parquet(
         df,
         metrics_destination,
         mode="append",
-        partitionKeys=["model_name", "model_version"],
+        partitionKeys=[IndCqc.model_name, IndCqc.model_version],
     )
 
 if __name__ == "__main__":

@@ -94,6 +94,14 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = "ascwds_filled_posts_source"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
+    r2:str = "r2"
+    percentage_data:str = "percentage_data"
+    latest_snapshot:str = "latest_snapshot"
+    job_run_id:str = "job_run_id"
+    job_name:str = "job_name"
+    model_name:str = "model_name"
+    model_version:str = "model_version"
+    metrics_date:str = "generated_metric_date"
 
 
 # DONT IMPORT FROM BELOW THIS LINE
