@@ -150,7 +150,7 @@ def filter_locations_df_for_independent_non_res_care_home_data(
     df: DataFrame, carehome_col_name: str
 ) -> DataFrame:
     filtered_df = df.filter(F.col(carehome_col_name) == "N")
-    return filtered_df 
+    return filtered_df
 
 
 def collect_arguments():
