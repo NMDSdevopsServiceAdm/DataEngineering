@@ -9,6 +9,9 @@ import pyspark.sql.functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.prepare_locations_utils.job_calculator.job_calculator import (
+    calculate_jobcount,
+)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
@@ -76,6 +79,8 @@ def main(source: str, destination: str):
         AWPClean.worker_records_bounded,
         AWPClean.worker_records_deduplicated,
     )
+
+    ascwds_workplace_df = calculate_jobcount(ascwds_workplace_df, AWPClean.total_staff, AWPClean.worker_records, AWPClean.job_count)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(
