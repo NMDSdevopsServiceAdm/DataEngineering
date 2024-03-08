@@ -780,7 +780,7 @@ class MergeIndCQCData:
 
 
 @dataclass
-class PrepareNonResSchemas(object):
+class NonResFeaturesSchema(object):
     basic_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
