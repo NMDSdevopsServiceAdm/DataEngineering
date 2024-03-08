@@ -798,7 +798,7 @@ class PrepareNonResSchemas(object):
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(IndCQC.job_count_unfiltered, FloatType(), True),
             StructField(IndCQC.job_count, FloatType(), True),
-            StructField(IndCQC.current_local_authority, StringType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
