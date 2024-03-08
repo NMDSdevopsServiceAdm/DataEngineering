@@ -27,7 +27,12 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
-    locations_df = calculate_jobcount(locations_df, IndCqcColumns.total_staff, IndCqcColumns.worker_records, IndCqcColumns.job_count)
+    locations_df = calculate_jobcount(
+        locations_df,
+        IndCqcColumns.total_staff,
+        IndCqcColumns.worker_records,
+        IndCqcColumns.job_count,
+    )
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
