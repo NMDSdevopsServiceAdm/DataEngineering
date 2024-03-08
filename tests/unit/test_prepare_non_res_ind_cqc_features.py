@@ -6,8 +6,8 @@ from pyspark.ml.linalg import SparseVector
 from pyspark.sql import functions as F
 
 import jobs.prepare_non_res_ind_cqc_features as job
-from tests.test_file_data import PrepareNonResData as Data
-from tests.test_file_schemas import PrepareNonResSchemas as Schemas
+from tests.test_file_data import NonResFeaturesData as Data
+from tests.test_file_schemas import NonResFeaturesSchema as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as INDCQC
 
@@ -50,7 +50,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         read_from_parquet_mock.return_value = self.test_df
 
         input_df_length = self.test_df.count()
-        self.assertEqual(input_df_length, 14)
+        self.assertEqual(input_df_length, 10)
 
         job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
@@ -71,7 +71,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, cols)
 
         result = job.filter_locations_df_for_independent_non_res_care_home_data(
-            df=df, carehome_col_name="carehome", cqc_col_name="cqc_sector"
+            df=df, carehome_col_name="carehome"
         )
         result_row = result.collect()
         self.assertTrue(result.count() == 1)

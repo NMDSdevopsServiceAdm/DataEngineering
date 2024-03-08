@@ -46,7 +46,6 @@ def main(cleaned_cqc_ind_source, destination):
     filtered_loc_data = filter_locations_df_for_independent_non_res_care_home_data(
         df=locations_df,
         carehome_col_name=INDCQC.care_home,
-        cqc_col_name=INDCQC.cqc_sector,
     )
 
     filtered_data_with_employee_col = convert_col_to_integer_col(
@@ -148,13 +147,10 @@ def convert_col_to_integer_col(df, col_name):
 
 
 def filter_locations_df_for_independent_non_res_care_home_data(
-    df: DataFrame, carehome_col_name: str, cqc_col_name: str
+    df: DataFrame, carehome_col_name: str
 ) -> DataFrame:
-    care_home_data = df.filter(F.col(carehome_col_name) == "N")
-    independent_care_home_data = care_home_data.filter(
-        F.col(cqc_col_name) == "Independent"
-    )
-    return independent_care_home_data
+    filtered_df = df.filter(F.col(carehome_col_name) == "N")
+    return filtered_df 
 
 
 def collect_arguments():
