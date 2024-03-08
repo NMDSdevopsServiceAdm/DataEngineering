@@ -1,6 +1,7 @@
 import sys
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
+from pyspark.sql.types import FloatType, StringType
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -8,6 +9,10 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
     CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    current_geography_columns,
+    contemporary_geography_columns,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -38,10 +43,8 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
-    CQCLClean.ons_contemporary_import_date,
-    CQCLClean.ons_contemporary_geographies,
-    CQCLClean.ons_current_import_date,
-    CQCLClean.ons_current_geographies,
+    *current_geography_columns,
+    *contemporary_geography_columns,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -98,6 +101,18 @@ def main(
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
+
+    # temporary code to be replaced by job calculator (needed now so later jobs can be tested)
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered", F.lit(None).cast(FloatType())
+    )
+    ind_cqc_location_df = ind_cqc_location_df.withColumn(
+        "job_count_unfiltered_source", F.lit(None).cast(StringType())
+    )
+    # end of temporary code
 
     utils.write_to_parquet(
         ind_cqc_location_df,
