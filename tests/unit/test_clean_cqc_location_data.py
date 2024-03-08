@@ -212,7 +212,7 @@ class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
             CQCLCleaned.cqc_location_import_date,
         ).drop(CQCLCleaned.import_date)
 
-    def test_join_cqc_provider_data_adds_two_columns(self):
+    def test_join_cqc_provider_data_adds_three_columns(self):
         returned_df = job.join_cqc_provider_data(
             self.test_location_df, self.test_provider_df
         )
