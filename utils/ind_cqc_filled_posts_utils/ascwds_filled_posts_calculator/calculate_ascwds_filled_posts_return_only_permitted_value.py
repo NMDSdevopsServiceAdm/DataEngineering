@@ -8,7 +8,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
 )
 
 
-def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_job_count_permitted(
+def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
     input_df, permitted_column: str, non_permitted_column: str, output_column_name
 ):
     return input_df.withColumn(
