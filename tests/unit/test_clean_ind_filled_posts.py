@@ -18,8 +18,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 class CleanIndFilledPostsTests(unittest.TestCase):
-    IND_FILLED_POSTS_DIR = "input_dir"
-    IND_FILLED_POSTS_CLEANED_DIR = "output_dir"
+    MERGE_IND_CQC_SOURCE = "input_dir"
+    CLEANED_IND_CQC_DESTINATION = "output_dir"
     partition_keys = [
         Keys.year,
         Keys.month,
@@ -47,15 +47,15 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
 
         job.main(
-            self.IND_FILLED_POSTS_DIR,
-            self.IND_FILLED_POSTS_CLEANED_DIR,
+            self.MERGE_IND_CQC_SOURCE,
+            self.CLEANED_IND_CQC_DESTINATION,
         )
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
-            self.IND_FILLED_POSTS_CLEANED_DIR,
+            self.CLEANED_IND_CQC_DESTINATION,
             mode=ANY,
             partitionKeys=self.partition_keys,
         )
