@@ -1445,19 +1445,13 @@ class MergeIndCQCData:
 
     # fmt: off
     merged_rows_for_cleaning_job = [
-        ("1-1783948", "20220201", "South East", 0, ["Domiciliary care service"], "non-residential", 5, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", 82, None, date(2020, 1, 1)),
-        ("1-1783948", "20220101", "South East", 0, ["Domiciliary care service"], "non-residential", 5, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", None, 67, date(2020, 1, 1)),
-        ("1-3483748", "20220112", "North West", 0, ["Extra Care housing services"], "non-residential", "Gloucestershire", "N", "Local authority", "Rural hamlet and isolated dwellings", None, 34, None, date(2020, 1, 1)),
-        ("1-6837467", "20220101", "North West", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, "Gloucestershire", "N", "Local authority", "Rural hamlet and isolated dwellings", None, None, date(2020, 1, 1)),
-        ("1-1047868", "20220101", "South East", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, "Surrey", "N", "", "Rural hamlet and isolated dwellings", None, None, date(2020, 1, 1)),
-        ("1-1023530", "20220112", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", None, None, date(2020, 1, 1)),
-        ("1-1060912", "20220112", "North East", 0, ["Hospice services at home"], "non-residential", 34, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", None, date(2020, 1, 1)),
-        ("1-1070956", "20220301", "North East", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, "Lewisham", "N", "Independent", "Urban city and town", None, None, date(2020, 1, 1)),
-        ("1-1083695", "20220308", "South West", 0, ["Specialist college service"], "non-residential", 15, "Lewisham", "N", "Independent", "Rural town and fringe in a sparse setting", None, None, date(2020, 1, 1)),
-        ("1-1075835", "20220308", "North East", 0, ["Mobile doctors service"], "non-residential", 17, "Lewisham", "N", "Local authority", "Urban city and town", None, None, date(2020, 1, 1)),
-        ("1-0000000", "20220308", "North East", 67, ["Care home service with nursing"], "Care home with nursing", None, "Lewisham", "Y", "Local authority", "Urban city and town", None, None, date(2020, 1, 1)),
-        ("1-1089441", "20220308", "North East", 10, ["Care home service with nursing"], "Care home with nursing", 0, "Lewisham", "Y", "Independent", "Urban city and town", 25, 25, date(2020, 1, 1)),
-        ("1-1089508", "20220315", "North West", 20, ["Care home service without nursing"], "Care home without nursing", 23, "Lewisham", "Y", "", "Urban city and town", None, None, date(2020, 1, 1)),
+        ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing"),
+        ("1-1000001", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "Y", 5, 5, None, 67, "Care home without nursing"),
+        ("1-1000002", "20220101", date(2022, 1, 1), "South East", "Surrey", "Rural", "N", 0, 17, None, None, "non-residential"),
+        ("1-1000002", "20220201", date(2022, 2, 1), "South East", "Surrey", "Rural", "N", 0, 34, None, None, "non-residential"),
+        ("1-1000003", "20220301", date(2022, 3, 1), "North West", "Bolton", "Urban", "N", 0, 34, None, None, "non-residential"),
+        ("1-1000003", "20220308", date(2022, 3, 8), "North West", "Bolton", "Rural", "N", 0, 15, None, None, "non-residential"),
+        ("1-1000004", "20220308", date(2022, 3, 8), "South West", "Dorset", "Urban", "Y", 9, 0, 25, 25, "Care home with nursing"),
     ]
     # fmt: on
 

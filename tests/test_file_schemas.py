@@ -778,24 +778,16 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.import_date, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(ONSClean.current_region, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(
-                CQCLClean.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
-            StructField(CQCLClean.primary_service_type, StringType(), True),
-            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
             StructField(CQCLClean.current_cssr, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
         ]
     )
 
