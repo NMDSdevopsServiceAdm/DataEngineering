@@ -8,7 +8,6 @@ from pyspark.sql.types import (
     FloatType,
     ArrayType,
     DateType,
-    DoubleType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -790,12 +789,12 @@ class MergeIndCQCData:
             ),
             StructField(CQCLClean.primary_service_type, StringType(), True),
             StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
-            StructField(CQCLClean.job_count_unfiltered, DoubleType(), True),
             StructField(CQCLClean.current_cssr, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
-            StructField(CQCLClean.job_count_unfiltered_source, StringType(), True),
+            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
+            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
         ]
     )
