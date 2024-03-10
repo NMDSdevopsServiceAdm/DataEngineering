@@ -8,12 +8,11 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     ASCWDSFilledPostCalculationConstants as calculation_constant,
 )
+from utils.ind_cqc_filled_posts_utils.utils import (
+    update_dataframe_with_identifying_rule,
+)
 
 absolute_difference = "absolute_difference"
-
-absolute_difference_within_range_source_description = (
-    "average of total staff and worker records as both were similar"
-)
 
 
 def calculate_ascwds_filled_posts_absolute_difference_within_range(
@@ -53,6 +52,12 @@ def calculate_ascwds_filled_posts_absolute_difference_within_range(
     )
 
     input_df = input_df.drop(absolute_difference)
+
+    input_df = update_dataframe_with_identifying_rule(
+        input_df,
+        "average of total staff and worker records as both were similar",
+        output_column_name,
+    )
 
     return input_df
 
