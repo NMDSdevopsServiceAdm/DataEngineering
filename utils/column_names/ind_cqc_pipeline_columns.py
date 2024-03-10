@@ -43,12 +43,8 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     establishment_id: str = AWPClean.establishment_id
     organisation_id: str = AWPClean.organisation_id
-    total_staff: str = AWPClean.total_staff
     total_staff_bounded: str = AWPClean.total_staff_bounded
-    total_staff_deduplicated: str = AWPClean.total_staff_deduplicated
-    worker_records: str = AWPClean.worker_records
     worker_records_bounded: str = AWPClean.worker_records_bounded
-    worker_records_deduplicated: str = AWPClean.worker_records_deduplicated
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     contemporary_ons_import_date: str = ONSClean.contemporary_ons_import_date
