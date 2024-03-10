@@ -10,10 +10,6 @@ from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
 
-only_one_permitted_value_source_description = (
-    "only one of total staff or worker records were provided"
-)
-
 
 def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
     input_df, permitted_column: str, non_permitted_column: str, output_column_name
