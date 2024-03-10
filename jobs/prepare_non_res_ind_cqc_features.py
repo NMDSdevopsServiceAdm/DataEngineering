@@ -113,7 +113,7 @@ def main(cleaned_cqc_ind_source, destination):
         INDCQC.people_directly_employed,
         INDCQC.care_home,
         INDCQC.features,
-        INDCQC.job_count,
+        INDCQC.ascwds_filled_posts,  # TODO change to ascwds_filled_posts_dedup_clean when it exists
         Keys.year,
         Keys.month,
         Keys.day,
