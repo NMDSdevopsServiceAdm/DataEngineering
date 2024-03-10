@@ -7,9 +7,10 @@ from utils import utils
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
-from utils.ind_cqc_filled_posts_utils.filter_job_count.filter_job_count import (
-    null_job_count_outliers,
-)
+
+# from utils.ind_cqc_filled_posts_utils.filter_job_count.filter_job_count import (
+#     null_job_count_outliers,
+# )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns,
@@ -37,7 +38,10 @@ def main(
         IndCqcColumns.ascwds_filled_posts,
     )
 
-    locations_df = null_job_count_outliers(locations_df)
+    # TODO - deduplicate ascwds_filled_posts
+
+    # TODO - update filter outliers ascwds_filled_post data
+    # locations_df = null_job_count_outliers(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
