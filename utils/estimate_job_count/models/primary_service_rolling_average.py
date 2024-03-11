@@ -1,22 +1,10 @@
 from pyspark.sql import DataFrame, Window
 import pyspark.sql.functions as F
-from dataclasses import dataclass
 
 from utils.utils import convert_days_to_unix_time
-from utils.estimate_job_count.column_names import (
-    UNIX_TIME,
-    JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
 )
-
-
-@dataclass
-class ColName:
-    count_of_job_count: str = "count_of_job_count"
-    sum_of_job_count: str = "sum_of_job_count"
-    rolling_total_count_of_job_count: str = "rolling_total_count_of_job_count"
-    rolling_total_sum_of_job_count: str = "rolling_total_sum_of_job_count"
-    rolling_average_model: str = "rolling_average_model"
 
 
 def model_primary_service_rolling_average(
@@ -40,36 +28,41 @@ def model_primary_service_rolling_average(
 
 
 def filter_to_locations_with_known_job_count(df: DataFrame) -> DataFrame:
-    return df.where((F.col(JOB_COUNT).isNotNull()) & (F.col(JOB_COUNT) > 0))
+    return df.where(
+        (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+        & (F.col(IndCqc.ascwds_filled_posts_dedup_clean) > 0)
+    )
 
 
 def calculate_job_count_aggregates_per_service_and_time_period(
     df: DataFrame,
 ) -> DataFrame:
-    return df.groupBy(PRIMARY_SERVICE_TYPE, UNIX_TIME).agg(
-        F.count(JOB_COUNT).cast("integer").alias(ColName.count_of_job_count),
-        F.sum(JOB_COUNT).alias(ColName.sum_of_job_count),
+    return df.groupBy(IndCqc.primary_service_type, IndCqc.unix_time).agg(
+        F.count(IndCqc.ascwds_filled_posts_dedup_clean)
+        .cast("integer")
+        .alias(IndCqc.count_of_job_count),
+        F.sum(IndCqc.ascwds_filled_posts_dedup_clean).alias(IndCqc.sum_of_job_count),
     )
 
 
 def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
     df = calculate_rolling_sum(
         df,
-        ColName.sum_of_job_count,
+        IndCqc.sum_of_job_count,
         number_of_days,
-        ColName.rolling_total_sum_of_job_count,
+        IndCqc.rolling_total_sum_of_job_count,
     )
     df = calculate_rolling_sum(
         df,
-        ColName.count_of_job_count,
+        IndCqc.count_of_job_count,
         number_of_days,
-        ColName.rolling_total_count_of_job_count,
+        IndCqc.rolling_total_count_of_job_count,
     )
 
     return df.withColumn(
-        ColName.rolling_average_model,
-        F.col(ColName.rolling_total_sum_of_job_count)
-        / F.col(ColName.rolling_total_count_of_job_count),
+        IndCqc.rolling_average_model,
+        F.col(IndCqc.rolling_total_sum_of_job_count)
+        / F.col(IndCqc.rolling_total_count_of_job_count),
     )
 
 
@@ -78,13 +71,15 @@ def calculate_rolling_sum(
 ) -> DataFrame:
     return df.withColumn(
         new_col_name,
-        F.sum(col_to_sum).over(define_window_specifications(UNIX_TIME, number_of_days)),
+        F.sum(col_to_sum).over(
+            define_window_specifications(IndCqc.unix_time, number_of_days)
+        ),
     )
 
 
 def define_window_specifications(unix_date_col: str, number_of_days: int) -> Window:
     return (
-        Window.partitionBy(PRIMARY_SERVICE_TYPE)
+        Window.partitionBy(IndCqc.primary_service_type)
         .orderBy(F.col(unix_date_col).cast("long"))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
@@ -94,7 +89,9 @@ def join_rolling_average_into_df(
     df: DataFrame, rolling_average_df: DataFrame
 ) -> DataFrame:
     rolling_average_df = rolling_average_df.select(
-        PRIMARY_SERVICE_TYPE, UNIX_TIME, ColName.rolling_average_model
+        IndCqc.primary_service_type, IndCqc.unix_time, IndCqc.rolling_average_model
     )
 
-    return df.join(rolling_average_df, [PRIMARY_SERVICE_TYPE, UNIX_TIME], "left")
+    return df.join(
+        rolling_average_df, [IndCqc.primary_service_type, IndCqc.unix_time], "left"
+    )
