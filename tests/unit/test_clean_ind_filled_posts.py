@@ -7,8 +7,8 @@ from pyspark.sql.types import IntegerType, StringType, StructField, StructType, 
 
 import jobs.clean_ind_cqc_filled_posts as job
 
-from tests.test_file_data import MergeIndCQCData as Data
-from tests.test_file_schemas import MergeIndCQCData as Schemas
+from tests.test_file_data import CleanIndCQCData as Data
+from tests.test_file_schemas import CleanIndCQCData as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (

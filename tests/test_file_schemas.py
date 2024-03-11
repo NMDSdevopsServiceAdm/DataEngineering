@@ -774,6 +774,9 @@ class MergeIndCQCData:
         ]
     )
 
+
+@dataclass
+class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),

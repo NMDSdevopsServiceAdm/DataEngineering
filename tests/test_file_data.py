@@ -1443,6 +1443,9 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
+
+@dataclass
+class CleanIndCQCData:
     # fmt: off
     merged_rows_for_cleaning_job = [
         ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing"),
