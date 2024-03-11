@@ -869,8 +869,24 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
-    care_home_features_schema = []
-    non_res_features_schema = []
+    
+    features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.features, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
     populate_known_jobs_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
