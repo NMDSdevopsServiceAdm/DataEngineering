@@ -38,3 +38,11 @@ def mean_absolute_difference_less_than_max_pct_difference(
     abs_dff_col: str, comparison_col: str, max_diff_val: float
 ):
     return F.col(abs_dff_col) / F.col(comparison_col) < max_diff_val
+
+
+def two_cols_are_equal_and_at_least_minimum_permitted_value(
+    first_col: str, second_col: str
+):
+    return (
+        F.col(first_col) == F.col(second_col)
+    ) & selected_column_is_at_least_the_min_permitted_value(first_col)
