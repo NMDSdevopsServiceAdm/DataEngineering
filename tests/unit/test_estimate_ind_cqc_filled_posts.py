@@ -134,7 +134,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
     def test_max_import_date_returns_correct_date(self):
         returned_date = job.get_max_import_date(self.test_cleaned_ind_cqc_df, IndCqc.cqc_location_import_date)
-        expected_date = date(2022, 4, 22)
+        expected_date = "20220422"
     
         self.assertEqual(expected_date, returned_date)
 

@@ -1,5 +1,5 @@
 import sys
-import 
+from datetime import date
 
 import pyspark.sql
 from pyspark.sql import functions as F
@@ -159,7 +159,8 @@ def main(
 
 def get_max_import_date(df:DataFrame, import_date_column:str) -> str:
     date = df.select(F.max(import_date_column).alias("max")).first().max
-    date_as_string = date
+    date_as_string = date.strftime("%Y%m%d")
+    return date_as_string
 
 
 def populate_estimate_jobs_when_job_count_known(
