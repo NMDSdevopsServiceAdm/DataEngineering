@@ -26,9 +26,3 @@ def selected_column_is_at_least_the_min_permitted_value(col_name: str):
 
 def selected_column_is_below_the_min_permitted_value(col_name: str):
     return F.col(col_name) < calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
-
-
-def column_value_is_less_than_min_absolute_difference_between_total_staff_and_worker_record_count(
-    col_name: str, min_abs_diff: float
-) -> bool:
-    return F.col(col_name) < min_abs_diff
