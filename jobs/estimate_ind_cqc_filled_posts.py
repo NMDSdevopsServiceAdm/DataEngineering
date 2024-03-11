@@ -13,6 +13,20 @@ from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
 
+cleaned_ind_cqc_columns = [
+    IndCqc.location_id,
+    IndCqc.services_offered,
+    IndCqc.primary_service_type,
+    IndCqc.people_directly_employed,
+    IndCqc.number_of_beds,
+    IndCqc.cqc_location_import_date,
+    IndCqc.ascwds_filled_posts,
+    IndCqc.ascwds_filled_posts_source,
+    IndCqc.ascwds_filled_posts_dedup_clean,
+    IndCqc.current_cssr,
+    IndCqc.cqc_sector,
+]
+
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 # Note: using 88 as a proxy for 3 months
 NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
@@ -30,29 +44,10 @@ def main(
 ) -> pyspark.sql.DataFrame:
     print("Estimating independent CQC filled posts...")
 
-    cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
-
-    locations_df = (
-        spark.read.parquet(prepared_locations_cleaned_source)
-        .select(
-            LOCATION_ID,
-            SERVICES_OFFERED,
-            PRIMARY_SERVICE_TYPE,
-            PEOPLE_DIRECTLY_EMPLOYED,
-            NUMBER_OF_BEDS,
-            SNAPSHOT_DATE,
-            JOB_COUNT_UNFILTERED,
-            JOB_COUNT_UNFILTERED_SOURCE,
-            JOB_COUNT,
-            LOCAL_AUTHORITY,
-            CQC_SECTOR,
-        )
-        .filter(f"{REGISTRATION_STATUS} = 'Registered'")
-    )
-
-    # loads model features
-    carehome_features_df = spark.read.parquet(carehome_features_source)
-    non_res_features_df = spark.read.parquet(nonres_features_source)
+    cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source, cleaned_ind_cqc_columns)
+    
+    carehome_features_df = utils.read_from_parquet(care_home_features_source)
+    non_res_features_df =utils.read_from_parquet(non_res_features_source)
 
     locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
 
