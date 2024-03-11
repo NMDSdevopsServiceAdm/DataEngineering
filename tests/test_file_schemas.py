@@ -8,6 +8,7 @@ from pyspark.sql.types import (
     FloatType,
     ArrayType,
     DateType,
+    DoubleType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -791,6 +792,15 @@ class CleanIndCQCData:
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
+        ]
+    )
+
+    calculate_ascwds_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
     )
 
