@@ -26,3 +26,15 @@ def selected_column_is_at_least_the_min_permitted_value(col_name: str):
 
 def selected_column_is_below_the_min_permitted_value(col_name: str):
     return F.col(col_name) < calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
+
+
+def column_value_is_less_than_max_absolute_difference(
+    col_name: str, max_abs_diff: float
+) -> bool:
+    return F.col(col_name) < max_abs_diff
+
+
+def mean_absolute_difference_less_than_max_pct_difference(
+    abs_dff_col: str, comparison_col: str, max_diff_val: float
+):
+    return F.col(abs_dff_col) / F.col(comparison_col) < max_diff_val
