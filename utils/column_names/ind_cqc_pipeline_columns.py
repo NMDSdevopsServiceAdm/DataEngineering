@@ -117,6 +117,7 @@ class IndCqcColumns:
     last_filled_posts: str = "last_filled_posts"
     extrapolation_ratio: str = "extrapolation_ratio"
     extrapolation_model: str = "extrapolation_model"
+    prediction: str = "prediction"
 
 
 # DONT IMPORT FROM BELOW THIS LINE

@@ -1029,3 +1029,11 @@ class ModelExtrapolation:
             StructField(IndCQC.extrapolation_ratio, DoubleType(), True),
         ]
     )
+
+
+@dataclass
+class ModelCareHomes:
+    care_homes_cleaned_ind_cqc_schema = (
+        EstimateIndCQCFilledPostsSchemas.cleaned_ind_cqc_schema
+    )
+    care_homes_features_schema = EstimateIndCQCFilledPostsSchemas.features_schema

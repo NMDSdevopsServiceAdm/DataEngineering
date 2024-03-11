@@ -1,6 +1,8 @@
 import pyspark.sql
 
-from utils.estimate_job_count.column_names import ESTIMATE_JOB_COUNT
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 
 from pyspark.sql import functions as F
 
