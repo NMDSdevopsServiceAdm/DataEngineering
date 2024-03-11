@@ -11,6 +11,10 @@ from utils.ind_cqc_filled_posts_utils.utils import (
 )
 
 
+def ascwds_filled_posts_select_only_value_source_description(permitted_column: str):
+    return "only " + permitted_column + " was provided"
+
+
 def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
     input_df, permitted_column: str, non_permitted_column: str, output_column_name
 ):
@@ -32,5 +36,7 @@ def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_pe
     )
 
     return update_dataframe_with_identifying_rule(
-        input_df, "only " + permitted_column + " was provided", output_column_name
+        input_df,
+        ascwds_filled_posts_select_only_value_source_description(permitted_column),
+        output_column_name,
     )
