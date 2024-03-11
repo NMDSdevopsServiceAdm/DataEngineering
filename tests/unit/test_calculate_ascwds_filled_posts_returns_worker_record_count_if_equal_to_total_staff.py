@@ -6,7 +6,6 @@ from tests.test_file_schemas import CleanIndCQCData as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
 
@@ -14,13 +13,6 @@ import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate
 
 
 class TestAscwdsFilledPostsWorkerRecordsEqualsTotalStaff(unittest.TestCase):
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
-
     def setUp(self):
         self.spark = utils.get_spark()
         self.ascwds_total_staff_and_worker_record_df = self.spark.createDataFrame(
