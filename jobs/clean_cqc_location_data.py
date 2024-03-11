@@ -179,11 +179,11 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
         CQCPClean.cqc_provider_import_date,
     )
 
-    provider_data_to_join_df = provider_df.withColumnsRenamed(
-        {
-            CQCPClean.provider_id: CQCLClean.provider_id,
-            CQCPClean.name: CQCLClean.provider_name,
-        }
+    provider_data_to_join_df = provider_df.withColumnRenamed(
+        CQCPClean.provider_id, CQCLClean.provider_id
+    )
+    provider_data_to_join_df = provider_data_to_join_df.withColumnRenamed(
+        CQCPClean.name, CQCLClean.provider_name
     )
 
     joined_df = locations_df.join(
