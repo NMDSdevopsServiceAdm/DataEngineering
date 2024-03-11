@@ -869,7 +869,7 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
-    
+
     features_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -892,7 +892,7 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.estimate_job_count, FloatType(), True),
-            StructField(IndCQC.estimate_job_count_source, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )

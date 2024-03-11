@@ -1,7 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
-from datetime import datetime
+from datetime import datetime, date
 
 
 import jobs.estimate_ind_cqc_filled_posts as job
@@ -10,6 +10,7 @@ from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCqc,
 )
 
 
@@ -100,7 +101,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             data_percentage=50.0,
             model_version="1.0.0",
             model_name="care_home_jobs_prediction",
-            latest_snapshot="20220601",
+            latest_import_date=date(2022, 6, 1),
             job_run_id="abc1234",
             job_name="estimate_job_counts",
         )
@@ -109,7 +110,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         expected_columns = [
             "r2",
             "percentage_data",
-            "latest_snapshot",
+            "latest_import_date",
             "job_run_id",
             "job_name",
             "generated_metric_date",
@@ -121,7 +122,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
         self.assertEqual(df.first()["model_version"], "1.0.0")
         self.assertEqual(df.first()["model_name"], "care_home_jobs_prediction")
-        self.assertEqual(df.first()["latest_snapshot"], "20220601")
+        self.assertEqual(df.first()["latest_import_date"], "20220601")
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
 
@@ -131,8 +132,11 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(job.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 88)
 
 
-
-
+    def test_max_import_date_returns_correct_date(self):
+        returned_date = job.get_max_import_date(self.test_cleaned_ind_cqc_df, IndCqc.cqc_location_import_date)
+        expected_date = date(2022, 4, 22)
+    
+        self.assertEqual(expected_date, returned_date)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,27 @@
 import sys
+import 
 
 import pyspark.sql
 from pyspark.sql import functions as F
+from pyspark.sql.types import (
+    IntegerType,
+    StringType,
+)
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCqc,
+)
+from utils.estimate_job_count.models.care_homes import model_care_homes
+from utils.estimate_job_count.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
+from utils.estimate_job_count.models.extrapolation import model_extrapolation
+from utils.estimate_job_count.models.interpolation import model_interpolation
+from utils.estimate_job_count.models.non_res_with_pir import (
+    model_non_residential_with_pir,
 )
 # Update this once Gary's PR is in
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
@@ -44,44 +59,44 @@ def main(
 ) -> pyspark.sql.DataFrame:
     print("Estimating independent CQC filled posts...")
 
+    # This job requires data filtered to registered, cqc independent sector locations. 
+    # These filteres are applied earlier in the pipeline.
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source, cleaned_ind_cqc_columns)
     
     carehome_features_df = utils.read_from_parquet(care_home_features_source)
     non_res_features_df =utils.read_from_parquet(non_res_features_source)
 
-    locations_df = filter_to_only_cqc_independent_sector_data(locations_df)
-
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT, F.lit(None).cast(IntegerType())
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCqc.estimate_filled_posts, F.lit(None).cast(IntegerType())
     )
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT_SOURCE, F.lit(None).cast(StringType())
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCqc.estimate_filled_posts_source, F.lit(None).cast(StringType())
     )
-    latest_snapshot = utils.get_max_snapshot_date(locations_df)
+    latest_import_date = get_max_import_date(cleaned_ind_cqc_df)
 
-    locations_df = utils.create_unix_timestamp_variable_from_date_column(
-        locations_df,
-        date_col=SNAPSHOT_DATE,
+    cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
+        cleaned_ind_cqc_df,
+        date_col=IndCqc.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name="unix_time",
     )
 
-    locations_df = populate_estimate_jobs_when_job_count_known(locations_df)
+    cleaned_ind_cqc_df = populate_estimate_jobs_when_job_count_known(cleaned_ind_cqc_df)
 
-    locations_df = model_primary_service_rolling_average(
-        locations_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    cleaned_ind_cqc_df = model_primary_service_rolling_average(
+        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
     )
 
-    locations_df = model_extrapolation(locations_df)
+    cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
 
     # Care homes model
-    locations_df, care_home_metrics_info = model_care_homes(
-        locations_df,
+    cleaned_ind_cqc_df, care_home_metrics_info = model_care_homes(
+        cleaned_ind_cqc_df,
         carehome_features_df,
         care_home_model_directory,
     )
 
-    locations_df = model_interpolation(locations_df)
+    cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
     care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
@@ -90,17 +105,17 @@ def main(
         data_percentage=care_home_metrics_info["data_percentage"],
         model_version=care_home_model_info[-2],
         model_name="care_home_with_nursing_historical_jobs_prediction",
-        latest_snapshot=latest_snapshot,
+        latest_import_date=latest_import_date,
         job_run_id=job_run_id,
         job_name=job_name,
     )
 
     # Non-res with PIR data model
     (
-        locations_df,
+        cleaned_ind_cqc_df,
         non_residential_with_pir_metrics_info,
     ) = model_non_residential_with_pir(
-        locations_df,
+        cleaned_ind_cqc_df,
         non_res_features_df,
         non_res_model_directory,
     )
@@ -112,28 +127,24 @@ def main(
         data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
         model_version=non_res_model_info[-2],
         model_name="non_residential_with_pir",
-        latest_snapshot=latest_snapshot,
+        latest_import_date=latest_import_date,
         job_run_id=job_run_id,
         job_name=job_name,
     )
 
-    locations_df = locations_df.withColumnRenamed(
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
         "rolling_average", "rolling_average_model"
     )
-    locations_df = locations_df.withColumn(
-        ESTIMATE_JOB_COUNT,
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCqc.estimate_filled_posts,
         F.when(
-            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
+            F.col(IndCqc.estimate_filled_posts).isNotNull(), F.col(IndCqc.estimate_filled_posts)
         ).otherwise(F.col("rolling_average_model")),
     )
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "rolling_average_model", ESTIMATE_JOB_COUNT
+    cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
+        cleaned_ind_cqc_df, "rolling_average_model", IndCqc.estimate_filled_posts
     )
 
-    today = date.today()
-    locations_df = locations_df.withColumn("run_year", F.lit(today.year))
-    locations_df = locations_df.withColumn("run_month", F.lit(f"{today.month:0>2}"))
-    locations_df = locations_df.withColumn("run_day", F.lit(f"{today.day:0>2}"))
 
     print("Completed estimated job counts")
 
@@ -146,21 +157,24 @@ def main(
         partitionKeys=PartitionKeys,
     )
 
+def get_max_import_date(df:DataFrame, import_date_column:str) -> str:
+    date = df.select(F.max(import_date_column).alias("max")).first().max
+    date_as_string = date
 
 
 def populate_estimate_jobs_when_job_count_known(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = df.withColumn(
-        IndCqc.estimate_job_count,
+        IndCqc.estimate_filled_posts,
         F.when(
-            (F.col(IndCqc.estimate_job_count).isNull() & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())),
+            (F.col(IndCqc.estimate_filled_posts).isNull() & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())),
             F.col(IndCqc.ascwds_filled_posts_dedup_clean),
-        ).otherwise(F.col(IndCqc.estimate_job_count)),
+        ).otherwise(F.col(IndCqc.estimate_filled_posts)),
     )
 
     df = update_dataframe_with_identifying_rule(
-        df, "ascwds_job_count", IndCqc.estimate_job_count
+        df, "ascwds_job_count", IndCqc.estimate_filled_posts
     )
 
     return df
@@ -172,7 +186,7 @@ def write_metrics_df(
     data_percentage,
     model_name,
     model_version,
-    latest_snapshot, # Change this name
+    latest_import_date, 
     job_run_id,
     job_name,
 ):
@@ -180,7 +194,7 @@ def write_metrics_df(
     columns = [
         IndCqc.r2,
         IndCqc.percentage_data,
-        IndCqc.latest_snapshot,
+        IndCqc.latest_import_date,
         IndCqc.job_run_id,
         IndCqc.job_name,
         IndCqc.model_name,
@@ -190,7 +204,7 @@ def write_metrics_df(
         (
             r2,
             data_percentage,
-            latest_snapshot,
+            latest_import_date,
             job_run_id,
             job_name,
             model_name,
