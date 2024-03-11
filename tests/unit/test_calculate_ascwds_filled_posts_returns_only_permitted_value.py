@@ -13,7 +13,6 @@ import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate
 
 
 class TestAscwdsFilledPostsOnlyPermittedValue(unittest.TestCase):
-
     def setUp(self):
         self.spark = utils.get_spark()
         self.ascwds_total_staff_and_worker_record_df = self.spark.createDataFrame(
