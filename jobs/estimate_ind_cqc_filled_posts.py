@@ -1,5 +1,5 @@
 import sys
-from datetime import date
+from datetime import datetime
 
 import pyspark.sql
 from pyspark.sql import functions as F
@@ -23,6 +23,7 @@ from utils.estimate_job_count.models.interpolation import model_interpolation
 from utils.estimate_job_count.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
+
 # Update this once Gary's PR is in
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
@@ -46,25 +47,28 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 # Note: using 88 as a proxy for 3 months
 NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
 
+
 def main(
     cleaned_ind_cqc_source: str,
     care_home_features_source: str,
-    non_res_features_source:str,
-    care_home_model_directory:str,
-    non_res_model_directory:str,
-    metrics_destination:str,
-    estimated_ind_cqc_destination:str,
+    non_res_features_source: str,
+    care_home_model_directory: str,
+    non_res_model_directory: str,
+    metrics_destination: str,
+    estimated_ind_cqc_destination: str,
     job_run_id,
     job_name,
 ) -> pyspark.sql.DataFrame:
     print("Estimating independent CQC filled posts...")
 
-    # This job requires data filtered to registered, cqc independent sector locations. 
+    # This job requires data filtered to registered, cqc independent sector locations.
     # These filteres are applied earlier in the pipeline.
-    cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source, cleaned_ind_cqc_columns)
-    
+    cleaned_ind_cqc_df = utils.read_from_parquet(
+        cleaned_ind_cqc_source, cleaned_ind_cqc_columns
+    )
+
     carehome_features_df = utils.read_from_parquet(care_home_features_source)
-    non_res_features_df =utils.read_from_parquet(non_res_features_source)
+    non_res_features_df = utils.read_from_parquet(non_res_features_source)
 
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
         IndCqc.estimate_filled_posts, F.lit(None).cast(IntegerType())
@@ -72,7 +76,9 @@ def main(
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
         IndCqc.estimate_filled_posts_source, F.lit(None).cast(StringType())
     )
-    latest_import_date = get_max_import_date(cleaned_ind_cqc_df)
+    latest_import_date = get_max_import_date(
+        cleaned_ind_cqc_df, IndCqc.cqc_location_import_date
+    )
 
     cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
         cleaned_ind_cqc_df,
@@ -138,13 +144,13 @@ def main(
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
         IndCqc.estimate_filled_posts,
         F.when(
-            F.col(IndCqc.estimate_filled_posts).isNotNull(), F.col(IndCqc.estimate_filled_posts)
+            F.col(IndCqc.estimate_filled_posts).isNotNull(),
+            F.col(IndCqc.estimate_filled_posts),
         ).otherwise(F.col("rolling_average_model")),
     )
     cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
         cleaned_ind_cqc_df, "rolling_average_model", IndCqc.estimate_filled_posts
     )
-
 
     print("Completed estimated job counts")
 
@@ -157,7 +163,8 @@ def main(
         partitionKeys=PartitionKeys,
     )
 
-def get_max_import_date(df:DataFrame, import_date_column:str) -> str:
+
+def get_max_import_date(df: DataFrame, import_date_column: str) -> str:
     date = df.select(F.max(import_date_column).alias("max")).first().max
     date_as_string = date.strftime("%Y%m%d")
     return date_as_string
@@ -169,7 +176,10 @@ def populate_estimate_jobs_when_job_count_known(
     df = df.withColumn(
         IndCqc.estimate_filled_posts,
         F.when(
-            (F.col(IndCqc.estimate_filled_posts).isNull() & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())),
+            (
+                F.col(IndCqc.estimate_filled_posts).isNull()
+                & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+            ),
             F.col(IndCqc.ascwds_filled_posts_dedup_clean),
         ).otherwise(F.col(IndCqc.estimate_filled_posts)),
     )
@@ -187,7 +197,7 @@ def write_metrics_df(
     data_percentage,
     model_name,
     model_version,
-    latest_import_date, 
+    latest_import_date,
     job_run_id,
     job_name,
 ):
@@ -221,6 +231,7 @@ def write_metrics_df(
         mode="append",
         partitionKeys=[IndCqc.model_name, IndCqc.model_version],
     )
+
 
 if __name__ == "__main__":
     print("Spark job 'estimate_ind_cqc_filled_posts' starting...")

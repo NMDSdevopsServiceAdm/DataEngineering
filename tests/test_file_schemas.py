@@ -8,6 +8,8 @@ from pyspark.sql.types import (
     FloatType,
     ArrayType,
     DateType,
+    LongType,
+    DoubleType,
 )
 
 from utils.estimate_job_count.column_names import (
@@ -811,6 +813,7 @@ class NonResFeaturesSchema(object):
         ]
     )
 
+
 @dataclass
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
@@ -845,6 +848,7 @@ class CareHomeFeaturesSchema:
         ]
     )
 
+
 @dataclass
 class EstimateIndCQCFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
@@ -854,9 +858,13 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.contemporary_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(
-                StringType(),
-            ), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
@@ -864,7 +872,9 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True),
+            StructField(
+                IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True
+            ),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
         ]
@@ -894,5 +904,49 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelPrimaryServiceRollingAverage:
+    input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+        ]
+    )
+    known_job_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+        ]
+    )
+    rolling_sum_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField("col_to_sum", StringType(), False),
+        ]
+    )
+    rolling_average_schema = StructType(
+        [
+            StructField("other_col", StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
+    calculate_rolling_average_column_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.count_of_job_count, IntegerType(), True),
+            StructField(IndCQC.sum_of_job_count, DoubleType(), True),
         ]
     )

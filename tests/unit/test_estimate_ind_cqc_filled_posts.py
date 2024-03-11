@@ -18,7 +18,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     CARE_HOME_FEATURES = "care home features"
     NON_RES_FEATURES = "non res features"
-    CARE_HOME_MODEL = "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
+    CARE_HOME_MODEL = (
+        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
+    )
     NON_RES_MODEL = "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0/"
     METRICS_DESTINATION = "metrics destination"
     ESTIMATES_DESTINATION = "estimates destination"
@@ -33,11 +35,16 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema)
-        self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.features_schema)
-        self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.features_schema)   
+        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
+            Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
+        )
+        self.test_care_home_features_df = self.spark.createDataFrame(
+            Data.care_home_features_rows, Schemas.features_schema
+        )
+        self.test_non_res_features_df = self.spark.createDataFrame(
+            Data.non_res_features_rows, Schemas.features_schema
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
-
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -79,20 +86,23 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-    
+
     def test_populate_known_jobs_use_job_count_from_current_date(self):
-        test_df = self.spark.createDataFrame(Data.populate_known_jobs_rows,Schemas.populate_known_jobs_schema)
+        test_df = self.spark.createDataFrame(
+            Data.populate_known_jobs_rows, Schemas.populate_known_jobs_schema
+        )
 
         returned_df = job.populate_estimate_jobs_when_job_count_known(test_df)
-        expected_df = self.spark.createDataFrame(Data.expected_populate_known_jobs_rows, Schemas.populate_known_jobs_schema)
-    
+        expected_df = self.spark.createDataFrame(
+            Data.expected_populate_known_jobs_rows, Schemas.populate_known_jobs_schema
+        )
+
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
-        
+
         self.assertEqual(returned_df.count(), expected_df.count())
         self.assertEqual(expected_data, returned_data)
 
-    
     @patch("utils.utils.write_to_parquet")
     def test_write_metrics_df_creates_metrics_df(self, write_to_parquet_mock: Mock):
         job.write_metrics_df(
@@ -101,7 +111,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             data_percentage=50.0,
             model_version="1.0.0",
             model_name="care_home_jobs_prediction",
-            latest_import_date=date(2022, 6, 1),
+            latest_import_date="20220601",
             job_run_id="abc1234",
             job_name="estimate_job_counts",
         )
@@ -126,16 +136,15 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.first()["job_name"], "estimate_job_counts")
         self.assertIsInstance(df.first()["generated_metric_date"], datetime)
 
-
-
     def test_number_of_days_constant_is_eighty_eight(self):
         self.assertEqual(job.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 88)
 
-
     def test_max_import_date_returns_correct_date(self):
-        returned_date = job.get_max_import_date(self.test_cleaned_ind_cqc_df, IndCqc.cqc_location_import_date)
+        returned_date = job.get_max_import_date(
+            self.test_cleaned_ind_cqc_df, IndCqc.cqc_location_import_date
+        )
         expected_date = "20220422"
-    
+
         self.assertEqual(expected_date, returned_date)
 
 
