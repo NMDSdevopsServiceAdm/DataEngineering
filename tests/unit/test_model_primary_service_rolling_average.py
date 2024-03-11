@@ -62,10 +62,10 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         df = df.sort(
             F.col(IndCqc.primary_service_type).desc(), F.col(IndCqc.unix_time).asc()
         ).collect()
-        self.assertEqual(df[0][IndCqc.count_of_job_count], 2)
-        self.assertEqual(df[0][IndCqc.sum_of_job_count], 10.0)
-        self.assertEqual(df[7][IndCqc.count_of_job_count], 1)
-        self.assertEqual(df[7][IndCqc.sum_of_job_count], 142.0)
+        self.assertEqual(df[0][IndCqc.count_of_filled_posts], 2)
+        self.assertEqual(df[0][IndCqc.sum_of_filled_posts], 10.0)
+        self.assertEqual(df[7][IndCqc.count_of_filled_posts], 1)
+        self.assertEqual(df[7][IndCqc.sum_of_filled_posts], 142.0)
 
     def test_create_rolling_average_column(self):
         df = job.create_rolling_average_column(self.data_for_rolling_avg, 88)

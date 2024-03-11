@@ -40,29 +40,29 @@ def calculate_job_count_aggregates_per_service_and_time_period(
     return df.groupBy(IndCqc.primary_service_type, IndCqc.unix_time).agg(
         F.count(IndCqc.ascwds_filled_posts_dedup_clean)
         .cast("integer")
-        .alias(IndCqc.count_of_job_count),
-        F.sum(IndCqc.ascwds_filled_posts_dedup_clean).alias(IndCqc.sum_of_job_count),
+        .alias(IndCqc.count_of_filled_posts),
+        F.sum(IndCqc.ascwds_filled_posts_dedup_clean).alias(IndCqc.sum_of_filled_posts),
     )
 
 
 def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
     df = calculate_rolling_sum(
         df,
-        IndCqc.sum_of_job_count,
+        IndCqc.sum_of_filled_posts,
         number_of_days,
-        IndCqc.rolling_total_sum_of_job_count,
+        IndCqc.rolling_total_sum_of_filled_posts,
     )
     df = calculate_rolling_sum(
         df,
-        IndCqc.count_of_job_count,
+        IndCqc.count_of_filled_posts,
         number_of_days,
-        IndCqc.rolling_total_count_of_job_count,
+        IndCqc.rolling_total_count_of_filled_posts,
     )
 
     return df.withColumn(
         IndCqc.rolling_average_model,
-        F.col(IndCqc.rolling_total_sum_of_job_count)
-        / F.col(IndCqc.rolling_total_count_of_job_count),
+        F.col(IndCqc.rolling_total_sum_of_filled_posts)
+        / F.col(IndCqc.rolling_total_count_of_filled_posts),
     )
 
 
