@@ -35,11 +35,14 @@ class TestAscwdsFilledPostsAbsoluteDiffInRange(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    def test_calculate_ascwds_filled_posts_absolute_difference_within_range_values(
+    def test_calculate_ascwds_filled_posts_row_count_correct(
         self,
     ):
         self.assertEqual(self.df.count(), 9)
 
+    def test_calculate_ascwds_filled_posts_absolute_difference_within_range_values(
+        self,
+    ):
         df = self.df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][IndCQC.ascwds_filled_posts], None)
         self.assertEqual(df[1][IndCQC.ascwds_filled_posts], 500.0)
@@ -54,8 +57,6 @@ class TestAscwdsFilledPostsAbsoluteDiffInRange(unittest.TestCase):
     def test_calculate_ascwds_filled_posts_absolute_difference_within_range_sources(
         self,
     ):
-        self.assertEqual(self.df.count(), 9)
-
         df = self.df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][IndCQC.ascwds_filled_posts_source], None)
         self.assertEqual(
