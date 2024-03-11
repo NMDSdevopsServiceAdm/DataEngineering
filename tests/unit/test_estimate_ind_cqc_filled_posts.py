@@ -17,8 +17,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     CARE_HOME_FEATURES = "care home features"
     NON_RES_FEATURES = "non res features"
-    CARE_HOME_MODEL = "care home model"
-    NON_RES_MODEL = "non res model"
+    CARE_HOME_MODEL = "tests/test_models/care_home_with_nursing_historical_jobs_prediction/1.0.0/"
+    NON_RES_MODEL = "tests/test_models/non_residential_with_pir_jobs_prediction/1.0.0/"
     METRICS_DESTINATION = "metrics destination"
     ESTIMATES_DESTINATION = "estimates destination"
     JOB_RUN_ID = "job run id"
@@ -33,9 +33,53 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema)
-        #self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.care_home_features_schema)
-        #self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.non_res_features_schema)   
+        self.test_care_home_features_df = self.spark.createDataFrame(Data.care_home_features_rows, Schemas.features_schema)
+        self.test_non_res_features_df = self.spark.createDataFrame(Data.non_res_features_rows, Schemas.features_schema)   
+        self.care_home_model = utils.read_from_parquet(self.CARE_HOME_MODEL)
+        self.non_res_model = utils.read_from_parquet(self.NON_RES_MODEL)
         warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_from_parquet")
+    def test_main_runs(
+        self,
+        read_from_parquet_patch: Mock,
+        write_to_parquet_patch: Mock,
+    ):
+
+        read_from_parquet_patch.side_effect = [
+            self.test_cleaned_ind_cqc_df,
+            self.test_care_home_features_df,
+            self.test_non_res_features_df,
+            self.care_home_model,
+            self.non_res_model,
+            self.METRICS_DESTINATION,
+            self.ESTIMATES_DESTINATION,
+            self.JOB_RUN_ID,
+            self.JOB_NAME,
+        ]
+
+        job.main(
+            self.CLEANED_IND_CQC_TEST_DATA,
+            self.CARE_HOME_FEATURES,
+            self.NON_RES_FEATURES,
+            self.CARE_HOME_MODEL,
+            self.NON_RES_MODEL,
+            self.METRICS_DESTINATION,
+            self.ESTIMATES_DESTINATION,
+            self.JOB_RUN_ID,
+            self.JOB_NAME,
+        )
+
+        self.assertEqual(read_from_parquet_patch.call_count, 3)
+
+        write_to_parquet_patch.assert_called(
+            ANY,
+            self.ESTIMATES_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
 
     @unittest.skip("not refactored test yet")
     @patch("utils.utils.get_s3_sub_folders_for_path")
