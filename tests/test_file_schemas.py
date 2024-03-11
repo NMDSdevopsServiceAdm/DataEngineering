@@ -946,7 +946,86 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.count_of_job_count, IntegerType(), True),
-            StructField(IndCQC.sum_of_job_count, DoubleType(), True),
+            StructField(IndCQC.count_of_filled_posts, IntegerType(), True),
+            StructField(IndCQC.sum_of_filled_posts, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelExtrapolation:
+    extrapolation_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
+    data_to_filter_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+        ]
+    )
+    first_and_last_submission_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
+    extrapolated_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.first_submission_time, LongType(), False),
+            StructField(IndCQC.last_submission_time, LongType(), False),
+            StructField(IndCQC.first_filled_posts, DoubleType(), True),
+            StructField(IndCQC.first_rolling_average, DoubleType(), True),
+            StructField(IndCQC.last_filled_posts, DoubleType(), True),
+            StructField(IndCQC.last_rolling_average, DoubleType(), True),
+        ]
+    )
+    extrapolated_values_to_be_added_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+        ]
+    )
+    extrapolated_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.first_submission_time, LongType(), False),
+            StructField(IndCQC.last_submission_time, LongType(), False),
+            StructField(IndCQC.first_rolling_average, DoubleType(), True),
+            StructField(IndCQC.last_rolling_average, DoubleType(), True),
+        ]
+    )
+    extrapolated_model_outputs_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.first_submission_time, LongType(), False),
+            StructField(IndCQC.last_submission_time, LongType(), False),
+            StructField(IndCQC.first_filled_posts, DoubleType(), True),
+            StructField(IndCQC.last_filled_posts, DoubleType(), True),
+            StructField(IndCQC.extrapolation_ratio, DoubleType(), True),
         ]
     )

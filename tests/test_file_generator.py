@@ -1605,7 +1605,7 @@ def generate_data_for_interpolating_values_for_all_dates_df():
 
     return df
 
-
+"""
 def generate_data_for_extrapolation_model():
     spark = utils.get_spark()
 
@@ -1811,3 +1811,4 @@ def generate_data_for_creating_extrapolated_model_outputs_df():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
+"""

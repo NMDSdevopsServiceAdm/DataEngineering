@@ -88,8 +88,8 @@ class IndCqcColumns:
     service_count: str = "service_count"
     date_diff: str = "date_diff"
     features: str = "features"
-    estimate_filled_posts: str = "estimate_job_count"
-    estimate_filled_posts_source: str = "estimate_job_count_source"
+    estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_source: str = "estimate_filled_posts_source"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_source: str = "ascwds_filled_posts_source"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
@@ -103,11 +103,20 @@ class IndCqcColumns:
     model_version: str = "model_version"
     metrics_date: str = "generated_metric_date"
     unix_time: str = "unix_time"
-    count_of_job_count: str = "count_of_job_count"
-    sum_of_job_count: str = "sum_of_job_count"
-    rolling_total_count_of_job_count: str = "rolling_total_count_of_job_count"
-    rolling_total_sum_of_job_count: str = "rolling_total_sum_of_job_count"
+    count_of_filled_posts: str = "count_of_filled_posts"
+    sum_of_filled_posts: str = "sum_of_filled_posts"
+    rolling_total_count_of_filled_posts: str = "rolling_total_count_of_filled_posts"
+    rolling_total_sum_of_filled_posts: str = "rolling_total_sum_of_filled_posts"
     rolling_average_model: str = "rolling_average_model"
+    max_filled_posts: str = "max_filled_posts"
+    first_submission_time: str = "first_submission_time"
+    first_rolling_average: str = "first_rolling_average"
+    first_filled_posts: str = "first_filled_posts"
+    last_submission_time: str = "last_submission_time"
+    last_rolling_average: str = "last_rolling_average"
+    last_filled_posts: str = "last_filled_posts"
+    extrapolation_ratio: str = "extrapolation_ratio"
+    extrapolation_model: str = "extrapolation_model"
 
 
 # DONT IMPORT FROM BELOW THIS LINE
@@ -127,8 +136,8 @@ class PrepareLocationsColumns:
     deregistration_date: str = "deregistration_date"
     dormancy: str = "dormancy"
     establishmentid: str = "establishmentid"
-    job_count_unfiltered: str = "job_count_unfiltered"
-    job_count_unfiltered_source: str = "job_count_unfiltered_source"
+    filled_posts_unfiltered: str = "filled_posts_unfiltered"
+    filled_posts_unfiltered_source: str = "filled_posts_unfiltered_source"
     local_authority: str = "local_authority"
     location_name: str = "location_name"
     location_type: str = "location_type"
@@ -164,9 +173,11 @@ class PrepareLocationsColumns:
 class PrepareLocationsCleanedColumns:
     care_home = PrepareLocationsColumns.care_home
     cqc_sector = PrepareLocationsColumns.cqc_sector
-    job_count: str = "job_count"
-    job_count_unfiltered = PrepareLocationsColumns.job_count_unfiltered
-    job_count_unfiltered_source = PrepareLocationsColumns.job_count_unfiltered_source
+    filled_posts: str = "filled_posts"
+    filled_posts_unfiltered = PrepareLocationsColumns.filled_posts_unfiltered
+    filled_posts_unfiltered_source = (
+        PrepareLocationsColumns.filled_posts_unfiltered_source
+    )
     local_authority = PrepareLocationsColumns.local_authority
     location_id = PrepareLocationsColumns.location_id
     number_of_beds = PrepareLocationsColumns.number_of_beds
@@ -190,7 +201,7 @@ class PrepareLocationsCleanedColumns:
 class FeatureEngineeringColumns:
     care_home = PrepareLocationsCleanedColumns.care_home
     features: str = "features"
-    job_count = PrepareLocationsCleanedColumns.job_count
+    filled_posts = PrepareLocationsCleanedColumns.filled_posts
     location_id = PrepareLocationsCleanedColumns.location_id
     number_of_beds = PrepareLocationsCleanedColumns.number_of_beds
     ons_region = PrepareLocationsCleanedColumns.ons_region
@@ -206,14 +217,14 @@ class FeatureEngineeringColumns:
 class EstimateJobsColumns:
     care_home_model: str = "care_home_model"
     cqc_sector = PrepareLocationsCleanedColumns.cqc_sector
-    estimate_job_count: str = "estimate_job_count"
-    estimate_job_count_source: str = "estimate_job_count_source"
+    estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_source: str = "estimate_filled_posts_source"
     extrapolation_model: str = "extrapolation_model"
     interpolation_model: str = "interpolation_model"
-    job_count = PrepareLocationsCleanedColumns.job_count
-    job_count_unfiltered = PrepareLocationsCleanedColumns.job_count_unfiltered
-    job_count_unfiltered_source = (
-        PrepareLocationsCleanedColumns.job_count_unfiltered_source
+    filled_posts = PrepareLocationsCleanedColumns.filled_posts
+    filled_posts_unfiltered = PrepareLocationsCleanedColumns.filled_posts_unfiltered
+    filled_posts_unfiltered_source = (
+        PrepareLocationsCleanedColumns.filled_posts_unfiltered_source
     )
     local_authority = PrepareLocationsCleanedColumns.local_authority
     location_id = PrepareLocationsCleanedColumns.location_id
