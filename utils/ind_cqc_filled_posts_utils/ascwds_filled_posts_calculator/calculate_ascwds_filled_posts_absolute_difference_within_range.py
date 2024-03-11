@@ -18,7 +18,6 @@ absolute_difference = "absolute_difference"
 def calculate_ascwds_filled_posts_absolute_difference_within_range(
     input_df, total_staff_column: str, worker_records_column: str, output_column_name
 ):
-
     input_df = input_df.withColumn(
         absolute_difference,
         F.abs(F.col(total_staff_column) - F.col(worker_records_column)),
