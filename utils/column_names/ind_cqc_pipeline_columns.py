@@ -118,6 +118,7 @@ class IndCqcColumns:
     extrapolation_ratio: str = "extrapolation_ratio"
     extrapolation_model: str = "extrapolation_model"
     prediction: str = "prediction"
+    care_home_model: str = "care_home_model"
 
 
 # DONT IMPORT FROM BELOW THIS LINE

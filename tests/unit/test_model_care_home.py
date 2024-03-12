@@ -5,7 +5,7 @@ from datetime import date
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
-from utils.estimated_filled_posts.models.care_homes import model_care_homes
+from utils.estimate_job_count.models.care_homes import model_care_homes
 from tests.test_file_data import ModelCareHomes as Data
 from tests.test_file_schemas import ModelCareHomes as Schemas
 from utils import utils
@@ -55,11 +55,11 @@ class TestModelCareHome(unittest.TestCase):
             df[IndCqc.location_id] == "1-000000002"
         ).collect()[0]
 
-        self.assertIsNotNone(expected_location_with_prediction.estimated_filled_posts)
+        self.assertIsNotNone(expected_location_with_prediction.estimate_filled_posts)
         self.assertIsNotNone(
-            expected_location_with_prediction.estimated_filled_posts_source
+            expected_location_with_prediction.estimate_filled_posts_source
         )
-        self.assertIsNone(expected_location_without_prediction.estimated_filled_posts)
+        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
         self.assertIsNone(
-            expected_location_without_prediction.estimated_filled_posts_source
+            expected_location_without_prediction.estimate_filled_posts_source
         )

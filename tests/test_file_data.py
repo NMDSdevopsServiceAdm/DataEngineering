@@ -2125,5 +2125,117 @@ class ModelExtrapolation:
 
 @dataclass
 class ModelCareHomes:
-    care_homes_cleaned_ind_cqc_rows = EstimateIndCQCFilledPostsData.cleaned_ind_cqc_rows
-    care_homes_features_rows = EstimateIndCQCFilledPostsData.care_home_features_rows
+    care_homes_cleaned_ind_cqc_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            None,
+            None,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            "Care home without nursing",
+            None,
+            None,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            None,
+            None,
+            None,
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "already_populated",
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+        ),
+        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
+    ]
+    care_homes_features_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            10.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+            Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
+            34,
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            20.0,
+            "N",
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+            None,
+            0,
+        ),
+    ]
+
+
+@dataclass
+class InsertPredictionsIntoLocations:
+    cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
+
+    care_home_features_rows = ModelCareHomes.care_homes_features_rows
+
+    predictions_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            50.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+            56.89,
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+            12.34,
+        ),
+    ]
+
+
+@dataclass
+class GenerateRSquaredMetric:
+    cqc_ind_cleaned_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            50.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 9),
+            56.89,
+        ),
+        ("1-000000004", "non-residential", 10.0, "N", None, 0, date(2022, 3, 9), 12.34),
+    ]

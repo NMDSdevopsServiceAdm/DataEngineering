@@ -14,26 +14,30 @@ def insert_predictions_into_locations(
 ) -> pyspark.sql.DataFrame:
     locations_with_predictions = locations_df.join(
         predictions_df,
-        (locations_df["locationid"] == predictions_df["locationid"])
-        & (locations_df["snapshot_date"] == predictions_df["snapshot_date"]),
+        (locations_df[IndCqc.location_id] == predictions_df[IndCqc.location_id])
+        & (
+            locations_df[IndCqc.cqc_location_import_date]
+            == predictions_df[IndCqc.cqc_location_import_date]
+        ),
         "left",
     )
 
     locations_with_predictions = locations_with_predictions.select(
-        locations_df["*"], predictions_df["prediction"]
+        locations_df["*"], predictions_df[IndCqc.prediction]
     )
 
     locations_with_prediction_model_column = locations_with_predictions.withColumn(
-        model_column_name, F.col("prediction")
+        model_column_name, F.col(IndCqc.prediction)
     )
     locations_with_prediction_model_column = (
         locations_with_prediction_model_column.withColumn(
-            ESTIMATE_JOB_COUNT,
+            IndCqc.estimate_filled_posts,
             F.when(
-                F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
-            ).otherwise(F.col("prediction")),
+                F.col(IndCqc.estimate_filled_posts).isNotNull(),
+                F.col(IndCqc.estimate_filled_posts),
+            ).otherwise(F.col(IndCqc.prediction)),
         )
     )
 
-    locations_df = locations_with_prediction_model_column.drop(F.col("prediction"))
+    locations_df = locations_with_prediction_model_column.drop(F.col(IndCqc.prediction))
     return locations_df

@@ -1,10 +1,6 @@
 from pyspark.ml.regression import GBTRegressionModel
-from pyspark.sql import functions as F
 from pyspark.sql import DataFrame
-from utils.estimate_job_count.column_names import (
-    ESTIMATE_JOB_COUNT,
-    CARE_HOME_MODEL,
-)
+
 from utils.estimate_job_count.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
@@ -40,11 +36,11 @@ def model_care_homes(
         IndCqc.percentage_data: (features_df.count() / locations_df.count()) * 100,
     }
     locations_df = insert_predictions_into_locations(
-        locations_df, care_home_predictions, CARE_HOME_MODEL
+        locations_df, care_home_predictions, IndCqc.care_home_model
     )
 
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_homes", ESTIMATE_JOB_COUNT
+        locations_df, "model_care_homes", IndCqc.estimate_filled_posts
     )
 
     return locations_df, metrics_info

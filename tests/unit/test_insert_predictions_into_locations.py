@@ -1,4 +1,6 @@
+import unittest
 import warnings
+from datetime import date
 
 from pyspark.ml.linalg import Vectors
 from pyspark.sql import SparkSession
@@ -6,150 +8,101 @@ from pyspark.sql import SparkSession
 from utils.estimate_job_count.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
-import unittest
+from tests.test_file_data import InsertPredictionsIntoLocations as Data
+from tests.test_file_schemas import InsertPredictionsIntoLocations as Schemas
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 
 
 class TestModelNonResWithPir(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_estimate_2021_jobs"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
+        self.cleaned_cqc_ind_df = self.spark.createDataFrame(
+            Data.cleaned_cqc_rows, Schemas.cleaned_cqc_schema
+        )
+        self.care_home_features_df = self.spark.createDataFrame(
+            Data.care_home_features_rows, Schemas.care_home_features_schema
+        )
+        self.predictions_df = self.spark.createDataFrame(
+            Data.predictions_rows, Schemas.predictions_schema
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-    def generate_locations_df(self):
-        # fmt: off
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "estimate_job_count",
-            "estimate_job_count_source",
-            "carehome",
-            "ons_region",
-            "number_of_beds",
-            "snapshot_date"
-        ]
-        rows = [
-            ("1-000000001", "Care home with nursing", None, None, "Y", "South West", 67, "2022-03-29"),
-            ("1-000000002", "Care home without nursing", None, None, "N", "Merseyside", 12, "2022-03-29"),
-            ("1-000000003", "Care home with nursing", None, None, None, "Merseyside", 34, "2022-03-29"),
-            ("1-000000004", "non-residential", 10, "already_populated", "N", None, 0, "2022-03-29"),
-            ("1-000000001", "non-residential", None, None, "N", None, 0, "2022-02-20"),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(rows, columns)
-
-    def generate_features_df(self):
-        # fmt: off
-        feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region",
-                           "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features",
-                           "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
-
-        feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29",
-             Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
-            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None,
-             Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021",
-             "05", "05"),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, None, "2021", "05", "05"),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(
-            feature_rows,
-            schema=feature_columns,
-        )
-
-    def generate_predictions_df(self):
-        # fmt: off
-        columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds",
-                   "snapshot_date", "prediction"]
-
-        rows = [
-            ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", 12.34),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(
-            rows,
-            schema=columns,
-        )
 
     def test_insert_predictions_into_locations_doesnt_remove_existing_estimates(self):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
         df = insert_predictions_into_locations(
-            locations_df, predictions_df, "care_home_model_estimate,"
+            self.cleaned_cqc_ind_df,
+            self.predictions_df,
+            IndCqc.care_home_model,
         )
 
         expected_location_with_prediction = df.where(
-            df["locationid"] == "1-000000004"
+            df[IndCqc.location_id] == "1-000000004"
         ).collect()[0]
-        self.assertEqual(expected_location_with_prediction.estimate_job_count, 10)
+        self.assertEqual(expected_location_with_prediction.estimate_filled_posts, 10)
 
     def test_insert_predictions_into_locations_does_so_when_locationid_matches(
         self,
     ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
         df = insert_predictions_into_locations(
-            locations_df, predictions_df, "care_home_model_estimate"
+            self.cleaned_cqc_ind_df,
+            self.predictions_df,
+            IndCqc.care_home_model,
         )
 
         expected_location_with_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+            (df[IndCqc.location_id] == "1-000000001")
+            & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
         ).collect()[0]
         expected_location_without_prediction = df.where(
-            df["locationid"] == "1-000000003"
+            df[IndCqc.location_id] == "1-000000003"
         ).collect()[0]
-        self.assertEqual(expected_location_with_prediction.estimate_job_count, 56.89)
-        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+        self.assertAlmostEqual(
+            expected_location_with_prediction.estimate_filled_posts, 56.889999389, 8
+        )
+        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
 
     def test_insert_predictions_into_locations_only_inserts_for_matching_snapshots(
         self,
     ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
         df = insert_predictions_into_locations(
-            locations_df, predictions_df, "care_home_model_estimate"
+            self.cleaned_cqc_ind_df,
+            self.predictions_df,
+            IndCqc.care_home_model,
         )
 
         expected_location_without_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-02-20")
+            (df[IndCqc.location_id] == "1-000000001")
+            & (df[IndCqc.cqc_location_import_date] == date(2022, 2, 20))
         ).collect()[0]
-        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
 
     def test_insert_predictions_into_locations_adds_extra_column(self):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
         df = insert_predictions_into_locations(
-            locations_df, predictions_df, "care_home_model_estimate"
+            self.cleaned_cqc_ind_df,
+            self.predictions_df,
+            IndCqc.care_home_model,
         )
-        assert "care_home_model_estimate" in df.columns
+        assert IndCqc.care_home_model in df.columns
 
     def test_insert_model_column_name_into_locations_does_so_when_locationid_matches(
         self,
     ):
-        locations_df = self.generate_locations_df()
-        predictions_df = self.generate_predictions_df()
-
-        model_column_name = "care_home_model_estimate"
+        model_column_name = IndCqc.care_home_model
 
         df = insert_predictions_into_locations(
-            locations_df, predictions_df, model_column_name
+            self.cleaned_cqc_ind_df, self.predictions_df, model_column_name
         )
 
         expected_location_with_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+            (df[IndCqc.location_id] == "1-000000001")
+            & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
         ).collect()[0]
         expected_location_without_prediction = df.where(
-            df["locationid"] == "1-000000003"
+            df[IndCqc.location_id] == "1-000000003"
         ).collect()[0]
-        self.assertEqual(
-            expected_location_with_prediction.care_home_model_estimate, 56.89
+        self.assertAlmostEqual(
+            expected_location_with_prediction.care_home_model, 56.889999389, 8
         )
-        self.assertIsNone(expected_location_without_prediction.care_home_model_estimate)
+        self.assertIsNone(expected_location_without_prediction.care_home_model)
