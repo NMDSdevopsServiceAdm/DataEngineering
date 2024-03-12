@@ -65,7 +65,7 @@ def two_cols_are_equal_and_at_least_minimum_permitted_value(
     ) & selected_column_is_at_least_the_min_permitted_value(first_col)
 
 
-def absolute_difference_between_two_columns(first_col: str, second_col: str):
+def absolute_difference_between_two_columns(first_col: str, second_col: str) -> int:
     return F.abs(F.col(first_col) - F.col(second_col))
 
 
