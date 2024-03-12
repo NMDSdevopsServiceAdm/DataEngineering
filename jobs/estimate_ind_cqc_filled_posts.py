@@ -184,7 +184,7 @@ def populate_estimate_jobs_when_job_count_known(
     )
 
     df = update_dataframe_with_identifying_rule(
-        df, "ascwds_job_count", IndCqc.estimate_filled_posts
+        df, "ascwds_filled_posts", IndCqc.estimate_filled_posts
     )
 
     return df
