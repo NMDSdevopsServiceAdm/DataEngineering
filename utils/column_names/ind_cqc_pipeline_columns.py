@@ -126,6 +126,7 @@ class IndCqcColumns:
     next_filled_posts_unix_time: str = "next_job_count_unix_time"
     interpolation_model: str = "interpolation_model"
     rolling_average: str = "rolling_average"
+    non_res_model: str = "non_res_with_pir_model"
 
 
 # DONT IMPORT FROM BELOW THIS LINE

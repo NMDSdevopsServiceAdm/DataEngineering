@@ -2295,3 +2295,74 @@ class ModelInterpolation:
         ("1-000000003", 4, None, None),
         ("1-000000003", 5, 8.5, 5),
     ]
+
+
+@dataclass
+class ModelNonResidential:
+    cleaned_cqc_ind_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            None,
+            None,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            "Care home without nursing",
+            None,
+            None,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            None,
+            None,
+            None,
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "already_populated",
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+        ),
+        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
+    ]
+    non_res_features_rows = [
+        (
+            "1-000000002",
+            "non-residential",
+            10.0,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+            Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
+            45,
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+            None,
+            None,
+        ),
+    ]
