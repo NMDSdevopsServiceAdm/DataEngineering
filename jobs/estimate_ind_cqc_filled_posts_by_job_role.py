@@ -12,7 +12,7 @@ def main(source: str):
 
 
 if __name__ == "__main__":
-    print("spark job: estimate_by_job_role starting")
+    print("spark job: estimate_ind_cqc_filled_posts_by_job_role starting")
     print(f"job args: {sys.argv}")
 
     source = next(

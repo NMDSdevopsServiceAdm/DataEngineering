@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-import jobs.estimate_by_job_role as job
+import jobs.estimate_ind_cqc_filled_posts_by_job_role as job
 
 
 class BaseSetup(unittest.TestCase):
