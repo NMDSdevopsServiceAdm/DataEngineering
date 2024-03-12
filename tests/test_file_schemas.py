@@ -475,6 +475,7 @@ class CQCLocationsSchema:
             StructField(CQCLClean.provider_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
         ]
     )
 

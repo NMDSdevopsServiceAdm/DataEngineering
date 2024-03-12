@@ -1041,30 +1041,16 @@ class CQCLocationsData:
     ]
 
     locations_for_ons_join_rows = [
-        (
-            "loc-1",
-            "prov-1",
-            date(2020, 1, 1),
-            "PR1 9AB",
-        ),
-        (
-            "loc-2",
-            "prov-1",
-            date(2018, 1, 1),
-            "B69 3EG",
-        ),
+        ("loc-1", "prov-1", date(2020, 1, 1), "PR1 9AB", "Registered"),
+        ("loc-2", "prov-1", date(2018, 1, 1), "B69 3EG", "Deregistered"),
         (
             "loc-3",
             "prov-2",
             date(2020, 1, 1),
             "PR1 9HL",
+            "Deregistered",
         ),
-        (
-            "loc-4",
-            "prov-2",
-            date(2021, 1, 1),
-            "LS1 2AB",
-        ),
+        ("loc-4", "prov-2", date(2021, 1, 1), "LS1 2AB", "Registered"),
     ]
 
     expected_ons_join_with_null_rows = [
