@@ -6,9 +6,6 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     column_value_is_less_than_max_absolute_difference,
     mean_absolute_difference_less_than_max_pct_difference,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
-    ASCWDSFilledPostCalculationConstants as calculation_constant,
-)
 from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
@@ -41,12 +38,10 @@ def calculate_ascwds_filled_posts_absolute_difference_within_range(
                 & (
                     column_value_is_less_than_max_absolute_difference(
                         col_name=absolute_difference,
-                        max_abs_diff=calculation_constant.MAX_ABSOLUTE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
                     )
                     | mean_absolute_difference_less_than_max_pct_difference(
                         abs_dff_col=absolute_difference,
                         comparison_col=total_staff_column,
-                        max_diff_val=calculation_constant.MAX_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT,
                     )
                 )
             ),

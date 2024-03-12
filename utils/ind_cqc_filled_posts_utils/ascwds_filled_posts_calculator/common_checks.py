@@ -28,16 +28,20 @@ def selected_column_is_below_the_min_permitted_value(col_name: str):
     return F.col(col_name) < calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
 
 
-def column_value_is_less_than_max_absolute_difference(
-    col_name: str, max_abs_diff: float
-) -> bool:
-    return F.col(col_name) < max_abs_diff
+def column_value_is_less_than_max_absolute_difference(col_name: str) -> bool:
+    return (
+        F.col(col_name)
+        < calculation_constant.MAX_ABSOLUTE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+    )
 
 
 def mean_absolute_difference_less_than_max_pct_difference(
-    abs_dff_col: str, comparison_col: str, max_diff_val: float
+    abs_dff_col: str, comparison_col: str
 ):
-    return F.col(abs_dff_col) / F.col(comparison_col) < max_diff_val
+    return (
+        F.col(abs_dff_col) / F.col(comparison_col)
+        < calculation_constant.MAX_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
+    )
 
 
 def two_cols_are_equal_and_at_least_minimum_permitted_value(
