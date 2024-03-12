@@ -54,7 +54,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
-
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
             self.test_care_home_features_df,
