@@ -77,4 +77,7 @@ class InvalidPostcodes:
         "WF12 2SE": "WF13 2SE",
         "WR13 3JS": "WF13 3JS",
         "YO61 3FF": "YO61 3FN",
+        # "CB10 4EJ": "CB10 1EJ",
+        # "RG19 3DD": "RH19 3DD",
+        # "BL11 5PE": "BB11 5PE",
     }
