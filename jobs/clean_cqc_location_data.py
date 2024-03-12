@@ -241,6 +241,12 @@ def check_current_against_contemporary_geographies(
         AnalysisException: If column_to_check_for_nulls is mistyped or otherwise not present in cleaned_locations_df/
         SystemExit: If the check finds mismatched postcodes, it will raise this and cause a glue job failure where the output should feature in Glue's logs.
     """
+
+    COLUMNS_TO_FILTER = [
+        CQCLClean.postcode,
+        CQCLClean.location_id,
+    ]
+
     if not column_to_check_for_nulls in cleaned_locations_df.columns:
         raise AnalysisException(
             f"ERROR: A column or function parameter with name {column_to_check_for_nulls} cannot be resolved."
@@ -251,13 +257,9 @@ def check_current_against_contemporary_geographies(
     )
     if not sample_clean_null_df.rdd.isEmpty():
         list_of_tuples = []
-        cols_to_return = [
-            CQCLClean.postcode,
-            CQCLClean.location_id,
-        ]
         data_to_log = (
-            sample_clean_null_df.select(cols_to_return)
-            .groupBy(cols_to_return)
+            sample_clean_null_df.select(COLUMNS_TO_FILTER)
+            .groupBy(COLUMNS_TO_FILTER)
             .count()
             .collect()
         )
