@@ -83,8 +83,8 @@ class IndCqcColumns:
     current_constituancy: str = ONSClean.current_constituancy
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
+    ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
-    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
     service_count: str = "service_count"
     date_diff: str = "date_diff"
     features: str = "features"

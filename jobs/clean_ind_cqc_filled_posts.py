@@ -37,8 +37,14 @@ def main(
 
     # TODO - update filter outliers ascwds_filled_post data
     # locations_df = null_job_count_outliers(locations_df)
+    locations_df = locations_df.withColumn(
+        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
+    )  # temporary code so pipeline runs
 
     # TODO - deduplicate ascwds_filled_posts
+    locations_df = locations_df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup, F.col(IndCQC.ascwds_filled_posts_clean)
+    )  # temporary code so pipeline runs
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
