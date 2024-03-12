@@ -6,7 +6,7 @@ import pyspark.sql
 from utils.utils import convert_days_to_unix_time
 
 from pyspark.sql.types import ArrayType, LongType, FloatType
-from utils.prepare_locations_utils.job_calculator.job_calculator import (
+from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (

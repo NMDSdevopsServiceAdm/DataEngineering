@@ -25,7 +25,7 @@ from utils.estimate_filled_posts.models.non_res_with_pir import (
 )
 
 # Update this once Gary's PR is in
-from utils.prepare_locations_utils.job_calculator.job_calculator import (
+from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
 

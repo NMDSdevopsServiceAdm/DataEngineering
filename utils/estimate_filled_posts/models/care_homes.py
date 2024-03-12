@@ -5,7 +5,7 @@ from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
 from utils.estimate_filled_posts.r2_metric import generate_r2_metric
-from utils.prepare_locations_utils.job_calculator.job_calculator import (
+from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
