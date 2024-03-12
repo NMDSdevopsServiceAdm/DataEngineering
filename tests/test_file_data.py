@@ -8,11 +8,20 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
+    ascwds_filled_posts_absolute_difference_within_range_source_description,
+)
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_only_permitted_value import (
+    ascwds_filled_posts_select_only_value_source_description,
+)
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
+    ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
 
 
@@ -1478,6 +1487,29 @@ class CleanIndCQCData:
         ("1-000008", 500, 475, None, None,),
         # Already populated, shouldn't change it
         ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
+        # Only know total_staff: Return totalstaff (10)
+        ("1-000003", 10, None, 10.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
+        # worker_record_count below min permitted: return totalstaff (23)
+        ("1-000004", 23, 1, 23.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
+        # Only know worker_records: Return worker_record_count (100)
+        ("1-000005", None, 100, 100.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.worker_records_bounded),),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
     ]
     # fmt: on
 

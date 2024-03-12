@@ -1,5 +1,6 @@
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
+from pyspark.sql import DataFrame
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     calculate_ascwds_filled_posts_absolute_difference_within_range,
@@ -13,11 +14,11 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 
 
 def calculate_ascwds_filled_posts(
-    input_df,
+    input_df: DataFrame,
     total_staff_column: str,
     worker_records_column: str,
     output_column_name: str,
-):
+) -> DataFrame:
     source_output_column_name = output_column_name + "_source"
 
     print("Calculating ascwds_filled_posts...")
