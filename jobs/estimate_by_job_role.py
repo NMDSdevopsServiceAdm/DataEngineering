@@ -3,6 +3,11 @@ from utils import utils
 
 
 def main(source: str):
+    """creates job role estimates
+
+    Args:
+        source: path to the estimates ind cqc filled posts data
+    """
     df_estimated_ind_cqc_filled_posts_data = utils.read_from_parquet(source)
 
 
