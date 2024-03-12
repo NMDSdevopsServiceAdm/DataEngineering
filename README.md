@@ -99,6 +99,27 @@ For verbose output add `-v` to the end of the command.
 <br>
 <br>
 
+## Documentation
+The documentation for the work we do here should be located in one of two places, as detailed in the subsections below
+
+### Docstrings
+We have started to implement docstrings within our code, and they are to follow the [Google Docstring Styleguide](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings). Currently the approach is to ensure all functions within jobs have a docstring, then expand that out to classes and modules as desired.
+This relaxed approach is because of Sphinx in the section below, which has been setup to automatically and dynamically pick up docstrings from code within the low-level documentation, and thus over time will become more and more populated. This will allow us to control the growth of documentation and visualise it the way we want to.
+
+### Sphinx
+For low level, close-to-code documentation and technical pipeline components, you can easily launch our documentation server once you've cloned our repository
+- `sphinx-autobuild docs/source/ docs/build/`
+*Note that if you already have a copy of our repository you will need to update your pipenv file* - Try doing this with the following before running the above if you have any issues:
+- `pipenv sync --dev`
+
+#### Making changes to documentation
+Since Sphinx is configured to understand Markdown (.md) files, you can find all of the documentation (excluding the main repo README) within the `docs` directory.
+To understand more about how the Sphinx documentation was setup, consult our [Sphinx page on Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx)
+
+### Confluence
+For high level project documentation, including content such as handovers, ADRs, signposting, private decision logs and guidance otherwise not available or suitable for our public repo, you can request access to our Confluence here: [Skills For Care Data Engineering Confluence Home](https://skillsforcare.atlassian.net/wiki/spaces/DE/overview?homepageId=1011220675)
+
+
 ## Infrastructure
 
 So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
