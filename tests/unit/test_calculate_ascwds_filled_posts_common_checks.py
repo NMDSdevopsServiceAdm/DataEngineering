@@ -111,9 +111,7 @@ class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
             "result",
             F.when(
                 (
-                    job.absolute_difference_between_total_staff_and_worker_records_below_cut_off(
-                        IndCQC.ascwds_filled_posts
-                    )
+                    job.absolute_difference_between_total_staff_and_worker_records_below_cut_off()
                 ),
                 True,
             ).otherwise(False),
@@ -130,9 +128,7 @@ class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
             "result",
             F.when(
                 (
-                    job.percentage_difference_between_total_staff_and_worker_records_below_cut_off(
-                        IndCQC.ascwds_filled_posts
-                    )
+                    job.percentage_difference_between_total_staff_and_worker_records_below_cut_off()
                 ),
                 True,
             ).otherwise(False),
