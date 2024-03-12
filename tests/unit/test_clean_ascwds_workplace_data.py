@@ -12,9 +12,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.utils import (
     get_spark,
     format_date_fields,
@@ -45,9 +42,6 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(
-        "jobs.clean_ascwds_workplace_data.create_column_with_repeated_values_removed"
-    )
     @patch("utils.cleaning_utils.set_column_bounds")
     @patch("utils.utils.format_date_fields", wraps=format_date_fields)
     @patch("utils.utils.write_to_parquet")
@@ -58,14 +52,12 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
         set_column_bounds_mock: Mock,
-        create_column_with_repeated_values_removed_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         self.assertEqual(format_date_fields_mock.call_count, 1)
-        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)

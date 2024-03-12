@@ -35,6 +35,12 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
+
+class MainTests(CleanIndFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch("jobs.clean_ind_filled_post.create_column_with_repeated_values_removed")
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
     @patch("utils.utils.read_from_parquet")
@@ -43,6 +49,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         read_from_parquet_mock,
         calculate_ascwds_filled_posts_mock: Mock,
         write_to_parquet_mock: Mock,
+        create_column_with_repeated_values_removed_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
 
@@ -52,6 +59,7 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         )
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
+        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
