@@ -259,3 +259,6 @@ The main steps I tried that seemed to work, revolved around the followingg steps
 5. This seemed to eliminate the cache of the old variant and load the new one, and if not, try closing the browser too and repeating the steps above, then to re-open the browser.
 
 It is a little fiddly with the autodocs!
+
+### Autolinting Docstrings
+Not in the POC, but there exists python packages such as [pydoclint](https://github.com/jsh9/pydoclint)
