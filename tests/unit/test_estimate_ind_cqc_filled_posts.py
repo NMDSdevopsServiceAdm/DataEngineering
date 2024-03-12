@@ -32,6 +32,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         Keys.day,
         Keys.import_date,
     ]
+    partition_keys_for_metrics = [IndCqc.model_name, IndCqc.model_version]
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -80,11 +81,17 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
 
-        write_to_parquet_patch.assert_called(
+        write_to_parquet_patch.assert_any_call(
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
+        )
+        write_to_parquet_patch.assert_any_call(
+            ANY,
+            self.METRICS_DESTINATION,
+            mode="append",
+            partitionKeys=self.partition_keys_for_metrics,
         )
 
     def test_populate_known_jobs_use_job_count_from_current_date(self):
