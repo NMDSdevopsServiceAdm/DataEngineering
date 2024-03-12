@@ -80,7 +80,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-
+        self.assertEqual(write_to_parquet_patch.call_count, 3)
         write_to_parquet_patch.assert_any_call(
             ANY,
             self.ESTIMATES_DESTINATION,
