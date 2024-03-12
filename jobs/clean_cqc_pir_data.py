@@ -7,10 +7,12 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
+from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as PIRCleanCols,
     CqcPIRCleanedValues as PIRCleanValues,
 )
+
 
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -31,6 +33,10 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     cqc_pir_df = add_care_home_column(cqc_pir_df)
 
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
+
+    cqc_pir_df = cqc_pir_df.withColumnRenamed(
+        PIRCols.people_directly_employed, PIRCleanCols.people_directly_employed
+    )
 
     utils.write_to_parquet(
         cqc_pir_df,

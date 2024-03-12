@@ -8,6 +8,12 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
 
 
 @dataclass
@@ -554,7 +560,7 @@ class CQCProviderData:
 
 
 @dataclass
-class IngestONSData:
+class ONSData:
     sample_rows = [
         ("Yorkshire & Humber", "Leeds", "50.10101"),
         ("Yorkshire & Humber", "York", "52.10101"),
@@ -566,6 +572,16 @@ class IngestONSData:
         ("Yorkshire & Humber", "York", "52.10101"),
         ("Yorkshire & Humber", "Hull", "53.10101"),
     ]
+
+    # fmt: off
+    ons_sample_rows_full = [
+        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+    ]
+    # fmt: on
 
 
 @dataclass
@@ -841,22 +857,22 @@ class CQCLocationsData:
         (
             "loc-1",
             "prov-1",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-2",
             "prov-1",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-3",
             "prov-2",
-            "2020-01-01",
+            "20200101",
         ),
         (
             "loc-4",
             "prov-2",
-            "2021-01-01",
+            "20210101",
         ),
     ]
 
@@ -865,22 +881,19 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "North East",
-            "2020-01-01",
+            date(2020, 1, 1),
         ),
         (
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
-            "North West",
-            "2020-01-01",
+            date(2020, 1, 1),
         ),
         (
-            "prov-2",
+            "prov-3",
             "Sunny Days Domestic Care",
             "Independent",
-            "North East",
-            "2021-01-01",
+            date(2020, 1, 1),
         ),
     ]
 
@@ -890,28 +903,32 @@ class CQCLocationsData:
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-2",
             "prov-1",
             "Apple Tree Care Homes",
             "Local authority",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-3",
             "prov-2",
             "Sunshine Domestic Care",
             "Independent",
-            "2020-01-01",
+            date(2020, 1, 1),
+            date(2020, 1, 1),
         ),
         (
             "loc-4",
             "prov-2",
-            "Sunny Days Domestic Care",
+            "Sunshine Domestic Care",
             "Independent",
-            "2021-01-01",
+            date(2021, 1, 1),
+            date(2020, 1, 1),
         ),
     ]
 
@@ -995,51 +1012,35 @@ class CQCLocationsData:
 
     ons_postcode_directory_rows = [
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
+            "LS12AB",
+            date(2021, 1, 1),
             "Leeds",
-            "Urban city and town",
-            "20210101",
-            "LS1 2AB",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "Leeds",
+            "Yorkshire & Humber",
         ),
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
+            "B693EG",
+            date(2021, 1, 1),
             "York",
-            "Urban city and town",
-            "20210101",
-            "B69 3EG",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "York",
+            "Yorkshire & Humber",
         ),
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
+            "PR19HL",
+            date(2019, 1, 1),
             "Hull",
-            "Urban city and town",
-            "20200101",
-            "PR1 9HL",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "East Riding of Yorkshire",
+            "Yorkshire & Humber",
         ),
     ]
 
-    expected_processed_ons_rows = [
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            "LS1 2AB",
-            date(2021, 1, 1),
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "York",
-            "Urban city and town",
-            "B69 3EG",
-            date(2021, 1, 1),
-        ),
-    ]
-
-    locations_for_contemporary_ons_join_rows = [
+    locations_for_ons_join_rows = [
         (
             "loc-1",
             "prov-1",
@@ -1066,50 +1067,25 @@ class CQCLocationsData:
         ),
     ]
 
-    ons_for_contemporary_ons_join_rows = [
+    expected_ons_join_rows = [
         (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Leeds",
-            "Urban city and town",
-            date(2021, 1, 1),
-            "LS1 2AB",
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "York",
-            "Urban city and town",
-            date(2021, 1, 1),
-            "B69 3EG",
-        ),
-        (
-            "Yorkshire & Humber",
-            "Hertfordshire",
-            "Hull",
-            "Urban city and town",
             date(2019, 1, 1),
-            "PR1 9HL",
-        ),
-    ]
-
-    expected_contemporary_ons_join_rows = [
-        (
+            "PR19AB",
+            date(2020, 1, 1),
             "loc-1",
             "prov-1",
-            date(2020, 1, 1),
-            "PR1 9AB",
             None,
             None,
             None,
             None,
-            date(2019, 1, 1),
+            None,
         ),
         (
+            None,
+            "B693EG",
+            date(2018, 1, 1),
             "loc-2",
             "prov-1",
-            date(2018, 1, 1),
-            "B69 3EG",
             None,
             None,
             None,
@@ -1117,26 +1093,28 @@ class CQCLocationsData:
             None,
         ),
         (
+            date(2019, 1, 1),
+            "PR19HL",
+            date(2020, 1, 1),
             "loc-3",
             "prov-2",
-            date(2020, 1, 1),
-            "PR1 9HL",
-            "Yorkshire & Humber",
-            "Hertfordshire",
             "Hull",
-            "Urban city and town",
-            date(2019, 1, 1),
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "East Riding of Yorkshire",
+            "Yorkshire & Humber",
         ),
         (
+            date(2021, 1, 1),
+            "LS12AB",
+            date(2021, 1, 1),
             "loc-4",
             "prov-2",
-            date(2021, 1, 1),
-            "LS1 2AB",
-            "Yorkshire & Humber",
-            "Hertfordshire",
             "Leeds",
-            "Urban city and town",
+            "Yorkshire & Humber",
             date(2021, 1, 1),
+            "Leeds",
+            "Yorkshire & Humber",
         ),
     ]
 
@@ -1464,3 +1442,272 @@ class MergeIndCQCData:
         ("loc-3", "Independent",),
     ]
     # fmt: on
+
+
+@dataclass
+class NonResFeaturesData(object):
+    # fmt: off
+    rows = [
+        ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "Surrey", "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", '2022', '02', '01', '20220201'),
+        ("1-1783948", date(2022, 1, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "Surrey",  "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", '2022', '01', '01', '20220101'),
+        ("1-10235302415", date(2022, 1, 12), "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None, "Surrey",  "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3", "Registered", '2022', '01', '12', '20220112'),
+        ("1-1060912125", date(2022, 1, 12), "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, None, "Surrey",  "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "rule_2", "Registered", '2022', '01', '12', '20220212'),
+        ("1-107095666", date(2022, 3, 1), "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None, "Lewisham",  "N", "Independent", "(England/Wales) Urban city and town", "rule_3", "Registered", '2022', '03', '01', '20220301'),
+        ("1-108369587", date(2022, 3, 8), "South West", 0, ["Specialist college service"], "non-residential", 15, None, None, "Lewisham",  "N", "Independent", "(England/Wales) Rural town and fringe in a sparse setting", "rule_1", "Registered", '2022', '03', '08', '20220308'),
+        ("1-000000001", date(2022, 3, 8), "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Lewisham",  "Y", "Local authority", "(England/Wales) Urban city and town", "rule_1", "Registered", '2022', '03', '08', '20220308'),
+        ("1-10894414510", date(2022, 3, 8), "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Lewisham",  "Y", "Independent", "(England/Wales) Urban city and town", "rule_3", "Registered", '2022', '03', '08', '20220308'),
+        ("1-108950835", date(2022, 3, 15), "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Lewisham",  "Y", "", "(England/Wales) Urban city and town", "rule_1", "Registered", '2022', '03', '15', '20220315'),
+        ("1-108967195", date(2022, 4, 22), "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "Lewisham",  "N", "Independent", "(England/Wales) Urban city and town", "rule_3", "Registered", '2022', '04', '22', '20220422'),
+    ]
+    # fmt: on
+
+
+@dataclass
+class CareHomeFeaturesData:
+    clean_merged_data_rows = [
+        (
+            "1-1783948",
+            date(2022, 2, 1),
+            "South East",
+            0,
+            ["Domiciliary care service"],
+            5,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-1783948",
+            date(2022, 1, 1),
+            "South East",
+            0,
+            ["Domiciliary care service"],
+            5,
+            67.0,
+            "N",
+            "Independent",
+            "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-348374832",
+            date(2022, 1, 12),
+            "Merseyside",
+            0,
+            ["Extra Care housing services"],
+            None,
+            34.0,
+            "N",
+            "Local authority",
+            "(England/Wales) Rural hamlet and isolated dwellings",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-683746776",
+            date(2022, 1, 1),
+            "Merseyside",
+            0,
+            [
+                "Doctors treatment service",
+                "Long term conditions services",
+                "Shared Lives",
+            ],
+            34,
+            None,
+            "N",
+            "Local authority",
+            "(England/Wales) Rural hamlet and isolated dwellings",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-10478686",
+            date(2022, 1, 1),
+            "London Senate",
+            0,
+            ["Community health care services - Nurses Agency only"],
+            None,
+            None,
+            "N",
+            "",
+            "(England/Wales) Rural hamlet and isolated dwellings",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-10235302415",
+            date(2022, 1, 12),
+            "South West",
+            0,
+            ["Urgent care services", "Supported living service"],
+            17,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Rural hamlet and isolated dwellings",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-1060912125",
+            date(2022, 1, 12),
+            "Yorkshire and The Humbler",
+            0,
+            ["Hospice services at home"],
+            34,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Rural hamlet and isolated dwellings",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-107095666",
+            date(2022, 3, 1),
+            "Yorkshire and The Humbler",
+            0,
+            [
+                "Specialist college service",
+                "Community based services for people who misuse substances",
+                "Urgent care services'",
+            ],
+            34,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-108369587",
+            date(2022, 3, 8),
+            "South West",
+            0,
+            ["Specialist college service"],
+            15,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Rural town and fringe in a sparse setting",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-10758359583",
+            date(2022, 3, 8),
+            None,
+            0,
+            ["Mobile doctors service"],
+            17,
+            None,
+            "N",
+            "Local authority",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-000000001",
+            date(2022, 3, 8),
+            "Yorkshire and The Humbler",
+            67,
+            ["Care home service with nursing"],
+            None,
+            None,
+            "Y",
+            "Local authority",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-10894414510",
+            date(2022, 3, 8),
+            "Yorkshire and The Humbler",
+            10,
+            ["Care home service with nursing"],
+            0,
+            25.0,
+            "Y",
+            "Independent",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-108950835",
+            date(2022, 3, 15),
+            "Merseyside",
+            20,
+            ["Care home service without nursing"],
+            23,
+            None,
+            "Y",
+            "",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "1-108967195",
+            date(2022, 4, 22),
+            "(pseudo) Wales",
+            0,
+            ["Supported living service", "Acute services with overnight beds"],
+            11,
+            None,
+            "N",
+            "Independent",
+            "(England/Wales) Urban city and town",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+    ]
+    # fmt: on
+
+    filter_to_ind_care_home_rows = rows = [
+        ("Y", CQCLValues.independent),
+        ("N", CQCLValues.independent),
+        ("Y", CQCLValues.local_authority),
+        ("Y", ""),
+        ("Y", None),
+    ]
+
+    expected_filtered_to_ind_care_home_rows = rows = [
+        ("Y", CQCLValues.independent),
+    ]
