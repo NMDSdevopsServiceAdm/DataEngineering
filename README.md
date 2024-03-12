@@ -105,6 +105,7 @@ The documentation for the work we do here should be located in one of two places
 ### Docstrings
 We have started to implement docstrings within our code, and they are to follow the [Google Docstring Styleguide](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings). Currently the approach is to ensure all functions within jobs have a docstring, then expand that out to classes and modules as desired.
 This relaxed approach is because of Sphinx in the section below, which has been setup to automatically and dynamically pick up docstrings from code within the low-level documentation, and thus over time will become more and more populated. This will allow us to control the growth of documentation and visualise it the way we want to.
+There is a [discussion and comparison of different Docstring standards on our Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1033994246/Docstrings+StyleGuides+and+Resources)
 
 ### Sphinx
 For low level, close-to-code documentation and technical pipeline components, you can easily launch our documentation server once you've cloned our repository
