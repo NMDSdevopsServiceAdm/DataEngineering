@@ -14,8 +14,8 @@
               "Parameters": {
                 "JobName": "${clean_ascwds_workplace_job_name}",
                 "Arguments": {
-                  "--ascwds_workplace_source": "s3://${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--ascwds_workplace_destination": "s3://${dataset_bucket_uri}domain=ASCWDS/dataset=workplace_cleaned/"
+                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                  "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
                 }
               },
               "End": true
@@ -31,8 +31,8 @@
               "Parameters": {
                 "JobName": "${clean_cqc_pir_data_job_name}",
                 "Arguments": {
-                  "--cqc_pir_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                  "--cleaned_cqc_pir_destination": "s3://${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
+                  "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
+                  "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
                 }
               },
               "ResultPath": null,
@@ -55,8 +55,8 @@
                       "Parameters": {
                         "JobName": "${clean_ons_data_job_name}",
                         "Arguments": {
-                          "--ons_source": "s3://${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--cleaned_ons_destination": "s3://${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
                         }
                       },
                       "End": true
@@ -72,8 +72,8 @@
                       "Parameters": {
                         "JobName": "${clean_cqc_provider_data_job_name}",
                         "Arguments": {
-                          "--cqc_provider_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
-                          "--cqc_provider_cleaned": "s3://${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
+                          "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
                         }
                       },
                       "End": true
@@ -89,10 +89,10 @@
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
-                  "--cleaned_cqc_provider_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                  "--cleaned_ons_postcode_directory_source": "s3://${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "s3://${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                  "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
+                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
                 }
               },
               "End": true
@@ -115,10 +115,10 @@
               "Parameters": {
                 "JobName": "${merge_ind_cqc_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--cleaned_cqc_pir_source": "s3://${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                  "--cleaned_ascwds_workplace_source": "s3://${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--destination": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
+                  "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
               "Next": "Run clean ind cqc data job"
@@ -129,8 +129,8 @@
               "Parameters": {
                 "JobName": "${clean_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
-                  "--merged_ind_cqc_source": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                  "--cleaned_ind_cqc_destination": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
                 }
               },
               "Next": "Feature engineering"
@@ -147,8 +147,8 @@
                       "Parameters": {
                         "JobName": "${prepare_care_home_ind_cqc_features_job_name}",
                         "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                          "--care_home_ind_cqc_features_destination": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
+                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
+                          "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
                         }
                       },
                       "End": true
@@ -160,12 +160,12 @@
                   "States": {
                     "Run non res features job": {
                       "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
                         "JobName": "${prepare_non_res_ind_cqc_features_job_name}",
                         "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                          "--care_home_ind_cqc_features_destination": "s3://${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features/"
+                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
+                          "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features/"
                         }
                       },
                       "End": true
@@ -194,9 +194,9 @@
               "Parameters": {
                 "JobName": "${clean_ascwds_worker_job_name}",
                 "Arguments": {
-                  "--ascwds_worker_source": "s3://${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--ascwds_workplace_cleaned_source": "s3://${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--ascwds_worker_destination": "s3://${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+                  "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                  "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
                 }
               },
               "Next": "run ascwds crawler"
