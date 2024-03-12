@@ -9,14 +9,13 @@
 This library is under heavy development
 ```
 
-For further info on the steps I took to get this far, check out the {doc}`walkthrough`
-Read through the steps in the {ref}`Setting up` section to get started, and from there explore the specific sections of relevance
+For further info on the steps I took to get this far, check out the [Walkthrough on Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx)
+Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx#Setting-up) section to get started, and from there explore the specific sections of relevance
 
 ```{toctree}
 :caption: 'Contents:'
 :maxdepth: 2
    
-walkthrough
 usage
 currentReadme
 sample_docpage
