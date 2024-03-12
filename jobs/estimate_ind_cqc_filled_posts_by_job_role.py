@@ -1,5 +1,10 @@
 import sys
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(source: str, output_dir: str):
@@ -12,10 +17,7 @@ def main(source: str, output_dir: str):
     df_estimated_ind_cqc_filled_posts_data = utils.read_from_parquet(source)
 
     utils.write_to_parquet(
-        df_estimated_ind_cqc_filled_posts_data,
-        output_dir,
-        "overwrite",
-        ["year", "month", "day", "import_date"],
+        df_estimated_ind_cqc_filled_posts_data, output_dir, "overwrite", PartitionKeys
     )
 
 

@@ -1,6 +1,11 @@
 import unittest
 from unittest.mock import ANY, patch, Mock
 import jobs.estimate_ind_cqc_filled_posts_by_job_role as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 class BaseSetup(unittest.TestCase):
@@ -21,5 +26,5 @@ class MainTests(BaseSetup):
 
         read_from_parquet_mock.assert_called_once_with(SOURCE)
         write_to_parquet_mock.assert_called_once_with(
-            ANY, OUTPUT_DIR, "overwrite", ["year", "month", "day", "import_date"]
+            ANY, OUTPUT_DIR, "overwrite", PartitionKeys
         )
