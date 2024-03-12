@@ -24,7 +24,7 @@ def model_non_residential_with_pir(
 
     non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
 
-    non_null_job_count_df = non_residential_with_pir_predictions.where(
+    non_null_filled_posts_df = non_residential_with_pir_predictions.where(
         non_residential_with_pir_predictions[
             IndCqc.ascwds_filled_posts_dedup_clean
         ].isNotNull()
@@ -32,7 +32,7 @@ def model_non_residential_with_pir(
 
     metrics_info = {
         IndCqc.r2: generate_r2_metric(
-            non_null_job_count_df,
+            non_null_filled_posts_df,
             IndCqc.prediction,
             IndCqc.ascwds_filled_posts_dedup_clean,
         ),

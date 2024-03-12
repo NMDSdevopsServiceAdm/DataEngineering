@@ -10,16 +10,16 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 def model_primary_service_rolling_average(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
-    df_with_job_count_only = filter_to_locations_with_known_job_count(df)
+    df_with_filled_posts_only = filter_to_locations_with_known_filled_posts(df)
 
-    job_count_sum_and_count_df = (
-        calculate_job_count_aggregates_per_service_and_time_period(
-            df_with_job_count_only
+    filled_posts_sum_and_count_df = (
+        calculate_filled_posts_aggregates_per_service_and_time_period(
+            df_with_filled_posts_only
         )
     )
 
     rolling_average_df = create_rolling_average_column(
-        job_count_sum_and_count_df, number_of_days
+        filled_posts_sum_and_count_df, number_of_days
     )
 
     df = join_rolling_average_into_df(df, rolling_average_df)
@@ -27,14 +27,14 @@ def model_primary_service_rolling_average(
     return df
 
 
-def filter_to_locations_with_known_job_count(df: DataFrame) -> DataFrame:
+def filter_to_locations_with_known_filled_posts(df: DataFrame) -> DataFrame:
     return df.where(
         (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
         & (F.col(IndCqc.ascwds_filled_posts_dedup_clean) > 0)
     )
 
 
-def calculate_job_count_aggregates_per_service_and_time_period(
+def calculate_filled_posts_aggregates_per_service_and_time_period(
     df: DataFrame,
 ) -> DataFrame:
     return df.groupBy(IndCqc.primary_service_type, IndCqc.unix_time).agg(

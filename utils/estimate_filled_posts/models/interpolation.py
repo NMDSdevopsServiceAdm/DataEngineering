@@ -15,10 +15,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 def model_interpolation(df: DataFrame) -> DataFrame:
-    known_job_count_df = filter_to_locations_with_a_known_job_count(df)
+    known_filled_posts_df = filter_to_locations_with_a_known_filled_posts(df)
 
     first_and_last_submission_date_df = (
-        calculate_first_and_last_submission_date_per_location(known_job_count_df)
+        calculate_first_and_last_submission_date_per_location(known_filled_posts_df)
     )
 
     all_dates_df = convert_first_and_last_known_years_into_exploded_df(
@@ -26,7 +26,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     )
 
     all_dates_df = merge_known_values_with_exploded_dates(
-        all_dates_df, known_job_count_df
+        all_dates_df, known_filled_posts_df
     )
 
     all_dates_df = interpolate_values_for_all_dates(all_dates_df)
@@ -47,7 +47,7 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     return df
 
 
-def filter_to_locations_with_a_known_job_count(
+def filter_to_locations_with_a_known_filled_posts(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = df.select(
@@ -92,10 +92,10 @@ def create_date_range(
 
 
 def merge_known_values_with_exploded_dates(
-    df: DataFrame, known_job_count_df: DataFrame
+    df: DataFrame, known_filled_posts_df: DataFrame
 ) -> DataFrame:
-    df = leftouter_join_on_locationid_and_unix_time(df, known_job_count_df)
-    df = add_unix_time_for_known_job_count(df)
+    df = leftouter_join_on_locationid_and_unix_time(df, known_filled_posts_df)
+    df = add_unix_time_for_known_filled_posts(df)
     return df
 
 
@@ -105,7 +105,7 @@ def leftouter_join_on_locationid_and_unix_time(
     return df.join(other_df, [IndCqc.location_id, IndCqc.unix_time], "leftouter")
 
 
-def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
+def add_unix_time_for_known_filled_posts(df: DataFrame) -> DataFrame:
     return df.withColumn(
         IndCqc.filled_posts_unix_time,
         F.when(
@@ -196,18 +196,18 @@ def calculate_interpolated_values_in_new_column(
 
 def interpolate_values(
     unix_time: str,
-    previous_job_count_unix_time: str,
-    next_job_count_unix_time: str,
-    job_count: str,
-    previous_job_count: str,
-    next_job_count: str,
+    previous_filled_posts_unix_time: str,
+    next_filled_posts_unix_time: str,
+    filled_posts: str,
+    previous_filled_posts: str,
+    next_filled_posts: str,
 ) -> float:
-    if previous_job_count_unix_time == next_job_count_unix_time:
-        return job_count
+    if previous_filled_posts_unix_time == next_filled_posts_unix_time:
+        return filled_posts
     else:
-        job_count_per_unix_time_ratio = (next_job_count - previous_job_count) / (
-            next_job_count_unix_time - previous_job_count_unix_time
-        )
-        return previous_job_count + job_count_per_unix_time_ratio * (
-            unix_time - previous_job_count_unix_time
+        filled_posts_per_unix_time_ratio = (
+            next_filled_posts - previous_filled_posts
+        ) / (next_filled_posts_unix_time - previous_filled_posts_unix_time)
+        return previous_filled_posts + filled_posts_per_unix_time_ratio * (
+            unix_time - previous_filled_posts_unix_time
         )

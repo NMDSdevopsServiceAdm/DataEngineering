@@ -12,10 +12,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 def model_extrapolation(df: DataFrame) -> DataFrame:
-    filtered_df = filter_to_locations_who_have_a_job_count_at_some_point(df)
+    filtered_df = filter_to_locations_who_have_a_filled_posts_at_some_point(df)
 
     filtered_with_first_and_last_submitted_data_df = (
-        add_job_count_and_rolling_average_for_first_and_last_submission(filtered_df)
+        add_filled_posts_and_rolling_average_for_first_and_last_submission(filtered_df)
     )
 
     df_with_extrapolated_values = add_extrapolated_values(
@@ -37,7 +37,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     return df_with_extrapolated_values
 
 
-def filter_to_locations_who_have_a_job_count_at_some_point(
+def filter_to_locations_who_have_a_filled_posts_at_some_point(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     max_filled_posts_per_location_df = calculate_max_filled_posts_for_each_location(df)
@@ -63,19 +63,19 @@ def filter_to_known_values_only(
     return df.where(F.col(IndCqc.max_filled_posts) > 0.0)
 
 
-def add_job_count_and_rolling_average_for_first_and_last_submission(
+def add_filled_posts_and_rolling_average_for_first_and_last_submission(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = add_first_and_last_submission_date_cols(df)
 
-    df = add_job_count_and_rolling_average_for_specific_time_period(
+    df = add_filled_posts_and_rolling_average_for_specific_time_period(
         df,
         IndCqc.first_submission_time,
         IndCqc.first_filled_posts,
         IndCqc.first_rolling_average,
     )
 
-    df = add_job_count_and_rolling_average_for_specific_time_period(
+    df = add_filled_posts_and_rolling_average_for_specific_time_period(
         df,
         IndCqc.last_submission_time,
         IndCqc.last_filled_posts,
@@ -88,11 +88,11 @@ def add_job_count_and_rolling_average_for_first_and_last_submission(
 def add_first_and_last_submission_date_cols(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    populated_job_count_df = df.where(
+    populated_filled_posts_df = df.where(
         F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull()
     )
 
-    first_and_last_submission_date_df = populated_job_count_df.groupBy(
+    first_and_last_submission_date_df = populated_filled_posts_df.groupBy(
         IndCqc.location_id
     ).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
@@ -102,21 +102,21 @@ def add_first_and_last_submission_date_cols(
     return left_join_on_locationid(df, first_and_last_submission_date_df)
 
 
-def add_job_count_and_rolling_average_for_specific_time_period(
+def add_filled_posts_and_rolling_average_for_specific_time_period(
     df: pyspark.sql.DataFrame,
     unix_time_period: str,
-    new_job_count_col_name: str,
+    new_filled_posts_col_name: str,
     new_rolling_average_col_name: str,
 ) -> pyspark.sql.DataFrame:
     unix_time_df = df.where(F.col(unix_time_period) == F.col(IndCqc.unix_time))
     unix_time_df = unix_time_df.withColumnRenamed(
-        IndCqc.ascwds_filled_posts_dedup_clean, new_job_count_col_name
+        IndCqc.ascwds_filled_posts_dedup_clean, new_filled_posts_col_name
     )
     unix_time_df = unix_time_df.withColumnRenamed(
         IndCqc.rolling_average_model, new_rolling_average_col_name
     )
     unix_time_df = unix_time_df.select(
-        IndCqc.location_id, new_job_count_col_name, new_rolling_average_col_name
+        IndCqc.location_id, new_filled_posts_col_name, new_rolling_average_col_name
     )
 
     return left_join_on_locationid(df, unix_time_df)

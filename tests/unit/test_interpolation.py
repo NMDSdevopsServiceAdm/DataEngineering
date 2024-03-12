@@ -70,8 +70,8 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(df[8][IndCqc.interpolation_model], 10.0)
         self.assertEqual(df[9][IndCqc.interpolation_model], 15.0)
 
-    def test_filter_to_locations_with_a_known_job_count(self):
-        filtered_df = job.filter_to_locations_with_a_known_job_count(
+    def test_filter_to_locations_with_a_known_filled_posts(self):
+        filtered_df = job.filter_to_locations_with_a_known_filled_posts(
             self.interpolation_df
         )
 

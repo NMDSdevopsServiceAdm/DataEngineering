@@ -93,12 +93,12 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             partitionKeys=self.partition_keys_for_metrics,
         )
 
-    def test_populate_known_jobs_use_job_count_from_current_date(self):
+    def test_populate_known_jobs_use_filled_posts_from_current_date(self):
         test_df = self.spark.createDataFrame(
             Data.populate_known_jobs_rows, Schemas.populate_known_jobs_schema
         )
 
-        returned_df = job.populate_estimate_jobs_when_job_count_known(test_df)
+        returned_df = job.populate_estimate_jobs_when_filled_posts_known(test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_populate_known_jobs_rows, Schemas.populate_known_jobs_schema
         )
@@ -119,7 +119,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_name="care_home_jobs_prediction",
             latest_import_date="20220601",
             job_run_id="abc1234",
-            job_name="estimate_job_counts",
+            job_name="estimate_filled_postss",
         )
         df = write_to_parquet_mock.call_args[0][0]
 
@@ -139,7 +139,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.first()[IndCqc.model_version], "1.0.0")
         self.assertEqual(df.first()[IndCqc.model_name], "care_home_jobs_prediction")
         self.assertEqual(df.first()[IndCqc.latest_import_date], "20220601")
-        self.assertEqual(df.first()[IndCqc.job_name], "estimate_job_counts")
+        self.assertEqual(df.first()[IndCqc.job_name], "estimate_filled_postss")
         self.assertIsInstance(df.first()[IndCqc.metrics_date], datetime)
 
     def test_number_of_days_constant_is_eighty_eight(self):

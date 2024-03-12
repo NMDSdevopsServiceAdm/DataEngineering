@@ -88,7 +88,9 @@ def main(
         new_col_name=IndCqc.unix_time,
     )
 
-    cleaned_ind_cqc_df = populate_estimate_jobs_when_job_count_known(cleaned_ind_cqc_df)
+    cleaned_ind_cqc_df = populate_estimate_jobs_when_filled_posts_known(
+        cleaned_ind_cqc_df
+    )
 
     cleaned_ind_cqc_df = model_primary_service_rolling_average(
         cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
@@ -169,7 +171,7 @@ def get_max_import_date(df: DataFrame, import_date_column: str) -> str:
     return date_as_string
 
 
-def populate_estimate_jobs_when_job_count_known(
+def populate_estimate_jobs_when_filled_posts_known(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = df.withColumn(

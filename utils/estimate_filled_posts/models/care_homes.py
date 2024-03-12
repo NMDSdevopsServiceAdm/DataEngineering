@@ -23,13 +23,13 @@ def model_care_homes(
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
-    non_null_job_count_df = care_home_predictions.where(
+    non_null_filled_posts_df = care_home_predictions.where(
         care_home_predictions[IndCqc.ascwds_filled_posts_dedup_clean].isNotNull()
     )
 
     metrics_info = {
         IndCqc.r2: generate_r2_metric(
-            non_null_job_count_df,
+            non_null_filled_posts_df,
             IndCqc.prediction,
             IndCqc.ascwds_filled_posts_dedup_clean,
         ),

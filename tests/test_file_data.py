@@ -1825,11 +1825,11 @@ class EstimateIndCQCFilledPostsData:
     ]
 
     expected_populate_known_jobs_rows = [
-        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_job_count"),
+        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_filled_posts"),
         ("1-000000002", None, date(2022, 3, 4), None, None),
         ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
-        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_job_count"),
-        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_job_count"),
+        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_filled_posts"),
+        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_filled_posts"),
     ]
 
 
@@ -1853,7 +1853,7 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing"),
         ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing"),
     ]
-    known_job_count_rows = [
+    known_filled_posts_rows = [
         ("1-000000001", 1672531200, 4.0, "non-residential"),
         ("1-000000002", 1672531200, 6.0, "non-residential"),
         ("1-000000003", 1675209600, 20.0, "non-residential"),
@@ -2315,16 +2315,30 @@ class GenerateRSquaredMetric:
 class ModelInterpolation:
     interpolation_rows = [
         ("1-000000001", date(2023, 1, 1), 1672531200, None, None, None),
-        ("1-000000001", date(2023, 1, 2), 1672617600, 30.0, 30.0, "ascwds_job_count"),
+        (
+            "1-000000001",
+            date(2023, 1, 2),
+            1672617600,
+            30.0,
+            30.0,
+            "ascwds_filled_posts",
+        ),
         ("1-000000001", date(2023, 1, 3), 1672704000, None, None, None),
         ("1-000000002", date(2023, 1, 1), 1672531200, None, None, None),
-        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0, 4.0, "ascwds_job_count"),
+        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0, 4.0, "ascwds_filled_posts"),
         ("1-000000002", date(2023, 1, 5), 1672876800, None, None, None),
-        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0, 5.0, "ascwds_job_count"),
-        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0, 5.0, "ascwds_job_count"),
+        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0, 5.0, "ascwds_filled_posts"),
+        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0, 5.0, "ascwds_filled_posts"),
         ("1-000000002", date(2023, 1, 11), 1673395200, None, None, None),
         ("1-000000002", date(2023, 1, 13), 1673568000, None, None, None),
-        ("1-000000002", date(2023, 1, 15), 1673740800, 20.0, 20.0, "ascwds_job_count"),
+        (
+            "1-000000002",
+            date(2023, 1, 15),
+            1673740800,
+            20.0,
+            20.0,
+            "ascwds_filled_posts",
+        ),
         ("1-000000002", date(2023, 1, 17), 1673913600, None, 21.0, "other_source"),
         ("1-000000002", date(2023, 1, 19), 1674086400, None, None, None),
     ]

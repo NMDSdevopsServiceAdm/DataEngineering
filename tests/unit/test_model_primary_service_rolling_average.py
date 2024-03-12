@@ -19,8 +19,8 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.input_df = self.spark.createDataFrame(
             Data.input_rows, Schemas.input_schema
         )
-        self.known_job_count_df = self.spark.createDataFrame(
-            Data.known_job_count_rows, Schemas.known_job_count_schema
+        self.known_filled_posts_df = self.spark.createDataFrame(
+            Data.known_filled_posts_rows, Schemas.known_filled_posts_schema
         )
         self.rolling_sum_df = self.spark.createDataFrame(
             Data.rolling_sum_rows, Schemas.rolling_sum_schema
@@ -47,16 +47,16 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.assertEqual(df[4][IndCqc.rolling_average_model], 30.0)
         self.assertEqual(df[15][IndCqc.rolling_average_model], 70.25)
 
-    def test_filter_to_locations_with_known_job_count(self):
-        df = job.filter_to_locations_with_known_job_count(self.input_df)
+    def test_filter_to_locations_with_known_filled_posts(self):
+        df = job.filter_to_locations_with_known_filled_posts(self.input_df)
         self.assertEqual(df.count(), 10)
         self.assertEqual(
             df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNull()).count(), 0
         )
 
-    def test_calculate_job_count_aggregates_per_service_and_time_period(self):
-        df = job.calculate_job_count_aggregates_per_service_and_time_period(
-            self.known_job_count_df
+    def test_calculate_filled_posts_aggregates_per_service_and_time_period(self):
+        df = job.calculate_filled_posts_aggregates_per_service_and_time_period(
+            self.known_filled_posts_df
         )
         self.assertEqual(df.count(), 8)
         df = df.sort(
@@ -88,7 +88,7 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.assertEqual(df[6]["rolling_total"], 21.0)
 
     def test_join_rolling_average_into_df(self):
-        main_df = self.known_job_count_df
+        main_df = self.known_filled_posts_df
         rolling_avg_df = self.rolling_avg_df
 
         df = job.join_rolling_average_into_df(main_df, rolling_avg_df)

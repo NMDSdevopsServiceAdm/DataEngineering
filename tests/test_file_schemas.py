@@ -945,7 +945,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.primary_service_type, StringType(), False),
         ]
     )
-    known_job_count_schema = StructType(
+    known_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
