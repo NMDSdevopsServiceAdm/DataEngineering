@@ -502,6 +502,13 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+
+    expected_split_registered_schema = StructType(
+        [
+            *expected_ons_join_schema,
         ]
     )
 

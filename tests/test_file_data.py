@@ -1067,7 +1067,7 @@ class CQCLocationsData:
         ),
     ]
 
-    expected_ons_join_rows = [
+    expected_ons_join_with_null_rows = [
         (
             date(2019, 1, 1),
             "PR19AB",
@@ -1079,6 +1079,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Registered",
         ),
         (
             None,
@@ -1091,6 +1092,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Deregistered",
         ),
         (
             date(2019, 1, 1),
@@ -1103,6 +1105,7 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "East Riding of Yorkshire",
             "Yorkshire & Humber",
+            "Deregistered",
         ),
         (
             date(2021, 1, 1),
@@ -1115,6 +1118,36 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "Leeds",
             "Yorkshire & Humber",
+            "Registered",
+        ),
+    ]
+
+    expected_split_registered_no_nulls_rows = [
+        (
+            date(2019, 1, 1),
+            "PR19AB",
+            date(2020, 1, 1),
+            "loc-1",
+            "prov-1",
+            "Cardiff",
+            "Welsh Street",
+            date(2021, 1, 1),
+            "Some field in the hills",
+            "Welsh Region",
+            "Registered",
+        ),
+        (
+            date(2021, 1, 1),
+            "LS12AB",
+            date(2021, 1, 1),
+            "loc-4",
+            "prov-2",
+            "Leeds",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "Leeds",
+            "Yorkshire & Humber",
+            "Registered",
         ),
     ]
 
