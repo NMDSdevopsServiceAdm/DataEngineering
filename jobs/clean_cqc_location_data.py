@@ -8,6 +8,7 @@ import utils.cleaning_utils as cUtils
 from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
+from pyspark.sql.utils import AnalysisException
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -223,20 +224,25 @@ def split_dataframe_into_registered_and_deregistered_rows(
 
 def check_current_against_contemporary_geographies(
     cleaned_locations_df: DataFrame,
-    column_to_check_for_nulls: str = ONSClean.current_ons_import_date,
+    column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
 ) -> DataFrame:
     """
     Checks a cleaned locations df for any mismatches of contemporary versus current geographies based on the column_to_check_for_nulls,
     where this column is a subset of columns resulting from a left join and so could contain null values.
     """
+    if not column_to_check_for_nulls in cleaned_locations_df.columns:
+        raise AnalysisException(
+            f"ERROR: A column or function parameter with name {column_to_check_for_nulls} cannot be resolved."
+        )
+
     sample_clean_null_df = cleaned_locations_df.filter(
         F.col(column_to_check_for_nulls).isNull()
     )
-    if sample_clean_null_df.rdd.isEmpty() == False:
+    if not sample_clean_null_df.rdd.isEmpty():
         list_of_tuples = []
         cols_to_return = [
-            CQCL.postcode,
-            CQCL.location_id,
+            CQCLClean.postcode,
+            CQCLClean.location_id,
         ]
         data_to_log = (
             sample_clean_null_df.select(cols_to_return)
@@ -247,11 +253,12 @@ def check_current_against_contemporary_geographies(
 
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
-        sys.exit(
+        raise SystemExit(
             f"Error: Problem matching contemporary to current ons data.\nHere is a list of their {CQCL.postcode} and {CQCL.location_id}:\n{list_of_tuples}"
         )
-    print("No mismatches found, returning original dataframe")
-    return cleaned_locations_df
+    else:
+        print("No mismatches found, returning original dataframe")
+        return cleaned_locations_df
 
 
 if __name__ == "__main__":
