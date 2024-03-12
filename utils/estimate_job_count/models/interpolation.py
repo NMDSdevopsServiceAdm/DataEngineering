@@ -4,25 +4,14 @@ from pyspark.sql import DataFrame, Window
 import pyspark.sql
 
 from utils.utils import convert_days_to_unix_time
-from utils.estimate_job_count.column_names import (
-    LOCATION_ID,
-    UNIX_TIME,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    INTERPOLATION_MODEL,
-)
+
 from pyspark.sql.types import ArrayType, LongType, FloatType
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
-
-FIRST_SUBMISSION_TIME = "first_submission_time"
-LAST_SUBMISSION_TIME = "last_submission_time"
-PREVIOUS_JOB_COUNT = "previous_job_count"
-NEXT_JOB_COUNT = "next_job_count"
-JOB_COUNT_UNIX_TIME = "job_count_unix_time"
-PREVIOUS_JOB_COUNT_UNIX_TIME = "previous_job_count_unix_time"
-NEXT_JOB_COUNT_UNIX_TIME = "next_job_count_unix_time"
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 
 
 def model_interpolation(df: DataFrame) -> DataFrame:
@@ -45,13 +34,14 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 
     df = df.withColumn(
-        ESTIMATE_JOB_COUNT,
+        IndCqc.estimate_filled_posts,
         F.when(
-            F.col(ESTIMATE_JOB_COUNT).isNotNull(), F.col(ESTIMATE_JOB_COUNT)
-        ).otherwise(F.col(INTERPOLATION_MODEL)),
+            F.col(IndCqc.estimate_filled_posts).isNotNull(),
+            F.col(IndCqc.estimate_filled_posts),
+        ).otherwise(F.col(IndCqc.interpolation_model)),
     )
     df = update_dataframe_with_identifying_rule(
-        df, INTERPOLATION_MODEL, ESTIMATE_JOB_COUNT
+        df, IndCqc.interpolation_model, IndCqc.estimate_filled_posts
     )
 
     return df
@@ -60,17 +50,19 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 def filter_to_locations_with_a_known_job_count(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    df = df.select(LOCATION_ID, UNIX_TIME, JOB_COUNT)
+    df = df.select(
+        IndCqc.location_id, IndCqc.unix_time, IndCqc.ascwds_filled_posts_dedup_clean
+    )
 
-    return df.where(F.col(JOB_COUNT).isNotNull())
+    return df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
 
 
 def calculate_first_and_last_submission_date_per_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.groupBy(LOCATION_ID).agg(
-        F.min(UNIX_TIME).cast("integer").alias(FIRST_SUBMISSION_TIME),
-        F.max(UNIX_TIME).cast("integer").alias(LAST_SUBMISSION_TIME),
+    return df.groupBy(IndCqc.location_id).agg(
+        F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
+        F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
     )
 
 
@@ -80,9 +72,11 @@ def convert_first_and_last_known_years_into_exploded_df(
     date_range_udf = F.udf(create_date_range, ArrayType(LongType()))
 
     return df.withColumn(
-        "unix_time",
-        F.explode(date_range_udf(FIRST_SUBMISSION_TIME, LAST_SUBMISSION_TIME)),
-    ).drop(FIRST_SUBMISSION_TIME, LAST_SUBMISSION_TIME)
+        IndCqc.unix_time,
+        F.explode(
+            date_range_udf(IndCqc.first_submission_time, IndCqc.last_submission_time)
+        ),
+    ).drop(IndCqc.first_submission_time, IndCqc.last_submission_time)
 
 
 def create_date_range(
@@ -108,30 +102,37 @@ def merge_known_values_with_exploded_dates(
 def leftouter_join_on_locationid_and_unix_time(
     df: DataFrame, other_df: DataFrame
 ) -> DataFrame:
-    return df.join(other_df, [LOCATION_ID, UNIX_TIME], "leftouter")
+    return df.join(other_df, [IndCqc.location_id, IndCqc.unix_time], "leftouter")
 
 
 def add_unix_time_for_known_job_count(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        JOB_COUNT_UNIX_TIME,
-        F.when((F.col(JOB_COUNT).isNotNull()), F.col(UNIX_TIME)).otherwise(F.lit(None)),
+        IndCqc.filled_posts_unix_time,
+        F.when(
+            (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull()),
+            F.col(IndCqc.unix_time),
+        ).otherwise(F.lit(None)),
     )
 
 
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
     df = input_previous_and_next_values_into_df(df)
-    df = calculate_interpolated_values_in_new_column(df, INTERPOLATION_MODEL)
+    df = calculate_interpolated_values_in_new_column(df, IndCqc.interpolation_model)
     return df
 
 
 def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
-    df = get_previous_value_in_column(df, JOB_COUNT, PREVIOUS_JOB_COUNT)
     df = get_previous_value_in_column(
-        df, JOB_COUNT_UNIX_TIME, PREVIOUS_JOB_COUNT_UNIX_TIME
+        df, IndCqc.ascwds_filled_posts_dedup_clean, IndCqc.previous_filled_posts
     )
-    df = get_next_value_in_new_column(df, JOB_COUNT, NEXT_JOB_COUNT)
+    df = get_previous_value_in_column(
+        df, IndCqc.filled_posts_unix_time, IndCqc.previous_filled_posts_unix_time
+    )
+    df = get_next_value_in_new_column(
+        df, IndCqc.ascwds_filled_posts_dedup_clean, IndCqc.next_filled_posts
+    )
     return get_next_value_in_new_column(
-        df, JOB_COUNT_UNIX_TIME, NEXT_JOB_COUNT_UNIX_TIME
+        df, IndCqc.filled_posts_unix_time, IndCqc.next_filled_posts_unix_time
     )
 
 
@@ -148,7 +149,9 @@ def get_previous_value_in_column(
 
 def create_window_for_previous_value() -> Window:
     return (
-        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(-sys.maxsize, 0)
+        Window.partitionBy(IndCqc.location_id)
+        .orderBy(IndCqc.unix_time)
+        .rowsBetween(-sys.maxsize, 0)
     )
 
 
@@ -165,7 +168,9 @@ def get_next_value_in_new_column(
 
 def create_window_for_next_value() -> Window:
     return (
-        Window.partitionBy(LOCATION_ID).orderBy(UNIX_TIME).rowsBetween(0, sys.maxsize)
+        Window.partitionBy(IndCqc.location_id)
+        .orderBy(IndCqc.unix_time)
+        .rowsBetween(0, sys.maxsize)
     )
 
 
@@ -177,16 +182,16 @@ def calculate_interpolated_values_in_new_column(
     df = df.withColumn(
         new_column_name,
         interpol_udf(
-            UNIX_TIME,
-            PREVIOUS_JOB_COUNT_UNIX_TIME,
-            NEXT_JOB_COUNT_UNIX_TIME,
-            JOB_COUNT,
-            PREVIOUS_JOB_COUNT,
-            NEXT_JOB_COUNT,
+            IndCqc.unix_time,
+            IndCqc.previous_filled_posts_unix_time,
+            IndCqc.next_filled_posts_unix_time,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.previous_filled_posts,
+            IndCqc.next_filled_posts,
         ),
     )
 
-    return df.select(LOCATION_ID, UNIX_TIME, INTERPOLATION_MODEL)
+    return df.select(IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model)
 
 
 def interpolate_values(

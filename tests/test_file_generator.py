@@ -1461,7 +1461,7 @@ def generate_data_for_calculating_rolling_average_column():
     df = spark.createDataFrame(rows, schema=schema)
 
     return df
-"""
+
 
 
 def generate_data_for_interpolation_model():
@@ -1605,7 +1605,7 @@ def generate_data_for_interpolating_values_for_all_dates_df():
 
     return df
 
-"""
+
 def generate_data_for_extrapolation_model():
     spark = utils.get_spark()
 
