@@ -17,7 +17,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks as job
 
 
-class TestJobCountTotalStaffEqualWorkerRecords(unittest.TestCase):
+class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
     common_checks_rows = [("1-000000001", 9, 2, None), ("1-000000002", 2, 2, 2.0)]
     common_checks_schema = StructType(
         [
