@@ -488,6 +488,18 @@ module "prepare_care_home_ind_cqc_features_job" {
   }
 }
 
+module "estimate_by_job_role_job" {
+  source          = "../modules/glue-job"
+  script_name     = "estimate_by_job_role.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimated_ind_cqc_filled_posts_data" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
