@@ -266,7 +266,7 @@ def check_current_against_contemporary_geographies(
 
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
-        raise SystemExit(
+        raise TypeError(
             f"Error: Problem matching contemporary to current ons data. Here is a list of their {CQCL.postcode} and {CQCL.location_id}: {list_of_tuples}"
         )
     else:

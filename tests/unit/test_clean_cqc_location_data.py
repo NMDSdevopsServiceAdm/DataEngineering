@@ -384,7 +384,7 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
         input_registered_df.show()
         # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
         expected_tuple = ("PR19AB", "loc-1", "count: 1")
-        with self.assertRaises(SystemExit) as context:
+        with self.assertRaises(TypeError) as context:
             job.check_current_against_contemporary_geographies(input_registered_df)
 
         self.assertTrue(
