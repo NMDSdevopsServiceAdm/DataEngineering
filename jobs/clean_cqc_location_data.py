@@ -228,7 +228,18 @@ def check_current_against_contemporary_geographies(
 ) -> DataFrame:
     """
     Checks a cleaned locations df for any mismatches of contemporary versus current geographies based on the column_to_check_for_nulls,
-    where this column is a subset of columns resulting from a left join and so could contain null values.
+    where this column is a one column from a subset of columns resulting from a left join and so could contain null values.
+
+    Args:
+        cleaned_locations_df (DataFrame): A cleaned locations df that must contain at least the column_to_check_for_nulls, postcode and locationId.
+        column_to_check_for_nulls (str): Default - current_ons_import_date, should be any one of the left-joined columns to check for null entries.
+
+    Returns:
+        cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
+
+    Raises:
+        AnalysisException: If column_to_check_for_nulls is mistyped or otherwise not present in cleaned_locations_df/
+        SystemExit: If the check finds mismatched postcodes, it will raise this and cause a glue job failure where the output should feature in Glue's logs.
     """
     if not column_to_check_for_nulls in cleaned_locations_df.columns:
         raise AnalysisException(
