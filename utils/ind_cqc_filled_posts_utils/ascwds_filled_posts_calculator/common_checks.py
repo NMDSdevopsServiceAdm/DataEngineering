@@ -3,13 +3,15 @@ import pyspark.sql.functions as F
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     ASCWDSFilledPostCalculationConstants as calculation_constant,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 
 absolute_difference: str = "absolute_difference"
 
 
 def ascwds_filled_posts_is_null() -> bool:
-    return F.col(IndCqcColumns.ascwds_filled_posts).isNull()
+    return F.col(IndCQC.ascwds_filled_posts).isNull()
 
 
 def selected_column_is_not_null(col_name: str) -> bool:
@@ -33,7 +35,7 @@ def selected_column_is_below_the_min_permitted_value(col_name: str) -> bool:
 def absolute_difference_between_total_staff_and_worker_records_below_cut_off() -> bool:
     return (
         absolute_difference_between_two_columns(
-            IndCqcColumns.total_staff_bounded, IndCqcColumns.worker_records_bounded
+            IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
         )
         < calculation_constant.MAX_ABSOLUTE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
     )
@@ -45,10 +47,10 @@ def percentage_difference_between_total_staff_and_worker_records_below_cut_off()
     return (
         (
             absolute_difference_between_two_columns(
-                IndCqcColumns.total_staff_bounded, IndCqcColumns.worker_records_bounded
+                IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
             )
             / average_of_two_columns(
-                IndCqcColumns.total_staff_bounded, IndCqcColumns.worker_records_bounded
+                IndCQC.total_staff_bounded, IndCQC.worker_records_bounded
             )
         )
         < calculation_constant.MAX_PERCENTAGE_DIFFERENCE_BETWEEN_TOTAL_STAFF_AND_WORKER_RECORD_COUNT
