@@ -77,10 +77,6 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 @dataclass
@@ -783,6 +779,36 @@ class MergeIndCQCData:
 
 
 @dataclass
+class CleanIndCQCData:
+    merged_schema_for_cleaning_job = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+            StructField(CQCLClean.current_cssr, StringType(), True),
+            StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
+            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+        ]
+    )
+
+    calculate_ascwds_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class NonResFeaturesSchema(object):
     basic_schema = StructType(
         [
@@ -799,7 +825,6 @@ class NonResFeaturesSchema(object):
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),

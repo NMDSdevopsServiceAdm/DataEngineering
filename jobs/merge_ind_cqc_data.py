@@ -55,12 +55,8 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.location_id,
     AWPClean.establishment_id,
     AWPClean.organisation_id,
-    AWPClean.total_staff,
     AWPClean.total_staff_bounded,
-    AWPClean.total_staff_deduplicated,
-    AWPClean.worker_records,
     AWPClean.worker_records_bounded,
-    AWPClean.worker_records_deduplicated,
 ]
 
 cleaned_cqc_pir_columns_to_import = [
@@ -101,18 +97,6 @@ def main(
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
-
-    # temporary code to be replaced by job calculator (needed now so later jobs can be tested)
-    ind_cqc_location_df = ind_cqc_location_df.withColumn(
-        "job_count", F.lit(None).cast(FloatType())
-    )
-    ind_cqc_location_df = ind_cqc_location_df.withColumn(
-        "job_count_unfiltered", F.lit(None).cast(FloatType())
-    )
-    ind_cqc_location_df = ind_cqc_location_df.withColumn(
-        "job_count_unfiltered_source", F.lit(None).cast(StringType())
-    )
-    # end of temporary code
 
     utils.write_to_parquet(
         ind_cqc_location_df,
