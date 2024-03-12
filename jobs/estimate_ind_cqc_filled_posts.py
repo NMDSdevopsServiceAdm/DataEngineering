@@ -40,6 +40,7 @@ cleaned_ind_cqc_columns = [
     IndCqc.ascwds_filled_posts_source,
     IndCqc.ascwds_filled_posts_dedup_clean,
     IndCqc.current_cssr,
+    IndCqc.current_region,
     IndCqc.cqc_sector,
 ]
 
