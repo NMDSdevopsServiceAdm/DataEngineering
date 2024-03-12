@@ -3,7 +3,7 @@ import warnings
 
 from pyspark.sql import SparkSession
 
-import utils.estimate_job_count.models.interpolation as job
+import utils.estimate_filled_posts.models.interpolation as job
 from utils import utils
 from tests.test_file_data import ModelInterpolation as Data
 from tests.test_file_schemas import ModelInterpolation as Schemas

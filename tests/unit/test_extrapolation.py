@@ -2,7 +2,7 @@ import unittest
 import warnings
 
 
-import utils.estimate_job_count.models.extrapolation as job
+import utils.estimate_filled_posts.models.extrapolation as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,

@@ -2,7 +2,7 @@ import unittest
 import warnings
 from datetime import date
 
-from utils.estimate_job_count.models.non_res_with_pir import (
+from utils.estimate_filled_posts.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
 from pyspark.ml.linalg import Vectors

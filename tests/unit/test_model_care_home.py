@@ -5,7 +5,7 @@ from datetime import date
 from pyspark.sql import SparkSession
 from pyspark.ml.linalg import Vectors
 
-from utils.estimate_job_count.models.care_homes import model_care_homes
+from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from tests.test_file_data import ModelCareHomes as Data
 from tests.test_file_schemas import ModelCareHomes as Schemas
 from utils import utils

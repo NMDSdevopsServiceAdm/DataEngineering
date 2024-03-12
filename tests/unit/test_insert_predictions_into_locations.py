@@ -5,7 +5,7 @@ from datetime import date
 from pyspark.ml.linalg import Vectors
 from pyspark.sql import SparkSession
 
-from utils.estimate_job_count.insert_predictions_into_locations import (
+from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
 from tests.test_file_data import InsertPredictionsIntoLocations as Data

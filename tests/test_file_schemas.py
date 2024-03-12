@@ -13,7 +13,7 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.estimate_job_count.column_names import (
+from utils.estimate_filled_posts.column_names import (
     LOCATION_ID,
     SNAPSHOT_DATE,
     PEOPLE_DIRECTLY_EMPLOYED,

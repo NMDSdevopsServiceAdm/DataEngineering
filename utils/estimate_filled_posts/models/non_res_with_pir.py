@@ -1,10 +1,10 @@
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import DataFrame
 
-from utils.estimate_job_count.insert_predictions_into_locations import (
+from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
-from utils.estimate_job_count.r2_metric import generate_r2_metric
+from utils.estimate_filled_posts.r2_metric import generate_r2_metric
 from utils.prepare_locations_utils.job_calculator.job_calculator import (
     update_dataframe_with_identifying_rule,
 )
@@ -13,18 +13,21 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def model_care_homes(
+def model_non_residential_with_pir(
     locations_df: DataFrame, features_df: DataFrame, model_path: str
-) -> tuple:
+):
     gbt_trained_model = GBTRegressionModel.load(model_path)
-    features_df = features_df.where(features_df[IndCqc.care_home] == "Y")
+
+    features_df = features_df.where(features_df[IndCqc.care_home] == "N")
     features_df = features_df.where(features_df[IndCqc.current_region].isNotNull())
-    features_df = features_df.where(features_df[IndCqc.number_of_beds].isNotNull())
+    features_df = features_df.where(features_df[IndCqc.people_directly_employed] > 0)
 
-    care_home_predictions = gbt_trained_model.transform(features_df)
+    non_residential_with_pir_predictions = gbt_trained_model.transform(features_df)
 
-    non_null_job_count_df = care_home_predictions.where(
-        care_home_predictions[IndCqc.ascwds_filled_posts_dedup_clean].isNotNull()
+    non_null_job_count_df = non_residential_with_pir_predictions.where(
+        non_residential_with_pir_predictions[
+            IndCqc.ascwds_filled_posts_dedup_clean
+        ].isNotNull()
     )
 
     metrics_info = {
@@ -35,12 +38,14 @@ def model_care_homes(
         ),
         IndCqc.percentage_data: (features_df.count() / locations_df.count()) * 100,
     }
-    locations_df = insert_predictions_into_locations(
-        locations_df, care_home_predictions, IndCqc.care_home_model
-    )
 
+    locations_df = insert_predictions_into_locations(
+        locations_df, non_residential_with_pir_predictions, IndCqc.non_res_model
+    )
     locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_homes", IndCqc.estimate_filled_posts
+        locations_df,
+        "model_non_res_with_pir",
+        IndCqc.estimate_filled_posts,
     )
 
     return locations_df, metrics_info

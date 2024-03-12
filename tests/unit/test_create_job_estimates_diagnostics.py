@@ -14,7 +14,7 @@ from tests.test_file_data import (
     CreateJobEstimatesDiagnosticsData as Data,
 )
 import jobs.create_job_estimates_diagnostics as job
-from utils.estimate_job_count.column_names import (
+from utils.estimate_filled_posts.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
     JOB_COUNT,
