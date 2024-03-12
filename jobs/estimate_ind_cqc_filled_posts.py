@@ -84,7 +84,7 @@ def main(
         cleaned_ind_cqc_df,
         date_col=IndCqc.cqc_location_import_date,
         date_format="yyyy-MM-dd",
-        new_col_name="unix_time",
+        new_col_name=IndCqc.unix_time,
     )
 
     cleaned_ind_cqc_df = populate_estimate_jobs_when_job_count_known(cleaned_ind_cqc_df)
@@ -95,7 +95,6 @@ def main(
 
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
 
-    # Care homes model
     cleaned_ind_cqc_df, care_home_metrics_info = model_care_homes(
         cleaned_ind_cqc_df,
         carehome_features_df,
@@ -107,8 +106,8 @@ def main(
     care_home_model_info = care_home_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
-        r2=care_home_metrics_info["r2"],
-        data_percentage=care_home_metrics_info["data_percentage"],
+        r2=care_home_metrics_info[IndCqc.r2],
+        data_percentage=care_home_metrics_info[IndCqc.percentage_data],
         model_version=care_home_model_info[-2],
         model_name="care_home_with_nursing_historical_jobs_prediction",
         latest_import_date=latest_import_date,
@@ -116,7 +115,6 @@ def main(
         job_name=job_name,
     )
 
-    # Non-res with PIR data model
     (
         cleaned_ind_cqc_df,
         non_residential_with_pir_metrics_info,
@@ -129,8 +127,8 @@ def main(
     non_res_model_info = non_res_model_directory.split("/")
     write_metrics_df(
         metrics_destination,
-        r2=non_residential_with_pir_metrics_info["r2"],
-        data_percentage=non_residential_with_pir_metrics_info["data_percentage"],
+        r2=non_residential_with_pir_metrics_info[IndCqc.r2],
+        data_percentage=non_residential_with_pir_metrics_info[IndCqc.percentage_data],
         model_version=non_res_model_info[-2],
         model_name="non_residential_with_pir",
         latest_import_date=latest_import_date,
@@ -139,20 +137,20 @@ def main(
     )
 
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
-        "rolling_average", "rolling_average_model"
+        IndCqc.rolling_average, IndCqc.rolling_average_model
     )
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
         IndCqc.estimate_filled_posts,
         F.when(
             F.col(IndCqc.estimate_filled_posts).isNotNull(),
             F.col(IndCqc.estimate_filled_posts),
-        ).otherwise(F.col("rolling_average_model")),
+        ).otherwise(F.col(IndCqc.rolling_average_model)),
     )
     cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
-        cleaned_ind_cqc_df, "rolling_average_model", IndCqc.estimate_filled_posts
+        cleaned_ind_cqc_df, IndCqc.rolling_average_model, IndCqc.estimate_filled_posts
     )
 
-    print("Completed estimated job counts")
+    print("Completed estimate independent CQC filled posts")
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 

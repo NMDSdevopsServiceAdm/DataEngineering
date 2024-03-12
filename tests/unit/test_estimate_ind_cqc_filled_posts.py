@@ -118,23 +118,23 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         df = write_to_parquet_mock.call_args[0][0]
 
         expected_columns = [
-            "r2",
-            "percentage_data",
-            "latest_import_date",
-            "job_run_id",
-            "job_name",
-            "generated_metric_date",
-            "model_name",
-            "model_version",
+            IndCqc.r2,
+            IndCqc.percentage_data,
+            IndCqc.latest_import_date,
+            IndCqc.job_run_id,
+            IndCqc.job_name,
+            IndCqc.metrics_date,
+            IndCqc.model_name,
+            IndCqc.model_version,
         ]
 
         self.assertEqual(sorted(expected_columns), sorted(df.columns))
         self.assertAlmostEqual(df.first()["r2"], 0.99, places=2)
-        self.assertEqual(df.first()["model_version"], "1.0.0")
-        self.assertEqual(df.first()["model_name"], "care_home_jobs_prediction")
-        self.assertEqual(df.first()["latest_import_date"], "20220601")
-        self.assertEqual(df.first()["job_name"], "estimate_job_counts")
-        self.assertIsInstance(df.first()["generated_metric_date"], datetime)
+        self.assertEqual(df.first()[IndCqc.model_version], "1.0.0")
+        self.assertEqual(df.first()[IndCqc.model_name], "care_home_jobs_prediction")
+        self.assertEqual(df.first()[IndCqc.latest_import_date], "20220601")
+        self.assertEqual(df.first()[IndCqc.job_name], "estimate_job_counts")
+        self.assertIsInstance(df.first()[IndCqc.metrics_date], datetime)
 
     def test_number_of_days_constant_is_eighty_eight(self):
         self.assertEqual(job.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 88)
