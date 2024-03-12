@@ -13,7 +13,7 @@ from tests.test_file_schemas import CleanIndCQCData as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    IndCqcColumns,
+    IndCqcColumns as IndCQC,
 )
 
 
@@ -62,8 +62,8 @@ class CleanIndFilledPostsTests(unittest.TestCase):
 
     def test_replace_zero_beds_with_null(self):
         columns = [
-            IndCqcColumns.location_id,
-            IndCqcColumns.number_of_beds,
+            IndCQC.location_id,
+            IndCQC.number_of_beds,
         ]
         rows = [
             ("1-000000001", None),
@@ -76,17 +76,17 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
-        self.assertEqual(df[1][IndCqcColumns.number_of_beds], None)
-        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[0][IndCQC.number_of_beds], None)
+        self.assertEqual(df[1][IndCQC.number_of_beds], None)
+        self.assertEqual(df[2][IndCQC.number_of_beds], 1)
 
     def test_populate_missing_care_home_number_of_beds(self):
         schema = StructType(
             [
-                StructField(IndCqcColumns.location_id, StringType(), True),
-                StructField(IndCqcColumns.cqc_location_import_date, DateType(), True),
-                StructField(IndCqcColumns.care_home, StringType(), True),
-                StructField(IndCqcColumns.number_of_beds, IntegerType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.cqc_location_import_date, DateType(), True),
+                StructField(IndCQC.care_home, StringType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
 
@@ -104,22 +104,20 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         df = job.populate_missing_care_home_number_of_beds(input_df)
         self.assertEqual(df.count(), 7)
 
-        df = df.sort(
-            IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date
-        ).collect()
-        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
-        self.assertEqual(df[1][IndCqcColumns.number_of_beds], None)
-        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 1)
-        self.assertEqual(df[3][IndCqcColumns.number_of_beds], 1)
-        self.assertEqual(df[4][IndCqcColumns.number_of_beds], 1)
-        self.assertEqual(df[5][IndCqcColumns.number_of_beds], 1)
-        self.assertEqual(df[6][IndCqcColumns.number_of_beds], 3)
+        df = df.sort(IndCQC.location_id, IndCQC.cqc_location_import_date).collect()
+        self.assertEqual(df[0][IndCQC.number_of_beds], None)
+        self.assertEqual(df[1][IndCQC.number_of_beds], None)
+        self.assertEqual(df[2][IndCQC.number_of_beds], 1)
+        self.assertEqual(df[3][IndCQC.number_of_beds], 1)
+        self.assertEqual(df[4][IndCQC.number_of_beds], 1)
+        self.assertEqual(df[5][IndCQC.number_of_beds], 1)
+        self.assertEqual(df[6][IndCQC.number_of_beds], 3)
 
     def test_filter_to_care_homes_with_known_beds(self):
         columns = [
-            IndCqcColumns.location_id,
-            IndCqcColumns.care_home,
-            IndCqcColumns.number_of_beds,
+            IndCQC.location_id,
+            IndCQC.care_home,
+            IndCQC.number_of_beds,
         ]
         rows = [
             ("1-000000001", "Y", None),
@@ -133,12 +131,12 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0][IndCqcColumns.location_id], "1-000000003")
+        self.assertEqual(df[0][IndCQC.location_id], "1-000000003")
 
     def test_average_beds_per_location(self):
         columns = [
-            IndCqcColumns.location_id,
-            IndCqcColumns.number_of_beds,
+            IndCQC.location_id,
+            IndCQC.number_of_beds,
         ]
         rows = [
             ("1-000000001", 1),
@@ -153,15 +151,15 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         df = job.average_beds_per_location(df)
         self.assertEqual(df.count(), 3)
 
-        df = df.sort(IndCqcColumns.location_id).collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][job.average_number_of_beds], 1)
         self.assertEqual(df[1][job.average_number_of_beds], 2)
         self.assertEqual(df[2][job.average_number_of_beds], 3)
 
     def test_replace_null_beds_with_average(self):
         columns = [
-            IndCqcColumns.location_id,
-            IndCqcColumns.number_of_beds,
+            IndCQC.location_id,
+            IndCQC.number_of_beds,
             job.average_number_of_beds,
         ]
         rows = [
@@ -175,14 +173,14 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 3)
 
         df = df.collect()
-        self.assertEqual(df[0][IndCqcColumns.number_of_beds], None)
-        self.assertEqual(df[1][IndCqcColumns.number_of_beds], 1)
-        self.assertEqual(df[2][IndCqcColumns.number_of_beds], 2)
+        self.assertEqual(df[0][IndCQC.number_of_beds], None)
+        self.assertEqual(df[1][IndCQC.number_of_beds], 1)
+        self.assertEqual(df[2][IndCQC.number_of_beds], 2)
 
     def test_replace_null_beds_with_average_doesnt_change_known_beds(self):
         columns = [
-            IndCqcColumns.location_id,
-            IndCqcColumns.number_of_beds,
+            IndCQC.location_id,
+            IndCQC.number_of_beds,
             job.average_number_of_beds,
         ]
         rows = [
@@ -194,7 +192,81 @@ class CleanIndFilledPostsTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
 
         df = df.collect()
-        self.assertEqual(df[0][IndCqcColumns.number_of_beds], 1)
+        self.assertEqual(df[0][IndCQC.number_of_beds], 1)
+
+
+class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+        self.test_purge_outdated_df = self.spark.createDataFrame(
+            Data.repeated_value_rows, Schemas.repeated_value_schema
+        )
+        self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
+            Data.expected_without_repeated_values_rows,
+            Schemas.expected_without_repeated_values_schema,
+        )
+        self.returned_df = job.create_column_with_repeated_values_removed(
+            self.test_purge_outdated_df,
+            column_to_clean="integer_column",
+        )
+        self.OUTPUT_COLUMN = "integer_column_deduplicated"
+
+        self.returned_data = self.returned_df.sort(
+            IndCQC.location_id, IndCQC.cqc_location_import_date
+        ).collect()
+        self.expected_data = self.expected_df_without_repeated_values_df.sort(
+            IndCQC.location_id, IndCQC.cqc_location_import_date
+        ).collect()
+
+    def test_first_submitted_value_is_included_in_new_column(self):
+        self.assertEqual(
+            self.returned_data[0][self.OUTPUT_COLUMN],
+            self.expected_data[0][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[4][self.OUTPUT_COLUMN],
+            self.expected_data[4][self.OUTPUT_COLUMN],
+        )
+
+    def test_submitted_value_is_included_if_it_wasnt_repeated(self):
+        self.assertEqual(
+            self.returned_data[1][self.OUTPUT_COLUMN],
+            self.expected_data[1][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[5][self.OUTPUT_COLUMN],
+            self.expected_data[5][self.OUTPUT_COLUMN],
+        )
+
+    def test_repeated_value_entered_as_null_value(self):
+        self.assertEqual(
+            self.returned_data[2][self.OUTPUT_COLUMN],
+            self.expected_data[2][self.OUTPUT_COLUMN],
+        )
+        self.assertEqual(
+            self.returned_data[7][self.OUTPUT_COLUMN],
+            self.expected_data[7][self.OUTPUT_COLUMN],
+        )
+
+    def test_value_which_has_appeared_before_but_isnt_a_repeat_is_included(self):
+        self.assertEqual(
+            self.returned_data[6][self.OUTPUT_COLUMN],
+            self.expected_data[6][self.OUTPUT_COLUMN],
+        )
+
+    def test_returned_df_matches_expected_df(self):
+        self.assertEqual(
+            self.returned_data,
+            self.expected_data,
+        )
+
+    def test_returned_df_has_one_additional_column(self):
+        self.assertEqual(
+            len(self.returned_df.columns), len(self.test_purge_outdated_df.columns) + 1
+        )
+
+    def test_returned_df_has_same_number_of_rows(self):
+        self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
 if __name__ == "__main__":
