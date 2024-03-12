@@ -97,7 +97,7 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
-        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.ascwds_filled_posts_dedup_clean,
         Keys.year,
         Keys.month,
         Keys.day,

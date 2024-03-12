@@ -43,7 +43,7 @@ def main(
 
     # TODO - deduplicate ascwds_filled_posts
     locations_df = locations_df.withColumn(
-        IndCQC.ascwds_filled_posts_dedup, F.col(IndCQC.ascwds_filled_posts_clean)
+        IndCQC.ascwds_filled_posts_dedup_clean, F.col(IndCQC.ascwds_filled_posts_clean)
     )  # temporary code so pipeline runs
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
