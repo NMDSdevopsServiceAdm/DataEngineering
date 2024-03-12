@@ -1140,7 +1140,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField("job_count_unix_time", LongType(), True),
+            StructField(IndCQC.filled_posts_unix_time, LongType(), True),
         ]
     )
 
