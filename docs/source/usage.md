@@ -44,37 +44,3 @@ Check out the code in this file to see the magic.
 ```{eval-rst}
 .. autofunction:: utils.utils.latest_datefield_for_grouping
 ```
-
-
-## Setting a docstring convention.
-### Resources
-As hinted in the manual examples, there are better ways to structure Docstrings.
-
-There are a few articles that I've had a look at:
-
-- https://betterprogramming.pub/the-guide-to-python-docstrings-3d40340e824b
-- https://docs.python-guide.org/writing/documentation/
-- https://www.dataquest.io/blog/documenting-in-python-with-docstrings/
-
-But the specific PEP guidelines around comments and Docstrings are in these resources:
-
-- https://peps.python.org/pep-0008/#comments
-- https://peps.python.org/pep-0257/#specification
-
-### What standards exist
-The [PEP docstring standards](https://peps.python.org/pep-0257/#specification), in it's simplest sense, indicate 2 types of doc strings:
-1. [Single Line Docstrings](https://peps.python.org/pep-0257/#one-line-docstrings)
-2. [Multi Line Docstrings](https://peps.python.org/pep-0257/#multi-line-docstrings)
-
-Which you are free to read at your leisure, but I think it's more beneficial to focus on the four primary types of docstrings, all of which follow the above recommendations:
-
-- [NumPy/SciPy docstrings](https://numpydoc.readthedocs.io/en/latest/format.html)
-- [Google docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
-- [reStructuredText](https://docutils.sourceforge.io/rst.html)
-- [Epytext](https://epydoc.sourceforge.net/epytext.html)
-
-Looking through these, I feel like Epytext is a good resource for understanding what characters can be present in Docstrings, but ultimately the Google docstrings example is most closely aligned with my own view on docstrings. Some core components:
-
-- It agrees with me on not requiring docstrings for unit tests
-- Allows one line docstrings, but encourages more
-- Providers a template which should work with sphinx, as shown in the above example.
