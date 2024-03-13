@@ -55,8 +55,8 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
         TempColNames.upper_percentile,
     )
 
-    care_homes_within_standardised_residual_cutoff_df = create_filtered_job_count_df(
-        data_to_filter_df
+    care_homes_within_standardised_residual_cutoff_df = (
+        create_filled_posts_clean_col_in_filtered_df(data_to_filter_df)
     )
 
     care_homes_with_filtered_col_df = join_filtered_col_into_care_home_df(
@@ -64,7 +64,7 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
     )
 
     data_not_relevant_to_filter_df = (
-        add_job_counts_without_filtering_to_data_outside_of_this_filter(
+        add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
             data_not_relevant_to_filter_df
         )
     )
@@ -145,8 +145,8 @@ def calculate_standardised_residuals(
     df = calculate_expected_filled_posts_based_on_number_of_beds(
         df, expected_filled_posts_per_banded_bed_count_df
     )
-    df = calculate_job_count_residuals(df)
-    df = calculate_job_count_standardised_residual(df)
+    df = calculate_filled_post_residuals(df)
+    df = calculate_filled_post_standardised_residual(df)
 
     return df
 
@@ -170,7 +170,7 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
     return df
 
 
-def calculate_job_count_residuals(df: DataFrame) -> DataFrame:
+def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempColNames.residual,
         F.col(IndCQC.ascwds_filled_posts) - F.col(TempColNames.expected_filled_posts),
@@ -179,7 +179,7 @@ def calculate_job_count_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_job_count_standardised_residual(
+def calculate_filled_post_standardised_residual(
     df: DataFrame,
 ) -> DataFrame:
     df = df.withColumn(
@@ -227,7 +227,7 @@ def calculate_percentile(
     return df
 
 
-def create_filtered_job_count_df(
+def create_filled_posts_clean_col_in_filtered_df(
     df: DataFrame,
 ) -> DataFrame:
     within_boundary_df = df.filter(
@@ -264,7 +264,7 @@ def join_filtered_col_into_care_home_df(
     )
 
 
-def add_job_counts_without_filtering_to_data_outside_of_this_filter(
+def add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
     df: DataFrame,
 ) -> DataFrame:
     return df.withColumn(
