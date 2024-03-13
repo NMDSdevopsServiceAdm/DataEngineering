@@ -1,5 +1,3 @@
-# TODO - Update all this!
-
 import unittest
 import warnings
 
@@ -87,8 +85,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_filled_posts_per_bed_ratio(df)
 
         df = df.collect()
-        self.assertEqual(df[0]["jobs_per_bed_ratio"], 0.05)
-        self.assertEqual(df[1]["jobs_per_bed_ratio"], 2.0)
+        self.assertEqual(df[0]["filled_posts_per_bed_ratio"], 0.05)
+        self.assertEqual(df[1]["filled_posts_per_bed_ratio"], 2.0)
 
     def test_create_banded_bed_count_column(self):
         schema = StructType(
@@ -115,7 +113,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("jobs_per_bed_ratio", DoubleType(), True),
+                StructField("filled_posts_per_bed_ratio", DoubleType(), True),
             ]
         )
         rows = [
@@ -127,17 +125,21 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
         df = df.collect()
-        self.assertAlmostEquals(df[0]["avg_jobs_per_bed_ratio"], 1.2468, places=3)
-        self.assertAlmostEquals(df[1]["avg_jobs_per_bed_ratio"], 1.12346, places=3)
+        self.assertAlmostEquals(
+            df[0]["avg_filled_posts_per_bed_ratio"], 1.2468, places=3
+        )
+        self.assertAlmostEquals(
+            df[1]["avg_filled_posts_per_bed_ratio"], 1.12346, places=3
+        )
 
     def test_calculate_standardised_residuals(self):
-        expected_jobs_schema = StructType(
+        expected_filled_posts_schema = StructType(
             [
                 StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
+                StructField("avg_filled_posts_per_bed_ratio", DoubleType(), True),
             ]
         )
-        expected_jobs_rows = [
+        expected_filled_posts_rows = [
             (0.0, 1.4),
             (1.0, 1.28),
         ]
@@ -154,11 +156,11 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("2", 50, 80.0, 1.0),
             ("3", 50, 10.0, 1.0),
         ]
-        expected_jobs_df = self.spark.createDataFrame(
-            expected_jobs_rows, expected_jobs_schema
+        expected_filled_posts_df = self.spark.createDataFrame(
+            expected_filled_posts_rows, expected_filled_posts_schema
         )
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_standardised_residuals(df, expected_jobs_df)
+        df = job.calculate_standardised_residuals(df, expected_filled_posts_df)
         self.assertEqual(df.count(), 3)
         df = df.collect()
         self.assertAlmostEquals(df[0]["standardised_residual"], 0.53452, places=2)
@@ -166,13 +168,13 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(df[2]["standardised_residual"], -6.75, places=2)
 
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
-        expected_jobs_schema = StructType(
+        expected_filled_posts_schema = StructType(
             [
                 StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("avg_jobs_per_bed_ratio", DoubleType(), True),
+                StructField("avg_filled_posts_per_bed_ratio", DoubleType(), True),
             ]
         )
-        expected_jobs_rows = [
+        expected_filled_posts_rows = [
             (0.0, 1.11111),
             (1.0, 1.0101),
         ]
@@ -187,24 +189,24 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("1", 7, 0.0),
             ("2", 75, 1.0),
         ]
-        expected_jobs_df = self.spark.createDataFrame(
-            expected_jobs_rows, expected_jobs_schema
+        expected_filled_posts_df = self.spark.createDataFrame(
+            expected_filled_posts_rows, expected_filled_posts_schema
         )
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_expected_filled_posts_based_on_number_of_beds(
-            df, expected_jobs_df
+            df, expected_filled_posts_df
         )
 
         df = df.collect()
-        self.assertAlmostEquals(df[0]["expected_jobs"], 7.77777, places=3)
-        self.assertAlmostEquals(df[1]["expected_jobs"], 75.7575, places=3)
+        self.assertAlmostEquals(df[0]["expected_filled_posts"], 7.77777, places=3)
+        self.assertAlmostEquals(df[1]["expected_filled_posts"], 75.7575, places=3)
 
     def test_calculate_filled_post_residuals(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField("expected_jobs", DoubleType(), True),
+                StructField("expected_filled_posts", DoubleType(), True),
             ]
         )
         rows = [
@@ -225,7 +227,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField("residual", DoubleType(), True),
-                StructField("expected_jobs", DoubleType(), True),
+                StructField("expected_filled_posts", DoubleType(), True),
             ]
         )
         rows = [
@@ -303,7 +305,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertEqual(df.count(), 1)
         df = df.collect()
         self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
-        self.assertEqual(df[0]["locationid"], "1")
+        self.assertEqual(df[0][IndCQC.location_id], "1")
 
     def test_join_filtered_col_into_care_home_df(self):
         filtered_schema = StructType(
@@ -335,7 +337,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.join_filtered_col_into_care_home_df(ch_df, filtered_df)
 
         self.assertEqual(df.count(), 3)
-        df = df.sort("locationid", "snapshot_date").collect()
+        df = df.sort(IndCQC.location_id, "snapshot_date").collect()
         self.assertIsNone(df[0][IndCQC.ascwds_filled_posts_clean])
         self.assertEqual(df[1][IndCQC.ascwds_filled_posts_clean], 2.0)
         self.assertIsNone(df[2][IndCQC.ascwds_filled_posts_clean])
