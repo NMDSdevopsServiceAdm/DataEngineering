@@ -227,8 +227,10 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
 ) -> DataFrame:
     """
-    Checks a cleaned locations df for any mismatches of contemporary versus current geographies based on the column_to_check_for_nulls,
-    where this column is a one column from a subset of columns resulting from a left join and so could contain null values.
+    Checks a cleaned locations df for any CQC postcodes which could not be found in the ONS postcode directory based on the column_to_check_for_nulls.
+    This column should thus be chosen to be one column that would contain null values from a left join in the above case.
+    This is because this function attempts to create a small dataframe which should be empty in the case where column_to_check_for_nulls contains no nulls,
+    and thus implies all CQC postcodes were found in the ONS postcode directory.
 
     Args:
         cleaned_locations_df (DataFrame): A cleaned locations df that must contain at least the column_to_check_for_nulls, postcode and locationId.
@@ -238,8 +240,8 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
 
     Raises:
-        AnalysisException: If column_to_check_for_nulls is mistyped or otherwise not present in cleaned_locations_df/
-        SystemExit: If the check finds mismatched postcodes, it will raise this and cause a glue job failure where the output should feature in Glue's logs.
+        AnalysisException: If column_to_check_for_nulls, CQCLClean.postcode or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
     """
 
     COLUMNS_TO_FILTER = [
