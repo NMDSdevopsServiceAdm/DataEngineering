@@ -807,6 +807,19 @@ class CleanIndCQCData:
 
 
 @dataclass
+class FilterAscwdsFilledPostsSchema:
+    care_home_filled_posts_per_bed_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
 class NonResFeaturesSchema(object):
     basic_schema = StructType(
         [
