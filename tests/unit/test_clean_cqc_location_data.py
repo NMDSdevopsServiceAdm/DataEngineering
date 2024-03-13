@@ -403,7 +403,7 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
             "Exception does not contain the postcode, locationId and number of rows",
         )
 
-    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_correct_columns_present(
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_provided_column_is_in_dataset(
         self,
     ):
         COLUMN_NOT_IN_DF = "not_a_column"
@@ -413,10 +413,36 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
             )
 
         self.assertTrue(
-            f"ERROR: A column or function parameter with name {COLUMN_NOT_IN_DF} cannot be resolved."
+            f"ERROR: A column or function parameter with name {COLUMN_NOT_IN_DF} cannot be found in the dataframe."
             in str(context.exception),
             "Exception does not contain the correct error message",
         )
+
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_contains_appropriate_columns(
+        self,
+    ):
+        no_postcode_df = self.expected_split_registered_df.drop(CQCL.postcode)
+        no_location_df = self.expected_split_registered_df.drop(CQCL.location_id)
+        no_current_date_df = self.expected_split_registered_df.drop(
+            CQCLCleaned.current_ons_import_date
+        )
+
+        list_of_test_tuples = [
+            (no_postcode_df, CQCL.postcode),
+            (no_location_df, CQCL.location_id),
+            (no_current_date_df, CQCLCleaned.current_ons_import_date),
+        ]
+
+        for test_data in list_of_test_tuples:
+            with self.assertRaises(AnalysisException) as context:
+                job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+                    test_data[0]
+                )
+            self.assertTrue(
+                f"ERROR: A column or function parameter with name {test_data[1]} cannot be found in the dataframe."
+                in str(context.exception),
+                f"Error in {test_data} loop, exception does not contain the correct error message",
+            )
 
 
 if __name__ == "__main__":

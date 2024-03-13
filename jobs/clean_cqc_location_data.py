@@ -246,11 +246,11 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         CQCLClean.postcode,
         CQCLClean.location_id,
     ]
-
-    if not column_to_check_for_nulls in cleaned_locations_df.columns:
-        raise AnalysisException(
-            f"ERROR: A column or function parameter with name {column_to_check_for_nulls} cannot be resolved."
-        )
+    for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
+        if not column in cleaned_locations_df.columns:
+            raise AnalysisException(
+                f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
+            )
 
     sample_clean_null_df = cleaned_locations_df.filter(
         F.col(column_to_check_for_nulls).isNull()
