@@ -15,19 +15,23 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-
-from utils.prepare_locations_utils.filter_job_count import (
-    care_home_jobs_per_bed_ratio_outliers as job,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
+    remove_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
 from tests.test_file_generator import generate_care_home_jobs_per_bed_filter_df
 
 
 class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_filter_job_count").getOrCreate()
+        self.spark = utils.get_spark()
         self.estimate_job_count_input_data = generate_care_home_jobs_per_bed_filter_df()
-        self.filtered_output_df = job.care_home_jobs_per_bed_ratio_outliers(
-            self.estimate_job_count_input_data
+        self.filtered_output_df = (
+            job.remove_care_home_filled_posts_per_bed_ratio_outliers(
+                self.estimate_job_count_input_data
+            )
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -44,7 +48,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_select_data_not_in_subset_df(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("other_col", StringType(), True),
             ]
         )
@@ -64,12 +68,12 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             data_not_in_subset_df.count(), (df.count() - subset_df.count())
         )
 
-    def test_calculate_jobs_per_bed_ratio(self):
+    def test_calculate_filled_posts_per_bed_ratio(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("job_count_unfiltered", DoubleType(), True),
-                StructField("number_of_beds", IntegerType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
         rows = [
@@ -77,7 +81,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("1-000000002", 2.0, 1),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_jobs_per_bed_ratio(df)
+        df = job.calculate_filled_posts_per_bed_ratio(df)
 
         df = df.collect()
         self.assertEqual(df[0]["jobs_per_bed_ratio"], 0.05)
@@ -86,8 +90,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_create_banded_bed_count_column(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("number_of_beds", IntegerType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
         rows = [
@@ -97,17 +101,16 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_banded_bed_count_column(df)
-        df.printSchema()
 
         df = df.collect()
         self.assertEqual(df[0]["number_of_beds_banded"], 2.0)
         self.assertEqual(df[1]["number_of_beds_banded"], 5.0)
         self.assertEqual(df[2]["number_of_beds_banded"], 7.0)
 
-    def test_calculate_average_jobs_per_banded_bed_count(self):
+    def test_calculate_average_filled_posts_per_banded_bed_count(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("number_of_beds_banded", DoubleType(), True),
                 StructField("jobs_per_bed_ratio", DoubleType(), True),
             ]
@@ -118,7 +121,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("3", 1.0, 1.123456789),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_average_jobs_per_banded_bed_count(df)
+        df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
         df = df.collect()
         self.assertAlmostEquals(df[0]["avg_jobs_per_bed_ratio"], 1.2468, places=3)
@@ -137,9 +140,9 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("number_of_beds", IntegerType(), True),
-                StructField("job_count_unfiltered", DoubleType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
+                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
                 StructField("number_of_beds_banded", DoubleType(), True),
             ]
         )
@@ -159,7 +162,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(df[1]["standardised_residual"], 2.0, places=2)
         self.assertAlmostEquals(df[2]["standardised_residual"], -6.75, places=2)
 
-    def test_calculate_expected_jobs_based_on_number_of_beds(self):
+    def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_jobs_schema = StructType(
             [
                 StructField("number_of_beds_banded", DoubleType(), True),
@@ -172,8 +175,8 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("number_of_beds", IntegerType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
                 StructField("number_of_beds_banded", DoubleType(), True),
             ]
         )
@@ -185,17 +188,19 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             expected_jobs_rows, expected_jobs_schema
         )
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_expected_jobs_based_on_number_of_beds(df, expected_jobs_df)
+        df = job.calculate_expected_filled_posts_based_on_number_of_beds(
+            df, expected_jobs_df
+        )
 
         df = df.collect()
         self.assertAlmostEquals(df[0]["expected_jobs"], 7.77777, places=3)
         self.assertAlmostEquals(df[1]["expected_jobs"], 75.7575, places=3)
 
-    def test_calculate_job_count_residuals(self):
+    def test_calculate_filled_post_residuals(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("job_count_unfiltered", DoubleType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
                 StructField("expected_jobs", DoubleType(), True),
             ]
         )
@@ -205,17 +210,17 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("3", 10.0, 11.23456),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_job_count_residuals(df)
+        df = job.calculate_filled_post_residuals(df)
 
-        df = df.sort("locationid").collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["residual"], 1.23456, places=3)
         self.assertAlmostEquals(df[1]["residual"], 0.0, places=3)
         self.assertAlmostEquals(df[2]["residual"], -1.23456, places=3)
 
-    def test_calculate_job_count_standardised_residual(self):
+    def test_calculate_filled_post_standardised_residual(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("residual", DoubleType(), True),
                 StructField("expected_jobs", DoubleType(), True),
             ]
@@ -225,16 +230,16 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("2", 17.75, 25.0),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_job_count_standardised_residual(df)
+        df = job.calculate_filled_post_standardised_residual(df)
 
-        df = df.sort("locationid").collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["standardised_residual"], 5.55556, places=2)
         self.assertAlmostEquals(df[1]["standardised_residual"], 3.55, places=2)
 
     def test_calculate_standardised_residual_cutoffs(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("standardised_residual", DoubleType(), True),
             ]
         )
@@ -254,7 +259,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_calculate_percentile(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("standardised_residual", DoubleType(), True),
             ]
         )
@@ -273,12 +278,12 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
         self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
 
-    def test_create_filtered_job_count_df(self):
+    def test_create_filled_posts_clean_col_in_filtered_df(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("snapshot_date", StringType(), True),
-                StructField("job_count_unfiltered", DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
                 StructField("standardised_residual", DoubleType(), True),
                 StructField("lower_percentile", DoubleType(), True),
                 StructField("upper_percentile", DoubleType(), True),
@@ -290,19 +295,19 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ("3", "2023-01-01", 3.0, 12.25423, -1.2345, 1.2345),
         ]
         df = self.spark.createDataFrame(rows, schema)
-        df = job.create_filtered_job_count_df(df)
+        df = job.create_filled_posts_clean_col_in_filtered_df(df)
 
         self.assertEqual(df.count(), 1)
         df = df.collect()
-        self.assertEqual(df[0]["job_count"], 1.0)
+        self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
         self.assertEqual(df[0]["locationid"], "1")
 
     def test_join_filtered_col_into_care_home_df(self):
         filtered_schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("snapshot_date", StringType(), True),
-                StructField("job_count", DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
             ]
         )
         filtered_rows = [
@@ -310,10 +315,10 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         ch_schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("snapshot_date", StringType(), True),
-                StructField("number_of_beds", IntegerType(), True),
-                StructField("job_count_unfiltered", DoubleType(), True),
+                StructField(IndCQC.number_of_beds, IntegerType(), True),
+                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             ]
         )
         ch_rows = [
@@ -328,15 +333,15 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
 
         self.assertEqual(df.count(), 3)
         df = df.sort("locationid", "snapshot_date").collect()
-        self.assertIsNone(df[0]["job_count"])
-        self.assertEqual(df[1]["job_count"], 2.0)
-        self.assertIsNone(df[2]["job_count"])
+        self.assertIsNone(df[0][IndCQC.ascwds_filled_posts_clean])
+        self.assertEqual(df[1][IndCQC.ascwds_filled_posts_clean], 2.0)
+        self.assertIsNone(df[2][IndCQC.ascwds_filled_posts_clean])
 
-    def test_add_job_counts_without_filtering_duplicates_data_in_column(self):
+    def test_add_filled_posts_clean_without_filtering_duplicates_data_in_column(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
-                StructField("job_count_unfiltered", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts, StringType(), True),
             ]
         )
         rows = [
@@ -345,15 +350,23 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         ]
         df = self.spark.createDataFrame(rows, schema)
 
-        df = job.add_job_counts_without_filtering_to_data_outside_of_this_filter(df)
+        df = (
+            job.add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
+                df
+            )
+        )
         df = df.collect()
-        self.assertEqual(df[0]["job_count_unfiltered"], df[0]["job_count"])
-        self.assertEqual(df[1]["job_count_unfiltered"], df[1]["job_count"])
+        self.assertEqual(
+            df[0][IndCQC.ascwds_filled_posts], df[0][IndCQC.ascwds_filled_posts_clean]
+        )
+        self.assertEqual(
+            df[1][IndCQC.ascwds_filled_posts], df[1][IndCQC.ascwds_filled_posts_clean]
+        )
 
     def test_combine_dataframes_keeps_all_rows_of_data(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("other_col", StringType(), True),
             ]
         )
@@ -373,7 +386,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def test_combine_dataframes_have_matching_column_names(self):
         schema = StructType(
             [
-                StructField("locationid", StringType(), True),
+                StructField(IndCQC.location_id, StringType(), True),
                 StructField("other_col", StringType(), True),
             ]
         )
