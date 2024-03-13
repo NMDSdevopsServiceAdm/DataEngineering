@@ -23,7 +23,6 @@ from utils.estimate_filled_posts.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
 
-# Update this once Gary's PR is in
 from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
 )
