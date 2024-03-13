@@ -43,12 +43,8 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     establishment_id: str = AWPClean.establishment_id
     organisation_id: str = AWPClean.organisation_id
-    total_staff: str = AWPClean.total_staff
     total_staff_bounded: str = AWPClean.total_staff_bounded
-    total_staff_deduplicated: str = AWPClean.total_staff_deduplicated
-    worker_records: str = AWPClean.worker_records
     worker_records_bounded: str = AWPClean.worker_records_bounded
-    worker_records_deduplicated: str = AWPClean.worker_records_deduplicated
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     contemporary_ons_import_date: str = ONSClean.contemporary_ons_import_date
@@ -85,9 +81,10 @@ class IndCqcColumns:
     current_lsoa21: str = ONSClean.current_lsoa21
     current_msoa21: str = ONSClean.current_msoa21
     current_constituancy: str = ONSClean.current_constituancy
-    job_count: str = "job_count"
-    job_count_unfiltered: str = "job_count_unfiltered"
-    job_count_unfiltered_source: str = "job_count_unfiltered_source"
+    ascwds_filled_posts: str = "ascwds_filled_posts"
+    ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
+    ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
+    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     service_count: str = "service_count"
     date_diff: str = "date_diff"
     features: str = "features"
