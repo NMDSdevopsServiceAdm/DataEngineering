@@ -40,7 +40,7 @@ class MainTests(CleanIndFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("jobs.clean_ind_filled_post.create_column_with_repeated_values_removed")
+    @patch("jobs.clean_ind_cqc_filled_post.create_column_with_repeated_values_removed")
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
     @patch("utils.utils.read_from_parquet")
