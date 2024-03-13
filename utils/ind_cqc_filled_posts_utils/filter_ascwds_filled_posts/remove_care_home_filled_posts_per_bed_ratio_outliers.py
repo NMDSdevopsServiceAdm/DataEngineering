@@ -111,15 +111,20 @@ def calculate_filled_posts_per_bed_ratio(
 def create_banded_bed_count_column(
     input_df: DataFrame,
 ) -> DataFrame:
+
+    number_of_beds_df = input_df.select(IndCQC.number_of_beds).dropDuplicates()
+
     set_banded_boundaries = Bucketizer(
         splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
         inputCol=IndCQC.number_of_beds,
         outputCol=TempColNames.number_of_beds_banded,
     )
 
-    input_df = set_banded_boundaries.setHandleInvalid("keep").transform(input_df)
+    number_of_beds_df = set_banded_boundaries.setHandleInvalid("keep").transform(
+        input_df
+    )
 
-    return input_df
+    return input_df.join(number_of_beds_df, IndCQC.number_of_beds, "left")
 
 
 def calculate_average_filled_posts_per_banded_bed_count(
