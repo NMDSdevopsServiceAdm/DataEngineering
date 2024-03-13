@@ -111,7 +111,6 @@ def calculate_filled_posts_per_bed_ratio(
 def create_banded_bed_count_column(
     input_df: DataFrame,
 ) -> DataFrame:
-
     number_of_beds_df = input_df.select(IndCQC.number_of_beds).dropDuplicates()
 
     set_banded_boundaries = Bucketizer(
