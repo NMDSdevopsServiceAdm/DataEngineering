@@ -359,7 +359,7 @@ class JoinONSDataTests(CleanCQCLocationDatasetTests):
         self.assertCountEqual(returned_data, expected_data)
 
 
-class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
+class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
         self.expected_split_registered_df = self.spark.createDataFrame(
