@@ -1,5 +1,6 @@
 import unittest
 import warnings
+from datetime import date
 
 from tests.test_file_data import FilterAscwdsFilledPostsData as Data
 from tests.test_file_schemas import FilterAscwdsFilledPostsSchema as Schemas
@@ -10,6 +11,7 @@ from pyspark.sql.types import (
     StringType,
     DoubleType,
     IntegerType,
+    DateType,
 )
 
 from utils import utils
@@ -21,7 +23,7 @@ from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
 )
 
 
-class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
+class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.care_home_filled_posts_per_bed_input_data = self.spark.createDataFrame(
@@ -287,7 +289,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("snapshot_date", StringType(), True),
+                StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
                 StructField("standardised_residual", DoubleType(), True),
                 StructField("lower_percentile", DoubleType(), True),
@@ -295,9 +297,9 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
             ]
         )
         rows = [
-            ("1", "2023-01-01", 1.0, 0.26545, -1.2345, 1.2345),
-            ("2", "2023-01-01", 2.0, -3.2545, -1.2345, 1.2345),
-            ("3", "2023-01-01", 3.0, 12.25423, -1.2345, 1.2345),
+            ("1", date(2023, 1, 1), 1.0, 0.26545, -1.2345, 1.2345),
+            ("2", date(2023, 1, 1), 2.0, -3.2545, -1.2345, 1.2345),
+            ("3", date(2023, 1, 1), 3.0, 12.25423, -1.2345, 1.2345),
         ]
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_filled_posts_clean_col_in_filtered_df(df)
@@ -311,25 +313,25 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         filtered_schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("snapshot_date", StringType(), True),
+                StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
             ]
         )
         filtered_rows = [
-            ("2", "2023-01-01", 2.0),
+            ("2", date(2023, 1, 1), 2.0),
         ]
         ch_schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("snapshot_date", StringType(), True),
+                StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             ]
         )
         ch_rows = [
-            ("2", "2022-01-01", 1, 2.0),
-            ("2", "2023-01-01", 1, 2.0),
-            ("3", "2023-01-01", 25, 30.0),
+            ("2", date(2022, 1, 1), 1, 2.0),
+            ("2", date(2023, 1, 1), 1, 2.0),
+            ("3", date(2023, 1, 1), 25, 30.0),
         ]
         filtered_df = self.spark.createDataFrame(filtered_rows, filtered_schema)
         ch_df = self.spark.createDataFrame(ch_rows, ch_schema)
@@ -337,7 +339,7 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.join_filtered_col_into_care_home_df(ch_df, filtered_df)
 
         self.assertEqual(df.count(), 3)
-        df = df.sort(IndCQC.location_id, "snapshot_date").collect()
+        df = df.sort(IndCQC.location_id, IndCQC.cqc_location_import_date).collect()
         self.assertIsNone(df[0][IndCQC.ascwds_filled_posts_clean])
         self.assertEqual(df[1][IndCQC.ascwds_filled_posts_clean], 2.0)
         self.assertIsNone(df[2][IndCQC.ascwds_filled_posts_clean])
