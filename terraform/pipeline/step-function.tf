@@ -55,7 +55,7 @@ resource "aws_sfn_state_machine" "run-branch-pipeline" {
   }
 
   depends_on = [
-    aws_iam_policy.step_function_iam_policy
+    aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket
   ]
 }
