@@ -55,7 +55,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         super().setUp()
 
     @patch(
-        "jobs.clean_cqc_location_data.check_current_against_contemporary_geographies"
+        "jobs.clean_cqc_location_data.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset"
     )
     @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
@@ -67,7 +67,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         write_to_parquet_patch: Mock,
         format_date_fields_mock: Mock,
         column_to_date_mock: Mock,
-        check_current_against_contemporary_geographies: Mock,
+        raise_error_if_cqc_postcode_was_not_found_in_ons_dataset: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -85,7 +85,9 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 1)
-        self.assertEqual(check_current_against_contemporary_geographies.call_count, 1)
+        self.assertEqual(
+            raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
+        )
 
         write_to_parquet_patch.assert_called_once_with(
             ANY,
@@ -365,13 +367,15 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
             Schemas.expected_split_registered_schema,
         )
 
-    def test_check_current_against_contemporary_geographies_returns_original_df(self):
-        test_df = job.check_current_against_contemporary_geographies(
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_returns_original_df(
+        self,
+    ):
+        test_df = job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             self.expected_split_registered_df
         )
         self.assertEqual(test_df, self.expected_split_registered_df)
 
-    def test_check_current_against_contemporary_geographies_exits_program_when_check_fails(
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_exits_program_when_check_fails(
         self,
     ):
         expected_ons_join_df_with_nulls = self.spark.createDataFrame(
@@ -385,7 +389,9 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
         # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
         expected_tuple = ("PR19AB", "loc-1", "count: 1")
         with self.assertRaises(TypeError) as context:
-            job.check_current_against_contemporary_geographies(input_registered_df)
+            job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+                input_registered_df
+            )
 
         self.assertTrue(
             "Error: Problem matching contemporary to current ons data"
@@ -397,12 +403,12 @@ class CheckCurrentAgainstContemporaryGeographies(CleanCQCLocationDatasetTests):
             "Exception does not contain the postcode, locationId and number of rows",
         )
 
-    def test_check_current_against_contemporary_geographies_only_runs_when_correct_columns_present(
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_correct_columns_present(
         self,
     ):
         COLUMN_NOT_IN_DF = "not_a_column"
         with self.assertRaises(AnalysisException) as context:
-            job.check_current_against_contemporary_geographies(
+            job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
                 self.expected_split_registered_df, COLUMN_NOT_IN_DF
             )
 

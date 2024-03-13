@@ -103,7 +103,7 @@ def main(
         deregistered_locations_df,
     ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
 
-    registered_locations_df = check_current_against_contemporary_geographies(
+    registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         registered_locations_df
     )
 
@@ -222,7 +222,7 @@ def split_dataframe_into_registered_and_deregistered_rows(
     return registered_df, deregistered_df
 
 
-def check_current_against_contemporary_geographies(
+def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     cleaned_locations_df: DataFrame,
     column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
 ) -> DataFrame:
