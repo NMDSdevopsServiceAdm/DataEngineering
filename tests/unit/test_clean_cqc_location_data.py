@@ -385,7 +385,6 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
         input_registered_df = job.split_dataframe_into_registered_and_deregistered_rows(
             expected_ons_join_df_with_nulls
         )[0]
-        input_registered_df.show()
         # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
         expected_tuple = ("PR19AB", "loc-1", "count: 1")
         with self.assertRaises(TypeError) as context:
@@ -394,7 +393,7 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
             )
 
         self.assertTrue(
-            "Error: Problem matching contemporary to current ons data"
+            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data:"
             in str(context.exception),
             "Error text is missing correct description of Error",
         )

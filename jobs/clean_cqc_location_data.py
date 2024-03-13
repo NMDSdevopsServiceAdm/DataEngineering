@@ -269,7 +269,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
         raise TypeError(
-            f"Error: Problem matching contemporary to current ons data. Here is a list of their {CQCL.postcode} and {CQCL.location_id}: {list_of_tuples}"
+            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
         )
     else:
         print("No mismatches found, returning original dataframe")
