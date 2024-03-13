@@ -255,9 +255,9 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
                 f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
             )
 
-    sample_clean_null_df = cleaned_locations_df.filter(
-        F.col(column_to_check_for_nulls).isNull()
-    )
+    sample_clean_null_df = cleaned_locations_df.select(
+        [column_to_check_for_nulls, *COLUMNS_TO_FILTER]
+    ).filter(F.col(column_to_check_for_nulls).isNull())
     if not sample_clean_null_df.rdd.isEmpty():
         list_of_tuples = []
         data_to_log = (
