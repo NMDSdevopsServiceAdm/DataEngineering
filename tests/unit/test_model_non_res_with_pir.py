@@ -5,7 +5,6 @@ from datetime import date
 from utils.estimate_filled_posts.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
-from pyspark.ml.linalg import Vectors
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
@@ -30,6 +29,16 @@ class TestModelNonResWithPir(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    def test_model_non_res_with_pir_returns_all_locations(self):
+        cleaned_ind_cqc_df = self.cleaned_cqc_ind_df
+        features_df = self.non_res_features_df
+
+        df, _ = model_non_residential_with_pir(
+            cleaned_ind_cqc_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
+        )
+
+        self.assertEqual(df.count(), 5)
 
     def test_model_non_residential_with_pir_estimates_jobs_for_non_res_with_pir_only(
         self,

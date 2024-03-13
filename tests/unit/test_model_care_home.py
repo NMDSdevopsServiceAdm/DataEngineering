@@ -2,16 +2,16 @@ import unittest
 import warnings
 from datetime import date
 
-from pyspark.sql import SparkSession
-from pyspark.ml.linalg import Vectors
+from utils.estimate_filled_posts.models.care_homes import (
+    model_care_homes,
+)
 
-from utils.estimate_filled_posts.models.care_homes import model_care_homes
-from tests.test_file_data import ModelCareHomes as Data
-from tests.test_file_schemas import ModelCareHomes as Schemas
-from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
+from tests.test_file_data import ModelCareHomes as Data
+from tests.test_file_schemas import ModelCareHomes as Schemas
+from utils import utils
 
 
 class TestModelCareHome(unittest.TestCase):
@@ -29,6 +29,7 @@ class TestModelCareHome(unittest.TestCase):
             Data.care_homes_features_rows, Schemas.care_homes_features_schema
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_model_care_homes_returns_all_locations(self):
         cleaned_ind_cqc_df = self.care_homes_cleaned_ind_cqc_df
@@ -41,11 +42,10 @@ class TestModelCareHome(unittest.TestCase):
         self.assertEqual(df.count(), 5)
 
     def test_model_care_homes_estimates_jobs_for_care_homes_only(self):
-        cleaned_ind_cqc_df = self.care_homes_cleaned_ind_cqc_df
-        features_df = self.care_homes_features_df
-
         df, _ = model_care_homes(
-            cleaned_ind_cqc_df, features_df, f"{self.CAREHOME_MODEL}1.0.0"
+            self.care_homes_cleaned_ind_cqc_df,
+            self.care_homes_features_df,
+            f"{self.CAREHOME_MODEL}1.0.0",
         )
         expected_location_with_prediction = df.where(
             (df[IndCqc.location_id] == "1-000000001")
