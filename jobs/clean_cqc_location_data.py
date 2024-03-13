@@ -272,7 +272,9 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
         )
     else:
-        print("No mismatches found, returning original dataframe")
+        print(
+            "All postcodes were found in the ONS postcode file, returning original dataframe"
+        )
         return cleaned_locations_df
 
 
