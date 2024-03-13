@@ -86,7 +86,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_filled_posts_per_bed_ratio(df)
 
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0]["filled_posts_per_bed_ratio"], 0.05)
         self.assertEqual(df[1]["filled_posts_per_bed_ratio"], 2.0)
 
@@ -105,7 +105,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.create_banded_bed_count_column(df)
 
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0]["number_of_beds_banded"], 2.0)
         self.assertEqual(df[1]["number_of_beds_banded"], 5.0)
         self.assertEqual(df[2]["number_of_beds_banded"], 7.0)
@@ -126,7 +126,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(
             df[0]["avg_filled_posts_per_bed_ratio"], 1.2468, places=3
         )
@@ -164,7 +164,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_standardised_residuals(df, expected_filled_posts_df)
         self.assertEqual(df.count(), 3)
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["standardised_residual"], 0.53452, places=2)
         self.assertAlmostEquals(df[1]["standardised_residual"], 2.0, places=2)
         self.assertAlmostEquals(df[2]["standardised_residual"], -6.75, places=2)
@@ -199,7 +199,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             df, expected_filled_posts_df
         )
 
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["expected_filled_posts"], 7.77777, places=3)
         self.assertAlmostEquals(df[1]["expected_filled_posts"], 75.7575, places=3)
 
@@ -259,7 +259,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             df, 0.4, "lower_percentile", "upper_percentile"
         )
 
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
         self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
 
@@ -281,7 +281,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_percentile(
             df, "standardised_residual", 0.8, "upper_percentile"
         )
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
         self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
 
@@ -305,7 +305,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.create_filled_posts_clean_col_in_filtered_df(df)
 
         self.assertEqual(df.count(), 1)
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
         self.assertEqual(df[0][IndCQC.location_id], "1")
 
@@ -362,7 +362,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 df
             )
         )
-        df = df.collect()
+        df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(
             df[0][IndCQC.ascwds_filled_posts], df[0][IndCQC.ascwds_filled_posts_clean]
         )
