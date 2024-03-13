@@ -15,9 +15,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 def model_non_residential_with_pir(
     locations_df: DataFrame, features_df: DataFrame, model_path: str
-):
+) -> tuple:
     gbt_trained_model = GBTRegressionModel.load(model_path)
-
     features_df = features_df.where(features_df[IndCqc.care_home] == "N")
     features_df = features_df.where(features_df[IndCqc.current_region].isNotNull())
     features_df = features_df.where(features_df[IndCqc.people_directly_employed] > 0)
