@@ -10,6 +10,9 @@ from utils import utils
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
+from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts.filter_ascwds_filled_posts import (
+    null_ascwds_filled_post_outliers,
+)
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -38,11 +41,7 @@ def main(
         IndCQC.ascwds_filled_posts,
     )
 
-    # TODO - update filter outliers ascwds_filled_post data
-    # locations_df = null_job_count_outliers(locations_df)
-    locations_df = locations_df.withColumn(
-        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
-    )  # temporary code so pipeline runs
+    locations_df = null_ascwds_filled_post_outliers(locations_df)
 
     locations_df = create_column_with_repeated_values_removed(
         IndCQC.ascwds_filled_posts_clean, IndCQC.ascwds_filled_posts_dedup_clean
