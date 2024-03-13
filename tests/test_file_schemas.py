@@ -837,6 +837,13 @@ class NonResFeaturesSchema(object):
         ]
     )
 
+    filter_to_non_care_home_schema = StructType(
+        [
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
 
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
@@ -864,7 +871,7 @@ class CareHomeFeaturesSchema:
         ]
     )
 
-    filter_to_ind_care_home_schema = StructType(
+    filter_to_care_home_schema = StructType(
         [
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),

@@ -1531,6 +1531,15 @@ class NonResFeaturesData(object):
     ]
     # fmt: on
 
+    filter_to_non_care_home_rows = rows = [
+        ("Y", CQCLValues.independent),
+        ("N", CQCLValues.independent),
+    ]
+
+    expected_filtered_to_non_care_home_rows = rows = [
+        ("N", CQCLValues.independent),
+    ]
+
 
 @dataclass
 class CareHomeFeaturesData:
@@ -1770,14 +1779,11 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_ind_care_home_rows = rows = [
+    filter_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
         ("N", CQCLValues.independent),
-        ("Y", CQCLValues.local_authority),
-        ("Y", ""),
-        ("Y", None),
     ]
 
-    expected_filtered_to_ind_care_home_rows = rows = [
+    expected_filtered_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
     ]
