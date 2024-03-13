@@ -1,5 +1,4 @@
 import sys
-from datetime import datetime
 
 import pyspark.sql
 from pyspark.sql import functions as F
