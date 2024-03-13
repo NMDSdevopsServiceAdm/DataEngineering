@@ -21,16 +21,18 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
     remove_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
-from tests.test_file_generator import generate_care_home_jobs_per_bed_filter_df
 
 
 class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-        self.estimate_job_count_input_data = generate_care_home_jobs_per_bed_filter_df()
+        self.care_home_filled_posts_per_bed_input_data = self.spark.createDataFrame(
+            Data.care_home_filled_posts_per_bed_rows,
+            Schemas.care_home_filled_posts_per_bed_schema,
+        )
         self.filtered_output_df = (
             job.remove_care_home_filled_posts_per_bed_ratio_outliers(
-                self.estimate_job_count_input_data
+                self.care_home_filled_posts_per_bed_input_data
             )
         )
 
@@ -38,11 +40,12 @@ class FilterJobCountCareHomeJobsPerBedRatioTests(unittest.TestCase):
 
     def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
         self.assertEqual(
-            self.estimate_job_count_input_data.count(), self.filtered_output_df.count()
+            self.care_home_filled_posts_per_bed_input_data.count(),
+            self.filtered_output_df.count(),
         )
 
     def test_relevant_data_selected(self):
-        df = job.select_relevant_data(self.estimate_job_count_input_data)
+        df = job.select_relevant_data(self.care_home_filled_posts_per_bed_input_data)
         self.assertEqual(df.count(), 40)
 
     def test_select_data_not_in_subset_df(self):
