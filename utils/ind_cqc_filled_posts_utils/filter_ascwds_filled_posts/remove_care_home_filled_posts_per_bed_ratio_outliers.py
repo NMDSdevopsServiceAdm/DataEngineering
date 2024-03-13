@@ -119,11 +119,11 @@ def create_banded_bed_count_column(
         outputCol=TempColNames.number_of_beds_banded,
     )
 
-    number_of_beds_df = set_banded_boundaries.setHandleInvalid("keep").transform(
-        input_df
-    )
+    number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
+        "keep"
+    ).transform(number_of_beds_df)
 
-    return input_df.join(number_of_beds_df, IndCQC.number_of_beds, "left")
+    return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
 
 
 def calculate_average_filled_posts_per_banded_bed_count(
