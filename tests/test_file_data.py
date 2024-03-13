@@ -1531,12 +1531,12 @@ class NonResFeaturesData(object):
     ]
     # fmt: on
 
-    filter_to_non_care_home_rows = rows = [
+    filter_to_non_care_home_rows = [
         ("Y", CQCLValues.independent),
         ("N", CQCLValues.independent),
     ]
 
-    expected_filtered_to_non_care_home_rows = rows = [
+    expected_filtered_to_non_care_home_rows = [
         ("N", CQCLValues.independent),
     ]
 
