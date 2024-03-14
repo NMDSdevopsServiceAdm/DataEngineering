@@ -87,8 +87,8 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_filled_posts_per_bed_ratio(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0]["filled_posts_per_bed_ratio"], 0.05)
-        self.assertEqual(df[1]["filled_posts_per_bed_ratio"], 2.0)
+        self.assertEqual(df[0][job.TempColNames.filled_posts_per_bed_ratio], 0.05)
+        self.assertEqual(df[1][job.TempColNames.filled_posts_per_bed_ratio], 2.0)
 
     def test_create_banded_bed_count_column(self):
         schema = StructType(
@@ -106,16 +106,18 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.create_banded_bed_count_column(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0]["number_of_beds_banded"], 2.0)
-        self.assertEqual(df[1]["number_of_beds_banded"], 5.0)
-        self.assertEqual(df[2]["number_of_beds_banded"], 7.0)
+        self.assertEqual(df[0][job.TempColNames.number_of_beds_banded], 2.0)
+        self.assertEqual(df[1][job.TempColNames.number_of_beds_banded], 5.0)
+        self.assertEqual(df[2][job.TempColNames.number_of_beds_banded], 7.0)
 
     def test_calculate_average_filled_posts_per_banded_bed_count(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("filled_posts_per_bed_ratio", DoubleType(), True),
+                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
+                StructField(
+                    job.TempColNames.filled_posts_per_bed_ratio, DoubleType(), True
+                ),
             ]
         )
         rows = [
@@ -126,19 +128,21 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
-        df = df.sort("number_of_beds_banded").collect()
+        df = df.sort(job.TempColNames.number_of_beds_banded).collect()
         self.assertAlmostEquals(
-            df[0]["avg_filled_posts_per_bed_ratio"], 1.2468, places=3
+            df[0][job.TempColNames.avg_filled_posts_per_bed_ratio], 1.2468, places=3
         )
         self.assertAlmostEquals(
-            df[1]["avg_filled_posts_per_bed_ratio"], 1.12346, places=3
+            df[1][job.TempColNames.avg_filled_posts_per_bed_ratio], 1.12346, places=3
         )
 
     def test_calculate_standardised_residuals(self):
         expected_filled_posts_schema = StructType(
             [
-                StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("avg_filled_posts_per_bed_ratio", DoubleType(), True),
+                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
+                StructField(
+                    job.TempColNames.avg_filled_posts_per_bed_ratio, DoubleType(), True
+                ),
             ]
         )
         expected_filled_posts_rows = [
@@ -150,7 +154,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField("number_of_beds_banded", DoubleType(), True),
+                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
             ]
         )
         rows = [
@@ -165,15 +169,23 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_standardised_residuals(df, expected_filled_posts_df)
         self.assertEqual(df.count(), 3)
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["standardised_residual"], 0.53452, places=2)
-        self.assertAlmostEquals(df[1]["standardised_residual"], 2.0, places=2)
-        self.assertAlmostEquals(df[2]["standardised_residual"], -6.75, places=2)
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.standardised_residual], 0.53452, places=2
+        )
+        self.assertAlmostEquals(
+            df[1][job.TempColNames.standardised_residual], 2.0, places=2
+        )
+        self.assertAlmostEquals(
+            df[2][job.TempColNames.standardised_residual], -6.75, places=2
+        )
 
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_filled_posts_schema = StructType(
             [
-                StructField("number_of_beds_banded", DoubleType(), True),
-                StructField("avg_filled_posts_per_bed_ratio", DoubleType(), True),
+                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
+                StructField(
+                    job.TempColNames.avg_filled_posts_per_bed_ratio, DoubleType(), True
+                ),
             ]
         )
         expected_filled_posts_rows = [
@@ -184,7 +196,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField("number_of_beds_banded", DoubleType(), True),
+                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
             ]
         )
         rows = [
@@ -200,15 +212,19 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         )
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["expected_filled_posts"], 7.77777, places=3)
-        self.assertAlmostEquals(df[1]["expected_filled_posts"], 75.7575, places=3)
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.expected_filled_posts], 7.77777, places=3
+        )
+        self.assertAlmostEquals(
+            df[1][job.TempColNames.expected_filled_posts], 75.7575, places=3
+        )
 
     def test_calculate_filled_post_residuals(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField("expected_filled_posts", DoubleType(), True),
+                StructField(job.TempColNames.expected_filled_posts, DoubleType(), True),
             ]
         )
         rows = [
@@ -220,16 +236,16 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_filled_post_residuals(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["residual"], 1.23456, places=3)
-        self.assertAlmostEquals(df[1]["residual"], 0.0, places=3)
-        self.assertAlmostEquals(df[2]["residual"], -1.23456, places=3)
+        self.assertAlmostEquals(df[0][job.TempColNames.residual], 1.23456, places=3)
+        self.assertAlmostEquals(df[1][job.TempColNames.residual], 0.0, places=3)
+        self.assertAlmostEquals(df[2][job.TempColNames.residual], -1.23456, places=3)
 
     def test_calculate_filled_post_standardised_residual(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("residual", DoubleType(), True),
-                StructField("expected_filled_posts", DoubleType(), True),
+                StructField(job.TempColNames.residual, DoubleType(), True),
+                StructField(job.TempColNames.expected_filled_posts, DoubleType(), True),
             ]
         )
         rows = [
@@ -240,14 +256,18 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = job.calculate_filled_post_standardised_residual(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["standardised_residual"], 5.55556, places=2)
-        self.assertAlmostEquals(df[1]["standardised_residual"], 3.55, places=2)
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.standardised_residual], 5.55556, places=2
+        )
+        self.assertAlmostEquals(
+            df[1][job.TempColNames.standardised_residual], 3.55, places=2
+        )
 
     def test_calculate_standardised_residual_cutoffs(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("standardised_residual", DoubleType(), True),
+                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
             ]
         )
         # fmt: off
@@ -256,18 +276,25 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
 
         df = job.calculate_standardised_residual_cutoffs(
-            df, 0.4, "lower_percentile", "upper_percentile"
+            df,
+            0.4,
+            job.TempColNames.lower_percentile,
+            job.TempColNames.upper_percentile,
         )
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
-        self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.lower_percentile], -3.45, places=2
+        )
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.upper_percentile], 6.93, places=2
+        )
 
     def test_calculate_percentile(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField("standardised_residual", DoubleType(), True),
+                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
             ]
         )
         # fmt: off
@@ -276,14 +303,24 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
 
         df = job.calculate_percentile(
-            df, "standardised_residual", 0.2, "lower_percentile"
+            df,
+            job.TempColNames.standardised_residual,
+            0.2,
+            job.TempColNames.lower_percentile,
         )
         df = job.calculate_percentile(
-            df, "standardised_residual", 0.8, "upper_percentile"
+            df,
+            job.TempColNames.standardised_residual,
+            0.8,
+            job.TempColNames.upper_percentile,
         )
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0]["lower_percentile"], -3.45, places=2)
-        self.assertAlmostEquals(df[0]["upper_percentile"], 6.93, places=2)
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.lower_percentile], -3.45, places=2
+        )
+        self.assertAlmostEquals(
+            df[0][job.TempColNames.upper_percentile], 6.93, places=2
+        )
 
     def test_create_filled_posts_clean_col_in_filtered_df(self):
         schema = StructType(
@@ -291,9 +328,9 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField("standardised_residual", DoubleType(), True),
-                StructField("lower_percentile", DoubleType(), True),
-                StructField("upper_percentile", DoubleType(), True),
+                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
+                StructField(job.TempColNames.lower_percentile, DoubleType(), True),
+                StructField(job.TempColNames.upper_percentile, DoubleType(), True),
             ]
         )
         rows = [
