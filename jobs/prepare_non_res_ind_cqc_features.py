@@ -1,101 +1,86 @@
-import argparse
 import sys
-from dataclasses import dataclass
 from typing import List
 
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+
+from utils.feature_engineering_dictionaries import (
+    SERVICES_LOOKUP as services_dict,
+    RURAL_URBAN_INDICATOR_LOOKUP as rural_urban_indicator_dict,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as INDCQC,
+    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.feature_engineering_dictionaries import (
-    RURAL_URBAN_INDICATOR_LOOKUP,
-    SERVICES_LOOKUP,
-)
 from utils.features.helper import (
-    add_date_diff_into_df,
-    add_rui_data_data_frame,
-    add_service_count_to_data,
-    column_expansion_with_dict,
-    explode_column_from_distinct_values,
     vectorise_dataframe,
+    column_expansion_with_dict,
+    add_service_count_to_data,
+    add_rui_data_data_frame,
+    explode_column_from_distinct_values,
+    add_date_diff_into_df,
 )
 
 
-@dataclass
-class NewColNames:
-    service_count: str = "service_count"
-    date_diff: str = "date_diff"
+def main(
+    ind_cqc_filled_posts_cleaned_source: str,
+    non_res_ind_cqc_features_destination: str,
+) -> DataFrame:
+    print("Creating non res features dataset...")
 
+    locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-@dataclass
-class FeatureNames:
-    care_home: str = "features"
-
-
-def main(cleaned_cqc_ind_source, destination):
-    new_cols_for_features = NewColNames()
-    services_dict = SERVICES_LOOKUP
-    rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
-
-    locations_df = utils.read_from_parquet(cleaned_cqc_ind_source)
-
-    filtered_loc_data = filter_locations_df_for_independent_non_res_care_home_data(
-        df=locations_df,
-        carehome_col_name=INDCQC.care_home,
-    )
+    filtered_loc_data = filter_df_to_non_res_only(locations_df)
 
     filtered_data_with_employee_col = convert_col_to_integer_col(
         df=filtered_loc_data,
-        col_name=INDCQC.people_directly_employed,
+        col_name=IndCQC.people_directly_employed,
     )
 
     data_with_service_count = add_service_count_to_data(
         df=filtered_data_with_employee_col,
-        new_col_name=new_cols_for_features.service_count,
-        col_to_check=INDCQC.services_offered,
+        new_col_name=IndCQC.service_count,
+        col_to_check=IndCQC.services_offered,
     )
 
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
-        col_name=INDCQC.services_offered,
+        col_name=IndCQC.services_offered,
         lookup_dict=services_dict,
     )
 
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
-        rui_col_name=INDCQC.current_rural_urban_indicator_2011,
+        rui_col_name=IndCQC.current_rural_urban_indicator_2011,
         lookup_dict=rural_urban_indicator_dict,
     )
 
     distinct_regions = get_list_of_distinct_ons_regions(
         df=data_with_rui,
-        col_name=INDCQC.current_region,
     )
 
     data_with_region_cols, regions = explode_column_from_distinct_values(
         df=data_with_rui,
-        column_name=INDCQC.current_region,
+        column_name=IndCQC.current_region,
         col_prefix="ons_",
         col_list_set=set(distinct_regions),
     )
 
     data_with_date_diff = add_date_diff_into_df(
         df=data_with_region_cols,
-        new_col_name=new_cols_for_features.date_diff,
-        snapshot_date_col=INDCQC.cqc_location_import_date,
+        new_col_name=IndCQC.date_diff,
+        snapshot_date_col=IndCQC.cqc_location_import_date,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
-            new_cols_for_features.service_count,
-            INDCQC.people_directly_employed,
-            new_cols_for_features.date_diff,
+            IndCQC.service_count,
+            IndCQC.people_directly_employed,
+            IndCQC.date_diff,
         ]
         + service_keys
         + regions
@@ -106,14 +91,14 @@ def main(cleaned_cqc_ind_source, destination):
         df=data_with_date_diff, list_for_vectorisation=list_for_vectorisation
     )
     features_df = vectorised_dataframe.select(
-        INDCQC.location_id,
-        INDCQC.cqc_location_import_date,
-        INDCQC.current_region,
-        INDCQC.number_of_beds,
-        INDCQC.people_directly_employed,
-        INDCQC.care_home,
-        INDCQC.features,
-        INDCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.current_region,
+        IndCQC.number_of_beds,
+        IndCQC.people_directly_employed,
+        IndCQC.care_home,
+        IndCQC.features,
+        IndCQC.ascwds_filled_posts_dedup_clean,
         Keys.year,
         Keys.month,
         Keys.day,
@@ -126,57 +111,50 @@ def main(cleaned_cqc_ind_source, destination):
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
-    print(f"Exporting as parquet to {destination}")
+    print(f"Exporting as parquet to {non_res_ind_cqc_features_destination}")
     utils.write_to_parquet(
         features_df,
-        destination,
-        mode="append",
-        partitionKeys=["year", "month", "day"],
+        non_res_ind_cqc_features_destination,
+        mode="overwrite",
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 
-def get_list_of_distinct_ons_regions(df: DataFrame, col_name: str) -> List[str]:
-    distinct_regions = df.select(col_name).distinct().dropna().collect()
-    dis_regions_list = [str(row[INDCQC.current_region]) for row in distinct_regions]
+def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(IndCQC.care_home) == "N")
+
+
+def get_list_of_distinct_ons_regions(df: DataFrame) -> List[str]:
+    distinct_regions = df.select(IndCQC.current_region).distinct().dropna().collect()
+    dis_regions_list = [str(row.current_Region) for row in distinct_regions]
     return dis_regions_list
 
 
 def convert_col_to_integer_col(df, col_name):
-    df = df.withColumn(col_name, F.col(col_name).cast("int"))
-    return df
-
-
-def filter_locations_df_for_independent_non_res_care_home_data(
-    df: DataFrame, carehome_col_name: str
-) -> DataFrame:
-    filtered_df = df.filter(F.col(carehome_col_name) == "N")
-    return filtered_df
-
-
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--cleaned_cqc_ind_source",
-        help="Source S3 directory for cleaned cqc ind data",
-        required=True,
-    )
-    parser.add_argument(
-        "--prepared_non_res_ind_cqc_destination",
-        help="A destination directory for outputting prepared non res ind cqc data",
-        required=True,
-    )
-    args, _ = parser.parse_known_args()
-
-    return args.cleaned_cqc_ind_source, args.prepared_non_res_ind_cqc_destination
+    return df.withColumn(col_name, F.col(col_name).cast("int"))
 
 
 if __name__ == "__main__":
     print("Spark job 'prepare_non_res_ind_cqc_features' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    (cleaned_cqc_ind_source, destination) = collect_arguments()
+    (
+        ind_cqc_filled_posts_cleaned_source,
+        non_res_ind_cqc_features_destination,
+    ) = utils.collect_arguments(
+        (
+            "--ind_cqc_filled_posts_cleaned_source",
+            "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
+        ),
+        (
+            "--non_res_ind_cqc_features_destination",
+            "A destination directory for outputting non_res_features_ind_cqc_filled_posts",
+        ),
+    )
 
-    main(cleaned_cqc_ind_source, destination)
+    main(
+        ind_cqc_filled_posts_cleaned_source,
+        non_res_ind_cqc_features_destination,
+    )
 
     print("Spark job 'prepare_non_res_ind_cqc_features' complete")
