@@ -1028,33 +1028,19 @@ class CQCLocationsData:
     ]
 
     locations_for_ons_join_rows = [
-        (
-            "loc-1",
-            "prov-1",
-            date(2020, 1, 1),
-            "PR1 9AB",
-        ),
-        (
-            "loc-2",
-            "prov-1",
-            date(2018, 1, 1),
-            "B69 3EG",
-        ),
+        ("loc-1", "prov-1", date(2020, 1, 1), "PR1 9AB", "Registered"),
+        ("loc-2", "prov-1", date(2018, 1, 1), "B69 3EG", "Deregistered"),
         (
             "loc-3",
             "prov-2",
             date(2020, 1, 1),
             "PR1 9HL",
+            "Deregistered",
         ),
-        (
-            "loc-4",
-            "prov-2",
-            date(2021, 1, 1),
-            "LS1 2AB",
-        ),
+        ("loc-4", "prov-2", date(2021, 1, 1), "LS1 2AB", "Registered"),
     ]
 
-    expected_ons_join_rows = [
+    expected_ons_join_with_null_rows = [
         (
             date(2019, 1, 1),
             "PR19AB",
@@ -1066,6 +1052,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Registered",
         ),
         (
             None,
@@ -1078,6 +1065,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Deregistered",
         ),
         (
             date(2019, 1, 1),
@@ -1090,6 +1078,7 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "East Riding of Yorkshire",
             "Yorkshire & Humber",
+            "Deregistered",
         ),
         (
             date(2021, 1, 1),
@@ -1102,6 +1091,36 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "Leeds",
             "Yorkshire & Humber",
+            "Registered",
+        ),
+    ]
+
+    expected_split_registered_no_nulls_rows = [
+        (
+            date(2019, 1, 1),
+            "PR19AB",
+            date(2020, 1, 1),
+            "loc-1",
+            "prov-1",
+            "Somerset",
+            "Oxen Lane",
+            date(2021, 1, 1),
+            "Somerset",
+            "English Region",
+            "Registered",
+        ),
+        (
+            date(2021, 1, 1),
+            "LS12AB",
+            date(2021, 1, 1),
+            "loc-4",
+            "prov-2",
+            "Leeds",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "Leeds",
+            "Yorkshire & Humber",
+            "Registered",
         ),
     ]
 
@@ -1589,6 +1608,15 @@ class NonResFeaturesData(object):
     ]
     # fmt: on
 
+    filter_to_non_care_home_rows = [
+        ("Y", CQCLValues.independent),
+        ("N", CQCLValues.independent),
+    ]
+
+    expected_filtered_to_non_care_home_rows = [
+        ("N", CQCLValues.independent),
+    ]
+
 
 @dataclass
 class CareHomeFeaturesData:
@@ -1620,58 +1648,6 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-348374832",
-            date(2022, 1, 12),
-            "Merseyside",
-            0,
-            ["Extra Care housing services"],
-            None,
-            34.0,
-            "N",
-            "Local authority",
-            "(England/Wales) Rural hamlet and isolated dwellings",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-683746776",
-            date(2022, 1, 1),
-            "Merseyside",
-            0,
-            [
-                "Doctors treatment service",
-                "Long term conditions services",
-                "Shared Lives",
-            ],
-            34,
-            None,
-            "N",
-            "Local authority",
-            "(England/Wales) Rural hamlet and isolated dwellings",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-10478686",
-            date(2022, 1, 1),
-            "London Senate",
-            0,
-            ["Community health care services - Nurses Agency only"],
-            None,
-            None,
-            "N",
-            "",
-            "(England/Wales) Rural hamlet and isolated dwellings",
             "2023",
             "01",
             "01",
@@ -1746,38 +1722,6 @@ class CareHomeFeaturesData:
             "20230101",
         ),
         (
-            "1-10758359583",
-            date(2022, 3, 8),
-            None,
-            0,
-            ["Mobile doctors service"],
-            17,
-            None,
-            "N",
-            "Local authority",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-000000001",
-            date(2022, 3, 8),
-            "Yorkshire and The Humbler",
-            67,
-            ["Care home service with nursing"],
-            None,
-            None,
-            "Y",
-            "Local authority",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
             "1-10894414510",
             date(2022, 3, 8),
             "Yorkshire and The Humbler",
@@ -1787,22 +1731,6 @@ class CareHomeFeaturesData:
             25.0,
             "Y",
             "Independent",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-108950835",
-            date(2022, 3, 15),
-            "Merseyside",
-            20,
-            ["Care home service without nursing"],
-            23,
-            None,
-            "Y",
-            "",
             "(England/Wales) Urban city and town",
             "2023",
             "01",
@@ -1828,14 +1756,11 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_ind_care_home_rows = rows = [
+    filter_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
         ("N", CQCLValues.independent),
-        ("Y", CQCLValues.local_authority),
-        ("Y", ""),
-        ("Y", None),
     ]
 
-    expected_filtered_to_ind_care_home_rows = rows = [
+    expected_filtered_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
     ]
