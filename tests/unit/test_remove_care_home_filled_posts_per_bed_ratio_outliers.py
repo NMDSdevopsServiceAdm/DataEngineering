@@ -126,7 +126,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
-        df = df.sort(IndCQC.location_id).collect()
+        df = df.sort("number_of_beds_banded").collect()
         self.assertAlmostEquals(
             df[0]["avg_filled_posts_per_bed_ratio"], 1.2468, places=3
         )
