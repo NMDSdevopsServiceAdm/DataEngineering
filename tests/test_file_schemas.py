@@ -472,6 +472,7 @@ class CQCLocationsSchema:
             StructField(CQCLClean.provider_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
         ]
     )
 
@@ -499,6 +500,13 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+
+    expected_split_registered_schema = StructType(
+        [
+            *expected_ons_join_schema,
         ]
     )
 
@@ -837,6 +845,13 @@ class NonResFeaturesSchema(object):
         ]
     )
 
+    filter_to_non_care_home_schema = StructType(
+        [
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
 
 class CareHomeFeaturesSchema:
     clean_merged_data_schema = StructType(
@@ -864,7 +879,7 @@ class CareHomeFeaturesSchema:
         ]
     )
 
-    filter_to_ind_care_home_schema = StructType(
+    filter_to_care_home_schema = StructType(
         [
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
