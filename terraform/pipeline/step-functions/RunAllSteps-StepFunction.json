@@ -1,8 +1,8 @@
 {
   "Comment": "A description of my state machine",
-  "StartAt": "First stage",
+  "StartAt": "Bronze to Silver Transformation Layer",
   "States": {
-    "First stage": {
+    "Bronze to Silver Transformation Layer": {
       "Type": "Parallel",
       "Branches": [
         {
@@ -16,6 +16,19 @@
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+                }
+              },
+              "Next": "Run clean ascwds worker data job"
+            },
+            "Run clean ascwds worker data job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_ascwds_worker_job_name}",
+                "Arguments": {
+                  "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                  "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
                 }
               },
               "End": true
@@ -100,9 +113,10 @@
           }
         }
       ],
-      "Next": "Second stage"
+      "Next": "Silver to Gold Transformation Layer",
+      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer"
     },
-    "Second stage": {
+    "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
       "Next": "Success",
       "Branches": [
@@ -186,28 +200,28 @@
           }
         },
         {
-          "StartAt": "Run clean ascwds worker data job",
+          "StartAt": "Run ascwds crawler",
           "States": {
-            "Run clean ascwds worker data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ascwds_worker_job_name}",
-                "Arguments": {
-                  "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-                }
-              },
-              "Next": "run ascwds crawler"
-            },
-            "run ascwds crawler": {
+            "Run ascwds crawler": {
               "Type": "Task",
               "Parameters": {
                 "Name": "${ascwds_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Run ons crawler",
+          "States": {
+            "Run ons crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${ons_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
           }
         },
@@ -224,7 +238,8 @@
             }
           }
         }
-      ]
+      ],
+      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer"
     },
     "Success": {
       "Type": "Succeed"

@@ -46,6 +46,7 @@ resource "aws_sfn_state_machine" "run-branch-pipeline" {
     ascwds_crawler_name                         = module.ascwds_crawler.crawler_name
     cqc_crawler_name                            = module.cqc_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name           = module.ind_cqc_filled_posts_crawler.crawler_name
+    ons_crawler_name                            = module.ons_crawler_name.crawler_name
   })
 
   logging_configuration {
