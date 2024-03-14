@@ -1050,33 +1050,19 @@ class CQCLocationsData:
     ]
 
     locations_for_ons_join_rows = [
-        (
-            "loc-1",
-            "prov-1",
-            date(2020, 1, 1),
-            "PR1 9AB",
-        ),
-        (
-            "loc-2",
-            "prov-1",
-            date(2018, 1, 1),
-            "B69 3EG",
-        ),
+        ("loc-1", "prov-1", date(2020, 1, 1), "PR1 9AB", "Registered"),
+        ("loc-2", "prov-1", date(2018, 1, 1), "B69 3EG", "Deregistered"),
         (
             "loc-3",
             "prov-2",
             date(2020, 1, 1),
             "PR1 9HL",
+            "Deregistered",
         ),
-        (
-            "loc-4",
-            "prov-2",
-            date(2021, 1, 1),
-            "LS1 2AB",
-        ),
+        ("loc-4", "prov-2", date(2021, 1, 1), "LS1 2AB", "Registered"),
     ]
 
-    expected_ons_join_rows = [
+    expected_ons_join_with_null_rows = [
         (
             date(2019, 1, 1),
             "PR19AB",
@@ -1088,6 +1074,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Registered",
         ),
         (
             None,
@@ -1100,6 +1087,7 @@ class CQCLocationsData:
             None,
             None,
             None,
+            "Deregistered",
         ),
         (
             date(2019, 1, 1),
@@ -1112,6 +1100,7 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "East Riding of Yorkshire",
             "Yorkshire & Humber",
+            "Deregistered",
         ),
         (
             date(2021, 1, 1),
@@ -1124,6 +1113,36 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "Leeds",
             "Yorkshire & Humber",
+            "Registered",
+        ),
+    ]
+
+    expected_split_registered_no_nulls_rows = [
+        (
+            date(2019, 1, 1),
+            "PR19AB",
+            date(2020, 1, 1),
+            "loc-1",
+            "prov-1",
+            "Somerset",
+            "Oxen Lane",
+            date(2021, 1, 1),
+            "Somerset",
+            "English Region",
+            "Registered",
+        ),
+        (
+            date(2021, 1, 1),
+            "LS12AB",
+            date(2021, 1, 1),
+            "loc-4",
+            "prov-2",
+            "Leeds",
+            "Yorkshire & Humber",
+            date(2021, 1, 1),
+            "Leeds",
+            "Yorkshire & Humber",
+            "Registered",
         ),
     ]
 
