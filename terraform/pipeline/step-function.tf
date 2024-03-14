@@ -27,7 +27,7 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "run-branch-pipeline" {
+resource "aws_sfn_state_machine" "run-branch-pipeline-state-machine" {
   name     = "${local.workspace_prefix}-run-branch-pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
