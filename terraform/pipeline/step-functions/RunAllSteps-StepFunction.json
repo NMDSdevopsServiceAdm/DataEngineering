@@ -1,5 +1,5 @@
 {
-  "Comment": "A description of my state machine",
+  "Comment": "A state machine indicating the transformation steps from Bronze -> Silver -> Gold data layers, as divided by the stages",
   "StartAt": "Bronze to Silver Transformation Layer",
   "States": {
     "Bronze to Silver Transformation Layer": {
