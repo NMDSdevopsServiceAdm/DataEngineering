@@ -23,6 +23,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.features.helper import print_partition_info
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -97,7 +98,7 @@ def main(
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
-
+    print_partition_info(ind_cqc_location_df)
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
