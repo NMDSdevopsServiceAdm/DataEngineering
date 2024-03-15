@@ -44,7 +44,9 @@ def main(
     locations_df = null_ascwds_filled_post_outliers(locations_df)
 
     locations_df = create_column_with_repeated_values_removed(
-        IndCQC.ascwds_filled_posts_clean, IndCQC.ascwds_filled_posts_dedup_clean
+        locations_df,
+        IndCQC.ascwds_filled_posts_clean,
+        IndCQC.ascwds_filled_posts_dedup_clean,
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
