@@ -81,28 +81,30 @@ def main(
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
-    cqc_location_df = add_list_of_services_offered(cqc_location_df)
-    cqc_location_df = allocate_primary_service_type(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
         date_column_identifier=CQCLClean.registration_date,  # This will format both registration date and deregistration date
         raw_date_format="yyyy-MM-dd",
     )
-    cqc_location_df = cUtils.column_to_date(
-        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
-    )
-
-    cqc_location_df = join_ons_postcode_data_into_cqc_df(
-        cqc_location_df, ons_postcode_directory_df
-    )
-
-    cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
 
     (
         registered_locations_df,
         deregistered_locations_df,
     ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
 
+    registered_locations_df = add_list_of_services_offered(registered_locations_df)
+    registered_locations_df = allocate_primary_service_type(registered_locations_df)
+    registered_locations_df = cUtils.column_to_date(
+        registered_locations_df, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
+
+    registered_locations_df = join_cqc_provider_data(
+        registered_locations_df, cqc_provider_df
+    )
+
+    registered_locations_df = join_ons_postcode_data_into_cqc_df(
+        registered_locations_df, ons_postcode_directory_df
+    )
     registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         registered_locations_df
     )
