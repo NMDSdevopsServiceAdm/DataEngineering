@@ -40,34 +40,36 @@ class MainTests(CleanIndFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    # TODO ADD THIS TEST BACK IN!!!
-    # @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
-    # @patch("utils.utils.write_to_parquet")
-    # @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
-    # @patch("utils.utils.read_from_parquet")
-    # def test_main(
-    #     self,
-    #     read_from_parquet_mock,
-    #     calculate_ascwds_filled_posts_mock: Mock,
-    #     write_to_parquet_mock: Mock,
-    #     create_column_with_repeated_values_removed_mock: Mock,
-    # ):
-    #     read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
+    @patch("utils.utils.write_to_parquet")
+    @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
+    @patch("jobs.clean_ind_cqc_filled_posts.null_ascwds_filled_post_outliers")
+    @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
+    @patch("utils.utils.read_from_parquet")
+    def test_main(
+        self,
+        read_from_parquet_mock,
+        calculate_ascwds_filled_posts_mock: Mock,
+        null_ascwds_filled_post_outliers: Mock,
+        create_column_with_repeated_values_removed_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
 
-    #     job.main(
-    #         self.MERGE_IND_CQC_SOURCE,
-    #         self.CLEANED_IND_CQC_DESTINATION,
-    #     )
+        job.main(
+            self.MERGE_IND_CQC_SOURCE,
+            self.CLEANED_IND_CQC_DESTINATION,
+        )
 
-    #     calculate_ascwds_filled_posts_mock.assert_called_once()
-    #     self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 1)
+        calculate_ascwds_filled_posts_mock.assert_called_once()
+        null_ascwds_filled_post_outliers.assert_called_once()
+        create_column_with_repeated_values_removed_mock.assert_called_once()
 
-    #     write_to_parquet_mock.assert_called_once_with(
-    #         ANY,
-    #         self.CLEANED_IND_CQC_DESTINATION,
-    #         mode=ANY,
-    #         partitionKeys=self.partition_keys,
-    #     )
+        write_to_parquet_mock.assert_called_once_with(
+            ANY,
+            self.CLEANED_IND_CQC_DESTINATION,
+            mode=ANY,
+            partitionKeys=self.partition_keys,
+        )
 
     def test_replace_zero_beds_with_null(self):
         columns = [
