@@ -42,6 +42,10 @@ cleaned_ind_cqc_columns = [
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
     IndCQC.current_region,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
