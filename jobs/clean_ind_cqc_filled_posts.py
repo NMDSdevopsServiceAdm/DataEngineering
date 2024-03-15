@@ -111,8 +111,9 @@ def create_column_with_repeated_values_removed(
     new_column_name: str = None,
 ) -> DataFrame:
     """
-    ASCWDS repeats data until it is changed. This function creates a new column which converts repeated values to nulls,
-    so we only see newly submitted values once.
+    Some data we have (such as ASCWDS) repeats data until it is changed. This function creates a new column which converts repeated
+    values to nulls, so we only see newly submitted values once. This also happens as a result of joining the same datafile mulitple
+    times as part of the align dates field.
 
     For each location, this function iterates over the dataframe in date order and compares the current column value to the
     previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
