@@ -79,19 +79,23 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 3)
+
+        # TODO add back in once saving metrics
+        # self.assertEqual(write_to_parquet_patch.call_count, 3)
+
         write_to_parquet_patch.assert_any_call(
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-        write_to_parquet_patch.assert_any_call(
-            ANY,
-            self.METRICS_DESTINATION,
-            mode="append",
-            partitionKeys=self.partition_keys_for_metrics,
-        )
+        # TODO add back in once saving metrics
+        # write_to_parquet_patch.assert_any_call(
+        #     ANY,
+        #     self.METRICS_DESTINATION,
+        #     mode="append",
+        #     partitionKeys=self.partition_keys_for_metrics,
+        # )
 
     def test_populate_known_jobs_use_filled_posts_from_current_date(self):
         test_df = self.spark.createDataFrame(

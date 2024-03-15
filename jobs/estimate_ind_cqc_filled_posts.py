@@ -11,7 +11,7 @@ from pyspark.sql import DataFrame
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    IndCqcColumns as IndCqc,
+    IndCqcColumns as IndCQC,
 )
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
@@ -28,18 +28,22 @@ from utils.ind_cqc_filled_posts_utils.utils import (
 )
 
 cleaned_ind_cqc_columns = [
-    IndCqc.location_id,
-    IndCqc.services_offered,
-    IndCqc.primary_service_type,
-    IndCqc.people_directly_employed,
-    IndCqc.number_of_beds,
-    IndCqc.cqc_location_import_date,
-    IndCqc.ascwds_filled_posts,
-    IndCqc.ascwds_filled_posts_source,
-    IndCqc.ascwds_filled_posts_dedup_clean,
-    IndCqc.current_cssr,
-    IndCqc.current_region,
-    IndCqc.cqc_sector,
+    IndCQC.location_id,
+    IndCQC.name,
+    IndCQC.provider_id,
+    IndCQC.provider_name,
+    IndCQC.services_offered,
+    IndCQC.care_home,
+    IndCQC.primary_service_type,
+    IndCQC.people_directly_employed,
+    IndCQC.number_of_beds,
+    IndCQC.cqc_location_import_date,
+    IndCQC.ascwds_filled_posts,
+    IndCQC.ascwds_filled_posts_source,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.current_cssr,
+    IndCQC.current_region,
+    IndCQC.cqc_sector,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -74,86 +78,86 @@ def main(
     non_res_features_df = utils.read_from_parquet(non_res_features_source)
 
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCqc.estimate_filled_posts, F.lit(None).cast(IntegerType())
+        IndCQC.estimate_filled_posts, F.lit(None).cast(IntegerType())
     )
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCqc.estimate_filled_posts_source, F.lit(None).cast(StringType())
+        IndCQC.estimate_filled_posts_source, F.lit(None).cast(StringType())
     )
-    latest_import_date = get_max_import_date(
-        cleaned_ind_cqc_df, IndCqc.cqc_location_import_date
-    )
+    # latest_import_date = get_max_import_date(
+    #     cleaned_ind_cqc_df, IndCQC.cqc_location_import_date
+    # )
 
-    cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
-        cleaned_ind_cqc_df,
-        date_col=IndCqc.cqc_location_import_date,
-        date_format="yyyy-MM-dd",
-        new_col_name=IndCqc.unix_time,
-    )
+    # cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
+    #     cleaned_ind_cqc_df,
+    #     date_col=IndCQC.cqc_location_import_date,
+    #     date_format="yyyy-MM-dd",
+    #     new_col_name=IndCQC.unix_time,
+    # )
 
-    cleaned_ind_cqc_df = populate_estimate_jobs_when_filled_posts_known(
-        cleaned_ind_cqc_df
-    )
+    # cleaned_ind_cqc_df = populate_estimate_jobs_when_filled_posts_known(
+    #     cleaned_ind_cqc_df
+    # )
 
-    cleaned_ind_cqc_df = model_primary_service_rolling_average(
-        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
-    )
+    # cleaned_ind_cqc_df = model_primary_service_rolling_average(
+    #     cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    # )
 
-    cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
+    # cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
 
-    cleaned_ind_cqc_df, care_home_metrics_info = model_care_homes(
-        cleaned_ind_cqc_df,
-        carehome_features_df,
-        care_home_model_directory,
-    )
+    # cleaned_ind_cqc_df, care_home_metrics_info = model_care_homes(
+    #     cleaned_ind_cqc_df,
+    #     carehome_features_df,
+    #     care_home_model_directory,
+    # )
 
-    cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
+    # cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
-    care_home_model_info = care_home_model_directory.split("/")
-    write_metrics_df(
-        metrics_destination,
-        r2=care_home_metrics_info[IndCqc.r2],
-        data_percentage=care_home_metrics_info[IndCqc.percentage_data],
-        model_version=care_home_model_info[-2],
-        model_name="care_home_with_nursing_historical_jobs_prediction",
-        latest_import_date=latest_import_date,
-        job_run_id=job_run_id,
-        job_name=job_name,
-    )
+    # care_home_model_info = care_home_model_directory.split("/")
+    # write_metrics_df(
+    #     metrics_destination,
+    #     r2=care_home_metrics_info[IndCQC.r2],
+    #     data_percentage=care_home_metrics_info[IndCQC.percentage_data],
+    #     model_version=care_home_model_info[-2],
+    #     model_name="care_home_with_nursing_historical_jobs_prediction",
+    #     latest_import_date=latest_import_date,
+    #     job_run_id=job_run_id,
+    #     job_name=job_name,
+    # )
 
-    (
-        cleaned_ind_cqc_df,
-        non_residential_with_pir_metrics_info,
-    ) = model_non_residential_with_pir(
-        cleaned_ind_cqc_df,
-        non_res_features_df,
-        non_res_model_directory,
-    )
+    # (
+    #     cleaned_ind_cqc_df,
+    #     non_residential_with_pir_metrics_info,
+    # ) = model_non_residential_with_pir(
+    #     cleaned_ind_cqc_df,
+    #     non_res_features_df,
+    #     non_res_model_directory,
+    # )
 
-    non_res_model_info = non_res_model_directory.split("/")
-    write_metrics_df(
-        metrics_destination,
-        r2=non_residential_with_pir_metrics_info[IndCqc.r2],
-        data_percentage=non_residential_with_pir_metrics_info[IndCqc.percentage_data],
-        model_version=non_res_model_info[-2],
-        model_name="non_residential_with_pir",
-        latest_import_date=latest_import_date,
-        job_run_id=job_run_id,
-        job_name=job_name,
-    )
+    # non_res_model_info = non_res_model_directory.split("/")
+    # write_metrics_df(
+    #     metrics_destination,
+    #     r2=non_residential_with_pir_metrics_info[IndCQC.r2],
+    #     data_percentage=non_residential_with_pir_metrics_info[IndCQC.percentage_data],
+    #     model_version=non_res_model_info[-2],
+    #     model_name="non_residential_with_pir",
+    #     latest_import_date=latest_import_date,
+    #     job_run_id=job_run_id,
+    #     job_name=job_name,
+    # )
 
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
-        IndCqc.rolling_average, IndCqc.rolling_average_model
-    )
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCqc.estimate_filled_posts,
-        F.when(
-            F.col(IndCqc.estimate_filled_posts).isNotNull(),
-            F.col(IndCqc.estimate_filled_posts),
-        ).otherwise(F.col(IndCqc.rolling_average_model)),
-    )
-    cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
-        cleaned_ind_cqc_df, IndCqc.rolling_average_model, IndCqc.estimate_filled_posts
-    )
+    # cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
+    #     IndCQC.rolling_average, IndCQC.rolling_average_model
+    # )
+    # cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+    #     IndCQC.estimate_filled_posts,
+    #     F.when(
+    #         F.col(IndCQC.estimate_filled_posts).isNotNull(),
+    #         F.col(IndCQC.estimate_filled_posts),
+    #     ).otherwise(F.col(IndCQC.rolling_average_model)),
+    # )
+    # cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
+    #     cleaned_ind_cqc_df, IndCQC.rolling_average_model, IndCQC.estimate_filled_posts
+    # )
 
     print("Completed estimate independent CQC filled posts")
 
@@ -177,18 +181,18 @@ def populate_estimate_jobs_when_filled_posts_known(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
     df = df.withColumn(
-        IndCqc.estimate_filled_posts,
+        IndCQC.estimate_filled_posts,
         F.when(
             (
-                F.col(IndCqc.estimate_filled_posts).isNull()
-                & (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+                F.col(IndCQC.estimate_filled_posts).isNull()
+                & (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
             ),
-            F.col(IndCqc.ascwds_filled_posts_dedup_clean),
-        ).otherwise(F.col(IndCqc.estimate_filled_posts)),
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean),
+        ).otherwise(F.col(IndCQC.estimate_filled_posts)),
     )
 
     df = update_dataframe_with_identifying_rule(
-        df, "ascwds_filled_posts", IndCqc.estimate_filled_posts
+        df, "ascwds_filled_posts", IndCQC.estimate_filled_posts
     )
 
     return df
@@ -206,13 +210,13 @@ def write_metrics_df(
 ):
     spark = utils.get_spark()
     columns = [
-        IndCqc.r2,
-        IndCqc.percentage_data,
-        IndCqc.latest_import_date,
-        IndCqc.job_run_id,
-        IndCqc.job_name,
-        IndCqc.model_name,
-        IndCqc.model_version,
+        IndCQC.r2,
+        IndCQC.percentage_data,
+        IndCQC.latest_import_date,
+        IndCQC.job_run_id,
+        IndCQC.job_name,
+        IndCQC.model_name,
+        IndCQC.model_version,
     ]
     row = [
         (
@@ -226,13 +230,13 @@ def write_metrics_df(
         )
     ]
     df = spark.createDataFrame(row, columns)
-    df = df.withColumn(IndCqc.metrics_date, F.current_timestamp())
+    df = df.withColumn(IndCQC.metrics_date, F.current_timestamp())
     print(f"Writing model metrics as parquet to {metrics_destination}")
     utils.write_to_parquet(
         df,
         metrics_destination,
         mode="append",
-        partitionKeys=[IndCqc.model_name, IndCqc.model_version],
+        partitionKeys=[IndCQC.model_name, IndCQC.model_version],
     )
 
 
