@@ -461,11 +461,14 @@ module "clean_cqc_location_data_job" {
 }
 
 module "merge_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_name     = "merge_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "merge_ind_cqc_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "3.0"
+  worker_type       = "G.2X"
+  number_of_workers = 5
 
   job_parameters = {
     "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
