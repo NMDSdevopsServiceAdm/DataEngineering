@@ -48,6 +48,11 @@ def main(
         IndCQC.ascwds_filled_posts_clean,
         IndCQC.ascwds_filled_posts_dedup_clean,
     )
+    locations_df = create_column_with_repeated_values_removed(
+        locations_df,
+        IndCQC.people_directly_employed,
+        IndCQC.people_directly_employed_dedup,
+    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 

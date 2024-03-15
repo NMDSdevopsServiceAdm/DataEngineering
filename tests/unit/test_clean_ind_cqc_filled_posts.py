@@ -62,7 +62,7 @@ class MainTests(CleanIndFilledPostsTests):
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
         null_ascwds_filled_post_outliers.assert_called_once()
-        create_column_with_repeated_values_removed_mock.assert_called_once()
+        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
