@@ -4,7 +4,9 @@ from time import sleep
 import requests
 
 CQC_API_VERSION = "v1"
-RATE_LIMIT = 400  # Max ratelimit = 600 per minute.
+RATE_LIMIT = (
+    1000  # Max ratelimit = 600 per minute without partnercode, 2000 with a partnercode
+)
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 
@@ -25,10 +27,18 @@ def call_api(url, query_params=None):
     return response.json()
 
 
-def get_all_objects(stream, object_type, object_identifier, per_page=DEFAULT_PAGE_SIZE):
+def get_all_objects(
+    stream,
+    object_type,
+    object_identifier,
+    partner_code,
+    per_page=DEFAULT_PAGE_SIZE,
+):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}"
 
-    total_pages = call_api(url, {"perPage": per_page})["totalPages"]
+    total_pages = call_api(url, {"perPage": per_page, "partnerCode": partner_code})[
+        "totalPages"
+    ]
     all_objects = []
 
     print(f"Total pages: {total_pages}")

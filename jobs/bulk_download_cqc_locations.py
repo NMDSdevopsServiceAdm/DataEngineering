@@ -9,12 +9,15 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 
 
-def main(destination):
+def main(destination, aws_stored_partner_code):
     print("Collecting all locations from API")
     spark = utils.get_spark()
     df = None
     for paginated_locations in cqc.get_all_objects(
-        stream=True, object_type="locations", object_identifier=ColNames.location_id
+        stream=True,
+        object_type="locations",
+        object_identifier=ColNames.location_id,
+        partner_code=aws_stored_partner_code,
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
@@ -28,22 +31,19 @@ def main(destination):
     print(f"Finished! Files can be found in {destination}")
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--destination_prefix",
-        help="A destination bucket name in the format of s3://<bucket_name>/",
-        required=False,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return args.destination_prefix
-
-
 if __name__ == "__main__":
-    destination_prefix = collect_arguments()
+    (destination_prefix, aws_stored_partner_code) = utils.collect_arguments(
+        (
+            "--destination_prefix",
+            "Source s3 directory for parquet CQC providers dataset",
+            False,
+        ),
+        (
+            "--partner_code",
+            "The partner code used for increasing the rate limit, called from AWS secrets",
+            False,
+        ),
+    )
     todays_date = date.today()
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
@@ -54,4 +54,4 @@ if __name__ == "__main__":
 
     print(destination)
 
-    main(destination)
+    main(destination, aws_stored_partner_code)
