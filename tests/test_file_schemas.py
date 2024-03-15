@@ -281,23 +281,6 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    repeated_value_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-        ]
-    )
-
-    expected_without_repeated_values_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField("integer_column_deduplicated", IntegerType(), True),
-        ]
-    )
-
 
 @dataclass
 class ONSData:
@@ -812,6 +795,45 @@ class CleanIndCQCData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+        ]
+    )
+
+    repeated_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    expected_without_repeated_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("integer_column", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class FilterAscwdsFilledPostsSchema:
+    input_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+        ]
+    )
+    care_home_filled_posts_per_bed_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
     )
 
