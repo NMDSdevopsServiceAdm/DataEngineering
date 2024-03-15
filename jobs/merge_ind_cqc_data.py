@@ -101,6 +101,7 @@ def main(
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
+
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
