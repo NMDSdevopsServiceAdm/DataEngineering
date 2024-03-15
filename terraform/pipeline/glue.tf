@@ -329,7 +329,7 @@ module "bulk_cqc_providers_download_job" {
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--partner_code"       = "${locals.partner_code}"
+    "--partner_code"       = "${local.partner_code}"
     "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
@@ -346,7 +346,7 @@ module "bulk_cqc_locations_download_job" {
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--partner_code"       = "${locals.partner_code}"
+    "--partner_code"       = "${local.partner_code}"
     "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
