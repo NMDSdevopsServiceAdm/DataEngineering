@@ -1,4 +1,3 @@
-import argparse
 from datetime import date
 
 from utils import cqc_api as cqc
@@ -9,7 +8,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 
 
-def main(destination, aws_stored_partner_code):
+def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
     df = None
@@ -17,7 +16,9 @@ def main(destination, aws_stored_partner_code):
         stream=True,
         object_type="locations",
         object_identifier=ColNames.location_id,
-        partner_code=aws_stored_partner_code,
+        partner_code=cqc.get_secret(
+            secret_name="partner_code", region_name="eu-west-2"
+        ),
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
@@ -32,15 +33,10 @@ def main(destination, aws_stored_partner_code):
 
 
 if __name__ == "__main__":
-    (destination_prefix, aws_stored_partner_code) = utils.collect_arguments(
+    destination_prefix = utils.collect_arguments(
         (
             "--destination_prefix",
             "Source s3 directory for parquet CQC providers dataset",
-            False,
-        ),
-        (
-            "--partner_code",
-            "The partner code used for increasing the rate limit, called from AWS secrets",
             False,
         ),
     )
@@ -54,4 +50,4 @@ if __name__ == "__main__":
 
     print(destination)
 
-    main(destination, aws_stored_partner_code)
+    main(destination)

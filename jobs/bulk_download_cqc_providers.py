@@ -1,4 +1,3 @@
-import argparse
 from datetime import date
 
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
@@ -9,7 +8,7 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 )
 
 
-def main(destination, aws_stored_partner_code):
+def main(destination):
     print("Collecting all providers from API")
     spark = utils.get_spark()
     df = None
@@ -17,7 +16,9 @@ def main(destination, aws_stored_partner_code):
         stream=True,
         object_type="providers",
         object_identifier=ColNames.provider_id,
-        partner_code=aws_stored_partner_code,
+        partner_code=cqc.get_secret(
+            secret_name="partner_code", region_name="eu-west-2"
+        ),
     ):
         providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:
@@ -32,15 +33,10 @@ def main(destination, aws_stored_partner_code):
 
 
 if __name__ == "__main__":
-    destination_prefix, aws_stored_partner_code = utils.collect_arguments(
+    destination_prefix = utils.collect_arguments(
         (
             "--destination_prefix",
             "Source s3 directory for parquet CQC providers dataset",
-            False,
-        ),
-        (
-            "--partner_code",
-            "The partner code used for increasing the rate limit, called from AWS secrets",
             False,
         ),
     )
@@ -52,4 +48,4 @@ if __name__ == "__main__":
         date=todays_date,
     )
 
-    main(destination, aws_stored_partner_code)
+    main(destination)
