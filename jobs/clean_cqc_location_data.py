@@ -87,6 +87,9 @@ def main(
         date_column_identifier=CQCLClean.registration_date,  # This will format both registration date and deregistration date
         raw_date_format="yyyy-MM-dd",
     )
+    cqc_location_df = cUtils.column_to_date(
+        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
+    )
 
     (
         registered_locations_df,
@@ -95,9 +98,6 @@ def main(
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
-    registered_locations_df = cUtils.column_to_date(
-        registered_locations_df, Keys.import_date, CQCLClean.cqc_location_import_date
-    )
 
     registered_locations_df = join_cqc_provider_data(
         registered_locations_df, cqc_provider_df
