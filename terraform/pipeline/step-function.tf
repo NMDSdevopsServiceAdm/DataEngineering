@@ -26,6 +26,40 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "run-branch-pipeline-state-machine" {
+  name     = "${local.workspace_prefix}-run-branch-pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/RunAllSteps-StepFunction.json", {
+    dataset_bucket_uri                          = module.datasets_bucket.bucket_uri
+    clean_ascwds_workplace_job_name             = module.clean_ascwds_workplace_job.job_name
+    clean_ascwds_worker_job_name                = module.clean_ascwds_worker_job.job_name
+    clean_cqc_pir_data_job_name                 = module.clean_cqc_pir_data_job.job_name
+    clean_cqc_provider_data_job_name            = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name            = module.clean_cqc_location_data_job.job_name
+    clean_ons_data_job_name                     = module.clean_ons_data_job.job_name
+    merge_ind_cqc_data_job_name                 = module.merge_ind_cqc_data_job.job_name
+    clean_ind_cqc_filled_posts_job_name         = module.clean_ind_cqc_filled_posts_job.job_name
+    prepare_care_home_ind_cqc_features_job_name = module.prepare_care_home_ind_cqc_features_job.job_name
+    prepare_non_res_ind_cqc_features_job_name   = module.prepare_non_res_ind_cqc_features_job.job_name
+    ascwds_crawler_name                         = module.ascwds_crawler.crawler_name
+    cqc_crawler_name                            = module.cqc_crawler.crawler_name
+    ind_cqc_filled_posts_crawler_name           = module.ind_cqc_filled_posts_crawler.crawler_name
+    ons_crawler_name                            = module.ons_crawler.crawler_name
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "direct-payments-state-machine" {
   name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
