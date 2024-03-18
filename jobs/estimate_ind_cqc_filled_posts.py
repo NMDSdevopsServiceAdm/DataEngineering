@@ -1,0 +1,160 @@
+import sys
+
+import pyspark.sql
+from pyspark.sql import functions as F
+from pyspark.sql.types import (
+    IntegerType,
+    StringType,
+)
+
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
+from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
+from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
+
+from utils.ind_cqc_filled_posts_utils.utils import (
+    update_dataframe_with_identifying_rule,
+)
+
+cleaned_ind_cqc_columns = [
+    IndCQC.cqc_location_import_date,
+    IndCQC.location_id,
+    IndCQC.name,
+    IndCQC.provider_id,
+    IndCQC.provider_name,
+    IndCQC.services_offered,
+    IndCQC.primary_service_type,
+    IndCQC.care_home,
+    IndCQC.number_of_beds,
+    IndCQC.cqc_pir_import_date,
+    IndCQC.people_directly_employed,
+    IndCQC.people_directly_employed_dedup,
+    IndCQC.ascwds_workplace_import_date,
+    IndCQC.ascwds_filled_posts,
+    IndCQC.ascwds_filled_posts_source,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.current_ons_import_date,
+    IndCQC.current_cssr,
+    IndCQC.current_region,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+# Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
+
+
+def main(
+    cleaned_ind_cqc_source: str,
+    estimated_ind_cqc_destination: str,
+) -> pyspark.sql.DataFrame:
+    print("Estimating independent CQC filled posts...")
+
+    cleaned_ind_cqc_df = utils.read_from_parquet(
+        cleaned_ind_cqc_source, cleaned_ind_cqc_columns
+    )
+
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCQC.estimate_filled_posts, F.lit(None).cast(IntegerType())
+    )
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCQC.estimate_filled_posts_source, F.lit(None).cast(StringType())
+    )
+
+    cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
+        cleaned_ind_cqc_df,
+        date_col=IndCQC.cqc_location_import_date,
+        date_format="yyyy-MM-dd",
+        new_col_name=IndCQC.unix_time,
+    )
+
+    cleaned_ind_cqc_df = populate_estimate_jobs_when_filled_posts_known(
+        cleaned_ind_cqc_df
+    )
+
+    cleaned_ind_cqc_df = model_primary_service_rolling_average(
+        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    )
+
+    cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
+
+    cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
+
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
+        IndCQC.rolling_average, IndCQC.rolling_average_model
+    )
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
+        IndCQC.estimate_filled_posts,
+        F.when(
+            F.col(IndCQC.estimate_filled_posts).isNotNull(),
+            F.col(IndCQC.estimate_filled_posts),
+        ).otherwise(F.col(IndCQC.rolling_average_model)),
+    )
+    cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
+        cleaned_ind_cqc_df, IndCQC.rolling_average_model, IndCQC.estimate_filled_posts
+    )
+
+    print("Completed estimate independent CQC filled posts")
+
+    print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
+
+    utils.write_to_parquet(
+        cleaned_ind_cqc_df,
+        estimated_ind_cqc_destination,
+        mode="overwrite",
+        partitionKeys=PartitionKeys,
+    )
+
+
+def populate_estimate_jobs_when_filled_posts_known(
+    df: pyspark.sql.DataFrame,
+) -> pyspark.sql.DataFrame:
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts,
+        F.when(
+            (
+                F.col(IndCQC.estimate_filled_posts).isNull()
+                & (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
+            ),
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean),
+        ).otherwise(F.col(IndCQC.estimate_filled_posts)),
+    )
+
+    df = update_dataframe_with_identifying_rule(
+        df, "ascwds_filled_posts", IndCQC.estimate_filled_posts
+    )
+
+    return df
+
+
+if __name__ == "__main__":
+    print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
+    print(f"Job parameters: {sys.argv}")
+
+    (
+        cleaned_ind_cqc_source,
+        estimated_ind_cqc_destination,
+    ) = utils.collect_arguments(
+        (
+            "--cleaned_ind_cqc_source",
+            "Source s3 directory for cleaned_ind_cqc_filled_posts",
+        ),
+        (
+            "--estimated_ind_cqc_destination",
+            "A destination directory for outputting estimates for filled posts",
+        ),
+    )
+
+    main(
+        cleaned_ind_cqc_source,
+        estimated_ind_cqc_destination,
+    )
