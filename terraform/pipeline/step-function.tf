@@ -1,32 +1,3 @@
-resource "aws_sfn_state_machine" "data-engineering-state-machine" {
-  name     = "${local.workspace_prefix}-DataEngineeringPipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/DataEngineeringPipeline-StepFunction.json", {
-    prepare_locations_job_name                       = module.prepare_locations_job.job_name
-    prepare_locations_cleaned_job_name               = module.prepare_locations_cleaned_job.job_name
-    estimate_jobs_job_name                           = module.estimate_job_counts_job.job_name
-    locations_care_home_feature_engineering_job_name = module.locations_care_home_feature_engineering_job.job_name
-    locations_non_res_feature_engineering_job_name   = module.locations_non_res_feature_engineering_job.job_name
-    job_role_breakdown_job_name                      = module.job_role_breakdown_job.job_name
-    data_engineering_crawler_name                    = module.data_engineering_crawler.crawler_name
-    pipeline_resources_bucket_uri                    = module.pipeline_resources.bucket_uri
-    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
-    pipeline_failure_sns_topic                       = aws_sns_topic.pipeline_failures.arn
-    pipeline_failure_lambda_function_arn             = aws_lambda_function.error_notification_lambda.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy
-  ]
-}
-
 resource "aws_sfn_state_machine" "direct-payments-state-machine" {
   name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
