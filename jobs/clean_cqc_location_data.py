@@ -30,6 +30,20 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 
+import time
+
+
+def measure_execution_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Execution time of {func.__name__}: {end_time - start_time:.2f} seconds")
+        return result
+
+    return wrapper
+
+
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cqc_location_api_cols_to_import = [
@@ -117,10 +131,12 @@ def main(
     )
 
 
+@measure_execution_time
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == CQCLValues.social_care_identifier)
 
 
+@measure_execution_time
 def join_ons_postcode_data_into_cqc_df(
     cqc_df: DataFrame, ons_df: DataFrame
 ) -> DataFrame:
@@ -143,6 +159,7 @@ def join_ons_postcode_data_into_cqc_df(
     )
 
 
+@measure_execution_time
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
@@ -150,6 +167,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
 
 
+@measure_execution_time
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     cqc_loc_df = cqc_loc_df.withColumn(
         CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
@@ -157,6 +175,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     return cqc_loc_df
 
 
+@measure_execution_time
 def allocate_primary_service_type(df: DataFrame):
     return df.withColumn(
         CQCLClean.primary_service_type,
@@ -178,6 +197,7 @@ def allocate_primary_service_type(df: DataFrame):
     )
 
 
+@measure_execution_time
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     locations_df = cUtils.add_aligned_date_column(
         locations_df,
@@ -201,6 +221,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     return joined_df
 
 
+@measure_execution_time
 def split_dataframe_into_registered_and_deregistered_rows(
     locations_df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
@@ -224,6 +245,7 @@ def split_dataframe_into_registered_and_deregistered_rows(
     return registered_df, deregistered_df
 
 
+@measure_execution_time
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     cleaned_locations_df: DataFrame,
     column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
