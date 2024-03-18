@@ -256,7 +256,7 @@ module "job_role_breakdown_job" {
   }
 }
 
-module "clean_ind_cqc_filled_posts" {
+module "clean_ind_cqc_filled_posts_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_ind_cqc_filled_posts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
