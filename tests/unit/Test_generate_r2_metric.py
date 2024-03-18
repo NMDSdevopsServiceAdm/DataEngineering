@@ -1,34 +1,26 @@
-from pyspark.sql import SparkSession
-
-from utils.estimate_job_count.r2_metric import generate_r2_metric
 import unittest
 import warnings
+
+from utils.estimate_filled_posts.r2_metric import generate_r2_metric
+from tests.test_file_data import GenerateRSquaredMetric as Data
+from tests.test_file_schemas import GenerateRSquaredMetric as Schemas
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 
 
 class TestGenerateR2Metric(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_estimate_2021_jobs"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
         warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-    def generate_predictions_df(self):
-        # fmt: off
-        columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region", "number_of_beds", "snapshot_date", "prediction"]
-
-        rows = [
-            ("1-000000001", "Care home with nursing", 50, "Y", "South West", 67, "2022-03-29", 56.89),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", 12.34),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(
-            rows,
-            schema=columns,
-        )
 
     def test_generate_r2_metric(self):
-        df = self.generate_predictions_df()
-        r2 = generate_r2_metric(df, "prediction", "job_count")
+        df = self.spark.createDataFrame(
+            Data.cqc_ind_cleaned_rows, Schemas.cqc_ind_cleaned_schema
+        )
+        r2 = generate_r2_metric(
+            df, IndCqc.prediction, IndCqc.ascwds_filled_posts_dedup_clean
+        )
 
         self.assertAlmostEqual(r2, 0.93, places=2)
