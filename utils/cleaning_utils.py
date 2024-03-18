@@ -5,7 +5,6 @@ from pyspark.sql import (
 
 import pyspark.sql.functions as F
 
-
 key: str = "key"
 value: str = "value"
 import_date_s3_uri_format = "yyyyMMdd"
