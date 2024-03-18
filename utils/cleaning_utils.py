@@ -5,6 +5,20 @@ from pyspark.sql import (
 
 import pyspark.sql.functions as F
 
+import time
+
+
+def measure_execution_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Execution time of {func.__name__}: {end_time - start_time:.2f} seconds")
+        return result
+
+    return wrapper
+
+
 key: str = "key"
 value: str = "value"
 import_date_s3_uri_format = "yyyyMMdd"
@@ -90,6 +104,7 @@ def set_bounds_for_columns(
     return df
 
 
+@measure_execution_time
 def column_to_date(
     df: DataFrame,
     column_to_format: str,

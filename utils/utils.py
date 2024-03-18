@@ -13,6 +13,19 @@ import boto3
 
 TWO_MB = 2000000
 
+import time
+
+
+def measure_execution_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Execution time of {func.__name__}: {end_time - start_time:.2f} seconds")
+        return result
+
+    return wrapper
+
 
 class SetupSpark(object):
     def __init__(self):
@@ -91,6 +104,7 @@ def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date
     return output_dir
 
 
+@measure_execution_time
 def read_from_parquet(
     data_source: str, selected_columns: List[str] = None
 ) -> pyspark.sql.DataFrame:
@@ -112,6 +126,7 @@ def read_from_parquet(
     return df
 
 
+@measure_execution_time
 def write_to_parquet(
     df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
 ):
@@ -136,6 +151,7 @@ def read_csv_with_defined_schema(source, schema):
     return df
 
 
+@measure_execution_time
 def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
     date_columns = [column for column in df.columns if date_column_identifier in column]
 
