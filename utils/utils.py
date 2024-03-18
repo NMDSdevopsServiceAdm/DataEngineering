@@ -130,7 +130,12 @@ def read_from_parquet(
 def write_to_parquet(
     df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
 ):
-    df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
+    if mode == "overwrite":
+        df.write.mode(mode).partitionBy(*partitionKeys).option(
+            "partitionOverwriteMode", "dynamic"
+        ).parquet(output_dir)
+    else:
+        df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
 def read_csv(source, delimiter=","):
