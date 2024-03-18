@@ -1,11 +1,17 @@
 import unittest
 import warnings
+from datetime import date
 
-from utils.estimate_job_count.models.non_res_with_pir import (
+from utils.estimate_filled_posts.models.non_res_with_pir import (
     model_non_residential_with_pir,
 )
-from pyspark.sql import SparkSession
-from pyspark.ml.linalg import Vectors
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
+from tests.test_file_data import ModelNonResidential as Data
+from tests.test_file_schemas import ModelNonResidential as Schemas
+from utils import utils
 
 
 class TestModelNonResWithPir(unittest.TestCase):
@@ -14,76 +20,47 @@ class TestModelNonResWithPir(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_estimate_2021_jobs"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
+        self.cleaned_cqc_ind_df = self.spark.createDataFrame(
+            Data.cleaned_cqc_ind_rows, Schemas.cleaned_cqc_ind_schema
+        )
+        self.non_res_features_df = self.spark.createDataFrame(
+            Data.non_res_features_rows, Schemas.non_res_features_schema
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    def generate_locations_df(self):
-        # fmt: off
-        columns = [
-            "locationid",
-            "primary_service_type",
-            "estimate_job_count",
-            "estimate_job_count_source",
-            "carehome",
-            "ons_region",
-            "number_of_beds",
-            "snapshot_date"
-        ]
-        rows = [
-            ("1-000000001", "Care home with nursing", None, None, "Y", "South West", 67, "2022-03-29"),
-            ("1-000000002", "Care home without nursing", None, None, "N", "Merseyside", 12, "2022-03-29"),
-            ("1-000000003", "Care home with nursing", None, None, None, "Merseyside", 34, "2022-03-29"),
-            ("1-000000004", "non-residential", 10, "already_populated", "N", None, 0, "2022-03-29"),
-            ("1-000000001", "non-residential", None, None, "N", None, 0, "2022-02-20"),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(rows, columns)
+    def test_model_non_res_with_pir_returns_all_locations(self):
+        cleaned_ind_cqc_df = self.cleaned_cqc_ind_df
+        features_df = self.non_res_features_df
 
-    def generate_features_df(self):
-        # fmt: off
-        feature_columns = ["locationid", "primary_service_type", "job_count", "carehome", "ons_region",
-                           "number_of_beds", "snapshot_date", "care_home_features", "non_residential_inc_pir_features",
-                           "people_directly_employed", "snapshot_year", "snapshot_month", "snapshot_day"]
-
-        feature_rows = [
-            ("1-000000001", "Care home with nursing", 10, "Y", "South West", 67, "2022-03-29",
-             Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), None, 34, "2021", "05", "05"),
-            ("1-000000002", "non-residential", 10, "N", "Merseyside", 12, "2022-03-29", None,
-             Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05"),
-            ("1-000000003", "Care home with nursing", 20, "N", "Merseyside", 34, "2022-03-29", None, None, 0, "2021",
-             "05", "05"),
-            ("1-000000004", "non-residential", 10, "N", None, 0, "2022-03-29", None, None, None, "2021", "05", "05"),
-        ]
-        # fmt: on
-        return self.spark.createDataFrame(
-            feature_rows,
-            schema=feature_columns,
+        df, _ = model_non_residential_with_pir(
+            cleaned_ind_cqc_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
         )
+
+        self.assertEqual(df.count(), 5)
 
     def test_model_non_residential_with_pir_estimates_jobs_for_non_res_with_pir_only(
         self,
     ):
-        locations_df = self.generate_locations_df()
-        features_df = self.generate_features_df()
-
         df, _ = model_non_residential_with_pir(
-            locations_df, features_df, f"{self.NON_RES_WITH_PIR_MODEL}1.0.0"
+            self.cleaned_cqc_ind_df,
+            self.non_res_features_df,
+            f"{self.NON_RES_WITH_PIR_MODEL}1.0.0",
         )
         expected_location_without_prediction = df.where(
-            (df["locationid"] == "1-000000001") & (df["snapshot_date"] == "2022-03-29")
+            (df[IndCqc.location_id] == "1-000000001")
+            & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
         ).collect()[0]
         expected_location_with_prediction = df.where(
-            df["locationid"] == "1-000000002"
+            df[IndCqc.location_id] == "1-000000002"
         ).collect()[0]
 
-        self.assertIsNotNone(expected_location_with_prediction.estimate_job_count)
+        self.assertIsNotNone(expected_location_with_prediction.estimate_filled_posts)
         self.assertIsNotNone(
-            expected_location_with_prediction.estimate_job_count_source
+            expected_location_with_prediction.estimate_filled_posts_source
         )
-        self.assertIsNone(expected_location_without_prediction.estimate_job_count)
+        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
         self.assertIsNone(
-            expected_location_without_prediction.estimate_job_count_source
+            expected_location_without_prediction.estimate_filled_posts_source
         )

@@ -7,7 +7,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
 from utils import utils
-from utils.estimate_job_count.column_names import (
+from utils.estimate_filled_posts.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
     SNAPSHOT_DATE,

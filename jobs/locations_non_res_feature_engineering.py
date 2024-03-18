@@ -105,6 +105,8 @@ def main(prepared_locations_source, destination=None):
         new_col_name=new_cols_for_features.date_diff,
         snapshot_date_col=features_from_prepare_locations.snapshot_date,
     )
+    print("print column list:")
+    print(data_with_date_diff.columns)
 
     list_for_vectorisation: List[str] = sorted(
         [
