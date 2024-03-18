@@ -75,8 +75,6 @@ def main(
         new_col_name=IndCQC.date_diff,
         snapshot_date_col=IndCQC.cqc_location_import_date,
     )
-    print("print column list:")
-    print(data_with_date_diff.columns)
 
     list_for_vectorisation: List[str] = sorted(
         [
