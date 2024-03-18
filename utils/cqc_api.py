@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 
 CQC_API_VERSION = "v1"
 RATE_LIMIT = (
-    2000  # Max ratelimit = 600 per minute without partnercode, 2000 with a partnercode
+    400  # Max ratelimit = 600 per minute without partnercode, 2000 with a partnercode
 )
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
