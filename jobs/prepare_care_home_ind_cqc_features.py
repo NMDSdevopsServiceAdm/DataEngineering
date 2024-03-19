@@ -7,8 +7,8 @@ from pyspark.sql import DataFrame
 from utils import utils
 
 from utils.feature_engineering_dictionaries import (
-    SERVICES_LOOKUP,
-    RURAL_URBAN_INDICATOR_LOOKUP,
+    SERVICES_LOOKUP as services_dict,
+    RURAL_URBAN_INDICATOR_LOOKUP as rural_urban_indicator_dict,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -30,27 +30,23 @@ def main(
 ) -> DataFrame:
     print("Creating care home features dataset...")
 
-    services_dict = SERVICES_LOOKUP
-    rural_urban_indicator_dict = RURAL_URBAN_INDICATOR_LOOKUP
-
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    filtered_loc_data = filter_locations_df_for_independent_care_home_data(
-        df=locations_df,
-        carehome_col_name=IndCQC.care_home,
-        cqc_col_name=IndCQC.cqc_sector,
-    )
+    filtered_loc_data = filter_df_to_care_home_only(locations_df)
+
     data_with_service_count = add_service_count_to_data(
         df=filtered_loc_data,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
+
     service_keys = list(services_dict.keys())
     data_with_expanded_services = column_expansion_with_dict(
         df=data_with_service_count,
         col_name=IndCQC.services_offered,
         lookup_dict=services_dict,
     )
+
     rui_indicators = list(rural_urban_indicator_dict.keys())
     data_with_rui = add_rui_data_data_frame(
         df=data_with_expanded_services,
@@ -97,12 +93,13 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
-        IndCQC.job_count,
+        IndCQC.ascwds_filled_posts_dedup_clean,
         Keys.year,
         Keys.month,
         Keys.day,
         Keys.import_date,
     )
+
     print("distinct_regions")
     print(distinct_regions)
     print("number_of_features:")
@@ -119,14 +116,8 @@ def main(
     )
 
 
-def filter_locations_df_for_independent_care_home_data(
-    df: DataFrame, carehome_col_name: str, cqc_col_name: str
-) -> DataFrame:
-    care_home_data = df.filter(F.col(carehome_col_name) == "Y")
-    independent_care_home_data = care_home_data.filter(
-        F.col(cqc_col_name) == "Independent"
-    )
-    return independent_care_home_data
+def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(IndCQC.care_home) == "Y")
 
 
 def get_list_of_distinct_ons_regions(df: DataFrame) -> List[str]:
@@ -136,7 +127,7 @@ def get_list_of_distinct_ons_regions(df: DataFrame) -> List[str]:
 
 
 if __name__ == "__main__":
-    print("Spark job 'create_care_home_feature_ind_cqc_filled_posts' starting...")
+    print("Spark job 'prepare_care_home_ind_cqc_features' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -157,3 +148,5 @@ if __name__ == "__main__":
         ind_cqc_filled_posts_cleaned_source,
         care_home_ind_cqc_features_destination,
     )
+
+    print("Spark job 'prepare_care_home_ind_cqc_features' complete")

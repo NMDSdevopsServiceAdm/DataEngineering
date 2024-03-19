@@ -1,19 +1,23 @@
-resource "aws_sfn_state_machine" "data-engineering-state-machine" {
-  name     = "${local.workspace_prefix}-DataEngineeringPipeline"
+resource "aws_sfn_state_machine" "run-branch-pipeline-state-machine" {
+  name     = "${local.workspace_prefix}-run-branch-pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/DataEngineeringPipeline-StepFunction.json", {
-    prepare_locations_job_name                       = module.prepare_locations_job.job_name
-    prepare_locations_cleaned_job_name               = module.prepare_locations_cleaned_job.job_name
-    estimate_jobs_job_name                           = module.estimate_job_counts_job.job_name
-    locations_care_home_feature_engineering_job_name = module.locations_care_home_feature_engineering_job.job_name
-    locations_non_res_feature_engineering_job_name   = module.locations_non_res_feature_engineering_job.job_name
-    job_role_breakdown_job_name                      = module.job_role_breakdown_job.job_name
-    data_engineering_crawler_name                    = module.data_engineering_crawler.crawler_name
-    pipeline_resources_bucket_uri                    = module.pipeline_resources.bucket_uri
-    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
-    pipeline_failure_sns_topic                       = aws_sns_topic.pipeline_failures.arn
-    pipeline_failure_lambda_function_arn             = aws_lambda_function.error_notification_lambda.arn
+  definition = templatefile("step-functions/RunAllSteps-StepFunction.json", {
+    dataset_bucket_uri                          = module.datasets_bucket.bucket_uri
+    clean_ascwds_workplace_job_name             = module.clean_ascwds_workplace_job.job_name
+    clean_ascwds_worker_job_name                = module.clean_ascwds_worker_job.job_name
+    clean_cqc_pir_data_job_name                 = module.clean_cqc_pir_data_job.job_name
+    clean_cqc_provider_data_job_name            = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name            = module.clean_cqc_location_data_job.job_name
+    clean_ons_data_job_name                     = module.clean_ons_data_job.job_name
+    merge_ind_cqc_data_job_name                 = module.merge_ind_cqc_data_job.job_name
+    clean_ind_cqc_filled_posts_job_name         = module.clean_ind_cqc_filled_posts_job.job_name
+    prepare_care_home_ind_cqc_features_job_name = module.prepare_care_home_ind_cqc_features_job.job_name
+    prepare_non_res_ind_cqc_features_job_name   = module.prepare_non_res_ind_cqc_features_job.job_name
+    ascwds_crawler_name                         = module.ascwds_crawler.crawler_name
+    cqc_crawler_name                            = module.cqc_crawler.crawler_name
+    ind_cqc_filled_posts_crawler_name           = module.ind_cqc_filled_posts_crawler.crawler_name
+    ons_crawler_name                            = module.ons_crawler.crawler_name
   })
 
   logging_configuration {
@@ -23,7 +27,8 @@ resource "aws_sfn_state_machine" "data-engineering-state-machine" {
   }
 
   depends_on = [
-    aws_iam_policy.step_function_iam_policy
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
   ]
 }
 

@@ -8,6 +8,7 @@ import utils.cleaning_utils as cUtils
 from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
+from pyspark.sql.utils import AnalysisException
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -28,6 +29,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     current_geography_columns,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
+
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -80,8 +82,6 @@ def main(
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
-    cqc_location_df = add_list_of_services_offered(cqc_location_df)
-    cqc_location_df = allocate_primary_service_type(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
         date_column_identifier=CQCLClean.registration_date,  # This will format both registration date and deregistration date
@@ -91,16 +91,24 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    cqc_location_df = join_ons_postcode_data_into_cqc_df(
-        cqc_location_df, ons_postcode_directory_df
-    )
-
-    cqc_location_df = join_cqc_provider_data(cqc_location_df, cqc_provider_df)
-
     (
         registered_locations_df,
         deregistered_locations_df,
     ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+
+    registered_locations_df = add_list_of_services_offered(registered_locations_df)
+    registered_locations_df = allocate_primary_service_type(registered_locations_df)
+
+    registered_locations_df = join_cqc_provider_data(
+        registered_locations_df, cqc_provider_df
+    )
+
+    registered_locations_df = join_ons_postcode_data_into_cqc_df(
+        registered_locations_df, ons_postcode_directory_df
+    )
+    registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+        registered_locations_df
+    )
 
     utils.write_to_parquet(
         registered_locations_df,
@@ -215,6 +223,63 @@ def split_dataframe_into_registered_and_deregistered_rows(
     )
 
     return registered_df, deregistered_df
+
+
+def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+    cleaned_locations_df: DataFrame,
+    column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
+) -> DataFrame:
+    """
+    Checks a cleaned locations df for any CQC postcodes which could not be found in the ONS postcode directory based on the column_to_check_for_nulls.
+    This column should thus be chosen to be one column that would contain null values from a left join in the above case.
+    This is because this function attempts to create a small dataframe which should be empty in the case where column_to_check_for_nulls contains no nulls,
+    and thus implies all CQC postcodes were found in the ONS postcode directory.
+
+    Args:
+        cleaned_locations_df (DataFrame): A cleaned locations df that must contain at least the column_to_check_for_nulls, postcode and locationId.
+        column_to_check_for_nulls (str): Default - current_ons_import_date, should be any one of the left-joined columns to check for null entries.
+
+    Returns:
+        cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
+
+    Raises:
+        AnalysisException: If column_to_check_for_nulls, CQCLClean.postcode or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
+    """
+
+    COLUMNS_TO_FILTER = [
+        CQCLClean.postcode,
+        CQCLClean.location_id,
+    ]
+    list_of_columns = cleaned_locations_df.columns
+    for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
+        if not column in list_of_columns:
+            raise AnalysisException(
+                f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
+            )
+
+    sample_clean_null_df = cleaned_locations_df.select(
+        [column_to_check_for_nulls, *COLUMNS_TO_FILTER]
+    ).filter(F.col(column_to_check_for_nulls).isNull())
+    if not sample_clean_null_df.rdd.isEmpty():
+        list_of_tuples = []
+        data_to_log = (
+            sample_clean_null_df.select(COLUMNS_TO_FILTER)
+            .groupBy(COLUMNS_TO_FILTER)
+            .count()
+            .collect()
+        )
+
+        for row in data_to_log:
+            list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
+        raise TypeError(
+            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
+        )
+    else:
+        print(
+            "All postcodes were found in the ONS postcode file, returning original dataframe"
+        )
+        return cleaned_locations_df
 
 
 if __name__ == "__main__":

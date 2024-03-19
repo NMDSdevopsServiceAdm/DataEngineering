@@ -1,39 +1,44 @@
 import unittest
 import warnings
 
-from pyspark.sql import SparkSession
 
-import utils.estimate_job_count.models.extrapolation as job
-from tests.test_file_generator import (
-    generate_data_for_extrapolation_model,
-    generate_data_for_extrapolation_location_filtering_df,
-    generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df,
-    generate_data_for_adding_extrapolated_values_df,
-    generate_data_for_adding_extrapolated_values_to_be_added_into_df,
-    generate_data_for_creating_extrapolated_ratios_df,
-    generate_data_for_creating_extrapolated_model_outputs_df,
+import utils.estimate_filled_posts.models.extrapolation as job
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
 )
+from tests.test_file_data import ModelExtrapolation as Data
+from tests.test_file_schemas import ModelExtrapolation as Schemas
 
 
 class TestModelExtrapolation(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_extrapolation").getOrCreate()
-        self.extrapolation_df = generate_data_for_extrapolation_model()
-        self.data_to_filter_df = generate_data_for_extrapolation_location_filtering_df()
-        self.data_for_first_and_last_submissions_df = (
-            generate_data_for_job_count_and_rolling_average_first_and_last_submissions_df()
+        self.spark = utils.get_spark()
+        self.extrapolation_df = self.spark.createDataFrame(
+            Data.extrapolation_rows, Schemas.extrapolation_schema
         )
-        self.data_for_extrapolated_values_df = (
-            generate_data_for_adding_extrapolated_values_df()
+        self.data_to_filter_df = self.spark.createDataFrame(
+            Data.data_to_filter_rows, Schemas.data_to_filter_schema
+        )
+        self.data_for_first_and_last_submissions_df = self.spark.createDataFrame(
+            Data.first_and_last_submission_rows,
+            Schemas.first_and_last_submission_schema,
+        )
+        self.data_for_extrapolated_values_df = self.spark.createDataFrame(
+            Data.extrapolated_values_rows, Schemas.extrapolated_values_schema
         )
         self.data_for_extrapolated_values_to_be_added_into_df = (
-            generate_data_for_adding_extrapolated_values_to_be_added_into_df()
+            self.spark.createDataFrame(
+                Data.extrapolated_values_to_be_added_rows,
+                Schemas.extrapolated_values_to_be_added_schema,
+            )
         )
-        self.data_for_extrapolated_ratios_df = (
-            generate_data_for_creating_extrapolated_ratios_df()
+        self.data_for_extrapolated_ratios_df = self.spark.createDataFrame(
+            Data.extrapolated_ratios_rows, Schemas.extrapolated_ratios_schema
         )
-        self.data_for_extrapolated_model_outputs_df = (
-            generate_data_for_creating_extrapolated_model_outputs_df()
+        self.data_for_extrapolated_model_outputs_df = self.spark.createDataFrame(
+            Data.extrapolated_model_outputs_rows,
+            Schemas.extrapolated_model_outputs_schema,
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -46,50 +51,50 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(
             output_df.columns,
             [
-                "locationid",
-                "snapshot_date",
-                "unix_time",
-                "job_count",
-                "primary_service_type",
-                "estimate_job_count",
-                "estimate_job_count_source",
-                "rolling_average_model",
-                "extrapolation_model",
+                IndCqc.location_id,
+                IndCqc.cqc_location_import_date,
+                IndCqc.unix_time,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.primary_service_type,
+                IndCqc.estimate_filled_posts,
+                IndCqc.estimate_filled_posts_source,
+                IndCqc.rolling_average_model,
+                IndCqc.extrapolation_model,
             ],
         )
 
     def test_model_extrapolation_outputted_values_correct(self):
         df = job.model_extrapolation(self.extrapolation_df)
-        df = df.sort("locationid", "snapshot_date").collect()
+        df = df.sort(IndCqc.location_id, IndCqc.cqc_location_import_date).collect()
 
-        self.assertEqual(df[1]["extrapolation_model"], None)
+        self.assertEqual(df[1][IndCqc.extrapolation_model], None)
 
         self.assertAlmostEqual(
-            df[4]["extrapolation_model"],
+            df[4][IndCqc.extrapolation_model],
             4.0159045,
             places=5,
         )
         self.assertAlmostEqual(
-            df[6]["extrapolation_model"],
+            df[6][IndCqc.extrapolation_model],
             3.9840954,
             places=5,
         )
 
         self.assertAlmostEqual(
-            df[7]["extrapolation_model"],
+            df[7][IndCqc.extrapolation_model],
             19.920792,
             places=5,
         )
         self.assertAlmostEqual(
-            df[9]["extrapolation_model"],
+            df[9][IndCqc.extrapolation_model],
             20.079207,
             places=5,
         )
 
-        self.assertEqual(df[10]["extrapolation_model"], None)
+        self.assertEqual(df[10][IndCqc.extrapolation_model], None)
 
-    def test_filter_to_locations_who_have_a_job_count_at_some_point(self):
-        output_df = job.filter_to_locations_who_have_a_job_count_at_some_point(
+    def test_filter_to_locations_who_have_a_filled_posts_at_some_point(self):
+        output_df = job.filter_to_locations_who_have_a_filled_posts_at_some_point(
             self.data_to_filter_df
         )
 
@@ -97,21 +102,23 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(
             output_df.columns,
             [
-                "locationid",
-                "max_job_count",
-                "snapshot_date",
-                "job_count",
-                "primary_service_type",
+                IndCqc.location_id,
+                IndCqc.max_filled_posts,
+                IndCqc.cqc_location_import_date,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.primary_service_type,
             ],
         )
 
-        output_df = output_df.sort("locationid", "snapshot_date").collect()
-        self.assertEqual(output_df[0]["locationid"], "1-000000001")
-        self.assertEqual(output_df[0]["max_job_count"], 15.0)
-        self.assertEqual(output_df[1]["locationid"], "1-000000003")
-        self.assertEqual(output_df[1]["max_job_count"], 20.0)
-        self.assertEqual(output_df[2]["locationid"], "1-000000003")
-        self.assertEqual(output_df[2]["max_job_count"], 20.0)
+        output_df = output_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        self.assertEqual(output_df[0][IndCqc.location_id], "1-000000001")
+        self.assertEqual(output_df[0][IndCqc.max_filled_posts], 15.0)
+        self.assertEqual(output_df[1][IndCqc.location_id], "1-000000003")
+        self.assertEqual(output_df[1][IndCqc.max_filled_posts], 20.0)
+        self.assertEqual(output_df[2][IndCqc.location_id], "1-000000003")
+        self.assertEqual(output_df[2][IndCqc.max_filled_posts], 20.0)
 
     def test_add_first_and_last_submission_date_cols(self):
         output_df = job.add_first_and_last_submission_date_cols(
@@ -120,33 +127,35 @@ class TestModelExtrapolation(unittest.TestCase):
 
         self.assertEqual(output_df.count(), 6)
 
-        output_df = output_df.sort("locationid", "unix_time").collect()
-        self.assertEqual(output_df[0][job.FIRST_SUBMISSION_TIME], 1675209600)
-        self.assertEqual(output_df[0][job.LAST_SUBMISSION_TIME], 1675209600)
-        self.assertEqual(output_df[2][job.FIRST_SUBMISSION_TIME], 1675209600)
-        self.assertEqual(output_df[2][job.LAST_SUBMISSION_TIME], 1675209600)
-        self.assertEqual(output_df[3][job.FIRST_SUBMISSION_TIME], 1672531200)
-        self.assertEqual(output_df[3][job.LAST_SUBMISSION_TIME], 1675209600)
-        self.assertEqual(output_df[5][job.FIRST_SUBMISSION_TIME], 1672531200)
-        self.assertEqual(output_df[5][job.LAST_SUBMISSION_TIME], 1675209600)
+        output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        self.assertEqual(output_df[0][IndCqc.first_submission_time], 1675209600)
+        self.assertEqual(output_df[0][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[2][IndCqc.first_submission_time], 1675209600)
+        self.assertEqual(output_df[2][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[3][IndCqc.first_submission_time], 1672531200)
+        self.assertEqual(output_df[3][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[5][IndCqc.first_submission_time], 1672531200)
+        self.assertEqual(output_df[5][IndCqc.last_submission_time], 1675209600)
 
-    def test_add_job_count_and_rolling_average_for_first_and_last_submission(self):
-        output_df = job.add_job_count_and_rolling_average_for_first_and_last_submission(
-            self.data_for_first_and_last_submissions_df
+    def test_add_filled_posts_and_rolling_average_for_first_and_last_submission(self):
+        output_df = (
+            job.add_filled_posts_and_rolling_average_for_first_and_last_submission(
+                self.data_for_first_and_last_submissions_df
+            )
         )
 
         self.assertEqual(output_df.count(), 6)
 
-        output_df = output_df.sort("locationid", "unix_time").collect()
-        self.assertEqual(output_df[1][job.FIRST_JOB_COUNT], 5.0)
-        self.assertEqual(output_df[1][job.FIRST_ROLLING_AVERAGE], 15.0)
-        self.assertEqual(output_df[1][job.LAST_JOB_COUNT], 5.0)
-        self.assertEqual(output_df[1][job.LAST_ROLLING_AVERAGE], 15.0)
+        output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        self.assertEqual(output_df[1][IndCqc.first_filled_posts], 5.0)
+        self.assertEqual(output_df[1][IndCqc.first_rolling_average], 15.0)
+        self.assertEqual(output_df[1][IndCqc.last_filled_posts], 5.0)
+        self.assertEqual(output_df[1][IndCqc.last_rolling_average], 15.0)
 
-        self.assertEqual(output_df[4][job.FIRST_JOB_COUNT], 4.0)
-        self.assertEqual(output_df[4][job.FIRST_ROLLING_AVERAGE], 12.0)
-        self.assertEqual(output_df[4][job.LAST_JOB_COUNT], 6.0)
-        self.assertEqual(output_df[4][job.LAST_ROLLING_AVERAGE], 15.0)
+        self.assertEqual(output_df[4][IndCqc.first_filled_posts], 4.0)
+        self.assertEqual(output_df[4][IndCqc.first_rolling_average], 12.0)
+        self.assertEqual(output_df[4][IndCqc.last_filled_posts], 6.0)
+        self.assertEqual(output_df[4][IndCqc.last_rolling_average], 15.0)
 
     def test_create_extrapolation_ratio_column(self):
         output_df = job.create_extrapolation_ratio_column(
@@ -155,11 +164,11 @@ class TestModelExtrapolation(unittest.TestCase):
 
         self.assertEqual(output_df.count(), 3)
 
-        output_df = output_df.sort("locationid").collect()
-        self.assertEqual(output_df[0][job.EXTRAPOLATION_RATIO], 0.5)
-        self.assertEqual(output_df[1][job.EXTRAPOLATION_RATIO], 1.0)
+        output_df = output_df.sort(IndCqc.location_id).collect()
+        self.assertEqual(output_df[0][IndCqc.extrapolation_ratio], 0.5)
+        self.assertEqual(output_df[1][IndCqc.extrapolation_ratio], 1.0)
         self.assertAlmostEqual(
-            output_df[2][job.EXTRAPOLATION_RATIO], 1.17647059, places=5
+            output_df[2][IndCqc.extrapolation_ratio], 1.17647059, places=5
         )
 
     def test_create_extrapolation_model_column(self):
@@ -171,17 +180,17 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(
             output_df.columns,
             [
-                "locationid",
-                "snapshot_date",
-                "extrapolation_model",
+                IndCqc.location_id,
+                IndCqc.cqc_location_import_date,
+                IndCqc.extrapolation_model,
             ],
         )
 
-        output_df = output_df.sort("locationid", "unix_time").collect()
-        self.assertEqual(output_df[0][job.EXTRAPOLATION_MODEL], 7.5)
-        self.assertEqual(output_df[1][job.EXTRAPOLATION_MODEL], 15.0)
+        output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        self.assertEqual(output_df[0][IndCqc.extrapolation_model], 7.5)
+        self.assertEqual(output_df[1][IndCqc.extrapolation_model], 15.0)
         self.assertAlmostEqual(
-            output_df[2][job.EXTRAPOLATION_MODEL], 22.0323678, places=5
+            output_df[2][IndCqc.extrapolation_model], 22.0323678, places=5
         )
 
     def test_add_extrapolated_values(self):
@@ -192,15 +201,15 @@ class TestModelExtrapolation(unittest.TestCase):
 
         self.assertEqual(output_df.count(), 11)
 
-        output_df = output_df.sort("locationid", "unix_time").collect()
-        self.assertEqual(output_df[0][job.EXTRAPOLATION_MODEL], None)
-        self.assertEqual(output_df[1][job.EXTRAPOLATION_MODEL], None)
-        self.assertEqual(output_df[4][job.EXTRAPOLATION_MODEL], 60.0)
-        self.assertEqual(output_df[5][job.EXTRAPOLATION_MODEL], 20.0)
+        output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        self.assertEqual(output_df[0][IndCqc.extrapolation_model], None)
+        self.assertEqual(output_df[1][IndCqc.extrapolation_model], None)
+        self.assertEqual(output_df[4][IndCqc.extrapolation_model], 60.0)
+        self.assertEqual(output_df[5][IndCqc.extrapolation_model], 20.0)
         self.assertAlmostEqual(
-            output_df[6][job.EXTRAPOLATION_MODEL], 11.7647058, places=5
+            output_df[6][IndCqc.extrapolation_model], 11.7647058, places=5
         )
         self.assertAlmostEqual(
-            output_df[8][job.EXTRAPOLATION_MODEL], 23.5294117, places=5
+            output_df[8][IndCqc.extrapolation_model], 23.5294117, places=5
         )
-        self.assertEqual(output_df[10][job.EXTRAPOLATION_MODEL], None)
+        self.assertEqual(output_df[10][IndCqc.extrapolation_model], None)
