@@ -12,9 +12,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.utils import (
     get_spark,
     format_date_fields,
@@ -45,9 +42,6 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(
-        "jobs.clean_ascwds_workplace_data.create_column_with_repeated_values_removed"
-    )
     @patch("utils.cleaning_utils.set_column_bounds")
     @patch("utils.utils.format_date_fields", wraps=format_date_fields)
     @patch("utils.utils.write_to_parquet")
@@ -58,14 +52,12 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
         set_column_bounds_mock: Mock,
-        create_column_with_repeated_values_removed_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         self.assertEqual(format_date_fields_mock.call_count, 1)
-        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
@@ -221,80 +213,6 @@ class PurgeOutdatedWorkplacesColumn(AddPurgeOutdatedWorkplacesColumnTests):
         expected_list = ["keep", "keep", "keep"]
         self.assertFalse("purge" in purge_data_list)
         self.assertEqual(purge_data_list, expected_list)
-
-
-class AddColumnWithRepeatedValuesRemovedTests(IngestASCWDSWorkerDatasetTests):
-    def setUp(self):
-        super().setUp()
-        self.test_purge_outdated_df = self.spark.createDataFrame(
-            Data.repeated_value_rows, Schemas.repeated_value_schema
-        )
-        self.expected_df_without_repeated_values_df = self.spark.createDataFrame(
-            Data.expected_without_repeated_values_rows,
-            Schemas.expected_without_repeated_values_schema,
-        )
-        self.returned_df = job.create_column_with_repeated_values_removed(
-            self.test_purge_outdated_df,
-            column_to_clean="integer_column",
-        )
-        self.OUTPUT_COLUMN = "integer_column_deduplicated"
-
-        self.returned_data = self.returned_df.sort(
-            AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
-        ).collect()
-        self.expected_data = self.expected_df_without_repeated_values_df.sort(
-            AWPClean.establishment_id, AWPClean.ascwds_workplace_import_date
-        ).collect()
-
-    def test_first_submitted_value_is_included_in_new_column(self):
-        self.assertEqual(
-            self.returned_data[0][self.OUTPUT_COLUMN],
-            self.expected_data[0][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[4][self.OUTPUT_COLUMN],
-            self.expected_data[4][self.OUTPUT_COLUMN],
-        )
-
-    def test_submitted_value_is_included_if_it_wasnt_repeated(self):
-        self.assertEqual(
-            self.returned_data[1][self.OUTPUT_COLUMN],
-            self.expected_data[1][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[5][self.OUTPUT_COLUMN],
-            self.expected_data[5][self.OUTPUT_COLUMN],
-        )
-
-    def test_repeated_value_entered_as_null_value(self):
-        self.assertEqual(
-            self.returned_data[2][self.OUTPUT_COLUMN],
-            self.expected_data[2][self.OUTPUT_COLUMN],
-        )
-        self.assertEqual(
-            self.returned_data[7][self.OUTPUT_COLUMN],
-            self.expected_data[7][self.OUTPUT_COLUMN],
-        )
-
-    def test_value_which_has_appeared_before_but_isnt_a_repeat_is_included(self):
-        self.assertEqual(
-            self.returned_data[6][self.OUTPUT_COLUMN],
-            self.expected_data[6][self.OUTPUT_COLUMN],
-        )
-
-    def test_returned_df_matches_expected_df(self):
-        self.assertEqual(
-            self.returned_data,
-            self.expected_data,
-        )
-
-    def test_returned_df_has_one_additional_column(self):
-        self.assertEqual(
-            len(self.returned_df.columns), len(self.test_purge_outdated_df.columns) + 1
-        )
-
-    def test_returned_df_has_same_number_of_rows(self):
-        self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
 class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):

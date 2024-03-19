@@ -11,8 +11,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
-    current_geography_columns,
-    contemporary_geography_columns,
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -43,8 +42,13 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
-    *current_geography_columns,
-    *contemporary_geography_columns,
+    ONSClean.contemporary_ons_import_date,
+    ONSClean.contemporary_cssr,
+    ONSClean.contemporary_region,
+    ONSClean.current_ons_import_date,
+    ONSClean.current_cssr,
+    ONSClean.current_region,
+    ONSClean.current_rural_urban_ind_11,
     Keys.year,
     Keys.month,
     Keys.day,

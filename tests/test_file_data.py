@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from datetime import date
 
+from pyspark.ml.linalg import Vectors
+
+
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
@@ -449,28 +452,6 @@ class ASCWDSWorkplaceData:
             date(2013, 1, 1),
             1,
         ),
-    ]
-
-    repeated_value_rows = [
-        ("1", 1, date(2023, 2, 1)),
-        ("1", 2, date(2023, 3, 1)),
-        ("1", 2, date(2023, 4, 1)),
-        ("1", 3, date(2023, 8, 1)),
-        ("2", 3, date(2023, 2, 1)),
-        ("2", 9, date(2023, 4, 1)),
-        ("2", 3, date(2024, 1, 1)),
-        ("2", 3, date(2024, 2, 1)),
-    ]
-
-    expected_without_repeated_values_rows = [
-        ("1", 1, date(2023, 2, 1), 1),
-        ("1", 2, date(2023, 3, 1), 2),
-        ("1", 2, date(2023, 4, 1), None),
-        ("1", 3, date(2023, 8, 1), 3),
-        ("2", 3, date(2023, 2, 1), 3),
-        ("2", 9, date(2023, 4, 1), 9),
-        ("2", 3, date(2024, 1, 1), 3),
-        ("2", 3, date(2024, 2, 1), None),
     ]
 
 
@@ -1532,6 +1513,86 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
+    repeated_value_rows = [
+        ("1", 1, date(2023, 2, 1)),
+        ("1", 2, date(2023, 3, 1)),
+        ("1", 2, date(2023, 4, 1)),
+        ("1", 3, date(2023, 8, 1)),
+        ("2", 3, date(2023, 2, 1)),
+        ("2", 9, date(2023, 4, 1)),
+        ("2", 3, date(2024, 1, 1)),
+        ("2", 3, date(2024, 2, 1)),
+    ]
+
+    expected_without_repeated_values_rows = [
+        ("1", 1, date(2023, 2, 1), 1),
+        ("1", 2, date(2023, 3, 1), 2),
+        ("1", 2, date(2023, 4, 1), None),
+        ("1", 3, date(2023, 8, 1), 3),
+        ("2", 3, date(2023, 2, 1), 3),
+        ("2", 9, date(2023, 4, 1), 9),
+        ("2", 3, date(2024, 1, 1), 3),
+        ("2", 3, date(2024, 2, 1), None),
+    ]
+
+
+@dataclass
+class FilterAscwdsFilledPostsData:
+    input_rows = [
+        ("01", date(2023, 1, 1), "Y", 25, 1.0),
+        ("02", date(2023, 1, 1), "Y", 25, 2.0),
+        ("03", date(2023, 1, 1), "Y", 25, 3.0),
+    ]
+
+    # fmt: off
+    care_home_filled_posts_per_bed_rows = [
+        ("01", date(2023, 1, 1), "Y", 25, 1.0),
+        ("02", date(2023, 1, 1), "Y", 25, 2.0),
+        ("03", date(2023, 1, 1), "Y", 25, 3.0),
+        ("04", date(2023, 1, 1), "Y", 25, 4.0),
+        ("05", date(2023, 1, 1), "Y", 25, 5.0),
+        ("06", date(2023, 1, 1), "Y", 25, 6.0),
+        ("07", date(2023, 1, 1), "Y", 25, 7.0),
+        ("08", date(2023, 1, 1), "Y", 25, 8.0),
+        ("09", date(2023, 1, 1), "Y", 25, 9.0),
+        ("10", date(2023, 1, 1), "Y", 25, 10.0),
+        ("11", date(2023, 1, 1), "Y", 25, 11.0),
+        ("12", date(2023, 1, 1), "Y", 25, 12.0),
+        ("13", date(2023, 1, 1), "Y", 25, 13.0),
+        ("14", date(2023, 1, 1), "Y", 25, 14.0),
+        ("15", date(2023, 1, 1), "Y", 25, 15.0),
+        ("16", date(2023, 1, 1), "Y", 25, 16.0),
+        ("17", date(2023, 1, 1), "Y", 25, 17.0),
+        ("18", date(2023, 1, 1), "Y", 25, 18.0),
+        ("19", date(2023, 1, 1), "Y", 25, 19.0),
+        ("20", date(2023, 1, 1), "Y", 25, 20.0),
+        ("21", date(2023, 1, 1), "Y", 25, 21.0),
+        ("22", date(2023, 1, 1), "Y", 25, 22.0),
+        ("23", date(2023, 1, 1), "Y", 25, 23.0),
+        ("24", date(2023, 1, 1), "Y", 25, 24.0),
+        ("25", date(2023, 1, 1), "Y", 25, 25.0),
+        ("26", date(2023, 1, 1), "Y", 25, 26.0),
+        ("27", date(2023, 1, 1), "Y", 25, 27.0),
+        ("28", date(2023, 1, 1), "Y", 25, 28.0),
+        ("29", date(2023, 1, 1), "Y", 25, 29.0),
+        ("30", date(2023, 1, 1), "Y", 25, 30.0),
+        ("31", date(2023, 1, 1), "Y", 25, 31.0),
+        ("32", date(2023, 1, 1), "Y", 25, 32.0),
+        ("33", date(2023, 1, 1), "Y", 25, 33.0),
+        ("34", date(2023, 1, 1), "Y", 25, 34.0),
+        ("35", date(2023, 1, 1), "Y", 25, 35.0),
+        ("36", date(2023, 1, 1), "Y", 25, 36.0),
+        ("37", date(2023, 1, 1), "Y", 25, 37.0),
+        ("38", date(2023, 1, 1), "Y", 25, 38.0),
+        ("39", date(2023, 1, 1), "Y", 25, 39.0),
+        ("40", date(2023, 1, 1), "Y", 25, 40.0),
+        ("41", date(2023, 1, 1), "Y", 25, None),
+        ("42", date(2023, 1, 1), "Y", None, 42.0),
+        ("43", date(2023, 1, 1), "N", 25, 43.0),
+        ("44", date(2023, 1, 1), "N", None, 44.0),
+    ]
+    # fmt: on
+
 
 @dataclass
 class NonResFeaturesData(object):
@@ -1549,6 +1610,15 @@ class NonResFeaturesData(object):
         ("1-108967195", date(2022, 4, 22), "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", "N", "Independent", "(England/Wales) Urban city and town", "rule_3", "Registered", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
+
+    filter_to_non_care_home_rows = [
+        ("Y", CQCLValues.independent),
+        ("N", CQCLValues.independent),
+    ]
+
+    expected_filtered_to_non_care_home_rows = [
+        ("N", CQCLValues.independent),
+    ]
 
 
 @dataclass
@@ -1581,58 +1651,6 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-348374832",
-            date(2022, 1, 12),
-            "Merseyside",
-            0,
-            ["Extra Care housing services"],
-            None,
-            34.0,
-            "N",
-            "Local authority",
-            "(England/Wales) Rural hamlet and isolated dwellings",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-683746776",
-            date(2022, 1, 1),
-            "Merseyside",
-            0,
-            [
-                "Doctors treatment service",
-                "Long term conditions services",
-                "Shared Lives",
-            ],
-            34,
-            None,
-            "N",
-            "Local authority",
-            "(England/Wales) Rural hamlet and isolated dwellings",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-10478686",
-            date(2022, 1, 1),
-            "London Senate",
-            0,
-            ["Community health care services - Nurses Agency only"],
-            None,
-            None,
-            "N",
-            "",
-            "(England/Wales) Rural hamlet and isolated dwellings",
             "2023",
             "01",
             "01",
@@ -1707,38 +1725,6 @@ class CareHomeFeaturesData:
             "20230101",
         ),
         (
-            "1-10758359583",
-            date(2022, 3, 8),
-            None,
-            0,
-            ["Mobile doctors service"],
-            17,
-            None,
-            "N",
-            "Local authority",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-000000001",
-            date(2022, 3, 8),
-            "Yorkshire and The Humbler",
-            67,
-            ["Care home service with nursing"],
-            None,
-            None,
-            "Y",
-            "Local authority",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
             "1-10894414510",
             date(2022, 3, 8),
             "Yorkshire and The Humbler",
@@ -1748,22 +1734,6 @@ class CareHomeFeaturesData:
             25.0,
             "Y",
             "Independent",
-            "(England/Wales) Urban city and town",
-            "2023",
-            "01",
-            "01",
-            "20230101",
-        ),
-        (
-            "1-108950835",
-            date(2022, 3, 15),
-            "Merseyside",
-            20,
-            ["Care home service without nursing"],
-            23,
-            None,
-            "Y",
-            "",
             "(England/Wales) Urban city and town",
             "2023",
             "01",
@@ -1789,14 +1759,672 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_ind_care_home_rows = rows = [
+    filter_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
         ("N", CQCLValues.independent),
-        ("Y", CQCLValues.local_authority),
-        ("Y", ""),
-        ("Y", None),
     ]
 
-    expected_filtered_to_ind_care_home_rows = rows = [
+    expected_filtered_to_care_home_rows = rows = [
         ("Y", CQCLValues.independent),
+    ]
+
+
+@dataclass
+class EstimateIndCQCFilledPostsData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-1783948", date(2022, 2, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting","rule_1", "Registered"),
+        ("1-1783948", date(2022, 1, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, 67.0, "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting", "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting","rule_2", "Registered"),
+        ("1-348374832", date(2022, 1, 12), "Merseyside", "Merseyside", 0, ["Extra Care housing services"], "non-residential", None, 34.0, 34.0,  "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3", "Registered"),
+        ("1-683746776", date(2022, 1, 1), "Merseyside", "Merseyside", 0, ["Doctors treatment service", "Long term conditions services", "Shared Lives"], "non-residential", 34, None, None, "N", "Local authority", "(England/Wales) Rural hamlet and isolated dwellings", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1", "Registered"),
+        ("1-10478686", date(2022, 1, 1), "London Senate", "London Senate", 0, ["Community health care services - Nurses Agency only"], "non-residential", None, None, None, "N", "", "(England/Wales) Rural hamlet and isolated dwellings", "(England/Wales) Rural hamlet and isolated dwellings", "rule_1", "Registered"),
+        ("1-10235302415", date(2022, 1, 12), "South West", "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, None,  "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "(England/Wales) Rural hamlet and isolated dwellings", "rule_3", "Registered"),
+        ("1-1060912125", date(2022, 1, 12), "Yorkshire and The Humbler", "Yorkshire and The Humbler", 0, ["Hospice services at home"], "non-residential", 34, None, None,  "N", "Independent", "(England/Wales) Rural hamlet and isolated dwellings", "(England/Wales) Rural hamlet and isolated dwellings", "rule_2", "Registered"),
+        ("1-107095666", date(2022, 3, 1), "Yorkshire and The Humbler", "Yorkshire and The Humbler", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, None,   "N", "Independent", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_3", "Registered"),
+        ("1-108369587", date(2022, 3, 8), "South West", "South West", 0, ["Specialist college service"], "non-residential", 15, None, None,  "N", "Independent", "(England/Wales) Rural town and fringe in a sparse setting", "(England/Wales) Rural town and fringe in a sparse setting", "rule_1", "Registered"),
+        ("1-10758359583", date(2022, 3, 8), None, None, 0, ["Mobile doctors service"], "non-residential", 17, None, None,  "N", "Local authority", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_2", "Registered"),
+        ("1-000000001", date(2022, 3, 8), "Yorkshire and The Humbler", "Yorkshire and The Humbler", 67, ["Care home service with nursing"], "Care home with nursing", None, None, None, "Y", "Local authority", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_1", "Registered"),
+        ("1-10894414510", date(2022, 3, 8), "Yorkshire and The Humbler", "Yorkshire and The Humbler", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, 25.0, "Y", "Independent", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_3", "Registered"),
+        ("1-108950835", date(2022, 3, 15), "Merseyside", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Y", "", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_1", "Registered"),
+        ("1-108967195", date(2022, 4, 22), "(pseudo) Wales", "(pseudo) Wales", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "N", "Independent", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_3", "Registered"),
+    ]
+
+    non_res_features_rows = [
+        ("1-000000002", 10.0, "N", "Merseyside", 12, date(2022, 3, 29), Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05", "20210505"),
+        ("1-000000004", 10.0, "N", None, 0, date(2022, 3, 29),  None, None, "2021", "05", "05", "20210505"),
+    ]
+    # fmt: on
+    populate_known_jobs_rows = [
+        ("1-000000001", 1.0, date(2022, 3, 4), None, None),
+        ("1-000000002", None, date(2022, 3, 4), None, None),
+        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
+        ("1-000000004", 10.0, date(2022, 3, 4), None, None),
+        ("1-000000002", 7.0, date(2022, 2, 4), None, None),
+    ]
+
+    expected_populate_known_jobs_rows = [
+        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_filled_posts"),
+        ("1-000000002", None, date(2022, 3, 4), None, None),
+        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
+        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_filled_posts"),
+        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_filled_posts"),
+    ]
+
+
+@dataclass
+class ModelPrimaryServiceRollingAverage:
+    input_rows = [
+        ("1-000000001", "2023-01-01", 1672531200, 4.0, "non-residential"),
+        ("1-000000002", "2023-01-01", 1672531200, 6.0, "non-residential"),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential"),
+        ("1-000000004", "2023-03-01", 1677628800, 30.0, "non-residential"),
+        ("1-000000005", "2023-04-01", 1680303600, 40.0, "non-residential"),
+        ("1-000000006", "2023-01-01", 1672531200, None, "non-residential"),
+        ("1-000000007", "2023-02-01", 1675209600, None, "non-residential"),
+        ("1-000000008", "2023-03-01", 1677628800, None, "non-residential"),
+        ("1-000000011", "2023-01-01", 1672531200, 14.0, "Care home with nursing"),
+        ("1-000000012", "2023-01-01", 1672531200, 16.0, "Care home with nursing"),
+        ("1-000000013", "2023-02-01", 1675209600, 120.0, "Care home with nursing"),
+        ("1-000000014", "2023-03-01", 1677628800, 131.0, "Care home with nursing"),
+        ("1-000000015", "2023-04-01", 1680303600, 142.0, "Care home with nursing"),
+        ("1-000000016", "2023-01-01", 1672531200, None, "Care home with nursing"),
+        ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing"),
+        ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing"),
+    ]
+    known_filled_posts_rows = [
+        ("1-000000001", 1672531200, 4.0, "non-residential"),
+        ("1-000000002", 1672531200, 6.0, "non-residential"),
+        ("1-000000003", 1675209600, 20.0, "non-residential"),
+        ("1-000000004", 1677628800, 30.0, "non-residential"),
+        ("1-000000005", 1680303600, 40.0, "non-residential"),
+        ("1-000000011", 1672531200, 14.0, "Care home with nursing"),
+        ("1-000000012", 1672531200, 16.0, "Care home with nursing"),
+        ("1-000000013", 1675209600, 120.0, "Care home with nursing"),
+        ("1-000000014", 1677628800, 131.0, "Care home with nursing"),
+        ("1-000000015", 1680303600, 142.0, "Care home with nursing"),
+    ]
+    rolling_sum_rows = [
+        ("service_1", 86400, 10),
+        ("service_1", 172800, 12),
+        ("service_1", 259200, 15),
+        ("service_1", 345600, 17),
+        ("service_1", 432000, 20),
+        ("service_2", 86400, 10),
+        ("service_2", 172800, 11),
+    ]
+    rolling_average_rows = [
+        ("random_data", 1672531200, "non-residential", 44.24),
+        ("random_data", 1680303600, "Care home with nursing", 25.1),
+    ]
+    calculate_rolling_average_column_rows = [
+        ("Care home with nursing", 1672531200, 2, 30.0),
+        ("Care home with nursing", 1675209600, 1, 120.0),
+        ("Care home with nursing", 1677628800, 1, 131.0),
+        ("Care home with nursing", 1680303600, 1, 142.0),
+        ("non-residential", 1672531200, 2, 10.0),
+        ("non-residential", 1675209600, 1, 20.0),
+        ("non-residential", 1677628800, 1, 30.0),
+        ("non-residential", 1680303600, 1, 40.0),
+    ]
+
+
+@dataclass
+class ModelExtrapolation:
+    extrapolation_rows = [
+        (
+            "1-000000001",
+            "2023-01-01",
+            1672531200,
+            15.0,
+            "Care home with nursing",
+            None,
+            None,
+            15.0,
+        ),
+        (
+            "1-000000001",
+            "2023-02-01",
+            1675209600,
+            None,
+            "Care home with nursing",
+            None,
+            None,
+            15.1,
+        ),
+        (
+            "1-000000001",
+            "2023-03-01",
+            1677628800,
+            30.0,
+            "Care home with nursing",
+            30.0,
+            "already_populated",
+            15.2,
+        ),
+        (
+            "1-000000002",
+            "2023-01-01",
+            1672531200,
+            4.0,
+            "non-residential",
+            None,
+            None,
+            50.3,
+        ),
+        (
+            "1-000000002",
+            "2023-02-01",
+            1675209600,
+            None,
+            "non-residential",
+            None,
+            None,
+            50.5,
+        ),
+        (
+            "1-000000002",
+            "2023-03-01",
+            1677628800,
+            None,
+            "non-residential",
+            5.0,
+            "already_populated",
+            50.7,
+        ),
+        (
+            "1-000000002",
+            "2023-04-01",
+            1680303600,
+            None,
+            "non-residential",
+            None,
+            None,
+            50.1,
+        ),
+        (
+            "1-000000003",
+            "2023-01-01",
+            1672531200,
+            None,
+            "non-residential",
+            None,
+            None,
+            50.3,
+        ),
+        (
+            "1-000000003",
+            "2023-02-01",
+            1675209600,
+            20.0,
+            "non-residential",
+            None,
+            None,
+            50.5,
+        ),
+        (
+            "1-000000003",
+            "2023-03-01",
+            1677628800,
+            None,
+            "non-residential",
+            30.0,
+            "already_populated",
+            50.7,
+        ),
+        (
+            "1-000000004",
+            "2023-03-01",
+            1677628800,
+            None,
+            "non-residential",
+            None,
+            None,
+            50.7,
+        ),
+    ]
+    data_to_filter_rows = [
+        ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
+        ("1-000000002", "2023-01-01", None, "non-residential"),
+        ("1-000000002", "2023-02-01", None, "non-residential"),
+        ("1-000000003", "2023-01-01", 20.0, "non-residential"),
+        ("1-000000003", "2023-02-01", None, "non-residential"),
+    ]
+    first_and_last_submission_rows = [
+        ("1-000000001", "2023-01-01", 1672531200, None, 12.0),
+        ("1-000000001", "2023-02-01", 1675209600, 5.0, 15.0),
+        ("1-000000001", "2023-03-01", 1677628800, None, 18.0),
+        ("1-000000002", "2023-01-01", 1672531200, 4.0, 12.0),
+        ("1-000000002", "2023-02-01", 1675209600, 6.0, 15.0),
+        ("1-000000002", "2023-03-01", 1677628800, None, 18.0),
+    ]
+    extrapolated_values_rows = [
+        (
+            "1-000000001",
+            "2023-01-01",
+            1672531200,
+            15.0,
+            5.0,
+            1672531200,
+            1677628800,
+            15.0,
+            5.0,
+            30.0,
+            5.0,
+        ),
+        (
+            "1-000000001",
+            "2023-02-01",
+            1675209600,
+            None,
+            5.0,
+            1672531200,
+            1677628800,
+            15.0,
+            5.0,
+            30.0,
+            5.0,
+        ),
+        (
+            "1-000000001",
+            "2023-03-01",
+            1677628800,
+            30.0,
+            5.0,
+            1672531200,
+            1677628800,
+            15.0,
+            5.0,
+            30.0,
+            5.0,
+        ),
+        (
+            "1-000000002",
+            "2023-01-01",
+            1672531200,
+            40.0,
+            1.0,
+            1672531200,
+            1672531200,
+            40.0,
+            1.0,
+            40.0,
+            1.0,
+        ),
+        (
+            "1-000000002",
+            "2023-02-01",
+            1675209600,
+            None,
+            1.5,
+            1672531200,
+            1672531200,
+            40.0,
+            1.0,
+            40.0,
+            1.0,
+        ),
+        (
+            "1-000000002",
+            "2023-03-01",
+            1677628800,
+            None,
+            0.5,
+            1672531200,
+            1672531200,
+            40.0,
+            1.0,
+            40.0,
+            1.0,
+        ),
+        (
+            "1-000000003",
+            "2023-01-01",
+            1672531200,
+            None,
+            1.0,
+            1675209600,
+            1675209600,
+            20.0,
+            1.7,
+            20.0,
+            1.7,
+        ),
+        (
+            "1-000000003",
+            "2023-02-01",
+            1675209600,
+            20.0,
+            1.7,
+            1675209600,
+            1675209600,
+            20.0,
+            1.7,
+            20.0,
+            1.7,
+        ),
+        (
+            "1-000000003",
+            "2023-03-01",
+            1677628800,
+            None,
+            2.0,
+            1675209600,
+            1675209600,
+            20.0,
+            1.7,
+            20.0,
+            1.7,
+        ),
+    ]
+    extrapolated_values_to_be_added_rows = [
+        ("1-000000001", "2023-01-01", 1672531200),
+        ("1-000000001", "2023-02-01", 1675209600),
+        ("1-000000001", "2023-03-01", 1677628800),
+        ("1-000000002", "2023-01-01", 1672531200),
+        ("1-000000002", "2023-02-01", 1675209600),
+        ("1-000000002", "2023-03-01", 1677628800),
+        ("1-000000003", "2023-01-01", 1672531200),
+        ("1-000000003", "2023-02-01", 1675209600),
+        ("1-000000003", "2023-03-01", 1677628800),
+        ("1-000000003", "2023-04-01", 1680303600),
+        ("1-000000004", "2023-01-01", 1672531200),
+    ]
+    extrapolated_ratios_rows = [
+        ("1-000000001", 1675000000, 1.0, 1678000000, 1680000000, 2.0, 3.0),
+        ("1-000000002", 1675000000, 1.0, 1678000000, 1680000000, 1.0, 3.0),
+        ("1-000000003", 1675000000, 2.0, 1670000000, 1672000000, 3.0, 1.7),
+    ]
+    extrapolated_model_outputs_rows = [
+        (
+            "1-000000001",
+            "2023-01-01",
+            1675000000,
+            1.0,
+            1678000000,
+            1680000000,
+            15.0,
+            10.0,
+            0.5,
+        ),
+        (
+            "1-000000002",
+            "2023-02-01",
+            1675000000,
+            1.0,
+            1678000000,
+            1680000000,
+            15.0,
+            10.0,
+            1.0,
+        ),
+        (
+            "1-000000003",
+            "2023-03-01",
+            1675000000,
+            2.0,
+            1670000000,
+            1672000000,
+            10.0,
+            15.0,
+            1.46882452,
+        ),
+    ]
+
+
+@dataclass
+class ModelCareHomes:
+    care_homes_cleaned_ind_cqc_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            None,
+            None,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            "Care home without nursing",
+            None,
+            None,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            None,
+            None,
+            None,
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "already_populated",
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+        ),
+        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
+    ]
+    care_homes_features_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            10.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+            Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
+            34,
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            20.0,
+            "N",
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+            None,
+            0,
+        ),
+    ]
+
+
+@dataclass
+class InsertPredictionsIntoLocations:
+    cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
+
+    care_home_features_rows = ModelCareHomes.care_homes_features_rows
+
+    predictions_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            50.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+            56.89,
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+            12.34,
+        ),
+    ]
+
+
+@dataclass
+class GenerateRSquaredMetric:
+    cqc_ind_cleaned_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            50.0,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 9),
+            56.89,
+        ),
+        ("1-000000004", "non-residential", 10.0, "N", None, 0, date(2022, 3, 9), 12.34),
+    ]
+
+
+@dataclass
+class ModelInterpolation:
+    interpolation_rows = [
+        ("1-000000001", date(2023, 1, 1), 1672531200, None, None, None),
+        (
+            "1-000000001",
+            date(2023, 1, 2),
+            1672617600,
+            30.0,
+            30.0,
+            "ascwds_filled_posts",
+        ),
+        ("1-000000001", date(2023, 1, 3), 1672704000, None, None, None),
+        ("1-000000002", date(2023, 1, 1), 1672531200, None, None, None),
+        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0, 4.0, "ascwds_filled_posts"),
+        ("1-000000002", date(2023, 1, 5), 1672876800, None, None, None),
+        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0, 5.0, "ascwds_filled_posts"),
+        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0, 5.0, "ascwds_filled_posts"),
+        ("1-000000002", date(2023, 1, 11), 1673395200, None, None, None),
+        ("1-000000002", date(2023, 1, 13), 1673568000, None, None, None),
+        (
+            "1-000000002",
+            date(2023, 1, 15),
+            1673740800,
+            20.0,
+            20.0,
+            "ascwds_filled_posts",
+        ),
+        ("1-000000002", date(2023, 1, 17), 1673913600, None, 21.0, "other_source"),
+        ("1-000000002", date(2023, 1, 19), 1674086400, None, None, None),
+    ]
+
+    calculating_submission_dates_rows = [
+        ("1-000000001", 1672617600, 1.0),
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1673049600, 1.0),
+        ("1-000000002", 1673222400, 1.0),
+    ]
+
+    creating_timeseries_rows = [
+        ("1-000000001", 1672617600, 1672617600),
+        ("1-000000002", 1672704000, 1673049600),
+    ]
+
+    merging_exploded_data_rows = [
+        ("1-000000001", 1672617600),
+        ("1-000000002", 1672704000),
+        ("1-000000002", 1672790400),
+        ("1-000000002", 1672876800),
+        ("1-000000003", 1672790400),
+    ]
+
+    merging_known_values_rows = [
+        ("1-000000002", 1672704000, 1.0),
+        ("1-000000002", 1672876800, 2.5),
+        ("1-000000003", 1672790400, 15.0),
+    ]
+
+    calculating_interpolated_values_rows = [
+        ("1-000000001", 1, 30.0, 1),
+        ("1-000000002", 1, 4.0, 1),
+        ("1-000000002", 2, None, None),
+        ("1-000000002", 3, 5.0, 3),
+        ("1-000000003", 2, 5.0, 2),
+        ("1-000000003", 3, None, None),
+        ("1-000000003", 4, None, None),
+        ("1-000000003", 5, 8.5, 5),
+    ]
+
+
+@dataclass
+class ModelNonResidential:
+    cleaned_cqc_ind_rows = [
+        (
+            "1-000000001",
+            "Care home with nursing",
+            None,
+            None,
+            "Y",
+            "South West",
+            67,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            "Care home without nursing",
+            None,
+            None,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            "Care home with nursing",
+            None,
+            None,
+            None,
+            "Merseyside",
+            34,
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "already_populated",
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+        ),
+        ("1-000000001", "non-residential", None, None, "N", None, 0, date(2022, 2, 20)),
+    ]
+    non_res_features_rows = [
+        (
+            "1-000000002",
+            "non-residential",
+            10.0,
+            "N",
+            "Merseyside",
+            12,
+            date(2022, 3, 29),
+            Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
+            45,
+        ),
+        (
+            "1-000000004",
+            "non-residential",
+            10.0,
+            "N",
+            None,
+            0,
+            date(2022, 3, 29),
+            None,
+            None,
+        ),
     ]

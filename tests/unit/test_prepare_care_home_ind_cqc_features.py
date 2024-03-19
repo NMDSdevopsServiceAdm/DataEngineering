@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import functions as F
@@ -9,6 +10,7 @@ from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+    PartitionKeys as Keys,
 )
 
 from tests.test_file_data import CareHomeFeaturesData as Data
@@ -24,15 +26,14 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.test_df = self.spark.createDataFrame(
             Data.clean_merged_data_rows, Schemas.clean_merged_data_schema
         )
-        self.filter_to_ind_care_home_df = self.spark.createDataFrame(
-            Data.filter_to_ind_care_home_rows, Schemas.filter_to_ind_care_home_schema
-        )
+
+        warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
-        read_from_parquet_mock,
+        read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -46,20 +47,8 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             ANY,
             self.CARE_HOME_FEATURES_DIR,
             mode=ANY,
-            partitionKeys=["year", "month", "day", "import_date"],
+            partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
-
-    def test_filter_locations_df_for_independent_care_home_data(self):
-        returned_df = job.filter_locations_df_for_independent_care_home_data(
-            self.filter_to_ind_care_home_df, IndCQC.care_home, IndCQC.cqc_sector
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filtered_to_ind_care_home_rows,
-            Schemas.filter_to_ind_care_home_schema,
-        )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -89,13 +78,26 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         read_from_parquet_mock.return_value = self.test_df
 
         input_df_length = self.test_df.count()
-        self.assertEqual(input_df_length, 14)
+        self.assertEqual(input_df_length, 8)
 
         job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
 
         result = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(result.count(), 1)
+
+    def test_filter_df_to_care_home_only(self):
+        filter_to_ind_care_home_df = self.spark.createDataFrame(
+            Data.filter_to_care_home_rows, Schemas.filter_to_care_home_schema
+        )
+        returned_df = job.filter_df_to_care_home_only(filter_to_ind_care_home_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_to_care_home_rows,
+            Schemas.filter_to_care_home_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":
