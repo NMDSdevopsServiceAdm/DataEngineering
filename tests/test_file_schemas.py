@@ -1188,9 +1188,3 @@ class ModelInterpolation:
             StructField(IndCQC.filled_posts_unix_time, LongType(), True),
         ]
     )
-
-
-@dataclass
-class ModelNonResidential:
-    cleaned_cqc_ind_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
-    non_res_features_schema = ModelCareHomes.care_homes_features_schema
