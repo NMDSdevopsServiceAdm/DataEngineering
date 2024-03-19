@@ -17,6 +17,7 @@ from utils.estimate_filled_posts.models.primary_service_rolling_average import (
 )
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from utils.estimate_filled_posts.models.care_homes import model_care_homes
 
 from utils.ind_cqc_filled_posts_utils.utils import (
     update_dataframe_with_identifying_rule,
@@ -49,19 +50,23 @@ cleaned_ind_cqc_columns = [
 ]
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-# Note: using 88 as a proxy for 3 months
-NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88
+
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88  # Note: using 88 as a proxy for 3 months
 
 
 def main(
     cleaned_ind_cqc_source: str,
+    care_home_features_source: str,
+    care_home_model_source: str,
     estimated_ind_cqc_destination: str,
+    ml_model_metrics_destination: str,
 ) -> pyspark.sql.DataFrame:
     print("Estimating independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(
         cleaned_ind_cqc_source, cleaned_ind_cqc_columns
     )
+    care_home_features_df = utils.read_from_parquet(care_home_features_source)
 
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
         IndCQC.estimate_filled_posts, F.lit(None).cast(IntegerType())
@@ -89,6 +94,13 @@ def main(
 
     cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
+    cleaned_ind_cqc_df = model_care_homes(
+        cleaned_ind_cqc_df,
+        care_home_features_df,
+        care_home_model_source,
+        ml_model_metrics_destination,
+    )
+
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
         IndCQC.rolling_average, IndCQC.rolling_average_model
     )
@@ -103,8 +115,6 @@ def main(
         cleaned_ind_cqc_df, IndCQC.rolling_average_model, IndCQC.estimate_filled_posts
     )
 
-    print("Completed estimate independent CQC filled posts")
-
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
     utils.write_to_parquet(
@@ -113,6 +123,8 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+    print("Completed estimate independent CQC filled posts")
 
 
 def populate_estimate_jobs_when_filled_posts_known(
@@ -142,19 +154,37 @@ if __name__ == "__main__":
 
     (
         cleaned_ind_cqc_source,
+        care_home_features_source,
+        care_home_model_source,
         estimated_ind_cqc_destination,
+        ml_model_metrics_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_ind_cqc_source",
             "Source s3 directory for cleaned_ind_cqc_filled_posts",
         ),
         (
+            "--care_home_features_source",
+            "Source s3 directory for care home features dataset",
+        ),
+        (
+            "--care_home_model_source",
+            "Source s3 directory for the care home ML model",
+        ),
+        (
             "--estimated_ind_cqc_destination",
-            "A destination directory for outputting estimates for filled posts",
+            "Destination s3 directory for outputting estimates for filled posts",
+        ),
+        (
+            "--ml_model_metrics_destination",
+            "Destination s3 directory for outputting metrics from the ML models",
         ),
     )
 
     main(
         cleaned_ind_cqc_source,
+        care_home_features_source,
+        care_home_model_source,
         estimated_ind_cqc_destination,
+        ml_model_metrics_destination,
     )
