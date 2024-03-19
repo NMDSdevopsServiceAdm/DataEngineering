@@ -496,7 +496,8 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--estimated_ind_cqc_filled_posts_data" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
   }
 }
 
