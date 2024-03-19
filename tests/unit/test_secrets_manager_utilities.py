@@ -18,6 +18,14 @@ class AWSSecretsManagerUtilitiesTests(unittest.TestCase):
 class GetSecretTests(AWSSecretsManagerUtilitiesTests):
     def setUp(self) -> None:
         super().setUp()
+        self.error_common_response_metadata = {
+            "RequestId": "1234567890ABCDEF",
+            "HostId": "host ID data will appear here as a hash",
+            "HTTPStatusCode": 400,
+            "HTTPHeaders": {"header metadata key/values will appear here"},
+            "RetryAttempts": 0,
+        }
+        self.error_common_message = "Whatever AWS sends"
 
     @patch("boto3.session.Session")
     def test_get_secret_returns_username_and_password_from_secret_string(
@@ -96,34 +104,90 @@ class GetSecretTests(AWSSecretsManagerUtilitiesTests):
         self.assertEqual(secret_string, PHRASE_TO_TEST)
 
     @patch("boto3.session.Session")
-    def test_get_secret_correctly_handles_client_error_resource_not_found_exception(
-        self, mock_session
-    ):
+    def test_get_secret_correctly_handles_client_error(self, mock_session):
         mock_session.return_value.client.return_value = self.mock_client
 
-        self.mock_client.get_secret_value.side_effect = ClientError(
-            {
-                "Error": {
-                    "Code": "ResourceNotFoundException",
-                    "Message": "Resource not found or whatever aws sends",
+        self.mock_client.get_secret_value.side_effect = [
+            ClientError(
+                {
+                    "Error": {
+                        "Code": "ResourceNotFoundException",
+                        "Message": self.error_common_message,
+                    },
+                    "ResponseMetadata": self.error_common_response_metadata,
                 },
-                "ResponseMetadata": {
-                    "RequestId": "1234567890ABCDEF",
-                    "HostId": "host ID data will appear here as a hash",
-                    "HTTPStatusCode": 400,
-                    "HTTPHeaders": {"header metadata key/values will appear here"},
-                    "RetryAttempts": 0,
+                "get_secret_value",
+            ),
+            ClientError(
+                {
+                    "Error": {
+                        "Code": "InvalidRequestException",
+                        "Message": self.error_common_message,
+                    },
+                    "ResponseMetadata": self.error_common_response_metadata,
                 },
-            },
-            "get_secret_value",
+                "get_secret_value",
+            ),
+            ClientError(
+                {
+                    "Error": {
+                        "Code": "InvalidParameterException",
+                        "Message": self.error_common_message,
+                    },
+                    "ResponseMetadata": self.error_common_response_metadata,
+                },
+                "get_secret_value",
+            ),
+            ClientError(
+                {
+                    "Error": {
+                        "Code": "DecryptionFailure",
+                        "Message": self.error_common_message,
+                    },
+                    "ResponseMetadata": self.error_common_response_metadata,
+                },
+                "get_secret_value",
+            ),
+            ClientError(
+                {
+                    "Error": {
+                        "Code": "InternalServiceError",
+                        "Message": self.error_common_message,
+                    },
+                    "ResponseMetadata": self.error_common_response_metadata,
+                },
+                "get_secret_value",
+            ),
+        ]
+
+        with self.assertRaises(Exception) as context:
+            ars.get_secret(secret_name="Hello World", region_name="eu-west-2")
+        self.assertTrue(
+            "The requested secret Hello World was not found" in str(context.exception)
         )
 
         with self.assertRaises(Exception) as context:
             ars.get_secret(secret_name="Hello World", region_name="eu-west-2")
 
+        self.assertTrue("The request was invalid due to:" in str(context.exception))
+
+        with self.assertRaises(Exception) as context:
+            ars.get_secret(secret_name="Hello World", region_name="eu-west-2")
+
+        self.assertTrue("The request had invalid params:" in str(context.exception))
+
+        with self.assertRaises(Exception) as context:
+            ars.get_secret(secret_name="Hello World", region_name="eu-west-2")
+
         self.assertTrue(
-            "The requested secret Hello World was not found" in str(context.exception)
+            "The requested secret can't be decrypted using the provided KMS key:"
+            in str(context.exception)
         )
+
+        with self.assertRaises(Exception) as context:
+            ars.get_secret(secret_name="Hello World", region_name="eu-west-2")
+
+        self.assertTrue("An error occurred on service side:" in str(context.exception))
 
 
 if __name__ == "__main__":
