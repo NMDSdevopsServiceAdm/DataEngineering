@@ -1788,12 +1788,8 @@ class EstimateIndCQCFilledPostsData:
         ("1-108950835", date(2022, 3, 15), "Merseyside", "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, None, "Y", "", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_1", "Registered"),
         ("1-108967195", date(2022, 4, 22), "North West", "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "N", "Independent", "(England/Wales) Urban city and town", "(England/Wales) Urban city and town", "rule_3", "Registered"),
     ]
-
-    non_res_features_rows = [
-        ("1-000000002", 10.0, "N", "Merseyside", 12, date(2022, 3, 29), Vectors.sparse(211, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}), 45, "2021", "05", "05", "20210505"),
-        ("1-000000004", 10.0, "N", None, 0, date(2022, 3, 29), None, None, "2021", "05", "05", "20210505"),
-    ]
     # fmt: on
+
     populate_known_jobs_rows = [
         ("1-000000001", 1.0, date(2022, 3, 4), None, None),
         ("1-000000002", None, date(2022, 3, 4), None, None),
