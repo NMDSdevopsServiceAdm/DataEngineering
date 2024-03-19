@@ -30,17 +30,19 @@ def get_secret(secret_name: str = "partner_code", region_name: str = "eu-west-2"
         get_secret_value_response = client.get_secret_value(SecretId=secret_name)
     except ClientError as e:
         if e.response["Error"]["Code"] == "ResourceNotFoundException":
-            raise Exception("The requested secret " + secret_name + " was not found")
+            raise Exception(
+                "The requested secret " + secret_name + " was not found"
+            ) from e
         elif e.response["Error"]["Code"] == "InvalidRequestException":
-            raise Exception("The request was invalid due to:", e)
+            raise Exception("The request was invalid due to:", e) from e
         elif e.response["Error"]["Code"] == "InvalidParameterException":
-            raise Exception("The request had invalid params:", e)
+            raise Exception("The request had invalid params:", e) from e
         elif e.response["Error"]["Code"] == "DecryptionFailure":
             raise Exception(
                 "The requested secret can't be decrypted using the provided KMS key:", e
-            )
+            ) from e
         elif e.response["Error"]["Code"] == "InternalServiceError":
-            raise Exception("An error occurred on service side:", e)
+            raise Exception("An error occurred on service side:", e) from e
     else:
         if "SecretString" in get_secret_value_response:
             text_secret_data = get_secret_value_response["SecretString"]
