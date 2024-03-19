@@ -38,7 +38,7 @@ if __name__ == "__main__":
     destination_prefix = utils.collect_arguments(
         (
             "--destination_prefix",
-            "Source s3 directory for parquet CQC providers dataset",
+            "Source s3 directory for parquet CQC locations dataset",
             False,
         ),
     )
