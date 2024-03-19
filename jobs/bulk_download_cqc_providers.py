@@ -15,13 +15,14 @@ def main(destination):
     print("Collecting all providers from API")
     spark = utils.get_spark()
     df = None
+    partner_code_value = json.loads(
+        ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
+    )["partner_code"]
     for paginated_providers in cqc.get_all_objects(
         stream=True,
         object_type="providers",
         object_identifier=ColNames.provider_id,
-        partner_code=json.loads(
-            ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
-        )["partner_code"],
+        partner_code=partner_code_value,
     ):
         providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:
