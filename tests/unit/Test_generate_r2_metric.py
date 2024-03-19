@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from utils.estimate_filled_posts.r2_metric import generate_r2_metric
+from utils.estimate_filled_posts.ml_model_metrics import generate_r2_metric
 from tests.test_file_data import GenerateRSquaredMetric as Data
 from tests.test_file_schemas import GenerateRSquaredMetric as Schemas
 from utils import utils
