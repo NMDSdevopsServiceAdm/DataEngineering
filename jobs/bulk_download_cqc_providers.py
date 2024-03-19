@@ -2,6 +2,7 @@ from datetime import date
 
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api as cqc
+from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
@@ -19,7 +20,7 @@ def main(destination):
         object_type="providers",
         object_identifier=ColNames.provider_id,
         partner_code=json.loads(
-            cqc.get_secret(secret_name="partner_code", region_name="eu-west-2")
+            ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
         )["partner_code"],
     ):
         providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)

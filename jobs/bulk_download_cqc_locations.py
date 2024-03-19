@@ -1,6 +1,7 @@
 from datetime import date
 
 from utils import cqc_api as cqc
+from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -19,7 +20,7 @@ def main(destination):
         object_type="locations",
         object_identifier=ColNames.location_id,
         partner_code=json.loads(
-            cqc.get_secret(secret_name="partner_code", region_name="eu-west-2")
+            ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
         )["partner_code"],
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
