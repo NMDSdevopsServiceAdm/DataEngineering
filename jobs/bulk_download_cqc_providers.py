@@ -7,6 +7,8 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
+import json
+
 
 def main(destination):
     print("Collecting all providers from API")
@@ -16,9 +18,9 @@ def main(destination):
         stream=True,
         object_type="providers",
         object_identifier=ColNames.provider_id,
-        partner_code=cqc.get_secret(
-            secret_name="partner_code", region_name="eu-west-2"
-        ),
+        partner_code=json.loads(
+            cqc.get_secret(secret_name="partner_code", region_name="eu-west-2")
+        )["partner_code"],
     ):
         providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:

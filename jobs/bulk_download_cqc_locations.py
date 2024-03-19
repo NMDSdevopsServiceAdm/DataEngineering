@@ -7,6 +7,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
 
+import json
+
 
 def main(destination):
     print("Collecting all locations from API")
@@ -16,9 +18,9 @@ def main(destination):
         stream=True,
         object_type="locations",
         object_identifier=ColNames.location_id,
-        partner_code=cqc.get_secret(
-            secret_name="partner_code", region_name="eu-west-2"
-        ),
+        partner_code=json.loads(
+            cqc.get_secret(secret_name="partner_code", region_name="eu-west-2")
+        )["partner_code"],
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
