@@ -125,7 +125,6 @@ jobs:
       - run:
           name: save pipeline datasets bucket name
           command: |
-            cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
 
       - persist_to_workspace:
