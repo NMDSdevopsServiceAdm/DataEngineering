@@ -33,7 +33,6 @@ class TestModelCareHome(unittest.TestCase):
         self,
         save_model_metrics: Mock,
     ):
-
         job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
             self.care_homes_features_df,
@@ -48,7 +47,6 @@ class TestModelCareHome(unittest.TestCase):
         self,
         save_model_metrics: Mock,  # not using this but doesn't run without it, is this the best way?
     ):
-
         df = job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
             self.care_homes_features_df,
