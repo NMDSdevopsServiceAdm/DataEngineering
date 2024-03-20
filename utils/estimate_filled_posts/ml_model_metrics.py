@@ -68,9 +68,9 @@ def generate_r2_metric(df: DataFrame, prediction: str, label: str):
 
 def get_model_name_and_version_from_s3_filepath(model_source: str):
     split_filepath = model_source.split("/")
-    print(split_filepath)
-    model_name = split_filepath[3]
-    model_version = split_filepath[4]
+
+    model_name = split_filepath[-3]
+    model_version = split_filepath[-2]
 
     return model_name, model_version
 
