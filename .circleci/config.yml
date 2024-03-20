@@ -127,11 +127,12 @@ jobs:
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
-            ls
 
       - persist_to_workspace:
           root: .
-          paths: ./terraform/pipeline/pipeline_resources_bucket_name
+          paths:
+            - ./terraform/pipeline/pipeline_resources_bucket_name
+            - ./terraform/pipeline/datasets_bucket_name
   
   deploy-dependencies:
     docker:
