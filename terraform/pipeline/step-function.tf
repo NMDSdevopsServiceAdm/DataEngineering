@@ -1,4 +1,4 @@
-resource "aws_sfn_state_machine" "run-branch-pipeline-state-machine" {
+resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-machine" {
   name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
