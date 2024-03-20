@@ -187,7 +187,6 @@
                   }
                 }
               ],
-              
               "Next": "Run estimate ind cqc filled posts job"
             },
             "Run estimate ind cqc filled posts job": {
