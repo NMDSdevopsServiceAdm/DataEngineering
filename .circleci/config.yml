@@ -119,13 +119,16 @@ jobs:
       - run:
           name: save pipeline resources bucket name
           command: |
+            pwd
             cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
           
       - run:
           name: save pipeline datasets bucket name
           command: |
+            pwd
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
+            ls
 
       - persist_to_workspace:
           root: .
