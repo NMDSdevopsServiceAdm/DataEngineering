@@ -8,6 +8,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 def main(
     estimated_ind_cqc_filled_posts_source: str,
+    cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
 ):
     """creates job role estimates
@@ -18,6 +19,9 @@ def main(
     """
     df_estimated_ind_cqc_filled_posts_data = utils.read_from_parquet(
         estimated_ind_cqc_filled_posts_source
+    )
+    df_cleaned_ascwds_worker_data = utils.read_from_parquet(
+        cleaned_ascwds_worker_source
     )
 
     utils.write_to_parquet(
@@ -34,11 +38,16 @@ if __name__ == "__main__":
 
     (
         estimated_ind_cqc_filled_posts_source,
+        cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
     ) = utils.collect_arguments(
         (
             "--estimated_ind_cqc_filled_posts_source",
             "Source s3 directory for estimated ind cqc filled posts data",
+        ),
+        (
+            "--cleaned_ascwds_worker_source",
+            "Source s3 directory for parquet ASCWDS worker cleaned dataset",
         ),
         (
             "--estimated_ind_cqc_filled_posts_by_job_role_destination",
@@ -48,5 +57,6 @@ if __name__ == "__main__":
 
     main(
         estimated_ind_cqc_filled_posts_source,
+        cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
     )
