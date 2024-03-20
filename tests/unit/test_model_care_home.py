@@ -1,23 +1,20 @@
 import unittest
+from unittest.mock import patch, Mock
 import warnings
 from datetime import date
 
-from utils.estimate_filled_posts.models.care_homes import (
-    model_care_homes,
-)
-
+from utils import utils
+import utils.estimate_filled_posts.models.care_homes as job
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
 from tests.test_file_data import ModelCareHomes as Data
 from tests.test_file_schemas import ModelCareHomes as Schemas
-from utils import utils
 
 
 class TestModelCareHome(unittest.TestCase):
-    CAREHOME_MODEL = (
-        "tests/test_models/care_home_with_nursing_historical_jobs_prediction/"
-    )
+    CARE_HOME_MODEL = "tests/test_models/care_home_filled_posts_prediction/1.0.0/"
+    METRICS_DESTINATION = "metrics destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -31,22 +28,36 @@ class TestModelCareHome(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    def test_model_care_homes_returns_all_locations(self):
-        cleaned_ind_cqc_df = self.care_homes_cleaned_ind_cqc_df
-        features_df = self.care_homes_features_df
+    @patch("utils.estimate_filled_posts.models.care_homes.save_model_metrics")
+    def test_model_care_homes_runs(
+        self,
+        save_model_metrics: Mock,
+    ):
 
-        df, _ = model_care_homes(
-            cleaned_ind_cqc_df, features_df, f"{self.CAREHOME_MODEL}1.0.0"
+        job.model_care_homes(
+            self.care_homes_cleaned_ind_cqc_df,
+            self.care_homes_features_df,
+            self.CARE_HOME_MODEL,
+            self.METRICS_DESTINATION,
+        )
+
+        self.assertEqual(save_model_metrics.call_count, 1)
+
+    @patch("utils.estimate_filled_posts.models.care_homes.save_model_metrics")
+    def test_model_care_homes_returns_expected_data(
+        self,
+        save_model_metrics: Mock,  # not using this but doesn't run without it, is this the best way?
+    ):
+
+        df = job.model_care_homes(
+            self.care_homes_cleaned_ind_cqc_df,
+            self.care_homes_features_df,
+            self.CARE_HOME_MODEL,
+            self.METRICS_DESTINATION,
         )
 
         self.assertEqual(df.count(), 5)
 
-    def test_model_care_homes_estimates_jobs_for_care_homes_only(self):
-        df, _ = model_care_homes(
-            self.care_homes_cleaned_ind_cqc_df,
-            self.care_homes_features_df,
-            f"{self.CAREHOME_MODEL}1.0.0",
-        )
         expected_location_with_prediction = df.where(
             (df[IndCqc.location_id] == "1-000000001")
             & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
