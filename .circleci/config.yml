@@ -164,6 +164,8 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
   copy-default-data:
+    docker:
+      - image: cimg/base:current
     resource_class: small
     steps:
       - aws-s3/sync:
