@@ -116,6 +116,7 @@ jobs:
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
+
       - run:
           name: save pipeline resources bucket name
           command: |
@@ -123,7 +124,7 @@ jobs:
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
           
       - run:
-          name: save pipeline datasets bucket name
+          name: save datasets bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
@@ -172,12 +173,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      
-      - run:
-          name: debug
-          command: |
-            cat terraform/pipeline/datasets_bucket_name
-          
 
       - aws-s3/sync:
           aws-region: AWS_REGION
