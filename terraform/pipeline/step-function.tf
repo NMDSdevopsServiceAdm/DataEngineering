@@ -1,8 +1,8 @@
 resource "aws_sfn_state_machine" "run-branch-pipeline-state-machine" {
-  name     = "${local.workspace_prefix}-run-branch-pipeline"
+  name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/RunAllSteps-StepFunction.json", {
+  definition = templatefile("step-functions/IndCqcFilledPostEstimatePipeline-StepFunction.json", {
     dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
     clean_ascwds_workplace_job_name                    = module.clean_ascwds_workplace_job.job_name
     clean_ascwds_worker_job_name                       = module.clean_ascwds_worker_job.job_name
