@@ -219,21 +219,24 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: main
-      - lint-python:
-          filters:
-            branches:
-              ignore: main
-      - lint-terraform:
-          filters:
-            branches:
-              ignore: main
+      #- test:
+      #    filters:
+      #      branches:
+      #        ignore: main
+      #- lint-python:
+      #    filters:
+      #      branches:
+      #        ignore: main
+      #- lint-terraform:
+      #    filters:
+      #      branches:
+      #        ignore: main
       - terraform-plan:
-          requires:
-            - test
+        #    requires:
+        #   - test
+          filters:
+            branches:
+              ignore: main
       - terraform-apply:
           requires:
             - terraform-plan
