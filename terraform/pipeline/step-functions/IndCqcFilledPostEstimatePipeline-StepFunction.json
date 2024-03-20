@@ -197,7 +197,7 @@
                 "Arguments": {
                   "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
                   "--care_home_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/",
-                  "--care_home_model_source": "${dataset_bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/",
+                  "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/",
                   "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
                   "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }

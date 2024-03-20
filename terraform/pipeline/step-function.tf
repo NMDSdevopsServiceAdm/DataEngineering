@@ -4,6 +4,7 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
   type     = "STANDARD"
   definition = templatefile("step-functions/IndCqcFilledPostEstimatePipeline-StepFunction.json", {
     dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
     clean_ascwds_workplace_job_name                    = module.clean_ascwds_workplace_job.job_name
     clean_ascwds_worker_job_name                       = module.clean_ascwds_worker_job.job_name
     clean_cqc_pir_data_job_name                        = module.clean_cqc_pir_data_job.job_name
