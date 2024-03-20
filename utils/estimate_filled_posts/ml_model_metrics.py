@@ -35,14 +35,7 @@ def save_model_metrics(
         IndCqc.r2,
         IndCqc.model_run_timestamp,
     ]
-    metrics_row = [
-        (
-            model_name,
-            model_version,
-            r2_value,
-            F.current_timestamp,
-        )
-    ]
+    metrics_row = [(model_name, model_version, r2_value, F.current_timestamp())]
     metrics_df = spark.createDataFrame(metrics_row, metrics_columns)
 
     print(f"Writing metrics for {model_name} as parquet to {metrics_destination}")
