@@ -414,7 +414,7 @@ module "estimate_ind_cqc_filled_posts_job" {
     "--care_home_features_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
     "--care_home_model_source"        = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/"
     "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
-    "--metrics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
+    "--ml_model_metrics_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
   }
 }
 
