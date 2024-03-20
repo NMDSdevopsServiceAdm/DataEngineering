@@ -1,6 +1,12 @@
 from pyspark.ml.evaluation import RegressionEvaluator
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    FloatType,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -29,13 +35,15 @@ def save_model_metrics(
         model_source
     )
 
-    metrics_columns = [
-        IndCqc.model_name,
-        IndCqc.model_version,
-        IndCqc.r2,
-    ]
+    metrics_schema = StructType(
+        fields=[
+            StructField(IndCqc.model_name, StringType(), True),
+            StructField(IndCqc.model_version, StringType(), True),
+            StructField(IndCqc.r2, FloatType(), True),
+        ]
+    )
     metrics_row = [(model_name, model_version, r2_value)]
-    metrics_df = spark.createDataFrame(metrics_row, metrics_columns)
+    metrics_df = spark.createDataFrame(metrics_row, metrics_schema)
     metrics_df = metrics_df.withColumn(
         IndCqc.model_run_timestamp, F.current_timestamp()
     )
