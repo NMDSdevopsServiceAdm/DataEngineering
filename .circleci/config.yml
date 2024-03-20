@@ -168,6 +168,9 @@ jobs:
       - image: cimg/base:current
     resource_class: small
     steps:
+      - attach_workspace:
+          at: .
+
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
