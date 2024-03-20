@@ -170,11 +170,17 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      
+      - run:
+          name: debug
+          command: |
+            cat terraform/pipeline/datasets_bucket_name
+          
 
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
 
   terraform-destroy:
     working_directory: /tmp/project
