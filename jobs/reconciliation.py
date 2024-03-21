@@ -11,6 +11,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+    AscwdsWorkplaceCleanedValues as AWPValues,
 )
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -118,24 +119,24 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     )
 
     latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumn(
-        "ParentSubSingle",
+        AWPClean.parent_sub_or_single,
         F.when(
             (F.col(AWPClean.is_parent) == 1),
-            F.lit("Parent"),
+            F.lit(AWPValues.parent),
         )
         .when(
             ((F.col(AWPClean.is_parent) == 0) & (F.col(AWPClean.parent_id) > 0)),
-            F.lit("Subsidiary"),
+            F.lit(AWPValues.subsidiary),
         )
-        .otherwise(F.lit("Single")),
+        .otherwise(F.lit(AWPValues.single)),
     )
 
     latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumn(
-        "ownership",
+        AWPClean.ownership,
         F.when(
             (F.col(AWPClean.parent_permission) == 1),
-            F.lit("parent"),
-        ).otherwise(F.lit("workplace")),
+            F.lit(AWPValues.parent),
+        ).otherwise(F.lit(AWPValues.workplace)),
     ).drop(AWPClean.parent_permission)
 
     return latest_ascwds_workplace_df
