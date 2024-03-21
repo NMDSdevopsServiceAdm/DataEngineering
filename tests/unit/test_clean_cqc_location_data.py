@@ -1,9 +1,10 @@
 import unittest
 import warnings
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch, call
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 from dataclasses import asdict
+from pyspark.sql.utils import AnalysisException
 
 
 import jobs.clean_cqc_location_data as job
@@ -54,6 +55,9 @@ class MainTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(
+        "jobs.clean_cqc_location_data.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset"
+    )
     @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
@@ -64,6 +68,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         write_to_parquet_patch: Mock,
         format_date_fields_mock: Mock,
         column_to_date_mock: Mock,
+        raise_error_if_cqc_postcode_was_not_found_in_ons_dataset: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -81,24 +86,11 @@ class MainTests(CleanCQCLocationDatasetTests):
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
         format_date_fields_mock.assert_called_once()
-        self.assertEqual(column_to_date_mock.call_count, 2)
-        write_to_parquet_patch.assert_called_with(
-            ANY,
-            self.TEST_CLEANED_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+        self.assertEqual(column_to_date_mock.call_count, 1)
+        self.assertEqual(
+            raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
         )
-        write_to_parquet_patch.assert_called_with(
-            ANY,
-            self.TEST_DEREGISTERED_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
-        )
-
-        final_df: DataFrame = write_to_parquet_patch.call_args[0][0]
-        expected_cols = list(asdict(CQCLCleaned()).values())
-        for col in final_df.columns:
-            self.assertIn(col, expected_cols)
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
 
 
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
@@ -126,12 +118,12 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_remove_invalid_postcodes(self):
+    def test_amend_invalid_postcodes(self):
         test_invalid_postcode_df = self.spark.createDataFrame(
             Data.test_invalid_postcode_data, Schemas.invalid_postcode_schema
         )
 
-        df_with_invalid_postcodes_removed = job.remove_invalid_postcodes(
+        df_with_invalid_postcodes_removed = job.amend_invalid_postcodes(
             test_invalid_postcode_df
         )
 
@@ -147,6 +139,40 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
             df_with_invalid_postcodes_removed.sort(CQCL.location_id).collect(),
             expected_postcode_df.sort(CQCL.location_id).collect(),
         )
+
+
+class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_services_offered_df = self.spark.createDataFrame(
+            Data.primary_service_type_rows,
+            schema=Schemas.primary_service_type_schema,
+        )
+
+    def test_allocate_primary_service_type_add_column(self):
+        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
+
+        self.assertTrue(CQCLCleaned.services_offered in returned_df.columns)
+
+    def test_allocate_primary_service_type_returns_correct_data(self):
+        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_services_offered_rows,
+            Schemas.expected_services_offered_schema,
+        )
+
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCLCleaned.location_id)
+            .collect()
+        )
+        self.assertEqual(returned_data, expected_data)
 
 
 class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
@@ -180,12 +206,17 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_location_df = cUtils.column_to_date(
+            self.test_location_df,
+            Keys.import_date,
+            CQCLCleaned.cqc_location_import_date,
+        ).drop(CQCLCleaned.import_date)
 
-    def test_join_cqc_provider_data_adds_two_columns(self):
+    def test_join_cqc_provider_data_adds_three_columns(self):
         returned_df = job.join_cqc_provider_data(
             self.test_location_df, self.test_provider_df
         )
-        new_columns = 2
+        new_columns = 3
         expected_columns = len(self.test_location_df.columns) + new_columns
 
         self.assertEqual(len(returned_df.columns), expected_columns)
@@ -280,35 +311,128 @@ class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
             self.assertEqual(warnings_log, [])
 
 
-class PrepareOnsDataTests(CleanCQCLocationDatasetTests):
-    def setUp(self):
+class JoinONSDataTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
         super().setUp()
-        self.expected_processed_ons_df = self.spark.createDataFrame(
-            Data.expected_processed_ons_rows, Schemas.expected_processed_ons_schema
+        self.test_location_for_ons_join_df = self.spark.createDataFrame(
+            Data.locations_for_ons_join_rows,
+            Schemas.locations_for_ons_join_schema,
         )
-        self.test_ons_postcode_directory_with_date_df = cUtils.column_to_date(
+
+    def test_join_ons_postcode_data_completes(self):
+        returned_df = job.join_ons_postcode_data_into_cqc_df(
+            self.test_location_for_ons_join_df,
             self.test_ons_postcode_directory_df,
-            Keys.import_date,
-            "ons_postcode_import_date",
-        ).drop(Keys.import_date)
-
-    def test_columns_are_renamed_correctly(self):
-        returned_df = job.prepare_current_ons_data(
-            self.test_ons_postcode_directory_with_date_df
         )
 
-        expected_columns = self.expected_processed_ons_df.columns
+        self.assertIsInstance(returned_df, DataFrame)
 
-        self.assertEqual(expected_columns, returned_df.columns)
-
-    def test_only_most_recent_rows_are_kept(self):
-        returned_df = job.prepare_current_ons_data(
-            self.test_ons_postcode_directory_with_date_df
+    def test_join_ons_postcode_data_correctly_joins_data(self):
+        returned_df = job.join_ons_postcode_data_into_cqc_df(
+            self.test_location_for_ons_join_df,
+            self.test_ons_postcode_directory_df,
+        )
+        returned_data = (
+            returned_df.select(sorted(returned_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_ons_join_with_null_rows,
+            Schemas.expected_ons_join_schema,
+        )
+        expected_data = (
+            expected_df.select(sorted(expected_df.columns))
+            .sort(CQCL.location_id)
+            .collect()
         )
 
-        self.assertEqual(
-            self.expected_processed_ons_df.collect(), returned_df.collect()
+        self.assertCountEqual(returned_data, expected_data)
+
+
+class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.expected_split_registered_df = self.spark.createDataFrame(
+            Data.expected_split_registered_no_nulls_rows,
+            Schemas.expected_split_registered_schema,
         )
+
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_returns_original_df(
+        self,
+    ):
+        test_df = job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+            self.expected_split_registered_df
+        )
+        self.assertEqual(test_df, self.expected_split_registered_df)
+
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_exits_program_when_check_fails(
+        self,
+    ):
+        expected_ons_join_df_with_nulls = self.spark.createDataFrame(
+            Data.expected_ons_join_with_null_rows,
+            Schemas.expected_ons_join_schema,
+        )
+        input_registered_df = job.split_dataframe_into_registered_and_deregistered_rows(
+            expected_ons_join_df_with_nulls
+        )[0]
+        # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
+        expected_tuple = ("PR19AB", "loc-1", "count: 1")
+        with self.assertRaises(TypeError) as context:
+            job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+                input_registered_df
+            )
+
+        self.assertTrue(
+            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data:"
+            in str(context.exception),
+            "Error text is missing correct description of Error",
+        )
+        self.assertTrue(
+            f"{expected_tuple}" in str(context.exception),
+            "Exception does not contain the postcode, locationId and number of rows",
+        )
+
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_provided_column_is_in_dataset(
+        self,
+    ):
+        COLUMN_NOT_IN_DF = "not_a_column"
+        with self.assertRaises(AnalysisException) as context:
+            job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+                self.expected_split_registered_df, COLUMN_NOT_IN_DF
+            )
+
+        self.assertTrue(
+            f"ERROR: A column or function parameter with name {COLUMN_NOT_IN_DF} cannot be found in the dataframe."
+            in str(context.exception),
+            "Exception does not contain the correct error message",
+        )
+
+    def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_contains_appropriate_columns(
+        self,
+    ):
+        no_postcode_df = self.expected_split_registered_df.drop(CQCL.postcode)
+        no_location_df = self.expected_split_registered_df.drop(CQCL.location_id)
+        no_current_date_df = self.expected_split_registered_df.drop(
+            CQCLCleaned.current_ons_import_date
+        )
+
+        list_of_test_tuples = [
+            (no_postcode_df, CQCL.postcode),
+            (no_location_df, CQCL.location_id),
+            (no_current_date_df, CQCLCleaned.current_ons_import_date),
+        ]
+
+        for test_data in list_of_test_tuples:
+            with self.assertRaises(AnalysisException) as context:
+                job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
+                    test_data[0]
+                )
+            self.assertTrue(
+                f"ERROR: A column or function parameter with name {test_data[1]} cannot be found in the dataframe."
+                in str(context.exception),
+                f"Error in {test_data} loop, exception does not contain the correct error message",
+            )
 
 
 if __name__ == "__main__":

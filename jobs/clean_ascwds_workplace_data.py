@@ -46,6 +46,8 @@ def main(source: str, destination: str):
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
 
+    ascwds_workplace_df = purge_outdated_workplaces(ascwds_workplace_df)
+
     ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
 
     ascwds_workplace_df = cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
@@ -62,17 +64,6 @@ def main(source: str, destination: str):
         AWP.worker_records,
         AWPClean.worker_records_bounded,
         AscwdsScaleVariableLimits.worker_records_lower_limit,
-    )
-
-    ascwds_workplace_df = create_column_with_repeated_values_removed(
-        ascwds_workplace_df,
-        AWPClean.total_staff_bounded,
-        AWPClean.total_staff_deduplicated,
-    )
-    ascwds_workplace_df = create_column_with_repeated_values_removed(
-        ascwds_workplace_df,
-        AWPClean.worker_records_bounded,
-        AWPClean.worker_records_deduplicated,
     )
 
     print(f"Exporting as parquet to {destination}")
@@ -112,6 +103,22 @@ def remove_locations_with_duplicates(df: DataFrame):
 def add_purge_outdated_workplaces_column(
     df: DataFrame, comparison_date_col: str
 ) -> DataFrame:
+    """
+    For a given ascwds_workplace_df, based on the comparison_date_col, returns a dataframe where each row is marked to keep or purge in a new column
+
+    The rough steps are outlined below:
+    - Adds a column of purge dates which is a number of months before the comparison_date_col
+    - Calculates the latest update using an external function
+    - Compares this latest update date to the purge date, and marks the row accordingly, and clears the date information
+
+    Args:
+        df (DataFrame): An ascwds_workplace_df that must contain at least the comparison_date_col
+        comparison_date_col (str): The data column name to make comparisons on
+
+    Returns:
+        final_df (DataFrame): a dataframe where each row is marked for keeping or purging
+
+    """
     MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
     df_with_purge_date = df.withColumn(
@@ -158,52 +165,25 @@ def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date
     return df_with_latest_update
 
 
-def create_column_with_repeated_values_removed(
-    df: DataFrame,
-    column_to_clean: str,
-    new_column_name: str = None,
+def purge_outdated_workplaces(
+    ascwds_workplace_df_with_purge_marker: DataFrame,
+    purge_marker_col: str = AWPClean.purge_data,
 ) -> DataFrame:
     """
-    ASCWDS repeats data until it is changed. This function creates a new column which converts repeated values to nulls,
-    so we only see newly submitted values once.
-
-    For each workplace, this function iterates over the dataframe in date order and compares the current column value to the
-    previously submitted value. If the value differs from the previously submitted value then enter that value into the new column.
-    Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
+    Takes an ascwds_workplace_df extended with a column that marks data for purging or keeping
+    (such as the output from add_purge_outdated_workplaces_column),
+    and filters the dataframe based on rows marked to keep
 
     Args:
-        df: The dataframe to use
-        column_to_clean: The name of the column to convert
-        new_column_name: (optional) If not provided, "_deduplicated" will be appended onto the original column name
+        ascwds_workplace_df_with_purge_marker (DataFrame): As the name suggests, a DataFrame of workplace data with the purge marker present
+        purge_marker_col (str): (Default = AWPClean.purge_data) This is the name of the column where the purge marker is located
 
     Returns:
-        A DataFrame with an addional column with repeated values changed to nulls.
+        The dataframe but now filtered to only rows where the marker indicated the row be kept.
     """
-    PREVIOUS_VALUE: str = "previous_value"
-
-    if new_column_name is None:
-        new_column_name = column_to_clean + "_deduplicated"
-
-    w = Window.partitionBy(AWPClean.establishment_id).orderBy(
-        AWPClean.ascwds_workplace_import_date
+    return ascwds_workplace_df_with_purge_marker.filter(
+        F.col(purge_marker_col) == AWPValues.purge_keep
     )
-
-    df_with_previously_submitted_value = df.withColumn(
-        PREVIOUS_VALUE, F.lag(column_to_clean).over(w)
-    )
-
-    df_without_repeated_values = df_with_previously_submitted_value.withColumn(
-        new_column_name,
-        F.when(
-            (F.col(PREVIOUS_VALUE).isNull())
-            | (F.col(column_to_clean) != F.col(PREVIOUS_VALUE)),
-            F.col(column_to_clean),
-        ).otherwise(None),
-    )
-
-    df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
-
-    return df_without_repeated_values
 
 
 if __name__ == "__main__":

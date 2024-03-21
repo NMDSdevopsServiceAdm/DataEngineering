@@ -1,6 +1,7 @@
 import sys
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
+from pyspark.sql.types import FloatType, StringType
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -8,6 +9,9 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
     CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -35,8 +39,16 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.number_of_beds,
     CQCLClean.regulated_activities,
     CQCLClean.gac_service_types,
+    CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
+    ONSClean.contemporary_ons_import_date,
+    ONSClean.contemporary_cssr,
+    ONSClean.contemporary_region,
+    ONSClean.current_ons_import_date,
+    ONSClean.current_cssr,
+    ONSClean.current_region,
+    ONSClean.current_rural_urban_ind_11,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -47,12 +59,8 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.location_id,
     AWPClean.establishment_id,
     AWPClean.organisation_id,
-    AWPClean.total_staff,
     AWPClean.total_staff_bounded,
-    AWPClean.total_staff_deduplicated,
-    AWPClean.worker_records,
     AWPClean.worker_records_bounded,
-    AWPClean.worker_records_deduplicated,
 ]
 
 cleaned_cqc_pir_columns_to_import = [

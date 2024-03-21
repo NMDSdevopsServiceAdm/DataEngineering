@@ -12,8 +12,6 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     last_logged_in_date: str = "last_logged_in_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
-    total_staff_deduplicated: str = AWP.total_staff + "_deduplicated"
-    worker_records_deduplicated: str = AWP.worker_records + "_deduplicated"
 
 
 @dataclass

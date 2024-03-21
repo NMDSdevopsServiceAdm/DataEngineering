@@ -151,6 +151,20 @@ module "ingest_ons_data_job" {
   }
 }
 
+
+module "clean_ons_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_ons_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--cleaned_ons_destination" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+  }
+}
+
 module "prepare_locations_job" {
   source            = "../modules/glue-job"
   script_name       = "prepare_locations.py"
@@ -187,62 +201,20 @@ module "worker_tracking_job" {
   }
 }
 
-
-module "locations_care_home_feature_engineering_job" {
+module "prepare_non_res_ind_cqc_features_job" {
   source          = "../modules/glue-job"
-  script_name     = "locations_care_home_feature_engineering.py"
+  script_name     = "prepare_non_res_ind_cqc_features.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
+    "--ind_cqc_filled_posts_cleaned_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--non_res_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features/"
   }
 }
 
-
-module "locations_non_res_feature_engineering_job" {
-  source          = "../modules/glue-job"
-  script_name     = "locations_non_res_feature_engineering.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--prepared_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
-  }
-}
-
-module "job_role_breakdown_job" {
-  source          = "../modules/glue-job"
-  script_name     = "job_role_breakdown.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--job_estimates_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
-    "--worker_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_role_breakdown/version=1.0.0/"
-  }
-}
-
-module "prepare_locations_cleaned_job" {
-  source          = "../modules/glue-job"
-  script_name     = "prepare_locations_cleaned.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--prepared_locations_source"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-    "--prepared_locations_cleaned_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
-  }
-}
-
-module "clean_ind_cqc_filled_posts" {
+module "clean_ind_cqc_filled_posts_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_ind_cqc_filled_posts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
@@ -252,41 +224,6 @@ module "clean_ind_cqc_filled_posts" {
   job_parameters = {
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
     "--cleaned_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-  }
-}
-
-module "estimate_job_counts_job" {
-  source          = "../modules/glue-job"
-  script_name     = "estimate_job_counts.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--prepared_locations_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared_cleaned/version=1.0.0/"
-    "--carehome_features_source"          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_care_homes/2.0.0/"
-    "--nonres_features_source"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_ml_features_non_res/2.0.0/"
-    "--destination"                       = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
-    "--care_home_model_directory"         = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.1.0/"
-    "--non_res_with_pir_model_directory"  = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0/"
-    "--metrics_destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=model_metrics/"
-  }
-}
-
-module "create_job_estimates_diagnostics" {
-  source          = "../modules/glue-job"
-  script_name     = "create_job_estimates_diagnostics.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--estimate_job_counts_source"              = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates/version=2.0.0/"
-    "--capacity_tracker_care_home_source"       = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_care_home/"
-    "--capacity_tracker_non_residential_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
-    "--diagnostics_destination"                 = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_diagnostics/version=0.1.0/"
-    "--residuals_destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=job_estimates_residuals/version=0.1.0/"
-    "--description_of_change"                   = ""
   }
 }
 
@@ -428,7 +365,7 @@ module "clean_cqc_location_data_job" {
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
     "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
-    "--ons_postcode_directory_source"         = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--deregistered_cqc_location_destination" = "TODO - decide where to save"
   }
@@ -451,17 +388,63 @@ module "reconciliation_job" {
 }
 
 module "merge_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_name     = "merge_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "merge_ind_cqc_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "3.0"
+  worker_type       = "G.2X"
+  number_of_workers = 5
 
   job_parameters = {
     "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+  }
+}
+
+module "prepare_care_home_ind_cqc_features_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_care_home_ind_cqc_features.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_filled_posts_cleaned_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--care_home_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
+  }
+}
+
+
+module "estimate_ind_cqc_filled_posts_job" {
+  source          = "../modules/glue-job"
+  script_name     = "estimate_ind_cqc_filled_posts.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cleaned_ind_cqc_source"        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--care_home_features_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
+    "--care_home_model_source"        = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/"
+    "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--ml_model_metrics_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
+  }
+}
+
+module "estimate_ind_cqc_filled_posts_by_job_role_job" {
+  source          = "../modules/glue-job"
+  script_name     = "estimate_ind_cqc_filled_posts_by_job_role.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
   }
 }
 
@@ -490,7 +473,7 @@ module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  schedule                     = "cron(00 07 * * ? *)"
+  schedule                     = "cron(00 07 01,08,15,23 * ? *)"
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 

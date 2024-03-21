@@ -4,10 +4,7 @@ from datetime import date
 import warnings
 
 from pyspark.sql import SparkSession
-import pyspark.sql.functions as F
 from pyspark.sql.types import (
-    DoubleType,
-    IntegerType,
     StringType,
     StructField,
     StructType,
@@ -32,16 +29,6 @@ class PrepareLocationsTests(unittest.TestCase):
     TEST_PIR_FILE = "tests/test_data/domain=cqc/dataset=pir"
     TEST_ONS_FILE = "tests/test_data/domain=ons/dataset=postcodes"
     DESTINATION = "tests/test_data/domain=data_engineering/dataset=locations_prepared/version=1.0.0"
-
-    calculate_jobs_schema = StructType(
-        [
-            StructField("locationid", StringType(), False),
-            StructField("total_staff", IntegerType(), True),
-            StructField("worker_record_count", IntegerType(), True),
-            StructField("number_of_beds", IntegerType(), True),
-            StructField("job_count_unfiltered", DoubleType(), True),
-        ]
-    )
 
     def setUp(self):
         self.spark = SparkSession.builder.appName(
@@ -108,8 +95,8 @@ class PrepareLocationsTests(unittest.TestCase):
                 "services_offered",
                 "primary_service_type",
                 "people_directly_employed",
-                "job_count_unfiltered",
-                "job_count_unfiltered_source",
+                "total_staff",
+                "worker_record_count",
                 "region",
                 "postal_code",
                 "constituency",
