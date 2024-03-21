@@ -1,57 +1,87 @@
 import unittest
-import warnings
-import datetime
 
-from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-)
+from unittest.mock import patch, Mock
 
+import jobs.ingest_ons_data as job
 
-import jobs.ingest_capacity_tracker_data as job
+from utils import utils
+from tests.test_file_data import ONSData as Data
+from tests.test_file_schemas import ONSData as Schemas
 
 
-class TestJobCountAbsDiffInRange(unittest.TestCase):
-    calculate_jobs_schema = StructType(
-        [
-            StructField("id", StringType(), False),
-            StructField("Last_Updated_UTC", StringType(), True),
-        ]
-    )
+class IngestONSDataTests(unittest.TestCase):
+    TEST_CSV_SOURCE = "some/directory/path/file.csv"
+    TEST_DIRECTORY_SOURCE = "some/directory/path"
+    TEST_DESTINATION = "s3://some/"
+    TEST_NEW_DESTINATION = "s3://some/directory/path"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_ingest_capacity_tracker_data"
-        ).getOrCreate()
-
-        warnings.simplefilter("ignore", ResourceWarning)
-
-    def test_add_column_with_formatted_dates_care_homes(self):
-        rows = [
-            ("1", "08 Mar 2022 12:03"),
-            ("2", "09 Feb 2022 15:23"),
+        self.spark = utils.get_spark()
+        self.test_ons_df = self.spark.createDataFrame(
+            Data.sample_rows, Schemas.sample_schema
+        )
+        self.object_list = [
+            "directory/path/some-data-file.csv",
+            "directory/path/some-other-other-data-file.csv",
         ]
-        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        self.partial_csv_content = "Some, csv, content"
+        self.expected_ons_df = self.spark.createDataFrame(
+            Data.expected_rows, Schemas.sample_schema
+        )
 
-        df = job.add_column_with_formatted_dates(df, "Last_Updated_UTC", "dd MMM yyyy")
-        self.assertEqual(df.count(), 2)
+    @patch("utils.utils.read_partial_csv_content")
+    @patch("utils.utils.get_s3_objects_list")
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_csv")
+    def test_main_runs_when_source_is_csv(
+        self,
+        read_csv_patch: Mock,
+        write_to_parquet_patch: Mock,
+        get_s3_objects_list_patch: Mock,
+        read_partial_csv_content_patch: Mock,
+    ):
+        get_s3_objects_list_patch.return_value = self.object_list
+        read_csv_patch.return_value = self.test_ons_df
+        read_partial_csv_content_patch.return_value = self.partial_csv_content
 
-        df = df.collect()
-        self.assertEqual(df[0]["Last_Updated_UTC_formatted"], datetime.date(2022, 3, 8))
-        self.assertEqual(df[1]["Last_Updated_UTC_formatted"], datetime.date(2022, 2, 9))
+        job.main(self.TEST_CSV_SOURCE, self.TEST_DESTINATION)
 
-    def test_add_column_with_formatted_dates_non_res(self):
-        rows = [
-            ("1", "08/03/2022 12:03"),
-            ("2", "09/02/2022 15:23"),
-        ]
-        df = self.spark.createDataFrame(data=rows, schema=self.calculate_jobs_schema)
+        self.assertEqual(get_s3_objects_list_patch.call_count, 0)
+        self.assertEqual(read_csv_patch.call_count, 1)
+        self.assertEqual(read_partial_csv_content_patch.call_count, 1)
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][0].collect(),
+            self.expected_ons_df.collect(),
+        )
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
+        )
 
-        df = job.add_column_with_formatted_dates(df, "Last_Updated_UTC", "d/M/y")
-        self.assertEqual(df.count(), 2)
+    @patch("utils.utils.read_partial_csv_content")
+    @patch("utils.utils.get_s3_objects_list")
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_csv")
+    def test_main_runs_when_source_is_directory(
+        self,
+        read_csv_patch: Mock,
+        write_to_parquet_patch: Mock,
+        get_s3_objects_list_patch: Mock,
+        read_partial_csv_content_patch: Mock,
+    ):
+        get_s3_objects_list_patch.return_value = self.object_list
+        read_csv_patch.return_value = self.test_ons_df
+        read_partial_csv_content_patch.return_value = self.partial_csv_content
 
-        df = df.collect()
-        self.assertEqual(df[0]["Last_Updated_UTC_formatted"], datetime.date(2022, 3, 8))
-        self.assertEqual(df[1]["Last_Updated_UTC_formatted"], datetime.date(2022, 2, 9))
+        job.main(self.TEST_DIRECTORY_SOURCE, self.TEST_DESTINATION)
+
+        self.assertEqual(get_s3_objects_list_patch.call_count, 1)
+        self.assertEqual(read_csv_patch.call_count, 2)
+        self.assertEqual(read_partial_csv_content_patch.call_count, 2)
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][0].collect(),
+            self.expected_ons_df.collect(),
+        )
+        self.assertEqual(
+            write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
+        )
