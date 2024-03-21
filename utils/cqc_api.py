@@ -84,23 +84,23 @@ def get_page_objects(
         url,
         {"page": page_number, "perPage": per_page, "partnerCode": partner_code},
         headers_dict={"User-Agent": USER_AGENT},
-    )
+    ).json()
 
     for resource in response_body[object_type]:
-        returned_object = get_object(
-            resource[object_identifier], object_type, partner_code
-        )
+        returned_object = get_object(resource[object_identifier], object_type)
         page_objects.append(returned_object)
 
     return page_objects
 
 
-def get_object(cqc_location_id, object_type, partner_code):
+def get_object(cqc_location_id, object_type):
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
+    print(url)
 
-    location_body = call_api(
+    response = call_api(
         url + cqc_location_id,
-        {"partnerCode": partner_code},
+        query_params=None,  # This endpoint no longer supports a Partner Code
         headers_dict={"User-Agent": USER_AGENT},
     )
-    return location_body
+
+    return response.json()

@@ -38,7 +38,9 @@ class TestCQCLocationAPI(unittest.TestCase):
         )
 
         mock_call_api.assert_called_once_with(
-            "test_url", {"page": 1, "perPage": 500, "partnerCode": "PARTNERCODE"}
+            "test_url",
+            {"page": 1, "perPage": 500, "partnerCode": "PARTNERCODE"},
+            headers_dict={"User-Agent": "SkillsForCare"},
         )
 
         mock_get_object.assert_has_calls(
