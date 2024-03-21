@@ -388,6 +388,21 @@ module "merge_ind_cqc_data_job" {
   }
 }
 
+module "validate_merged_ind_cqc_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_merged_ind_cqc_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+    "--destination"                 = ""
+  }
+}
+
 module "prepare_care_home_ind_cqc_features_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_care_home_ind_cqc_features.py"
