@@ -31,14 +31,14 @@ SERVICES_LOOKUP = {
 }
 
 RURAL_URBAN_INDICATOR_LOOKUP = {
-    "indicator_1": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
-    "indicator_2": "(England/Wales) Rural hamlet and isolated dwellings",
-    "indicator_3": "(England/Wales) Rural village",
-    "indicator_4": "(England/Wales) Rural town and fringe in a sparse setting",
-    "indicator_5": "(England/Wales) Rural town and fringe",
-    "indicator_6": "(England/Wales) Urban city and town in a sparse setting",
-    "indicator_7": "(England/Wales) Urban city and town",
-    "indicator_8": "(England/Wales) Urban major conurbation",
-    "indicator_9": "(England/Wales) Urban minor conurbation",
-    "indicator_10": "(England/Wales) Rural village in a sparse setting",
+    "indicator_1": "Rural hamlet and isolated dwellings in a sparse setting",
+    "indicator_2": "Rural hamlet and isolated dwellings",
+    "indicator_3": "Rural village",
+    "indicator_4": "Rural town and fringe in a sparse setting",
+    "indicator_5": "Rural town and fringe",
+    "indicator_6": "Urban city and town in a sparse setting",
+    "indicator_7": "Urban city and town",
+    "indicator_8": "Urban major conurbation",
+    "indicator_9": "Urban minor conurbation",
+    "indicator_10": "Rural village in a sparse setting",
 }
