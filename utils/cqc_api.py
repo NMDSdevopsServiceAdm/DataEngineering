@@ -73,14 +73,16 @@ def get_page_objects(
     )
 
     for resource in response_body[object_type]:
-        returned_object = get_object(resource[object_identifier], object_type)
+        returned_object = get_object(
+            resource[object_identifier], object_type, partner_code
+        )
         page_objects.append(returned_object)
 
     return page_objects
 
 
-def get_object(cqc_location_id, object_type):
+def get_object(cqc_location_id, object_type, partner_code):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}/"
 
-    location_body = call_api(url + cqc_location_id)
+    location_body = call_api(url + cqc_location_id, {"partnerCode": partner_code})
     return location_body
