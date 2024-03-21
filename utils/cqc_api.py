@@ -34,7 +34,7 @@ def call_api(url, query_params=None, headers_dict=None):
     if response.status_code not in [200, 429]:
         raise Exception("API response: {}".format(response.status_code))
 
-    return response
+    return response.json()
 
 
 def get_all_objects(
@@ -50,7 +50,7 @@ def get_all_objects(
         url,
         {"perPage": per_page, "partnerCode": partner_code},
         headers_dict={"User-Agent": USER_AGENT},
-    ).json()["totalPages"]
+    )["totalPages"]
     all_objects = []
 
     print(f"Total pages: {total_pages}")
@@ -84,7 +84,7 @@ def get_page_objects(
         url,
         {"page": page_number, "perPage": per_page, "partnerCode": partner_code},
         headers_dict={"User-Agent": USER_AGENT},
-    ).json()
+    )
 
     for resource in response_body[object_type]:
         returned_object = get_object(resource[object_identifier], object_type)
@@ -103,4 +103,4 @@ def get_object(cqc_location_id, object_type):
         headers_dict={"User-Agent": USER_AGENT},
     )
 
-    return response.json()
+    return response
