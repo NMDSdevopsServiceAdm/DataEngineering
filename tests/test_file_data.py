@@ -611,6 +611,7 @@ class CapacityTrackerCareHomeData:
             "45330.3840277778",
         ),
         (
+            "Barnsley Metropolitan Borough Council",
             "Woodlands Lodge Care Home",
             "Mr Dhanus Dharry Ramdharry, Mrs Sooba Devi Mootyen, Mr Dhanraz Danny Ramdharry",
             "South Yorkshire",
@@ -643,6 +644,7 @@ class CapacityTrackerCareHomeData:
             "45330.4958333333",
         ),
         (
+            "Barnsley Metropolitan Borough Council",
             "Water Royd Nursing Home",
             "Maria Mallaband Limited",
             "South Yorkshire",
@@ -711,6 +713,7 @@ class CapacityTrackerCareHomeData:
             "45330.3840277778",
         ),
         (
+            "Barnsley Metropolitan Borough Council",
             "Woodlands Lodge Care Home",
             "Mr Dhanus Dharry Ramdharry, Mrs Sooba Devi Mootyen, Mr Dhanraz Danny Ramdharry",
             "South Yorkshire",
@@ -743,6 +746,7 @@ class CapacityTrackerCareHomeData:
             "45330.4958333333",
         ),
         (
+            "Barnsley Metropolitan Borough Council",
             "Water Royd Nursing Home",
             "Maria Mallaband Limited",
             "South Yorkshire",

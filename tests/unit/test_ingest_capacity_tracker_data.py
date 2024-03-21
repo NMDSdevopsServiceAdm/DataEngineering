@@ -63,6 +63,7 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             write_to_parquet_patch.call_args[0][0].collect(),
             self.expected_carehome_df.collect(),
         )
+
         self.assertEqual(
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
