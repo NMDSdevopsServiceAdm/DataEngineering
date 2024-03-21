@@ -1198,3 +1198,15 @@ class ModelInterpolation:
             StructField(IndCQC.filled_posts_unix_time, LongType(), True),
         ]
     )
+
+
+@dataclass
+class ValidateMergedIndCqcData:
+    cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
+    merged_ind_cqc_schema = StructType(
+        [
+            *MergeIndCQCData.expected_cqc_and_ascwds_merged_schema,
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+        ]
+    )
