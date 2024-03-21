@@ -3,9 +3,9 @@ import unittest
 import warnings
 
 from pyspark.ml.functions import vector_to_array
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from utils.utils import get_spark
 from utils.features.helper import (
     add_date_diff_into_df,
     add_rui_data_data_frame,
@@ -18,9 +18,7 @@ from utils.features.helper import (
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_locations_feature_engineering"
-        ).getOrCreate()
+        self.spark = get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()
@@ -31,13 +29,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         )
         df = df.select(
             F.col("test_input"),
-            F.to_date(F.col("test_input"), "MM-dd-yyyy").alias("snapshot_date"),
+            F.to_date(F.col("test_input"), "MM-dd-yyyy").alias("import_date"),
         )
         result = add_date_diff_into_df(
-            df=df, new_col_name="diff", snapshot_date_col="snapshot_date"
+            df=df, new_col_name="diff", import_date_col="import_date"
         )
         expected_max_date = datetime.date(2023, 1, 10)
-        actual_max_date = result.agg(F.max("snapshot_date")).first()[0]
+        actual_max_date = result.agg(F.max("import_date")).first()[0]
 
         expected_diff_between_max_date_and_other_date = 3652
         actual_diff = (
