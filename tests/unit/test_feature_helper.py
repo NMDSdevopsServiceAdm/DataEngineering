@@ -51,7 +51,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         cols = ["location", "rui_2011"]
         rows = [
             (
-                "1-10894414510",
+                "1-0001",
                 "Rural hamlet and isolated dwellings in a sparse setting",
             )
         ]
