@@ -45,7 +45,7 @@ class TestModelCareHome(unittest.TestCase):
     @patch("utils.estimate_filled_posts.models.care_homes.save_model_metrics")
     def test_model_care_homes_returns_expected_data(
         self,
-        save_model_metrics: Mock,  # not using this but doesn't run without it, is this the best way?
+        save_model_metrics: Mock,
     ):
         df = job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
