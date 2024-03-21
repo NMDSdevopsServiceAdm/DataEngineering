@@ -1,20 +1,28 @@
-import argparse
 from datetime import date
 
 from utils import cqc_api as cqc
+from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
 
+import json
+
 
 def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
     df = None
+    partner_code_value = json.loads(
+        ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
+    )["partner_code"]
     for paginated_locations in cqc.get_all_objects(
-        stream=True, object_type="locations", object_identifier=ColNames.location_id
+        stream=True,
+        object_type="locations",
+        object_identifier=ColNames.location_id,
+        partner_code=partner_code_value,
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
         if df:
@@ -28,22 +36,14 @@ def main(destination):
     print(f"Finished! Files can be found in {destination}")
 
 
-def collect_arguments():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--destination_prefix",
-        help="A destination bucket name in the format of s3://<bucket_name>/",
-        required=False,
-    )
-
-    args, _ = parser.parse_known_args()
-
-    return args.destination_prefix
-
-
 if __name__ == "__main__":
-    destination_prefix = collect_arguments()
+    destination_prefix = utils.collect_arguments(
+        (
+            "--destination_prefix",
+            "Source s3 directory for parquet CQC locations dataset",
+            False,
+        ),
+    )
     todays_date = date.today()
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
