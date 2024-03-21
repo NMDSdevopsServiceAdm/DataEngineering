@@ -74,7 +74,7 @@ def main(
 
     # get all locationids that have ever existed
     entire_location_id_history_df = get_all_location_ids_which_have_ever_existed(
-        cqc_location_api_source
+        all_location_ids_df
     )
 
     # all the formatting steps for Support team
