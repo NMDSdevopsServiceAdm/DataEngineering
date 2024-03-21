@@ -102,7 +102,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_explode_column_from_distinct_values_returns_df_with_new_cols_and_prefix(
         self,
     ):
-        val_1 = "Glasgow"
+        val_1 = "Gateshead"
         val_2 = "London"
         val_3 = "Leeds"
 
@@ -128,38 +128,38 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         expected_returned_rows = [
             {
                 "locationid": "1",
-                "region": "Glasgow",
+                "region": "Gateshead",
                 "ons_leeds": 0,
                 "ons_london": 0,
-                "ons_glasgow": 1,
+                "ons_gateshead": 1,
             },
             {
                 "locationid": "2",
-                "region": "Glasgow",
+                "region": "Gateshead",
                 "ons_leeds": 0,
                 "ons_london": 0,
-                "ons_glasgow": 1,
+                "ons_gateshead": 1,
             },
             {
                 "locationid": "3",
                 "region": "London",
                 "ons_leeds": 0,
                 "ons_london": 1,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
             {
                 "locationid": "4",
                 "region": "Leeds",
                 "ons_leeds": 1,
                 "ons_london": 0,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
             {
                 "locationid": "5",
                 "region": "Leeds",
                 "ons_leeds": 1,
                 "ons_london": 0,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
         ]
 
@@ -169,11 +169,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(len(df_rows), len(rows))
         self.assertListEqual(actual_returned_rows, expected_returned_rows)
         self.assertEqual(
-            list_created_of_new_cols, ["ons_glasgow", "ons_leeds", "ons_london"]
+            list_created_of_new_cols, ["ons_gateshead", "ons_leeds", "ons_london"]
         )
 
     def test_vectorisation(self):
-        val_1 = "Glasgow"
+        val_1 = "Gateshead"
         val_2 = "London"
         val_3 = "Leeds"
 
