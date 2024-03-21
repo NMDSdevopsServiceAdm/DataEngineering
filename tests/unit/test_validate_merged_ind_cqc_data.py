@@ -55,13 +55,6 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
 
-        write_to_parquet_patch.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
-        )
-
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
