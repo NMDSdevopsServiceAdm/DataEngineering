@@ -56,7 +56,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         rows = [
             (
                 "1-10894414510",
-                "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
+                "Rural hamlet and isolated dwellings in a sparse setting",
             )
         ]
         df = self.spark.createDataFrame(rows, cols)
@@ -64,7 +64,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             df=df,
             rui_col_name="rui_2011",
             lookup_dict={
-                "indicator_1": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"
+                "indicator_1": "Rural hamlet and isolated dwellings in a sparse setting"
             },
         )
         result_rows = result.collect()
