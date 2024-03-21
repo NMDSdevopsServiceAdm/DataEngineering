@@ -54,13 +54,13 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
-    # dedup deregistered file
+    ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
 
     # Filter CQC reg file to latest date?
 
     # get latest? ascwds data
-    ascwds_workforce_df = prepare_latest_cleaned_ascwds_workforce_data(
-        cleaned_ascwds_workplace_source
+    latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
+        ascwds_workplace_df
     )
 
     # add in all ascwds formatting
@@ -77,12 +77,10 @@ def main(
 
 
 def prepare_latest_cleaned_ascwds_workforce_data(
-    cleaned_ascwds_workforce_source: str,
+    ascwds_workplace_df: str,
 ) -> DataFrame:
-    ascwds_workforce_df = utils.read_from_parquet(cleaned_ascwds_workforce_source)
-
-    latest_ascwds_workforce_df = filter_df_to_maximum_value_in_column(
-        ascwds_workforce_df, AWPClean.ascwds_workplace_import_date
+    latest_ascwds_workplace_df = filter_df_to_maximum_value_in_column(
+        ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
 
     # TODO - make better! genuine dict for all ascwds data
@@ -93,7 +91,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
         "7": "Voluntary/Charity",
         "8": "Other",
     }
-    latest_ascwds_workforce_df = latest_ascwds_workforce_df.replace(
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.replace(
         esttype_dict, subset=[AWPClean.establishment_type]
     )
     # TODO - make better! dict specific to this job
@@ -108,11 +106,11 @@ def prepare_latest_cleaned_ascwds_workforce_data(
         "1": "I - Eastern",
         "9": "J - Yorkshire Humber",
     }
-    latest_ascwds_workforce_df = latest_ascwds_workforce_df.replace(
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.replace(
         region_dict, subset=[AWPClean.region_id]
     )
 
-    latest_ascwds_workforce_df = latest_ascwds_workforce_df.withColumn(
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumn(
         "ParentSubSingle",
         F.when(
             (F.col(AWPClean.is_parent) == 1),
@@ -125,7 +123,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
         .otherwise(F.lit("Single")),
     )
 
-    latest_ascwds_workforce_df = latest_ascwds_workforce_df.withColumn(
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumn(
         "ownership",
         F.when(
             (F.col(AWPClean.parent_permission) == 1),
@@ -133,7 +131,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
         ).otherwise(F.lit("workplace")),
     ).drop(AWPClean.parent_permission)
 
-    return latest_ascwds_workforce_df
+    return latest_ascwds_workplace_df
 
 
 # TODO - make utils function?
