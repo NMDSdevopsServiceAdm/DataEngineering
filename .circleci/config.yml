@@ -116,15 +116,24 @@ jobs:
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
+
       - run:
           name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
+          
+      - run:
+          name: save datasets bucket name
+          command: |
+            cd terraform/pipeline
+            echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
 
       - persist_to_workspace:
           root: .
-          paths: ./terraform/pipeline/pipeline_resources_bucket_name
+          paths:
+            - ./terraform/pipeline/pipeline_resources_bucket_name
+            - ./terraform/pipeline/datasets_bucket_name
   
   deploy-dependencies:
     docker:
@@ -156,6 +165,19 @@ jobs:
           aws-region: AWS_REGION
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
+
+  copy-default-data:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: .
+
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-default-datasets/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
 
   terraform-destroy:
     working_directory: /tmp/project
@@ -224,6 +246,9 @@ workflows:
           requires:
             - terraform-plan
       - deploy-dependencies:
+          requires:
+            - terraform-apply
+      - copy-default-data:
           requires:
             - terraform-apply
 
