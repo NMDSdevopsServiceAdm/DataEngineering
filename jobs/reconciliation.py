@@ -53,8 +53,13 @@ def main(
         deregistered_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
-
-    ascwds_workplace_df = utils.read_from_parquet(cleaned_ascwds_workplace_source)
+    ascwds_workplace_df = utils.read_from_parquet(
+        cleaned_ascwds_workplace_source,
+        selected_columns=cleaned_ascwds_workplace_columns_to_import,
+    )
+    all_location_ids_df = utils.read_from_parquet(
+        cqc_location_api_source, CQCLClean.location_id
+    )
 
     # Filter CQC reg file to latest date?
 
@@ -68,7 +73,9 @@ def main(
     # join in ASCWDS data (import_date and locationid)
 
     # get all locationids that have ever existed
-    entire_location_id_history_df = get_all_location_ids(cqc_location_api_source)
+    entire_location_id_history_df = get_all_location_ids_which_have_ever_existed(
+        cqc_location_api_source
+    )
 
     # all the formatting steps for Support team
 
@@ -143,12 +150,11 @@ def filter_df_to_maximum_value_in_column(
     return df.filter(F.col(column_to_filter_on) == max_date)
 
 
-def get_all_location_ids(cqc_location_source: str) -> DataFrame:
-    all_location_ids_df = (
-        utils.read_from_parquet(cqc_location_source)
-        .select(CQCLClean.location_id)
-        .distinct()
-    )
+def get_all_location_ids_which_have_ever_existed(
+    all_location_ids_df: DataFrame,
+) -> DataFrame:
+    all_location_ids_df = all_location_ids_df.dropDuplicates()
+
     return all_location_ids_df.withColumn("ever_existed", F.lit("yes"))
 
 
