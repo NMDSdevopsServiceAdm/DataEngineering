@@ -43,18 +43,18 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
 
 
 if __name__ == "__main__":
-    print("Spark job 'inges_ons_data' starting...")
+    print("Spark job 'ingest_capacity_tracker_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    ons_source, ons_destination = utils.collect_arguments(
+    capacity_tracker_source, capacity_tracker_destination = utils.collect_arguments(
         (
             "--source",
-            "A CSV file or directory of csv files in s3 with ONS data to import",
+            "A CSV file or directory of csv files in s3 with capacity tracker data to import",
         ),
         (
             "--destination",
-            "Destination s3 directory for ONS postcode directory",
+            "Destination s3 directory for capacity tracker data",
         ),
     )
-    main(ons_source, ons_destination)
-    print("Spark job 'ingest_ons_data' complete")
+    main(capacity_tracker_source, capacity_tracker_destination)
+    print("Spark job 'ingest_capacity_tracker_data' complete")
