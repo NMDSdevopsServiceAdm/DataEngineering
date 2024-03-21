@@ -2,11 +2,15 @@ import unittest
 
 from unittest.mock import patch, Mock
 
-import jobs.ingest_ons_data as job
+import jobs.ingest_capacity_tracker_data as job
 
 from utils import utils
-from tests.test_file_data import ONSData as Data
-from tests.test_file_schemas import ONSData as Schemas
+
+from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
+from tests.test_file_data import CapacityTrackerDomCareData as DomCareData
+
+from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
+from tests.test_file_schemas import CapacityTrackerDomCareSchema as DomCareSchema
 
 
 class IngestONSDataTests(unittest.TestCase):
