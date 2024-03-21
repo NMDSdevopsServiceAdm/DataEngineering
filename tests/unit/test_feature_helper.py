@@ -1,4 +1,4 @@
-import datetime
+from datetime import date
 import unittest
 import warnings
 
@@ -24,29 +24,27 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         return super().setUp()
 
     def test_add_date_diff_into_df(self):
+        date_col = "import_date"
+        date_diff = "date_diff"
         df = self.spark.createDataFrame(
-            [["01-10-2013"], ["01-10-2023"]], ["test_input"]
-        )
-        df = df.select(
-            F.col("test_input"),
-            F.to_date(F.col("test_input"), "MM-dd-yyyy").alias("import_date"),
+            [[date(2013, 1, 10)], [date(2023, 1, 10)]], [date_col]
         )
         result = add_date_diff_into_df(
-            df=df, new_col_name="diff", import_date_col="import_date"
+            df=df, new_col_name=date_diff, import_date_col=date_col
         )
-        expected_max_date = datetime.date(2023, 1, 10)
-        actual_max_date = result.agg(F.max("import_date")).first()[0]
+        expected_max_date = date(2023, 1, 10)
+        actual_max_date = result.agg(F.max(date_col)).first()[0]
 
         expected_diff_between_max_date_and_other_date = 3652
         actual_diff = (
-            result.filter(F.col("test_input") == "01-10-2013")
-            .select(F.col("diff"))
+            result.filter(F.col(date_col) == date(2013, 1, 10))
+            .select(F.col(date_diff))
             .collect()
         )
 
         self.assertEqual(actual_max_date, expected_max_date)
         self.assertEqual(
-            actual_diff[0].diff, expected_diff_between_max_date_and_other_date
+            actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
         )
 
     def test_add_rui_data_data_frame(self):
