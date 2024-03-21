@@ -60,11 +60,11 @@ def explode_column_from_distinct_values(
 
 
 def add_date_diff_into_df(
-    df: DataFrame, new_col_name: str, snapshot_date_col: str
+    df: DataFrame, new_col_name: str, import_date_col: str
 ) -> DataFrame:
-    max_d = df.agg(F.max(snapshot_date_col)).first()[0]
+    max_d = df.agg(F.max(import_date_col)).first()[0]
 
     loc_df = df.withColumn(
-        new_col_name, F.datediff(F.lit(max_d), F.col(snapshot_date_col))
+        new_col_name, F.datediff(F.lit(max_d), F.col(import_date_col))
     )
     return loc_df
