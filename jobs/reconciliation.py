@@ -62,14 +62,13 @@ def main(
         cqc_location_api_source, CQCLClean.location_id
     )
 
-    # Filter CQC reg file to latest date?
+    deregistered_locations_in_latest_month_df = (
+        filter_to_locations_deregistered_in_latest_month(deregistered_locations_df)
+    )
 
-    # get latest? ascwds data
     latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
         ascwds_workplace_df
     )
-
-    # add in all ascwds formatting
 
     # join in ASCWDS data (import_date and locationid)
 
@@ -149,6 +148,18 @@ def filter_df_to_maximum_value_in_column(
     max_date = df.agg(F.max(column_to_filter_on)).collect()[0][0]
 
     return df.filter(F.col(column_to_filter_on) == max_date)
+
+
+def filter_to_locations_deregistered_in_latest_month(
+    deregistered_df: DataFrame,
+) -> DataFrame:
+    latest_date = deregistered_df.agg(
+        F.max(CQCLClean.cqc_location_import_date)
+    ).collect()[0][0]
+    latest_month = F.trunc(latest_date, "month")
+    return deregistered_df.filter(
+        F.col(CQCLClean.cqc_location_import_date) >= latest_month
+    )
 
 
 def get_all_location_ids_which_have_ever_existed(
