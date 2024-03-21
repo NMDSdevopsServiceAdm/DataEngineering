@@ -401,20 +401,6 @@ module "prepare_care_home_ind_cqc_features_job" {
   }
 }
 
-module "estimate_ind_cqc_filled_posts_by_job_role_job" {
-  source          = "../modules/glue-job"
-  script_name     = "estimate_ind_cqc_filled_posts_by_job_role.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-
-  job_parameters = {
-    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
-    "--cleaned_ascwds_worker_source"                           = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-    "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
-  }
-}
-
 
 module "estimate_ind_cqc_filled_posts_job" {
   source          = "../modules/glue-job"
@@ -426,13 +412,22 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
     "--care_home_features_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
-    "--non_res_features_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features/"
-    "--care_home_model_directory"     = "${module.pipeline_resources.bucket_uri}/models/care_home_with_nursing_historical_jobs_prediction/2.1.0/"
-    "--non_res_model_directory"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_pir_jobs_prediction/2.0.0/"
-    "--metrics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=metrics_inc_cqc_filled_posts/"
+    "--care_home_model_source"        = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/"
     "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
-    "--job_run_id"                    = "test"
-    "--job_name"                      = "test"
+    "--ml_model_metrics_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
+  }
+}
+
+module "estimate_ind_cqc_filled_posts_by_job_role_job" {
+  source          = "../modules/glue-job"
+  script_name     = "estimate_ind_cqc_filled_posts_by_job_role.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
   }
 }
 

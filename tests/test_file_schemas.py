@@ -1126,8 +1126,8 @@ class InsertPredictionsIntoLocations:
 
 
 @dataclass
-class GenerateRSquaredMetric:
-    cqc_ind_cleaned_schema = StructType(
+class MLModelMetrics:
+    ind_cqc_with_predictions_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
@@ -1139,6 +1139,16 @@ class GenerateRSquaredMetric:
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
+
+    predictions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+
+    r2_metric_schema = predictions_schema
 
 
 @dataclass
@@ -1188,9 +1198,3 @@ class ModelInterpolation:
             StructField(IndCQC.filled_posts_unix_time, LongType(), True),
         ]
     )
-
-
-@dataclass
-class ModelNonResidential:
-    cleaned_cqc_ind_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
-    non_res_features_schema = ModelCareHomes.care_homes_features_schema
