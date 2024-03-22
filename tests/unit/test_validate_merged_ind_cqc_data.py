@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import jobs.validate_merged_ind_cqc_data as job
 
