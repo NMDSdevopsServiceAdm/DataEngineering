@@ -31,7 +31,7 @@ class SetupSpark(object):
         # spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
         spark = (
             SparkSession.builder.appName("sfc_data_engineering")
-            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.1-spark-3.2")
+            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.4-spark-3.3")
             .getOrCreate()
         )
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
