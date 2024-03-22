@@ -32,6 +32,9 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             Data.merged_ind_cqc_rows, Schemas.merged_ind_cqc_schema
         )
 
+    def tearDown(self) -> None:
+        self.spark.sparkContext._gateway.shutdown_callback_server()
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -47,7 +50,6 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_MERGED_IND_CQC_SOURCE,
-            self.TEST_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
