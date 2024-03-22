@@ -1,4 +1,3 @@
-from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
 from utils import utils
@@ -20,9 +19,7 @@ def main(
     direct_payments_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_prepare_direct_payments"
-    ).getOrCreate()
+    spark = utils.get_spark()
 
     direct_payments_df: DataFrame = spark.read.parquet(direct_payments_source).select(
         DP.LA_AREA,

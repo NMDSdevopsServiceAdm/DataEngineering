@@ -3,9 +3,9 @@ import unittest
 import warnings
 
 from pyspark.ml.functions import vector_to_array
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from utils import utils
 from utils.features.helper import (
     add_date_diff_into_df,
     add_rui_data_data_frame,
@@ -18,9 +18,7 @@ from utils.features.helper import (
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_locations_feature_engineering"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()

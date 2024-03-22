@@ -1,21 +1,19 @@
 import unittest
 import warnings
 
-from pyspark.sql import SparkSession
 
 import utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils import utils
 from tests.test_file_schemas import CalculatePaRatioSchemas as Schemas
 from tests.test_file_data import CalculatePaRatioData as Data
 
 
 class TestCalculatePARatio(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_dpr_calculate_pa_ratio"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
 

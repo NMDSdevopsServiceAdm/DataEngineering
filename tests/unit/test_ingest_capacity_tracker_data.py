@@ -2,14 +2,13 @@ import unittest
 import warnings
 import datetime
 
-from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     StructType,
     StructField,
     StringType,
 )
 
-
+from utils import utils
 import jobs.ingest_capacity_tracker_data as job
 
 
@@ -22,10 +21,7 @@ class TestJobCountAbsDiffInRange(unittest.TestCase):
     )
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_ingest_capacity_tracker_data"
-        ).getOrCreate()
-
+        self.spark = utils.get_spark()
         warnings.simplefilter("ignore", ResourceWarning)
 
     def test_add_column_with_formatted_dates_care_homes(self):

@@ -3,9 +3,9 @@ import unittest
 import warnings
 from dataclasses import dataclass, asdict
 
-from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, StructField
 
+from utils import utils
 from utils.prepare_locations_utils.dataframe_utils import (
     add_column_with_snaphot_date_substring,
     SnapshotConstants,
@@ -49,7 +49,7 @@ class HelperForDataFrameTests:
 
 class TestGroup(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_dataframe_utils").getOrCreate()
+        self.spark = utils.get_spark()
         generate_ascwds_workplace_file(PathsForTestData.TEST_ASCWDS_WORKPLACE_FILE)
         self.cqc_loc_df = generate_cqc_locations_file(
             PathsForTestData.TEST_CQC_LOCATION_FILE
