@@ -134,9 +134,7 @@ def read_csv(source, delimiter=","):
 
 
 def read_csv_with_defined_schema(source, schema):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_spss_csv_to_parquet"
-    ).getOrCreate()
+    spark = get_spark()
 
     df = spark.read.schema(schema).option("header", "true").csv(source)
 
