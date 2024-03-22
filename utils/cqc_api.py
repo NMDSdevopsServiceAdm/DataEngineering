@@ -1,6 +1,5 @@
 from ratelimit import limits, sleep_and_retry
 from time import sleep
-import json
 
 import requests
 
@@ -10,8 +9,6 @@ RATE_LIMIT = (
 )
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
-CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
-USER_AGENT = "SkillsForCare"
 
 
 @sleep_and_retry
@@ -39,10 +36,9 @@ def get_all_objects(
 ):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}"
 
-    total_pages = call_api(
-        url,
-        {"perPage": per_page, "partnerCode": partner_code},
-    )["totalPages"]
+    total_pages = call_api(url, {"perPage": per_page, "partnerCode": partner_code})[
+        "totalPages"
+    ]
     all_objects = []
 
     print(f"Total pages: {total_pages}")
@@ -73,8 +69,7 @@ def get_page_objects(
 ):
     page_objects = []
     response_body = call_api(
-        url,
-        {"page": page_number, "perPage": per_page, "partnerCode": partner_code},
+        url, {"page": page_number, "perPage": per_page, "partnerCode": partner_code}
     )
 
     for resource in response_body[object_type]:

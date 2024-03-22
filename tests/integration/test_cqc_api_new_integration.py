@@ -1,4 +1,4 @@
-from utils import cqc_api as cqc
+from utils import cqc_api_new as cqc
 import unittest
 import re
 
