@@ -47,7 +47,7 @@ def get_all_objects(
     for page_number in range(1, total_pages + 1):
         print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
         page_locations = get_page_objects(
-            url, page_number, object_type, object_identifier
+            url, page_number, object_type, object_identifier, partner_code
         )
 
         if stream:
@@ -60,20 +60,29 @@ def get_all_objects(
 
 
 def get_page_objects(
-    url, page_number, object_type, object_identifier, per_page=DEFAULT_PAGE_SIZE
+    url,
+    page_number,
+    object_type,
+    object_identifier,
+    partner_code,
+    per_page=DEFAULT_PAGE_SIZE,
 ):
     page_objects = []
-    response_body = call_api(url, {"page": page_number, "perPage": per_page})
+    response_body = call_api(
+        url, {"page": page_number, "perPage": per_page, "partnerCode": partner_code}
+    )
 
     for resource in response_body[object_type]:
-        returned_object = get_object(resource[object_identifier], object_type)
+        returned_object = get_object(
+            resource[object_identifier], object_type, partner_code
+        )
         page_objects.append(returned_object)
 
     return page_objects
 
 
-def get_object(cqc_location_id, object_type):
+def get_object(cqc_location_id, object_type, partner_code):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}/"
 
-    location_body = call_api(url + cqc_location_id)
+    location_body = call_api(url + cqc_location_id, {"partnerCode": partner_code})
     return location_body
