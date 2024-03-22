@@ -17,7 +17,7 @@ class TestCQCLocationAPI(unittest.TestCase):
 
         location_body = {"locationId": "test_id"}
 
-        result = cqc.get_object("test_id", "locations", "PARTNERCODE")
+        result = cqc.get_object("test_id", "locations")
         self.assertEqual(result, location_body)
 
     @mock.patch("utils.cqc_api.call_api")
@@ -40,13 +40,14 @@ class TestCQCLocationAPI(unittest.TestCase):
         mock_call_api.assert_called_once_with(
             "test_url",
             {"page": 1, "perPage": 500, "partnerCode": "PARTNERCODE"},
+            headers_dict={"User-Agent": "SkillsForCare"},
         )
 
         mock_get_object.assert_has_calls(
             [
-                mock.call("test_id", "locations", "PARTNERCODE"),
-                mock.call("test_id_2", "locations", "PARTNERCODE"),
-                mock.call("test_id_3", "locations", "PARTNERCODE"),
+                mock.call("test_id", "locations"),
+                mock.call("test_id_2", "locations"),
+                mock.call("test_id_3", "locations"),
             ]
         )
 

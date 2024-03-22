@@ -16,15 +16,22 @@ USER_AGENT = "SkillsForCare"
 
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
-def call_api(url, query_params=None):
-    response = requests.get(url, query_params)
+def call_api(url, query_params=None, headers_dict=None):
+    response = requests.get(url, query_params, headers=headers_dict)
 
     while response.status_code == 429:
         print("Sleeping for ten seconds due to rate limiting")
         sleep(10)
-        response = requests.get(url, query_params)
+        response = requests.get(url, query_params, headers=headers_dict)
 
-    if response.status_code != 200:
+    if (response.status_code == 403) & (headers_dict is None):
+        raise Exception(
+            "API response: {}, ensure you have set a User-Agent header".format(
+                response.status_code
+            )
+        )
+
+    if response.status_code not in [200, 429]:
         raise Exception("API response: {}".format(response.status_code))
 
     return response.json()
@@ -37,11 +44,12 @@ def get_all_objects(
     partner_code,
     per_page=DEFAULT_PAGE_SIZE,
 ):
-    url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}"
+    url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
 
     total_pages = call_api(
         url,
         {"perPage": per_page, "partnerCode": partner_code},
+        headers_dict={"User-Agent": USER_AGENT},
     )["totalPages"]
     all_objects = []
 
@@ -75,20 +83,23 @@ def get_page_objects(
     response_body = call_api(
         url,
         {"page": page_number, "perPage": per_page, "partnerCode": partner_code},
+        headers_dict={"User-Agent": USER_AGENT},
     )
 
     for resource in response_body[object_type]:
-        returned_object = get_object(
-            resource[object_identifier], object_type, partner_code
-        )
+        returned_object = get_object(resource[object_identifier], object_type)
         page_objects.append(returned_object)
 
     return page_objects
 
 
-def get_object(cqc_location_id, object_type, partner_code):
-    url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}/"
+def get_object(cqc_location_id, object_type):
+    url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
 
-    location_body = call_api(url + cqc_location_id, {"partnerCode": partner_code})
+    response = call_api(
+        url + cqc_location_id,
+        query_params=None,  # This endpoint no longer supports a Partner Code
+        headers_dict={"User-Agent": USER_AGENT},
+    )
 
-    return location_body
+    return response

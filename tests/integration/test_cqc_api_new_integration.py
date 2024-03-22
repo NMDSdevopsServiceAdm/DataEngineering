@@ -15,9 +15,7 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
         pass
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(
-            EXAMPLE_LOCATION_ID, "locations", self.PARTNER_CODE_STUB
-        )
+        result = cqc.get_object(EXAMPLE_LOCATION_ID, "locations")
 
         self.assertEqual(result["locationId"], EXAMPLE_LOCATION_ID)
         self.assertEqual(result["providerId"], "1-9098203603")
