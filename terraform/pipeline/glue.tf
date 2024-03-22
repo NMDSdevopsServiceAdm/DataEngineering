@@ -258,12 +258,12 @@ module "bulk_cqc_locations_download_job" {
 }
 
 module "bulk_cqc_providers_new_download_job" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_providers_new.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  glue_version     = "3.0"
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_providers_new.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
@@ -272,12 +272,12 @@ module "bulk_cqc_providers_new_download_job" {
 }
 
 module "bulk_cqc_locations_new_download_job" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_locations_new.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  glue_version     = "3.0"
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_locations_new.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
