@@ -4,7 +4,6 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from pyspark.shell import spark
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
@@ -650,7 +649,7 @@ class UtilsTests(unittest.TestCase):
         row = [
             ("1-000000001", "2023-01-01"),
         ]
-        df = spark.createDataFrame(row, schema=column_schema)
+        df = self.spark.createDataFrame(row, schema=column_schema)
         df = utils.create_unix_timestamp_variable_from_date_column(
             df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
         )
