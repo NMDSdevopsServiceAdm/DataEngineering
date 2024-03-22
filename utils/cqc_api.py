@@ -85,5 +85,4 @@ def get_object(cqc_location_id, object_type, partner_code):
     url = f"https://api.cqc.org.uk/public/{CQC_API_VERSION}/{object_type}/"
 
     location_body = call_api(url + cqc_location_id, {"partnerCode": partner_code})
-
     return location_body
