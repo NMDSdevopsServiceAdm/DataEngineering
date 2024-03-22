@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from unittest.mock import ANY, Mock, patch
 
@@ -11,12 +12,8 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+
+os.environ["spark_version"] = "3.3"
 
 
 class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
