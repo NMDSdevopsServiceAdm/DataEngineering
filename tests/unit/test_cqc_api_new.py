@@ -1,7 +1,7 @@
 import mock
 import unittest
 
-from utils import cqc_api as cqc
+from utils import cqc_api_new as cqc
 
 
 class TestCQCLocationAPI(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestCQCLocationAPI(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch("utils.cqc_api.call_api")
+    @mock.patch("utils.cqc_api_new.call_api")
     def test_get_location(self, mock_call_api):
         mock_call_api.return_value = {"locationId": "test_id"}
 
@@ -20,8 +20,8 @@ class TestCQCLocationAPI(unittest.TestCase):
         result = cqc.get_object("test_id", "locations")
         self.assertEqual(result, location_body)
 
-    @mock.patch("utils.cqc_api.call_api")
-    @mock.patch("utils.cqc_api.get_object")
+    @mock.patch("utils.cqc_api_new.call_api")
+    @mock.patch("utils.cqc_api_new.get_object")
     def test_get_page_locations(self, mock_get_object, mock_call_api):
         mock_call_api.return_value = {
             "locations": [
