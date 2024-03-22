@@ -7,7 +7,6 @@ name = "pypi"
 python_full_version = "3.9.6"
 
 [packages]
-pyspark = "==3.4.1"
 boto3 = "==1.20.7"
 mock = "==5.1.0"
 requests = "==2.31.0"
@@ -16,6 +15,7 @@ urllib3 = "==1.26.18"
 black = "==23.7.0"
 openpyxl = "==3.1.2"
 pydeequ = "==1.2.0"
+pyspark = "==3.3.4"
 
 [dev-packages]
 pylint = "==2.17.4"
