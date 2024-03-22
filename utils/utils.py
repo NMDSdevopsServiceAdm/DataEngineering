@@ -26,7 +26,12 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self) -> SparkSession:
-        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        # spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark = (
+            SparkSession.builder.appName("sfc_data_engineering").master("local[*]")
+            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.1-spark-3.2")
+            .getOrCreate()
+        )
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInRead=LEGACY")
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
