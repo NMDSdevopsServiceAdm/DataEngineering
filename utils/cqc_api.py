@@ -95,7 +95,6 @@ def get_page_objects(
 
 def get_object(cqc_location_id, object_type):
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
-    print(url)
 
     response = call_api(
         url + cqc_location_id,
