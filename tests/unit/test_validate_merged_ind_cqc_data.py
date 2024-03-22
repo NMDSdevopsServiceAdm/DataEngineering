@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 import jobs.validate_merged_ind_cqc_data as job
 
@@ -47,7 +47,6 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_MERGED_IND_CQC_SOURCE,
-            self.TEST_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)

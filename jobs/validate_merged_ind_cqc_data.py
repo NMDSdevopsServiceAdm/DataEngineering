@@ -3,13 +3,13 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pydeequ.checks import *
-from pydeequ.verification import *
-from pyspark.sql import Row, SparkSession
+from pydeequ.checks import Check, CheckLevel
+from pydeequ.verification import VerificationSuite, VerificationResult
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import \
     CqcLocationCleanedColumns as CQCLClean
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -35,22 +35,11 @@ def main(
 
     spark = utils.get_spark()
 
-    df = spark.sparkContext.parallelize(
-        [Row(a="foo", b=1, c=5), Row(a="bar", b=2, c=6), Row(a="baz", b=3, c=None)]
-    ).toDF()
-
     check = Check(spark, CheckLevel.Warning, "Review Check")
     checkResult = (
         VerificationSuite(spark)
-        .onData(df)
-        .addCheck(
-            check.hasSize(lambda x: x >= 3)
-            .hasMin("b", lambda x: x == 0)
-            .isComplete("c")
-            .isUnique("a")
-            .isContainedIn("a", ["foo", "bar", "baz"])
-            .isNonNegative("b")
-        )
+        .onData(merged_ind_cqc_df)
+        .addCheck(check.isComplete(IndCqcColumns.cqc_sector))
         .run()
     )
     checkResult_df = VerificationResult.checkResultsAsDataFrame(spark, checkResult)
