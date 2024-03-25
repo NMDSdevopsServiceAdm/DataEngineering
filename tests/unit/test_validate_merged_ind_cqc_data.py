@@ -33,14 +33,13 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         )
 
     def tearDown(self) -> None:
-        self.spark.sparkContext._gateway.shutdown_callback_server()
+        if self.spark.sparkContext._gateway:
+            self.spark.sparkContext._gateway.shutdown_callback_server()
 
-    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,

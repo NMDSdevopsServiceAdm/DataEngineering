@@ -4,7 +4,7 @@ import sys
 os.environ["SPARK_VERSION"] = "3.3"
 
 from pydeequ.checks import Check, CheckLevel
-from pydeequ.verification import VerificationSuite, VerificationResult
+from pydeequ.verification import VerificationResult, VerificationSuite
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
@@ -30,6 +30,8 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
+    cqc_location_df_size = cqc_location_df.count()
+
     merged_ind_cqc_df = utils.read_from_parquet(
         merged_ind_cqc_source,
     )
@@ -41,6 +43,13 @@ def main(
         VerificationSuite(spark)
         .onData(merged_ind_cqc_df)
         .addCheck(check.isComplete(IndCqcColumns.cqc_sector))
+        .addCheck(
+            check.hasUniqueness(
+                [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date],
+                lambda x: x == 1,
+            )
+        )
+        .addCheck(check.hasSize(lambda x: x == cqc_location_df_size))
         .run()
     )
     checkResult_df = VerificationResult.checkResultsAsDataFrame(spark, checkResult)
