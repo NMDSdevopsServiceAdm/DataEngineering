@@ -8,10 +8,8 @@ from pyspark.sql import functions as F
 from utils.utils import get_spark
 from utils.features.helper import (
     add_date_diff_into_df,
-    add_rui_data_data_frame,
+    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_service_count_to_data,
-    format_strings,
-    explode_column_from_distinct_values,
     vectorise_dataframe,
 )
 
@@ -47,7 +45,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
         )
 
-    def test_add_rui_data_data_frame(self):
+    def test_convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+        self,
+    ):
         cols = ["location", "rui_2011"]
         rows = [
             (
@@ -56,9 +56,9 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             )
         ]
         df = self.spark.createDataFrame(rows, cols)
-        result = add_rui_data_data_frame(
+        result = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=df,
-            rui_col_name="rui_2011",
+            categorical_col_name="rui_2011",
             lookup_dict={
                 "indicator_1": "Rural hamlet and isolated dwellings in a sparse setting"
             },
@@ -88,88 +88,6 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertTrue(
             rows[1].asDict()
             == {"location": "2", "services": ["service_1"], "service_count": 1}
-        )
-
-    def test_format_strings(self):
-        string_1 = "lots of spaces"
-        string_2 = "CAPITALS"
-        string_3 = "Punctuation?!()"
-
-        self.assertEqual("lots_of_spaces", format_strings(string_1))
-        self.assertEqual("capitals", format_strings(string_2))
-        self.assertEqual("punctuation", format_strings(string_3))
-
-    def test_explode_column_from_distinct_values_returns_df_with_new_cols_and_prefix(
-        self,
-    ):
-        val_1 = "Gateshead"
-        val_2 = "London"
-        val_3 = "Leeds"
-
-        col_list = {val_1, val_2, val_3}
-
-        cols = ["locationid", "region"]
-        rows = [
-            ("1", val_1),
-            ("2", val_1),
-            ("3", val_2),
-            ("4", val_3),
-            ("5", val_3),
-        ]
-        df = self.spark.createDataFrame(rows, cols)
-
-        result = explode_column_from_distinct_values(
-            df=df, column_name="region", col_prefix="ons_", col_list_set=col_list
-        )
-        df_rows = result[0].collect()
-        list_created_of_new_cols = result[1]
-        list_created_of_new_cols.sort()
-
-        expected_returned_rows = [
-            {
-                "locationid": "1",
-                "region": "Gateshead",
-                "ons_leeds": 0,
-                "ons_london": 0,
-                "ons_gateshead": 1,
-            },
-            {
-                "locationid": "2",
-                "region": "Gateshead",
-                "ons_leeds": 0,
-                "ons_london": 0,
-                "ons_gateshead": 1,
-            },
-            {
-                "locationid": "3",
-                "region": "London",
-                "ons_leeds": 0,
-                "ons_london": 1,
-                "ons_gateshead": 0,
-            },
-            {
-                "locationid": "4",
-                "region": "Leeds",
-                "ons_leeds": 1,
-                "ons_london": 0,
-                "ons_gateshead": 0,
-            },
-            {
-                "locationid": "5",
-                "region": "Leeds",
-                "ons_leeds": 1,
-                "ons_london": 0,
-                "ons_gateshead": 0,
-            },
-        ]
-
-        actual_returned_rows = [row.asDict() for row in df_rows]
-
-        self.assertTrue(len(result[0].columns) == 5)
-        self.assertEqual(len(df_rows), len(rows))
-        self.assertListEqual(actual_returned_rows, expected_returned_rows)
-        self.assertEqual(
-            list_created_of_new_cols, ["ons_gateshead", "ons_leeds", "ons_london"]
         )
 
     def test_vectorisation(self):
