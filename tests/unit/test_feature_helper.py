@@ -1,11 +1,11 @@
-import datetime
+from datetime import date
 import unittest
 import warnings
 
 from pyspark.ml.functions import vector_to_array
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from utils.utils import get_spark
 from utils.features.helper import (
     add_date_diff_into_df,
     add_rui_data_data_frame,
@@ -18,45 +18,41 @@ from utils.features.helper import (
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_locations_feature_engineering"
-        ).getOrCreate()
+        self.spark = get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()
 
     def test_add_date_diff_into_df(self):
+        date_col = "import_date"
+        date_diff = "date_diff"
         df = self.spark.createDataFrame(
-            [["01-10-2013"], ["01-10-2023"]], ["test_input"]
-        )
-        df = df.select(
-            F.col("test_input"),
-            F.to_date(F.col("test_input"), "MM-dd-yyyy").alias("snapshot_date"),
+            [[date(2013, 1, 10)], [date(2023, 1, 10)]], [date_col]
         )
         result = add_date_diff_into_df(
-            df=df, new_col_name="diff", snapshot_date_col="snapshot_date"
+            df=df, new_col_name=date_diff, import_date_col=date_col
         )
-        expected_max_date = datetime.date(2023, 1, 10)
-        actual_max_date = result.agg(F.max("snapshot_date")).first()[0]
+        expected_max_date = date(2023, 1, 10)
+        actual_max_date = result.agg(F.max(date_col)).first()[0]
 
         expected_diff_between_max_date_and_other_date = 3652
         actual_diff = (
-            result.filter(F.col("test_input") == "01-10-2013")
-            .select(F.col("diff"))
+            result.filter(F.col(date_col) == date(2013, 1, 10))
+            .select(F.col(date_diff))
             .collect()
         )
 
         self.assertEqual(actual_max_date, expected_max_date)
         self.assertEqual(
-            actual_diff[0].diff, expected_diff_between_max_date_and_other_date
+            actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
         )
 
     def test_add_rui_data_data_frame(self):
         cols = ["location", "rui_2011"]
         rows = [
             (
-                "1-10894414510",
-                "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting",
+                "1-0001",
+                "Rural hamlet and isolated dwellings in a sparse setting",
             )
         ]
         df = self.spark.createDataFrame(rows, cols)
@@ -64,7 +60,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             df=df,
             rui_col_name="rui_2011",
             lookup_dict={
-                "indicator_1": "(England/Wales) Rural hamlet and isolated dwellings in a sparse setting"
+                "indicator_1": "Rural hamlet and isolated dwellings in a sparse setting"
             },
         )
         result_rows = result.collect()
@@ -106,7 +102,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
     def test_explode_column_from_distinct_values_returns_df_with_new_cols_and_prefix(
         self,
     ):
-        val_1 = "Glasgow"
+        val_1 = "Gateshead"
         val_2 = "London"
         val_3 = "Leeds"
 
@@ -132,38 +128,38 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         expected_returned_rows = [
             {
                 "locationid": "1",
-                "region": "Glasgow",
+                "region": "Gateshead",
                 "ons_leeds": 0,
                 "ons_london": 0,
-                "ons_glasgow": 1,
+                "ons_gateshead": 1,
             },
             {
                 "locationid": "2",
-                "region": "Glasgow",
+                "region": "Gateshead",
                 "ons_leeds": 0,
                 "ons_london": 0,
-                "ons_glasgow": 1,
+                "ons_gateshead": 1,
             },
             {
                 "locationid": "3",
                 "region": "London",
                 "ons_leeds": 0,
                 "ons_london": 1,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
             {
                 "locationid": "4",
                 "region": "Leeds",
                 "ons_leeds": 1,
                 "ons_london": 0,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
             {
                 "locationid": "5",
                 "region": "Leeds",
                 "ons_leeds": 1,
                 "ons_london": 0,
-                "ons_glasgow": 0,
+                "ons_gateshead": 0,
             },
         ]
 
@@ -173,11 +169,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(len(df_rows), len(rows))
         self.assertListEqual(actual_returned_rows, expected_returned_rows)
         self.assertEqual(
-            list_created_of_new_cols, ["ons_glasgow", "ons_leeds", "ons_london"]
+            list_created_of_new_cols, ["ons_gateshead", "ons_leeds", "ons_london"]
         )
 
     def test_vectorisation(self):
-        val_1 = "Glasgow"
+        val_1 = "Gateshead"
         val_2 = "London"
         val_3 = "Leeds"
 

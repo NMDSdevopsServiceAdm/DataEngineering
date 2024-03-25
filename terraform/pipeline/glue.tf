@@ -42,10 +42,8 @@ module "ingest_capacity_tracker_data_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--care_home_source"      = ""
-    "--care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_care_home/"
-    "--non_res_source"        = ""
-    "--non_res_destination"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
+    "--source"      = ""
+    "--destination" = ""
   }
 }
 

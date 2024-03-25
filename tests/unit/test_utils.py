@@ -5,7 +5,7 @@ import unittest
 from io import BytesIO
 from enum import Enum
 from pyspark.shell import spark
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StructField,

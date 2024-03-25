@@ -77,6 +77,9 @@ def main(
     cleaned_ascwds_workplace_source: str,
     destination: str,
 ):
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 2000")
+
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
