@@ -24,6 +24,7 @@ cleaned_cqc_locations_columns_to_import = [
 def main(
     cleaned_cqc_location_source: str,
     merged_ind_cqc_source: str,
+    report_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
@@ -55,6 +56,8 @@ def main(
     checkResult_df = VerificationResult.checkResultsAsDataFrame(spark, checkResult)
     checkResult_df.show()
 
+    utils.write_to_parquet(checkResult_df, report_destination, mode="overwrite")
+
 
 if __name__ == "__main__":
     print("Spark job 'validate_merge_ind_cqc_data' starting...")
@@ -63,6 +66,7 @@ if __name__ == "__main__":
     (
         cleaned_cqc_location_source,
         merged_ind_cqc_source,
+        report_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_cqc_location_source",
@@ -72,10 +76,15 @@ if __name__ == "__main__":
             "--merged_ind_cqc_source",
             "Source s3 directory for parquet merged independent CQC dataset",
         ),
+        (
+            "--report_destination",
+            "Destination s3 directory for validation report parquet",
+        ),
     )
     main(
         cleaned_cqc_location_source,
         merged_ind_cqc_source,
+        report_destination,
     )
 
     print("Spark job 'validate_merge_ind_cqc_data' complete")

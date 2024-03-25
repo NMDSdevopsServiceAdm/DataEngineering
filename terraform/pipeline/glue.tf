@@ -399,7 +399,7 @@ module "validate_merged_ind_cqc_data_job" {
   job_parameters = {
     "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
-    "--destination"                 = ""
+    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data/"
   }
 }
 
