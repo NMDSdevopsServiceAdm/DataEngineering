@@ -1,13 +1,18 @@
-import re
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict
 
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.feature import VectorAssembler
 
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+
 
 def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
     loc_df = VectorAssembler(
-        inputCols=list_for_vectorisation, outputCol="features", handleInvalid="skip"
+        inputCols=list_for_vectorisation,
+        outputCol=IndCQC.features,
+        handleInvalid="skip",
     ).transform(df)
     return loc_df
 

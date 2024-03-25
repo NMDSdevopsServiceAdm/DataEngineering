@@ -2,7 +2,6 @@ from datetime import date
 import unittest
 import warnings
 
-from pyspark.ml.functions import vector_to_array
 from pyspark.sql import functions as F
 
 from utils.utils import get_spark
@@ -12,6 +11,11 @@ from utils.features.helper import (
     add_service_count_to_data,
     vectorise_dataframe,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from tests.test_file_data import ModelFeatures as Data
+from tests.test_file_schemas import ModelFeatures as Schemas
 
 
 class LocationsFeatureEngineeringTests(unittest.TestCase):
@@ -90,31 +94,26 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             == {"location": "2", "services": ["service_1"], "service_count": 1}
         )
 
-    def test_vectorisation(self):
-        val_1 = "Gateshead"
-        val_2 = "London"
-        val_3 = "Leeds"
+    def test_vectorise_dataframe(self):
+        list_for_vectorisation = ["col_1", "col_2", "col_3"]
 
-        col_list = {val_1, val_2, val_3}
-
-        cols = ["locationid", "region"]
-        rows = [("1", val_1)]
-        df = self.spark.createDataFrame(rows, cols)
-
-        exploded_df, regions = explode_column_from_distinct_values(
-            df=df, column_name="region", col_prefix="ons_", col_list_set=col_list
+        df = self.spark.createDataFrame(
+            Data.vectorise_input_rows, Schemas.vectorise_schema
         )
 
-        result = vectorise_dataframe(df=exploded_df, list_for_vectorisation=regions)
+        output_df = vectorise_dataframe(
+            df=df, list_for_vectorisation=list_for_vectorisation
+        )
+        output_data = (
+            output_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
+        )
 
-        # vector to array is a feature of spark 3.0.0
-        rows = result.withColumn(
-            "features", vector_to_array(F.col("features"))
-        ).collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_vectorised_feature_rows,
+            Schemas.expected_vectorised_feature_schema,
+        )
+        expected_data = (
+            expected_df.sort(IndCQC.location_id).select(IndCQC.features).collect()
+        )
 
-        result = rows[0].features
-        result.sort()
-
-        expected_vector_list = [0.0, 0.0, 1.0]
-
-        self.assertEqual(expected_vector_list, result)
+        self.assertEqual(output_data, expected_data)
