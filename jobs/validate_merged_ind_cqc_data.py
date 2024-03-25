@@ -40,7 +40,7 @@ def main(
     spark = utils.get_spark()
 
     check = Check(spark, CheckLevel.Warning, "Review Check")
-    checkResult = (
+    check_result = (
         VerificationSuite(spark)
         .onData(merged_ind_cqc_df)
         .addCheck(check.isComplete(IndCqcColumns.cqc_sector))
@@ -53,10 +53,10 @@ def main(
         .addCheck(check.hasSize(lambda x: x == cqc_location_df_size))
         .run()
     )
-    checkResult_df = VerificationResult.checkResultsAsDataFrame(spark, checkResult)
-    checkResult_df.show()
+    check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
+    check_result_df.show()
 
-    utils.write_to_parquet(checkResult_df, report_destination, mode="overwrite")
+    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 if __name__ == "__main__":
