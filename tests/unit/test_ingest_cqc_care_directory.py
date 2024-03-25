@@ -12,7 +12,7 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ProviderApiCols,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    OldCqcLocationApiColumns as LocationApiCols,
+    CqcLocationApiColumns as LocationApiCols,
 )
 import jobs.ingest_cqc_care_directory as job
 from tests.test_file_generator import (
