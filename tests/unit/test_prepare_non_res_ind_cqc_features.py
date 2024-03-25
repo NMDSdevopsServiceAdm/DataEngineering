@@ -50,24 +50,28 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_produces_dataframe_with_features(
+    def test_main_produces_dataframe_with_expected_features(
         self,
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
+        returned_feature_list = job.main(
+            self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION
+        )
+
+        self.assertEqual(len(returned_feature_list), 51)
 
         result = write_to_parquet_mock.call_args[0][0].orderBy(
             F.col(IndCQC.location_id)
         )
 
-        self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
+        self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            46, [0, 3, 13, 15, 18, 19, 45], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
+            51, [0, 3, 17, 20, 23, 24, 50], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
         )
-        actual_features = result.select(F.col("features")).collect()[0].features
+        actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
     @patch("utils.utils.write_to_parquet")
