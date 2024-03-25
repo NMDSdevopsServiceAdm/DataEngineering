@@ -467,6 +467,13 @@ module "ind_cqc_filled_posts_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
+module "data_validation_reports_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "data_validation_reports"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
@@ -489,4 +496,5 @@ module "dpr_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
+
 
