@@ -51,6 +51,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_MERGED_IND_CQC_SOURCE,
+            self.TEST_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
