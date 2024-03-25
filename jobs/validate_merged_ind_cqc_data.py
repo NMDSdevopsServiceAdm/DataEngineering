@@ -5,6 +5,7 @@ os.environ["SPARK_VERSION"] = "3.3"
 
 from pydeequ.checks import Check, CheckLevel
 from pydeequ.verification import VerificationResult, VerificationSuite
+from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
@@ -50,7 +51,12 @@ def main(
                 lambda x: x == 1,
             )
         )
-        .addCheck(check.hasSize(lambda x: x == cqc_location_df_size))
+        .addCheck(
+            check.hasSize(
+                lambda x: x == cqc_location_df_size,
+                f"size should match cqc loc size {cqc_location_df_size}",
+            )
+        )
         .run()
     )
     check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
@@ -60,6 +66,16 @@ def main(
 
     if spark.sparkContext._gateway:
         spark.sparkContext._gateway.shutdown_callback_server()
+
+    if isinstance(check_result_df, DataFrame):
+        parse_data_quality_errors(check_result_df)
+
+
+def parse_data_quality_errors(check_results: DataFrame):
+    failures_df = check_results.where(check_results["constraint_status"] == "Failure")
+
+    for failure in failures_df.collect():
+        print(failure.asDict())
 
 
 if __name__ == "__main__":
@@ -84,10 +100,16 @@ if __name__ == "__main__":
             "Destination s3 directory for validation report parquet",
         ),
     )
-    main(
-        cleaned_cqc_location_source,
-        merged_ind_cqc_source,
-        report_destination,
-    )
+    try:
+        main(
+            cleaned_cqc_location_source,
+            merged_ind_cqc_source,
+            report_destination,
+        )
+    finally:
+        spark = utils.get_spark()
+        if spark.sparkContext._gateway:
+            spark.sparkContext._gateway.shutdown_callback_server()
+        spark.stop()
 
     print("Spark job 'validate_merge_ind_cqc_data' complete")
