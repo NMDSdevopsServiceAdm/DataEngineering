@@ -44,15 +44,13 @@ def main(
     check_result = (
         VerificationSuite(spark)
         .onData(merged_ind_cqc_df)
-        .addCheck(check.isComplete(IndCqcColumns.cqc_sector))
         .addCheck(
-            check.hasUniqueness(
+            check.isComplete(IndCqcColumns.cqc_sector)
+            .hasUniqueness(
                 [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date],
                 lambda x: x == 1,
             )
-        )
-        .addCheck(
-            check.hasSize(
+            .hasSize(
                 lambda x: x == cqc_location_df_size,
                 f"size should match cqc loc size {cqc_location_df_size}",
             )
