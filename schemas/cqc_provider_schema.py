@@ -36,7 +36,7 @@ OLD_PROVIDER_SCHEMA = StructType(
     ]
 )
 
-PROVIDER_SCHEMA = StructType(
+NEW_PROVIDER_SCHEMA = StructType(
     fields=[
         StructField(ColNames.provider_id, StringType(), True),
         StructField(
