@@ -9,10 +9,6 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 class TestCQCLocationAPIIntegration(unittest.TestCase):
     def setUp(self):
         self.PARTNER_CODE_STUB = "PARTNERCODE"
-        pass
-
-    def tearDown(self):
-        pass
 
     def test_get_object_returns_location(self):
         result = cqc.get_object(EXAMPLE_LOCATION_ID, "locations")

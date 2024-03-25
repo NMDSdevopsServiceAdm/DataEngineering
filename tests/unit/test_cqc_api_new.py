@@ -5,12 +5,6 @@ from utils import cqc_api_new as cqc
 
 
 class TestCQCLocationAPI(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     @mock.patch("utils.cqc_api_new.call_api")
     def test_get_location(self, mock_call_api):
         mock_call_api.return_value = {"locationId": "test_id"}

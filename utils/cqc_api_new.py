@@ -31,7 +31,7 @@ def call_api(url, query_params=None, headers_dict=None):
             )
         )
 
-    if response.status_code not in [200, 429]:
+    if response.status_code not in [200, 403]:
         raise Exception("API response: {}".format(response.status_code))
 
     return response.json()
