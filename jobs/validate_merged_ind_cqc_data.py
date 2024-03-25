@@ -64,9 +64,6 @@ def main(
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
-    if spark.sparkContext._gateway:
-        spark.sparkContext._gateway.shutdown_callback_server()
-
     if isinstance(check_result_df, DataFrame):
         parse_data_quality_errors(check_result_df)
 
