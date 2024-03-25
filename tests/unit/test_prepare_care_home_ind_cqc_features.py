@@ -57,7 +57,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
         expected_feature_list = [
-            "date_diff",
+            IndCQC.date_diff,
             "indicator_1",
             "indicator_10",
             "indicator_2",
@@ -68,7 +68,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             "indicator_7",
             "indicator_8",
             "indicator_9",
-            "numberofbeds",
+            IndCQC.number_of_beds,
             "ons_east_midlands",
             "ons_eastern",
             "ons_london",
@@ -107,12 +107,14 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             "service_7",
             "service_8",
             "service_9",
-            "service_count",
+            IndCQC.service_count,
         ]
 
         returned_feature_list = job.main(
             self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR
         )
+
+        self.assertEqual(len(returned_feature_list), 51)
 
         self.assertEqual(returned_feature_list, expected_feature_list)
 
@@ -120,11 +122,11 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             F.col(IndCQC.location_id)
         )
 
-        self.assertTrue(result.filter(F.col("features").isNull()).count() == 0)
+        self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            43, [8, 11, 12, 13, 42], [1.0, 10.0, 1.0, 1.0, 1.0]
+            51, [8, 11, 20, 21, 50], [1.0, 10.0, 1.0, 1.0, 1.0]
         )
-        actual_features = result.select(F.col("features")).collect()[0].features
+        actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
     @patch("utils.utils.write_to_parquet")
