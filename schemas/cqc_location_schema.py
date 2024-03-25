@@ -5,8 +5,6 @@ from pyspark.sql.types import (
     ArrayType,
     FloatType,
     IntegerType,
-    DoubleType,
-    LongType,
 )
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -167,7 +165,7 @@ LOCATION_SCHEMA_NEW = StructType(
             ),
             True,
         ),
-        StructField(NewColNames.deregistrationDate, StringType(), True),
+        StructField(NewColNames.deregistration_date, StringType(), True),
         StructField(NewColNames.dormancy, StringType(), True),
         StructField(NewColNames.dormancyEndDate, StringType(), True),
         StructField(NewColNames.dormancyStartDate, StringType(), True),
@@ -351,7 +349,7 @@ LOCATION_SCHEMA_NEW = StructType(
         ),
         StructField(NewColNames.mainPhoneNumber, StringType(), True),
         StructField(NewColNames.name, StringType(), True),
-        StructField(NewColNames.numberOfBeds, LongType(), True),
+        StructField(NewColNames.numberOfBeds, IntegerType(), True),
         StructField(NewColNames.odsCcgCode, StringType(), True),
         StructField(NewColNames.odsCcgName, StringType(), True),
         StructField(NewColNames.odsCode, StringType(), True),
@@ -359,8 +357,8 @@ LOCATION_SCHEMA_NEW = StructType(
         StructField(NewColNames.onspdCcgName, StringType(), True),
         StructField(NewColNames.onspdIcbCode, StringType(), True),
         StructField(NewColNames.onspdIcbName, StringType(), True),
-        StructField(NewColNames.onspdLatitude, DoubleType(), True),
-        StructField(NewColNames.onspdLongitude, DoubleType(), True),
+        StructField(NewColNames.onspdLatitude, StringType(), True),
+        StructField(NewColNames.onspdLongitude, StringType(), True),
         StructField(NewColNames.organisationType, StringType(), True),
         StructField(NewColNames.postalAddressCounty, StringType(), True),
         StructField(NewColNames.postalAddressLine1, StringType(), True),
@@ -481,10 +479,12 @@ LOCATION_SCHEMA_NEW = StructType(
                                 StructType(
                                     [
                                         StructField(
-                                            NewColNames.documentType, StringType(), True
+                                            NewColNames.document_type,
+                                            StringType(),
+                                            True,
                                         ),
                                         StructField(
-                                            NewColNames.documentUri, StringType(), True
+                                            NewColNames.document_uri, StringType(), True
                                         ),
                                     ]
                                 ),
@@ -546,8 +546,8 @@ LOCATION_SCHEMA = StructType(
         StructField(OldColNames.county, StringType(), True),
         StructField(OldColNames.region, StringType(), True),
         StructField(OldColNames.postcode, StringType(), True),
-        StructField(OldColNames.latitude, StringType(), True),
-        StructField(OldColNames.longitude, StringType(), True),
+        StructField(OldColNames.latitude, FloatType(), True),
+        StructField(OldColNames.longitude, FloatType(), True),
         StructField(OldColNames.care_home, StringType(), True),
         StructField(OldColNames.inspection_directorate, StringType(), True),
         StructField(OldColNames.phone_number, StringType(), True),
