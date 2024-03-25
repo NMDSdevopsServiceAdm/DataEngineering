@@ -42,3 +42,15 @@ RURAL_URBAN_INDICATOR_LOOKUP = {
     "indicator_9": "(England/Wales) Urban minor conurbation",
     "indicator_10": "(England/Wales) Rural village in a sparse setting",
 }
+
+REGION_LOOKUP = {
+    "ons_east_midlands": "East Midlands",
+    "ons_eastern": "Eastern",
+    "ons_london": "London",
+    "ons_north_east": "North East",
+    "ons_north_west": "North West",
+    "ons_south_east": "South East",
+    "ons_south_west": "South West",
+    "ons_west_midlands": "West Midlands",
+    "ons_yorkshire_and_the_humber": "Yorkshire and the Humber",
+}
