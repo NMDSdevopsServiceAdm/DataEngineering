@@ -115,6 +115,8 @@ def main(
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
+    return list_for_vectorisation
+
 
 def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "Y")
