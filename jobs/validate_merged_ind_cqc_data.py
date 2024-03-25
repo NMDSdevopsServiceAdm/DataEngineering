@@ -58,6 +58,9 @@ def main(
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
+    if spark.sparkContext._gateway:
+        spark.sparkContext._gateway.shutdown_callback_server()
+
 
 if __name__ == "__main__":
     print("Spark job 'validate_merge_ind_cqc_data' starting...")
