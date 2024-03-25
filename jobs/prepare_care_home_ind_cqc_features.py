@@ -34,39 +34,39 @@ def main(
 
     filtered_loc_data = filter_df_to_care_home_only(locations_df)
 
-    data_with_service_count = add_service_count_to_data(
+    features_df = add_service_count_to_data(
         df=filtered_loc_data,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
 
     service_keys = list(services_dict.keys())
-    data_with_expanded_services = column_expansion_with_dict(
-        df=data_with_service_count,
+    features_df = column_expansion_with_dict(
+        df=features_df,
         col_name=IndCQC.services_offered,
         lookup_dict=services_dict,
     )
 
     rui_indicators = list(rural_urban_indicator_dict.keys())
-    data_with_rui = (
+    features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=data_with_expanded_services,
+            df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
             lookup_dict=rural_urban_indicator_dict,
         )
     )
 
     regions = list(ons_region_dict.keys())
-    data_with_region_cols = (
+    features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=data_with_rui,
+            df=features_df,
             categorical_col_name=IndCQC.current_region,
             lookup_dict=ons_region_dict,
         )
     )
 
-    data_with_date_diff = add_date_diff_into_df(
-        df=data_with_region_cols,
+    features_df = add_date_diff_into_df(
+        df=features_df,
         new_col_name=IndCQC.date_diff,
         snapshot_date_col=IndCQC.cqc_location_import_date,
     )
@@ -83,9 +83,9 @@ def main(
     )
 
     vectorised_dataframe = vectorise_dataframe(
-        df=data_with_date_diff, list_for_vectorisation=list_for_vectorisation
+        df=features_df, list_for_vectorisation=list_for_vectorisation
     )
-    features_df = vectorised_dataframe.select(
+    vectorised_features_df = vectorised_dataframe.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
@@ -107,7 +107,7 @@ def main(
     print(f"Exporting as parquet to {care_home_ind_cqc_features_destination}")
 
     utils.write_to_parquet(
-        features_df,
+        vectorised_features_df,
         care_home_ind_cqc_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
