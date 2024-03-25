@@ -3,7 +3,7 @@ from datetime import date
 from utils import cqc_api as cqc
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
@@ -24,7 +24,7 @@ def main(destination):
         object_identifier=ColNames.location_id,
         partner_code=partner_code_value,
     ):
-        locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
+        locations_df = spark.createDataFrame(paginated_locations, OLD_LOCATION_SCHEMA)
         if df:
             df = df.union(locations_df)
         else:

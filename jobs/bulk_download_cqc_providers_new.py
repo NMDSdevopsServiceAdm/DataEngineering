@@ -1,6 +1,6 @@
 from datetime import date
 
-from schemas.cqc_provider_schema import OLD_PROVIDER_SCHEMA
+from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api as cqc
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
@@ -24,7 +24,7 @@ def main(destination):
         object_identifier=ColNames.provider_id,
         partner_code=partner_code_value,
     ):
-        providers_df = spark.createDataFrame(paginated_providers, OLD_PROVIDER_SCHEMA)
+        providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:
             df = df.union(providers_df)
         else:
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC",
-        dataset="providers_api",
+        dataset="providers_api_new",
         date=todays_date,
     )
 
