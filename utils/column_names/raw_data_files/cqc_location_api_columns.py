@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class OldCqcLocationApiColumns:
+class CqcLocationApiColumns:
     address_line_one: str = "postalAddressLine1"
     care_home: str = "careHome"
     ccg_code: str = "onspdCcgCode"

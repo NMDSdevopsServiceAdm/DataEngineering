@@ -10,7 +10,7 @@ from pyspark.sql.types import (
 )
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    OldCqcLocationApiColumns as OldColNames,
+    CqcLocationApiColumns as OldColNames,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as NewColNames,
@@ -526,84 +526,84 @@ LOCATION_SCHEMA_NEW = StructType(
 
 LOCATION_SCHEMA = StructType(
     fields=[
-        StructField(NewColNames.location_id, StringType(), True),
-        StructField(NewColNames.provider_id, StringType(), True),
-        StructField(NewColNames.organisation_type, StringType(), True),
-        StructField(NewColNames.type, StringType(), True),
-        StructField(NewColNames.name, StringType(), True),
-        StructField(NewColNames.ccg_code, StringType(), True),
-        StructField(NewColNames.ccg_name, StringType(), True),
-        StructField(NewColNames.ods_code, StringType(), True),
-        StructField(NewColNames.uprn, StringType(), True),
-        StructField(NewColNames.registration_status, StringType(), True),
-        StructField(NewColNames.registration_date, StringType(), True),
-        StructField(NewColNames.deregistration_date, StringType(), True),
-        StructField(NewColNames.dormancy, StringType(), True),
-        StructField(NewColNames.number_of_beds, IntegerType(), True),
-        StructField(NewColNames.website, StringType(), True),
-        StructField(NewColNames.address_line_one, StringType(), True),
-        StructField(NewColNames.town_or_city, StringType(), True),
-        StructField(NewColNames.county, StringType(), True),
-        StructField(NewColNames.region, StringType(), True),
-        StructField(NewColNames.postcode, StringType(), True),
-        StructField(NewColNames.latitude, StringType(), True),
-        StructField(NewColNames.longitude, StringType(), True),
-        StructField(NewColNames.care_home, StringType(), True),
-        StructField(NewColNames.inspection_directorate, StringType(), True),
-        StructField(NewColNames.phone_number, StringType(), True),
-        StructField(NewColNames.constituancy, StringType(), True),
-        StructField(NewColNames.local_authority, StringType(), True),
+        StructField(OldColNames.location_id, StringType(), True),
+        StructField(OldColNames.provider_id, StringType(), True),
+        StructField(OldColNames.organisation_type, StringType(), True),
+        StructField(OldColNames.type, StringType(), True),
+        StructField(OldColNames.name, StringType(), True),
+        StructField(OldColNames.ccg_code, StringType(), True),
+        StructField(OldColNames.ccg_name, StringType(), True),
+        StructField(OldColNames.ods_code, StringType(), True),
+        StructField(OldColNames.uprn, StringType(), True),
+        StructField(OldColNames.registration_status, StringType(), True),
+        StructField(OldColNames.registration_date, StringType(), True),
+        StructField(OldColNames.deregistration_date, StringType(), True),
+        StructField(OldColNames.dormancy, StringType(), True),
+        StructField(OldColNames.number_of_beds, IntegerType(), True),
+        StructField(OldColNames.website, StringType(), True),
+        StructField(OldColNames.address_line_one, StringType(), True),
+        StructField(OldColNames.town_or_city, StringType(), True),
+        StructField(OldColNames.county, StringType(), True),
+        StructField(OldColNames.region, StringType(), True),
+        StructField(OldColNames.postcode, StringType(), True),
+        StructField(OldColNames.latitude, StringType(), True),
+        StructField(OldColNames.longitude, StringType(), True),
+        StructField(OldColNames.care_home, StringType(), True),
+        StructField(OldColNames.inspection_directorate, StringType(), True),
+        StructField(OldColNames.phone_number, StringType(), True),
+        StructField(OldColNames.constituancy, StringType(), True),
+        StructField(OldColNames.local_authority, StringType(), True),
         StructField(
-            NewColNames.last_inspection,
-            StructType([StructField(NewColNames.date, StringType(), True)]),
+            OldColNames.last_inspection,
+            StructType([StructField(OldColNames.date, StringType(), True)]),
             True,
         ),
         StructField(
-            NewColNames.last_report,
-            StructType([StructField(NewColNames.publication_date, StringType(), True)]),
+            OldColNames.last_report,
+            StructType([StructField(OldColNames.publication_date, StringType(), True)]),
             True,
         ),
         StructField(
-            NewColNames.relationships,
+            OldColNames.relationships,
             ArrayType(
                 StructType(
                     [
                         StructField(
-                            NewColNames.related_location_id, StringType(), True
+                            OldColNames.related_location_id, StringType(), True
                         ),
                         StructField(
-                            NewColNames.related_location_name, StringType(), True
+                            OldColNames.related_location_name, StringType(), True
                         ),
-                        StructField(NewColNames.type, StringType(), True),
-                        StructField(NewColNames.reason, StringType(), True),
+                        StructField(OldColNames.type, StringType(), True),
+                        StructField(OldColNames.reason, StringType(), True),
                     ]
                 )
             ),
             True,
         ),
         StructField(
-            NewColNames.regulated_activities,
+            OldColNames.regulated_activities,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.name, StringType(), True),
-                        StructField(NewColNames.code, StringType(), True),
+                        StructField(OldColNames.name, StringType(), True),
+                        StructField(OldColNames.code, StringType(), True),
                         StructField(
-                            NewColNames.contacts,
+                            OldColNames.contacts,
                             ArrayType(
                                 StructType(
                                     [
                                         StructField(
-                                            NewColNames.title, StringType(), True
+                                            OldColNames.title, StringType(), True
                                         ),
                                         StructField(
-                                            NewColNames.given_name, StringType(), True
+                                            OldColNames.given_name, StringType(), True
                                         ),
                                         StructField(
-                                            NewColNames.family_name, StringType(), True
+                                            OldColNames.family_name, StringType(), True
                                         ),
                                         StructField(
-                                            NewColNames.roles, StringType(), True
+                                            OldColNames.roles, StringType(), True
                                         ),
                                     ]
                                 )
@@ -615,75 +615,75 @@ LOCATION_SCHEMA = StructType(
             ),
         ),
         StructField(
-            NewColNames.gac_service_types,
+            OldColNames.gac_service_types,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.name, StringType(), True),
-                        StructField(NewColNames.description, StringType(), True),
+                        StructField(OldColNames.name, StringType(), True),
+                        StructField(OldColNames.description, StringType(), True),
                     ]
                 )
             ),
         ),
         StructField(
-            NewColNames.inspection_categories,
+            OldColNames.inspection_categories,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.code, StringType(), True),
-                        StructField(NewColNames.primary, StringType(), True),
-                        StructField(NewColNames.name, StringType(), True),
-                    ]
-                )
-            ),
-            True,
-        ),
-        StructField(
-            NewColNames.specialisms,
-            ArrayType(
-                StructType(
-                    [
-                        StructField(NewColNames.name, StringType(), True),
+                        StructField(OldColNames.code, StringType(), True),
+                        StructField(OldColNames.primary, StringType(), True),
+                        StructField(OldColNames.name, StringType(), True),
                     ]
                 )
             ),
             True,
         ),
         StructField(
-            NewColNames.current_ratings,
+            OldColNames.specialisms,
+            ArrayType(
+                StructType(
+                    [
+                        StructField(OldColNames.name, StringType(), True),
+                    ]
+                )
+            ),
+            True,
+        ),
+        StructField(
+            OldColNames.current_ratings,
             StructType(
                 [
                     StructField(
-                        NewColNames.overall,
+                        OldColNames.overall,
                         StructType(
                             [
-                                StructField(NewColNames.rating, StringType(), True),
+                                StructField(OldColNames.rating, StringType(), True),
                                 StructField(
-                                    NewColNames.report_date, StringType(), True
+                                    OldColNames.report_date, StringType(), True
                                 ),
                                 StructField(
-                                    NewColNames.report_link_id, StringType(), True
+                                    OldColNames.report_link_id, StringType(), True
                                 ),
                                 StructField(
-                                    NewColNames.key_question_ratings,
+                                    OldColNames.key_question_ratings,
                                     ArrayType(
                                         StructType(
                                             [
                                                 StructField(
-                                                    NewColNames.name, StringType(), True
+                                                    OldColNames.name, StringType(), True
                                                 ),
                                                 StructField(
-                                                    NewColNames.rating,
+                                                    OldColNames.rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.report_date,
+                                                    OldColNames.report_date,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.report_link_id,
+                                                    OldColNames.report_link_id,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -700,30 +700,30 @@ LOCATION_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.historic_ratings,
+            OldColNames.historic_ratings,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.organisation_id, StringType(), True),
-                        StructField(NewColNames.report_link_id, StringType(), True),
-                        StructField(NewColNames.report_date, StringType(), True),
+                        StructField(OldColNames.organisation_id, StringType(), True),
+                        StructField(OldColNames.report_link_id, StringType(), True),
+                        StructField(OldColNames.report_date, StringType(), True),
                         StructField(
-                            NewColNames.overall,
+                            OldColNames.overall,
                             StructType(
                                 [
-                                    StructField(NewColNames.rating, StringType(), True),
+                                    StructField(OldColNames.rating, StringType(), True),
                                     StructField(
-                                        NewColNames.key_question_ratings,
+                                        OldColNames.key_question_ratings,
                                         ArrayType(
                                             StructType(
                                                 [
                                                     StructField(
-                                                        NewColNames.name,
+                                                        OldColNames.name,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        NewColNames.rating,
+                                                        OldColNames.rating,
                                                         StringType(),
                                                         True,
                                                     ),
@@ -743,15 +743,15 @@ LOCATION_SCHEMA = StructType(
             ),
         ),
         StructField(
-            NewColNames.reports,
+            OldColNames.reports,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.link_id, StringType(), True),
-                        StructField(NewColNames.report_date, StringType(), True),
-                        StructField(NewColNames.report_uri, StringType(), True),
-                        StructField(NewColNames.first_visit_date, StringType(), True),
-                        StructField(NewColNames.report_type, StringType(), True),
+                        StructField(OldColNames.link_id, StringType(), True),
+                        StructField(OldColNames.report_date, StringType(), True),
+                        StructField(OldColNames.report_uri, StringType(), True),
+                        StructField(OldColNames.first_visit_date, StringType(), True),
+                        StructField(OldColNames.report_type, StringType(), True),
                     ]
                 )
             ),
