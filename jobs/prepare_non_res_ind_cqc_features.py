@@ -73,7 +73,7 @@ def main(
     features_df = add_date_diff_into_df(
         df=features_df,
         new_col_name=IndCQC.date_diff,
-        snapshot_date_col=IndCQC.cqc_location_import_date,
+        import_date_col=IndCQC.cqc_location_import_date,
     )
 
     list_for_vectorisation: List[str] = sorted(
