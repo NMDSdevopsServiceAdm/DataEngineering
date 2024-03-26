@@ -1,6 +1,5 @@
 from ratelimit import limits, sleep_and_retry
-from time import sleep
-import json
+import time
 
 import requests
 
@@ -21,7 +20,7 @@ def call_api(url, query_params=None, headers_dict=None):
 
     while response.status_code == 429:
         print("Sleeping for ten seconds due to rate limiting")
-        sleep(10)
+        time.sleep(10)
         response = requests.get(url, query_params, headers=headers_dict)
 
     if (response.status_code == 403) & (headers_dict is None):
@@ -31,7 +30,7 @@ def call_api(url, query_params=None, headers_dict=None):
             )
         )
 
-    if response.status_code not in [200, 403]:
+    if response.status_code not in [200]:
         raise Exception("API response: {}".format(response.status_code))
 
     return response.json()
