@@ -26,7 +26,6 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self) -> SparkSession:
-        # spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
         spark = (
             SparkSession.builder.appName("sfc_data_engineering")
             .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.4-spark-3.3")
