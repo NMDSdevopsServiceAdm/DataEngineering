@@ -76,17 +76,17 @@ class ProviderApiTests(CqcApiTests):
         self.provider_object_type = "providers"
         self.provider_id_examples = ["provider_1", "provider_2", "provider_3"]
         self.test_providers = [
-            {CQCL.provider_id: self.provider_id_examples[0]},
-            {CQCL.provider_id: self.provider_id_examples[1]},
-            {CQCL.provider_id: self.provider_id_examples[2]},
+            {CQCP.provider_id: self.provider_id_examples[0]},
+            {CQCP.provider_id: self.provider_id_examples[1]},
+            {CQCP.provider_id: self.provider_id_examples[2]},
         ]
 
     @patch("utils.cqc_api_new.call_api")
     def test_get_object_when_getting_provider(self, mock_call_api: Mock):
-        mock_call_api.return_value = {CQCL.provider_id: "provider_1"}
+        mock_call_api.return_value = {CQCP.provider_id: "provider_1"}
 
         returned_provider = cqc.get_object("provider_1", self.provider_object_type)
-        expected_provider = {CQCL.provider_id: "provider_1"}
+        expected_provider = {CQCP.provider_id: "provider_1"}
 
         self.assertEqual(returned_provider, expected_provider)
 
@@ -100,7 +100,7 @@ class ProviderApiTests(CqcApiTests):
         mock_get_object.side_effect = self.test_providers
 
         returned_page_objects = cqc.get_page_objects(
-            self.test_url, 1, self.provider_object_type, CQCL.provider_id, "PARTNERCODE"
+            self.test_url, 1, self.provider_object_type, CQCP.provider_id, "PARTNERCODE"
         )
 
         expected_page_objects = self.test_providers
