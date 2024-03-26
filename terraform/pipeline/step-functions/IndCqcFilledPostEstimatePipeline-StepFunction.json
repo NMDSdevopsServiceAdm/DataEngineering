@@ -144,7 +144,7 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Run clean ind cqc data job"
+              "Next": "Run data validation in parallel"
             },
             "Run data validation in parallel": {
               "Type": "Parallel",
