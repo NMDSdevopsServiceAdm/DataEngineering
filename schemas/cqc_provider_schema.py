@@ -8,38 +8,41 @@ from pyspark.sql.types import (
 )
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as ColNames,
+    CqcProviderApiColumns as OldColNames,
+)
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    NewCqcProviderApiColumns as NewColNames,
 )
 
 OLD_PROVIDER_SCHEMA = StructType(
     fields=[
-        StructField(ColNames.provider_id, StringType(), True),
+        StructField(OldColNames.provider_id, StringType(), True),
         StructField(
-            ColNames.location_ids,
+            OldColNames.location_ids,
             ArrayType(
                 StringType(),
             ),
         ),
-        StructField(ColNames.organisation_type, StringType(), True),
-        StructField(ColNames.ownership_type, StringType(), True),
-        StructField(ColNames.type, StringType(), True),
-        StructField(ColNames.uprn, StringType(), True),
-        StructField(ColNames.name, StringType(), True),
-        StructField(ColNames.registration_status, StringType(), True),
-        StructField(ColNames.registration_date, StringType(), True),
-        StructField(ColNames.deregistration_date, StringType(), True),
-        StructField(ColNames.address_line_one, StringType(), True),
-        StructField(ColNames.town_or_city, StringType(), True),
-        StructField(ColNames.county, StringType(), True),
-        StructField(ColNames.region, StringType(), True),
-        StructField(ColNames.postcode, StringType(), True),
-        StructField(ColNames.latitude, FloatType(), True),
-        StructField(ColNames.longitude, FloatType(), True),
-        StructField(ColNames.phone_number, StringType(), True),
-        StructField(ColNames.companies_house_number, StringType(), True),
-        StructField(ColNames.inspection_directorate, StringType(), True),
-        StructField(ColNames.constituency, StringType(), True),
-        StructField(ColNames.local_authority, StringType(), True),
+        StructField(OldColNames.organisation_type, StringType(), True),
+        StructField(OldColNames.ownership_type, StringType(), True),
+        StructField(OldColNames.type, StringType(), True),
+        StructField(OldColNames.uprn, StringType(), True),
+        StructField(OldColNames.name, StringType(), True),
+        StructField(OldColNames.registration_status, StringType(), True),
+        StructField(OldColNames.registration_date, StringType(), True),
+        StructField(OldColNames.deregistration_date, StringType(), True),
+        StructField(OldColNames.address_line_one, StringType(), True),
+        StructField(OldColNames.town_or_city, StringType(), True),
+        StructField(OldColNames.county, StringType(), True),
+        StructField(OldColNames.region, StringType(), True),
+        StructField(OldColNames.postcode, StringType(), True),
+        StructField(OldColNames.latitude, FloatType(), True),
+        StructField(OldColNames.longitude, FloatType(), True),
+        StructField(OldColNames.phone_number, StringType(), True),
+        StructField(OldColNames.companies_house_number, StringType(), True),
+        StructField(OldColNames.inspection_directorate, StringType(), True),
+        StructField(OldColNames.constituency, StringType(), True),
+        StructField(OldColNames.local_authority, StringType(), True),
     ]
 )
 
