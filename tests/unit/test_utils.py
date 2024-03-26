@@ -368,8 +368,8 @@ class UtilsTests(unittest.TestCase):
             "s3://sfc-main-datasets",
             "test_domain",
             "test_dateset",
-            version_number,
             dec_first_21,
+            version_number,
         )
         self.assertEqual(
             dir_path,
