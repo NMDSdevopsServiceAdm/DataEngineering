@@ -48,23 +48,25 @@ OLD_PROVIDER_SCHEMA = StructType(
 
 NEW_PROVIDER_SCHEMA = StructType(
     [
-        StructField(NewColNames.alsoKnownAs, StringType(), True),
-        StructField(NewColNames.brandId, StringType(), True),
-        StructField(NewColNames.brandName, StringType(), True),
-        StructField(NewColNames.charityNumber, StringType(), True),
-        StructField(NewColNames.companiesHouseNumber, StringType(), True),
+        StructField(NewColNames.also_known_as, StringType(), True),
+        StructField(NewColNames.brand_id, StringType(), True),
+        StructField(NewColNames.brand_name, StringType(), True),
+        StructField(NewColNames.charity_number, StringType(), True),
+        StructField(NewColNames.companies_house_number, StringType(), True),
         StructField(NewColNames.constituency, StringType(), True),
         StructField(
             NewColNames.contacts,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.personFamilyName, StringType(), True),
-                        StructField(NewColNames.personGivenName, StringType(), True),
+                        StructField(NewColNames.person_family_name, StringType(), True),
+                        StructField(NewColNames.person_given_name, StringType(), True),
                         StructField(
-                            NewColNames.personRoles, ArrayType(StringType(), True), True
+                            NewColNames.person_roles,
+                            ArrayType(StringType(), True),
+                            True,
                         ),
-                        StructField(NewColNames.personTitle, StringType(), True),
+                        StructField(NewColNames.person_title, StringType(), True),
                     ]
                 ),
                 True,
@@ -72,7 +74,7 @@ NEW_PROVIDER_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.currentRatings,
+            NewColNames.current_ratings,
             StructType(
                 [
                     StructField(
@@ -80,7 +82,7 @@ NEW_PROVIDER_SCHEMA = StructType(
                         StructType(
                             [
                                 StructField(
-                                    NewColNames.keyQuestionRatings,
+                                    NewColNames.key_question_ratings,
                                     ArrayType(
                                         StructType(
                                             [
@@ -88,7 +90,7 @@ NEW_PROVIDER_SCHEMA = StructType(
                                                     NewColNames.name, StringType(), True
                                                 ),
                                                 StructField(
-                                                    NewColNames.organisationId,
+                                                    NewColNames.organisation_id,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -98,12 +100,12 @@ NEW_PROVIDER_SCHEMA = StructType(
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.reportDate,
+                                                    NewColNames.report_date,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.reportLinkId,
+                                                    NewColNames.report_link_id,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -114,41 +116,43 @@ NEW_PROVIDER_SCHEMA = StructType(
                                     True,
                                 ),
                                 StructField(NewColNames.rating, StringType(), True),
-                                StructField(NewColNames.reportDate, StringType(), True),
                                 StructField(
-                                    NewColNames.reportLinkId, StringType(), True
+                                    NewColNames.report_date, StringType(), True
                                 ),
                                 StructField(
-                                    NewColNames.useOfResources,
+                                    NewColNames.report_link_id, StringType(), True
+                                ),
+                                StructField(
+                                    NewColNames.use_of_resources,
                                     StructType(
                                         [
                                             StructField(
-                                                NewColNames.combinedQualityRating,
+                                                NewColNames.combined_quality_rating,
                                                 StringType(),
                                                 True,
                                             ),
                                             StructField(
-                                                NewColNames.combinedQualitySummary,
+                                                NewColNames.combined_quality_summary,
                                                 StringType(),
                                                 True,
                                             ),
                                             StructField(
-                                                NewColNames.reportDate,
+                                                NewColNames.report_date,
                                                 StringType(),
                                                 True,
                                             ),
                                             StructField(
-                                                NewColNames.reportLinkId,
+                                                NewColNames.report_link_id,
                                                 StringType(),
                                                 True,
                                             ),
                                             StructField(
-                                                NewColNames.useOfResourcesRating,
+                                                NewColNames.use_of_resources_rating,
                                                 StringType(),
                                                 True,
                                             ),
                                             StructField(
-                                                NewColNames.useOfResourcesSummary,
+                                                NewColNames.use_of_resources_summary,
                                                 StringType(),
                                                 True,
                                             ),
@@ -161,12 +165,12 @@ NEW_PROVIDER_SCHEMA = StructType(
                         True,
                     ),
                     StructField(
-                        NewColNames.serviceRatings,
+                        NewColNames.service_ratings,
                         ArrayType(
                             StructType(
                                 [
                                     StructField(
-                                        NewColNames.keyQuestionRatings,
+                                        NewColNames.key_question_ratings,
                                         ArrayType(
                                             StructType(
                                                 [
@@ -188,14 +192,14 @@ NEW_PROVIDER_SCHEMA = StructType(
                                     ),
                                     StructField(NewColNames.name, StringType(), True),
                                     StructField(
-                                        NewColNames.organisationId, StringType(), True
+                                        NewColNames.organisation_id, StringType(), True
                                     ),
                                     StructField(NewColNames.rating, StringType(), True),
                                     StructField(
-                                        NewColNames.reportDate, StringType(), True
+                                        NewColNames.report_date, StringType(), True
                                     ),
                                     StructField(
-                                        NewColNames.reportLinkId, StringType(), True
+                                        NewColNames.report_link_id, StringType(), True
                                     ),
                                 ]
                             ),
@@ -207,19 +211,19 @@ NEW_PROVIDER_SCHEMA = StructType(
             ),
             True,
         ),
-        StructField(NewColNames.deregistrationDate, StringType(), True),
+        StructField(NewColNames.deregistration_date, StringType(), True),
         StructField(
-            NewColNames.historicRatings,
+            NewColNames.historic_ratings,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.organisationId, StringType(), True),
+                        StructField(NewColNames.organisation_id, StringType(), True),
                         StructField(
                             NewColNames.overall,
                             StructType(
                                 [
                                     StructField(
-                                        NewColNames.keyQuestionRatings,
+                                        NewColNames.key_question_ratings,
                                         ArrayType(
                                             StructType(
                                                 [
@@ -241,26 +245,26 @@ NEW_PROVIDER_SCHEMA = StructType(
                                     ),
                                     StructField(NewColNames.rating, StringType(), True),
                                     StructField(
-                                        NewColNames.useOfResources,
+                                        NewColNames.use_of_resources,
                                         StructType(
                                             [
                                                 StructField(
-                                                    NewColNames.combinedQualityRating,
+                                                    NewColNames.combined_quality_rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.combinedQualitySummary,
+                                                    NewColNames.combined_quality_summary,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.useOfResourcesRating,
+                                                    NewColNames.use_of_resources_rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    NewColNames.useOfResourcesSummary,
+                                                    NewColNames.use_of_resources_summary,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -272,15 +276,15 @@ NEW_PROVIDER_SCHEMA = StructType(
                             ),
                             True,
                         ),
-                        StructField(NewColNames.reportDate, StringType(), True),
-                        StructField(NewColNames.reportLinkId, StringType(), True),
+                        StructField(NewColNames.report_date, StringType(), True),
+                        StructField(NewColNames.report_link_id, StringType(), True),
                         StructField(
-                            NewColNames.serviceRatings,
+                            NewColNames.service_ratings,
                             ArrayType(
                                 StructType(
                                     [
                                         StructField(
-                                            NewColNames.keyQuestionRatings,
+                                            NewColNames.key_question_ratings,
                                             ArrayType(
                                                 StructType(
                                                     [
@@ -319,17 +323,21 @@ NEW_PROVIDER_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.inspectionAreas,
+            NewColNames.inspection_areas,
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.endDate, StringType(), True),
-                        StructField(NewColNames.inspectionAreaId, StringType(), True),
-                        StructField(NewColNames.inspectionAreaName, StringType(), True),
-                        StructField(NewColNames.inspectionAreaType, StringType(), True),
+                        StructField(NewColNames.end_date, StringType(), True),
+                        StructField(NewColNames.inspection_area_id, StringType(), True),
+                        StructField(
+                            NewColNames.inspection_area_name, StringType(), True
+                        ),
+                        StructField(
+                            NewColNames.inspection_area_type, StringType(), True
+                        ),
                         StructField(NewColNames.status, StringType(), True),
                         StructField(
-                            NewColNames.supersededBy,
+                            NewColNames.superseded_by,
                             ArrayType(StringType(), True),
                             True,
                         ),
@@ -340,7 +348,7 @@ NEW_PROVIDER_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.inspectionCategories,
+            NewColNames.inspection_categories,
             ArrayType(
                 StructType(
                     [
@@ -353,56 +361,60 @@ NEW_PROVIDER_SCHEMA = StructType(
             ),
             True,
         ),
-        StructField(NewColNames.inspectionDirectorate, StringType(), True),
+        StructField(NewColNames.inspection_directorate, StringType(), True),
         StructField(
-            NewColNames.lastInspection,
+            NewColNames.last_inspection,
             StructType([StructField(NewColNames.date, StringType(), True)]),
             True,
         ),
         StructField(
-            NewColNames.lastReport,
-            StructType([StructField(NewColNames.publicationDate, StringType(), True)]),
+            NewColNames.last_report,
+            StructType([StructField(NewColNames.publication_date, StringType(), True)]),
             True,
         ),
-        StructField(NewColNames.localAuthority, StringType(), True),
-        StructField(NewColNames.locationIds, ArrayType(StringType(), True), True),
-        StructField(NewColNames.mainPhoneNumber, StringType(), True),
+        StructField(NewColNames.local_authority, StringType(), True),
+        StructField(NewColNames.location_ids, ArrayType(StringType(), True), True),
+        StructField(NewColNames.main_phone_number, StringType(), True),
         StructField(NewColNames.name, StringType(), True),
-        StructField(NewColNames.odsCode, StringType(), True),
-        StructField(NewColNames.onspdIcbCode, StringType(), True),
-        StructField(NewColNames.onspdIcbName, StringType(), True),
-        StructField(NewColNames.onspdLatitude, DoubleType(), True),
-        StructField(NewColNames.onspdLongitude, DoubleType(), True),
-        StructField(NewColNames.organisationType, StringType(), True),
-        StructField(NewColNames.ownershipType, StringType(), True),
-        StructField(NewColNames.postalAddressCounty, StringType(), True),
-        StructField(NewColNames.postalAddressLine1, StringType(), True),
-        StructField(NewColNames.postalAddressLine2, StringType(), True),
-        StructField(NewColNames.postalAddressTownCity, StringType(), True),
-        StructField(NewColNames.postalCode, StringType(), True),
-        StructField(NewColNames.providerId, StringType(), True),
+        StructField(NewColNames.ods_code, StringType(), True),
+        StructField(NewColNames.onspd_icb_code, StringType(), True),
+        StructField(NewColNames.onspd_icb_name, StringType(), True),
+        StructField(NewColNames.onspd_latitude, DoubleType(), True),
+        StructField(NewColNames.onspd_longitude, DoubleType(), True),
+        StructField(NewColNames.organisation_type, StringType(), True),
+        StructField(NewColNames.ownership_type, StringType(), True),
+        StructField(NewColNames.postal_address_county, StringType(), True),
+        StructField(NewColNames.postal_address_line1, StringType(), True),
+        StructField(NewColNames.postal_address_line2, StringType(), True),
+        StructField(NewColNames.postal_address_town_city, StringType(), True),
+        StructField(NewColNames.postal_code, StringType(), True),
+        StructField(NewColNames.provider_id, StringType(), True),
         StructField(NewColNames.region, StringType(), True),
-        StructField(NewColNames.registrationDate, StringType(), True),
-        StructField(NewColNames.registrationStatus, StringType(), True),
+        StructField(NewColNames.registration_date, StringType(), True),
+        StructField(NewColNames.registration_status, StringType(), True),
         StructField(
-            NewColNames.regulatedActivities,
+            NewColNames.regulated_activities,
             ArrayType(
                 StructType(
                     [
                         StructField(NewColNames.code, StringType(), True),
                         StructField(NewColNames.name, StringType(), True),
                         StructField(
-                            NewColNames.nominatedIndividual,
+                            NewColNames.nominated_individual,
                             StructType(
                                 [
                                     StructField(
-                                        NewColNames.personFamilyName, StringType(), True
+                                        NewColNames.person_family_name,
+                                        StringType(),
+                                        True,
                                     ),
                                     StructField(
-                                        NewColNames.personGivenName, StringType(), True
+                                        NewColNames.person_given_name,
+                                        StringType(),
+                                        True,
                                     ),
                                     StructField(
-                                        NewColNames.personTitle, StringType(), True
+                                        NewColNames.person_title, StringType(), True
                                     ),
                                 ]
                             ),
@@ -420,9 +432,11 @@ NEW_PROVIDER_SCHEMA = StructType(
                 StructType(
                     [
                         StructField(NewColNames.reason, StringType(), True),
-                        StructField(NewColNames.relatedProviderId, StringType(), True),
                         StructField(
-                            NewColNames.relatedProviderName, StringType(), True
+                            NewColNames.related_provider_id, StringType(), True
+                        ),
+                        StructField(
+                            NewColNames.related_provider_name, StringType(), True
                         ),
                         StructField(NewColNames.type, StringType(), True),
                     ]
@@ -436,14 +450,14 @@ NEW_PROVIDER_SCHEMA = StructType(
             ArrayType(
                 StructType(
                     [
-                        StructField(NewColNames.firstVisitDate, StringType(), True),
+                        StructField(NewColNames.first_visit_date, StringType(), True),
                         StructField(
-                            NewColNames.inspectionLocations,
+                            NewColNames.inspection_locations,
                             ArrayType(
                                 StructType(
                                     [
                                         StructField(
-                                            NewColNames.locationId, StringType(), True
+                                            NewColNames.location_id, StringType(), True
                                         )
                                     ]
                                 ),
@@ -451,17 +465,19 @@ NEW_PROVIDER_SCHEMA = StructType(
                             ),
                             True,
                         ),
-                        StructField(NewColNames.linkId, StringType(), True),
+                        StructField(NewColNames.link_id, StringType(), True),
                         StructField(
-                            NewColNames.relatedDocuments,
+                            NewColNames.related_documents,
                             ArrayType(
                                 StructType(
                                     [
                                         StructField(
-                                            NewColNames.documentType, StringType(), True
+                                            NewColNames.document_type,
+                                            StringType(),
+                                            True,
                                         ),
                                         StructField(
-                                            NewColNames.documentUri, StringType(), True
+                                            NewColNames.document_uri, StringType(), True
                                         ),
                                     ]
                                 ),
@@ -469,9 +485,9 @@ NEW_PROVIDER_SCHEMA = StructType(
                             ),
                             True,
                         ),
-                        StructField(NewColNames.reportDate, StringType(), True),
-                        StructField(NewColNames.reportType, StringType(), True),
-                        StructField(NewColNames.reportUri, StringType(), True),
+                        StructField(NewColNames.report_date, StringType(), True),
+                        StructField(NewColNames.report_type, StringType(), True),
+                        StructField(NewColNames.report_uri, StringType(), True),
                     ]
                 ),
                 True,
@@ -480,10 +496,10 @@ NEW_PROVIDER_SCHEMA = StructType(
         ),
         StructField(NewColNames.type, StringType(), True),
         StructField(
-            NewColNames.unpublishedReports,
+            NewColNames.unpublished_reports,
             ArrayType(
                 StructType(
-                    [StructField(NewColNames.firstVisitDate, StringType(), True)]
+                    [StructField(NewColNames.first_visit_date, StringType(), True)]
                 ),
                 True,
             ),
