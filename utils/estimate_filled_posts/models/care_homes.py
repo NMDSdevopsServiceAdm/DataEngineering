@@ -5,9 +5,6 @@ from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
 from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
-from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
@@ -33,10 +30,6 @@ def model_care_homes(
 
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions, IndCqc.care_home_model
-    )
-
-    locations_df = update_dataframe_with_identifying_rule(
-        locations_df, "model_care_homes", IndCqc.estimate_filled_posts
     )
 
     return locations_df
