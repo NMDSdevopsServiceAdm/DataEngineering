@@ -251,12 +251,12 @@ def collect_arguments(*args):
     Args:
         *args: This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
 
-    Yields:
+    Returns:
         Generator[Any, None, None]: A generator used for parsing parsed parameters.
 
     Examples:
     >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
-    >>> (parameter_1, parameter_2 = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
+    >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
     """
     parser = argparse.ArgumentParser()
     for arg in args:
