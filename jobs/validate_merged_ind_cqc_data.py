@@ -52,7 +52,7 @@ def main(
             )
             .hasSize(
                 lambda x: x == cqc_location_df_size,
-                f"size should match cqc loc size {cqc_location_df_size}",
+                f"DataFrame row count should be {cqc_location_df_size}",
             )
         )
         .run()
@@ -62,15 +62,20 @@ def main(
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
-    if isinstance(check_result_df, DataFrame):
-        parse_data_quality_errors(check_result_df)
+    parse_data_quality_errors(check_result_df)
 
 
 def parse_data_quality_errors(check_results: DataFrame):
     failures_df = check_results.where(check_results["constraint_status"] == "Failure")
+    
+    failures_count = failures_df.count()
+    if failures_count == 0:
+        return
+
+    print(f'{failures_count} data quaility failures detected, printing errors')
 
     for failure in failures_df.collect():
-        print(failure.asDict())
+        print(failure.asDict()['constraint_message'])
 
 
 if __name__ == "__main__":
