@@ -1,35 +1,68 @@
-from utils import cqc_api_new as cqc
 import unittest
 import re
+
+from utils import cqc_api_new as cqc
+
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 
 EXAMPLE_LOCATION_ID = "1-10000792582"
 LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
+# TODO : test call_api()
+# TODO : test get_all_objects()
 
-class TestCQCLocationAPIIntegration(unittest.TestCase):
+
+class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.PARTNER_CODE_STUB = "PARTNERCODE"
+        self.page = 1
+
+
+class LocationApiTests(CqcApiIntegrationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.object_type = "locations"
+        self.example_object = [
+            {CQCL.location_id: "1-10000792582"},
+            {CQCL.provider_id: "1-9098203603"},
+            {CQCL.organisation_type: "Location"},
+        ]
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(EXAMPLE_LOCATION_ID, "locations")
+        result = cqc.get_object(EXAMPLE_LOCATION_ID, self.object_type)
 
-        self.assertEqual(result["locationId"], EXAMPLE_LOCATION_ID)
-        self.assertEqual(result["providerId"], "1-9098203603")
-        self.assertEqual(result["organisationType"], "Location")
+        self.assertEqual(
+            result[CQCL.location_id], self.example_object[CQCL.location_id]
+        )
+        self.assertEqual(
+            result[CQCL.provider_id], self.example_object[CQCL.provider_id]
+        )
+        self.assertEqual(
+            result[CQCL.organisation_type], self.example_object[CQCL.organisation_type]
+        )
 
     def test_get_page_locations_returns_all_locations_for_page(self):
-        page = 1
-        url = f"https://api.cqc.org.uk/public/v1/locations"
+        url = f"{cqc.CQC_API_BASE_URL}/public/{cqc.CQC_API_VERSION}/{self.object_type}"
 
         locations = cqc.get_page_objects(
-            url, page, "locations", "locationId", self.PARTNER_CODE_STUB, per_page=5
+            url,
+            self.page,
+            self.object_type,
+            CQCL.location_id,
+            self.PARTNER_CODE_STUB,
+            per_page=5,
         )
         self.assertEqual(len(locations), 5)
 
         regex = re.compile(LOCATION_ID_REGEX)
         for location in locations:
-            self.assertTrue(regex.match(location["locationId"]))
-            self.assertIsNotNone(location["providerId"])
+            self.assertTrue(regex.match(location[CQCL.location_id]))
+            self.assertIsNotNone(location[CQCL.provider_id])
 
 
 if __name__ == "__main__":
