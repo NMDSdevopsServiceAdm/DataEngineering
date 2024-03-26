@@ -377,6 +377,84 @@ class ONSData:
 
 
 @dataclass
+class CapacityTrackerCareHomeSchema:
+    sample_schema = StructType(
+        [
+            StructField("local_authority", StringType(), True),
+            StructField("location", StringType(), True),
+            StructField("parentorganisation", StringType(), True),
+            StructField("lrf", StringType(), True),
+            StructField("localauthority", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("icb", StringType(), True),
+            StructField("subicb", StringType(), True),
+            StructField("cqcid", StringType(), True),
+            StructField("odscode", StringType(), True),
+            StructField("covidresidentstotal", StringType(), True),
+            StructField("isacceptingadmissions", StringType(), True),
+            StructField("nursesemployed", StringType(), True),
+            StructField("nursesabsentgeneral", StringType(), True),
+            StructField("nursesabsentcovid", StringType(), True),
+            StructField("careworkersemployed", StringType(), True),
+            StructField("careworkersabsentgeneral", StringType(), True),
+            StructField("careworkersabsentcovid", StringType(), True),
+            StructField("noncareworkersemployed", StringType(), True),
+            StructField("noncareworkersabsentgeneral", StringType(), True),
+            StructField("noncareworkersabsentcovid", StringType(), True),
+            StructField("agencynursesemployed", StringType(), True),
+            StructField("agencycareworkersemployed", StringType(), True),
+            StructField("agencynoncareworkersemployed", StringType(), True),
+            StructField("hourspaid", StringType(), True),
+            StructField("hoursovertime", StringType(), True),
+            StructField("hoursagency", StringType(), True),
+            StructField("hoursabsence", StringType(), True),
+            StructField("daysabsence", StringType(), True),
+            StructField("lastupdatedutc", StringType(), True),
+            StructField("lastupdatedbst", StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CapacityTrackerDomCareSchema:
+    sample_schema = StructType(
+        [
+            StructField("local_authority", StringType(), True),
+            StructField("subicbname", StringType(), True),
+            StructField("icbname", StringType(), True),
+            StructField("regionname", StringType(), True),
+            StructField("laname", StringType(), True),
+            StructField("lrfname", StringType(), True),
+            StructField("laregionname", StringType(), True),
+            StructField("location", StringType(), True),
+            StructField("cqcid", StringType(), True),
+            StructField("odscode", StringType(), True),
+            StructField("cqcsurveylastupdatedutc", StringType(), True),
+            StructField("cqcsurveylastupdatedbst", StringType(), True),
+            StructField("serviceusercount", StringType(), True),
+            StructField("legacycovidconfirmed", StringType(), True),
+            StructField("legacycovidsuspected", StringType(), True),
+            StructField("cqccareworkersemployed", StringType(), True),
+            StructField("cqccareworkersabsent", StringType(), True),
+            StructField("canprovidermorehours", StringType(), True),
+            StructField("extrahourscount", StringType(), True),
+            StructField("covid_vaccination_(full_course)", StringType(), True),
+            StructField("covid_vaccination_(autumn_23)", StringType(), True),
+            StructField("flu_vaccination_(autumn_23)", StringType(), True),
+            StructField("confirmedsave", StringType(), True),
+            StructField("hourspaiddomcare", StringType(), True),
+            StructField("hoursovertimedomcare", StringType(), True),
+            StructField("hoursagencydomcare", StringType(), True),
+            StructField("hoursabsencedomcare", StringType(), True),
+            StructField("daysabsencedomcare", StringType(), True),
+            StructField("usersnhsla", StringType(), True),
+            StructField("usersselffunded", StringType(), True),
+            StructField("returnedpocpercent", StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CQCLocationsSchema:
     full_schema = StructType(
         [

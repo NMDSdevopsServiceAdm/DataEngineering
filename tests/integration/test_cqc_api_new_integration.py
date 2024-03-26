@@ -1,4 +1,4 @@
-from utils import cqc_api as cqc
+from utils import cqc_api_new as cqc
 import unittest
 import re
 
@@ -9,15 +9,9 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 class TestCQCLocationAPIIntegration(unittest.TestCase):
     def setUp(self):
         self.PARTNER_CODE_STUB = "PARTNERCODE"
-        pass
-
-    def tearDown(self):
-        pass
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(
-            EXAMPLE_LOCATION_ID, "locations", self.PARTNER_CODE_STUB
-        )
+        result = cqc.get_object(EXAMPLE_LOCATION_ID, "locations")
 
         self.assertEqual(result["locationId"], EXAMPLE_LOCATION_ID)
         self.assertEqual(result["providerId"], "1-9098203603")

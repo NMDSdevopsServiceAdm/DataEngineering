@@ -114,7 +114,16 @@
         }
       ],
       "Next": "Silver to Gold Transformation Layer",
-      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer"
+      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
     },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
@@ -304,7 +313,35 @@
           }
         }
       ],
-      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer"
+      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Publish error notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
     },
     "Success": {
       "Type": "Succeed"
