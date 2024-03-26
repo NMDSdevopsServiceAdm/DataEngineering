@@ -1256,8 +1256,6 @@ class ModelInterpolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
     calculating_submission_dates_schema = StructType(
