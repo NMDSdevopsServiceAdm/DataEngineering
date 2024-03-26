@@ -27,7 +27,7 @@ def insert_predictions_into_locations(
     )
 
     locations_with_predictions = locations_with_predictions.withColumnRenamed(
-        F.col(IndCqc.prediction, model_column_name)
+        IndCqc.prediction, model_column_name
     )
 
     return locations_with_predictions
