@@ -848,6 +848,11 @@ class MergeIndCQCData:
 
 
 @dataclass
+class IndCQCDataUtils:
+    test_schema = ()
+
+
+@dataclass
 class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [

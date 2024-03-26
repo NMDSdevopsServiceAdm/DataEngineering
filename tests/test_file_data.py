@@ -1668,6 +1668,11 @@ class MergeIndCQCData:
 
 
 @dataclass
+class IndCQCDataUtils:
+    test_data = []
+
+
+@dataclass
 class CleanIndCQCData:
     # fmt: off
     merged_rows_for_cleaning_job = [
