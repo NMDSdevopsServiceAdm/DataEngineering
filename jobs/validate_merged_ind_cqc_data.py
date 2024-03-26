@@ -58,7 +58,6 @@ def main(
         .run()
     )
     check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
-    check_result_df.show()
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
