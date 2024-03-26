@@ -2591,7 +2591,7 @@ class ValidateMergedIndCqcData:
     ]
    
     merged_ind_cqc_rows =[
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,10, date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
         ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
@@ -2603,7 +2603,7 @@ class ValidateMergedIndCqcData:
     ]
 
     merged_ind_cqc_extra_row_rows =[
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,10, date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
         ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
@@ -2616,7 +2616,7 @@ class ValidateMergedIndCqcData:
     ]
 
     merged_ind_cqc_missing_row_rows =[
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,10, date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
         ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
@@ -2627,7 +2627,7 @@ class ValidateMergedIndCqcData:
     ]
 
     merged_ind_cqc_with_cqc_sector_null_rows =[
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,10, date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
         ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
@@ -2639,7 +2639,7 @@ class ValidateMergedIndCqcData:
     ]
 
     merged_ind_cqc_with_duplicate_data_rows =[
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,10, date(2024, 1, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
