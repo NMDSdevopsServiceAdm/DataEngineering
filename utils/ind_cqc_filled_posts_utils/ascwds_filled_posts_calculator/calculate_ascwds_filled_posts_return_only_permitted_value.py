@@ -22,7 +22,6 @@ def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_pe
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
-
     input_df = input_df.withColumn(
         output_column_name,
         F.when(
