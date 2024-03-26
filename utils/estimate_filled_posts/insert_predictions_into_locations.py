@@ -26,18 +26,8 @@ def insert_predictions_into_locations(
         locations_df["*"], predictions_df[IndCqc.prediction]
     )
 
-    locations_with_prediction_model_column = locations_with_predictions.withColumn(
-        model_column_name, F.col(IndCqc.prediction)
-    )
-    locations_with_prediction_model_column = (
-        locations_with_prediction_model_column.withColumn(
-            IndCqc.estimate_filled_posts,
-            F.when(
-                F.col(IndCqc.estimate_filled_posts).isNotNull(),
-                F.col(IndCqc.estimate_filled_posts),
-            ).otherwise(F.col(IndCqc.prediction)),
-        )
+    locations_with_predictions = locations_with_predictions.withColumnRenamed(
+        F.col(IndCqc.prediction, model_column_name)
     )
 
-    locations_df = locations_with_prediction_model_column.drop(F.col(IndCqc.prediction))
-    return locations_df
+    return locations_with_predictions
