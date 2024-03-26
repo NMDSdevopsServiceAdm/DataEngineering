@@ -67,15 +67,15 @@ def main(
 
 def parse_data_quality_errors(check_results: DataFrame):
     failures_df = check_results.where(check_results["constraint_status"] == "Failure")
-    
+
     failures_count = failures_df.count()
     if failures_count == 0:
         return
 
-    print(f'{failures_count} data quaility failures detected, printing errors')
+    print(f"{failures_count} data quaility failures detected, printing errors")
 
     for failure in failures_df.collect():
-        print(failure.asDict()['constraint_message'])
+        print(failure.asDict()["constraint_message"])
 
 
 if __name__ == "__main__":
