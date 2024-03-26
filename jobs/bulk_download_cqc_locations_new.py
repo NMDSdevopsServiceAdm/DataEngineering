@@ -50,6 +50,7 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="locations_api_new",
         date=todays_date,
+        version="2.0.0",
     )
 
     print(destination)
