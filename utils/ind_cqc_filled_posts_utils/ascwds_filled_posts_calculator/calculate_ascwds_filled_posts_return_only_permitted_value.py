@@ -1,4 +1,4 @@
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, functions as F
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
     ascwds_filled_posts_is_null,
@@ -7,7 +7,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     selected_column_is_below_the_min_permitted_value,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
+    add_source_description_to_source_column,
 )
 
 
@@ -16,8 +16,13 @@ def ascwds_filled_posts_select_only_value_source_description(permitted_column: s
 
 
 def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
-    input_df, permitted_column: str, non_permitted_column: str, output_column_name
-):
+    input_df: DataFrame,
+    permitted_column: str,
+    non_permitted_column: str,
+    output_column_name: str,
+    source_output_column_name: str,
+) -> DataFrame:
+
     input_df = input_df.withColumn(
         output_column_name,
         F.when(
@@ -35,8 +40,9 @@ def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_pe
         ).otherwise(F.col(output_column_name)),
     )
 
-    return update_dataframe_with_identifying_rule(
+    return add_source_description_to_source_column(
         input_df,
-        ascwds_filled_posts_select_only_value_source_description(permitted_column),
         output_column_name,
+        source_output_column_name,
+        ascwds_filled_posts_select_only_value_source_description(permitted_column),
     )

@@ -24,6 +24,7 @@ class TestAscwdsFilledPostsAbsoluteDiffInRange(unittest.TestCase):
             IndCQC.total_staff_bounded,
             IndCQC.worker_records_bounded,
             IndCQC.ascwds_filled_posts,
+            IndCQC.ascwds_filled_posts_source,
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
