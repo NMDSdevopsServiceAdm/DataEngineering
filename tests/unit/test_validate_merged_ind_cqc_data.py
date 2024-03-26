@@ -43,6 +43,9 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         self.test_merged_ind_cqc_with_duplicate_data_df = self.spark.createDataFrame(
             Data.merged_ind_cqc_with_duplicate_data_rows, Schemas.merged_ind_cqc_schema
         )
+        self.constraint_status = "constraint_status"
+        self.constraint_message = "constraint_message"
+        self.failure_value = "Failure"
 
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
@@ -88,7 +91,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         )
         validation_results = write_to_parquet_patch.call_args[0][0]
         failure_count = validation_results.where(
-            validation_results["constraint_status"] == "Failure"
+            validation_results[self.constraint_status] == self.failure_value
         ).count()
         expected_failure_count = 0
 
@@ -112,19 +115,17 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         validation_results = write_to_parquet_patch.call_args[0][0]
-        validation_results.show()
         failure_count = validation_results.where(
-            validation_results["constraint_status"] == "Failure"
+            validation_results[self.constraint_status] == self.failure_value
         ).count()
         expected_failure_count = 1
         failure_message = (
             validation_results.where(
-                validation_results["constraint_status"] == "Failure"
+                validation_results[self.constraint_status] == self.failure_value
             )
-            .select("constraint_message")
+            .select(self.constraint_message)
             .collect()[0][0]
         )
-        print(failure_message)
         expected_failure_message = "Value: 10 does not meet the constraint requirement! size should match cqc loc size 9"
 
         self.assertEqual(failure_count, expected_failure_count)
@@ -148,19 +149,17 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         validation_results = write_to_parquet_patch.call_args[0][0]
-        validation_results.show()
         failure_count = validation_results.where(
-            validation_results["constraint_status"] == "Failure"
+            validation_results[self.constraint_status] == self.failure_value
         ).count()
         expected_failure_count = 1
         failure_message = (
             validation_results.where(
-                validation_results["constraint_status"] == "Failure"
+                validation_results[self.constraint_status] == self.failure_value
             )
-            .select("constraint_message")
+            .select(self.constraint_message)
             .collect()[0][0]
         )
-        print(failure_message)
         expected_failure_message = "Value: 8 does not meet the constraint requirement! size should match cqc loc size 9"
 
         self.assertEqual(failure_count, expected_failure_count)
@@ -184,19 +183,17 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         validation_results = write_to_parquet_patch.call_args[0][0]
-        validation_results.show()
         failure_count = validation_results.where(
-            validation_results["constraint_status"] == "Failure"
+            validation_results[self.constraint_status] == self.failure_value
         ).count()
         expected_failure_count = 1
         failure_message = (
             validation_results.where(
-                validation_results["constraint_status"] == "Failure"
+                validation_results[self.constraint_status] == self.failure_value
             )
-            .select("constraint_message")
+            .select(self.constraint_message)
             .collect()[0][0]
         )
-        print(failure_message)
         expected_failure_message = (
             "Value: 0.8888888888888888 does not meet the constraint requirement!"
         )
@@ -222,19 +219,18 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
         validation_results = write_to_parquet_patch.call_args[0][0]
-        validation_results.show()
+
         failure_count = validation_results.where(
-            validation_results["constraint_status"] == "Failure"
+            validation_results[self.constraint_status] == self.failure_value
         ).count()
         expected_failure_count = 1
         failure_message = (
             validation_results.where(
-                validation_results["constraint_status"] == "Failure"
+                validation_results[self.constraint_status] == self.failure_value
             )
-            .select("constraint_message")
+            .select(self.constraint_message)
             .collect()[0][0]
         )
-        print(failure_message)
         expected_failure_message = (
             "Value: 0.7777777777777778 does not meet the constraint requirement!"
         )
