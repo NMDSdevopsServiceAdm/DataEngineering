@@ -135,19 +135,6 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Run validate merged ind cqc data job"
-            },
-            "Run validate merged ind cqc data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${validate_merged_ind_cqc_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
-                }
-              },
               "Next": "Run clean ind cqc data job"
             },
             "Run clean ind cqc data job": {
@@ -223,9 +210,9 @@
               "Parameters": {
                 "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
                 "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--estimated_ind_cqc_filled_posts_source" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
                   "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
                 }
               },
               "Next": "run ind crawler"
@@ -234,15 +221,6 @@
               "Type": "Task",
               "Parameters": {
                 "Name": "${ind_cqc_filled_posts_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "End": true,
-              "Next": "run data validation crawler"
-            },
-            "run data validation crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${data_validation_reports_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "End": true
