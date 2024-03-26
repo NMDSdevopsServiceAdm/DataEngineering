@@ -1085,8 +1085,6 @@ class ModelExtrapolation:
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
