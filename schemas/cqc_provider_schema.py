@@ -1,4 +1,11 @@
-from pyspark.sql.types import StructField, StructType, StringType, ArrayType, FloatType
+from pyspark.sql.types import (
+    StructField,
+    StructType,
+    StringType,
+    ArrayType,
+    FloatType,
+    DoubleType,
+)
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
