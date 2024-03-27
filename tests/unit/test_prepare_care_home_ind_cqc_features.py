@@ -30,10 +30,22 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.prepare_care_home_ind_cqc_features.vectorise_dataframe")
+    @patch("jobs.prepare_care_home_ind_cqc_features.add_date_diff_into_df")
+    @patch(
+        "jobs.prepare_care_home_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+    )
+    @patch("jobs.prepare_care_home_ind_cqc_features.column_expansion_with_dict")
+    @patch("jobs.prepare_care_home_ind_cqc_features.add_service_count_to_data")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
+        add_service_count_to_data_mock: Mock,
+        column_expansion_with_dict_mock: Mock,
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
+        add_date_diff_into_df_mock: Mock,
+        vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -42,6 +54,15 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             self.IND_FILLED_POSTS_CLEANED_DIR,
             self.CARE_HOME_FEATURES_DIR,
         )
+
+        self.assertEqual(add_service_count_to_data_mock.call_count, 1)
+        self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
+        self.assertEqual(
+            convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
+            2,
+        )
+        self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
+        self.assertEqual(vectorise_dataframe_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
