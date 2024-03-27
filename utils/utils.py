@@ -81,12 +81,18 @@ def identify_csv_delimiter(sample_csv):
     return dialect.delimiter
 
 
-def generate_s3_datasets_dir_date_path(destination_prefix, domain, dataset, date):
+def generate_s3_datasets_dir_date_path(
+    destination_prefix,
+    domain,
+    dataset,
+    date,
+    version="1.0.0",
+):
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
     import_date = year + month + day
-    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version=1.0.0/year={year}/month={month}/day={day}/import_date={import_date}/"
+    output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
 
@@ -244,6 +250,20 @@ def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")
 
 
 def collect_arguments(*args):
+    """
+    Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
+    where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
+
+    Args:
+        *args: This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
+
+    Returns:
+        Generator[Any, None, None]: A generator used for parsing parsed parameters.
+
+    Examples:
+    >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
+    >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
+    """
     parser = argparse.ArgumentParser()
     for arg in args:
         parser.add_argument(
