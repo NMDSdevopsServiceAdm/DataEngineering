@@ -2384,30 +2384,12 @@ class ModelExtrapolation:
 @dataclass
 class ModelFeatures:
     vectorise_input_rows = [
-        (
-            "1-0001",
-            12.0,
-            0,
-            1,
-            date(2024, 1, 1),
-        ),
-        (
-            "1-0002",
-            50.0,
-            1,
-            1,
-            date(2024, 1, 1),
-        ),
+        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
+        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
     ]
     expected_vectorised_feature_rows = [
-        (
-            "1-0001",
-            Vectors.dense([12.0, 0.0, 1.0]),
-        ),
-        (
-            "1-0002",
-            Vectors.dense([50.0, 1.0, 1.0]),
-        ),
+        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
 
 
