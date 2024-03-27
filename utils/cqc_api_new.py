@@ -37,10 +37,9 @@ def call_api(url, query_params=None, headers_dict=None):
 
 
 def get_all_objects(
-    stream,
-    object_type,
-    object_identifier,
-    partner_code,
+    object_type: str,
+    object_identifier: str,
+    partner_code: str,
     per_page=DEFAULT_PAGE_SIZE,
 ):
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
@@ -50,7 +49,6 @@ def get_all_objects(
         {"perPage": per_page, "partnerCode": partner_code},
         headers_dict={"User-Agent": USER_AGENT},
     )["totalPages"]
-    all_objects = []
 
     print(f"Total pages: {total_pages}")
     print(f"Beginning CQC bulk download of {object_type}...")
@@ -61,13 +59,7 @@ def get_all_objects(
             url, page_number, object_type, object_identifier, partner_code
         )
 
-        if stream:
-            yield page_locations
-        else:
-            all_objects.append(page_locations)
-
-    if not stream:
-        return all_objects
+        yield page_locations
 
 
 def get_page_objects(

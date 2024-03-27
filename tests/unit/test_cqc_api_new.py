@@ -1,4 +1,5 @@
 import unittest
+from typing import Generator
 
 import mock
 
@@ -19,7 +20,7 @@ class TestResponse:
 
 class TestCQCLocationAPI(unittest.TestCase):
     @mock.patch("utils.cqc_api_new.call_api")
-    def test_get_location(self, mock_call_api):
+    def test_get_object(self, mock_call_api):
         mock_call_api.return_value = {"locationId": "test_id"}
 
         location_body = {"locationId": "test_id"}
@@ -29,7 +30,7 @@ class TestCQCLocationAPI(unittest.TestCase):
 
     @mock.patch("utils.cqc_api_new.call_api")
     @mock.patch("utils.cqc_api_new.get_object")
-    def test_get_page_locations(self, mock_get_object, mock_call_api):
+    def test_get_page_objects(self, mock_get_object, mock_call_api):
         mock_call_api.return_value = {
             "locations": [
                 {"locationId": "test_id"},
@@ -114,6 +115,29 @@ class TestCQCLocationAPI(unittest.TestCase):
 
         sleep_mock.assert_called_once()
         self.assertEqual(response_json, {})
+
+    @mock.patch("utils.cqc_api_new.get_page_objects")
+    @mock.patch("utils.cqc_api_new.call_api")
+    def test_get_all_objects_returns_correct_generator(
+        self, call_api_mock: mock.Mock, get_page_objects_mock: mock.Mock
+    ):
+        test_response_page_1_json = {"locations": ["1"]}
+        test_response_page_2_json = {"locations": ["2"]}
+        call_api_mock.return_value = {"totalPages": 2}
+        get_page_objects_mock.side_effect = [
+            test_response_page_1_json,
+            test_response_page_2_json,
+        ]
+
+        generator = cqc.get_all_objects(
+            object_type="locations",
+            object_identifier="location_id",
+            partner_code="partner_code",
+        )
+
+        self.assertTrue(isinstance(generator, Generator))
+        self.assertEqual(next(generator), test_response_page_1_json)
+        self.assertEqual(next(generator), test_response_page_2_json)
 
 
 if __name__ == "__main__":
