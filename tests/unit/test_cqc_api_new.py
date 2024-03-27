@@ -78,6 +78,26 @@ class TestCQCLocationAPI(unittest.TestCase):
         self.assertTrue("API response: 500" in str(context.exception))
 
     @mock.patch("requests.get")
+    def test_call_api_handles_400(self, get_mock: mock.Mock):
+        test_response = TestResponse(400, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 400" in str(context.exception))
+
+    @mock.patch("requests.get")
+    def test_call_api_handles_404(self, get_mock: mock.Mock):
+        test_response = TestResponse(404, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 404" in str(context.exception))
+
+    @mock.patch("requests.get")
     def test_call_api_handles_403_with_headers(self, get_mock: mock.Mock):
         test_response = TestResponse(403, {})
         get_mock.return_value = test_response
