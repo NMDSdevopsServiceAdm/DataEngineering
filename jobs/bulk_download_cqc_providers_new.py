@@ -1,7 +1,7 @@
 from datetime import date
 
-from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import cqc_api_new as cqc
+from schemas.cqc_provider_schema import NEW_PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
@@ -23,7 +23,7 @@ def main(destination):
         object_identifier=ColNames.provider_id,
         partner_code=partner_code_value,
     ):
-        providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
+        providers_df = spark.createDataFrame(paginated_providers, NEW_PROVIDER_SCHEMA)
         if df:
             df = df.union(providers_df)
         else:
@@ -49,6 +49,7 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="providers_api_new",
         date=todays_date,
+        version="2.0.0",
     )
 
     main(destination)
