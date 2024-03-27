@@ -24,11 +24,6 @@ def model_primary_service_rolling_average(
 
     df = join_rolling_average_into_df(df, rolling_average_df)
 
-    df = df.withColumnRenamed(
-        IndCqc.rolling_average_model,
-        (IndCqc.rolling_average_model + "_" + str(number_of_days) + "_days"),
-    )
-
     return df
 
 

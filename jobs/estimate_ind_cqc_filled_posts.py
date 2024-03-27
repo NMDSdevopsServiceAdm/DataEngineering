@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -73,14 +73,6 @@ def main(
     cleaned_ind_cqc_df = model_primary_service_rolling_average(
         cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
     )
-
-    # TODO - delete from here
-    cleaned_ind_cqc_df = model_primary_service_rolling_average(cleaned_ind_cqc_df, 178)
-    cleaned_ind_cqc_df = model_primary_service_rolling_average(cleaned_ind_cqc_df, 364)
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCQC.rolling_average_model, F.col("rolling_average_model_88_days")
-    )
-    # to here
 
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
 
