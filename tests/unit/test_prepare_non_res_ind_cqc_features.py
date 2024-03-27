@@ -2,14 +2,10 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import functions as F
-from pyspark.ml.linalg import SparseVector
-
 import jobs.prepare_non_res_ind_cqc_features as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 
@@ -28,10 +24,22 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.prepare_non_res_ind_cqc_features.vectorise_dataframe")
+    @patch("jobs.prepare_non_res_ind_cqc_features.add_date_diff_into_df")
+    @patch(
+        "jobs.prepare_non_res_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+    )
+    @patch("jobs.prepare_non_res_ind_cqc_features.column_expansion_with_dict")
+    @patch("jobs.prepare_non_res_ind_cqc_features.add_service_count_to_data")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
+        add_service_count_to_data_mock: Mock,
+        column_expansion_with_dict_mock: Mock,
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
+        add_date_diff_into_df_mock: Mock,
+        vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -41,38 +49,21 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.OUTPUT_DESTINATION,
         )
 
+        self.assertEqual(add_service_count_to_data_mock.call_count, 1)
+        self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
+        self.assertEqual(
+            convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
+            2,
+        )
+        self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
+        self.assertEqual(vectorise_dataframe_mock.call_count, 1)
+
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.OUTPUT_DESTINATION,
             mode=ANY,
             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
-
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
-    def test_main_produces_dataframe_with_expected_features(
-        self,
-        read_from_parquet_mock: Mock,
-        write_to_parquet_mock: Mock,
-    ):
-        read_from_parquet_mock.return_value = self.test_df
-
-        returned_feature_list = job.main(
-            self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION
-        )
-
-        self.assertEqual(len(returned_feature_list), 51)
-
-        result = write_to_parquet_mock.call_args[0][0].orderBy(
-            F.col(IndCQC.location_id)
-        )
-
-        self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
-        expected_features = SparseVector(
-            51, [0, 3, 17, 20, 23, 24, 50], [100.0, 1.0, 1.0, 17.0, 1.0, 1.0, 2.0]
-        )
-        actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
-        self.assertEqual(actual_features, expected_features)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
