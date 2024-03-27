@@ -42,10 +42,14 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
     def test_model_primary_service_rolling_averages_are_correct(self):
         df = self.output_df.orderBy("locationid").collect()
 
-        self.assertEqual(df[0][IndCqc.rolling_average_model], 5.0)
-        self.assertEqual(df[2][IndCqc.rolling_average_model], 10.0)
-        self.assertEqual(df[4][IndCqc.rolling_average_model], 30.0)
-        self.assertEqual(df[15][IndCqc.rolling_average_model], 70.25)
+        self.assertEqual(df[0]["rolling_average_model_88_days"], 5.0)
+        self.assertEqual(df[2]["rolling_average_model_88_days"], 10.0)
+        self.assertEqual(df[4]["rolling_average_model_88_days"], 30.0)
+        self.assertEqual(df[15]["rolling_average_model_88_days"], 70.25)
+        # self.assertEqual(df[0][IndCqc.rolling_average_model], 5.0)
+        # self.assertEqual(df[2][IndCqc.rolling_average_model], 10.0)
+        # self.assertEqual(df[4][IndCqc.rolling_average_model], 30.0)
+        # self.assertEqual(df[15][IndCqc.rolling_average_model], 70.25)
 
     def test_filter_to_locations_with_known_filled_posts(self):
         df = job.filter_to_locations_with_known_filled_posts(self.input_df)
