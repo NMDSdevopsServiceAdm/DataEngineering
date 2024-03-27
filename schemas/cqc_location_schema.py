@@ -532,7 +532,7 @@ LOCATION_SCHEMA_NEW = StructType(
     ]
 )
 
-LOCATION_SCHEMA = StructType(
+OLD_LOCATION_SCHEMA = StructType(
     fields=[
         StructField(OldColNames.location_id, StringType(), True),
         StructField(OldColNames.provider_id, StringType(), True),

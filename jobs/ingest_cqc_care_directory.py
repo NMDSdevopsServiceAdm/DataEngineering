@@ -55,7 +55,7 @@ def convert_to_cqc_provider_api_format(df):
     )
 
     output_provider_df = spark.createDataFrame(
-        data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA
+        data=[], schema=cqc_provider_schema.OLD_PROVIDER_SCHEMA
     )
     output_provider_df = output_provider_df.unionByName(
         provider_df, allowMissingColumns=True
@@ -139,7 +139,7 @@ def convert_to_cqc_location_api_format(df):
     location_df = location_df.join(specialisms_df, LocationApiCols.location_id)
 
     output_location_df = spark.createDataFrame(
-        data=[], schema=cqc_location_schema.LOCATION_SCHEMA
+        data=[], schema=cqc_location_schema.OLD_LOCATION_SCHEMA
     )
     output_location_df = output_location_df.unionByName(
         location_df, allowMissingColumns=True

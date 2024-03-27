@@ -10,14 +10,14 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
     def setUp(self):
         self.PARTNER_CODE_STUB = "PARTNERCODE"
 
-    def test_get_object_returns_location(self):
+    def test_get_object_returns_object(self):
         result = cqc.get_object(EXAMPLE_LOCATION_ID, "locations")
 
         self.assertEqual(result["locationId"], EXAMPLE_LOCATION_ID)
         self.assertEqual(result["providerId"], "1-9098203603")
         self.assertEqual(result["organisationType"], "Location")
 
-    def test_get_page_locations_returns_all_locations_for_page(self):
+    def test_get_page_objects_returns_all_objects_for_page(self):
         page = 1
         url = f"https://api.cqc.org.uk/public/v1/locations"
 

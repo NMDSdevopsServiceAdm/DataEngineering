@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -14,6 +14,9 @@ from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 
+from utils.ind_cqc_filled_posts_utils.utils import (
+    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
+)
 
 cleaned_ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -86,6 +89,19 @@ def main(
         care_home_features_df,
         care_home_model_source,
         ml_model_metrics_destination,
+    )
+
+    cleaned_ind_cqc_df = (
+        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+            cleaned_ind_cqc_df,
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                IndCQC.interpolation_model,
+                IndCQC.extrapolation_model,
+                IndCQC.care_home_model,
+                IndCQC.rolling_average_model,
+            ],
+        )
     )
 
     cleaned_ind_cqc_df = cleaned_ind_cqc_df.drop(IndCQC.unix_time)

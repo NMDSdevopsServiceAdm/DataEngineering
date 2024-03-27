@@ -64,11 +64,5 @@ class TestModelCareHome(unittest.TestCase):
             df[IndCqc.location_id] == "1-000000002"
         ).collect()[0]
 
-        self.assertIsNotNone(expected_location_with_prediction.estimate_filled_posts)
-        self.assertIsNotNone(
-            expected_location_with_prediction.estimate_filled_posts_source
-        )
-        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
-        self.assertIsNone(
-            expected_location_without_prediction.estimate_filled_posts_source
-        )
+        self.assertIsNotNone(expected_location_with_prediction.care_home_model)
+        self.assertIsNone(expected_location_without_prediction.care_home_model)

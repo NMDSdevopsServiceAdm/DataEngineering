@@ -71,7 +71,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -458,7 +458,7 @@ class CapacityTrackerDomCareSchema:
 class CQCLocationsSchema:
     full_schema = StructType(
         [
-            *LOCATION_SCHEMA,
+            *OLD_LOCATION_SCHEMA,
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -848,6 +848,34 @@ class MergeIndCQCData:
 
 
 @dataclass
+class IndCQCDataUtils:
+    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("model_name_1", FloatType(), True),
+            StructField("model_name_2", FloatType(), True),
+            StructField("model_name_3", FloatType(), True),
+        ]
+    )
+
+    expected_schema_with_estimate_filled_posts_and_source = StructType(
+        [
+            *input_schema_for_adding_estimate_filled_posts_and_source,
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+    estimated_source_description_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [
@@ -1021,16 +1049,6 @@ class EstimateIndCQCFilledPostsSchemas:
         ]
     )
 
-    populate_known_jobs_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -1085,8 +1103,6 @@ class ModelExtrapolation:
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
@@ -1151,6 +1167,25 @@ class ModelExtrapolation:
             StructField(IndCQC.first_filled_posts, DoubleType(), True),
             StructField(IndCQC.last_filled_posts, DoubleType(), True),
             StructField(IndCQC.extrapolation_ratio, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelFeatures:
+    vectorise_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("col_1", FloatType(), True),
+            StructField("col_2", IntegerType(), True),
+            StructField("col_3", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_vectorised_feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
@@ -1237,8 +1272,6 @@ class ModelInterpolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
     calculating_submission_dates_schema = StructType(

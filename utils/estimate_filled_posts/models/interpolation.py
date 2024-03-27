@@ -1,14 +1,8 @@
 import sys
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame, Window
-import pyspark.sql
+from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import ArrayType, LongType, FloatType
 
 from utils.utils import convert_days_to_unix_time
-
-from pyspark.sql.types import ArrayType, LongType, FloatType
-from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
@@ -33,23 +27,10 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 
-    df = df.withColumn(
-        IndCqc.estimate_filled_posts,
-        F.when(
-            F.col(IndCqc.estimate_filled_posts).isNotNull(),
-            F.col(IndCqc.estimate_filled_posts),
-        ).otherwise(F.col(IndCqc.interpolation_model)),
-    )
-    df = update_dataframe_with_identifying_rule(
-        df, IndCqc.interpolation_model, IndCqc.estimate_filled_posts
-    )
-
     return df
 
 
-def filter_to_locations_with_a_known_filled_posts(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def filter_to_locations_with_a_known_filled_posts(df: DataFrame) -> DataFrame:
     df = df.select(
         IndCqc.location_id, IndCqc.unix_time, IndCqc.ascwds_filled_posts_dedup_clean
     )
@@ -57,18 +38,14 @@ def filter_to_locations_with_a_known_filled_posts(
     return df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
 
 
-def calculate_first_and_last_submission_date_per_location(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def calculate_first_and_last_submission_date_per_location(df: DataFrame) -> DataFrame:
     return df.groupBy(IndCqc.location_id).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
         F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
     )
 
 
-def convert_first_and_last_known_years_into_exploded_df(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def convert_first_and_last_known_years_into_exploded_df(df: DataFrame) -> DataFrame:
     date_range_udf = F.udf(create_date_range, ArrayType(LongType()))
 
     return df.withColumn(

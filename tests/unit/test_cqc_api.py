@@ -4,7 +4,7 @@ import unittest
 from utils import cqc_api as cqc
 
 
-class TestCQCLocationAPI(unittest.TestCase):
+class TestCQCAPI(unittest.TestCase):
     def setUp(self):
         pass
 

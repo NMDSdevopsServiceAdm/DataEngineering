@@ -1,8 +1,6 @@
 import unittest
 import warnings
 
-from pyspark.sql import SparkSession
-
 import utils.estimate_filled_posts.models.interpolation as job
 from utils import utils
 from tests.test_file_data import ModelInterpolation as Data
@@ -52,8 +50,6 @@ class TestModelInterpolation(unittest.TestCase):
                 IndCqc.unix_time,
                 IndCqc.cqc_location_import_date,
                 IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.estimate_filled_posts,
-                IndCqc.estimate_filled_posts_source,
                 IndCqc.interpolation_model,
             ],
         )
