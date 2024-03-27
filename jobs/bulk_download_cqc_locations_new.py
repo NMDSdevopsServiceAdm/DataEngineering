@@ -3,7 +3,7 @@ from datetime import date
 from utils import cqc_api as cqc
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import LOCATION_SCHEMA_NEW
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
@@ -24,7 +24,7 @@ def main(destination):
         object_identifier=ColNames.location_id,
         partner_code=partner_code_value,
     ):
-        locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA)
+        locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA_NEW)
         if df:
             df = df.union(locations_df)
         else:
@@ -37,7 +37,7 @@ def main(destination):
 
 
 if __name__ == "__main__":
-    destination_prefix = utils.collect_arguments(
+    destination_prefix, *_ = utils.collect_arguments(
         (
             "--destination_prefix",
             "Source s3 directory for parquet CQC locations dataset",
@@ -50,6 +50,7 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="locations_api_new",
         date=todays_date,
+        version="2.0.0",
     )
 
     print(destination)

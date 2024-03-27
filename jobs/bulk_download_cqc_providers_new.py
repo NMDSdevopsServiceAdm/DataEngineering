@@ -37,7 +37,7 @@ def main(destination):
 
 
 if __name__ == "__main__":
-    destination_prefix = utils.collect_arguments(
+    destination_prefix, *_ = utils.collect_arguments(
         (
             "--destination_prefix",
             "Source s3 directory for parquet CQC providers dataset",
@@ -50,6 +50,7 @@ if __name__ == "__main__":
         domain="CQC",
         dataset="providers_api_new",
         date=todays_date,
+        version="2.0.0",
     )
 
     main(destination)
