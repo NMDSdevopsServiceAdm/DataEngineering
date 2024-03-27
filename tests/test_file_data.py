@@ -1669,7 +1669,31 @@ class MergeIndCQCData:
 
 @dataclass
 class IndCQCDataUtils:
-    test_data = []
+    input_rows_for_adding_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0),
+        ("1-000002", None, 30.0, 50.0),
+        ("1-000003", 20.0, 70.0, 60.0),
+        ("1-000004", None, None, 40.0),
+    ]
+
+    expected_rows_with_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
+        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
+    ]
+
+    source_missing_rows = [
+        ("1-000001", 8.0, None),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+    expected_source_added_rows = [
+        ("1-000001", 8.0, "model_name"),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
 
 
 @dataclass
@@ -2008,22 +2032,6 @@ class EstimateIndCQCFilledPostsData:
         ("1-108967195", date(2022, 4, 22), "North West", "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, None, "N", "Independent", "Urban city and town", "Urban city and town", "rule_3", "Registered"),
     ]
     # fmt: on
-
-    populate_known_jobs_rows = [
-        ("1-000000001", 1.0, date(2022, 3, 4), None, None),
-        ("1-000000002", None, date(2022, 3, 4), None, None),
-        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
-        ("1-000000004", 10.0, date(2022, 3, 4), None, None),
-        ("1-000000002", 7.0, date(2022, 2, 4), None, None),
-    ]
-
-    expected_populate_known_jobs_rows = [
-        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_filled_posts"),
-        ("1-000000002", None, date(2022, 3, 4), None, None),
-        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
-        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_filled_posts"),
-        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_filled_posts"),
-    ]
 
 
 @dataclass
