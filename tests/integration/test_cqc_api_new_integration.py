@@ -17,7 +17,7 @@ class TestCQCLocationAPIIntegration(unittest.TestCase):
         self.assertEqual(result["providerId"], "1-9098203603")
         self.assertEqual(result["organisationType"], "Location")
 
-    def test_get_page_object_returns_all_objectss_for_page(self):
+    def test_get_page_objects_returns_all_objects_for_page(self):
         page = 1
         url = f"https://api.cqc.org.uk/public/v1/locations"
 
