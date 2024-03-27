@@ -71,7 +71,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -458,7 +458,7 @@ class CapacityTrackerDomCareSchema:
 class CQCLocationsSchema:
     full_schema = StructType(
         [
-            *LOCATION_SCHEMA,
+            *OLD_LOCATION_SCHEMA,
             StructField(Keys.import_date, StringType(), True),
         ]
     )
