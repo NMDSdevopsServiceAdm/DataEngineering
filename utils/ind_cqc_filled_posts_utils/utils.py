@@ -6,6 +6,24 @@ from pyspark.sql.types import (
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
+def add_source_description_to_source_column(
+    input_df: DataFrame,
+    populated_column_name: str,
+    source_column_name: str,
+    source_description: str,
+) -> DataFrame:
+    return input_df.withColumn(
+        source_column_name,
+        F.when(
+            (
+                F.col(populated_column_name).isNotNull()
+                & F.col(source_column_name).isNull()
+            ),
+            source_description,
+        ).otherwise(F.col(source_column_name)),
+    )
+
+
 def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
     df: DataFrame,
     order_of_models_to_populate_estimate_filled_posts_with: list,
@@ -35,21 +53,3 @@ def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
         )
 
     return df
-
-
-def add_source_description_to_source_column(
-    input_df: DataFrame,
-    populated_column_name: str,
-    source_column_name: str,
-    source_description: str,
-) -> DataFrame:
-    return input_df.withColumn(
-        source_column_name,
-        F.when(
-            (
-                F.col(populated_column_name).isNotNull()
-                & F.col(source_column_name).isNull()
-            ),
-            source_description,
-        ).otherwise(F.col(source_column_name)),
-    )
