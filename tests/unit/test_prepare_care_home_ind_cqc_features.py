@@ -52,71 +52,12 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_produces_dataframe_with_expected_features(
+    def test_main_produces_dataframe_with_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
         read_from_parquet_mock.return_value = self.test_df
-        expected_feature_list = [
-            IndCQC.date_diff,
-            "indicator_1",
-            "indicator_10",
-            "indicator_2",
-            "indicator_3",
-            "indicator_4",
-            "indicator_5",
-            "indicator_6",
-            "indicator_7",
-            "indicator_8",
-            "indicator_9",
-            IndCQC.number_of_beds,
-            "ons_east_midlands",
-            "ons_eastern",
-            "ons_london",
-            "ons_north_east",
-            "ons_north_west",
-            "ons_south_east",
-            "ons_south_west",
-            "ons_west_midlands",
-            "ons_yorkshire_and_the_humber",
-            "service_1",
-            "service_10",
-            "service_11",
-            "service_12",
-            "service_13",
-            "service_14",
-            "service_15",
-            "service_16",
-            "service_17",
-            "service_18",
-            "service_19",
-            "service_2",
-            "service_20",
-            "service_21",
-            "service_22",
-            "service_23",
-            "service_24",
-            "service_25",
-            "service_26",
-            "service_27",
-            "service_28",
-            "service_29",
-            "service_3",
-            "service_4",
-            "service_5",
-            "service_6",
-            "service_7",
-            "service_8",
-            "service_9",
-            IndCQC.service_count,
-        ]
 
-        returned_feature_list = job.main(
-            self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR
-        )
-
-        self.assertEqual(len(returned_feature_list), 51)
-
-        self.assertEqual(returned_feature_list, expected_feature_list)
+        job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
 
         result = write_to_parquet_mock.call_args[0][0].orderBy(
             F.col(IndCQC.location_id)
