@@ -55,7 +55,7 @@ def convert_to_cqc_provider_api_format(df):
     )
 
     output_provider_df = spark.createDataFrame(
-        data=[], schema=cqc_provider_schema.PROVIDER_SCHEMA
+        data=[], schema=cqc_provider_schema.OLD_PROVIDER_SCHEMA
     )
     output_provider_df = output_provider_df.unionByName(
         provider_df, allowMissingColumns=True
