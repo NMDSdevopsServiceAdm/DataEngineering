@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch, call
 
+
 from utils import cqc_api_new as cqc
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -9,6 +10,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
+
 
 # TODO : test call_api()
 # TODO : test get_all_objects()
