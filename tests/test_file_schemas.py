@@ -917,7 +917,7 @@ class FilterAscwdsFilledPostsSchema:
 
 
 @dataclass
-class NonResFeaturesSchema(object):
+class NonResAscwdsWithDormancyFeaturesSchema(object):
     basic_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

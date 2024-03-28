@@ -1809,7 +1809,7 @@ class FilterAscwdsFilledPostsData:
 
 
 @dataclass
-class NonResFeaturesData(object):
+class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: off
     rows = [
         ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", '2022', '02', '01', '20220201'),
