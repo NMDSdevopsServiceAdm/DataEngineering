@@ -178,6 +178,11 @@ jobs:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
+      
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-pipeline-resources/models/"
+          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
     working_directory: /tmp/project
