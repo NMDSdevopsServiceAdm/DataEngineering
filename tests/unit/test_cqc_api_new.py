@@ -135,7 +135,7 @@ class ProviderApiTests(CqcApiTests):
         )
 
 
-class ResponseTests:
+class ResponseTests(CqcApiTests):
     @patch("requests.get")
     def test_call_api_handles_200(self, get_mock: Mock):
         test_response = TestResponse(200, {})
@@ -215,6 +215,8 @@ class ResponseTests:
         sleep_mock.assert_called_once()
         self.assertEqual(response_json, {})
 
+
+class GetAllObjectsTests(CqcApiTests):
     @patch("utils.cqc_api_new.get_page_objects")
     @patch("utils.cqc_api_new.call_api")
     def test_get_all_objects_returns_correct_generator(
