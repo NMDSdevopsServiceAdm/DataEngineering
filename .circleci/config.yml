@@ -181,7 +181,7 @@ jobs:
       
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-default-pipeline-resources/models/"
+          from: "s3://sfc-main-pipeline-resources/models/"
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
