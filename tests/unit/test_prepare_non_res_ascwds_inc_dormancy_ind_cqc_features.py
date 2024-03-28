@@ -61,7 +61,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
-            2,
+            3,
         )
         self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
@@ -80,14 +80,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        input_df_length = self.test_df.count()
-        self.assertEqual(input_df_length, 10)
-
         job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
         result = write_to_parquet_mock.call_args[0][0]
 
-        self.assertEqual(result.count(), 7)
+        self.assertEqual(self.test_df.count(), 10)
+        self.assertEqual(result.count(), 6)
 
     def test_filter_df_for_non_res_care_home_data(self):
         ind_cqc_df = self.spark.createDataFrame(
