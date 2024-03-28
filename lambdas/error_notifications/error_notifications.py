@@ -30,7 +30,7 @@ class Email(MessageClient):
 
 class Teams(MessageClient):
     # example of a different client that can be added
-    # all functionality that allows it to work is 
+    # all functionality that allows it to work is
     # abstracted into this class
     def __init__(self) -> None:
         self.client = "teams client"

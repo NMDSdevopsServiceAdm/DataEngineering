@@ -122,10 +122,23 @@ resource "aws_iam_role_policy_attachment" "glue_job_partner_code_secrets_attachm
   role       = aws_iam_role.sfc_glue_service_iam_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "glue_job_invoke_lambda_attachment" {
+  policy_arn = aws_iam_policy.invoke_error_notifications_lambda.arn
+  role       = aws_iam_role.sfc_glue_service_iam_role.name
+}
+
 resource "aws_iam_policy" "retrieve_partner_code_secret" {
   name        = "${terraform.workspace}-retrieve-partner-code-secret"
   path        = "/"
   description = "Retrieves a secret specific to the Bulk download jobs"
 
   policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = local.partner_code_secret_arn })
+}
+
+resource "aws_iam_policy" "invoke_error_notifications_lambda" {
+  name        = "${terraform.workspace}-invoke_error_notifications_lambda"
+  path        = "/"
+  description = "Invoke error notification lambda privileges"
+
+  policy = templatefile("policy-documents/invoke-error-notifications-lambda.json", { lambda_arn = aws_lambda_function.error_notification_lambda.arn})
 }
