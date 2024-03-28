@@ -140,5 +140,5 @@ resource "aws_iam_policy" "invoke_error_notifications_lambda" {
   path        = "/"
   description = "Invoke error notification lambda privileges"
 
-  policy = templatefile("policy-documents/invoke-error-notifications-lambda.json", { lambda_arn = aws_lambda_function.error_notification_lambda.arn})
+  policy = templatefile("policy-documents/invoke-error-notifications-lambda.json", { lambda_arn = aws_lambda_function.error_notification_lambda.arn })
 }
