@@ -21,6 +21,18 @@ class CqcApiTests(unittest.TestCase):
         self.test_url = "test_url"
 
 
+class TestResponse:
+    status_code: int = 500
+    content: dict = {}
+
+    def __init__(self, status_code: int, content: dict) -> None:
+        self.status_code = status_code
+        self.content = content
+
+    def json(self):
+        return self.content
+
+
 class LocationApiTests(CqcApiTests):
     def setUp(self) -> None:
         super().setUp()
