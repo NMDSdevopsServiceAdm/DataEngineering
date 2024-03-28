@@ -51,12 +51,14 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
+    @patch("utils.utils.parse_data_quality_errors")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
+        parse_data_quality_errors_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -71,6 +73,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
+        self.assertEqual(parse_data_quality_errors_patch, 1)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
