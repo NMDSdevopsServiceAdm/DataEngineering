@@ -10,7 +10,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
 
-EXAMPLE_LOCATION_ID = "1-10000792582"
 LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
 # TODO : test call_api()
@@ -34,7 +33,7 @@ class LocationApiTests(CqcApiIntegrationTests):
         ]
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(EXAMPLE_LOCATION_ID, self.object_type)
+        result = cqc.get_object(self.example_object[CQCL.location_id], self.object_type)
 
         self.assertEqual(
             result[CQCL.location_id], self.example_object[CQCL.location_id]
@@ -76,7 +75,7 @@ class ProviderApiTests(CqcApiIntegrationTests):
         ]
 
     def test_get_object_returns_provider(self):
-        result = cqc.get_object(EXAMPLE_LOCATION_ID, self.object_type)
+        result = cqc.get_object(self.example_object[CQCP.provider_id], self.object_type)
 
         self.assertEqual(
             result[CQCP.location_ids], self.example_object[CQCP.location_ids]
