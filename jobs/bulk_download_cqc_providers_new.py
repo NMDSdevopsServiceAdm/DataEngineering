@@ -1,5 +1,7 @@
 from datetime import date
 
+from boto3.session import boto3
+
 from utils import cqc_api_new as cqc
 from schemas.cqc_provider_schema import NEW_PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
@@ -33,6 +35,13 @@ def main(destination):
     utils.write_to_parquet(df, destination, "append")
 
     print(f"Finished! Files can be found in {destination}")
+
+    lambda_client = boto3.client("lambda")
+    lambda_client.invoke(
+        FunctionName="jf-glue-failure-notification",
+        InvocationType="RequestResponse",
+        Payload='{ "Error": "some error" }',
+    )
 
 
 if __name__ == "__main__":
