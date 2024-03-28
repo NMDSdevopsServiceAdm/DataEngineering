@@ -26,9 +26,9 @@ from utils.features.helper import (
 
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
-    non_res_ind_cqc_features_destination: str,
+    non_res_ascwds_inc_dormancy_ind_cqc_features_destination: str,
 ) -> DataFrame:
-    print("Creating non res features dataset...")
+    print("Creating non res ascwds inc dormancy features dataset...")
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
@@ -109,10 +109,12 @@ def main(
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
-    print(f"Exporting as parquet to {non_res_ind_cqc_features_destination}")
+    print(
+        f"Exporting as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
+    )
     utils.write_to_parquet(
         vectorised_features_df,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
@@ -127,26 +129,28 @@ def convert_col_to_integer_col(df, col_name):
 
 
 if __name__ == "__main__":
-    print("Spark job 'prepare_non_res_ind_cqc_features' starting...")
+    print(
+        "Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' starting..."
+    )
     print(f"Job parameters: {sys.argv}")
 
     (
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
             "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
         ),
         (
-            "--non_res_ind_cqc_features_destination",
+            "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination",
             "A destination directory for outputting non_res_features_ind_cqc_filled_posts",
         ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_non_res_ind_cqc_features' complete")
+    print("Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' complete")

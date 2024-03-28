@@ -2,7 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-import jobs.prepare_non_res_ind_cqc_features_ascwds_inc_dormancy as job
+import jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -24,13 +24,21 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_non_res_ind_cqc_features.vectorise_dataframe")
-    @patch("jobs.prepare_non_res_ind_cqc_features.add_date_diff_into_df")
     @patch(
-        "jobs.prepare_non_res_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.vectorise_dataframe"
     )
-    @patch("jobs.prepare_non_res_ind_cqc_features.column_expansion_with_dict")
-    @patch("jobs.prepare_non_res_ind_cqc_features.add_service_count_to_data")
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_date_diff_into_df"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.column_expansion_with_dict"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_service_count_to_data"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
