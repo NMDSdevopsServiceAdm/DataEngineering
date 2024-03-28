@@ -954,6 +954,13 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         ]
     )
 
+    filter_to_dormancy_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CareHomeFeaturesSchema:

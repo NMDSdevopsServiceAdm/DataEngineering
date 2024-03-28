@@ -33,6 +33,7 @@ def main(
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
     filtered_loc_data = filter_df_to_non_res_only(locations_df)
+    filtered_loc_data = filter_df_to_non_null_dormancy(locations_df)
 
     filtered_data_with_employee_col = convert_col_to_integer_col(
         df=filtered_loc_data,
@@ -122,6 +123,10 @@ def main(
 
 def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "N")
+
+
+def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(IndCQC.dormancy).isNotNull())
 
 
 def convert_col_to_integer_col(df, col_name):

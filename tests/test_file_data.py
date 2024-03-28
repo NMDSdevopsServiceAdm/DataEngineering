@@ -1834,6 +1834,17 @@ class NonResAscwdsWithDormancyFeaturesData(object):
         ("N", CQCLValues.independent),
     ]
 
+    filter_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00002", None),
+        ("1-00003", "N"),
+    ]
+
+    expected_filtered_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00003", "N"),
+    ]
+
 
 @dataclass
 class CareHomeFeaturesData:
