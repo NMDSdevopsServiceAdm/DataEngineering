@@ -135,5 +135,109 @@ class ProviderApiTests(CqcApiTests):
         )
 
 
+class ResponseTests:
+    @patch("requests.get")
+    def test_call_api_handles_200(self, get_mock: Mock):
+        test_response = TestResponse(200, {})
+        get_mock.return_value = test_response
+
+        response_json = cqc.call_api(
+            "test_url", {"test": "body"}, headers_dict={"some": "header"}
+        )
+        self.assertEqual(response_json, {})
+
+    @patch("requests.get")
+    def test_call_api_handles_500(self, get_mock: Mock):
+        test_response = TestResponse(500, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 500" in str(context.exception))
+
+    @patch("requests.get")
+    def test_call_api_handles_400(self, get_mock: Mock):
+        test_response = TestResponse(400, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 400" in str(context.exception))
+
+    @patch("requests.get")
+    def test_call_api_handles_404(self, get_mock: Mock):
+        test_response = TestResponse(404, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 404" in str(context.exception))
+
+    @patch("requests.get")
+    def test_call_api_handles_403_with_headers(self, get_mock: Mock):
+        test_response = TestResponse(403, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+
+        self.assertTrue("API response: 403" in str(context.exception))
+
+    @patch("requests.get")
+    def test_call_api_handles_403_without_headers(self, get_mock: Mock):
+        test_response = TestResponse(403, {})
+        get_mock.return_value = test_response
+
+        with self.assertRaises(Exception) as context:
+            cqc.call_api("test_url", {"test": "body"}, headers_dict=None)
+
+        self.assertTrue(
+            "API response: 403, ensure you have set a User-Agent header"
+            in str(context.exception)
+        )
+
+    @patch("time.sleep", return_value=None)
+    @patch("requests.get")
+    def test_call_api_handles_429_without_headers(
+        self, get_mock: Mock, sleep_mock: Mock
+    ):
+        test_response_timeout = TestResponse(429, {})
+        test_response_success = TestResponse(200, {})
+        get_mock.side_effect = [test_response_timeout, test_response_success]
+
+        response_json = cqc.call_api(
+            "test_url", {"test": "body"}, headers_dict={"some": "header"}
+        )
+
+        sleep_mock.assert_called_once()
+        self.assertEqual(response_json, {})
+
+    @patch("utils.cqc_api_new.get_page_objects")
+    @patch("utils.cqc_api_new.call_api")
+    def test_get_all_objects_returns_correct_generator(
+        self, call_api_mock: Mock, get_page_objects_mock: Mock
+    ):
+        test_response_page_1_json = {"locations": ["1"]}
+        test_response_page_2_json = {"locations": ["2"]}
+        call_api_mock.return_value = {"totalPages": 2}
+        get_page_objects_mock.side_effect = [
+            test_response_page_1_json,
+            test_response_page_2_json,
+        ]
+
+        generator = cqc.get_all_objects(
+            object_type="locations",
+            object_identifier="location_id",
+            partner_code="partner_code",
+        )
+
+        self.assertTrue(isinstance(generator, Generator))
+        self.assertEqual(next(generator), test_response_page_1_json)
+        self.assertEqual(next(generator), test_response_page_2_json)
+
+
 if __name__ == "__main__":
     unittest.main()
