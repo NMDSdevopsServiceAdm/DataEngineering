@@ -44,7 +44,10 @@ class ErrorNotifications(unittest.TestCase):
         self.mock_task_success()
 
         error_notifications.main(
-            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD,
+            {},
+            self.sns_client,
+            self.sf_client,
         )
         self.sf_stubber.assert_no_pending_responses()
 
@@ -61,7 +64,10 @@ class ErrorNotifications(unittest.TestCase):
         self.mock_task_success()
 
         error_notifications.main(
-            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD,
+            {},
+            self.sns_client,
+            self.sf_client,
         )
         self.sf_stubber.assert_no_pending_responses()
 
@@ -76,7 +82,10 @@ class ErrorNotifications(unittest.TestCase):
         self.mock_task_success()
 
         error_notifications.main(
-            EXAMPLE_STATEMACHINE_GENERIC_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            EXAMPLE_STATEMACHINE_GENERIC_FAILURE_PAYLOAD,
+            {},
+            self.sns_client,
+            self.sf_client,
         )
         self.sf_stubber.assert_no_pending_responses()
 
@@ -89,7 +98,10 @@ class ErrorNotifications(unittest.TestCase):
         )
 
         error_notifications.main(
-            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD,
+            {},
+            self.sns_client,
+            self.sf_client,
         )
 
         self.sf_stubber.assert_no_pending_responses()
@@ -112,7 +124,10 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.activate()
 
         error_notifications.main(
-            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            EXAMPLE_STATEMACHINE_GLUE_FAILURE_PAYLOAD,
+            {},
+            self.sns_client,
+            self.sf_client,
         )
 
         self.sf_stubber.assert_no_pending_responses()
@@ -146,6 +161,3 @@ class ErrorNotifications(unittest.TestCase):
             "publish", {"MessageId": MessageIdResponse}, exepcted_params
         )
         self.sns_stubber.activate()
-
-
-
