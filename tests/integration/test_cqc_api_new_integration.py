@@ -12,9 +12,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 
 LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
-# TODO : test call_api()
-# TODO : test get_all_objects()
-
 
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):

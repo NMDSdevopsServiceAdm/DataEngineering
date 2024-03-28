@@ -1,33 +1,14 @@
 import unittest
 from typing import Generator
-
-import mock
 from unittest.mock import Mock, patch, call
 
 from utils import cqc_api_new as cqc
-
-
-class TestResponse:
-    status_code: int = 500
-    content: dict = {}
-
-    def __init__(self, status_code: int, content: dict) -> None:
-        self.status_code = status_code
-        self.content = content
-
-    def json(self):
-        return self.content
-
-
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-
-# TODO : test call_api()
-# TODO : test get_all_objects()
 
 
 class CqcApiTests(unittest.TestCase):
@@ -135,6 +116,18 @@ class ProviderApiTests(CqcApiTests):
                 call(self.provider_id_examples[2], self.provider_object_type),
             ]
         )
+
+
+class TestResponse(CqcApiTests):
+    status_code: int = 500
+    content: dict = {}
+
+    def __init__(self, status_code: int, content: dict) -> None:
+        self.status_code = status_code
+        self.content = content
+
+    def json(self):
+        return self.content
 
     @mock.patch("requests.get")
     def test_call_api_handles_200(self, get_mock: mock.Mock):
