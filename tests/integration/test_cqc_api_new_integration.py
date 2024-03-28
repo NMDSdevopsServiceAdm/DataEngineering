@@ -26,11 +26,11 @@ class LocationApiTests(CqcApiIntegrationTests):
     def setUp(self) -> None:
         super().setUp()
         self.object_type = "locations"
-        self.example_object = [
-            {CQCL.location_id: "1-10000792582"},
-            {CQCL.provider_id: "1-9098203603"},
-            {CQCL.organisation_type: "Location"},
-        ]
+        self.example_object = {
+            CQCL.location_id: "1-10000792582",
+            CQCL.provider_id: "1-9098203603",
+            CQCL.organisation_type: "Location",
+        }
 
     def test_get_object_returns_location(self):
         result = cqc.get_object(self.example_object[CQCL.location_id], self.object_type)
@@ -68,11 +68,11 @@ class ProviderApiTests(CqcApiIntegrationTests):
     def setUp(self) -> None:
         super().setUp()
         self.object_type = "providers"
-        self.example_object = [
-            {CQCP.location_ids: ["1-10000792582"]},
-            {CQCP.provider_id: "1-9098203603"},
-            {CQCP.organisation_type: "Provider"},
-        ]
+        self.example_object = {
+            CQCP.location_ids: ["1-10000792582"],
+            CQCP.provider_id: "1-9098203603",
+            CQCP.organisation_type: "Provider",
+        }
 
     def test_get_object_returns_provider(self):
         result = cqc.get_object(self.example_object[CQCP.provider_id], self.object_type)
