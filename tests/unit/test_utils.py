@@ -359,7 +359,26 @@ class UtilsTests(unittest.TestCase):
 
         self.assertEqual(delimiter, "|")
 
-    def test_generate_s3_datasets_dir_date_path(self):
+    def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
+        self,
+    ):
+        dec_first_21 = datetime(2021, 12, 1)
+        version_number = "2.0.0"
+        dir_path = utils.generate_s3_datasets_dir_date_path(
+            "s3://sfc-main-datasets",
+            "test_domain",
+            "test_dateset",
+            dec_first_21,
+            version_number,
+        )
+        self.assertEqual(
+            dir_path,
+            "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=2.0.0/year=2021/month=12/day=01/import_date=20211201/",
+        )
+
+    def test_generate_s3_datasets_dir_date_path_uses_version_one_when_no_version_number_is_passed(
+        self,
+    ):
         dec_first_21 = datetime(2021, 12, 1)
         dir_path = utils.generate_s3_datasets_dir_date_path(
             "s3://sfc-main-datasets", "test_domain", "test_dateset", dec_first_21

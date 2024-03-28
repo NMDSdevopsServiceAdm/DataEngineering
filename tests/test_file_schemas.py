@@ -71,7 +71,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -458,7 +458,7 @@ class CapacityTrackerDomCareSchema:
 class CQCLocationsSchema:
     full_schema = StructType(
         [
-            *LOCATION_SCHEMA,
+            *OLD_LOCATION_SCHEMA,
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -1151,6 +1151,25 @@ class ModelExtrapolation:
             StructField(IndCQC.first_filled_posts, DoubleType(), True),
             StructField(IndCQC.last_filled_posts, DoubleType(), True),
             StructField(IndCQC.extrapolation_ratio, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelFeatures:
+    vectorise_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("col_1", FloatType(), True),
+            StructField("col_2", IntegerType(), True),
+            StructField("col_3", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_vectorised_feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
