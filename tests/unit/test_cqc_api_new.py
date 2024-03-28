@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch, call
-
+from typing import Generator
 
 from utils import cqc_api_new as cqc
 
