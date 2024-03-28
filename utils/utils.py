@@ -3,7 +3,7 @@ import re
 import csv
 import argparse
 
-from pyspark.sql import SparkSession, DataFrame, Column, Window
+from pyspark.sql import DataFrame, Column, Window, SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.utils import AnalysisException
 import pyspark.sql
@@ -26,7 +26,11 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self) -> SparkSession:
-        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark = (
+            SparkSession.builder.appName("sfc_data_engineering")
+            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.4-spark-3.3")
+            .getOrCreate()
+        )
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInRead=LEGACY")
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
@@ -133,9 +137,7 @@ def read_csv(source, delimiter=","):
 
 
 def read_csv_with_defined_schema(source, schema):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_spss_csv_to_parquet"
-    ).getOrCreate()
+    spark = get_spark()
 
     df = spark.read.schema(schema).option("header", "true").csv(source)
 

@@ -8,7 +8,6 @@ import utils.cleaning_utils as cUtils
 from pyspark.sql.dataframe import DataFrame
 
 import pyspark.sql.functions as F
-from pyspark.sql.utils import AnalysisException
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -254,7 +253,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     list_of_columns = cleaned_locations_df.columns
     for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
         if not column in list_of_columns:
-            raise AnalysisException(
+            raise ValueError(
                 f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
             )
 
