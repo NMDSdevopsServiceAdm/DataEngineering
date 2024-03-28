@@ -67,22 +67,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
-    def test_populate_known_jobs_use_filled_posts_from_current_date(self):
-        test_df = self.spark.createDataFrame(
-            Data.populate_known_jobs_rows, Schemas.populate_known_jobs_schema
-        )
-
-        returned_df = job.populate_estimate_jobs_when_filled_posts_known(test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_populate_known_jobs_rows, Schemas.populate_known_jobs_schema
-        )
-
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_df.count(), expected_df.count())
-        self.assertEqual(expected_data, returned_data)
-
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

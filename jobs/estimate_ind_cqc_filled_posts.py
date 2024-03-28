@@ -1,11 +1,6 @@
 import sys
 
-import pyspark.sql
-from pyspark.sql import functions as F
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-)
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -20,7 +15,7 @@ from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 
 from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
+    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
 )
 
 cleaned_ind_cqc_columns = [
@@ -60,7 +55,7 @@ def main(
     care_home_model_source: str,
     estimated_ind_cqc_destination: str,
     ml_model_metrics_destination: str,
-) -> pyspark.sql.DataFrame:
+) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(
@@ -68,22 +63,11 @@ def main(
     )
     care_home_features_df = utils.read_from_parquet(care_home_features_source)
 
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCQC.estimate_filled_posts, F.lit(None).cast(IntegerType())
-    )
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCQC.estimate_filled_posts_source, F.lit(None).cast(StringType())
-    )
-
     cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
         cleaned_ind_cqc_df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
-    )
-
-    cleaned_ind_cqc_df = populate_estimate_jobs_when_filled_posts_known(
-        cleaned_ind_cqc_df
     )
 
     cleaned_ind_cqc_df = model_primary_service_rolling_average(
@@ -101,19 +85,20 @@ def main(
         ml_model_metrics_destination,
     )
 
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumnRenamed(
-        IndCQC.rolling_average, IndCQC.rolling_average_model
+    cleaned_ind_cqc_df = (
+        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+            cleaned_ind_cqc_df,
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                IndCQC.interpolation_model,
+                IndCQC.extrapolation_model,
+                IndCQC.care_home_model,
+                IndCQC.rolling_average_model,
+            ],
+        )
     )
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.withColumn(
-        IndCQC.estimate_filled_posts,
-        F.when(
-            F.col(IndCQC.estimate_filled_posts).isNotNull(),
-            F.col(IndCQC.estimate_filled_posts),
-        ).otherwise(F.col(IndCQC.rolling_average_model)),
-    )
-    cleaned_ind_cqc_df = update_dataframe_with_identifying_rule(
-        cleaned_ind_cqc_df, IndCQC.rolling_average_model, IndCQC.estimate_filled_posts
-    )
+
+    cleaned_ind_cqc_df = cleaned_ind_cqc_df.drop(IndCQC.unix_time)
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
@@ -125,27 +110,6 @@ def main(
     )
 
     print("Completed estimate independent CQC filled posts")
-
-
-def populate_estimate_jobs_when_filled_posts_known(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
-    df = df.withColumn(
-        IndCQC.estimate_filled_posts,
-        F.when(
-            (
-                F.col(IndCQC.estimate_filled_posts).isNull()
-                & (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
-            ),
-            F.col(IndCQC.ascwds_filled_posts_dedup_clean),
-        ).otherwise(F.col(IndCQC.estimate_filled_posts)),
-    )
-
-    df = update_dataframe_with_identifying_rule(
-        df, "ascwds_filled_posts", IndCQC.estimate_filled_posts
-    )
-
-    return df
 
 
 if __name__ == "__main__":

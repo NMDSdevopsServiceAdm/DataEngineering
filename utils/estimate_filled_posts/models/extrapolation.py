@@ -1,11 +1,5 @@
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
-import pyspark.sql
+from pyspark.sql import DataFrame, functions as F
 
-
-from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
@@ -22,24 +16,12 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
         df, filtered_with_first_and_last_submitted_data_df
     )
 
-    df_with_extrapolated_values = df_with_extrapolated_values.withColumn(
-        IndCqc.estimate_filled_posts,
-        F.when(
-            F.col(IndCqc.estimate_filled_posts).isNotNull(),
-            F.col(IndCqc.estimate_filled_posts),
-        ).otherwise(F.col(IndCqc.extrapolation_model)),
-    )
-    df_with_extrapolated_values = update_dataframe_with_identifying_rule(
-        df_with_extrapolated_values,
-        IndCqc.extrapolation_model,
-        IndCqc.estimate_filled_posts,
-    )
     return df_with_extrapolated_values
 
 
 def filter_to_locations_who_have_a_filled_posts_at_some_point(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+    df: DataFrame,
+) -> DataFrame:
     max_filled_posts_per_location_df = calculate_max_filled_posts_for_each_location(df)
     max_filled_posts_per_location_df = filter_to_known_values_only(
         max_filled_posts_per_location_df
@@ -48,24 +30,20 @@ def filter_to_locations_who_have_a_filled_posts_at_some_point(
     return left_join_on_locationid(max_filled_posts_per_location_df, df)
 
 
-def calculate_max_filled_posts_for_each_location(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def calculate_max_filled_posts_for_each_location(df: DataFrame) -> DataFrame:
     max_filled_posts_for_each_location_df = df.groupBy(IndCqc.location_id).agg(
         F.max(IndCqc.ascwds_filled_posts_dedup_clean).alias(IndCqc.max_filled_posts)
     )
     return max_filled_posts_for_each_location_df
 
 
-def filter_to_known_values_only(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def filter_to_known_values_only(df: DataFrame) -> DataFrame:
     return df.where(F.col(IndCqc.max_filled_posts) > 0.0)
 
 
 def add_filled_posts_and_rolling_average_for_first_and_last_submission(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+    df: DataFrame,
+) -> DataFrame:
     df = add_first_and_last_submission_date_cols(df)
 
     df = add_filled_posts_and_rolling_average_for_specific_time_period(
@@ -85,9 +63,7 @@ def add_filled_posts_and_rolling_average_for_first_and_last_submission(
     return df
 
 
-def add_first_and_last_submission_date_cols(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def add_first_and_last_submission_date_cols(df: DataFrame) -> DataFrame:
     populated_filled_posts_df = df.where(
         F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull()
     )
@@ -103,11 +79,11 @@ def add_first_and_last_submission_date_cols(
 
 
 def add_filled_posts_and_rolling_average_for_specific_time_period(
-    df: pyspark.sql.DataFrame,
+    df: DataFrame,
     unix_time_period: str,
     new_filled_posts_col_name: str,
     new_rolling_average_col_name: str,
-) -> pyspark.sql.DataFrame:
+) -> DataFrame:
     unix_time_df = df.where(F.col(unix_time_period) == F.col(IndCqc.unix_time))
     unix_time_df = unix_time_df.withColumnRenamed(
         IndCqc.ascwds_filled_posts_dedup_clean, new_filled_posts_col_name
@@ -122,9 +98,7 @@ def add_filled_posts_and_rolling_average_for_specific_time_period(
     return left_join_on_locationid(df, unix_time_df)
 
 
-def add_extrapolated_values(
-    df: pyspark.sql.DataFrame, extrapolation_df: pyspark.sql.DataFrame
-) -> pyspark.sql.DataFrame:
+def add_extrapolated_values(df: DataFrame, extrapolation_df: DataFrame) -> DataFrame:
     df_with_extrapolation_models = extrapolation_df.where(
         (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time))
         | (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time))
@@ -145,9 +119,7 @@ def add_extrapolated_values(
     )
 
 
-def create_extrapolation_ratio_column(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def create_extrapolation_ratio_column(df: DataFrame) -> DataFrame:
     df_with_extrapolation_ratio_column = df.withColumn(
         IndCqc.extrapolation_ratio,
         F.when(
@@ -175,9 +147,7 @@ def create_extrapolation_ratio_column(
     return df_with_extrapolation_ratio_column
 
 
-def create_extrapolation_model_column(
-    df: pyspark.sql.DataFrame,
-) -> pyspark.sql.DataFrame:
+def create_extrapolation_model_column(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCqc.extrapolation_model,
         F.when(
@@ -194,7 +164,5 @@ def create_extrapolation_model_column(
     )
 
 
-def left_join_on_locationid(
-    main_df: pyspark.sql.DataFrame, data_to_add_df: pyspark.sql.DataFrame
-) -> pyspark.sql.DataFrame:
+def left_join_on_locationid(main_df: DataFrame, data_to_add_df: DataFrame) -> DataFrame:
     return main_df.join(data_to_add_df, IndCqc.location_id, "left")

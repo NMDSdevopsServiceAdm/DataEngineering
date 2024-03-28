@@ -24,12 +24,14 @@ class TestAscwdsFilledPostsOnlyPermittedValue(unittest.TestCase):
             IndCQC.total_staff_bounded,
             IndCQC.worker_records_bounded,
             IndCQC.ascwds_filled_posts,
+            IndCQC.ascwds_filled_posts_source,
         )
         self.worker_records_only_permitted_df = job.calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
             self.ascwds_total_staff_and_worker_record_df,
             IndCQC.worker_records_bounded,
             IndCQC.total_staff_bounded,
             IndCQC.ascwds_filled_posts,
+            IndCQC.ascwds_filled_posts_source,
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 

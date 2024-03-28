@@ -27,18 +27,6 @@ class TestModelNonResWithPir(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    def test_insert_predictions_into_locations_doesnt_remove_existing_estimates(self):
-        df = insert_predictions_into_locations(
-            self.cleaned_cqc_ind_df,
-            self.predictions_df,
-            IndCqc.care_home_model,
-        )
-
-        expected_location_with_prediction = df.where(
-            df[IndCqc.location_id] == "1-000000004"
-        ).collect()[0]
-        self.assertEqual(expected_location_with_prediction.estimate_filled_posts, 10)
-
     def test_insert_predictions_into_locations_does_so_when_locationid_matches(
         self,
     ):
@@ -56,9 +44,9 @@ class TestModelNonResWithPir(unittest.TestCase):
             df[IndCqc.location_id] == "1-000000003"
         ).collect()[0]
         self.assertAlmostEqual(
-            expected_location_with_prediction.estimate_filled_posts, 56.889999389, 8
+            expected_location_with_prediction.care_home_model, 56.889999389, 8
         )
-        self.assertIsNone(expected_location_without_prediction.estimate_filled_posts)
+        self.assertIsNone(expected_location_without_prediction.care_home_model)
 
     def test_insert_predictions_into_locations_only_inserts_for_matching_snapshots(
         self,
