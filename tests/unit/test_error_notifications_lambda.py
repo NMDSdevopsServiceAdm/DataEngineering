@@ -32,6 +32,7 @@ EXAMPLE_GENERIC_FAILURE_PAYLOAD = {
 
 class ErrorNotifications(unittest.TestCase):
     def setUp(self) -> None:
+        os.environ["SNS_TOPIC_ARN"] = "arn:aws:sns:eu-west-2:1234523454:my-topic"
         self.sns_client = boto3.client("sns", region_name="eu-west-2")
         self.sns_stubber = Stubber(self.sns_client)
         self.sf_client = boto3.client("stepfunctions", region_name="eu-west-2")
@@ -39,7 +40,6 @@ class ErrorNotifications(unittest.TestCase):
 
     def test_sns_called_with_topic_arn(self):
         topic_arn = "arn:aws:sns:eu-west-2:1234523454:my-topic"
-        os.environ["SNS_TOPIC_ARN"] = topic_arn
         self.mock_sns_publish(topic_arn=topic_arn)
         self.mock_task_success()
 
@@ -52,7 +52,6 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_sns_correctly_formats_email_text_for_glue_job_errors(self):
-        os.environ["SNS_TOPIC_ARN"] = "arn:aws:sns:eu-west-2:1234523454:my-topic"
         expected_message = (
             "Execution of the step function notifications-on-pipeline-fail-DataEngineeringPipeline has failed. "
             "The failure occured on glue job notifications-on-pipeline-fail-prepare_locations_job with error: \n\n"
@@ -72,7 +71,6 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_sns_correctly_formats_email_text_for_all_other_errors(self):
-        os.environ["SNS_TOPIC_ARN"] = "arn:aws:sns:eu-west-2:1234523454:my-topic"
         expected_message = (
             "Execution of the step function notifications-on-pipeline-fail-DataEngineeringPipeline has failed with error. \n\n"
             "Crawler with name notifications-on-pipeline-fail-data_engineering_data_engineering has already started (Service: Glue, Status Code: 400, Request ID: e4f91543-dbca-49c9-8c52-fcd5db89efd9) \n\n"
@@ -133,7 +131,6 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_publish_errors_can_handle_non_step_function_errors(self):
-        os.environ["SNS_TOPIC_ARN"] = "arn:aws:sns:eu-west-2:1234523454:my-topic"
         expected_message = {"some generic error"}
         self.mock_sns_publish(expected_message=expected_message)
 

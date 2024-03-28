@@ -129,11 +129,11 @@ def get_error_type(event):
     return BaseError(error)
 
 
-def get_message_client(event) -> MessageClient:
+def get_message_client(event, sns_client=None) -> MessageClient:
     # can look at the event and decide which client to use
     # new clients can be added easily as they only need to
     # implement the send method and inherit from MessageClient
-    return Email()
+    return Email(sns_client)
 
 
 def main(event, _, sns_client=None, sf_client=None):
@@ -143,7 +143,7 @@ def main(event, _, sns_client=None, sf_client=None):
     send_callback = "CallbackToken" in event
     error = get_error_type(event)
     try:
-        client = get_message_client(event)
+        client = get_message_client(event, sns_client)
         response = error.send(client)
         if send_callback:
             success_callback(event["CallbackToken"], response, sf_client)
