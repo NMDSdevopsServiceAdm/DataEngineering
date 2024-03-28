@@ -181,7 +181,7 @@
                 {
                   "StartAt": "Run non res ascwds inc dormancy features job",
                   "States": {
-                    "Run non res features job": {
+                    "Run non res ascwds inc dormancy features job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
