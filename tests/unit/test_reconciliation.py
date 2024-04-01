@@ -9,7 +9,6 @@ import jobs.reconciliation as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 
@@ -28,12 +27,9 @@ class ReconciliationTests(unittest.TestCase):
             Data.dates_to_use_rows, Schemas.dates_to_use_schema
         )
 
-        (
-            most_recent_cqc_location_import_date,
-            first_of_most_recent_month,
-            first_of_previous_month,
-        ) = job.collect_dates_to_use(input_df)
+        first_of_most_recent_month, first_of_previous_month = job.collect_dates_to_use(
+            input_df
+        )
 
-        self.assertEqual(most_recent_cqc_location_import_date, date(2024, 3, 28))
         self.assertEqual(first_of_most_recent_month, date(2024, 3, 1))
         self.assertEqual(first_of_previous_month, date(2024, 2, 1))

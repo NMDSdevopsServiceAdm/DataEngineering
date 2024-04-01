@@ -12,18 +12,9 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     last_logged_in_date: str = "last_logged_in_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
-    parent_sub_or_single: str = "parent_sub_or_single"
-    ownership: str = "ownership"
 
 
 @dataclass
 class AscwdsWorkplaceCleanedValues:
     purge_keep: str = "keep"
     purge_delete: str = "purge"
-    parent: str = "parent"
-    subsidiary: str = "subsidiary"
-    single: str = "single"
-    workplace: str = "workplace"
-    potentials: str = "potentials"
-    singles_and_subs: str = "singles_and_subs"
-    parents: str = "parents"
