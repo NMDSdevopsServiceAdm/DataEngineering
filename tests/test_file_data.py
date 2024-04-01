@@ -1537,6 +1537,14 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ReconciliationData:
+    dates_to_use_rows = [
+        ("1-001", date(2024, 3, 28)),
+        ("1-002", date(2023, 1, 1)),
+    ]
+
+
+@dataclass
 class FilterAscwdsFilledPostsData:
     input_rows = [
         ("01", date(2023, 1, 1), "Y", 25, 1.0),

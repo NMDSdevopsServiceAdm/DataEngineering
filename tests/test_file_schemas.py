@@ -817,6 +817,16 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ReconciliationSchema:
+    dates_to_use_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+
+@dataclass
 class FilterAscwdsFilledPostsSchema:
     input_schema = StructType(
         [

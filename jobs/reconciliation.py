@@ -1,6 +1,8 @@
 import sys
-import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame
+
+from pyspark.sql import DataFrame, functions as F
+from typing import Tuple
+from datetime import date
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -62,9 +64,15 @@ def main(
         cqc_location_api_source, CQCLClean.location_id
     )
 
-    deregistered_locations_in_latest_month_df = (
-        filter_to_locations_deregistered_in_latest_month(deregistered_locations_df)
-    )
+    (
+        most_recent_cqc_location_import_date,
+        first_of_most_recent_month,
+        first_of_previous_month,
+    ) = collect_dates_to_use(deregistered_locations_df)
+
+    # deregistered_locations_in_previous_month_df = (
+    #     filter_to_locations_deregistered_in_latest_month(deregistered_locations_df)
+    # )
 
     latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
         ascwds_workplace_df
@@ -150,15 +158,28 @@ def filter_df_to_maximum_value_in_column(
     return df.filter(F.col(column_to_filter_on) == max_date)
 
 
-def filter_to_locations_deregistered_in_latest_month(
+def collect_dates_to_use(
     deregistered_df: DataFrame,
-) -> DataFrame:
-    latest_date = deregistered_df.agg(
-        F.max(CQCLClean.cqc_location_import_date)
-    ).collect()[0][0]
-    latest_month = F.trunc(latest_date, "month")
-    return deregistered_df.filter(
-        F.col(CQCLClean.cqc_location_import_date) >= latest_month
+) -> Tuple[date, date, date]:
+    dates_df = deregistered_df.select(
+        F.max(CQCLClean.cqc_location_import_date).alias("most_recent")
+    )
+    dates_df = dates_df.withColumn(
+        "start_of_month", F.trunc(F.col("most_recent"), "mon")
+    )
+    dates_df = dates_df.withColumn(
+        "start_of_previous_month", F.add_months(F.col("start_of_month"), -1)
+    )
+
+    dates_collected = dates_df.collect()
+    most_recent_cqc_location_import_date = dates_collected[0]["most_recent"]
+    first_of_most_recent_month = dates_collected[0]["start_of_month"]
+    first_of_previous_month = dates_collected[0]["start_of_previous_month"]
+
+    return (
+        most_recent_cqc_location_import_date,
+        first_of_most_recent_month,
+        first_of_previous_month,
     )
 
 
