@@ -90,24 +90,18 @@ def main(
         )
     )
 
-    reconciliation_df = join_deregistered_cqc_locations_into_ascwds(
+    ascwds_with_deregistration_date_df = join_deregistered_cqc_locations_into_ascwds(
         latest_ascwds_workplace_df, locations_deregistered_before_most_recent_month_df
     )
 
-    incorrect_or_missing_locationid_df = (
-        filter_to_locations_with_incorrect_or_missing_locationids(reconciliation_df)
-    )
-
     create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
-        reconciliation_df,
-        incorrect_or_missing_locationid_df,
+        ascwds_with_deregistration_date_df,
         first_of_previous_month,
         reconciliation_single_and_subs_destination,
     )
 
     create_reconciliation_outputs_for_ascwds_parent_accounts(
-        reconciliation_df,
-        incorrect_or_missing_locationid_df,
+        ascwds_with_deregistration_date_df,
         first_of_previous_month,
         reconciliation_parents_destination,
     )
@@ -278,27 +272,19 @@ def remove_ascwds_head_office_accounts(df: DataFrame) -> DataFrame:
 
 def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
     reconciliation_df: DataFrame,
-    incorrect_or_missing_locationid_df: DataFrame,
     first_of_previous_month: date,
     destination: str,
 ):
-    single_sub_deregistered_df = (
-        create_singles_and_subsidiary_deregistered_df_with_description_col(
-            reconciliation_df, first_of_previous_month
-        )
+    singles_and_subs_df = reconciliation_df.where(
+        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
     )
-    single_sub_incorrect_or_missing_locationid_df = create_singles_and_subsidiary_incorrect_or_missing_locationid_with_description_col(
-        incorrect_or_missing_locationid_df
+    singles_and_subs_df = remove_deregistration_dates_before_previous_month(
+        singles_and_subs_df, first_of_previous_month
     )
-
-    singles_and_subs_df = single_sub_deregistered_df.unionByName(
-        single_sub_incorrect_or_missing_locationid_df
-    )
-
+    singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = singles_and_subs_df.withColumn(
         ReconColumn.subject, F.lit("CQC Reconcilliation Work")
     )
-
     singles_and_subs_output_df = (
         create_missing_columns_required_for_output_and_reorder_for_saving(
             singles_and_subs_df
@@ -307,31 +293,156 @@ def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
     write_to_csv(singles_and_subs_output_df, destination)
 
 
-def create_singles_and_subsidiary_deregistered_df_with_description_col(
-    df: DataFrame, first_of_previous_month: date
+def remove_deregistration_dates_before_previous_month(
+    df: DataFrame,
+    first_of_previous_month: date,
 ) -> DataFrame:
-    df = df.where(F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
-    df = df.where(F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
-    return df.withColumn(
-        ReconColumn.description, F.lit("Potential (new): Deregistered ID")
+    return df.where(
+        (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
+        | F.col(CQCLClean.deregistration_date).isNull()
     )
 
 
-def create_singles_and_subsidiary_incorrect_or_missing_locationid_with_description_col(
-    df: DataFrame,
-) -> DataFrame:
-    df = df.where(F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
-    return df.withColumn(ReconColumn.description, F.lit("Potential (new): Regtype"))
+def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
+    return df.withColumn(
+        ReconColumn.description,
+        F.when(
+            F.col(CQCLClean.deregistration_date).isNotNull(),
+            F.lit("Potential (new): Deregistered ID"),
+        ).otherwise(F.lit("Potential (new): Regtype")),
+    )
 
 
 def create_reconciliation_outputs_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
-    incorrect_or_missing_locationid_df: DataFrame,
     first_of_previous_month: date,
     destination: str,
 ):
-    # write_to_csv(parents_output_df, destination)
-    return None
+    parents_dereg_df = reconciliation_df.where(
+        F.col(ReconColumn.potentials) == ReconValues.parents
+    )
+
+    parents_dereg_df = parents_dereg_df.withColumn(
+        "issue_category",
+        F.when(
+            (F.col(CQCLClean.deregistration_date) >= first_of_previous_month),
+            F.lit("new"),
+        )
+        .when(
+            (F.col(CQCLClean.deregistration_date) < first_of_previous_month),
+            F.lit("old"),
+        )
+        .otherwise(F.lit("missing_or_incorrect")),
+    )
+
+    parents_dereg_df = parents_dereg_df.withColumn(
+        "id_for_parent_account",
+        F.when(
+            (F.col("isparent") == 1),
+            F.col("establishmentid"),
+        ).otherwise(F.col("parentid")),
+    )
+
+    unique_parentids_df = parents_dereg_df.select(
+        F.col("id_for_parent_account")
+    ).dropDuplicates(["id_for_parent_account"])
+
+    parent_recon_df = unique_parentids_df.join(
+        parents_dereg_df, "id_for_parent_account", "left"
+    )
+
+    new_issues_parents_df = parent_recon_df.where(F.col("issue_category") == "new")
+    old_issues_parents_df = parent_recon_df.where(F.col("issue_category") == "old")
+    missing_or_incorrect_parents_df = parent_recon_df.where(
+        F.col("issue_category") == "missing_or_incorrect"
+    )
+
+    new_issues_parents_df = unique_parents_with_array_of_nmdsids(
+        new_issues_parents_df, "new_potential_subs"
+    )
+    old_issues_parents_df = unique_parents_with_array_of_nmdsids(
+        old_issues_parents_df, "old_potential_subs"
+    )
+    missing_or_incorrect_parents_df = unique_parents_with_array_of_nmdsids(
+        missing_or_incorrect_parents_df, "missing_or_incorrect_potential_subs"
+    )
+
+    ascwds_parents_df = ascwds_df.where(F.col("ParentSubSingle") == "Parent")
+
+    unique_parentids_df = unique_parentids_df.withColumnRenamed(
+        "id_for_parent_account", "establishmentid"
+    )
+
+    unique_parentids_df = unique_parentids_df.join(
+        ascwds_parents_df, "establishmentid", "left"
+    )
+
+    new_issues_parents_df = new_issues_parents_df.withColumnRenamed(
+        "id_for_parent_account", "establishmentid"
+    )
+    old_issues_parents_df = old_issues_parents_df.withColumnRenamed(
+        "id_for_parent_account", "establishmentid"
+    )
+    missing_or_incorrect_parents_df = missing_or_incorrect_parents_df.withColumnRenamed(
+        "id_for_parent_account", "establishmentid"
+    )
+
+    parents_dereg_df = unique_parentids_df.join(
+        new_issues_parents_df, "establishmentid", "left"
+    )
+    parents_dereg_df = parents_dereg_df.join(
+        old_issues_parents_df, "establishmentid", "left"
+    )
+    parents_dereg_df = parents_dereg_df.join(
+        missing_or_incorrect_parents_df, "establishmentid", "left"
+    )
+
+    parents_dereg_df = parents_dereg_df.withColumn(
+        "Description",
+        F.concat(
+            F.when(
+                F.col("new_potential_subs").isNotNull(),
+                F.concat(F.col("new_potential_subs"), F.lit(" ")),
+            ).otherwise(F.lit("")),
+            F.when(
+                F.col("old_potential_subs").isNotNull(),
+                F.concat(F.col("old_potential_subs"), F.lit(" ")),
+            ).otherwise(F.lit("")),
+            F.when(
+                F.col("missing_or_incorrect_potential_subs").isNotNull(),
+                F.concat(F.col("missing_or_incorrect_potential_subs"), F.lit(" ")),
+            ).otherwise(F.lit("")),
+        ),
+    )
+
+    parents_dereg_df = parents_dereg_df.withColumn(
+        "Subject", F.lit("CQC Reconcilliation Work - Parent")
+    )
+
+    parents_output_df = (
+        create_missing_columns_required_for_output_and_reorder_for_saving(
+            parents_dereg_df
+        )
+    )
+    write_to_csv(parents_output_df, destination)
+
+
+def unique_parents_with_array_of_nmdsids(df, new_col_name):
+    subs_at_parent_df = df.select("id_for_parent_account", "nmdsid")
+    subs_at_parent_df = (
+        subs_at_parent_df.groupby("id_for_parent_account")
+        .agg(F.collect_set("nmdsid"))
+        .withColumnRenamed("collect_set(nmdsid)", new_col_name)
+    )
+
+    subs_at_parent_df = subs_at_parent_df.withColumn(
+        new_col_name, F.concat_ws(", ", F.col(new_col_name))
+    )
+    subs_at_parent_df = subs_at_parent_df.withColumn(
+        new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
+    )
+
+    return subs_at_parent_df
 
 
 if __name__ == "__main__":
