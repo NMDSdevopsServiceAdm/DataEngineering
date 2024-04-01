@@ -16,16 +16,12 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedValues as AWPValues,
 )
 
-cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.deregistration_date,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
@@ -41,6 +37,10 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.establishment_name,
     AWPClean.master_update_date,
     AWPClean.region_id,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 
 
@@ -64,6 +64,15 @@ def main(
         cqc_location_api_source, CQCLClean.location_id
     )
 
+    latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
+        ascwds_workplace_df
+    )
+
+    # get all locationids that have ever existed
+    entire_location_id_history_df = get_all_location_ids_which_have_ever_existed(
+        all_location_ids_df
+    )
+
     (
         most_recent_cqc_location_import_date,
         first_of_most_recent_month,
@@ -74,16 +83,7 @@ def main(
     #     filter_to_locations_deregistered_in_latest_month(deregistered_locations_df)
     # )
 
-    latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
-        ascwds_workplace_df
-    )
-
     # join in ASCWDS data (import_date and locationid)
-
-    # get all locationids that have ever existed
-    entire_location_id_history_df = get_all_location_ids_which_have_ever_existed(
-        all_location_ids_df
-    )
 
     # all the formatting steps for Support team
 
@@ -145,6 +145,24 @@ def prepare_latest_cleaned_ascwds_workforce_data(
             F.lit(AWPValues.parent),
         ).otherwise(F.lit(AWPValues.workplace)),
     ).drop(AWPClean.parent_permission)
+
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumn(
+        AWPValues.potentials,
+        F.when(
+            (
+                (
+                    (F.col(AWPClean.parent_sub_or_single) == AWPValues.single)
+                    | (F.col(AWPClean.parent_sub_or_single) == AWPValues.subsidiary)
+                )
+                & (F.col(AWPClean.ownership) == AWPValues.workplace)
+            ),
+            F.lit(AWPValues.singles_and_subs),
+        ).otherwise(F.lit(AWPValues.parents)),
+    )
+
+    latest_ascwds_workplace_df = latest_ascwds_workplace_df.withColumnRenamed(
+        AWPClean.location_id, CQCLClean.location_id
+    )
 
     return latest_ascwds_workplace_df
 

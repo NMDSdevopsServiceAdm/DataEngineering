@@ -24,3 +24,6 @@ class AscwdsWorkplaceCleanedValues:
     subsidiary: str = "subsidiary"
     single: str = "single"
     workplace: str = "workplace"
+    potentials: str = "potentials"
+    singles_and_subs: str = "singles_and_subs"
+    parents: str = "parents"
