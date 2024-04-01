@@ -38,6 +38,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.nmds_id,
     AWPClean.is_parent,
     AWPClean.parent_id,
+    AWPClean.organisation_id,
     AWPClean.parent_permission,
     AWPClean.establishment_type,
     AWPClean.registration_type,
@@ -318,121 +319,82 @@ def create_reconciliation_outputs_for_ascwds_parent_accounts(
     first_of_previous_month: date,
     destination: str,
 ):
-    parents_dereg_df = reconciliation_df.where(
+    parents_df = reconciliation_df.where(
         F.col(ReconColumn.potentials) == ReconValues.parents
     )
+    unique_parentids_df = parents_df.select(
+        F.col(AWPClean.organisation_id)
+    ).dropDuplicates()
 
-    parents_dereg_df = parents_dereg_df.withColumn(
-        "issue_category",
-        F.when(
-            (F.col(CQCLClean.deregistration_date) >= first_of_previous_month),
-            F.lit("new"),
-        )
-        .when(
-            (F.col(CQCLClean.deregistration_date) < first_of_previous_month),
-            F.lit("old"),
-        )
-        .otherwise(F.lit("missing_or_incorrect")),
+    new_issues_df = parents_df.where(
+        F.col(CQCLClean.deregistration_date) >= first_of_previous_month
     )
-
-    parents_dereg_df = parents_dereg_df.withColumn(
-        "id_for_parent_account",
-        F.when(
-            (F.col("isparent") == 1),
-            F.col("establishmentid"),
-        ).otherwise(F.col("parentid")),
+    old_issues_df = parents_df.where(
+        F.col(CQCLClean.deregistration_date) < first_of_previous_month
+    )
+    missing_or_incorrect_df = parents_df.where(
+        F.col(CQCLClean.deregistration_date).isNull()
     )
 
-    unique_parentids_df = parents_dereg_df.select(
-        F.col("id_for_parent_account")
-    ).dropDuplicates(["id_for_parent_account"])
-
-    parent_recon_df = unique_parentids_df.join(
-        parents_dereg_df, "id_for_parent_account", "left"
+    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+        new_issues_df, ReconColumn.new_potential_subs, unique_parentids_df
+    )
+    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+        old_issues_df, ReconColumn.old_potential_subs, unique_parentids_df
+    )
+    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+        missing_or_incorrect_df,
+        ReconColumn.missing_or_incorrect_potential_subs,
+        unique_parentids_df,
     )
 
-    new_issues_parents_df = parent_recon_df.where(F.col("issue_category") == "new")
-    old_issues_parents_df = parent_recon_df.where(F.col("issue_category") == "old")
-    missing_or_incorrect_parents_df = parent_recon_df.where(
-        F.col("issue_category") == "missing_or_incorrect"
-    )
-
-    new_issues_parents_df = unique_parents_with_array_of_nmdsids(
-        new_issues_parents_df, "new_potential_subs"
-    )
-    old_issues_parents_df = unique_parents_with_array_of_nmdsids(
-        old_issues_parents_df, "old_potential_subs"
-    )
-    missing_or_incorrect_parents_df = unique_parents_with_array_of_nmdsids(
-        missing_or_incorrect_parents_df, "missing_or_incorrect_potential_subs"
-    )
-
-    ascwds_parents_df = ascwds_df.where(F.col("ParentSubSingle") == "Parent")
-
-    unique_parentids_df = unique_parentids_df.withColumnRenamed(
-        "id_for_parent_account", "establishmentid"
-    )
-
-    unique_parentids_df = unique_parentids_df.join(
-        ascwds_parents_df, "establishmentid", "left"
-    )
-
-    new_issues_parents_df = new_issues_parents_df.withColumnRenamed(
-        "id_for_parent_account", "establishmentid"
-    )
-    old_issues_parents_df = old_issues_parents_df.withColumnRenamed(
-        "id_for_parent_account", "establishmentid"
-    )
-    missing_or_incorrect_parents_df = missing_or_incorrect_parents_df.withColumnRenamed(
-        "id_for_parent_account", "establishmentid"
-    )
-
-    parents_dereg_df = unique_parentids_df.join(
-        new_issues_parents_df, "establishmentid", "left"
-    )
-    parents_dereg_df = parents_dereg_df.join(
-        old_issues_parents_df, "establishmentid", "left"
-    )
-    parents_dereg_df = parents_dereg_df.join(
-        missing_or_incorrect_parents_df, "establishmentid", "left"
-    )
-
-    parents_dereg_df = parents_dereg_df.withColumn(
-        "Description",
+    unique_parentids_df = unique_parentids_df.withColumn(
+        ReconColumn.description,
         F.concat(
             F.when(
-                F.col("new_potential_subs").isNotNull(),
-                F.concat(F.col("new_potential_subs"), F.lit(" ")),
+                F.col(ReconColumn.new_potential_subs).isNotNull(),
+                F.concat(F.col(ReconColumn.new_potential_subs), F.lit(" ")),
             ).otherwise(F.lit("")),
             F.when(
-                F.col("old_potential_subs").isNotNull(),
-                F.concat(F.col("old_potential_subs"), F.lit(" ")),
+                F.col(ReconColumn.old_potential_subs).isNotNull(),
+                F.concat(F.col(ReconColumn.old_potential_subs), F.lit(" ")),
             ).otherwise(F.lit("")),
             F.when(
-                F.col("missing_or_incorrect_potential_subs").isNotNull(),
-                F.concat(F.col("missing_or_incorrect_potential_subs"), F.lit(" ")),
+                F.col(ReconColumn.missing_or_incorrect_potential_subs).isNotNull(),
+                F.concat(
+                    F.col(ReconColumn.missing_or_incorrect_potential_subs), F.lit(" ")
+                ),
             ).otherwise(F.lit("")),
         ),
     )
 
-    parents_dereg_df = parents_dereg_df.withColumn(
-        "Subject", F.lit("CQC Reconcilliation Work - Parent")
+    unique_parentids_df = unique_parentids_df.withColumn(
+        ReconColumn.subject, F.lit("CQC Reconcilliation Work - Parent")
     )
 
     parents_output_df = (
         create_missing_columns_required_for_output_and_reorder_for_saving(
-            parents_dereg_df
+            unique_parentids_df
         )
     )
     write_to_csv(parents_output_df, destination)
 
 
-def unique_parents_with_array_of_nmdsids(df, new_col_name):
-    subs_at_parent_df = df.select("id_for_parent_account", "nmdsid")
+def join_array_of_nmdsids_into_unique_orgid_df(
+    df_with_issues: DataFrame, new_col_name: str, unique_df: DataFrame
+) -> DataFrame:
+    unique_issues_parents_df = unique_parents_with_array_of_nmdsids(
+        df_with_issues, new_col_name
+    )
+    return unique_df.join(unique_issues_parents_df, AWPClean.organisation_id, "left")
+
+
+def unique_parents_with_array_of_nmdsids(df: DataFrame, new_col_name: str) -> DataFrame:
+    subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
     subs_at_parent_df = (
-        subs_at_parent_df.groupby("id_for_parent_account")
-        .agg(F.collect_set("nmdsid"))
-        .withColumnRenamed("collect_set(nmdsid)", new_col_name)
+        subs_at_parent_df.groupby(AWPClean.organisation_id)
+        .agg(F.collect_set(AWPClean.nmds_id))
+        .alias(new_col_name)
     )
 
     subs_at_parent_df = subs_at_parent_df.withColumn(
