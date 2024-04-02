@@ -229,6 +229,26 @@
           }
         },
         {
+          "StartAt": "Run reconciliation job",
+          "States": {
+            "Run reconciliation job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${reconciliation_job_name}",
+                "Arguments": {
+                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                  "--deregistered_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=deregistered_locations/",
+                  "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs/",
+                  "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents/"
+                }
+              },
+              "Next": "Run clean ind cqc data job"
+            }
+          }
+        },
+        {
           "StartAt": "Run ascwds crawler",
           "States": {
             "Run ascwds crawler": {
