@@ -15,9 +15,12 @@ def write_to_csv(df: DataFrame, output_dir: str):
 def create_missing_columns_required_for_output_and_reorder_for_saving(
     df: DataFrame,
 ) -> DataFrame:
+    df = df.withColumnRenamed(AWPClean.establishment_type, Recon.sector)
+    df = df.withColumnRenamed(AWPClean.region_id, Recon.sfc_region)
+    df = df.withColumnRenamed(AWPClean.establishment_name, Recon.name)
     df = (
-        df.withColumn(Recon.nmds, AWPClean.nmds_id)
-        .withColumn(Recon.workplace_id, AWPClean.nmds_id)
+        df.withColumn(Recon.nmds, F.col(AWPClean.nmds_id))
+        .withColumn(Recon.workplace_id, F.col(AWPClean.nmds_id))
         .withColumn(Recon.requester_name, F.concat(Recon.nmds, F.lit(" "), Recon.name))
         .withColumn(
             Recon.requester_name_2, F.concat(Recon.nmds, F.lit(" "), Recon.name)
@@ -35,8 +38,6 @@ def create_missing_columns_required_for_output_and_reorder_for_saving(
         .withColumn(Recon.item, F.lit("CQC work"))
         .withColumn(Recon.phone, F.lit(0))
     )
-    df = df.withColumnRenamed(AWPClean.establishment_type, Recon.sector)
-    df = df.withColumnRenamed(AWPClean.region_id, Recon.sfc_region)
 
     return df.selectExpr(
         Recon.subject,
