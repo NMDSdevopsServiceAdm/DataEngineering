@@ -5,9 +5,6 @@ from typing import Tuple
 from datetime import date
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -24,8 +21,6 @@ from utils.reconciliation_utils.utils import (
     create_missing_columns_required_for_output_and_reorder_for_saving,
     write_to_csv,
 )
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
@@ -45,12 +40,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.location_id,
     AWPClean.main_service_id,
     AWPClean.establishment_name,
-    AWPClean.master_update_date,
     AWPClean.region_id,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
 ]
 
 

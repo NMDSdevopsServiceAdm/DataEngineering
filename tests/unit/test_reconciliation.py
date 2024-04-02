@@ -8,10 +8,6 @@ from datetime import date
 import jobs.reconciliation as job
 from utils import utils
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-
 from tests.test_file_data import ReconciliationData as Data
 from tests.test_file_schemas import ReconciliationSchema as Schemas
 
