@@ -19,8 +19,8 @@ def create_missing_columns_required_for_output_and_reorder_for_saving(
     df = df.withColumnRenamed(AWPClean.region_id, Recon.sfc_region)
     df = df.withColumnRenamed(AWPClean.establishment_name, Recon.name)
     df = (
-        df.withColumn(Recon.nmds, F.col(AWPClean.nmds_id))
-        .withColumn(Recon.workplace_id, F.col(AWPClean.nmds_id))
+        df.withColumn(Recon.nmds, F.lit(AWPClean.nmds_id))
+        .withColumn(Recon.workplace_id, F.lit(AWPClean.nmds_id))
         .withColumn(Recon.requester_name, F.concat(Recon.nmds, F.lit(" "), Recon.name))
         .withColumn(
             Recon.requester_name_2, F.concat(Recon.nmds, F.lit(" "), Recon.name)
