@@ -68,7 +68,7 @@ class GetPageObjectsTests(CqcApiTests):
 
         mock_call_api.assert_called_once_with(
             self.test_url,
-            {"page": 1, "perPage": 500, "partnerCode": "PARTNERCODE"},
+            {"page": 1, "perPage": 500},
             headers_dict={"User-Agent": "SkillsForCare"},
         )
 
