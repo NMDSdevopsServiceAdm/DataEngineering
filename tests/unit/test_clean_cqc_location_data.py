@@ -1,9 +1,8 @@
 import unittest
 import warnings
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, patch
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
-from dataclasses import asdict
 
 import jobs.clean_cqc_location_data as job
 
