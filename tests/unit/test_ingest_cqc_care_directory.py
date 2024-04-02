@@ -2,7 +2,7 @@ import unittest
 import shutil
 from unittest.mock import Mock, patch
 
-from pyspark.sql import SparkSession, Row
+from pyspark.sql import Row
 
 from utils import utils
 from utils.column_names.raw_data_files.cqc_care_directory_columns import (
@@ -61,9 +61,7 @@ class CQC_Care_Directory_Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.spark = SparkSession.builder.appName(
-            "test_ingest_cqc_care_directory"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
         generate_raw_cqc_care_directory_csv_file(
             self.TEST_RAW_CQC_CARE_DIRECTORY_CSV_FILE
         )

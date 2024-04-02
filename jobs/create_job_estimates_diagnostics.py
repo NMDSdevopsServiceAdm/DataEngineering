@@ -37,9 +37,7 @@ def main(
     residuals_destination,
     description_of_change,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_job_estimate_diagnostics"
-    ).getOrCreate()
+    spark = utils.get_spark()
     print("Creating diagnostics for job estimates")
 
     now = datetime.now()

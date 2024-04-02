@@ -3,8 +3,6 @@ import warnings
 from unittest.mock import patch
 from datetime import date
 
-from pyspark.sql import SparkSession
-
 
 from tests.test_helpers import remove_file_path
 from tests.test_file_schemas import (
@@ -21,6 +19,7 @@ from utils.estimate_filled_posts.column_names import (
     ESTIMATE_JOB_COUNT,
     SNAPSHOT_DATE,
 )
+from utils import utils
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
@@ -43,9 +42,7 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
     RESIDUALS_DESTINATION = "tests/test_data/tmp/residuals/"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_create_job_estimates_diagnostics"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

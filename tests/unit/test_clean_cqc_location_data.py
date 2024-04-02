@@ -4,11 +4,8 @@ from unittest.mock import Mock, patch, call
 import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 from dataclasses import asdict
-from pyspark.sql.utils import AnalysisException
-
 
 import jobs.clean_cqc_location_data as job
-
 
 from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
@@ -397,7 +394,7 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
         self,
     ):
         COLUMN_NOT_IN_DF = "not_a_column"
-        with self.assertRaises(AnalysisException) as context:
+        with self.assertRaises(ValueError) as context:
             job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
                 self.expected_split_registered_df, COLUMN_NOT_IN_DF
             )
@@ -424,7 +421,7 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
         ]
 
         for test_data in list_of_test_tuples:
-            with self.assertRaises(AnalysisException) as context:
+            with self.assertRaises(ValueError) as context:
                 job.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
                     test_data[0]
                 )

@@ -4,7 +4,7 @@ import unittest
 from utils import cqc_api as cqc
 
 
-class TestCQCLocationAPI(unittest.TestCase):
+class TestCQCAPI(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -17,7 +17,7 @@ class TestCQCLocationAPI(unittest.TestCase):
 
         location_body = {"locationId": "test_id"}
 
-        result = cqc.get_object("test_id", "locations")
+        result = cqc.get_object("test_id", "locations", "PARTNERCODE")
         self.assertEqual(result, location_body)
 
     @mock.patch("utils.cqc_api.call_api")
@@ -33,15 +33,20 @@ class TestCQCLocationAPI(unittest.TestCase):
 
         mock_get_object.return_value({"locationId": "get_location_return_id"})
 
-        result = cqc.get_page_objects("test_url", 1, "locations", "locationId")
+        result = cqc.get_page_objects(
+            "test_url", 1, "locations", "locationId", "PARTNERCODE"
+        )
 
-        mock_call_api.assert_called_once_with("test_url", {"page": 1, "perPage": 500})
+        mock_call_api.assert_called_once_with(
+            "test_url",
+            {"page": 1, "perPage": 500, "partnerCode": "PARTNERCODE"},
+        )
 
         mock_get_object.assert_has_calls(
             [
-                mock.call("test_id", "locations"),
-                mock.call("test_id_2", "locations"),
-                mock.call("test_id_3", "locations"),
+                mock.call("test_id", "locations", "PARTNERCODE"),
+                mock.call("test_id_2", "locations", "PARTNERCODE"),
+                mock.call("test_id_3", "locations", "PARTNERCODE"),
             ]
         )
 

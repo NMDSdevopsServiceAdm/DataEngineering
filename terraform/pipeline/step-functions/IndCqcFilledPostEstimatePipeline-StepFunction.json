@@ -115,7 +115,16 @@
         }
       ],
       "Next": "Silver to Gold Transformation Layer",
-      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer"
+      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
     },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
@@ -136,19 +145,56 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Run clean ind cqc data job"
+              "Next": "Run data validation in parallel"
             },
-            "Run clean ind cqc data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ind_cqc_filled_posts_job_name}",
-                "Arguments": {
-                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+            "Run data validation in parallel": {
+              "Type": "Parallel",
+              "Next": "Feature engineering",
+              "Branches": [
+                {
+                  "StartAt": "Run clean ind cqc data job",
+                  "States": {
+                    "Run clean ind cqc data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${clean_ind_cqc_filled_posts_job_name}",
+                        "Arguments": {
+                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                          "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run validate merged ind cqc data job",
+                  "States": {
+                    "Run validate merged ind cqc data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${validate_merged_ind_cqc_data_job_name}",
+                        "Arguments": {
+                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
+                        }
+                      },
+                      "Next": "Run data validation crawler"
+                    },
+                    "Run data validation crawler": {
+                      "Type": "Task",
+                      "Parameters": {
+                        "Name": "${data_validation_reports_crawler_name}"
+                      },
+                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                      "End": true
+                    }
+                  }
                 }
-              },
-              "Next": "Feature engineering"
+              ]
             },
             "Feature engineering": {
               "Type": "Parallel",
@@ -198,7 +244,7 @@
                 "Arguments": {
                   "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
                   "--care_home_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/",
-                  "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/",
+                  "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/3.1.0/",
                   "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
                   "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }
@@ -211,9 +257,9 @@
               "Parameters": {
                 "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
                 "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
                   "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
                 }
               },
               "Next": "run ind crawler"
@@ -288,7 +334,35 @@
           }
         }
       ],
-      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer"
+      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Publish error notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
     },
     "Success": {
       "Type": "Succeed"

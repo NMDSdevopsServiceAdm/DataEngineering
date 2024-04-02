@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from pyspark.sql import SparkSession
+
 from pyspark.sql.types import (
     StructType,
     StructField,
@@ -9,6 +9,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
+from utils import utils
 import utils.direct_payments_utils.estimate_direct_payments.create_summary_table as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -17,9 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestCreateSummaryTable(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_create_summary_table"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
 

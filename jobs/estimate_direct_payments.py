@@ -1,4 +1,3 @@
-from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
 from utils import utils
@@ -24,9 +23,7 @@ def main(
     destination,
     summary_destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = utils.get_spark()
 
     direct_payments_df: DataFrame = spark.read.parquet(
         direct_payments_merged_source

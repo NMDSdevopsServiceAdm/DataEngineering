@@ -71,7 +71,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -377,10 +377,88 @@ class ONSData:
 
 
 @dataclass
+class CapacityTrackerCareHomeSchema:
+    sample_schema = StructType(
+        [
+            StructField("local_authority", StringType(), True),
+            StructField("location", StringType(), True),
+            StructField("parentorganisation", StringType(), True),
+            StructField("lrf", StringType(), True),
+            StructField("localauthority", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("icb", StringType(), True),
+            StructField("subicb", StringType(), True),
+            StructField("cqcid", StringType(), True),
+            StructField("odscode", StringType(), True),
+            StructField("covidresidentstotal", StringType(), True),
+            StructField("isacceptingadmissions", StringType(), True),
+            StructField("nursesemployed", StringType(), True),
+            StructField("nursesabsentgeneral", StringType(), True),
+            StructField("nursesabsentcovid", StringType(), True),
+            StructField("careworkersemployed", StringType(), True),
+            StructField("careworkersabsentgeneral", StringType(), True),
+            StructField("careworkersabsentcovid", StringType(), True),
+            StructField("noncareworkersemployed", StringType(), True),
+            StructField("noncareworkersabsentgeneral", StringType(), True),
+            StructField("noncareworkersabsentcovid", StringType(), True),
+            StructField("agencynursesemployed", StringType(), True),
+            StructField("agencycareworkersemployed", StringType(), True),
+            StructField("agencynoncareworkersemployed", StringType(), True),
+            StructField("hourspaid", StringType(), True),
+            StructField("hoursovertime", StringType(), True),
+            StructField("hoursagency", StringType(), True),
+            StructField("hoursabsence", StringType(), True),
+            StructField("daysabsence", StringType(), True),
+            StructField("lastupdatedutc", StringType(), True),
+            StructField("lastupdatedbst", StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CapacityTrackerDomCareSchema:
+    sample_schema = StructType(
+        [
+            StructField("local_authority", StringType(), True),
+            StructField("subicbname", StringType(), True),
+            StructField("icbname", StringType(), True),
+            StructField("regionname", StringType(), True),
+            StructField("laname", StringType(), True),
+            StructField("lrfname", StringType(), True),
+            StructField("laregionname", StringType(), True),
+            StructField("location", StringType(), True),
+            StructField("cqcid", StringType(), True),
+            StructField("odscode", StringType(), True),
+            StructField("cqcsurveylastupdatedutc", StringType(), True),
+            StructField("cqcsurveylastupdatedbst", StringType(), True),
+            StructField("serviceusercount", StringType(), True),
+            StructField("legacycovidconfirmed", StringType(), True),
+            StructField("legacycovidsuspected", StringType(), True),
+            StructField("cqccareworkersemployed", StringType(), True),
+            StructField("cqccareworkersabsent", StringType(), True),
+            StructField("canprovidermorehours", StringType(), True),
+            StructField("extrahourscount", StringType(), True),
+            StructField("covid_vaccination_(full_course)", StringType(), True),
+            StructField("covid_vaccination_(autumn_23)", StringType(), True),
+            StructField("flu_vaccination_(autumn_23)", StringType(), True),
+            StructField("confirmedsave", StringType(), True),
+            StructField("hourspaiddomcare", StringType(), True),
+            StructField("hoursovertimedomcare", StringType(), True),
+            StructField("hoursagencydomcare", StringType(), True),
+            StructField("hoursabsencedomcare", StringType(), True),
+            StructField("daysabsencedomcare", StringType(), True),
+            StructField("usersnhsla", StringType(), True),
+            StructField("usersselffunded", StringType(), True),
+            StructField("returnedpocpercent", StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CQCLocationsSchema:
     full_schema = StructType(
         [
-            *LOCATION_SCHEMA,
+            *OLD_LOCATION_SCHEMA,
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -1088,6 +1166,25 @@ class ModelExtrapolation:
 
 
 @dataclass
+class ModelFeatures:
+    vectorise_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("col_1", FloatType(), True),
+            StructField("col_2", IntegerType(), True),
+            StructField("col_3", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_vectorised_feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelCareHomes:
     care_homes_cleaned_ind_cqc_schema = StructType(
         [
@@ -1206,5 +1303,17 @@ class ModelInterpolation:
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.filled_posts_unix_time, LongType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateMergedIndCqcData:
+    cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
+    merged_ind_cqc_schema = StructType(
+        [
+            *MergeIndCQCData.expected_cqc_and_ascwds_merged_schema,
+            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )

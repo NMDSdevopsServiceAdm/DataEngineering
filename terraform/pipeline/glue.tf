@@ -42,10 +42,8 @@ module "ingest_capacity_tracker_data_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--care_home_source"      = ""
-    "--care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_care_home/"
-    "--non_res_source"        = ""
-    "--non_res_destination"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=capacity_tracker_non_residential/"
+    "--source"      = ""
+    "--destination" = ""
   }
 }
 
@@ -259,6 +257,38 @@ module "bulk_cqc_locations_download_job" {
   }
 }
 
+module "bulk_cqc_providers_new_download_job" {
+  source           = "../modules/glue-job"
+  script_name      = "bulk_download_cqc_providers_new.py"
+  glue_role        = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket  = module.pipeline_resources
+  datasets_bucket  = module.datasets_bucket
+  trigger          = true
+  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
+  glue_version     = "3.0"
+
+  job_parameters = {
+    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
+module "bulk_cqc_locations_new_download_job" {
+  source           = "../modules/glue-job"
+  script_name      = "bulk_download_cqc_locations_new.py"
+  glue_role        = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket  = module.pipeline_resources
+  datasets_bucket  = module.datasets_bucket
+  trigger          = true
+  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
+  glue_version     = "3.0"
+
+  job_parameters = {
+    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
+    "--additional-python-modules" : "ratelimit==2.2.1,"
+  }
+}
+
 
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
@@ -405,6 +435,21 @@ module "merge_ind_cqc_data_job" {
   }
 }
 
+module "validate_merged_ind_cqc_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_merged_ind_cqc_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
+  }
+}
+
 module "prepare_care_home_ind_cqc_features_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_care_home_ind_cqc_features.py"
@@ -429,7 +474,7 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
     "--care_home_features_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
-    "--care_home_model_source"        = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/2.1.0/"
+    "--care_home_model_source"        = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/3.1.0/"
     "--estimated_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--ml_model_metrics_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
   }
@@ -469,6 +514,13 @@ module "ind_cqc_filled_posts_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
+module "data_validation_reports_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "data_validation_reports"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
 module "cqc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "CQC"
@@ -491,4 +543,5 @@ module "dpr_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
+
 

@@ -1,15 +1,13 @@
 import unittest
 
-from pyspark.sql import SparkSession
 
+from utils import utils
 import jobs.ingest_ascwds_dataset as job
 
 
 class IngestASCWDSDatasetTests(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "sfc_data_engineering_test_ingest_ascwds_dataset"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
 
     def test_filter_test_accounts(self):
         columns = [
