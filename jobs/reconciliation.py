@@ -191,15 +191,10 @@ def collect_dates_to_use(
     )
 
     dates_collected = dates_df.collect()
-    most_recent_cqc_location_import_date = dates_collected[0]["most_recent"]
     first_of_most_recent_month = dates_collected[0]["start_of_month"]
     first_of_previous_month = dates_collected[0]["start_of_previous_month"]
 
-    return (
-        most_recent_cqc_location_import_date,
-        first_of_most_recent_month,
-        first_of_previous_month,
-    )
+    return first_of_most_recent_month, first_of_previous_month
 
 
 def identify_if_location_ids_in_ascwds_have_ever_existed(
