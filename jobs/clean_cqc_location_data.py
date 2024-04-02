@@ -5,9 +5,7 @@ from typing import Tuple
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql import DataFrame, Window
-
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
