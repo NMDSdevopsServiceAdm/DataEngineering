@@ -1,8 +1,8 @@
 import unittest
 import warnings
-from unittest.mock import Mock, patch
-import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame
+from unittest.mock import ANY, Mock, patch
+from pyspark.sql import DataFrame, functions as F
+from dataclasses import asdict
 
 import jobs.clean_cqc_location_data as job
 
@@ -26,8 +26,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_PROV_SOURCE = "some/other/directory"
-    TEST_CLEANED_DESTINATION = "some/other/directory"
-    TEST_DEREGISTERED_DESTINATION = "some/other/directory"
+    TEST_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -76,8 +75,7 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_LOC_SOURCE,
             self.TEST_PROV_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
-            self.TEST_CLEANED_DESTINATION,
-            self.TEST_DEREGISTERED_DESTINATION,
+            self.TEST_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
@@ -86,7 +84,17 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(
             raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
         )
-        self.assertEqual(write_to_parquet_patch.call_count, 2)
+        write_to_parquet_patch.assert_called_once_with(
+            ANY,
+            self.TEST_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
+
+        final_df: DataFrame = write_to_parquet_patch.call_args[0][0]
+        expected_cols = list(asdict(CQCLCleaned()).values())
+        for col in final_df.columns:
+            self.assertIn(col, expected_cols)
 
 
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
@@ -242,67 +250,48 @@ class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(
+    def test_select_registered_locations_only_splits_data_correctly(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_rows, Schemas.registration_status_schema
         )
 
-        (
-            returned_registered_df,
-            returned_deregistered_df,
-        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_df = job.select_registered_locations_only(test_df)
         returned_registered_data = returned_registered_df.collect()
-        returned_deregistered_data = returned_deregistered_df.collect()
 
         expected_registered_data = self.spark.createDataFrame(
             Data.expected_registered_rows, Schemas.registration_status_schema
         ).collect()
-        expected_deregistered_data = self.spark.createDataFrame(
-            Data.expected_deregistered_rows, Schemas.registration_status_schema
-        ).collect()
 
         self.assertEqual(returned_registered_data, expected_registered_data)
-        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_raises_a_warning_if_any_rows_are_invalid(
+    def test_select_registered_locations_only_raises_a_warning_if_any_rows_are_invalid(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_with_missing_data_rows,
             Schemas.registration_status_schema,
         )
-        (
-            returned_registered_df,
-            returned_deregistered_df,
-        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_df = job.select_registered_locations_only(test_df)
         returned_registered_data = returned_registered_df.collect()
-        returned_deregistered_data = returned_deregistered_df.collect()
 
         expected_registered_data = self.spark.createDataFrame(
             Data.expected_registered_rows, Schemas.registration_status_schema
         ).collect()
-        expected_deregistered_data = self.spark.createDataFrame(
-            Data.expected_deregistered_rows, Schemas.registration_status_schema
-        ).collect()
 
         self.assertEqual(returned_registered_data, expected_registered_data)
-        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
 
         self.assertWarns(Warning)
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_does_not_raise_a_warning_if_all_rows_are_valid(
+    def test_select_registered_locations_only_does_not_raise_a_warning_if_all_rows_are_valid(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_rows, Schemas.registration_status_schema
         )
         with warnings.catch_warnings(record=True) as warnings_log:
-            (
-                returned_registered_df,
-                returned_deregistered_df,
-            ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+            returned_registered_df = job.select_registered_locations_only(test_df)
 
             self.assertEqual(warnings_log, [])
 

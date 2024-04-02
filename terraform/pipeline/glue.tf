@@ -397,7 +397,6 @@ module "clean_cqc_location_data_job" {
     "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
-    "--deregistered_cqc_location_destination" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=deregistered_locations/"
   }
 }
 
@@ -410,7 +409,6 @@ module "reconciliation_job" {
 
   job_parameters = {
     "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
-    "--deregistered_cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=deregistered_locations/"
     "--cleaned_ascwds_workplace_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs/"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/parents/"

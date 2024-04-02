@@ -1154,14 +1154,17 @@ class CQCLocationsData:
 
     registration_status_with_missing_data_rows = [
         (
+            date(2024, 3, 1),
             "loc-1",
             "Registered",
         ),
         (
+            date(2024, 3, 1),
             "loc-2",
             "Deregistered",
         ),
         (
+            date(2024, 3, 1),
             "loc-3",
             "new value",
         ),
@@ -1169,26 +1172,40 @@ class CQCLocationsData:
 
     registration_status_rows = [
         (
+            date(2024, 3, 1),
             "loc-1",
             "Registered",
         ),
         (
+            date(2024, 2, 1),
             "loc-2",
             "Deregistered",
         ),
-    ]
-
-    expected_deregistered_rows = [
         (
-            "loc-2",
+            date(2024, 3, 1),
+            "loc-3",
             "Deregistered",
         ),
     ]
 
     expected_registered_rows = [
         (
+            date(2024, 3, 1),
             "loc-1",
             "Registered",
+        ),
+    ]
+
+    expected_deregistered_rows = [
+        (
+            date(2024, 3, 1),
+            "loc-1",
+            "Registered",
+        ),
+        (
+            date(2024, 3, 1),
+            "loc-3",
+            "Deregistered",
         ),
     ]
 

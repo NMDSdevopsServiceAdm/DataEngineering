@@ -5,7 +5,7 @@ from typing import Tuple
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -68,7 +68,6 @@ def main(
     cleaned_cqc_provider_source: str,
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
-    deregistered_cqc_location_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -90,10 +89,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    (
-        registered_locations_df,
-        deregistered_locations_df,
-    ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+    registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -112,17 +108,6 @@ def main(
     utils.write_to_parquet(
         registered_locations_df,
         cleaned_cqc_location_destination,
-        mode="overwrite",
-        partitionKeys=cqcPartitionKeys,
-    )
-
-    deduped_deregistered_locations_df = (
-        only_keep_first_instance_of_deregistered_locations(deregistered_locations_df)
-    )
-
-    utils.write_to_parquet(
-        deduped_deregistered_locations_df,
-        deregistered_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
@@ -212,7 +197,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     return joined_df
 
 
-def split_dataframe_into_registered_and_deregistered_rows(
+def select_registered_locations_only(
     locations_df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
     invalid_rows = locations_df.where(
@@ -225,30 +210,9 @@ def split_dataframe_into_registered_and_deregistered_rows(
             f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
         )
 
-    registered_df = locations_df.where(
+    return locations_df.where(
         locations_df[CQCL.registration_status] == CQCLValues.registered
     )
-    deregistered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == CQCLValues.deregistered
-    )
-
-    return registered_df, deregistered_df
-
-
-def only_keep_first_instance_of_deregistered_locations(
-    df_with_duplicates: DataFrame,
-) -> DataFrame:
-    # TODO write test
-    row_number: str = "row_number"
-    window = Window.partitionBy(CQCLClean.location_id).orderBy(
-        CQCLClean.cqc_location_import_date
-    )
-    df_without_duplicates = (
-        df_with_duplicates.withColumn(row_number, F.row_number().over(window))
-        .filter(F.col(row_number) == 1)
-        .drop(F.col(row_number))
-    )
-    return df_without_duplicates
 
 
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
@@ -317,7 +281,6 @@ if __name__ == "__main__":
         cleaned_cqc_provider_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
-        deregistered_cqc_location_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -335,17 +298,12 @@ if __name__ == "__main__":
             "--cleaned_cqc_location_destination",
             "Destination s3 directory for cleaned parquet CQC locations dataset",
         ),
-        (
-            "--deregistered_cqc_location_destination",
-            "Destination s3 directory for deregistered CQC locations dataset",
-        ),
     )
     main(
         cqc_location_source,
         cleaned_cqc_provider_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
-        deregistered_cqc_location_destination,
     )
 
     print("Spark job 'clean_cqc_location_data' complete")

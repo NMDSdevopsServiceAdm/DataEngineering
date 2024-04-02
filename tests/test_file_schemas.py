@@ -517,6 +517,7 @@ class CQCLocationsSchema:
 
     registration_status_schema = StructType(
         [
+            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
         ]

@@ -46,17 +46,12 @@ cleaned_ascwds_workplace_columns_to_import = [
 
 def main(
     cqc_location_api_source: str,
-    deregistered_cqc_location_source: str,
     cleaned_ascwds_workplace_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ) -> DataFrame:
     all_location_ids_df = utils.read_from_parquet(
         cqc_location_api_source, CQCLClean.location_id
-    )
-    deregistered_locations_df = utils.read_from_parquet(
-        deregistered_cqc_location_source,
-        selected_columns=deregistered_cqc_locations_columns_to_import,
     )
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
@@ -433,7 +428,6 @@ if __name__ == "__main__":
 
     (
         cqc_location_api_source,
-        deregistered_cqc_location_source,
         cleaned_ascwds_workplace_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
@@ -441,10 +435,6 @@ if __name__ == "__main__":
         (
             "--cqc_location_api_source",
             "Source s3 directory for initial CQC location api dataset",
-        ),
-        (
-            "--deregistered_cqc_location_source",
-            "Source s3 directory for deregistered CQC locations dataset",
         ),
         (
             "--cleaned_ascwds_workplace_source",
@@ -461,7 +451,6 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_api_source,
-        deregistered_cqc_location_source,
         cleaned_ascwds_workplace_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
