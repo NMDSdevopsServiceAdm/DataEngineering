@@ -22,7 +22,7 @@ from utils.reconciliation_utils.utils import (
     write_to_csv,
 )
 
-cleaned_cqc_locations_columns_to_import = [
+deregistered_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.deregistration_date,
@@ -51,16 +51,16 @@ def main(
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ) -> DataFrame:
+    all_location_ids_df = utils.read_from_parquet(
+        cqc_location_api_source, CQCLClean.location_id
+    )
     deregistered_locations_df = utils.read_from_parquet(
         deregistered_cqc_location_source,
-        selected_columns=cleaned_cqc_locations_columns_to_import,
+        selected_columns=deregistered_cqc_locations_columns_to_import,
     )
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
-    )
-    all_location_ids_df = utils.read_from_parquet(
-        cqc_location_api_source, CQCLClean.location_id
     )
 
     first_of_most_recent_month, first_of_previous_month = collect_dates_to_use(
@@ -85,6 +85,13 @@ def main(
         latest_ascwds_workplace_df, locations_deregistered_before_most_recent_month_df
     )
 
+    ascwds_with_deregistration_date_df = (
+        remove_locations_with_accurately_linked_location_ids(
+            ascwds_with_deregistration_date_df
+        )
+    )
+    print("ascwds_with_deregistration_date_df")
+    ascwds_with_deregistration_date_df.sort(AWPClean.establishment_id).show()
     create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
         ascwds_with_deregistration_date_df,
         first_of_previous_month,
@@ -111,6 +118,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = add_parent_sub_or_single_col_to_df(df)
     df = add_ownership_col_to_df(df)
     df = add_potentials_col_to_df(df)
+    df = filter_to_cqc_registration_type_only(df)
 
     return df.withColumnRenamed(AWPClean.location_id, CQCLClean.location_id)
 
@@ -165,6 +173,10 @@ def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
             F.lit(ReconValues.singles_and_subs),
         ).otherwise(F.lit(ReconValues.parents)),
     )
+
+
+def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(AWPClean.registration_type) == "2")
 
 
 def collect_dates_to_use(
@@ -225,6 +237,12 @@ def join_deregistered_cqc_locations_into_ascwds(
     )
 
 
+def remove_locations_with_accurately_linked_location_ids(
+    df: DataFrame,
+) -> DataFrame:
+    return df.where(F.col(CQCLClean.cqc_location_import_date).isNull())
+
+
 def filter_to_locations_with_incorrect_or_missing_locationids(
     df: DataFrame,
 ) -> DataFrame:
@@ -276,7 +294,9 @@ def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
             singles_and_subs_df
         )
     )
-    write_to_csv(singles_and_subs_output_df, destination)
+    print("singles_and_subs_output_df")
+    singles_and_subs_output_df.show(truncate=False)
+    # write_to_csv(singles_and_subs_output_df, destination)
 
 
 def remove_deregistration_dates_before_previous_month(
@@ -320,10 +340,20 @@ def create_reconciliation_outputs_for_ascwds_parent_accounts(
     missing_or_incorrect_df = parents_df.where(
         F.col(CQCLClean.deregistration_date).isNull()
     )
+    print("new_issues_df")
+    new_issues_df.show()
+    print("old_issues_df")
+    old_issues_df.show()
+    print("missing_or_incorrect_df")
+    missing_or_incorrect_df.show()
 
+    print("row332")
+    unique_parentids_df.show(truncate=False)
     unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
         new_issues_df, ReconColumn.new_potential_subs, unique_parentids_df
     )
+    print("row337")
+    unique_parentids_df.show(truncate=False)
     unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
         old_issues_df, ReconColumn.old_potential_subs, unique_parentids_df
     )
@@ -333,6 +363,8 @@ def create_reconciliation_outputs_for_ascwds_parent_accounts(
         unique_parentids_df,
     )
 
+    print("row348")
+    unique_parentids_df.show(truncate=False)
     unique_parentids_df = unique_parentids_df.withColumn(
         ReconColumn.description,
         F.concat(
@@ -353,6 +385,8 @@ def create_reconciliation_outputs_for_ascwds_parent_accounts(
         ),
     )
 
+    print("row363")
+    unique_parentids_df.show(truncate=False)
     unique_parentids_df = unique_parentids_df.withColumn(
         ReconColumn.subject, F.lit("CQC Reconcilliation Work - Parent")
     )
@@ -362,7 +396,8 @@ def create_reconciliation_outputs_for_ascwds_parent_accounts(
             unique_parentids_df
         )
     )
-    write_to_csv(parents_output_df, destination)
+    parents_output_df.show(truncate=False)
+    # write_to_csv(parents_output_df, destination)
 
 
 def join_array_of_nmdsids_into_unique_orgid_df(
