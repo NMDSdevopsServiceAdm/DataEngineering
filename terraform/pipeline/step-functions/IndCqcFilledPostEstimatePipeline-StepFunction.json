@@ -288,14 +288,6 @@
                   "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
                 }
               },
-              "Next": "Run sfc crawler"
-            },
-            "Run sfc crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${sfc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "End": true
             }
           }
