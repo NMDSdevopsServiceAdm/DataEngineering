@@ -255,7 +255,7 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = singles_and_subs_df.withColumn(
-        ReconColumn.subject, F.lit("CQC Reconcilliation Work")
+        ReconColumn.subject, F.lit(ReconValues.single_sub_subject_value)
     )
     singles_and_subs_df = create_missing_columns_required_for_output(
         singles_and_subs_df
@@ -268,8 +268,8 @@ def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
         ReconColumn.description,
         F.when(
             F.col(CQCLClean.deregistration_date).isNotNull(),
-            F.lit("Potential (new): Deregistered ID"),
-        ).otherwise(F.lit("Potential (new): Regtype")),
+            F.lit(ReconValues.single_sub_deregistered_description),
+        ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
     )
 
 
@@ -312,7 +312,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     )
 
     ascwds_parent_accounts_df = ascwds_parent_accounts_df.withColumn(
-        ReconColumn.subject, F.lit("CQC Reconcilliation Work - Parent")
+        ReconColumn.subject, F.lit(ReconValues.parent_subject_value)
     )
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
