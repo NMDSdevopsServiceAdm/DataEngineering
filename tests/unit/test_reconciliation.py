@@ -2,7 +2,7 @@ import unittest
 import warnings
 from pathlib import Path
 import shutil
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import Mock, patch
 
 from pyspark.sql import functions as F
 from datetime import date
@@ -59,7 +59,7 @@ class ReconciliationTests(unittest.TestCase):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_csv_patch.call_count, 1)
+        self.assertEqual(write_to_csv_patch.call_count, 2)
 
     def test_collect_dates_to_use(self):
         input_df = self.spark.createDataFrame(
