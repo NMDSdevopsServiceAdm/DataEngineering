@@ -358,9 +358,9 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
             Data.expected_ons_join_with_null_rows,
             Schemas.expected_ons_join_schema,
         )
-        input_registered_df = job.split_dataframe_into_registered_and_deregistered_rows(
+        input_registered_df = job.select_registered_locations_only(
             expected_ons_join_df_with_nulls
-        )[0]
+        )
         # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
         expected_tuple = ("PR19AB", "loc-1", "count: 1")
         with self.assertRaises(TypeError) as context:

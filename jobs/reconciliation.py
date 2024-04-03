@@ -19,11 +19,6 @@ from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationDict as ReconDict,
 )
 
-from utils.reconciliation_utils.utils import (
-    create_missing_columns_required_for_output_and_reorder_for_saving,
-    write_to_csv,
-)
-
 cqc_locations_columns_to_import = [
     CQCLClean.import_date,
     CQCLClean.location_id,
@@ -79,18 +74,21 @@ def main(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
 
+    reconciliation_df = create_missing_columns_required_for_output(reconciliation_df)
 
-#     create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
-#         ascwds_with_deregistration_date_df,
-#         first_of_previous_month,
-#         reconciliation_single_and_subs_destination,
-#     )
+    single_and_sub_df = (
+        create_reconciliation_outputs_for_ascwds_single_and_sub_accounts(
+            reconciliation_df
+        )
+    )
 
-#     create_reconciliation_outputs_for_ascwds_parent_accounts(
-#         ascwds_with_deregistration_date_df,
-#         first_of_previous_month,
-#         reconciliation_parents_destination,
-#     )
+    #     create_reconciliation_outputs_for_ascwds_parent_accounts(
+    #         ascwds_with_deregistration_date_df,
+    #         first_of_previous_month,
+    #         reconciliation_parents_destination,
+    #     )
+
+    write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
 
 
 def filter_df_to_maximum_value_in_column(
@@ -237,49 +235,27 @@ def filter_to_locations_relevant_to_reconcilition_process(
     return df
 
 
-# def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
-#     reconciliation_df: DataFrame,
-#     first_of_previous_month: date,
-#     destination: str,
-# ):
-#     singles_and_subs_df = reconciliation_df.where(
-#         F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
-#     )
-#     singles_and_subs_df = remove_deregistration_dates_before_previous_month(
-#         singles_and_subs_df, first_of_previous_month
-#     )
-#     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
-#     singles_and_subs_df = singles_and_subs_df.withColumn(
-#         ReconColumn.subject, F.lit("CQC Reconcilliation Work")
-#     )
-#     singles_and_subs_output_df = (
-#         create_missing_columns_required_for_output_and_reorder_for_saving(
-#             singles_and_subs_df
-#         )
-#     )
-#     print("singles_and_subs_output_df")
-#     singles_and_subs_output_df.show(truncate=False)
-#     # write_to_csv(singles_and_subs_output_df, destination)
+def create_reconciliation_outputs_for_ascwds_single_and_sub_accounts(
+    reconciliation_df: DataFrame,
+) -> DataFrame:
+    singles_and_subs_df = reconciliation_df.where(
+        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+    )
+    singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
+    singles_and_subs_df = singles_and_subs_df.withColumn(
+        ReconColumn.subject, F.lit("CQC Reconcilliation Work")
+    )
+    return final_column_selection(singles_and_subs_df)
 
 
-# def remove_deregistration_dates_before_previous_month(
-#     df: DataFrame,
-#     first_of_previous_month: date,
-# ) -> DataFrame:
-#     return df.where(
-#         (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
-#         | F.col(CQCLClean.deregistration_date).isNull()
-#     )
-
-
-# def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
-#     return df.withColumn(
-#         ReconColumn.description,
-#         F.when(
-#             F.col(CQCLClean.deregistration_date).isNotNull(),
-#             F.lit("Potential (new): Deregistered ID"),
-#         ).otherwise(F.lit("Potential (new): Regtype")),
-#     )
+def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
+    return df.withColumn(
+        ReconColumn.description,
+        F.when(
+            F.col(CQCLClean.deregistration_date).isNotNull(),
+            F.lit("Potential (new): Deregistered ID"),
+        ).otherwise(F.lit("Potential (new): Regtype")),
+    )
 
 
 # def create_reconciliation_outputs_for_ascwds_parent_accounts(
@@ -388,6 +364,68 @@ def filter_to_locations_relevant_to_reconcilition_process(
 #     )
 
 #     return subs_at_parent_df
+
+
+def create_missing_columns_required_for_output(
+    df: DataFrame,
+) -> DataFrame:
+    df = df.withColumnRenamed(AWPClean.establishment_type, ReconColumn.sector)
+    df = df.withColumnRenamed(AWPClean.region_id, ReconColumn.sfc_region)
+    df = df.withColumnRenamed(AWPClean.establishment_name, ReconColumn.name)
+    return (
+        df.withColumn(ReconColumn.nmds, F.col(AWPClean.nmds_id))
+        .withColumn(ReconColumn.workplace_id, F.col(AWPClean.nmds_id))
+        .withColumn(
+            ReconColumn.requester_name,
+            F.concat(ReconColumn.nmds, F.lit(" "), ReconColumn.name),
+        )
+        .withColumn(
+            ReconColumn.requester_name_2,
+            F.concat(ReconColumn.nmds, F.lit(" "), ReconColumn.name),
+        )
+        .withColumn(ReconColumn.status, F.lit("Open"))
+        .withColumn(ReconColumn.technician, F.lit("_"))
+        .withColumn(ReconColumn.manual_call_log, F.lit("No"))
+        .withColumn(ReconColumn.mode, F.lit("Internal"))
+        .withColumn(ReconColumn.priority, F.lit("Priority 5"))
+        .withColumn(ReconColumn.category, F.lit("Workplace"))
+        .withColumn(ReconColumn.sub_category, F.lit("Reports"))
+        .withColumn(ReconColumn.is_requester_named, F.lit("Yes"))
+        .withColumn(ReconColumn.security_question, F.lit("N/A"))
+        .withColumn(ReconColumn.website, F.lit("ASC-WDS"))
+        .withColumn(ReconColumn.item, F.lit("CQC work"))
+        .withColumn(ReconColumn.phone, F.lit(0))
+    )
+
+
+def final_column_selection(df: DataFrame) -> DataFrame:
+    return df.select(
+        ReconColumn.subject,
+        ReconColumn.nmds,
+        ReconColumn.name,
+        ReconColumn.description,
+        ReconColumn.requester_name_2,
+        ReconColumn.requester_name,
+        ReconColumn.sector,
+        ReconColumn.status,
+        ReconColumn.technician,
+        ReconColumn.sfc_region,
+        ReconColumn.manual_call_log,
+        ReconColumn.mode,
+        ReconColumn.priority,
+        ReconColumn.category,
+        ReconColumn.sub_category,
+        ReconColumn.is_requester_named,
+        ReconColumn.security_question,
+        ReconColumn.website,
+        ReconColumn.item,
+        ReconColumn.phone,
+        ReconColumn.workplace_id,
+    ).sort(ReconColumn.description, ReconColumn.nmds)
+
+
+def write_to_csv(df: DataFrame, output_dir: str):
+    df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_dir)
 
 
 if __name__ == "__main__":
