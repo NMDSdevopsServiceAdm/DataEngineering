@@ -1154,17 +1154,14 @@ class CQCLocationsData:
 
     registration_status_with_missing_data_rows = [
         (
-            date(2024, 3, 1),
             "loc-1",
             "Registered",
         ),
         (
-            date(2024, 3, 1),
             "loc-2",
             "Deregistered",
         ),
         (
-            date(2024, 3, 1),
             "loc-3",
             "new value",
         ),
@@ -1172,40 +1169,19 @@ class CQCLocationsData:
 
     registration_status_rows = [
         (
-            date(2024, 3, 1),
             "loc-1",
             "Registered",
         ),
         (
-            date(2024, 2, 1),
             "loc-2",
-            "Deregistered",
-        ),
-        (
-            date(2024, 3, 1),
-            "loc-3",
             "Deregistered",
         ),
     ]
 
     expected_registered_rows = [
         (
-            date(2024, 3, 1),
             "loc-1",
             "Registered",
-        ),
-    ]
-
-    expected_deregistered_rows = [
-        (
-            date(2024, 3, 1),
-            "loc-1",
-            "Registered",
-        ),
-        (
-            date(2024, 3, 1),
-            "loc-3",
-            "Deregistered",
         ),
     ]
 
@@ -1771,26 +1747,26 @@ class CleanIndCQCData:
 class ReconciliationData:
     # fmt: off
     input_ascwds_workplace_rows = [
-        (date(2024, 4, 1), "100", "A100", "0", None, "100", "2", "1", "1", None, "10", "Est Name 00", "1"),  # Single - not CQC regtype - not included in recon
-        (date(2024, 4, 1), "101", "A101", "0", None, "101", "2", "1", "2", "1-001", "10", "Est Name 01", "1"),  # Single - ID matches - not included in recon
-        (date(2024, 4, 1), "102", "A102", "0", None, "102", "2", "1", "2", "1-902", "10", "Est Name 02", "2"),  # Single - ID matches dereg - not included in recon as deregistered before previous month
-        (date(2024, 4, 1), "103", "A103", "0", None, "103", "2", "1", "2", "1-903", "10", "Est Name 03", "3"),  # Single - ID matches dereg - included in recon
-        (date(2024, 4, 1), "104", "A104", "0", None, "104", "2", "1", "2", "1-501", "10", "Est Name 04", "4"),  # Single - ID doesn't exist in CQC - included in recon
-        (date(2024, 4, 1), "105", "A105", "0", None, "105", "2", "1", "2", None, "10", "Est Name 05", "5"),  # Single - missing CQC ID - included in recon
-        (date(2024, 4, 1), "106", "A106", "0", "206", "206", "2", "1", "2", "1-002", "10", "Est Name 06", "6"),  # Sub - ID matches - not included in recon
-        (date(2024, 4, 1), "107", "A107", "0", "207", "207", "2", "1", "2", "1-912", "10", "Est Name 07", "7"),  # Sub - ID matches dereg - not included in recon as deregistered before previous month
-        (date(2024, 4, 1), "108", "A108", "0", "208", "208", "2", "1", "2", "1-913", "10", "Est Name 08", "8"),  # Sub - ID matches dereg - included in recon
-        (date(2024, 4, 1), "109", "A109", "0", "209", "209", "2", "1", "2", "1-502", "10", "Est Name 09", "9"),  # Sub - ID doesn't exist in CQC - included in recon
-        (date(2024, 4, 1), "110", "A110", "0", "210", "210", "2", "1", "2", None, "10", "Est Name 10", "9"),  # Sub - missing CQC ID - included in recon
-        (date(2024, 4, 1), "111", "A111", "0", "211", "211", "2", "1", "2", "1-995", "10", "Est Name 11", "9"),  # Sub - ID dereg but in current month - not included in recon
-        (date(2024, 4, 1), "201", "A201", "1", None, "201", "2", "1", "1", None, "10", "Est Name 21", "1"),  # Parent - has issues - included in recon
-        (date(2024, 4, 1), "202", "A202", "0", "201", "210", "1", "1", "2", "1-003", "10", "Est Name 22", "2"),  # Parent - ID matches - not included in recon
-        (date(2024, 4, 1), "203", "A203", "0", "201", "210", "1", "1", "2", "1-922", "10", "Est Name 23", "3"),  # Parent - ID matches dereg - not included in recon as deregistered before previous month
-        (date(2024, 4, 1), "204", "A204", "0", "201", "210", "1", "1", "2", "1-923", "10", "Est Name 24", "4"),  # Parent - ID matches dereg - included in recon
-        (date(2024, 4, 1), "205", "A205", "0", "201", "210", "1", "1", "2", "1-503", "10", "Est Name 25", "5"),  # Parent - ID doesn't exist in CQC - included in recon
-        (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "10", "Est Name 26", "6"),  # Parent - missing CQC ID - included in recon
-        (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "72", "Est Name 26", "6"),  # Parent - head office - not included in recon
-        (date(2024, 4, 1), "301", "A301", "1", None, "301", "2", "1", "2", "1-004", "10", "Est Name 31", "1"),  # Parent - no issues - not included in recon
+        (date(2024, 4, 1), "100", "A100", "0", None, "100", "2", "1", "1", None, "10", "Est Name 00", "1"),  # Single - not CQC regtype - INCLUDED
+        (date(2024, 4, 1), "101", "A101", "0", None, "101", "2", "1", "2", "1-001", "10", "Est Name 01", "1"),  # Single - ID matches - EXCLUDED
+        (date(2024, 4, 1), "102", "A102", "0", None, "102", "2", "1", "2", "1-902", "10", "Est Name 02", "2"),  # Single - ID matches dereg - EXCLUDED as deregistered before previous month
+        (date(2024, 4, 1), "103", "A103", "0", None, "103", "2", "1", "2", "1-903", "10", "Est Name 03", "3"),  # Single - ID matches dereg - INCLUDED
+        (date(2024, 4, 1), "104", "A104", "0", None, "104", "2", "1", "2", "1-501", "10", "Est Name 04", "4"),  # Single - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "105", "A105", "0", None, "105", "2", "1", "2", None, "10", "Est Name 05", "5"),  # Single - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "106", "A106", "0", "206", "206", "2", "1", "2", "1-002", "10", "Est Name 06", "6"),  # Sub - ID matches - EXCLUDED
+        (date(2024, 4, 1), "107", "A107", "0", "207", "207", "2", "1", "2", "1-912", "10", "Est Name 07", "7"),  # Sub - ID matches dereg - EXCLUDED as deregistered before previous month
+        (date(2024, 4, 1), "108", "A108", "0", "208", "208", "2", "1", "2", "1-913", "10", "Est Name 08", "8"),  # Sub - ID matches dereg - INCLUDED
+        (date(2024, 4, 1), "109", "A109", "0", "209", "209", "2", "1", "2", "1-502", "10", "Est Name 09", "9"),  # Sub - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "110", "A110", "0", "210", "210", "2", "1", "2", None, "10", "Est Name 10", "9"),  # Sub - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "111", "A111", "0", "211", "211", "2", "1", "2", "1-995", "10", "Est Name 11", "9"),  # Sub - ID dereg but in current month - EXCLUDED
+        (date(2024, 4, 1), "201", "A201", "1", None, "201", "2", "1", "1", None, "10", "Est Name 21", "1"),  # Parent - has issues - INCLUDED
+        (date(2024, 4, 1), "202", "A202", "0", "201", "210", "1", "1", "2", "1-003", "10", "Est Name 22", "2"),  # Parent - ID matches - EXCLUDED
+        (date(2024, 4, 1), "203", "A203", "0", "201", "210", "1", "1", "2", "1-922", "10", "Est Name 23", "3"),  # Parent - ID matches dereg - EXCLUDED as deregistered before previous month
+        (date(2024, 4, 1), "204", "A204", "0", "201", "210", "1", "1", "2", "1-923", "10", "Est Name 24", "4"),  # Parent - ID matches dereg - INCLUDED
+        (date(2024, 4, 1), "205", "A205", "0", "201", "210", "1", "1", "2", "1-503", "10", "Est Name 25", "5"),  # Parent - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "10", "Est Name 26", "6"),  # Parent - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "72", "Est Name 26", "6"),  # Parent - head office - EXCLUDED
+        (date(2024, 4, 1), "301", "A301", "1", None, "301", "2", "1", "2", "1-004", "10", "Est Name 31", "1"),  # Parent - no issues - EXCLUDED
     ]
     input_cqc_location_api_rows = [
         ("20240101", "1-901", "Deregistered", "2024-01-01"),
