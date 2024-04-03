@@ -62,9 +62,10 @@ def main(
         first_of_previous_month,
     ) = collect_dates_to_use(cqc_location_df)
 
-    latest_ascwds_workplace_df, ascwds_parent_accounts_df = (
-        prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_df)
-    )
+    (
+        latest_ascwds_workplace_df,
+        ascwds_parent_accounts_df,
+    ) = prepare_latest_cleaned_ascwds_workforce_data(ascwds_workplace_df)
 
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
         latest_ascwds_workplace_df, cqc_location_df
