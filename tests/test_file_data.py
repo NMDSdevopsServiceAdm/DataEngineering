@@ -1769,20 +1769,6 @@ class CleanIndCQCData:
 
 @dataclass
 class ReconciliationData:
-    input_cqc_location_rows = [
-        ("1-001",),
-        ("1-002",),
-        ("1-003",),
-        ("1-901",),
-        ("1-902",),
-        ("1-903",),
-        ("1-904",),
-        ("1-905",),
-        ("1-912",),
-        ("1-913",),
-        ("1-922",),
-        ("1-923",),
-    ]
     # fmt: off
     input_ascwds_workplace_rows = [
         (date(2024, 4, 1), "100", "A100", "0", None, "100", "2", "1", "1", None, "10", "Est Name 00", "1"),  # Single - not CQC regtype - not included in recon
@@ -1803,20 +1789,25 @@ class ReconciliationData:
         (date(2024, 4, 1), "204", "A204", "0", "201", "210", "1", "1", "2", "1-923", "10", "Est Name 24", "4"),  # Parent - ID matches dereg - included in recon
         (date(2024, 4, 1), "205", "A205", "0", "201", "210", "1", "1", "2", "1-503", "10", "Est Name 25", "5"),  # Parent - ID doesn't exist in CQC - included in recon
         (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "10", "Est Name 26", "6"),  # Parent - missing CQC ID - included in recon
-        (date(2024, 4, 1), "301", "A301", "1", None, "301", "2", "1", "1", None, "10", "Est Name 31", "1"),  # Parent - no issues - not included in recon
+        (date(2024, 4, 1), "206", "A206", "0", "201", "210", "1", "1", "2", None, "72", "Est Name 26", "6"),  # Parent - head office - not included in recon
+        (date(2024, 4, 1), "301", "A301", "1", None, "301", "2", "1", "2", "1-004", "10", "Est Name 31", "1"),  # Parent - no issues - not included in recon
+    ]
+    input_cqc_location_api_rows = [
+        ("20240101", "1-901", "Deregistered", "2024-01-01"),
+        ("20240401", "1-001", "Registered", None),
+        ("20240401", "1-002", "Registered", None),
+        ("20240401", "1-003", "Registered", None),
+        ("20240401", "1-004", "Registered", None),
+        ("20240401", "1-902", "Deregistered", "2024-01-01"),
+        ("20240401", "1-912", "Deregistered", "2024-01-01"),
+        ("20240401", "1-922", "Deregistered", "2024-01-01"),
+        ("20240401", "1-903", "Deregistered", "2024-03-01"),
+        ("20240401", "1-904", "Deregistered", "2024-03-01"),
+        ("20240401", "1-913", "Deregistered", "2024-03-01"),
+        ("20240401", "1-923", "Deregistered", "2024-03-01"),
+        ("20240401", "1-995", "Deregistered", "2024-04-01"),
     ]
     # fmt: on
-    input_deregistered_cqc_location_schema = [
-        (date(2024, 1, 1), "1-901", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-902", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-912", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-922", date(2024, 1, 1)),
-        (date(2024, 4, 1), "1-903", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-904", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-913", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-923", date(2024, 3, 1)),
-        (date(2024, 4, 1), "1-995", date(2024, 4, 1)),
-    ]
     dates_to_use_rows = [
         ("1-001", date(2024, 3, 28)),
         ("1-002", date(2023, 1, 1)),

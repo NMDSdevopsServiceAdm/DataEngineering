@@ -897,11 +897,6 @@ class CleanIndCQCData:
 
 @dataclass
 class ReconciliationSchema:
-    input_cqc_location_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-        ]
-    )
     input_ascwds_workplace_schema = StructType(
         [
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
@@ -919,11 +914,12 @@ class ReconciliationSchema:
             StructField(AWPClean.region_id, StringType(), True),
         ]
     )
-    input_deregistered_cqc_location_schema = StructType(
+    input_cqc_location_api_schema = StructType(
         [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.import_date, StringType(), True),
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.deregistration_date, DateType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.deregistration_date, StringType(), True),
         ]
     )
     dates_to_use_schema = StructType(

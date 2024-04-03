@@ -5,8 +5,10 @@ from typing import Tuple
 from datetime import date
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -22,9 +24,10 @@ from utils.reconciliation_utils.utils import (
     write_to_csv,
 )
 
-deregistered_cqc_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
+cqc_locations_columns_to_import = [
+    CQCLClean.import_date,
     CQCLClean.location_id,
+    CQCLClean.registration_status,
     CQCLClean.deregistration_date,
 ]
 cleaned_ascwds_workplace_columns_to_import = [
@@ -50,53 +53,84 @@ def main(
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ) -> DataFrame:
-    all_location_ids_df = utils.read_from_parquet(
-        cqc_location_api_source, CQCLClean.location_id
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_api_source, cqc_locations_columns_to_import
     )
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
-    first_of_most_recent_month, first_of_previous_month = collect_dates_to_use(
-        deregistered_locations_df
-    )
+    cqc_location_df = prepare_most_recent_cqc_location_df(cqc_location_df)
+    (
+        first_of_most_recent_month,
+        first_of_previous_month,
+    ) = collect_dates_to_use(cqc_location_df)
 
     latest_ascwds_workplace_df = prepare_latest_cleaned_ascwds_workforce_data(
         ascwds_workplace_df
     )
 
-    latest_ascwds_workplace_df = identify_if_location_ids_in_ascwds_have_ever_existed(
-        latest_ascwds_workplace_df, all_location_ids_df
+    merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
+        latest_ascwds_workplace_df, cqc_location_df
     )
 
-    locations_deregistered_before_most_recent_month_df = (
-        filter_to_locations_deregistered_before_most_recent_month(
-            deregistered_locations_df, first_of_most_recent_month
-        )
+    reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
+        merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
 
-    ascwds_with_deregistration_date_df = join_deregistered_cqc_locations_into_ascwds(
-        latest_ascwds_workplace_df, locations_deregistered_before_most_recent_month_df
-    )
 
-    ascwds_with_deregistration_date_df = (
-        remove_locations_with_accurately_linked_location_ids(
-            ascwds_with_deregistration_date_df
-        )
+#     create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
+#         ascwds_with_deregistration_date_df,
+#         first_of_previous_month,
+#         reconciliation_single_and_subs_destination,
+#     )
+
+#     create_reconciliation_outputs_for_ascwds_parent_accounts(
+#         ascwds_with_deregistration_date_df,
+#         first_of_previous_month,
+#         reconciliation_parents_destination,
+#     )
+
+
+def filter_df_to_maximum_value_in_column(
+    df: DataFrame, column_to_filter_on: str
+) -> DataFrame:
+    max_date = df.agg(F.max(column_to_filter_on)).collect()[0][0]
+
+    return df.filter(F.col(column_to_filter_on) == max_date)
+
+
+def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
+    cqc_location_df = cUtils.column_to_date(
+        cqc_location_df, CQCLClean.import_date, CQCLClean.cqc_location_import_date
+    ).drop(CQCLClean.import_date)
+    cqc_location_df = filter_df_to_maximum_value_in_column(
+        cqc_location_df, CQCLClean.cqc_location_import_date
     )
-    print("ascwds_with_deregistration_date_df")
-    ascwds_with_deregistration_date_df.sort(AWPClean.establishment_id).show()
-    create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
-        ascwds_with_deregistration_date_df,
+    cqc_location_df = utils.format_date_fields(
+        cqc_location_df,
+        date_column_identifier=CQCLClean.deregistration_date,
+        raw_date_format="yyyy-MM-dd",
+    )
+    return cqc_location_df
+
+
+def collect_dates_to_use(df: DataFrame) -> Tuple[date, date, date]:
+    dates_df = df.select(F.max(CQCLClean.cqc_location_import_date).alias("most_recent"))
+    dates_df = dates_df.withColumn(
+        "start_of_month", F.trunc(F.col("most_recent"), "mon")
+    )
+    dates_df = dates_df.withColumn(
+        "start_of_previous_month", F.add_months(F.col("start_of_month"), -1)
+    )
+    dates_collected = dates_df.collect()
+    first_of_most_recent_month = dates_collected[0]["start_of_month"]
+    first_of_previous_month = dates_collected[0]["start_of_previous_month"]
+
+    return (
+        first_of_most_recent_month,
         first_of_previous_month,
-        reconciliation_single_and_subs_destination,
-    )
-
-    create_reconciliation_outputs_for_ascwds_parent_accounts(
-        ascwds_with_deregistration_date_df,
-        first_of_previous_month,
-        reconciliation_parents_destination,
     )
 
 
@@ -106,6 +140,8 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = filter_df_to_maximum_value_in_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
+    df = filter_to_cqc_registration_type_only(df)
+    df = remove_ascwds_head_office_accounts(df)
     df = df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
     df = df.replace(
         ReconDict.establishment_type_dict, subset=[AWPClean.establishment_type]
@@ -113,17 +149,8 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = add_parent_sub_or_single_col_to_df(df)
     df = add_ownership_col_to_df(df)
     df = add_potentials_col_to_df(df)
-    df = filter_to_cqc_registration_type_only(df)
 
-    return df.withColumnRenamed(AWPClean.location_id, CQCLClean.location_id)
-
-
-def filter_df_to_maximum_value_in_column(
-    df: DataFrame, column_to_filter_on: str
-) -> DataFrame:
-    max_date = df.agg(F.max(column_to_filter_on)).collect()[0][0]
-
-    return df.filter(F.col(column_to_filter_on) == max_date)
+    return df
 
 
 def add_parent_sub_or_single_col_to_df(df: DataFrame) -> DataFrame:
@@ -138,7 +165,7 @@ def add_parent_sub_or_single_col_to_df(df: DataFrame) -> DataFrame:
             F.lit(ReconValues.subsidiary),
         )
         .otherwise(F.lit(ReconValues.single)),
-    )
+    ).drop(AWPClean.is_parent, AWPClean.parent_id)
 
 
 def add_ownership_col_to_df(df: DataFrame) -> DataFrame:
@@ -167,259 +194,200 @@ def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
             ),
             F.lit(ReconValues.singles_and_subs),
         ).otherwise(F.lit(ReconValues.parents)),
-    )
+    ).drop(ReconColumn.parent_sub_or_single, ReconColumn.ownership)
 
 
 def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(AWPClean.registration_type) == "2")
 
 
-def collect_dates_to_use(
-    deregistered_df: DataFrame,
-) -> Tuple[date, date, date]:
-    dates_df = deregistered_df.select(
-        F.max(CQCLClean.cqc_location_import_date).alias("most_recent")
-    )
-    dates_df = dates_df.withColumn(
-        "start_of_month", F.trunc(F.col("most_recent"), "mon")
-    )
-    dates_df = dates_df.withColumn(
-        "start_of_previous_month", F.add_months(F.col("start_of_month"), -1)
-    )
-
-    dates_collected = dates_df.collect()
-    first_of_most_recent_month = dates_collected[0]["start_of_month"]
-    first_of_previous_month = dates_collected[0]["start_of_previous_month"]
-
-    return first_of_most_recent_month, first_of_previous_month
-
-
-def identify_if_location_ids_in_ascwds_have_ever_existed(
-    ascwds_df: DataFrame,
-    cqc_location_id_df: DataFrame,
-) -> DataFrame:
-    distinct_location_id_df = get_all_location_ids_which_have_ever_existed(
-        cqc_location_id_df
-    )
-
-    return ascwds_df.join(distinct_location_id_df, CQCLClean.location_id, "left")
-
-
-def get_all_location_ids_which_have_ever_existed(
-    all_location_ids_df: DataFrame,
-) -> DataFrame:
-    all_location_ids_df = all_location_ids_df.dropDuplicates()
-
-    return all_location_ids_df.withColumn(ReconColumn.ever_existed, F.lit("yes"))
-
-
-def filter_to_locations_deregistered_before_most_recent_month(
-    deregistered_locations_df: DataFrame, first_of_most_recent_month: date
-) -> DataFrame:
-    return deregistered_locations_df.filter(
-        F.col(CQCLClean.deregistration_date) < first_of_most_recent_month
-    )
-
-
-def join_deregistered_cqc_locations_into_ascwds(
-    latest_ascwds_workplace_df: DataFrame,
-    locations_deregistered_before_most_recent_month_df: DataFrame,
-) -> DataFrame:
-    return latest_ascwds_workplace_df.join(
-        locations_deregistered_before_most_recent_month_df,
-        CQCLClean.location_id,
-        "left",
-    )
-
-
-def remove_locations_with_accurately_linked_location_ids(
-    df: DataFrame,
-) -> DataFrame:
-    return df.where(F.col(CQCLClean.cqc_location_import_date).isNull())
-
-
-def filter_to_locations_with_incorrect_or_missing_locationids(
-    df: DataFrame,
-) -> DataFrame:
-    missing_locationid_df = filter_to_ascwds_locations_with_missing_locationids(df)
-    incorrect_locationid_df = filter_to_ascwds_locations_with_incorrect_locationids(df)
-    missing_and_incorrect_locationid_combined_df = missing_locationid_df.unionByName(
-        incorrect_locationid_df
-    )
-    return remove_ascwds_head_office_accounts(
-        missing_and_incorrect_locationid_combined_df
-    )
-
-
-def filter_to_ascwds_locations_with_missing_locationids(df: DataFrame) -> DataFrame:
-    return df.where(
-        (F.col(AWPClean.registration_type) == 2)
-        & (F.col(AWPClean.location_id).isNull())
-    )
-
-
-def filter_to_ascwds_locations_with_incorrect_locationids(df: DataFrame) -> DataFrame:
-    return df.where(
-        (F.col(AWPClean.location_id).isNotNull())
-        & (F.col(ReconColumn.ever_existed).isNull())
-    )
-
-
 def remove_ascwds_head_office_accounts(df: DataFrame) -> DataFrame:
     return df.where(F.col(AWPClean.main_service_id) != "72")
 
 
-def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
-    reconciliation_df: DataFrame,
-    first_of_previous_month: date,
-    destination: str,
-):
-    singles_and_subs_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+def join_cqc_location_data_into_ascwds_workplace_df(
+    ascwds_workplace_df: DataFrame,
+    cqc_location_df: DataFrame,
+) -> DataFrame:
+    ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
+        AWPClean.location_id, CQCLClean.location_id
     )
-    singles_and_subs_df = remove_deregistration_dates_before_previous_month(
-        singles_and_subs_df, first_of_previous_month
-    )
-    singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
-    singles_and_subs_df = singles_and_subs_df.withColumn(
-        ReconColumn.subject, F.lit("CQC Reconcilliation Work")
-    )
-    singles_and_subs_output_df = (
-        create_missing_columns_required_for_output_and_reorder_for_saving(
-            singles_and_subs_df
+    return ascwds_workplace_df.join(cqc_location_df, CQCLClean.location_id, "left")
+
+
+def filter_to_locations_relevant_to_reconcilition_process(
+    df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
+) -> DataFrame:
+    df = df.where(
+        F.col(CQCLClean.registration_status).isNull()
+        | (
+            (
+                (F.col(CQCLClean.registration_status) == CQCLValues.deregistered)
+                & (F.col(CQCLClean.deregistration_date) < first_of_most_recent_month)
+            )
+            & (
+                (F.col(ReconColumn.potentials) == ReconValues.parents)
+                | (
+                    (F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
+                    & (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
+                )
+            )
         )
     )
-    print("singles_and_subs_output_df")
-    singles_and_subs_output_df.show(truncate=False)
-    # write_to_csv(singles_and_subs_output_df, destination)
+    return df
 
 
-def remove_deregistration_dates_before_previous_month(
-    df: DataFrame,
-    first_of_previous_month: date,
-) -> DataFrame:
-    return df.where(
-        (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
-        | F.col(CQCLClean.deregistration_date).isNull()
-    )
+# def create_reconciliation_outputs_for_ascwds_singles_and_subsidiary_accounts(
+#     reconciliation_df: DataFrame,
+#     first_of_previous_month: date,
+#     destination: str,
+# ):
+#     singles_and_subs_df = reconciliation_df.where(
+#         F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+#     )
+#     singles_and_subs_df = remove_deregistration_dates_before_previous_month(
+#         singles_and_subs_df, first_of_previous_month
+#     )
+#     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
+#     singles_and_subs_df = singles_and_subs_df.withColumn(
+#         ReconColumn.subject, F.lit("CQC Reconcilliation Work")
+#     )
+#     singles_and_subs_output_df = (
+#         create_missing_columns_required_for_output_and_reorder_for_saving(
+#             singles_and_subs_df
+#         )
+#     )
+#     print("singles_and_subs_output_df")
+#     singles_and_subs_output_df.show(truncate=False)
+#     # write_to_csv(singles_and_subs_output_df, destination)
 
 
-def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
-    return df.withColumn(
-        ReconColumn.description,
-        F.when(
-            F.col(CQCLClean.deregistration_date).isNotNull(),
-            F.lit("Potential (new): Deregistered ID"),
-        ).otherwise(F.lit("Potential (new): Regtype")),
-    )
+# def remove_deregistration_dates_before_previous_month(
+#     df: DataFrame,
+#     first_of_previous_month: date,
+# ) -> DataFrame:
+#     return df.where(
+#         (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
+#         | F.col(CQCLClean.deregistration_date).isNull()
+#     )
 
 
-def create_reconciliation_outputs_for_ascwds_parent_accounts(
-    reconciliation_df: DataFrame,
-    first_of_previous_month: date,
-    destination: str,
-):
-    parents_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.parents
-    )
-    unique_parentids_df = parents_df.select(
-        F.col(AWPClean.organisation_id)
-    ).dropDuplicates()
-
-    new_issues_df = parents_df.where(
-        F.col(CQCLClean.deregistration_date) >= first_of_previous_month
-    )
-    old_issues_df = parents_df.where(
-        F.col(CQCLClean.deregistration_date) < first_of_previous_month
-    )
-    missing_or_incorrect_df = parents_df.where(
-        F.col(CQCLClean.deregistration_date).isNull()
-    )
-    print("new_issues_df")
-    new_issues_df.show()
-    print("old_issues_df")
-    old_issues_df.show()
-    print("missing_or_incorrect_df")
-    missing_or_incorrect_df.show()
-
-    print("row332")
-    unique_parentids_df.show(truncate=False)
-    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
-        new_issues_df, ReconColumn.new_potential_subs, unique_parentids_df
-    )
-    print("row337")
-    unique_parentids_df.show(truncate=False)
-    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
-        old_issues_df, ReconColumn.old_potential_subs, unique_parentids_df
-    )
-    unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
-        missing_or_incorrect_df,
-        ReconColumn.missing_or_incorrect_potential_subs,
-        unique_parentids_df,
-    )
-
-    print("row348")
-    unique_parentids_df.show(truncate=False)
-    unique_parentids_df = unique_parentids_df.withColumn(
-        ReconColumn.description,
-        F.concat(
-            F.when(
-                F.col(ReconColumn.new_potential_subs).isNotNull(),
-                F.concat(F.col(ReconColumn.new_potential_subs), F.lit(" ")),
-            ).otherwise(F.lit("")),
-            F.when(
-                F.col(ReconColumn.old_potential_subs).isNotNull(),
-                F.concat(F.col(ReconColumn.old_potential_subs), F.lit(" ")),
-            ).otherwise(F.lit("")),
-            F.when(
-                F.col(ReconColumn.missing_or_incorrect_potential_subs).isNotNull(),
-                F.concat(
-                    F.col(ReconColumn.missing_or_incorrect_potential_subs), F.lit(" ")
-                ),
-            ).otherwise(F.lit("")),
-        ),
-    )
-
-    print("row363")
-    unique_parentids_df.show(truncate=False)
-    unique_parentids_df = unique_parentids_df.withColumn(
-        ReconColumn.subject, F.lit("CQC Reconcilliation Work - Parent")
-    )
-
-    parents_output_df = (
-        create_missing_columns_required_for_output_and_reorder_for_saving(
-            unique_parentids_df
-        )
-    )
-    parents_output_df.show(truncate=False)
-    # write_to_csv(parents_output_df, destination)
+# def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
+#     return df.withColumn(
+#         ReconColumn.description,
+#         F.when(
+#             F.col(CQCLClean.deregistration_date).isNotNull(),
+#             F.lit("Potential (new): Deregistered ID"),
+#         ).otherwise(F.lit("Potential (new): Regtype")),
+#     )
 
 
-def join_array_of_nmdsids_into_unique_orgid_df(
-    df_with_issues: DataFrame, new_col_name: str, unique_df: DataFrame
-) -> DataFrame:
-    unique_issues_parents_df = unique_parents_with_array_of_nmdsids(
-        df_with_issues, new_col_name
-    )
-    return unique_df.join(unique_issues_parents_df, AWPClean.organisation_id, "left")
+# def create_reconciliation_outputs_for_ascwds_parent_accounts(
+#     reconciliation_df: DataFrame,
+#     first_of_previous_month: date,
+#     destination: str,
+# ):
+#     parents_df = reconciliation_df.where(
+#         F.col(ReconColumn.potentials) == ReconValues.parents
+#     )
+#     unique_parentids_df = parents_df.select(
+#         F.col(AWPClean.organisation_id)
+#     ).dropDuplicates()
+
+#     new_issues_df = parents_df.where(
+#         F.col(CQCLClean.deregistration_date) >= first_of_previous_month
+#     )
+#     old_issues_df = parents_df.where(
+#         F.col(CQCLClean.deregistration_date) < first_of_previous_month
+#     )
+#     missing_or_incorrect_df = parents_df.where(
+#         F.col(CQCLClean.deregistration_date).isNull()
+#     )
+#     print("new_issues_df")
+#     new_issues_df.show()
+#     print("old_issues_df")
+#     old_issues_df.show()
+#     print("missing_or_incorrect_df")
+#     missing_or_incorrect_df.show()
+
+#     print("row332")
+#     unique_parentids_df.show(truncate=False)
+#     unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+#         new_issues_df, ReconColumn.new_potential_subs, unique_parentids_df
+#     )
+#     print("row337")
+#     unique_parentids_df.show(truncate=False)
+#     unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+#         old_issues_df, ReconColumn.old_potential_subs, unique_parentids_df
+#     )
+#     unique_parentids_df = join_array_of_nmdsids_into_unique_orgid_df(
+#         missing_or_incorrect_df,
+#         ReconColumn.missing_or_incorrect_potential_subs,
+#         unique_parentids_df,
+#     )
+
+#     print("row348")
+#     unique_parentids_df.show(truncate=False)
+#     unique_parentids_df = unique_parentids_df.withColumn(
+#         ReconColumn.description,
+#         F.concat(
+#             F.when(
+#                 F.col(ReconColumn.new_potential_subs).isNotNull(),
+#                 F.concat(F.col(ReconColumn.new_potential_subs), F.lit(" ")),
+#             ).otherwise(F.lit("")),
+#             F.when(
+#                 F.col(ReconColumn.old_potential_subs).isNotNull(),
+#                 F.concat(F.col(ReconColumn.old_potential_subs), F.lit(" ")),
+#             ).otherwise(F.lit("")),
+#             F.when(
+#                 F.col(ReconColumn.missing_or_incorrect_potential_subs).isNotNull(),
+#                 F.concat(
+#                     F.col(ReconColumn.missing_or_incorrect_potential_subs), F.lit(" ")
+#                 ),
+#             ).otherwise(F.lit("")),
+#         ),
+#     )
+
+#     print("row363")
+#     unique_parentids_df.show(truncate=False)
+#     unique_parentids_df = unique_parentids_df.withColumn(
+#         ReconColumn.subject, F.lit("CQC Reconcilliation Work - Parent")
+#     )
+
+#     parents_output_df = (
+#         create_missing_columns_required_for_output_and_reorder_for_saving(
+#             unique_parentids_df
+#         )
+#     )
+#     parents_output_df.show(truncate=False)
+#     # write_to_csv(parents_output_df, destination)
 
 
-def unique_parents_with_array_of_nmdsids(df: DataFrame, new_col_name: str) -> DataFrame:
-    subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
-    subs_at_parent_df = (
-        subs_at_parent_df.groupby(AWPClean.organisation_id)
-        .agg(F.collect_set(AWPClean.nmds_id))
-        .alias(new_col_name)
-    )
+# def join_array_of_nmdsids_into_unique_orgid_df(
+#     df_with_issues: DataFrame, new_col_name: str, unique_df: DataFrame
+# ) -> DataFrame:
+#     unique_issues_parents_df = unique_parents_with_array_of_nmdsids(
+#         df_with_issues, new_col_name
+#     )
+#     return unique_df.join(unique_issues_parents_df, AWPClean.organisation_id, "left")
 
-    subs_at_parent_df = subs_at_parent_df.withColumn(
-        new_col_name, F.concat_ws(", ", F.col(new_col_name))
-    )
-    subs_at_parent_df = subs_at_parent_df.withColumn(
-        new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
-    )
 
-    return subs_at_parent_df
+# def unique_parents_with_array_of_nmdsids(df: DataFrame, new_col_name: str) -> DataFrame:
+#     subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
+#     subs_at_parent_df = (
+#         subs_at_parent_df.groupby(AWPClean.organisation_id)
+#         .agg(F.collect_set(AWPClean.nmds_id))
+#         .alias(new_col_name)
+#     )
+
+#     subs_at_parent_df = subs_at_parent_df.withColumn(
+#         new_col_name, F.concat_ws(", ", F.col(new_col_name))
+#     )
+#     subs_at_parent_df = subs_at_parent_df.withColumn(
+#         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
+#     )
+
+#     return subs_at_parent_df
 
 
 if __name__ == "__main__":
