@@ -240,7 +240,7 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
         )
 
         self.returned_df = job.remove_workplaces_with_duplicate_location_ids(
-            self.input_df
+            self.test_location_df
         )
 
         self.test_duplicate_loc_df = self.spark.createDataFrame(
