@@ -231,7 +231,7 @@ class PurgeOutdatedWorkplacesColumn(AddPurgeOutdatedWorkplacesColumnTests):
         self.assertEqual(purge_data_list, expected_list)
 
 
-class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
+class RemoveWorkplacesWithDuplicateLocationIdsTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
