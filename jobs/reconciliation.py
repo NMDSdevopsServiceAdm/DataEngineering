@@ -85,11 +85,17 @@ def main(
     print("prepare_latest_cleaned_ascwds_workforce_data complete:")
     print("latest_ascwds_workplace_df:")
     latest_ascwds_workplace_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     print("ascwds_parent_accounts_df:")
     ascwds_parent_accounts_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
 
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
@@ -97,7 +103,10 @@ def main(
     )
     print("join_cqc_location_data_into_ascwds_workplace_df complete:")
     merged_ascwds_cqc_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
 
     reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
@@ -105,14 +114,20 @@ def main(
     )
     print("filter_to_locations_relevant_to_reconcilition_process complete:")
     reconciliation_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     reconciliation_df = remove_ascwds_head_office_accounts_without_location_ids(
         reconciliation_df
     )
     print("remove_ascwds_head_office_accounts_without_location_ids complete:")
     reconciliation_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
@@ -297,26 +312,38 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     )
     print("filtered to single and subs complete:")
     singles_and_subs_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     print("add_singles_and_sub_description_column complete:")
     singles_and_subs_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     singles_and_subs_df = singles_and_subs_df.withColumn(
         ReconColumn.subject, F.lit(ReconValues.single_sub_subject_value)
     )
     print("add_singles_and_sub_subject_column complete:")
     singles_and_subs_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     singles_and_subs_df = create_missing_columns_required_for_output(
         singles_and_subs_df
     )
     print("create_missing_columns_required_for_output complete:")
     singles_and_subs_df.where(
-        (F.col(AWPClean.nmds_id) == "B1024991") | (F.col(AWPClean.nmds_id) == "D118013")
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
     ).show(truncate=False)
     return final_column_selection(singles_and_subs_df)
 
@@ -341,64 +368,124 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
         F.col(ReconColumn.potentials) == ReconValues.parents
     )
     print("filtered to parents only")
-    reconciliation_parents_df.show(5, truncate=False)
+    reconciliation_parents_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCLClean.deregistration_date) >= first_of_previous_month
     )
     print("new issues df")
-    new_issues_df.show(5, truncate=False)
+    new_issues_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     old_issues_df = reconciliation_parents_df.where(
         F.col(CQCLClean.deregistration_date) < first_of_previous_month
     )
     print("old issues df")
-    old_issues_df.show(5, truncate=False)
+    old_issues_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     missing_or_incorrect_df = reconciliation_parents_df.where(
         F.col(CQCLClean.deregistration_date).isNull()
     )
     print("missing or incorrect df")
-    missing_or_incorrect_df.show(5, truncate=False)
+    missing_or_incorrect_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
 
     print("all parents pre merging")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         new_issues_df, ReconColumn.new_potential_subs, ascwds_parent_accounts_df
     )
     print("new issues joined in")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         old_issues_df, ReconColumn.old_potential_subs, ascwds_parent_accounts_df
     )
     print("old issues joined in")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         missing_or_incorrect_df,
         ReconColumn.missing_or_incorrect_potential_subs,
         ascwds_parent_accounts_df,
     )
     print("missing and incorrect joined in")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
 
     ascwds_parent_accounts_df = create_description_column_for_parent_accounts(
         ascwds_parent_accounts_df
     )
     print("description column added")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     ascwds_parent_accounts_df = ascwds_parent_accounts_df.where(
         F.length(ReconColumn.description) > 1
     )
     print("filtered to parents with a description value only")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
 
     ascwds_parent_accounts_df = ascwds_parent_accounts_df.withColumn(
         ReconColumn.subject, F.lit(ReconValues.parent_subject_value)
     )
     print("subject column added")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
     )
     print("added batch of missing columns")
-    ascwds_parent_accounts_df.show(5, truncate=False)
+    ascwds_parent_accounts_df.where(
+        (F.col(AWPClean.nmds_id) == "B1024991")
+        | (F.col(AWPClean.nmds_id) == "D118013")
+        | (F.col(AWPClean.nmds_id) == "G1018505")
+        | (F.col(AWPClean.nmds_id) == "H1028244")
+    ).show(5, truncate=False)
 
     return final_column_selection(ascwds_parent_accounts_df)
 
