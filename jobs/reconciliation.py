@@ -113,7 +113,7 @@ def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame
 def collect_dates_to_use(df: DataFrame) -> Tuple[date, date, date]:
     dates_df = df.select(F.max(CQCLClean.cqc_location_import_date).alias("most_recent"))
     dates_df = dates_df.withColumn(
-        "start_of_month", F.trunc(F.col("most_recent"), "mon")
+        "start_of_month", F.trunc(F.col("most_recent"), "MM")
     )
     dates_df = dates_df.withColumn(
         "start_of_previous_month", F.add_months(F.col("start_of_month"), -1)

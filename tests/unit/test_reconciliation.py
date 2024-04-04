@@ -61,17 +61,27 @@ class ReconciliationTests(unittest.TestCase):
         self.assertEqual(read_from_parquet_patch.call_count, 2)
         self.assertEqual(write_to_csv_patch.call_count, 2)
 
-    def test_collect_dates_to_use(self):
+    def test_collect_dates_to_use_return_correct_value_when_mid_month(self):
         input_df = self.spark.createDataFrame(
-            Data.dates_to_use_rows, Schemas.dates_to_use_schema
+            Data.dates_to_use_mid_month_rows, Schemas.dates_to_use_schema
         )
-
         (
             first_of_most_recent_month,
             first_of_previous_month,
         ) = job.collect_dates_to_use(input_df)
         self.assertEqual(first_of_most_recent_month, date(2024, 3, 1))
         self.assertEqual(first_of_previous_month, date(2024, 2, 1))
+
+    def test_collect_dates_to_use_return_correct_value_when_first_of_the_month(self):
+        input_df = self.spark.createDataFrame(
+            Data.dates_to_use_first_month_rows, Schemas.dates_to_use_schema
+        )
+        (
+            first_of_most_recent_month,
+            first_of_previous_month,
+        ) = job.collect_dates_to_use(input_df)
+        self.assertEqual(first_of_most_recent_month, date(2024, 4, 1))
+        self.assertEqual(first_of_previous_month, date(2024, 3, 1))
 
     def test_write_to_csv(self):
         df = self.test_cqc_location_api_df
