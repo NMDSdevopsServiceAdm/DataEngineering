@@ -73,7 +73,9 @@ def main(
     reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
-
+    reconciliation_df = remove_ascwds_head_office_accounts_without_location_ids(
+        reconciliation_df
+    )
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
@@ -217,7 +219,7 @@ def join_cqc_location_data_into_ascwds_workplace_df(
 def filter_to_locations_relevant_to_reconcilition_process(
     df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
 ) -> DataFrame:
-    reconciliation_df = df.where(
+    return df.where(
         F.col(CQCLClean.registration_status).isNull()
         | (
             (
@@ -233,7 +235,6 @@ def filter_to_locations_relevant_to_reconcilition_process(
             )
         )
     )
-    return remove_ascwds_head_office_accounts_without_location_ids(reconciliation_df)
 
 
 def remove_ascwds_head_office_accounts_without_location_ids(
