@@ -354,17 +354,27 @@ class ASCWDSWorkplaceData:
         (
             "loc-2",
             "2020-01-01",
-            "1",
+            "2",
         ),
         (
             "loc-3",
             "2020-01-01",
-            "2",
+            "3",
         ),
         (
             "loc-4",
             "2021-01-01",
-            "2",
+            "4",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "5",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "6",
         ),
     ]
 
@@ -373,12 +383,12 @@ class ASCWDSWorkplaceData:
         (
             "loc-3",
             "2020-01-01",
-            "10",
+            "7",
         ),
         (
             "loc-4",
             "2021-01-01",
-            "10",
+            "8",
         ),
     ]
 
@@ -387,12 +397,12 @@ class ASCWDSWorkplaceData:
         (
             "loc-3",
             "2021-01-01",
-            "10",
+            "3",
         ),
         (
             "loc-4",
             "2022-01-01",
-            "10",
+            "4",
         ),
     ]
 
@@ -405,7 +415,17 @@ class ASCWDSWorkplaceData:
         (
             "loc-2",
             "2020-01-01",
-            "1",
+            "2",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "5",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "6",
         ),
     ]
 
@@ -2590,7 +2610,7 @@ class ModelInterpolation:
 @dataclass
 class ValidateMergedIndCqcData:
     # fmt: off
-    cqc_locations_rows =  [
+    cqc_locations_rows = [
         (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
         (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
         (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
@@ -2601,8 +2621,8 @@ class ValidateMergedIndCqcData:
         (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
         (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
     ]
-   
-    merged_ind_cqc_rows =[
+
+    merged_ind_cqc_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2614,7 +2634,7 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_extra_row_rows =[
+    merged_ind_cqc_extra_row_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2627,7 +2647,7 @@ class ValidateMergedIndCqcData:
         ("1-000000004", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_missing_row_rows =[
+    merged_ind_cqc_missing_row_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2638,7 +2658,7 @@ class ValidateMergedIndCqcData:
         ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_with_cqc_sector_null_rows =[
+    merged_ind_cqc_with_cqc_sector_null_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2650,7 +2670,7 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), None, "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_with_duplicate_data_rows =[
+    merged_ind_cqc_with_duplicate_data_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),

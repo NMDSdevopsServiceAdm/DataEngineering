@@ -11,7 +11,6 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
-    AscwdsWorkplaceColumns as AWP,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -20,14 +19,14 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
 
 DATE_COLUMN_IDENTIFIER = "date"
-COLUMNS_TO_BOUND = [AWP.total_staff, AWP.worker_records]
+COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 
 
 def main(source: str, destination: str):
     ascwds_workplace_df = utils.read_from_parquet(source)
 
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-        AWP.last_logged_in, AWPClean.last_logged_in_date
+        AWPClean.last_logged_in, AWPClean.last_logged_in_date
     )
 
     ascwds_workplace_df = utils.format_date_fields(
@@ -48,20 +47,22 @@ def main(source: str, destination: str):
 
     ascwds_workplace_df = purge_outdated_workplaces(ascwds_workplace_df)
 
-    ascwds_workplace_df = remove_locations_with_duplicates(ascwds_workplace_df)
+    ascwds_workplace_df = remove_workplaces_with_duplicate_location_ids(
+        ascwds_workplace_df
+    )
 
     ascwds_workplace_df = cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
 
     ascwds_workplace_df = cUtils.set_column_bounds(
         ascwds_workplace_df,
-        AWP.total_staff,
+        AWPClean.total_staff,
         AWPClean.total_staff_bounded,
         AscwdsScaleVariableLimits.total_staff_lower_limit,
     )
 
     ascwds_workplace_df = cUtils.set_column_bounds(
         ascwds_workplace_df,
-        AWP.worker_records,
+        AWPClean.worker_records,
         AWPClean.worker_records_bounded,
         AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
@@ -86,18 +87,25 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     return df
 
 
-def remove_locations_with_duplicates(df: DataFrame):
+def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
+    location_id_count: str = "location_id_count"
+
+    locations_without_location_id_df = df.where(F.col(AWPClean.location_id).isNull())
+    locations_with_location_id_df = df.where(F.col(AWPClean.location_id).isNotNull())
+
     loc_id_import_date_window = Window.partitionBy(
-        AWP.location_id, PartitionKeys.import_date
+        AWPClean.location_id, PartitionKeys.import_date
     )
-
-    df_with_count = df.withColumn(
-        "location_id_count", F.count(AWP.location_id).over(loc_id_import_date_window)
+    count_of_location_id_df = locations_with_location_id_df.withColumn(
+        location_id_count, F.count(AWPClean.location_id).over(loc_id_import_date_window)
     )
+    duplicate_location_ids_removed_df = count_of_location_id_df.filter(
+        F.col(location_id_count) == 1
+    ).drop(location_id_count)
 
-    df_without_duplicates = df_with_count.filter(F.col("location_id_count") == 1)
-
-    return df_without_duplicates.drop("location_id_count")
+    return locations_without_location_id_df.unionByName(
+        duplicate_location_ids_removed_df
+    )
 
 
 def add_purge_outdated_workplaces_column(
@@ -144,20 +152,24 @@ def add_purge_outdated_workplaces_column(
     return final_df
 
 
-def calculate_latest_update_to_workplace_location(df: DataFrame, comparison_date_col):
+def calculate_latest_update_to_workplace_location(
+    df: DataFrame, comparison_date_col
+) -> DataFrame:
     org_df_with_latest_updates = df.groupBy(
-        AWP.organisation_id, comparison_date_col
-    ).agg(F.max(AWP.master_update_date).alias("latest_org_mupddate"))
+        AWPClean.organisation_id, comparison_date_col
+    ).agg(F.max(AWPClean.master_update_date).alias("latest_org_mupddate"))
 
     df_with_org_updates = df.join(
-        org_df_with_latest_updates, [AWP.organisation_id, comparison_date_col], "left"
+        org_df_with_latest_updates,
+        [AWPClean.organisation_id, comparison_date_col],
+        "left",
     )
 
     df_with_latest_update = df_with_org_updates.withColumn(
         "latest_update",
-        F.when((F.col(AWP.is_parent) == "1"), F.col("latest_org_mupddate")).otherwise(
-            F.col(AWP.master_update_date)
-        ),
+        F.when(
+            (F.col(AWPClean.is_parent) == "1"), F.col("latest_org_mupddate")
+        ).otherwise(F.col(AWPClean.master_update_date)),
     )
 
     df_with_latest_update = df_with_latest_update.drop("latest_org_mupddate")
