@@ -235,12 +235,12 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_location_df = self.spark.createDataFrame(
+        self.input_df = self.spark.createDataFrame(
             Data.small_location_rows, Schemas.location_schema
         )
 
-        self.returned_df = job.remove_workplaces_with_duplicate_location_ids(
-            self.test_location_df
+        self.workplaces_with_duplicate_location_ids_removed_df = (
+            job.remove_workplaces_with_duplicate_location_ids(self.input_df)
         )
 
         self.test_duplicate_loc_df = self.spark.createDataFrame(
@@ -248,11 +248,13 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
         )
 
     def test_returns_a_dataframe(self):
-        self.assertEqual(type(self.returned_df), DataFrame)
+        self.assertEqual(
+            type(self.workplaces_with_duplicate_location_ids_removed_df), DataFrame
+        )
 
     def test_returns_the_correct_columns(self):
         self.assertCountEqual(
-            self.returned_df.columns,
+            self.workplaces_with_duplicate_location_ids_removed_df.columns,
             [
                 AWP.location_id,
                 AWP.import_date,
@@ -262,37 +264,34 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
 
     def test_does_not_remove_rows_if_no_duplicates(self):
         self.assertEqual(
-            self.returned_df.sort(AWP.organisation_id).collect(),
-            self.test_location_df.sort(AWP.organisation_id).collect(),
+            self.workplaces_with_duplicate_location_ids_removed_df.sort(
+                AWP.organisation_id
+            ).collect(),
+            self.input_df.sort(AWP.organisation_id).collect(),
         )
 
     def test_removes_duplicate_location_id_with_same_import_date(self):
-        filtered_df = job.remove_workplaces_with_duplicate_location_ids(
+        output_df = job.remove_workplaces_with_duplicate_location_ids(
             self.test_duplicate_loc_df
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_filtered_location_rows, Schemas.location_schema
         )
         self.assertEqual(
-            filtered_df.sort(AWP.organisation_id).collect(),
+            output_df.sort(AWP.organisation_id).collect(),
             expected_df.sort(AWP.organisation_id).collect(),
         )
 
     def test_does_not_remove_duplicate_location_id_with_different_import_dates(self):
-        locations_with_different_import_dates_df = self.spark.createDataFrame(
+        input_df = self.spark.createDataFrame(
             Data.location_rows_with_different_import_dates,
             Schemas.location_schema,
         )
-
-        filtered_df = job.remove_workplaces_with_duplicate_location_ids(
-            locations_with_different_import_dates_df
-        )
+        output_df = job.remove_workplaces_with_duplicate_location_ids(input_df)
 
         self.assertEqual(
-            filtered_df.sort(AWP.organisation_id).collect(),
-            locations_with_different_import_dates_df.sort(
-                AWP.organisation_id
-            ).collect(),
+            output_df.sort(AWP.organisation_id).collect(),
+            input_df.sort(AWP.organisation_id).collect(),
         )
 
 
