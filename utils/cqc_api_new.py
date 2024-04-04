@@ -46,7 +46,9 @@ def get_all_objects(
 
     total_pages = call_api(
         url,
-        {"perPage": per_page, "partnerCode": partner_code},
+        {
+            "perPage": per_page,
+        },
         headers_dict={"User-Agent": USER_AGENT},
     )["totalPages"]
 
@@ -73,7 +75,7 @@ def get_page_objects(
     page_objects = []
     response_body = call_api(
         url,
-        {"page": page_number, "perPage": per_page, "partnerCode": partner_code},
+        {"page": page_number, "perPage": per_page},
         headers_dict={"User-Agent": USER_AGENT},
     )
 
