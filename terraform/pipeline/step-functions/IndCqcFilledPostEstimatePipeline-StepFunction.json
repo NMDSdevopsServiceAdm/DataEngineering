@@ -84,9 +84,9 @@
           }
         },
         {
-          "StartAt": "Clean ONS and Clean CQC pProvider Parallel",
+          "StartAt": "Clean ONS and Clean CQC Provider Parallel",
           "States": {
-            "Clean ONS and Clean CQC pProvider Parallel": {
+            "Clean ONS and Clean CQC Provider Parallel": {
               "Type": "Parallel",
               "Branches": [
                 {
