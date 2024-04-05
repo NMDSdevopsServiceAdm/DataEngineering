@@ -895,6 +895,35 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ReconciliationSchema:
+    input_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_id, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+    input_cqc_location_api_schema = StructType(
+        [
+            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.deregistration_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class FilterAscwdsFilledPostsSchema:
     input_schema = StructType(
         [
