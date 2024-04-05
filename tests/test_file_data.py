@@ -1198,13 +1198,6 @@ class CQCLocationsData:
         ),
     ]
 
-    expected_deregistered_rows = [
-        (
-            "loc-2",
-            "Deregistered",
-        ),
-    ]
-
     expected_registered_rows = [
         (
             "loc-1",
