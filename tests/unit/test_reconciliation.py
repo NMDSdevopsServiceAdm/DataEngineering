@@ -2,6 +2,7 @@ import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
+from pyspark.sql import functions as F
 
 import jobs.reconciliation as job
 from utils import utils
