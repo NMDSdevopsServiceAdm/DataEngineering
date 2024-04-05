@@ -4,8 +4,7 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -18,13 +17,10 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import CQCPirCleanedData
-from tests.test_file_schemas import (
-    CQCPPIRCleanSchema,
-)
+from tests.test_file_data import UtilsData, CQCPirCleanedData
+from tests.test_file_schemas import UtilsSchema, CQCPPIRCleanSchema
 
 from utils import utils
-from tests.test_file_generator import generate_ascwds_workplace_file
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns,
 )
@@ -105,9 +101,6 @@ class UtilsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
-        self.test_workplace_df = generate_ascwds_workplace_file(
-            self.TEST_ASCWDS_WORKPLACE_FILE
-        )
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
@@ -130,6 +123,11 @@ class UtilsTests(unittest.TestCase):
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
         except OSError:
             pass  # Ignore dir does not exist
+
+
+class GeneralUtilsTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_get_s3_objects_list_returns_all_objects(self):
         partial_response = {
@@ -653,8 +651,11 @@ class UtilsTests(unittest.TestCase):
         )
 
     def test_format_import_date_returns_date_format(self):
-        df = utils.format_import_date(self.test_workplace_df)
+        columns = ["locationid", "import_date"]
+        rows = [("1-000000001", "20200101"), ("1-000000002", "20210101")]
+        test_df = self.spark.createDataFrame(rows, columns)
 
+        df = utils.format_import_date(test_df)
         self.assertEqual(df.schema["import_date"].dataType, DateType())
         self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
 
@@ -786,7 +787,7 @@ class UtilsTests(unittest.TestCase):
                 self.assertEqual(row.process_day, "05")
 
 
-class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
+class LatestDatefieldForGroupingTests(UtilsTests):
     def setup(self) -> None:
         super(LatestDatefieldForGroupingTests, self).setUp()
 
@@ -871,6 +872,46 @@ class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
         self.assertEqual(returned_df.collect()[0][0], "LOWER_CASE")
         self.assertEqual(returned_df.collect()[1][0], "WITHSPACES")
         self.assertEqual(returned_df.collect()[2][0], "UPPER_CASE")
+
+
+class FilterDataframeToMaximumValueTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.df = self.spark.createDataFrame(
+            UtilsData.filter_to_max_value_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+    def test_filter_df_to_maximum_value_in_column_filters_correctly_with_date(self):
+        returned_df = utils.filter_df_to_maximum_value_in_column(
+            self.df, "date_type_column"
+        )
+
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_filter_to_max_date_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+        returned_data = returned_df.sort("ID").collect()
+        expected_data = expected_df.sort("ID").collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+    def test_filter_df_to_maximum_value_in_column_filters_correctly_with_string(self):
+        returned_df = utils.filter_df_to_maximum_value_in_column(
+            self.df, "import_date_style_col"
+        )
+
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_filter_to_max_string_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+        returned_data = returned_df.sort("ID").collect()
+        expected_data = expected_df.sort("ID").collect()
+
+        self.assertEqual(expected_data, returned_data)
 
 
 if __name__ == "__main__":

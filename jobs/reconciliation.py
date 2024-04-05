@@ -1,8 +1,16 @@
 import sys
+from pyspark.sql import DataFrame, functions as F
+from typing import Tuple
+from datetime import date
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -46,6 +54,47 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
+    )
+
+    cqc_location_df = prepare_most_recent_cqc_location_df(cqc_location_df)
+    (
+        first_of_most_recent_month,
+        first_of_previous_month,
+    ) = collect_dates_to_use(cqc_location_df)
+
+
+def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
+    cqc_location_df = cUtils.column_to_date(
+        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
+    ).drop(Keys.import_date)
+    cqc_location_df = utils.filter_df_to_maximum_value_in_column(
+        cqc_location_df, CQCLClean.cqc_location_import_date
+    )
+    cqc_location_df = utils.format_date_fields(
+        cqc_location_df,
+        date_column_identifier=CQCL.deregistration_date,
+        raw_date_format="yyyy-MM-dd",
+    )
+    return cqc_location_df
+
+
+def collect_dates_to_use(df: DataFrame) -> Tuple[date, date]:
+    most_recent: str = "most_recent"
+    start_of_month: str = "start_of_month"
+    start_of_previous_month: str = "start_of_previous_month"
+
+    dates_df = df.select(F.max(CQCLClean.cqc_location_import_date).alias(most_recent))
+    dates_df = dates_df.withColumn(start_of_month, F.trunc(F.col(most_recent), "MM"))
+    dates_df = dates_df.withColumn(
+        start_of_previous_month, F.add_months(F.col(start_of_month), -1)
+    )
+    dates_collected = dates_df.collect()
+    first_of_most_recent_month = dates_collected[0][start_of_month]
+    first_of_previous_month = dates_collected[0][start_of_previous_month]
+
+    return (
+        first_of_most_recent_month,
+        first_of_previous_month,
     )
 
 

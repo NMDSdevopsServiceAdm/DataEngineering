@@ -41,11 +41,9 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
 
 def prepare_current_ons_data(df: DataFrame) -> DataFrame:
-    max_import_date = df.agg(F.max(ONSClean.contemporary_ons_import_date)).collect()[0][
-        0
-    ]
-    df = df.filter(F.col(ONSClean.contemporary_ons_import_date) == max_import_date)
-
+    df = utils.filter_df_to_maximum_value_in_column(
+        df, ONSClean.contemporary_ons_import_date
+    )
     current_ons_df = df.select(
         df[ONSClean.postcode],
         df[ONSClean.contemporary_ons_import_date].alias(
