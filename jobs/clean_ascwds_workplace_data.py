@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedValues as AWPValues,
 )
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
+from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
+    ascwds_workplace_labels_dict,
+)
 
 DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
@@ -65,6 +68,13 @@ def main(source: str, destination: str):
         AWPClean.worker_records,
         AWPClean.worker_records_bounded,
         AscwdsScaleVariableLimits.worker_records_lower_limit,
+    )
+
+    ascwds_workplace_df = cUtils.apply_categorical_labels(
+        ascwds_workplace_df,
+        ascwds_workplace_labels_dict,
+        ascwds_workplace_labels_dict.keys(),
+        add_as_new_column=True,
     )
 
     print(f"Exporting as parquet to {destination}")
