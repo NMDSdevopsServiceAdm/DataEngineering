@@ -6,12 +6,18 @@ from datetime import date
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
     CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
 )
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationColumns as ReconColumn,
@@ -20,10 +26,10 @@ from utils.reconciliation_utils.reconciliation_values import (
 )
 
 cqc_locations_columns_to_import = [
-    CQCLClean.import_date,
-    CQCLClean.location_id,
-    CQCLClean.registration_status,
-    CQCLClean.deregistration_date,
+    Keys.import_date,
+    CQCL.location_id,
+    CQCL.registration_status,
+    CQCL.deregistration_date,
 ]
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
@@ -100,14 +106,14 @@ def filter_df_to_maximum_value_in_column(
 
 def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
     cqc_location_df = cUtils.column_to_date(
-        cqc_location_df, CQCLClean.import_date, CQCLClean.cqc_location_import_date
-    ).drop(CQCLClean.import_date)
+        cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
+    ).drop(Keys.import_date)
     cqc_location_df = filter_df_to_maximum_value_in_column(
         cqc_location_df, CQCLClean.cqc_location_import_date
     )
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
-        date_column_identifier=CQCLClean.deregistration_date,
+        date_column_identifier=CQCL.deregistration_date,
         raw_date_format="yyyy-MM-dd",
     )
     return cqc_location_df
@@ -214,26 +220,26 @@ def join_cqc_location_data_into_ascwds_workplace_df(
     cqc_location_df: DataFrame,
 ) -> DataFrame:
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-        AWPClean.location_id, CQCLClean.location_id
+        AWPClean.location_id, CQCL.location_id
     )
-    return ascwds_workplace_df.join(cqc_location_df, CQCLClean.location_id, "left")
+    return ascwds_workplace_df.join(cqc_location_df, CQCL.location_id, "left")
 
 
 def filter_to_locations_relevant_to_reconcilition_process(
     df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
 ) -> DataFrame:
     return df.where(
-        F.col(CQCLClean.registration_status).isNull()
+        F.col(CQCL.registration_status).isNull()
         | (
             (
-                (F.col(CQCLClean.registration_status) == CQCLValues.deregistered)
-                & (F.col(CQCLClean.deregistration_date) < first_of_most_recent_month)
+                (F.col(CQCL.registration_status) == CQCLValues.deregistered)
+                & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
             )
             & (
                 (F.col(ReconColumn.potentials) == ReconValues.parents)
                 | (
                     (F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
-                    & (F.col(CQCLClean.deregistration_date) >= first_of_previous_month)
+                    & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
                 )
             )
         )
@@ -244,9 +250,9 @@ def remove_ascwds_head_office_accounts_without_location_ids(
     df: DataFrame,
 ) -> DataFrame:
     return df.where(
-        (F.col(CQCLClean.registration_status).isNotNull())
+        (F.col(CQCL.registration_status).isNotNull())
         | (
-            (F.col(CQCLClean.registration_status).isNull())
+            (F.col(CQCL.registration_status).isNull())
             & (F.col(AWPClean.main_service_id) != "72")
         )
     )
@@ -272,7 +278,7 @@ def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
         ReconColumn.description,
         F.when(
-            F.col(CQCLClean.deregistration_date).isNotNull(),
+            F.col(CQCL.deregistration_date).isNotNull(),
             F.lit(ReconValues.single_sub_deregistered_description),
         ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
     )
@@ -289,15 +295,15 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     )
     print("filtered to parents only")
     new_issues_df = reconciliation_parents_df.where(
-        F.col(CQCLClean.deregistration_date) >= first_of_previous_month
+        F.col(CQCL.deregistration_date) >= first_of_previous_month
     )
     print("new issues df")
     old_issues_df = reconciliation_parents_df.where(
-        F.col(CQCLClean.deregistration_date) < first_of_previous_month
+        F.col(CQCL.deregistration_date) < first_of_previous_month
     )
     print("old issues df")
     missing_or_incorrect_df = reconciliation_parents_df.where(
-        F.col(CQCLClean.deregistration_date).isNull()
+        F.col(CQCL.deregistration_date).isNull()
     )
     print("missing or incorrect df")
 
@@ -464,11 +470,11 @@ if __name__ == "__main__":
         ),
         (
             "--reconciliation_single_and_subs_destination",
-            "Destination s3 directory for reconciliation parquet singles and subs dataset",
+            "Destination s3 directory for singles and subs reconciliation CSV dataset",
         ),
         (
             "--reconciliation_parents_destination",
-            "Destination s3 directory for reconciliation parquet parents dataset",
+            "Destination s3 directory for parents reconciliation CSV dataset",
         ),
     )
     main(

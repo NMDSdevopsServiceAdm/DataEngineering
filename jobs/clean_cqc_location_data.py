@@ -197,9 +197,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     return joined_df
 
 
-def select_registered_locations_only(
-    locations_df: DataFrame,
-) -> Tuple[DataFrame, DataFrame]:
+def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
@@ -243,7 +241,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     ]
     list_of_columns = cleaned_locations_df.columns
     for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
-        if not column in list_of_columns:
+        if column not in list_of_columns:
             raise ValueError(
                 f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
             )

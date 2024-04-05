@@ -246,7 +246,7 @@ class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
         self.assertCountEqual(returned_data, expected_data)
 
 
-class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
+class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
