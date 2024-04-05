@@ -354,17 +354,27 @@ class ASCWDSWorkplaceData:
         (
             "loc-2",
             "2020-01-01",
-            "1",
+            "2",
         ),
         (
             "loc-3",
             "2020-01-01",
-            "2",
+            "3",
         ),
         (
             "loc-4",
             "2021-01-01",
-            "2",
+            "4",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "5",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "6",
         ),
     ]
 
@@ -373,12 +383,12 @@ class ASCWDSWorkplaceData:
         (
             "loc-3",
             "2020-01-01",
-            "10",
+            "7",
         ),
         (
             "loc-4",
             "2021-01-01",
-            "10",
+            "8",
         ),
     ]
 
@@ -387,12 +397,12 @@ class ASCWDSWorkplaceData:
         (
             "loc-3",
             "2021-01-01",
-            "10",
+            "3",
         ),
         (
             "loc-4",
             "2022-01-01",
-            "10",
+            "4",
         ),
     ]
 
@@ -405,7 +415,17 @@ class ASCWDSWorkplaceData:
         (
             "loc-2",
             "2020-01-01",
-            "1",
+            "2",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "5",
+        ),
+        (
+            None,
+            "2021-01-01",
+            "6",
         ),
     ]
 
@@ -1751,6 +1771,50 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ReconciliationData:
+    # fmt: off
+    input_ascwds_workplace_rows = [
+        (date(2024, 4, 1), "100", "A100", "0", None, "100", "2", "1", "1", None, "10", "Est Name 00", "1"),  # Single - not CQC regtype - INCLUDED
+        (date(2024, 4, 1), "101", "A101", "0", None, "101", "2", "1", "2", "1-001", "10", "Est Name 01", "1"),  # Single - ID matches - EXCLUDED
+        (date(2024, 4, 1), "102", "A102", "0", None, "102", "2", "1", "2", "1-902", "10", "Est Name 02", "2"),  # Single - ID matches dereg - EXCLUDED as deregistered before previous month
+        (date(2024, 4, 1), "103", "A103", "0", None, "103", "2", "1", "2", "1-903", "10", "Est Name 03", "3"),  # Single - ID matches dereg - INCLUDED
+        (date(2024, 4, 1), "104", "A104", "0", None, "104", "2", "1", "2", "1-501", "10", "Est Name 04", "4"),  # Single - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "105", "A105", "0", None, "105", "2", "1", "2", None, "10", "Est Name 05", "5"),  # Single - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "106", "A106", "0", "206", "206", "2", "1", "2", "1-002", "10", "Est Name 06", "6"),  # Sub - ID matches - EXCLUDED
+        (date(2024, 4, 1), "107", "A107", "0", "207", "207", "2", "1", "2", "1-912", "10", "Est Name 07", "7"),  # Sub - ID matches dereg - EXCLUDED as deregistered before previous month
+        (date(2024, 4, 1), "108", "A108", "0", "208", "208", "2", "1", "2", "1-913", "10", "Est Name 08", "8"),  # Sub - ID matches dereg - INCLUDED
+        (date(2024, 4, 1), "109", "A109", "0", "209", "209", "2", "1", "2", "1-502", "10", "Est Name 09", "9"),  # Sub - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "110", "A110", "0", "210", "210", "2", "1", "2", None, "10", "Est Name 10", "9"),  # Sub - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "111", "A111", "0", "211", "211", "2", "1", "2", "1-995", "10", "Est Name 11", "9"),  # Sub - ID dereg but in current month - EXCLUDED
+        (date(2024, 4, 1), "112", "A112", "0", "212", "212", "2", "1", "2", "1-913", "72", "Est Name 08", "8"),  # Sub - ID matches dereg - INCLUDED (keep head office for incorect ID)
+        (date(2024, 4, 1), "201", "A201", "1", None, "201", "2", "1", "1", None, "10", "Parent 01", "1"),  # Parent - has issues - INCLUDED
+        (date(2024, 4, 1), "202", "A202", "0", "201", "201", "1", "1", "2", "1-003", "10", "Est Name 22", "2"),  # Parent - ID matches - EXCLUDED
+        (date(2024, 4, 1), "203", "A203", "0", "201", "201", "1", "1", "2", "1-922", "10", "Est Name 23", "3"),  # Parent - ID matches dereg - INCLUDED (deregistered before previous month)
+        (date(2024, 4, 1), "204", "A204", "0", "201", "201", "1", "1", "2", "1-923", "10", "Est Name 24", "4"),  # Parent - ID matches dereg - INCLUDED (deregistered in previous month)
+        (date(2024, 4, 1), "205", "A205", "0", "201", "201", "1", "1", "2", "1-503", "10", "Est Name 25", "5"),  # Parent - ID doesn't exist in CQC - INCLUDED
+        (date(2024, 4, 1), "206", "A206", "0", "201", "201", "1", "1", "2", None, "10", "Est Name 26", "6"),  # Parent - missing CQC ID - INCLUDED
+        (date(2024, 4, 1), "206", "A206", "0", "201", "201", "1", "1", "2", None, "72", "Est Name 26", "6"),  # Parent - head office - EXCLUDED
+        (date(2024, 4, 1), "301", "A301", "1", None, "301", "2", "1", "2", "1-004", "10", "Parent 02", "1"),  # Parent - no issues - EXCLUDED
+    ]
+    input_cqc_location_api_rows = [
+        ("20240101", "1-901", "Deregistered", "2024-01-01"),
+        ("20240401", "1-001", "Registered", None),
+        ("20240401", "1-002", "Registered", None),
+        ("20240401", "1-003", "Registered", None),
+        ("20240401", "1-004", "Registered", None),
+        ("20240401", "1-902", "Deregistered", "2024-01-01"),
+        ("20240401", "1-912", "Deregistered", "2024-01-01"),
+        ("20240401", "1-922", "Deregistered", "2024-01-01"),
+        ("20240401", "1-903", "Deregistered", "2024-03-01"),
+        ("20240401", "1-904", "Deregistered", "2024-03-01"),
+        ("20240401", "1-913", "Deregistered", "2024-03-01"),
+        ("20240401", "1-923", "Deregistered", "2024-03-01"),
+        ("20240401", "1-995", "Deregistered", "2024-04-01"),
+    ]
+    # fmt: on
+
+
+@dataclass
 class FilterAscwdsFilledPostsData:
     input_rows = [
         ("01", date(2023, 1, 1), "Y", 25, 1.0),
@@ -2590,7 +2654,7 @@ class ModelInterpolation:
 @dataclass
 class ValidateMergedIndCqcData:
     # fmt: off
-    cqc_locations_rows =  [
+    cqc_locations_rows = [
         (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
         (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
         (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
@@ -2601,8 +2665,8 @@ class ValidateMergedIndCqcData:
         (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
         (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
     ]
-   
-    merged_ind_cqc_rows =[
+
+    merged_ind_cqc_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2614,7 +2678,7 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_extra_row_rows =[
+    merged_ind_cqc_extra_row_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2627,7 +2691,7 @@ class ValidateMergedIndCqcData:
         ("1-000000004", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_missing_row_rows =[
+    merged_ind_cqc_missing_row_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2638,7 +2702,7 @@ class ValidateMergedIndCqcData:
         ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_with_cqc_sector_null_rows =[
+    merged_ind_cqc_with_cqc_sector_null_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
@@ -2650,7 +2714,7 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), None, "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
 
-    merged_ind_cqc_with_duplicate_data_rows =[
+    merged_ind_cqc_with_duplicate_data_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),

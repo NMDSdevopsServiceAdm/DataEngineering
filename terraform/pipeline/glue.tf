@@ -400,6 +400,21 @@ module "clean_cqc_location_data_job" {
   }
 }
 
+module "reconciliation_job" {
+  source          = "../modules/glue-job"
+  script_name     = "reconciliation.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cleaned_ascwds_workplace_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs"
+    "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/parents"
+  }
+}
+
 module "merge_ind_cqc_data_job" {
   source            = "../modules/glue-job"
   script_name       = "merge_ind_cqc_data.py"
