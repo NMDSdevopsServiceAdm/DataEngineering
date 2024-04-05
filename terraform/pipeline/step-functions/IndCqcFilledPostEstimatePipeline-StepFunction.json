@@ -18,19 +18,49 @@
                   "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
                 }
               },
-              "Next": "Run clean ascwds worker data job"
+              "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
             },
-            "Run clean ascwds worker data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ascwds_worker_job_name}",
-                "Arguments": {
-                  "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+            "Clean ASCWDS worker and SfC Reconciliation Parallel": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Run clean ascwds worker data job",
+                  "States": {
+                    "Run clean ascwds worker data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "reconciliation-clean_ascwds_worker_data_job",
+                        "Arguments": {
+                          "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                          "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run reconciliation job",
+                  "States": {
+                    "Run reconciliation job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "reconciliation-reconciliation_job",
+                        "Arguments": {
+                          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                          "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
+                          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-              },
+              ],
               "End": true
             }
           }
@@ -54,9 +84,9 @@
           }
         },
         {
-          "StartAt": "Parallel",
+          "StartAt": "Clean ONS and Clean CQC pProvider Parallel",
           "States": {
-            "Parallel": {
+            "Clean ONS and Clean CQC pProvider Parallel": {
               "Type": "Parallel",
               "Branches": [
                 {
@@ -144,9 +174,9 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Run data validation in parallel"
+              "Next": "Clean IND CQC and data validation on Merge IND CQC data Parallel"
             },
-            "Run data validation in parallel": {
+            "Clean IND CQC and data validation on Merge IND CQC data Parallel": {
               "Type": "Parallel",
               "Next": "Feature engineering",
               "Branches": [
