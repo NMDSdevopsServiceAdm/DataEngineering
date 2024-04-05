@@ -5,9 +5,7 @@ from typing import Tuple
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql.dataframe import DataFrame
-
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -41,8 +39,9 @@ cqc_location_api_cols_to_import = [
     CQCL.name,
     CQCL.number_of_beds,
     CQCL.postcode,
-    CQCL.registration_date,
     CQCL.registration_status,
+    CQCL.registration_date,
+    CQCL.deregistration_date,
     CQCL.regulated_activities,
     CQCL.specialisms,
     CQCL.type,
@@ -90,10 +89,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    (
-        registered_locations_df,
-        deregistered_locations_df,
-    ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+    registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -201,9 +197,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     return joined_df
 
 
-def split_dataframe_into_registered_and_deregistered_rows(
-    locations_df: DataFrame,
-) -> Tuple[DataFrame, DataFrame]:
+def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
@@ -214,14 +208,9 @@ def split_dataframe_into_registered_and_deregistered_rows(
             f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
         )
 
-    registered_df = locations_df.where(
+    return locations_df.where(
         locations_df[CQCL.registration_status] == CQCLValues.registered
     )
-    deregistered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == CQCLValues.deregistered
-    )
-
-    return registered_df, deregistered_df
 
 
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
@@ -252,7 +241,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     ]
     list_of_columns = cleaned_locations_df.columns
     for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
-        if not column in list_of_columns:
+        if column not in list_of_columns:
             raise ValueError(
                 f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
             )
