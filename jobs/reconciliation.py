@@ -69,11 +69,11 @@ if __name__ == "__main__":
         ),
         (
             "--reconciliation_single_and_subs_destination",
-            "Destination s3 directory for reconciliation parquet singles and subs dataset",
+            "Destination s3 directory for singles and subs reconciliation CSV dataset",
         ),
         (
             "--reconciliation_parents_destination",
-            "Destination s3 directory for reconciliation parquet parents dataset",
+            "Destination s3 directory for parents reconciliation CSV dataset",
         ),
     )
     main(
