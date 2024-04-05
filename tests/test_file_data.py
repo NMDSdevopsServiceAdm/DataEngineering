@@ -1850,6 +1850,15 @@ class ReconciliationData:
         ("1-002", date(2023, 1, 1)),
     ]
 
+    remove_head_office_accounts_rows = [
+        ("loc_1", None, "72"), 
+        ("loc_2", None, "not 72"), 
+        ("loc_3", CQCLValues.registered, "72"), 
+        ("loc_4", CQCLValues.registered, "not 72"), 
+        ("loc_5", CQCLValues.deregistered, "not 72"),
+        ("loc_6", CQCLValues.deregistered, "72"),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:

@@ -91,3 +91,34 @@ class CollectDatesToUseTests(ReconciliationTests):
 
         self.assertEqual(first_of_most_recent_month, date(2024, 3, 1))
         self.assertEqual(first_of_previous_month, date(2024, 2, 1))
+
+
+class RemoveASCWDSHeadOfficeAccountsWithoutLocationIdsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_remove_head_office_accounts_df = self.spark.createDataFrame(
+            Data.remove_head_office_accounts_rows,
+            Schemas.remove_head_office_accounts_schema,
+        )
+        self.returned_df = job.remove_ascwds_head_office_accounts_without_location_ids(
+            self.test_remove_head_office_accounts_df,
+        )
+        self.returned_locations = (
+            self.returned_df.select(CQCL.location_id).rdd.flatMap(lambda x: x).collect()
+        )
+
+    def test_remove_head_office_accounts_when_registration_status_is_null_and_main_service_id_is_seventy_two(
+        self,
+    ):
+        self.assertFalse("loc_1" in self.returned_locations)
+
+    def test_keep_head_office_accounts_when_registration_status_is_null_and_main_service_id_is_not_seventy_two(
+        self,
+    ):
+        self.assertTrue("loc_2" in self.returned_locations)
+
+    def test_keep_head_office_accounts_when_registration_status_is_not_null(self):
+        self.assertTrue("loc_3" in self.returned_locations)
+        self.assertTrue("loc_4" in self.returned_locations)
+        self.assertTrue("loc_5" in self.returned_locations)
+        self.assertTrue("loc_6" in self.returned_locations)
