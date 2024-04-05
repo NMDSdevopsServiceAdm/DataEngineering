@@ -30,7 +30,7 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "reconciliation-clean_ascwds_worker_data_job",
+                        "JobName": "${clean_ascwds_worker_job_name}",
                         "Arguments": {
                           "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
                           "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
@@ -48,7 +48,7 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "reconciliation-reconciliation_job",
+                        "JobName": "${reconciliation_job_name}",
                         "Arguments": {
                           "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
                           "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
