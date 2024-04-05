@@ -921,12 +921,6 @@ class ReconciliationSchema:
             StructField(CQCLClean.deregistration_date, StringType(), True),
         ]
     )
-    dates_to_use_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
 
 
 @dataclass
