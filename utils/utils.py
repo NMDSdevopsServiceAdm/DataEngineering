@@ -3,10 +3,8 @@ import re
 import csv
 import argparse
 
-from pyspark.sql import DataFrame, Column, Window, SparkSession
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
-import pyspark.sql
 from typing import List
 
 import boto3
@@ -103,7 +101,7 @@ def generate_s3_datasets_dir_date_path(
 
 def read_from_parquet(
     data_source: str, selected_columns: List[str] = None
-) -> pyspark.sql.DataFrame:
+) -> DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
 
@@ -205,8 +203,8 @@ def format_import_date(df, fieldname="import_date"):
 
 
 def create_unix_timestamp_variable_from_date_column(
-    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
-) -> pyspark.sql.DataFrame:
+    df: DataFrame, date_col: str, date_format: str, new_col_name: str
+) -> DataFrame:
     return df.withColumn(
         new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
     )
@@ -318,3 +316,11 @@ def latest_datefield_for_grouping(
 
 def normalise_column_values(df: DataFrame, col_name: str):
     return df.withColumn(col_name, F.upper(F.regexp_replace(F.col(col_name), " ", "")))
+
+
+def filter_df_to_maximum_value_in_column(
+    df: DataFrame, column_to_filter_on: str
+) -> DataFrame:
+    max_value = df.agg(F.max(column_to_filter_on)).collect()[0][0]
+
+    return df.filter(F.col(column_to_filter_on) == max_value)

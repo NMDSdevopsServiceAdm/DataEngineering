@@ -1,5 +1,4 @@
 import sys
-
 from pyspark.sql import DataFrame, functions as F
 from typing import Tuple
 from datetime import date
@@ -90,25 +89,15 @@ def main(
         ascwds_parent_accounts_df, reconciliation_df, first_of_previous_month
     )
 
-    print("start saving single and subs")
     write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
-    print("start saving parents")
     write_to_csv(parents_df, reconciliation_parents_destination)
-
-
-def filter_df_to_maximum_value_in_column(
-    df: DataFrame, column_to_filter_on: str
-) -> DataFrame:
-    max_date = df.agg(F.max(column_to_filter_on)).collect()[0][0]
-
-    return df.filter(F.col(column_to_filter_on) == max_date)
 
 
 def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     ).drop(Keys.import_date)
-    cqc_location_df = filter_df_to_maximum_value_in_column(
+    cqc_location_df = utils.filter_df_to_maximum_value_in_column(
         cqc_location_df, CQCLClean.cqc_location_import_date
     )
     cqc_location_df = utils.format_date_fields(
@@ -119,17 +108,19 @@ def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame
     return cqc_location_df
 
 
-def collect_dates_to_use(df: DataFrame) -> Tuple[date, date, date]:
-    dates_df = df.select(F.max(CQCLClean.cqc_location_import_date).alias("most_recent"))
+def collect_dates_to_use(df: DataFrame) -> Tuple[date, date]:
+    most_recent: str = "most_recent"
+    start_of_month: str = "start_of_month"
+    start_of_previous_month: str = "start_of_previous_month"
+
+    dates_df = df.select(F.max(CQCLClean.cqc_location_import_date).alias(most_recent))
+    dates_df = dates_df.withColumn(start_of_month, F.trunc(F.col(most_recent), "MM"))
     dates_df = dates_df.withColumn(
-        "start_of_month", F.trunc(F.col("most_recent"), "MM")
-    )
-    dates_df = dates_df.withColumn(
-        "start_of_previous_month", F.add_months(F.col("start_of_month"), -1)
+        start_of_previous_month, F.add_months(F.col(start_of_month), -1)
     )
     dates_collected = dates_df.collect()
-    first_of_most_recent_month = dates_collected[0]["start_of_month"]
-    first_of_previous_month = dates_collected[0]["start_of_previous_month"]
+    first_of_most_recent_month = dates_collected[0][start_of_month]
+    first_of_previous_month = dates_collected[0][start_of_previous_month]
 
     return (
         first_of_most_recent_month,
@@ -140,7 +131,7 @@ def collect_dates_to_use(df: DataFrame) -> Tuple[date, date, date]:
 def prepare_latest_cleaned_ascwds_workforce_data(
     ascwds_workplace_df: str,
 ) -> Tuple[DataFrame, DataFrame]:
-    df = filter_df_to_maximum_value_in_column(
+    df = utils.filter_df_to_maximum_value_in_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
     df = df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
@@ -289,57 +280,44 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
     first_of_previous_month: str,
 ) -> DataFrame:
-    print("starting parent output")
     reconciliation_parents_df = reconciliation_df.where(
         F.col(ReconColumn.potentials) == ReconValues.parents
     )
-    print("filtered to parents only")
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
     )
-    print("new issues df")
     old_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) < first_of_previous_month
     )
-    print("old issues df")
     missing_or_incorrect_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date).isNull()
     )
-    print("missing or incorrect df")
 
-    print("all parents pre merging")
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         new_issues_df, ReconColumn.new_potential_subs, ascwds_parent_accounts_df
     )
-    print("new issues joined in")
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         old_issues_df, ReconColumn.old_potential_subs, ascwds_parent_accounts_df
     )
-    print("old issues joined in")
     ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
         missing_or_incorrect_df,
         ReconColumn.missing_or_incorrect_potential_subs,
         ascwds_parent_accounts_df,
     )
-    print("missing and incorrect joined in")
 
     ascwds_parent_accounts_df = create_description_column_for_parent_accounts(
         ascwds_parent_accounts_df
     )
-    print("description column added")
     ascwds_parent_accounts_df = ascwds_parent_accounts_df.where(
         F.length(ReconColumn.description) > 1
     )
-    print("filtered to parents with a description value only")
 
     ascwds_parent_accounts_df = ascwds_parent_accounts_df.withColumn(
         ReconColumn.subject, F.lit(ReconValues.parent_subject_value)
     )
-    print("subject column added")
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
     )
-    print("added batch of missing columns")
 
     return final_column_selection(ascwds_parent_accounts_df)
 
