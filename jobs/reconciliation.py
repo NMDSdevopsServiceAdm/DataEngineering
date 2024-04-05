@@ -1,18 +1,21 @@
 import sys
 
 from utils import utils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedColumns as CQCLClean,
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 cqc_locations_columns_to_import = [
-    CQCLClean.import_date,
-    CQCLClean.location_id,
-    CQCLClean.registration_status,
-    CQCLClean.deregistration_date,
+    Keys.import_date,
+    CQCL.location_id,
+    CQCL.registration_status,
+    CQCL.deregistration_date,
 ]
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
