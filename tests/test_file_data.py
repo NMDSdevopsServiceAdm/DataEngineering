@@ -1812,15 +1812,35 @@ class ReconciliationData:
         ("20240401", "1-003", "Registered", None),
         ("20240401", "1-004", "Registered", None),
         ("20240401", "1-902", "Deregistered", "2024-01-01"),
-        ("20240401", "1-912", "Deregistered", "2024-01-01"),
-        ("20240401", "1-922", "Deregistered", "2024-01-01"),
         ("20240401", "1-903", "Deregistered", "2024-03-01"),
         ("20240401", "1-904", "Deregistered", "2024-03-01"),
+        ("20240401", "1-912", "Deregistered", "2024-01-01"),
         ("20240401", "1-913", "Deregistered", "2024-03-01"),
+        ("20240401", "1-922", "Deregistered", "2024-01-01"),
         ("20240401", "1-923", "Deregistered", "2024-03-01"),
         ("20240401", "1-995", "Deregistered", "2024-04-01"),
     ]
     # fmt: on
+
+    expected_prepared_most_recent_cqc_location_rows = [
+        ("1-001", "Registered", None, date(2024, 4, 1)),
+        ("1-002", "Registered", None, date(2024, 4, 1)),
+        ("1-003", "Registered", None, date(2024, 4, 1)),
+        ("1-004", "Registered", None, date(2024, 4, 1)),
+        ("1-902", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-903", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-904", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-912", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-913", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-922", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-923", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-995", "Deregistered", date(2024, 4, 1), date(2024, 4, 1)),
+    ]
+
+    dates_to_use_rows = [
+        ("1-001", date(2024, 3, 28)),
+        ("1-002", date(2023, 1, 1)),
+    ]
 
 
 @dataclass
