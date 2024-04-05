@@ -1422,6 +1422,22 @@ class CQCLocationsData:
 
 
 @dataclass
+class UtilsData:
+    filter_to_max_value_rows = [
+        ("1", date(2024, 1, 1), "20220101"),
+        ("2", date(2024, 1, 1), "20230101"),
+        ("3", date(2023, 1, 1), "20240101"),
+    ]
+    expected_filter_to_max_date_rows = [
+        ("1", date(2024, 1, 1), "20220101"),
+        ("2", date(2024, 1, 1), "20230101"),
+    ]
+    expected_filter_to_max_string_rows = [
+        ("3", date(2023, 1, 1), "20240101"),
+    ]
+
+
+@dataclass
 class CleaningUtilsData:
     worker_rows = [
         ("1", "1", "100"),

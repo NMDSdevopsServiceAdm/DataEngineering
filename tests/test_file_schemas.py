@@ -587,6 +587,17 @@ class CQCLocationsSchema:
 
 
 @dataclass
+class UtilsSchema:
+    filter_to_max_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("date_type_column", DateType(), True),
+            StructField("import_date_style_col", StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CleaningUtilsSchemas:
     worker_schema = StructType(
         [
