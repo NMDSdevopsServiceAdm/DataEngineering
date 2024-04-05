@@ -26,6 +26,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationValues as ReconValues,
+)
 
 
 @dataclass
@@ -1848,6 +1851,16 @@ class ReconciliationData:
     dates_to_use_rows = [
         ("1-001", date(2024, 3, 28)),
         ("1-002", date(2023, 1, 1)),
+    ]
+
+    add_singles_and_subs_description_rows = [
+        ("loc_1", date(2024, 3, 28)),
+        ("loc_2", None),
+    ]
+
+    expected_singles_and_subs_description_rows = [
+        ("loc_1", date(2024, 3, 28), ReconValues.single_sub_deregistered_description),
+        ("loc_2", None, ReconValues.single_sub_reg_type_description),
     ]
 
 

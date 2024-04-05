@@ -70,6 +70,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationColumns as ReconColumn,
+)
 
 from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
@@ -952,6 +955,20 @@ class ReconciliationSchema:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    add_singles_and_subs_description_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+        ]
+    )
+
+    expected_singles_and_subs_description_schema = StructType(
+        [
+            *add_singles_and_subs_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
         ]
     )
 

@@ -91,3 +91,51 @@ class CollectDatesToUseTests(ReconciliationTests):
 
         self.assertEqual(first_of_most_recent_month, date(2024, 3, 1))
         self.assertEqual(first_of_previous_month, date(2024, 2, 1))
+
+
+class CreateReconciliationOutputForSingleAndSubAccountsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @unittest.skip("to do")
+    def test(self):
+        pass
+
+
+class AddSinglesAndSubDescriptionColumnTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_add_singles_and_subs_description_df = self.spark.createDataFrame(
+            Data.add_singles_and_subs_description_rows,
+            Schemas.add_singles_and_subs_description_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_singles_and_subs_description_rows,
+            Schemas.expected_singles_and_subs_description_schema,
+        )
+        self.returned_df = job.add_singles_and_sub_description_column(
+            self.test_add_singles_and_subs_description_df,
+        )
+
+    def test_add_singles_and_subs_description_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = (
+            len(self.test_add_singles_and_subs_description_df.columns) + 1
+        )
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_add_singles_and_subs_description_column_adds_a_column_with_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(CQCL.location_id).collect()
+        expected_data = self.expected_df.sort(CQCL.location_id).collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class CreateMissingClumnsRequiredForOutputTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @unittest.skip("to do")
+    def test(self):
+        pass
