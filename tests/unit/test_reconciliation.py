@@ -12,6 +12,9 @@ from tests.test_file_schemas import ReconciliationSchema as Schemas
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -144,11 +147,33 @@ class AddPotentialsColToDf(ReconciliationTests):
         super().setUp()
 
 
-class getAscwdsParentAccounts(ReconciliationTests):
+class GetAscwdsParentAccounts(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
 
-class filterToCqcRegistrationTypeOnly(ReconciliationTests):
+class FilterToCqcRegistrationTypeOnly(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
+
+        self.test_filter_to_cqc_registration_type_df = self.spark.createDataFrame(
+            Data.regtype_rows,
+            Schemas.regtype_schema,
+        )
+        self.returned_df = job.filter_to_cqc_registration_type_only(
+            self.test_filter_to_cqc_registration_type_df,
+        )
+        self.returned_locations = (
+            self.returned_df.select(AWPClean.establishment_id)
+            .rdd.flatMap(lambda x: x)
+            .collect()
+        )
+
+    def test_remove_workplace_when_main_service_id_is_not_regulated(self):
+        self.assertFalse("1" in self.returned_locations)
+
+    def test_keep_workplace_when_main_service_id_is_cqc_regulated(self):
+        self.assertTrue("2" in self.returned_locations)
+
+    def test_remove_workplace_when_main_service_id_is_null(self):
+        self.assertFalse("3" in self.returned_locations)

@@ -956,8 +956,8 @@ class ReconciliationSchema:
 
     regtype_schema = StructType(
         [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
         ]
     )
 

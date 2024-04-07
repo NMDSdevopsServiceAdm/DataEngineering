@@ -1850,6 +1850,12 @@ class ReconciliationData:
         ("1-002", date(2023, 1, 1)),
     ]
 
+    regtype_rows = [
+        ("1", "Not regulated"),
+        ("2", "CQC regulated"),
+        ("3", None),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:
