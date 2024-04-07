@@ -2,6 +2,7 @@ import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
+from pyspark.sql import DataFrame
 
 import jobs.reconciliation as job
 from utils import utils
@@ -93,3 +94,66 @@ class CollectDatesToUseTests(ReconciliationTests):
 
         self.assertEqual(first_of_most_recent_month, date(2024, 3, 1))
         self.assertEqual(first_of_previous_month, date(2024, 2, 1))
+
+
+class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(
+        "jobs.reconciliation.remove_ascwds_head_office_accounts_without_location_ids"
+    )
+    @patch("jobs.reconciliation.filter_to_cqc_registration_type_only")
+    @patch("jobs.reconciliation.get_ascwds_parent_accounts")
+    @patch("jobs.reconciliation.add_potentials_col_to_df")
+    @patch("jobs.reconciliation.add_region_id_labels_for_reconciliation")
+    @patch("utils.utils.filter_df_to_maximum_value_in_column")
+    def test_prepare_latest_cleaned_ascwds_workforce_data_runs(
+        self,
+        filter_df_to_maximum_value_in_column_patch: Mock,
+        add_region_id_labels_for_reconciliation_patch: Mock,
+        add_potentials_col_to_df_patch: Mock,
+        get_ascwds_parent_accounts_patch: Mock,
+        filter_to_cqc_registration_type_only_patch: Mock,
+        remove_ascwds_head_office_accounts_without_location_ids_patch: Mock,
+    ):
+        returned_df_1, returned_df_2 = job.prepare_latest_cleaned_ascwds_workforce_data(
+            self.test_clean_ascwds_workplace_df,
+        )
+
+        self.assertEqual(filter_df_to_maximum_value_in_column_patch.call_count, 1)
+        self.assertEqual(add_region_id_labels_for_reconciliation_patch.call_count, 1)
+        self.assertEqual(add_potentials_col_to_df_patch.call_count, 1)
+        self.assertEqual(get_ascwds_parent_accounts_patch.call_count, 1)
+        self.assertEqual(filter_to_cqc_registration_type_only_patch.call_count, 1)
+        self.assertEqual(
+            remove_ascwds_head_office_accounts_without_location_ids_patch.call_count, 1
+        )
+
+        self.assertIsInstance(returned_df_1, DataFrame)
+        self.assertIsInstance(returned_df_2, DataFrame)
+
+
+class AddRegionLabelsForReconciliation(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class AddPotentialsColToDf(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class getAscwdsParentAccounts(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class filterToCqcRegistrationTypeOnly(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class RmoveAscwdsHeadOfficeAccountsWithoutLocationIds(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
