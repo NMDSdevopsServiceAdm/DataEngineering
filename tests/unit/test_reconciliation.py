@@ -2,7 +2,6 @@ import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
-from pyspark.sql import functions as F
 
 import jobs.reconciliation as job
 from utils import utils
@@ -38,10 +37,12 @@ class MainTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("jobs.reconciliation.write_to_csv")
     @patch("utils.utils.read_from_parquet")
     def test_main_run(
         self,
         read_from_parquet_patch: Mock,
+        write_to_csv_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cqc_location_api_df,
@@ -56,6 +57,7 @@ class MainTests(ReconciliationTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(write_to_csv_patch.call_count, 2)
 
 
 class PrepareMostRecentCqcLocationDataTests(ReconciliationTests):
