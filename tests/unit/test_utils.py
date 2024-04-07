@@ -18,7 +18,7 @@ import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
 from tests.test_file_data import UtilsData, CQCPirCleanedData
-from tests.test_file_schemas import UtilsSchema, CQCPPIRCleanSchema
+from tests.test_file_schemas import UtilsSchema, CQCPIRCleanSchema
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
@@ -106,7 +106,7 @@ class UtilsTests(unittest.TestCase):
         )
         self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
             data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+            schema=CQCPIRCleanSchema.clean_subset_for_grouping_by,
         )
         self.test_grouping_list = [
             F.col(CqcPIRCleanedColumns.location_id),

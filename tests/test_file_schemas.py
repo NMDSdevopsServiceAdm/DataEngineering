@@ -776,7 +776,7 @@ class CQCPIRSchema:
 
 
 @dataclass
-class CQCPPIRCleanSchema:
+class CQCPIRCleanSchema:
     clean_subset_for_grouping_by = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
@@ -946,6 +946,12 @@ class ReconciliationSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    dates_to_use_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
 

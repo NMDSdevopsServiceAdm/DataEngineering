@@ -76,6 +76,22 @@ def main(
         latest_ascwds_workplace_df, cqc_location_df
     )
 
+    reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
+        merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
+    )
+    reconciliation_df = remove_ascwds_head_office_accounts_without_location_ids(
+        reconciliation_df
+    )
+    single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
+        reconciliation_df
+    )
+    parents_df = create_reconciliation_output_for_ascwds_parent_accounts(
+        ascwds_parent_accounts_df, reconciliation_df, first_of_previous_month
+    )
+
+    write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
+    write_to_csv(parents_df, reconciliation_parents_destination)
+
 
 def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
     cqc_location_df = cUtils.column_to_date(
@@ -200,6 +216,218 @@ def join_cqc_location_data_into_ascwds_workplace_df(
         AWPClean.location_id, CQCL.location_id
     )
     return ascwds_workplace_df.join(cqc_location_df, CQCL.location_id, "left")
+
+
+def filter_to_locations_relevant_to_reconcilition_process(
+    df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
+) -> DataFrame:
+    return df.where(
+        F.col(CQCL.registration_status).isNull()
+        | (
+            (
+                (F.col(CQCL.registration_status) == CQCLValues.deregistered)
+                & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
+            )
+            & (
+                (F.col(ReconColumn.potentials) == ReconValues.parents)
+                | (
+                    (F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
+                    & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
+                )
+            )
+        )
+    )
+
+
+def remove_ascwds_head_office_accounts_without_location_ids(
+    df: DataFrame,
+) -> DataFrame:
+    return df.where(
+        (F.col(CQCL.registration_status).isNotNull())
+        | (
+            (F.col(CQCL.registration_status).isNull())
+            & (F.col(AWPClean.main_service_id) != "72")
+        )
+    )
+
+
+def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
+    reconciliation_df: DataFrame,
+) -> DataFrame:
+    singles_and_subs_df = reconciliation_df.where(
+        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+    )
+    singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
+    singles_and_subs_df = singles_and_subs_df.withColumn(
+        ReconColumn.subject, F.lit(ReconValues.single_sub_subject_value)
+    )
+    singles_and_subs_df = create_missing_columns_required_for_output(
+        singles_and_subs_df
+    )
+    return final_column_selection(singles_and_subs_df)
+
+
+def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
+    return df.withColumn(
+        ReconColumn.description,
+        F.when(
+            F.col(CQCL.deregistration_date).isNotNull(),
+            F.lit(ReconValues.single_sub_deregistered_description),
+        ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
+    )
+
+
+def create_reconciliation_output_for_ascwds_parent_accounts(
+    ascwds_parent_accounts_df: DataFrame,
+    reconciliation_df: DataFrame,
+    first_of_previous_month: str,
+) -> DataFrame:
+    reconciliation_parents_df = reconciliation_df.where(
+        F.col(ReconColumn.potentials) == ReconValues.parents
+    )
+    new_issues_df = reconciliation_parents_df.where(
+        F.col(CQCL.deregistration_date) >= first_of_previous_month
+    )
+    old_issues_df = reconciliation_parents_df.where(
+        F.col(CQCL.deregistration_date) < first_of_previous_month
+    )
+    missing_or_incorrect_df = reconciliation_parents_df.where(
+        F.col(CQCL.deregistration_date).isNull()
+    )
+
+    ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
+        new_issues_df, ReconColumn.new_potential_subs, ascwds_parent_accounts_df
+    )
+    ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
+        old_issues_df, ReconColumn.old_potential_subs, ascwds_parent_accounts_df
+    )
+    ascwds_parent_accounts_df = join_array_of_nmdsids_into_parent_account_df(
+        missing_or_incorrect_df,
+        ReconColumn.missing_or_incorrect_potential_subs,
+        ascwds_parent_accounts_df,
+    )
+
+    ascwds_parent_accounts_df = create_description_column_for_parent_accounts(
+        ascwds_parent_accounts_df
+    )
+    ascwds_parent_accounts_df = ascwds_parent_accounts_df.where(
+        F.length(ReconColumn.description) > 1
+    )
+
+    ascwds_parent_accounts_df = ascwds_parent_accounts_df.withColumn(
+        ReconColumn.subject, F.lit(ReconValues.parent_subject_value)
+    )
+    ascwds_parent_accounts_df = create_missing_columns_required_for_output(
+        ascwds_parent_accounts_df
+    )
+
+    return final_column_selection(ascwds_parent_accounts_df)
+
+
+def join_array_of_nmdsids_into_parent_account_df(
+    df_with_issues: DataFrame, new_col_name: str, unique_df: DataFrame
+) -> DataFrame:
+    unique_issues_parents_df = organisation_id_with_array_of_nmdsids(
+        df_with_issues, new_col_name
+    )
+    return unique_df.join(unique_issues_parents_df, AWPClean.organisation_id, "left")
+
+
+def organisation_id_with_array_of_nmdsids(
+    df: DataFrame, new_col_name: str
+) -> DataFrame:
+    subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
+    subs_at_parent_df = subs_at_parent_df.groupby(AWPClean.organisation_id).agg(
+        F.collect_set(AWPClean.nmds_id).alias(new_col_name)
+    )
+    subs_at_parent_df = subs_at_parent_df.withColumn(
+        new_col_name, F.concat_ws(", ", F.col(new_col_name))
+    )
+    return subs_at_parent_df.withColumn(
+        new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
+    )
+
+
+def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:
+    return df.withColumn(
+        ReconColumn.description,
+        F.concat(
+            F.when(
+                F.col(ReconColumn.new_potential_subs).isNotNull(),
+                F.concat(F.col(ReconColumn.new_potential_subs), F.lit(" ")),
+            ).otherwise(F.lit("")),
+            F.when(
+                F.col(ReconColumn.old_potential_subs).isNotNull(),
+                F.concat(F.col(ReconColumn.old_potential_subs), F.lit(" ")),
+            ).otherwise(F.lit("")),
+            F.when(
+                F.col(ReconColumn.missing_or_incorrect_potential_subs).isNotNull(),
+                F.concat(
+                    F.col(ReconColumn.missing_or_incorrect_potential_subs), F.lit(" ")
+                ),
+            ).otherwise(F.lit("")),
+        ),
+    )
+
+
+def create_missing_columns_required_for_output(df: DataFrame) -> DataFrame:
+    df = df.withColumnRenamed(AWPClean.establishment_type, ReconColumn.sector)
+    df = df.withColumnRenamed(AWPClean.region_id, ReconColumn.sfc_region)
+    df = df.withColumnRenamed(AWPClean.establishment_name, ReconColumn.name)
+    return (
+        df.withColumn(ReconColumn.nmds, F.col(AWPClean.nmds_id))
+        .withColumn(ReconColumn.workplace_id, F.col(AWPClean.nmds_id))
+        .withColumn(
+            ReconColumn.requester_name,
+            F.concat(ReconColumn.nmds, F.lit(" "), ReconColumn.name),
+        )
+        .withColumn(
+            ReconColumn.requester_name_2,
+            F.concat(ReconColumn.nmds, F.lit(" "), ReconColumn.name),
+        )
+        .withColumn(ReconColumn.status, F.lit("Open"))
+        .withColumn(ReconColumn.technician, F.lit("_"))
+        .withColumn(ReconColumn.manual_call_log, F.lit("No"))
+        .withColumn(ReconColumn.mode, F.lit("Internal"))
+        .withColumn(ReconColumn.priority, F.lit("Priority 5"))
+        .withColumn(ReconColumn.category, F.lit("Workplace"))
+        .withColumn(ReconColumn.sub_category, F.lit("Reports"))
+        .withColumn(ReconColumn.is_requester_named, F.lit("Yes"))
+        .withColumn(ReconColumn.security_question, F.lit("N/A"))
+        .withColumn(ReconColumn.website, F.lit("ASC-WDS"))
+        .withColumn(ReconColumn.item, F.lit("CQC work"))
+        .withColumn(ReconColumn.phone, F.lit(0))
+    )
+
+
+def final_column_selection(df: DataFrame) -> DataFrame:
+    return df.select(
+        ReconColumn.subject,
+        ReconColumn.nmds,
+        ReconColumn.name,
+        ReconColumn.description,
+        ReconColumn.requester_name_2,
+        ReconColumn.requester_name,
+        ReconColumn.sector,
+        ReconColumn.status,
+        ReconColumn.technician,
+        ReconColumn.sfc_region,
+        ReconColumn.manual_call_log,
+        ReconColumn.mode,
+        ReconColumn.priority,
+        ReconColumn.category,
+        ReconColumn.sub_category,
+        ReconColumn.is_requester_named,
+        ReconColumn.security_question,
+        ReconColumn.website,
+        ReconColumn.item,
+        ReconColumn.phone,
+        ReconColumn.workplace_id,
+    ).sort(ReconColumn.description, ReconColumn.nmds)
+
+
+def write_to_csv(df: DataFrame, output_dir: str):
+    df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_dir)
 
 
 if __name__ == "__main__":

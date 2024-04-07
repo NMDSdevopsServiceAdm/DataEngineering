@@ -84,7 +84,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(
             raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
         )
-
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
