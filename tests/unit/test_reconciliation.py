@@ -152,8 +152,3 @@ class getAscwdsParentAccounts(ReconciliationTests):
 class filterToCqcRegistrationTypeOnly(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
-
-
-class RmoveAscwdsHeadOfficeAccountsWithoutLocationIds(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
