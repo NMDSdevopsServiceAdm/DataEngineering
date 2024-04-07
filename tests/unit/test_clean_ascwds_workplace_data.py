@@ -149,7 +149,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         )
 
     def test_adds_correct_value_for_non_parent_workplaces(self):
-        input_df = self.test_purge_outdated_df.where(F.col(AWP.is_parent) == "0")
+        input_df = self.test_purge_outdated_df.where(F.col(AWP.is_parent) == "No")
 
         returned_df = job.add_purge_outdated_workplaces_column(
             input_df, AWPClean.ascwds_workplace_import_date
@@ -171,7 +171,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
             self.test_purge_outdated_df, AWPClean.ascwds_workplace_import_date
         )
 
-        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "1")
+        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "Yes")
         purge_data_list = [
             row.purge_data
             for row in returned_df_parents.sort(AWP.location_id).collect()
@@ -188,7 +188,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
                     "20210101",
                     "2",
                     date(2021, 1, 1),
-                    0,
+                    "No",
                 ),
             ],
             Schemas.purge_outdated_schema,
@@ -199,7 +199,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
             input_df, AWPClean.ascwds_workplace_import_date
         )
 
-        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "1")
+        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "Yes")
         purge_data_list = [
             row.purge_data
             for row in returned_df_parents.sort(AWP.location_id).collect()

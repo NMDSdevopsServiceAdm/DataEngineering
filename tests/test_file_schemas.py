@@ -913,7 +913,6 @@ class ReconciliationSchema:
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.nmds_id, StringType(), True),
             StructField(AWPClean.is_parent, StringType(), True),
-            StructField(AWPClean.parent_id, StringType(), True),
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(AWPClean.parent_permission, StringType(), True),
             StructField(AWPClean.establishment_type, StringType(), True),

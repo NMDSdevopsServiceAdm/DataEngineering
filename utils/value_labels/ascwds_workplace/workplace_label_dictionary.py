@@ -1,8 +1,16 @@
 from utils.value_labels.ascwds_workplace.ascwds_workplace_esttype import (
     AscwdsWorkplaceValueLabelsEsttype,
 )
+from utils.value_labels.ascwds_workplace.ascwds_workplace_parent_permission import (
+    AscwdsWorkplaceValueLabelsParentPermission,
+)
+from utils.value_labels.ascwds_workplace.ascwds_workplace_is_parent import (
+    AscwdsWorkplaceValueLabelsIsParent,
+)
 
 
 ascwds_workplace_labels_dict = {
-    AscwdsWorkplaceValueLabelsEsttype.column_name: AscwdsWorkplaceValueLabelsEsttype.labels_dict
+    AscwdsWorkplaceValueLabelsEsttype.column_name: AscwdsWorkplaceValueLabelsEsttype.labels_dict,
+    AscwdsWorkplaceValueLabelsParentPermission.column_name: AscwdsWorkplaceValueLabelsParentPermission.labels_dict,
+    AscwdsWorkplaceValueLabelsIsParent.column_name: AscwdsWorkplaceValueLabelsIsParent.labels_dict,
 }

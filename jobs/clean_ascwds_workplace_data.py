@@ -74,7 +74,7 @@ def main(source: str, destination: str):
         ascwds_workplace_df,
         ascwds_workplace_labels_dict,
         ascwds_workplace_labels_dict.keys(),
-        add_as_new_column=True,
+        add_as_new_column=False,
     )
 
     print(f"Exporting as parquet to {destination}")
@@ -178,7 +178,7 @@ def calculate_latest_update_to_workplace_location(
     df_with_latest_update = df_with_org_updates.withColumn(
         "latest_update",
         F.when(
-            (F.col(AWPClean.is_parent) == "1"), F.col("latest_org_mupddate")
+            (F.col(AWPClean.is_parent) == "Yes"), F.col("latest_org_mupddate")
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
 

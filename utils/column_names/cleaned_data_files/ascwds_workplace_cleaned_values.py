@@ -12,7 +12,6 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     last_logged_in_date: str = "last_logged_in_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
-    establishment_type_labelled: str = "esttype_labels"
 
 
 @dataclass
