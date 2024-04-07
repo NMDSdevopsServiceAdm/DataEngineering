@@ -3,10 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class ReconciliationColumns:
-    parent_sub_or_single: str = "parent_sub_or_single"
-    ownership: str = "ownership"
-    potentials: str = "potentials"
-    ever_existed: str = "ever_existed"
+    parents_or_singles_and_subs: str = "parents_or_singles_and_subs"
     new_potential_subs: str = "new_potential_subs"
     old_potential_subs: str = "old_potential_subs"
     missing_or_incorrect_potential_subs: str = "missing_or_incorrect_potential_subs"
@@ -35,10 +32,6 @@ class ReconciliationColumns:
 
 @dataclass
 class ReconciliationValues:
-    parent: str = "parent"
-    subsidiary: str = "subsidiary"
-    single: str = "single"
-    workplace: str = "workplace"
     singles_and_subs: str = "singles_and_subs"
     parents: str = "parents"
     single_sub_subject_value: str = "CQC Reconcilliation Work"

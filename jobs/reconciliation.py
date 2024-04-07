@@ -151,7 +151,7 @@ def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
 
 def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        ReconColumn.potentials,
+        ReconColumn.parents_or_singles_and_subs,
         F.when(
             (
                 (F.col(AWPClean.is_parent) == "Yes")
@@ -166,7 +166,7 @@ def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
 
 
 def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(AWPClean.registration_type) == "2")
+    return df.filter(F.col(AWPClean.registration_type) == "CQC regulated")
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
@@ -213,9 +213,12 @@ def filter_to_locations_relevant_to_reconcilition_process(
                 & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
             )
             & (
-                (F.col(ReconColumn.potentials) == ReconValues.parents)
+                (F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents)
                 | (
-                    (F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
+                    (
+                        F.col(ReconColumn.parents_or_singles_and_subs)
+                        == ReconValues.singles_and_subs
+                    )
                     & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
                 )
             )
@@ -227,7 +230,7 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
     singles_and_subs_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.singles_and_subs
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = singles_and_subs_df.withColumn(
@@ -255,7 +258,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     first_of_previous_month: str,
 ) -> DataFrame:
     reconciliation_parents_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.parents
+        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
