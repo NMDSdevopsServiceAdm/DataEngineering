@@ -86,8 +86,8 @@ def main(
         & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
     ).show(2)
 
-    latest_ascwds_workplace_df.unpersist()
-    cqc_location_df.unpersist()
+    # latest_ascwds_workplace_df.unpersist()
+    # cqc_location_df.unpersist()
 
     print("first_of_most_recent_month = " + str(first_of_most_recent_month))
     print("first_of_previous_month = " + str(first_of_previous_month))
@@ -97,7 +97,7 @@ def main(
     )
     print("reconciliation_df:")
     reconciliation_df.show()
-    merged_ascwds_cqc_df.unpersist()
+    # merged_ascwds_cqc_df.unpersist()
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
@@ -108,7 +108,7 @@ def main(
     )
     print("parents_df:")
     parents_df.show()
-    reconciliation_df.unpersist()
+    # reconciliation_df.unpersist()
 
     write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
     write_to_csv(parents_df, reconciliation_parents_destination)
