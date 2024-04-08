@@ -600,7 +600,6 @@ class UtilsSchema:
     )
 
 
-
 @dataclass
 class CleaningUtilsSchemas:
     worker_schema = StructType(
@@ -1096,11 +1095,25 @@ class ReconciliationSchema:
         ]
     )
 
-    
     select_rows_with_value_schema = StructType(
         [
             StructField("id", StringType(), True),
             StructField("value_to_filter_on", StringType(), True),
+        ]
+    )
+
+    organisation_id_with_array_of_nmdsids_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_organisation_id_with_array_of_nmdsids_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField("new_column", StringType(), True),
         ]
     )
 

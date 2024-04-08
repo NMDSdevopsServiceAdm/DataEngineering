@@ -233,7 +233,7 @@ def filter_to_locations_relevant_to_reconcilition_process(
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
-    singles_and_subs_df = utils.select_rows_with_value(
+    singles_and_subs_df = select_rows_with_value(
         reconciliation_df,
         ReconColumn.parents_or_singles_and_subs,
         ReconValues.singles_and_subs,
@@ -267,7 +267,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
     first_of_previous_month: str,
 ) -> DataFrame:
-    reconciliation_parents_df = utils.select_rows_with_value(
+    reconciliation_parents_df = select_rows_with_value(
         reconciliation_df, ReconColumn.parents_or_singles_and_subs, ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
@@ -323,12 +323,15 @@ def organisation_id_with_array_of_nmdsids(
     df: DataFrame, new_col_name: str
 ) -> DataFrame:
     subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
+    subs_at_parent_df.show()
     subs_at_parent_df = subs_at_parent_df.groupby(AWPClean.organisation_id).agg(
         F.collect_set(AWPClean.nmds_id).alias(new_col_name)
     )
+    subs_at_parent_df.show()
     subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat_ws(", ", F.col(new_col_name))
     )
+    subs_at_parent_df.show()
     return subs_at_parent_df.withColumn(
         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
     )
