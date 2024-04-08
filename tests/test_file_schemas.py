@@ -1006,6 +1006,59 @@ class ReconciliationSchema:
         ]
     )
 
+    final_column_selection_schema = StructType(
+        [
+            StructField("extra_column", StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+        ]
+    )
+
+    expected_final_column_selection_schema = StructType(
+        [
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:

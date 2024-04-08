@@ -99,6 +99,17 @@ class CollectDatesToUseTests(ReconciliationTests):
 class CreateReconciliationOutputForSingleAndSubAccountsTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_singles_and_subs_df = self.spark.createDataFrame(
+            Data.singles_and_subs_rows,
+            Schemas.singles_and_subs_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_singles_and_subs_rows,
+            Schemas.expected_singles_and_subs_schema,
+        )
+        self.returned_df = job.add_singles_and_sub_description_column(
+            self.test_singles_and_subs_df,
+        )
 
     @unittest.skip("to do")
     def test(self):
@@ -221,3 +232,36 @@ class CreateMissingColumnsRequiredForOutputTests(ReconciliationTests):
         self.assertEqual(
             returned_data[0][ReconColumn.phone], expected_data[0][ReconColumn.phone]
         )
+
+
+class FinalColumnSelectionTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_final_column_selection_df = self.spark.createDataFrame(
+            Data.final_column_selection_rows,
+            Schemas.final_column_selection_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_final_column_selection_rows,
+            Schemas.expected_final_column_selection_schema,
+        )
+        self.returned_df = job.final_column_selection(
+            self.test_final_column_selection_df,
+        )
+
+    def test_final_column_selection_contains_correct_columns(self):
+        print(self.returned_df.columns)
+        print(self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_final_column_selection_sorts_data_correctly(self):
+        returned_data = self.returned_df.select(
+            ReconColumn.nmds, ReconColumn.description
+        ).collect()
+        expected_data = self.expected_df.select(
+            ReconColumn.nmds, ReconColumn.description
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_final_column_selection_returns_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
