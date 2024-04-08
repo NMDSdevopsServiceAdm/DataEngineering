@@ -159,11 +159,18 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = add_parents_or_singles_and_subs_col_to_df(df)
 
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
+
+    print("cqc_registered_accounts_df where locationid is Null:")
+    cqc_registered_accounts_df.where(F.col(AWPClean.location_id).isNull()).show(2)
     cqc_registered_accounts_df = (
         remove_ascwds_head_office_accounts_without_location_ids(
             cqc_registered_accounts_df
         )
     )
+    print(
+        "cqc_registered_accounts_df where locationid is Null after head office removed:"
+    )
+    cqc_registered_accounts_df.where(F.col(AWPClean.location_id).isNull()).show(2)
 
     parent_accounts_df = get_ascwds_parent_accounts(df)
 
