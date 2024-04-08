@@ -135,7 +135,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
     df = add_region_id_labels_for_reconciliation(df)
-    df = add_potentials_col_to_df(df)
+    df = add_parents_or_singles_and_subs_col_to_df(df)
 
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
     cqc_registered_accounts_df = (
@@ -153,7 +153,7 @@ def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
     return df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
 
 
-def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
+def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
     return df.withColumn(
         ReconColumn.parents_or_singles_and_subs,
         F.when(

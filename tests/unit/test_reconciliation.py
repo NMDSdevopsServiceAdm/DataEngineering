@@ -2,7 +2,6 @@ import unittest
 import warnings
 from datetime import date
 from unittest.mock import Mock, patch
-from pyspark.sql import DataFrame
 
 import jobs.reconciliation as job
 from utils import utils
@@ -108,14 +107,14 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
     )
     @patch("jobs.reconciliation.filter_to_cqc_registration_type_only")
     @patch("jobs.reconciliation.get_ascwds_parent_accounts")
-    @patch("jobs.reconciliation.add_potentials_col_to_df")
+    @patch("jobs.reconciliation.add_parents_or_singles_and_subs_col_to_df")
     @patch("jobs.reconciliation.add_region_id_labels_for_reconciliation")
     @patch("utils.utils.filter_df_to_maximum_value_in_column")
     def test_prepare_latest_cleaned_ascwds_workforce_data_runs(
         self,
         filter_df_to_maximum_value_in_column_patch: Mock,
         add_region_id_labels_for_reconciliation_patch: Mock,
-        add_potentials_col_to_df_patch: Mock,
+        add_parents_or_singles_and_subs_col_to_df_patch: Mock,
         get_ascwds_parent_accounts_patch: Mock,
         filter_to_cqc_registration_type_only_patch: Mock,
         remove_ascwds_head_office_accounts_without_location_ids_patch: Mock,
@@ -126,7 +125,7 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
 
         self.assertEqual(filter_df_to_maximum_value_in_column_patch.call_count, 1)
         self.assertEqual(add_region_id_labels_for_reconciliation_patch.call_count, 1)
-        self.assertEqual(add_potentials_col_to_df_patch.call_count, 1)
+        self.assertEqual(add_parents_or_singles_and_subs_col_to_df_patch.call_count, 1)
         self.assertEqual(get_ascwds_parent_accounts_patch.call_count, 1)
         self.assertEqual(filter_to_cqc_registration_type_only_patch.call_count, 1)
         self.assertEqual(
@@ -138,15 +137,14 @@ class AddRegionLabelsForReconciliation(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
+        # TODO
 
-class AddPotentialsColToDf(ReconciliationTests):
+
+class AddParentsOrSinglesAndSubsColToDf(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
-
-class GetAscwdsParentAccounts(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
+        # TODO
 
 
 class FilterToCqcRegistrationTypeOnly(ReconciliationTests):
@@ -205,3 +203,10 @@ class RemoveASCWDSHeadOfficeAccountsWithoutLocationIdsTests(ReconciliationTests)
         self,
     ):
         self.assertFalse("4" in self.returned_locations)
+
+
+class GetAscwdsParentAccounts(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        # TODO
