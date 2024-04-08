@@ -599,12 +599,6 @@ class UtilsSchema:
         ]
     )
 
-    select_rows_with_value_schema = StructType(
-        [
-            StructField("id", StringType(), True),
-            StructField("value_to_filter_on", StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -1099,6 +1093,14 @@ class ReconciliationSchema:
         [
             *add_subject_column_schema,
             StructField(ReconColumn.subject, StringType(), True),
+        ]
+    )
+
+    
+    select_rows_with_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("value_to_filter_on", StringType(), True),
         ]
     )
 

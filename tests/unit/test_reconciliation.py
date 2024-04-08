@@ -475,3 +475,30 @@ class AddSubjectColumnTests(ReconciliationTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
+
+class SelectRowsWithValueTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.df = self.spark.createDataFrame(
+            Data.select_rows_with_value_rows,
+            Schemas.select_rows_with_value_schema,
+        )
+
+        self.returned_df = job.select_rows_with_value(
+            self.df, "value_to_filter_on", "keep"
+        )
+
+        self.returned_ids = (
+            self.returned_df.select("id").rdd.flatMap(lambda x: x).collect()
+        )
+
+    def test_select_rows_with_value_selects_rows_with_value(self):
+        self.assertTrue("id_1" in self.returned_ids)
+
+    def test_select_rows_with_value_drops_other_rows(self):
+        self.assertFalse("id_2" in self.returned_ids)
+
+    def test_select_rows_with_value_does_not_change_columns(self):
+        self.assertEqual(self.returned_df.schema, Schemas.select_rows_with_value_schema)
