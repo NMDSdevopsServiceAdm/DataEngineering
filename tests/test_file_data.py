@@ -1863,6 +1863,35 @@ class ReconciliationData:
         ("loc_2", None, ReconValues.single_sub_reg_type_description),
     ]
 
+    create_missing_columns_rows = [
+        ("id_1", "care_home", "region", "Care Home Name"),
+    ]
+
+    expected_create_missing_columns_rows = [
+        (
+            "id_1",
+            "care_home",
+            "region",
+            "Care Home Name",
+            "id_1",
+            "id_1",
+            "id_1 Care Home Name",
+            "id_1 Care Home Name",
+            "Open",
+            "_",
+            "No",
+            "Internal",
+            "Priority 5",
+            "Workplace",
+            "Reports",
+            "Yes",
+            "N/A",
+            "ASC-WDS",
+            "CCQ work",
+            0,
+        ),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:
