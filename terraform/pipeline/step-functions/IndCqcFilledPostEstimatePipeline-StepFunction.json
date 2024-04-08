@@ -115,7 +115,7 @@
                       "Parameters": {
                         "JobName": "${clean_cqc_provider_data_job_name}",
                         "Arguments": {
-                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
+                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
                           "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
                         }
                       },
