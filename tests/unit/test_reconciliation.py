@@ -262,12 +262,12 @@ class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
         self.assertTrue("loc_19" in self.returned_locations)
         self.assertTrue("loc_20" in self.returned_locations)
 
-    def test_filter_keeps_rows_where_registration_status_is_deregistered_and_date_is_before_first_of_current_month_and_potenitals_is_parent(
+    def test_filter_keeps_rows_where_registration_status_is_deregistered_and_date_is_before_first_of_current_month_and_parents_or_singles_and_subs_is_parent(
         self,
     ):
         self.assertTrue("loc_21" in self.returned_locations)
 
-    def test_filter_removes_rows_where_registration_status_is_deregistered_and_date_is_before_first_of_current_month_and_potenitals_is_singles_and_subs(
+    def test_filter_removes_rows_where_registration_status_is_deregistered_and_date_is_before_first_of_current_month_and_parents_or_singles_and_subs_is_singles_and_subs(
         self,
     ):
         self.assertFalse("loc_22" in self.returned_locations)
