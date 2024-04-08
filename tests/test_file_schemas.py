@@ -977,7 +977,7 @@ class ReconciliationSchema:
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
             StructField(CQCLClean.deregistration_date, DateType(), True),
-            StructField(ReconColumn.potentials, StringType(), True),
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
         ]
     )
 
