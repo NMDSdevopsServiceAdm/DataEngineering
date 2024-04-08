@@ -1,8 +1,6 @@
-from datetime import date
 import unittest
-from unittest.mock import patch, ANY, Mock
-
-from pyspark.sql import DataFrame, functions as F
+from unittest.mock import patch, Mock
+from pyspark.sql import DataFrame
 
 import jobs.clean_ascwds_workplace_data as job
 
@@ -12,20 +10,13 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-    AscwdsWorkplaceCleanedValues as AWPValues,
-)
-from utils.utils import (
-    get_spark,
-    format_date_fields,
-)
-import utils.cleaning_utils as cUtils
+from utils import utils
 
 
 class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
-    TEST_DESTINATION = "s3://some_bucket/some_destination_key"
+    TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
+    TEST_COVERAGE_DESTINATION = "s3://some_other_destination_key"
     partition_keys = [
         PartitionKeys.year,
         PartitionKeys.month,
@@ -34,7 +25,7 @@ class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     ]
 
     def setUp(self) -> None:
-        self.spark = get_spark()
+        self.spark = utils.get_spark()
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
             Data.workplace_rows, Schemas.workplace_schema
         )
@@ -46,8 +37,9 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("jobs.clean_ascwds_workplace_data.select_columns_required_for_coverage_df")
     @patch("utils.cleaning_utils.set_column_bounds")
-    @patch("utils.utils.format_date_fields", wraps=format_date_fields)
+    @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(
@@ -56,14 +48,20 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
         set_column_bounds_mock: Mock,
+        select_columns_required_for_coverage_df_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+        job.main(
+            self.TEST_SOURCE,
+            self.TEST_CLEANED_DESTINATION,
+            self.TEST_COVERAGE_DESTINATION,
+        )
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         self.assertEqual(format_date_fields_mock.call_count, 1)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
+        self.assertEqual(select_columns_required_for_coverage_df_mock.call_count, 1)
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 

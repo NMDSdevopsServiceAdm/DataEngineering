@@ -11,7 +11,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
-    AscwdsWorkplaceCleanedValues as AWPValues,
 )
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
 
@@ -93,7 +92,7 @@ def main(
         AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
 
-    coverage_df = coverage_df.select(cols_required_for_coverage_df)
+    coverage_df = select_columns_required_for_coverage_df(coverage_df)
 
     print(
         f"Exporting ascwds workplace coverage data as parquet to {coverage_file_destination}"
@@ -166,8 +165,12 @@ def create_purged_dfs_for_coverage_and_data(
     df = create_coverage_purge_date_column(df)
     df = create_date_column_for_purging_data(df)
 
-    ascwds_workplace_df = df.where(data_purge_date < remove_if_before_this_date)
-    coverage_df = df.where(coverage_purge_date < remove_if_before_this_date)
+    ascwds_workplace_df = df.where(
+        F.col(data_purge_date) < F.col(remove_if_before_this_date)
+    )
+    coverage_df = df.where(
+        F.col(coverage_purge_date) < F.col(remove_if_before_this_date)
+    )
 
     return ascwds_workplace_df, coverage_df
 
@@ -208,6 +211,10 @@ def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
         ),
     )
+
+
+def select_columns_required_for_coverage_df(df: DataFrame) -> DataFrame:
+    return df.select(cols_required_for_coverage_df)
 
 
 if __name__ == "__main__":
