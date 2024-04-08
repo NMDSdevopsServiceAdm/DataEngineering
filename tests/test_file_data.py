@@ -26,6 +26,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationValues as ReconValues,
+)
 
 
 @dataclass
@@ -1861,6 +1864,38 @@ class ReconciliationData:
         ("2", "1-002", "any non-head office service"),
         ("3", None, "any non-head office service"),
         ("4", None, "Head office services"),
+    ]
+
+    first_of_most_recent_month = date(2024, 4, 1)
+    first_of_previous_month = date(2024, 3, 1)
+    filter_to_relevant_rows = [
+        # fmt: off
+        ("loc_1", None, date(2024, 3, 31), ReconValues.parents), # keep
+        ("loc_2", None, date(2024, 3, 31), ReconValues.singles_and_subs), # keep
+        ("loc_3", None, date(2024, 3, 1), ReconValues.parents), # keep
+        ("loc_4", None, date(2024, 3, 1), ReconValues.singles_and_subs), # keep
+        ("loc_5", None, date(2024, 2, 29), ReconValues.parents), # keep
+        ("loc_6", None, date(2024, 2, 29), ReconValues.singles_and_subs), # keep
+        ("loc_7", None, date(2024, 4, 1), ReconValues.parents), # keep
+        ("loc_8", None, date(2024, 4, 1), ReconValues.singles_and_subs), # keep
+        ("loc_9", CQCLValues.registered, date(2024, 3, 31), ReconValues.parents), # remove
+        ("loc_10", CQCLValues.registered, date(2024, 3, 31), ReconValues.singles_and_subs), # remove
+        ("loc_11", CQCLValues.registered, date(2024, 3, 1), ReconValues.parents), # remove
+        ("loc_12", CQCLValues.registered, date(2024, 3, 1), ReconValues.singles_and_subs), # remove
+        ("loc_13", CQCLValues.registered, date(2024, 2, 29), ReconValues.parents), # remove
+        ("loc_14", CQCLValues.registered, date(2024, 2, 29), ReconValues.singles_and_subs), # remove
+        ("loc_15", CQCLValues.registered, date(2024, 4, 1), ReconValues.parents), # remove
+        ("loc_16", CQCLValues.registered, date(2024, 4, 1), ReconValues.singles_and_subs), # remove
+        ("loc_17", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.parents), # keep
+        ("loc_18", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs), # keep
+        ("loc_19", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.parents), # keep
+        ("loc_20", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs), # keep
+        ("loc_21", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.parents), # keep
+        ("loc_22", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs), # remove
+        ("loc_23", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.parents), # remove
+        ("loc_24", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),
+        # remove
+        # fmt: on
     ]
 
 
