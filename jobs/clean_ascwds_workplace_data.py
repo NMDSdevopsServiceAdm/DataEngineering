@@ -172,10 +172,10 @@ def create_purged_dfs_for_coverage_and_data(
     df = create_date_column_for_purging_data(df)
 
     ascwds_workplace_df = df.where(
-        F.col(AWPClean.data_purge_date) < F.col(AWPClean.remove_if_before_this_date)
+        F.col(AWPClean.data_purge_date) >= F.col(AWPClean.keep_if_after_this_date)
     )
     coverage_df = df.where(
-        F.col(AWPClean.coverage_purge_date) < F.col(AWPClean.remove_if_before_this_date)
+        F.col(AWPClean.coverage_purge_date) >= F.col(AWPClean.keep_if_after_this_date)
     )
 
     return ascwds_workplace_df, coverage_df
@@ -213,7 +213,7 @@ def create_coverage_purge_date_column(df: DataFrame) -> DataFrame:
 
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        AWPClean.remove_if_before_this_date,
+        AWPClean.keep_if_after_this_date,
         F.add_months(
             F.col(AWPClean.ascwds_workplace_import_date),
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
