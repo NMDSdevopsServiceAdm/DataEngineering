@@ -15,7 +15,8 @@
                 "JobName": "${clean_ascwds_workplace_job_name}",
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--coverage_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/"
                 }
               },
               "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
@@ -51,7 +52,7 @@
                         "JobName": "${reconciliation_job_name}",
                         "Arguments": {
                           "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
-                          "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--ascwds_coverage_source": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/",
                           "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
                           "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
                         }
@@ -337,6 +338,19 @@
               "End": true,
               "Parameters": {
                 "Name": "${cqc_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+            }
+          }
+        },
+        {
+          "StartAt": "Run sfc crawler",
+          "States": {
+            "Run sfc crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
