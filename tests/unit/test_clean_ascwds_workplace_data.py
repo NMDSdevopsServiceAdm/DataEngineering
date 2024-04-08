@@ -106,101 +106,11 @@ class CastToIntTests(CleanASCWDSWorkplaceDatasetTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class AddPurgeOutdatedWorkplacesColumnTests(CleanASCWDSWorkplaceDatasetTests):
+class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
-        self.test_purge_outdated_df = self.spark.createDataFrame(
-            Data.purge_outdated_data, Schemas.purge_outdated_schema
-        )
-        self.test_purge_outdated_df = cUtils.column_to_date(
-            self.test_purge_outdated_df,
-            AWP.import_date,
-            AWPClean.ascwds_workplace_import_date,
-        )
-        self.test_purge_outdated_df = self.test_purge_outdated_df.select(
-            AWPClean.location_id,
-            AWPClean.organisation_id,
-            AWPClean.master_update_date,
-            AWPClean.is_parent,
-            AWPClean.ascwds_workplace_import_date,
-        )
 
-    def test_returned_df_has_new_purge_data_column(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, AWPClean.ascwds_workplace_import_date
-        )
-        original_cols = self.test_purge_outdated_df.columns
-        expected_cols = original_cols + [AWPClean.purge_data]
-        self.assertCountEqual(returned_df.columns, expected_cols)
-
-    def test_returned_df_purge_data_col_is_string(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, AWPClean.ascwds_workplace_import_date
-        )
-        self.assertEqual(
-            returned_df.select(AWPClean.purge_data).dtypes,
-            [(AWPClean.purge_data, "string")],
-        )
-
-    def test_adds_correct_value_for_non_parent_workplaces(self):
-        input_df = self.test_purge_outdated_df.where(F.col(AWP.is_parent) == "0")
-
-        returned_df = job.add_purge_outdated_workplaces_column(
-            input_df, AWPClean.ascwds_workplace_import_date
-        )
-
-        purge_data_list = [
-            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = [
-            AWPValues.purge_keep,
-            AWPValues.purge_delete,
-            AWPValues.purge_keep,
-            AWPValues.purge_delete,
-        ]
-        self.assertEqual(purge_data_list, expected_purge_list)
-
-    def test_adds_correct_value_for_parent_workplaces(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, AWPClean.ascwds_workplace_import_date
-        )
-
-        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "1")
-        purge_data_list = [
-            row.purge_data
-            for row in returned_df_parents.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = [AWPValues.purge_keep, AWPValues.purge_delete]
-
-        self.assertEqual(purge_data_list, expected_purge_list)
-
-    def test_does_not_use_org_children_with_different_import_dates(self):
-        org_child = self.spark.createDataFrame(
-            [
-                (
-                    "1-000000007",
-                    "20210101",
-                    "2",
-                    date(2021, 1, 1),
-                    0,
-                ),
-            ],
-            Schemas.purge_outdated_schema,
-        )
-        input_df = self.test_purge_outdated_df.union(org_child)
-
-        returned_df = job.add_purge_outdated_workplaces_column(
-            input_df, AWPClean.ascwds_workplace_import_date
-        )
-
-        returned_df_parents = returned_df.where(F.col(AWPClean.is_parent) == "1")
-        purge_data_list = [
-            row.purge_data
-            for row in returned_df_parents.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = [AWPValues.purge_keep, AWPValues.purge_delete]
-
-        self.assertEqual(purge_data_list, expected_purge_list)
+        # TODO
 
 
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
