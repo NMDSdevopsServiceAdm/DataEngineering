@@ -133,14 +133,14 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = add_region_id_labels_for_reconciliation(df)
     df = add_potentials_col_to_df(df)
 
-    parent_accounts_df = get_ascwds_parent_accounts(df)
-
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
     cqc_registered_accounts_df = (
         remove_ascwds_head_office_accounts_without_location_ids(
             cqc_registered_accounts_df
         )
     )
+
+    parent_accounts_df = get_ascwds_parent_accounts(df)
 
     return cqc_registered_accounts_df, parent_accounts_df
 
