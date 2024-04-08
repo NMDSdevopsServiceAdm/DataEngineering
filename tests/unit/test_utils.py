@@ -913,6 +913,15 @@ class FilterDataframeToMaximumValueTests(UtilsTests):
 
         self.assertEqual(expected_data, returned_data)
 
+    def test_select_rows_with_value_selects_rows_with_value(self):
+        pass
+
+    def test_select_rows_with_value_drops_other_rows(self):
+        pass
+
+    def test_select_rows_with_value_does_not_change_columns(self):
+        pass
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

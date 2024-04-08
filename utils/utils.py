@@ -324,3 +324,8 @@ def filter_df_to_maximum_value_in_column(
     max_value = df.agg(F.max(column_to_filter_on)).collect()[0][0]
 
     return df.filter(F.col(column_to_filter_on) == max_value)
+
+
+def select_rows_with_value(df, column, value):
+    df = df.where(column == value)
+    return df
