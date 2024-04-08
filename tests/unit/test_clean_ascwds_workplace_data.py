@@ -23,7 +23,7 @@ from utils.utils import (
 import utils.cleaning_utils as cUtils
 
 
-class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
+class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_DESTINATION = "s3://some_bucket/some_destination_key"
     partition_keys = [
@@ -42,7 +42,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
 
-class MainTests(IngestASCWDSWorkerDatasetTests):
+class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -61,19 +61,13 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
 
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
+        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         self.assertEqual(format_date_fields_mock.call_count, 1)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
-
-        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
-        write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
-        )
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
-class CastToIntTests(IngestASCWDSWorkerDatasetTests):
+class CastToIntTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -112,7 +106,7 @@ class CastToIntTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
+class AddPurgeOutdatedWorkplacesColumnTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
         self.test_purge_outdated_df = self.spark.createDataFrame(
@@ -209,29 +203,7 @@ class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(purge_data_list, expected_purge_list)
 
 
-class PurgeOutdatedWorkplacesColumn(AddPurgeOutdatedWorkplacesColumnTests):
-    def setUp(self):
-        super().setUp()
-        self.test_only_keep_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, AWPClean.ascwds_workplace_import_date
-        )
-
-    def test_data_correctly_purged(self):
-        returned_df = job.purge_outdated_workplaces(self.test_only_keep_df)
-
-        purge_data_list = [
-            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
-        ]
-        expected_list = [
-            AWPValues.purge_keep,
-            AWPValues.purge_keep,
-            AWPValues.purge_keep,
-        ]
-        self.assertFalse(AWPValues.purge_delete in purge_data_list)
-        self.assertEqual(purge_data_list, expected_list)
-
-
-class RemoveWorkplacesWithDuplicateLocationIdsTests(IngestASCWDSWorkerDatasetTests):
+class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
