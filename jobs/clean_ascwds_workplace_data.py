@@ -44,6 +44,13 @@ def main(source: str, destination: str):
         AWPClean.ascwds_workplace_import_date,
     )
 
+    ascwds_workplace_df = cUtils.apply_categorical_labels(
+        ascwds_workplace_df,
+        ascwds_workplace_labels_dict,
+        ascwds_workplace_labels_dict.keys(),
+        add_as_new_column=False,
+    )
+
     ascwds_workplace_df = add_purge_outdated_workplaces_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
@@ -68,13 +75,6 @@ def main(source: str, destination: str):
         AWPClean.worker_records,
         AWPClean.worker_records_bounded,
         AscwdsScaleVariableLimits.worker_records_lower_limit,
-    )
-
-    ascwds_workplace_df = cUtils.apply_categorical_labels(
-        ascwds_workplace_df,
-        ascwds_workplace_labels_dict,
-        ascwds_workplace_labels_dict.keys(),
-        add_as_new_column=False,
     )
 
     print(f"Exporting as parquet to {destination}")
