@@ -38,6 +38,9 @@ def main(
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ):
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 1000")
+
     cqc_location_df = utils.read_from_parquet(
         cqc_location_api_source, cqc_locations_columns_to_import
     )
