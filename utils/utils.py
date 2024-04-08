@@ -327,6 +327,5 @@ def filter_df_to_maximum_value_in_column(
 
 
 def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str):
-    condition = column + " == " + value_to_keep
-    df = df.where(condition)
+    df = df.where(df[column] == value_to_keep)
     return df
