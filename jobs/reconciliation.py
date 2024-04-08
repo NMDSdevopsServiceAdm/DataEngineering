@@ -57,57 +57,21 @@ def main(
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
         latest_ascwds_workplace_df, cqc_location_df
     )
-    print("merged_ascwds_cqc_df where registration_status is Null:")
-    merged_ascwds_cqc_df.where(F.col(CQCL.registration_status).isNull()).show(2)
-
-    print("merged_ascwds_cqc_df where deregistrated before current month:")
-    merged_ascwds_cqc_df.where(
-        (F.col(CQCL.registration_status) == CQCLValues.deregistered)
-        & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
-    ).show(2)
-
-    print("merged_ascwds_cqc_df where deregistrated before current month and parent:")
-    merged_ascwds_cqc_df.where(
-        (F.col(CQCL.registration_status) == CQCLValues.deregistered)
-        & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
-        & (F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents)
-    ).show(2)
-
-    print(
-        "merged_ascwds_cqc_df where deregistrated in previous month and single or sub:"
-    )
-    merged_ascwds_cqc_df.where(
-        (F.col(CQCL.registration_status) == CQCLValues.deregistered)
-        & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
-        & (
-            F.col(ReconColumn.parents_or_singles_and_subs)
-            == ReconValues.singles_and_subs
-        )
-        & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
-    ).show(2)
 
     latest_ascwds_workplace_df.unpersist()
     cqc_location_df.unpersist()
 
-    print("first_of_most_recent_month = " + str(first_of_most_recent_month))
-    print("first_of_previous_month = " + str(first_of_previous_month))
-
     reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
-    print("reconciliation_df:")
-    reconciliation_df.show()
     merged_ascwds_cqc_df.unpersist()
+
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
-    print("single_and_sub_df:")
-    single_and_sub_df.show()
     parents_df = create_reconciliation_output_for_ascwds_parent_accounts(
         ascwds_parent_accounts_df, reconciliation_df, first_of_previous_month
     )
-    print("parents_df:")
-    parents_df.show()
     reconciliation_df.unpersist()
 
     write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
@@ -159,18 +123,11 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = add_parents_or_singles_and_subs_col_to_df(df)
 
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
-
-    print("cqc_registered_accounts_df where locationid is Null:")
-    cqc_registered_accounts_df.where(F.col(AWPClean.location_id).isNull()).show(2)
     cqc_registered_accounts_df = (
         remove_ascwds_head_office_accounts_without_location_ids(
             cqc_registered_accounts_df
         )
     )
-    print(
-        "cqc_registered_accounts_df where locationid is Null after head office removed:"
-    )
-    cqc_registered_accounts_df.where(F.col(AWPClean.location_id).isNull()).show(2)
 
     parent_accounts_df = get_ascwds_parent_accounts(df)
 
