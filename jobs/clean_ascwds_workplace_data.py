@@ -22,10 +22,6 @@ partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
-data_purge_date: str = "data_purge_date"
-coverage_purge_date: str = "coverage_purge_date"
-master_update_date_org: str = "master_update_date_org"
-remove_if_before_this_date: str = "remove_if_before_this_date"
 
 cols_required_for_coverage_df = [
     AWPClean.ascwds_workplace_import_date,
@@ -176,10 +172,10 @@ def create_purged_dfs_for_coverage_and_data(
     df = create_date_column_for_purging_data(df)
 
     ascwds_workplace_df = df.where(
-        F.col(data_purge_date) < F.col(remove_if_before_this_date)
+        F.col(AWPClean.data_purge_date) < F.col(AWPClean.remove_if_before_this_date)
     )
     coverage_df = df.where(
-        F.col(coverage_purge_date) < F.col(remove_if_before_this_date)
+        F.col(AWPClean.coverage_purge_date) < F.col(AWPClean.remove_if_before_this_date)
     )
 
     return ascwds_workplace_df, coverage_df
@@ -188,7 +184,7 @@ def create_purged_dfs_for_coverage_and_data(
 def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> DataFrame:
     org_df_with_maximum_update_date = df.groupBy(
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
-    ).agg(F.max(AWPClean.master_update_date).alias(master_update_date_org))
+    ).agg(F.max(AWPClean.master_update_date).alias(AWPClean.master_update_date_org))
 
     return df.join(
         org_df_with_maximum_update_date,
@@ -199,23 +195,25 @@ def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> Data
 
 def create_data_purge_date_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        data_purge_date,
+        AWPClean.data_purge_date,
         F.when(
-            (F.col(AWPClean.is_parent) == "Yes"), F.col(master_update_date_org)
+            (F.col(AWPClean.is_parent) == "Yes"), F.col(AWPClean.master_update_date_org)
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
 
 
 def create_coverage_purge_date_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        coverage_purge_date,
-        F.greatest(F.col(data_purge_date), F.col(AWPClean.last_logged_in_date)),
+        AWPClean.coverage_purge_date,
+        F.greatest(
+            F.col(AWPClean.data_purge_date), F.col(AWPClean.last_logged_in_date)
+        ),
     )
 
 
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        remove_if_before_this_date,
+        AWPClean.remove_if_before_this_date,
         F.add_months(
             F.col(AWPClean.ascwds_workplace_import_date),
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
