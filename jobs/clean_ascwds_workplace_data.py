@@ -154,9 +154,9 @@ def create_purged_dfs_for_coverage_and_data(
     """
     This process is designed to purge/remove data which is deemed too old to exist.
 
-    If the worplace is a parent account, the data used to purge is the maximum of any account within that organisation.
+    If the worplace is a parent account, the mupddate used to purge is the maximum of any account within that organisation.
 
-    The purge rules for coverage also takes the last_logged_in date.
+    The purge rules for coverage_purge_date also takes last_logged_in date into account.
 
     Args:
         df (DataFrame): The ascwds_workplace_df to be purged
