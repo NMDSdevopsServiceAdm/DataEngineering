@@ -289,6 +289,21 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    add_purge_data_col_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.is_parent, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+    expected_add_purge_data_col_schema = StructType(
+        [
+            *add_purge_data_col_schema,
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+
 
 @dataclass
 class ONSData:

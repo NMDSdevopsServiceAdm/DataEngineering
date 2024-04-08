@@ -449,6 +449,19 @@ class ASCWDSWorkplaceData:
         ("2", date(2024, 4, 1), "6", date(2024, 3, 10), date(2024, 3, 10)),
     ]
 
+    add_purge_data_col_rows = [
+        ("1", "Yes", date(2024, 3, 3), date(2024, 2, 2)),
+        ("2", "Yes", date(2024, 3, 3), date(2024, 2, 2)),
+        ("3", "No", date(2024, 3, 3), date(2024, 2, 2)),
+        ("4", "No", date(2024, 3, 3), date(2024, 2, 2)),
+    ]
+    expected_add_purge_data_col_rows = [
+        ("1", "Yes", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
+        ("2", "Yes", date(2024, 2, 2), date(2024, 3, 3), date(2024, 3, 3)),
+        ("3", "No", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
+        ("4", "No", date(2024, 2, 2), date(2024, 3, 3), date(2024, 2, 2)),
+    ]
+
 
 @dataclass
 class CQCProviderData:
@@ -1842,29 +1855,29 @@ class ReconciliationData:
     first_of_previous_month = date(2024, 3, 1)
     filter_to_relevant_rows = [
         # fmt: off
-        ("loc_1", None, date(2024, 3, 31), ReconValues.parents), # keep
-        ("loc_2", None, date(2024, 3, 31), ReconValues.singles_and_subs), # keep
-        ("loc_3", None, date(2024, 3, 1), ReconValues.parents), # keep
-        ("loc_4", None, date(2024, 3, 1), ReconValues.singles_and_subs), # keep
-        ("loc_5", None, date(2024, 2, 29), ReconValues.parents), # keep
-        ("loc_6", None, date(2024, 2, 29), ReconValues.singles_and_subs), # keep
-        ("loc_7", None, date(2024, 4, 1), ReconValues.parents), # keep
-        ("loc_8", None, date(2024, 4, 1), ReconValues.singles_and_subs), # keep
-        ("loc_9", CQCLValues.registered, date(2024, 3, 31), ReconValues.parents), # remove
-        ("loc_10", CQCLValues.registered, date(2024, 3, 31), ReconValues.singles_and_subs), # remove
-        ("loc_11", CQCLValues.registered, date(2024, 3, 1), ReconValues.parents), # remove
-        ("loc_12", CQCLValues.registered, date(2024, 3, 1), ReconValues.singles_and_subs), # remove
-        ("loc_13", CQCLValues.registered, date(2024, 2, 29), ReconValues.parents), # remove
-        ("loc_14", CQCLValues.registered, date(2024, 2, 29), ReconValues.singles_and_subs), # remove
-        ("loc_15", CQCLValues.registered, date(2024, 4, 1), ReconValues.parents), # remove
-        ("loc_16", CQCLValues.registered, date(2024, 4, 1), ReconValues.singles_and_subs), # remove
-        ("loc_17", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.parents), # keep
-        ("loc_18", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs), # keep
-        ("loc_19", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.parents), # keep
-        ("loc_20", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs), # keep
-        ("loc_21", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.parents), # keep
-        ("loc_22", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs), # remove
-        ("loc_23", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.parents), # remove
+        ("loc_1", None, date(2024, 3, 31), ReconValues.parents),  # keep
+        ("loc_2", None, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
+        ("loc_3", None, date(2024, 3, 1), ReconValues.parents),  # keep
+        ("loc_4", None, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
+        ("loc_5", None, date(2024, 2, 29), ReconValues.parents),  # keep
+        ("loc_6", None, date(2024, 2, 29), ReconValues.singles_and_subs),  # keep
+        ("loc_7", None, date(2024, 4, 1), ReconValues.parents),  # keep
+        ("loc_8", None, date(2024, 4, 1), ReconValues.singles_and_subs),  # keep
+        ("loc_9", CQCLValues.registered, date(2024, 3, 31), ReconValues.parents),  # remove
+        ("loc_10", CQCLValues.registered, date(2024, 3, 31), ReconValues.singles_and_subs),  # remove
+        ("loc_11", CQCLValues.registered, date(2024, 3, 1), ReconValues.parents),  # remove
+        ("loc_12", CQCLValues.registered, date(2024, 3, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_13", CQCLValues.registered, date(2024, 2, 29), ReconValues.parents),  # remove
+        ("loc_14", CQCLValues.registered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
+        ("loc_15", CQCLValues.registered, date(2024, 4, 1), ReconValues.parents),  # remove
+        ("loc_16", CQCLValues.registered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_17", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.parents),  # keep
+        ("loc_18", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
+        ("loc_19", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.parents),  # keep
+        ("loc_20", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
+        ("loc_21", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.parents),  # keep
+        ("loc_22", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
+        ("loc_23", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.parents),  # remove
         ("loc_24", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),
         # remove
         # fmt: on

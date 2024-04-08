@@ -140,28 +140,62 @@ class CalculateMaximumMasterUpdateDateForOrganisationTests(
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_maximum_master_update_date_for_organisation_is_correct(self):
-        test_mupddate_for_org_df = self.spark.createDataFrame(
+        self.test_mupddate_for_org_df = self.spark.createDataFrame(
             Data.mupddate_for_org_rows,
             Schemas.mupddate_for_org_schema,
         )
-        returned_df = job.calculate_maximum_master_update_date_for_organisation(
-            test_mupddate_for_org_df,
+        self.returned_df = job.calculate_maximum_master_update_date_for_organisation(
+            self.test_mupddate_for_org_df,
         )
 
-        expected_df = self.spark.createDataFrame(
+        self.expected_df = self.spark.createDataFrame(
             Data.expected_mupddate_for_org_rows,
             Schemas.expected_mupddate_for_org_schema,
         )
+
+    def test_calculate_maximum_master_update_date_for_organisation_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_mupddate_for_org_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_calculate_maximum_master_update_date_for_organisation_returns_expected_df(
+        self,
+    ):
         self.assertEqual(
-            returned_df.sort(AWP.location_id).collect(),
-            expected_df.sort(AWP.location_id).collect(),
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
         )
 
 
 class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+
+        self.test_add_purge_data_col_df = self.spark.createDataFrame(
+            Data.add_purge_data_col_rows,
+            Schemas.add_purge_data_col_schema,
+        )
+        self.returned_df = job.create_data_purge_date_column(
+            self.test_add_purge_data_col_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_purge_data_col_rows,
+            Schemas.expected_add_purge_data_col_schema,
+        )
+
+    def test_create_data_purge_date_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_add_purge_data_col_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_data_purge_date_column_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
 
 
 class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
