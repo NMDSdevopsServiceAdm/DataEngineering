@@ -13,6 +13,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
+from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
+    ascwds_workplace_labels_dict,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -66,6 +69,13 @@ def main(
         ascwds_workplace_df,
         Keys.import_date,
         AWPClean.ascwds_workplace_import_date,
+    )
+
+    ascwds_workplace_df = cUtils.apply_categorical_labels(
+        ascwds_workplace_df,
+        ascwds_workplace_labels_dict,
+        ascwds_workplace_labels_dict.keys(),
+        add_as_new_column=False,
     )
 
     ascwds_workplace_df, coverage_df = create_purged_dfs_for_coverage_and_data(
@@ -191,7 +201,7 @@ def create_data_purge_date_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
         data_purge_date,
         F.when(
-            (F.col(AWPClean.is_parent) == "1"), F.col(master_update_date_org)
+            (F.col(AWPClean.is_parent) == "Yes"), F.col(master_update_date_org)
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
 

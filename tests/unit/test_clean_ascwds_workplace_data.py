@@ -39,6 +39,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
 
     @patch("jobs.clean_ascwds_workplace_data.select_columns_required_for_coverage_df")
     @patch("utils.cleaning_utils.set_column_bounds")
+    @patch("utils.cleaning_utils.apply_categorical_labels")
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -47,6 +48,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
+        apply_categorical_labels_mock: Mock,
         set_column_bounds_mock: Mock,
         select_columns_required_for_coverage_df_mock: Mock,
     ):
@@ -60,6 +62,7 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         self.assertEqual(format_date_fields_mock.call_count, 1)
+        self.assertEqual(apply_categorical_labels_mock.call_count, 1)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
         self.assertEqual(select_columns_required_for_coverage_df_mock.call_count, 1)
         self.assertEqual(write_to_parquet_mock.call_count, 2)

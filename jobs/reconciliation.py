@@ -37,7 +37,7 @@ def main(
     ascwds_coverage_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
-) -> DataFrame:
+):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_api_source, cqc_locations_columns_to_import
     )
@@ -111,80 +111,70 @@ def collect_dates_to_use(df: DataFrame) -> Tuple[date, date]:
 
 
 def prepare_latest_cleaned_ascwds_workforce_data(
-    ascwds_workplace_df: str,
+    ascwds_workplace_df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
     df = utils.filter_df_to_maximum_value_in_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
-    df = df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
-    df = df.replace(
-        ReconDict.establishment_type_dict, subset=[AWPClean.establishment_type]
-    )
-    df = add_parent_sub_or_single_col_to_df(df)
-    df = add_ownership_col_to_df(df)
-    df = add_potentials_col_to_df(df)
+    df = add_region_id_labels_for_reconciliation(df)
+    df = add_parents_or_singles_and_subs_col_to_df(df)
+
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
+    cqc_registered_accounts_df = (
+        remove_ascwds_head_office_accounts_without_location_ids(
+            cqc_registered_accounts_df
+        )
+    )
+
     parent_accounts_df = get_ascwds_parent_accounts(df)
 
     return cqc_registered_accounts_df, parent_accounts_df
 
 
-def add_parent_sub_or_single_col_to_df(df: DataFrame) -> DataFrame:
+def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
+    return df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
+
+
+def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        ReconColumn.parent_sub_or_single,
-        F.when(
-            (F.col(AWPClean.is_parent) == 1),
-            F.lit(ReconValues.parent),
-        )
-        .when(
-            ((F.col(AWPClean.is_parent) == 0) & (F.col(AWPClean.parent_id) > 0)),
-            F.lit(ReconValues.subsidiary),
-        )
-        .otherwise(F.lit(ReconValues.single)),
-    ).drop(AWPClean.parent_id)
-
-
-def add_ownership_col_to_df(df: DataFrame) -> DataFrame:
-    return df.withColumn(
-        ReconColumn.ownership,
-        F.when(
-            (F.col(AWPClean.parent_permission) == 1),
-            F.lit(ReconValues.parent),
-        ).otherwise(F.lit(ReconValues.workplace)),
-    ).drop(AWPClean.parent_permission)
-
-
-def add_potentials_col_to_df(df: DataFrame) -> DataFrame:
-    return df.withColumn(
-        ReconColumn.potentials,
+        ReconColumn.parents_or_singles_and_subs,
         F.when(
             (
-                (
-                    (F.col(ReconColumn.parent_sub_or_single) == ReconValues.single)
-                    | (
-                        F.col(ReconColumn.parent_sub_or_single)
-                        == ReconValues.subsidiary
-                    )
+                (F.col(AWPClean.is_parent) == "Yes")
+                | (
+                    (F.col(AWPClean.is_parent) == "No")
+                    & (F.col(AWPClean.parent_permission) == "Parent has ownership")
                 )
-                & (F.col(ReconColumn.ownership) == ReconValues.workplace)
             ),
-            F.lit(ReconValues.singles_and_subs),
-        ).otherwise(F.lit(ReconValues.parents)),
-    ).drop(ReconColumn.parent_sub_or_single, ReconColumn.ownership)
+            F.lit(ReconValues.parents),
+        ).otherwise(F.lit(ReconValues.singles_and_subs)),
+    )
 
 
 def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(AWPClean.registration_type) == "2")
+    return df.filter(F.col(AWPClean.registration_type) == "CQC regulated")
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(AWPClean.is_parent) == "1").select(
+    return df.filter(F.col(AWPClean.is_parent) == "Yes").select(
         AWPClean.nmds_id,
         AWPClean.establishment_id,
         AWPClean.establishment_name,
         AWPClean.organisation_id,
         AWPClean.establishment_type,
         AWPClean.region_id,
+    )
+
+
+def remove_ascwds_head_office_accounts_without_location_ids(
+    df: DataFrame,
+) -> DataFrame:
+    return df.where(
+        (F.col(AWPClean.location_id).isNotNull())
+        | (
+            (F.col(AWPClean.location_id).isNull())
+            & (F.col(AWPClean.main_service_id) != "Head office services")
+        )
     )
 
 
@@ -209,24 +199,15 @@ def filter_to_locations_relevant_to_reconcilition_process(
                 & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
             )
             & (
-                (F.col(ReconColumn.potentials) == ReconValues.parents)
+                (F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents)
                 | (
-                    (F.col(ReconColumn.potentials) == ReconValues.singles_and_subs)
+                    (
+                        F.col(ReconColumn.parents_or_singles_and_subs)
+                        == ReconValues.singles_and_subs
+                    )
                     & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
                 )
             )
-        )
-    )
-
-
-def remove_ascwds_head_office_accounts_without_location_ids(
-    df: DataFrame,
-) -> DataFrame:
-    return df.where(
-        (F.col(CQCL.registration_status).isNotNull())
-        | (
-            (F.col(CQCL.registration_status).isNull())
-            & (F.col(AWPClean.main_service_id) != "72")
         )
     )
 
@@ -235,7 +216,7 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
     singles_and_subs_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.singles_and_subs
+        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.singles_and_subs
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = singles_and_subs_df.withColumn(
@@ -263,7 +244,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     first_of_previous_month: str,
 ) -> DataFrame:
     reconciliation_parents_df = reconciliation_df.where(
-        F.col(ReconColumn.potentials) == ReconValues.parents
+        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
