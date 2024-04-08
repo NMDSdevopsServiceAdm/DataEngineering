@@ -1102,7 +1102,7 @@ class ReconciliationSchema:
         ]
     )
 
-    organisation_id_with_array_of_nmdsids_schema = StructType(
+    join_array_of_nmdsids_schema = StructType(
         [
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(AWPClean.nmds_id, StringType(), True),
@@ -1110,7 +1110,7 @@ class ReconciliationSchema:
         ]
     )
 
-    expected_organisation_id_with_array_of_nmdsids_schema = StructType(
+    expected_join_array_of_nmdsids_schema = StructType(
         [
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField("new_column", StringType(), True),

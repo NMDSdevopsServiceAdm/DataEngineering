@@ -504,21 +504,21 @@ class SelectRowsWithValueTests(ReconciliationTests):
         self.assertEqual(self.returned_df.schema, Schemas.select_rows_with_value_schema)
 
 
-class OrganisationIdWithArrayOfNmdsidsTests(ReconciliationTests):
+class JoinArrayOfNmdsIdsTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
         self.df = self.spark.createDataFrame(
-            Data.organisation_id_with_array_of_nmdsids_rows,
-            Schemas.organisation_id_with_array_of_nmdsids_schema,
+            Data.join_array_of_nmdsids_rows,
+            Schemas.join_array_of_nmdsids_schema,
         )
         self.new_column = Data.new_column
-        self.returned_df = job.organisation_id_with_array_of_nmdsids(
+        self.returned_df = job.join_array_of_nmdsids_into_parent_account_df(
             self.df, self.new_column
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_organisation_id_with_array_of_nmdsids_rows,
-            Schemas.expected_organisation_id_with_array_of_nmdsids_schema,
+            Data.expected_join_array_of_nmdsids_rows,
+            Schemas.expected_join_array_of_nmdsids_schema,
         )
         self.returned_df.show(truncate=False)
 
