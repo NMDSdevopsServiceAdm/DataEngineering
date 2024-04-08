@@ -57,19 +57,27 @@ def main(
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
         latest_ascwds_workplace_df, cqc_location_df
     )
+    print("merged_ascwds_cqc_df:")
+    merged_ascwds_cqc_df.show()
     latest_ascwds_workplace_df.unpersist()
     cqc_location_df.unpersist()
 
     reconciliation_df = filter_to_locations_relevant_to_reconcilition_process(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
+    print("reconciliation_df:")
+    reconciliation_df.show()
     merged_ascwds_cqc_df.unpersist()
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
+    print("single_and_sub_df:")
+    single_and_sub_df.show()
     parents_df = create_reconciliation_output_for_ascwds_parent_accounts(
         ascwds_parent_accounts_df, reconciliation_df, first_of_previous_month
     )
+    print("parents_df:")
+    parents_df.show()
     reconciliation_df.unpersist()
 
     write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
