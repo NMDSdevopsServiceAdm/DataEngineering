@@ -1000,7 +1000,6 @@ class ReconciliationSchema:
             StructField(ReconColumn.sub_category, StringType(), True),
             StructField(ReconColumn.is_requester_named, StringType(), True),
             StructField(ReconColumn.security_question, StringType(), True),
-            StructField(ReconColumn.technician, StringType(), True),
             StructField(ReconColumn.website, StringType(), True),
             StructField(ReconColumn.item, StringType(), True),
             StructField(ReconColumn.phone, IntegerType(), True),

@@ -12,6 +12,9 @@ from tests.test_file_schemas import ReconciliationSchema as Schemas
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationColumns as ReconColumn,
+)
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -132,10 +135,89 @@ class AddSinglesAndSubDescriptionColumnTests(ReconciliationTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CreateMissingClumnsRequiredForOutputTests(ReconciliationTests):
+class CreateMissingColumnsRequiredForOutputTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_create_missing_columns_df = self.spark.createDataFrame(
+            Data.create_missing_columns_rows,
+            Schemas.create_missing_columns_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_missing_columns_rows,
+            Schemas.expected_create_missing_columns_schema,
+        )
+        self.returned_df = job.create_missing_columns_required_for_output(
+            self.test_create_missing_columns_df,
+        )
+        self.returned_df.show()
+        self.returned_df.printSchema()
 
-    @unittest.skip("to do")
-    def test(self):
-        pass
+    def test_create_missing_columns_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_create_missing_columns_returns_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_create_missing_columns_returns_expected_values_in_new_columns(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(
+            returned_data[0][ReconColumn.nmds], expected_data[0][ReconColumn.nmds]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.workplace_id],
+            expected_data[0][ReconColumn.workplace_id],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.requester_name],
+            expected_data[0][ReconColumn.requester_name],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.requester_name_2],
+            expected_data[0][ReconColumn.requester_name_2],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.status], expected_data[0][ReconColumn.status]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.technician],
+            expected_data[0][ReconColumn.technician],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.manual_call_log],
+            expected_data[0][ReconColumn.manual_call_log],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.mode], expected_data[0][ReconColumn.mode]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.priority],
+            expected_data[0][ReconColumn.priority],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.category],
+            expected_data[0][ReconColumn.category],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.sub_category],
+            expected_data[0][ReconColumn.sub_category],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.is_requester_named],
+            expected_data[0][ReconColumn.is_requester_named],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.security_question],
+            expected_data[0][ReconColumn.security_question],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.website], expected_data[0][ReconColumn.website]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.item], expected_data[0][ReconColumn.item]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.phone], expected_data[0][ReconColumn.phone]
+        )
