@@ -120,7 +120,7 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
         filter_to_cqc_registration_type_only_patch: Mock,
         remove_ascwds_head_office_accounts_without_location_ids_patch: Mock,
     ):
-        returned_df_1, returned_df_2 = job.prepare_latest_cleaned_ascwds_workforce_data(
+        job.prepare_latest_cleaned_ascwds_workforce_data(
             self.test_clean_ascwds_workplace_df,
         )
 
@@ -132,9 +132,6 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
         self.assertEqual(
             remove_ascwds_head_office_accounts_without_location_ids_patch.call_count, 1
         )
-
-        self.assertIsInstance(returned_df_1, DataFrame)
-        self.assertIsInstance(returned_df_2, DataFrame)
 
 
 class AddRegionLabelsForReconciliation(ReconciliationTests):
