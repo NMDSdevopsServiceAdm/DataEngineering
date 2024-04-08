@@ -234,7 +234,9 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
     singles_and_subs_df = utils.select_rows_with_value(
-        reconciliation_df, ReconColumn.potentials, ReconValues.singles_and_subs
+        reconciliation_df,
+        ReconColumn.parents_or_singles_and_subs,
+        ReconValues.singles_and_subs,
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = add_subject_column(
@@ -266,7 +268,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     first_of_previous_month: str,
 ) -> DataFrame:
     reconciliation_parents_df = utils.select_rows_with_value(
-        reconciliation_df, ReconColumn.potentials, ReconValues.parents
+        reconciliation_df, ReconColumn.parents_or_singles_and_subs, ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
