@@ -7,9 +7,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 
 @dataclass
 class AscwdsWorkplaceValueLabelsIsParent:
-    """The possible values of the parentpermission column in ascwds workplace data"""
+    """The possible values of the isparent column in ascwds workplace data"""
 
-    column_name: str = AWP.parent_permission
+    column_name: str = AWP.is_parent
 
     labels_dict = {
         "0": "No",
