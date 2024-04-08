@@ -913,7 +913,6 @@ class ReconciliationSchema:
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.nmds_id, StringType(), True),
             StructField(AWPClean.is_parent, StringType(), True),
-            StructField(AWPClean.parent_id, StringType(), True),
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(AWPClean.parent_permission, StringType(), True),
             StructField(AWPClean.establishment_type, StringType(), True),
@@ -950,8 +949,23 @@ class ReconciliationSchema:
     )
     dates_to_use_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    regtype_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+        ]
+    )
+
+    remove_head_office_accounts_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
         ]
     )
 
