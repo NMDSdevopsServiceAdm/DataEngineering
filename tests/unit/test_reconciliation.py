@@ -265,3 +265,27 @@ class FinalColumnSelectionTests(ReconciliationTests):
 
     def test_final_column_selection_returns_expected_rows(self):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+
+class AddSubjectColumnTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.add_subject_column_rows,
+            Schemas.add_subject_column_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_subject_column_rows,
+            Schemas.expected_add_subject_column_schema,
+        )
+        self.returned_df = job.add_subject_column(self.test_df, "test_subject")
+
+    def test_add_subject_column_adds_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_add_subject_column_adds_column_with_correct_value(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)

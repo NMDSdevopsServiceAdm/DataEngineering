@@ -1066,6 +1066,18 @@ class ReconciliationSchema:
         ]
     )
 
+    add_subject_column_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+        ]
+    )
+
+    expected_add_subject_column_schema = StructType(
+        [
+            *add_subject_column_schema,
+            StructField(ReconColumn.subject, StringType(), True),
+        ]
+    )
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
