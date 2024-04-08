@@ -11,9 +11,3 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     last_logged_in_date: str = "last_logged_in_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
-
-
-@dataclass
-class AscwdsWorkplaceCleanedValues:
-    purge_keep: str = "keep"
-    purge_delete: str = "purge"
