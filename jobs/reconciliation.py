@@ -184,9 +184,9 @@ def remove_ascwds_head_office_accounts_without_location_ids(
     df: DataFrame,
 ) -> DataFrame:
     return df.where(
-        (F.col(CQCL.registration_status).isNotNull())
+        (F.col(AWPClean.location_id).isNotNull())
         | (
-            (F.col(CQCL.registration_status).isNull())
+            (F.col(AWPClean.location_id).isNull())
             & (F.col(AWPClean.main_service_id) != "Head office services")
         )
     )
