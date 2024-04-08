@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
     AscwdsWorkplaceCleanedValues as AWPValues,
 )
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
+from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
+    ascwds_workplace_labels_dict,
+)
 
 DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
@@ -39,6 +42,13 @@ def main(source: str, destination: str):
         ascwds_workplace_df,
         PartitionKeys.import_date,
         AWPClean.ascwds_workplace_import_date,
+    )
+
+    ascwds_workplace_df = cUtils.apply_categorical_labels(
+        ascwds_workplace_df,
+        ascwds_workplace_labels_dict,
+        ascwds_workplace_labels_dict.keys(),
+        add_as_new_column=False,
     )
 
     ascwds_workplace_df = add_purge_outdated_workplaces_column(
@@ -168,7 +178,7 @@ def calculate_latest_update_to_workplace_location(
     df_with_latest_update = df_with_org_updates.withColumn(
         "latest_update",
         F.when(
-            (F.col(AWPClean.is_parent) == "1"), F.col("latest_org_mupddate")
+            (F.col(AWPClean.is_parent) == "Yes"), F.col("latest_org_mupddate")
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
 
