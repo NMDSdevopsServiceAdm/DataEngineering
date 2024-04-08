@@ -450,16 +450,34 @@ class ASCWDSWorkplaceData:
     ]
 
     add_purge_data_col_rows = [
-        ("1", "Yes", date(2024, 3, 3), date(2024, 2, 2)),
-        ("2", "Yes", date(2024, 3, 3), date(2024, 2, 2)),
-        ("3", "No", date(2024, 3, 3), date(2024, 2, 2)),
-        ("4", "No", date(2024, 3, 3), date(2024, 2, 2)),
+        ("1", "Yes", date(2024, 2, 2), date(2024, 2, 2)),
+        ("2", "Yes", date(2024, 2, 2), date(2024, 3, 3)),
+        ("3", "No", date(2024, 2, 2), date(2024, 2, 2)),
+        ("4", "No", date(2024, 2, 2), date(2024, 3, 3)),
     ]
     expected_add_purge_data_col_rows = [
         ("1", "Yes", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
         ("2", "Yes", date(2024, 2, 2), date(2024, 3, 3), date(2024, 3, 3)),
         ("3", "No", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
         ("4", "No", date(2024, 2, 2), date(2024, 3, 3), date(2024, 2, 2)),
+    ]
+
+    add_coverage_purge_date_col_rows = [
+        ("1", date(2024, 3, 3), date(2024, 2, 2)),
+        ("2", date(2024, 4, 4), date(2024, 5, 5)),
+    ]
+    expected_add_coverage_purge_date_col_rows = [
+        ("1", date(2024, 3, 3), date(2024, 2, 2), date(2024, 3, 3)),
+        ("2", date(2024, 4, 4), date(2024, 5, 5), date(2024, 5, 5)),
+    ]
+
+    date_col_for_purging_rows = [
+        ("1", date(2024, 3, 3)),
+        ("2", date(2024, 4, 4)),
+    ]
+    expected_date_col_for_purging_rows = [
+        ("1", date(2024, 3, 3), date(2022, 3, 3)),
+        ("2", date(2024, 4, 4), date(2022, 4, 4)),
     ]
 
 

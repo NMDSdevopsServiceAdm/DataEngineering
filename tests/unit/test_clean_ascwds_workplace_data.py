@@ -202,10 +202,62 @@ class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+        self.test_add_coverage_purge_date_col_df = self.spark.createDataFrame(
+            Data.add_coverage_purge_date_col_rows,
+            Schemas.add_coverage_purge_date_col_schema,
+        )
+        self.returned_df = job.create_coverage_purge_date_column(
+            self.test_add_coverage_purge_date_col_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_coverage_purge_date_col_rows,
+            Schemas.expected_add_coverage_purge_date_col_schema,
+        )
+
+    def test_create_coverage_purge_date_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_add_coverage_purge_date_col_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_coverage_purge_date_column_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
+
 
 class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+
+        self.test_date_col_for_purging_df = self.spark.createDataFrame(
+            Data.date_col_for_purging_rows,
+            Schemas.date_col_for_purging_schema,
+        )
+        self.returned_df = job.create_date_column_for_purging_data(
+            self.test_date_col_for_purging_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_date_col_for_purging_rows,
+            Schemas.expected_date_col_for_purging_schema,
+        )
+
+    def test_create_date_column_for_purging_data_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_date_col_for_purging_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_date_column_for_purging_data_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
 
 
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):

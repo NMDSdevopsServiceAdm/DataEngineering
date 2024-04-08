@@ -300,7 +300,34 @@ class ASCWDSWorkplaceSchemas:
     expected_add_purge_data_col_schema = StructType(
         [
             *add_purge_data_col_schema,
-            StructField(AWPClean.master_update_date_org, DateType(), True),
+            StructField(AWPClean.data_purge_date, DateType(), True),
+        ]
+    )
+
+    add_coverage_purge_date_col_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.data_purge_date, DateType(), True),
+            StructField(AWPClean.last_logged_in_date, DateType(), True),
+        ]
+    )
+    expected_add_coverage_purge_date_col_schema = StructType(
+        [
+            *add_coverage_purge_date_col_schema,
+            StructField(AWPClean.coverage_purge_date, DateType(), True),
+        ]
+    )
+
+    date_col_for_purging_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+    expected_date_col_for_purging_schema = StructType(
+        [
+            *date_col_for_purging_schema,
+            StructField(AWPClean.keep_if_after_this_date, DateType(), True),
         ]
     )
 
