@@ -274,13 +274,18 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    purge_outdated_schema = StructType(
+    mupddate_for_org_schema = StructType(
         [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
             StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWP.location_id, StringType(), True),
             StructField(AWP.master_update_date, DateType(), True),
-            StructField(AWP.is_parent, StringType(), True),
+        ]
+    )
+    expected_mupddate_for_org_schema = StructType(
+        [
+            *mupddate_for_org_schema,
+            StructField(AWPClean.master_update_date_org, DateType(), True),
         ]
     )
 

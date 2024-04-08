@@ -111,7 +111,67 @@ class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
 
-        # TODO
+    @patch("jobs.clean_ascwds_workplace_data.create_date_column_for_purging_data")
+    @patch("jobs.clean_ascwds_workplace_data.create_coverage_purge_date_column")
+    @patch("jobs.clean_ascwds_workplace_data.create_data_purge_date_column")
+    @patch(
+        "jobs.clean_ascwds_workplace_data.calculate_maximum_master_update_date_for_organisation"
+    )
+    def test_create_purged_dfs_for_coverage_and_data_runs(
+        self,
+        calculate_maximum_master_update_date_for_organisation_patch: Mock,
+        create_data_purge_date_column_patch: Mock,
+        create_coverage_purge_date_column_patch: Mock,
+        create_date_column_for_purging_data_patch: Mock,
+    ):
+        job.create_purged_dfs_for_coverage_and_data(self.test_ascwds_workplace_df)
+
+        self.assertEqual(
+            calculate_maximum_master_update_date_for_organisation_patch.call_count, 1
+        )
+        self.assertEqual(create_data_purge_date_column_patch.call_count, 1)
+        self.assertEqual(create_coverage_purge_date_column_patch.call_count, 1)
+        self.assertEqual(create_date_column_for_purging_data_patch.call_count, 1)
+
+
+class CalculateMaximumMasterUpdateDateForOrganisationTests(
+    CleanASCWDSWorkplaceDatasetTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_maximum_master_update_date_for_organisation_is_correct(self):
+        test_mupddate_for_org_df = self.spark.createDataFrame(
+            Data.mupddate_for_org_rows,
+            Schemas.mupddate_for_org_schema,
+        )
+        returned_df = job.calculate_maximum_master_update_date_for_organisation(
+            test_mupddate_for_org_df,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_mupddate_for_org_rows,
+            Schemas.expected_mupddate_for_org_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(AWP.location_id).collect(),
+            expected_df.sort(AWP.location_id).collect(),
+        )
+
+
+class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
 
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
