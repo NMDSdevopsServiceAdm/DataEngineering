@@ -522,6 +522,7 @@ class JoinArrayOfNmdsIdsTests(ReconciliationTests):
         )
         self.returned_df.show(truncate=False)
 
+    # Rewrite these tests fro function including join
     def test_organisation_id_with_array_of_nmdsids_returns_one_row_per_org_id(self):
         expected_rows = self.df.dropDuplicates([AWPClean.organisation_id]).count()
         returned_rows = self.returned_df.count()
