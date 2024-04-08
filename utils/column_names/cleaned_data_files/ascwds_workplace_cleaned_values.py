@@ -12,6 +12,6 @@ class AscwdsWorkplaceCleanedColumns(AWP):
     data_purge_date: str = "data_purge_date"
     coverage_purge_date: str = "coverage_purge_date"
     master_update_date_org: str = "master_update_date_org"
-    remove_if_before_this_date: str = "remove_if_before_this_date"
+    keep_if_after_this_date: str = "keep_if_after_this_date"
     total_staff_bounded: str = AWP.total_staff + "_bounded"
     worker_records_bounded: str = AWP.worker_records + "_bounded"
