@@ -174,3 +174,34 @@ class FilterToCqcRegistrationTypeOnly(ReconciliationTests):
 
     def test_remove_workplace_when_main_service_id_is_null(self):
         self.assertFalse("3" in self.returned_locations)
+
+
+class RemoveASCWDSHeadOfficeAccountsWithoutLocationIdsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_remove_head_office_accounts_df = self.spark.createDataFrame(
+            Data.remove_head_office_accounts_rows,
+            Schemas.remove_head_office_accounts_schema,
+        )
+        self.returned_df = job.remove_ascwds_head_office_accounts_without_location_ids(
+            self.test_remove_head_office_accounts_df,
+        )
+        self.returned_locations = (
+            self.returned_df.select(AWPClean.establishment_id)
+            .rdd.flatMap(lambda x: x)
+            .collect()
+        )
+
+    def test_keep_ascwds_accounts_when_location_id_is_not_null(self):
+        self.assertTrue("1" in self.returned_locations)
+        self.assertTrue("2" in self.returned_locations)
+
+    def test_keep_ascwds_accounts_when_location_id_is_null_but_main_service_is_not_head_office(
+        self,
+    ):
+        self.assertTrue("3" in self.returned_locations)
+
+    def test_remove_ascwds_accounts_when_location_id_is_null_and_main_service_is_head_office(
+        self,
+    ):
+        self.assertFalse("4" in self.returned_locations)

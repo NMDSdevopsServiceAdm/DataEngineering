@@ -1856,6 +1856,13 @@ class ReconciliationData:
         ("3", None),
     ]
 
+    remove_head_office_accounts_rows = [
+        ("1", "1-001", "Head office services"),
+        ("2", "1-002", "any non-head office service"),
+        ("3", None, "any non-head office service"),
+        ("4", None, "Head office services"),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:

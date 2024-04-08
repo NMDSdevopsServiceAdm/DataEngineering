@@ -961,6 +961,14 @@ class ReconciliationSchema:
         ]
     )
 
+    remove_head_office_accounts_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
