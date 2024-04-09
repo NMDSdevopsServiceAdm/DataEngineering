@@ -30,35 +30,21 @@ cqc_locations_columns_to_import = [
     CQCL.registration_status,
     CQCL.deregistration_date,
 ]
-cleaned_ascwds_workplace_columns_to_import = [
-    AWPClean.ascwds_workplace_import_date,
-    AWPClean.establishment_id,
-    AWPClean.nmds_id,
-    AWPClean.is_parent,
-    AWPClean.organisation_id,
-    AWPClean.parent_permission,
-    AWPClean.establishment_type,
-    AWPClean.registration_type,
-    AWPClean.location_id,
-    AWPClean.main_service_id,
-    AWPClean.establishment_name,
-    AWPClean.region_id,
-]
 
 
 def main(
     cqc_location_api_source: str,
-    cleaned_ascwds_workplace_source: str,
+    ascwds_coverage_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ):
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 1000")
+
     cqc_location_df = utils.read_from_parquet(
         cqc_location_api_source, cqc_locations_columns_to_import
     )
-    ascwds_workplace_df = utils.read_from_parquet(
-        cleaned_ascwds_workplace_source,
-        selected_columns=cleaned_ascwds_workplace_columns_to_import,
-    )
+    ascwds_workplace_df = utils.read_from_parquet(ascwds_coverage_source)
 
     cqc_location_df = prepare_most_recent_cqc_location_df(cqc_location_df)
     (
@@ -74,6 +60,7 @@ def main(
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
         latest_ascwds_workplace_df, cqc_location_df
     )
+
     latest_ascwds_workplace_df.unpersist()
     cqc_location_df.unpersist()
 
@@ -81,6 +68,7 @@ def main(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
     merged_ascwds_cqc_df.unpersist()
+
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
@@ -415,7 +403,7 @@ if __name__ == "__main__":
 
     (
         cqc_location_api_source,
-        cleaned_ascwds_workplace_source,
+        ascwds_coverage_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     ) = utils.collect_arguments(
@@ -424,8 +412,8 @@ if __name__ == "__main__":
             "Source s3 directory for initial CQC location api dataset",
         ),
         (
-            "--cleaned_ascwds_workplace_source",
-            "Source s3 directory for cleaned parquet ASCWDS workplace dataset",
+            "--ascwds_coverage_source",
+            "Source s3 directory for ASCWDS coverage parquet dataset",
         ),
         (
             "--reconciliation_single_and_subs_destination",
@@ -438,7 +426,7 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_api_source,
-        cleaned_ascwds_workplace_source,
+        ascwds_coverage_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     )

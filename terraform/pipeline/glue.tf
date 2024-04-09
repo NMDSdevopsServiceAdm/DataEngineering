@@ -130,8 +130,9 @@ module "clean_ascwds_workplace_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--ascwds_workplace_source"      = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--ascwds_workplace_source"              = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cleaned_ascwds_workplace_destination" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--coverage_file_destination"            = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=coverage/"
   }
 }
 
@@ -409,7 +410,7 @@ module "reconciliation_job" {
 
   job_parameters = {
     "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
-    "--cleaned_ascwds_workplace_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--ascwds_coverage_source"                     = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=coverage/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/parents"
   }
@@ -524,6 +525,13 @@ module "cqc_crawler" {
   dataset_for_crawler          = "CQC"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   schedule                     = "cron(00 07 01,08,15,23 * ? *)"
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
+module "sfc_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "SfC"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
