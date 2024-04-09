@@ -462,11 +462,11 @@ class ASCWDSWorkplaceData:
         ("4", "No", date(2024, 2, 2), date(2024, 3, 3), date(2024, 2, 2)),
     ]
 
-    add_coverage_purge_date_col_rows = [
+    add_workplace_last_active_date_col_rows = [
         ("1", date(2024, 3, 3), date(2024, 2, 2)),
         ("2", date(2024, 4, 4), date(2024, 5, 5)),
     ]
-    expected_add_coverage_purge_date_col_rows = [
+    expected_add_workplace_last_active_date_col_rows = [
         ("1", date(2024, 3, 3), date(2024, 2, 2), date(2024, 3, 3)),
         ("2", date(2024, 4, 4), date(2024, 5, 5), date(2024, 5, 5)),
     ]
@@ -478,6 +478,12 @@ class ASCWDSWorkplaceData:
     expected_date_col_for_purging_rows = [
         ("1", date(2024, 3, 3), date(2022, 3, 3)),
         ("2", date(2024, 4, 4), date(2022, 4, 4)),
+    ]
+
+    workplace_last_active_rows = [
+        ("1", date(2024, 4, 4), date(2024, 5, 5)),
+        ("2", date(2024, 4, 4), date(2024, 4, 4)),
+        ("3", date(2024, 4, 4), date(2024, 3, 3)),
     ]
 
 

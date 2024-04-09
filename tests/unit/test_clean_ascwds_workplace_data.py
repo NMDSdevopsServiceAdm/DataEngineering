@@ -10,6 +10,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
 from utils import utils
 
 
@@ -112,16 +115,16 @@ class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
         super().setUp()
 
     @patch("jobs.clean_ascwds_workplace_data.create_date_column_for_purging_data")
-    @patch("jobs.clean_ascwds_workplace_data.create_coverage_purge_date_column")
-    @patch("jobs.clean_ascwds_workplace_data.create_data_purge_date_column")
+    @patch("jobs.clean_ascwds_workplace_data.create_workplace_last_active_date_column")
+    @patch("jobs.clean_ascwds_workplace_data.create_data_last_amended_date_column")
     @patch(
         "jobs.clean_ascwds_workplace_data.calculate_maximum_master_update_date_for_organisation"
     )
     def test_create_purged_dfs_for_coverage_and_data_runs(
         self,
         calculate_maximum_master_update_date_for_organisation_patch: Mock,
-        create_data_purge_date_column_patch: Mock,
-        create_coverage_purge_date_column_patch: Mock,
+        create_data_last_amended_date_column_patch: Mock,
+        create_workplace_last_active_date_column_patch: Mock,
         create_date_column_for_purging_data_patch: Mock,
     ):
         job.create_purged_dfs_for_coverage_and_data(self.test_ascwds_workplace_df)
@@ -129,8 +132,8 @@ class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
         self.assertEqual(
             calculate_maximum_master_update_date_for_organisation_patch.call_count, 1
         )
-        self.assertEqual(create_data_purge_date_column_patch.call_count, 1)
-        self.assertEqual(create_coverage_purge_date_column_patch.call_count, 1)
+        self.assertEqual(create_data_last_amended_date_column_patch.call_count, 1)
+        self.assertEqual(create_workplace_last_active_date_column_patch.call_count, 1)
         self.assertEqual(create_date_column_for_purging_data_patch.call_count, 1)
 
 
@@ -175,7 +178,7 @@ class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
             Data.add_purge_data_col_rows,
             Schemas.add_purge_data_col_schema,
         )
-        self.returned_df = job.create_data_purge_date_column(
+        self.returned_df = job.create_data_last_amended_date_column(
             self.test_add_purge_data_col_df,
         )
 
@@ -184,12 +187,12 @@ class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
             Schemas.expected_add_purge_data_col_schema,
         )
 
-    def test_create_data_purge_date_column_adds_a_column(self):
+    def test_create_data_last_amended_date_column_adds_a_column(self):
         returned_columns = len(self.returned_df.columns)
         expected_columns = len(self.test_add_purge_data_col_df.columns) + 1
         self.assertEqual(returned_columns, expected_columns)
 
-    def test_create_data_purge_date_column_returns_expected_df(
+    def test_create_data_last_amended_date_column_returns_expected_df(
         self,
     ):
         self.assertEqual(
@@ -202,25 +205,27 @@ class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_add_coverage_purge_date_col_df = self.spark.createDataFrame(
-            Data.add_coverage_purge_date_col_rows,
-            Schemas.add_coverage_purge_date_col_schema,
+        self.test_add_workplace_last_active_date_col_df = self.spark.createDataFrame(
+            Data.add_workplace_last_active_date_col_rows,
+            Schemas.add_workplace_last_active_date_col_schema,
         )
-        self.returned_df = job.create_coverage_purge_date_column(
-            self.test_add_coverage_purge_date_col_df,
+        self.returned_df = job.create_workplace_last_active_date_column(
+            self.test_add_workplace_last_active_date_col_df,
         )
 
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_add_coverage_purge_date_col_rows,
-            Schemas.expected_add_coverage_purge_date_col_schema,
+            Data.expected_add_workplace_last_active_date_col_rows,
+            Schemas.expected_add_workplace_last_active_date_col_schema,
         )
 
-    def test_create_coverage_purge_date_column_adds_a_column(self):
+    def test_create_workplace_last_active_date_column_adds_a_column(self):
         returned_columns = len(self.returned_df.columns)
-        expected_columns = len(self.test_add_coverage_purge_date_col_df.columns) + 1
+        expected_columns = (
+            len(self.test_add_workplace_last_active_date_col_df.columns) + 1
+        )
         self.assertEqual(returned_columns, expected_columns)
 
-    def test_create_coverage_purge_date_column_returns_expected_df(
+    def test_create_workplace_last_active_date_column_returns_expected_df(
         self,
     ):
         self.assertEqual(
@@ -258,6 +263,33 @@ class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
             self.returned_df.sort(AWP.location_id).collect(),
             self.expected_df.sort(AWP.location_id).collect(),
         )
+
+
+class KeepWorkplacesActiveOnOrAfterPurgeDate(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_workplace_last_active_df = self.spark.createDataFrame(
+            Data.workplace_last_active_rows,
+            Schemas.workplace_last_active_schema,
+        )
+        self.returned_df = job.keep_workplaces_active_on_or_after_purge_date(
+            self.test_workplace_last_active_df, "last_active", AWPClean.purge_date
+        )
+        self.returned_locations = (
+            self.returned_df.select(AWP.establishment_id)
+            .rdd.flatMap(lambda x: x)
+            .collect()
+        )
+
+    def test_remove_workplace_when_last_active_before_purge_date(self):
+        self.assertFalse("1" in self.returned_locations)
+
+    def test_keep_workplace_when_last_active_on_purge_date(self):
+        self.assertTrue("2" in self.returned_locations)
+
+    def test_keep_workplace_when_last_active_after_purge_date(self):
+        self.assertTrue("3" in self.returned_locations)
 
 
 class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):

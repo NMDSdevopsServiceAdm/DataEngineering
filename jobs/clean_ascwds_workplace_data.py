@@ -156,7 +156,7 @@ def create_purged_dfs_for_coverage_and_data(
 
     If the worplace is a parent account, the mupddate used to purge is the maximum of any account within that organisation.
 
-    The purge rules for coverage_purge_date also takes last_logged_in date into account.
+    The purge rules for workplace_last_active_date also takes last_logged_in date into account.
 
     Args:
         df (DataFrame): The ascwds_workplace_df to be purged
@@ -167,15 +167,15 @@ def create_purged_dfs_for_coverage_and_data(
 
     """
     df = calculate_maximum_master_update_date_for_organisation(df)
-    df = create_data_purge_date_column(df)
-    df = create_coverage_purge_date_column(df)
+    df = create_data_last_amended_date_column(df)
+    df = create_workplace_last_active_date_column(df)
     df = create_date_column_for_purging_data(df)
 
-    ascwds_workplace_df = df.where(
-        F.col(AWPClean.data_purge_date) >= F.col(AWPClean.keep_if_after_this_date)
+    ascwds_workplace_df = keep_workplaces_active_on_or_after_purge_date(
+        df, AWPClean.data_last_amended_date, AWPClean.purge_date
     )
-    coverage_df = df.where(
-        F.col(AWPClean.coverage_purge_date) >= F.col(AWPClean.keep_if_after_this_date)
+    coverage_df = keep_workplaces_active_on_or_after_purge_date(
+        df, AWPClean.workplace_last_active_date, AWPClean.purge_date
     )
 
     return ascwds_workplace_df, coverage_df
@@ -193,32 +193,38 @@ def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> Data
     )
 
 
-def create_data_purge_date_column(df: DataFrame) -> DataFrame:
+def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        AWPClean.data_purge_date,
+        AWPClean.data_last_amended_date,
         F.when(
             (F.col(AWPClean.is_parent) == "Yes"), F.col(AWPClean.master_update_date_org)
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
 
 
-def create_coverage_purge_date_column(df: DataFrame) -> DataFrame:
+def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        AWPClean.coverage_purge_date,
+        AWPClean.workplace_last_active_date,
         F.greatest(
-            F.col(AWPClean.data_purge_date), F.col(AWPClean.last_logged_in_date)
+            F.col(AWPClean.data_last_amended_date), F.col(AWPClean.last_logged_in_date)
         ),
     )
 
 
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
     return df.withColumn(
-        AWPClean.keep_if_after_this_date,
+        AWPClean.purge_date,
         F.add_months(
             F.col(AWPClean.ascwds_workplace_import_date),
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
         ),
     )
+
+
+def keep_workplaces_active_on_or_after_purge_date(
+    df: DataFrame, last_active_date_col: str, purge_date_col: str
+) -> DataFrame:
+    return df.where(F.col(last_active_date_col) >= F.col(purge_date_col))
 
 
 def select_columns_required_for_coverage_df(df: DataFrame) -> DataFrame:

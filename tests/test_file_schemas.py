@@ -300,21 +300,21 @@ class ASCWDSWorkplaceSchemas:
     expected_add_purge_data_col_schema = StructType(
         [
             *add_purge_data_col_schema,
-            StructField(AWPClean.data_purge_date, DateType(), True),
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
         ]
     )
 
-    add_coverage_purge_date_col_schema = StructType(
+    add_workplace_last_active_date_col_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWPClean.data_purge_date, DateType(), True),
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
             StructField(AWPClean.last_logged_in_date, DateType(), True),
         ]
     )
-    expected_add_coverage_purge_date_col_schema = StructType(
+    expected_add_workplace_last_active_date_col_schema = StructType(
         [
-            *add_coverage_purge_date_col_schema,
-            StructField(AWPClean.coverage_purge_date, DateType(), True),
+            *add_workplace_last_active_date_col_schema,
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
         ]
     )
 
@@ -327,7 +327,15 @@ class ASCWDSWorkplaceSchemas:
     expected_date_col_for_purging_schema = StructType(
         [
             *date_col_for_purging_schema,
-            StructField(AWPClean.keep_if_after_this_date, DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
+        ]
+    )
+
+    workplace_last_active_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField("last_active", DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
