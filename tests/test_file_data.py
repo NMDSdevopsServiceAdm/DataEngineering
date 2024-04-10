@@ -1907,6 +1907,30 @@ class ReconciliationData:
         # fmt: on
     ]
 
+    region_id_rows = [
+        ("1", "4"),
+        ("2", "2"),
+        ("3", "7"),
+        ("4", "8"),
+        ("5", "5"),
+        ("6", "3"),
+        ("7", "6"),
+        ("8", "1"),
+        ("9", "9"),
+    ]
+
+    expected_region_id_rows = [
+        ("1", "B - North East"),
+        ("2", "C - East Midlands"),
+        ("3", "D - South West"),
+        ("4", "E - West Midlands"),
+        ("5", "F - North West"),
+        ("6", "G - London"),
+        ("7", "H - South East"),
+        ("8", "I - Eastern"),
+        ("9", "J - Yorkshire Humber"),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:

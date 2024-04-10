@@ -1036,6 +1036,13 @@ class ReconciliationSchema:
         ]
     )
 
+    region_id_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:

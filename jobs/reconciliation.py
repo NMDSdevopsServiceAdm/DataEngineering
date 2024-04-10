@@ -122,7 +122,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = utils.filter_df_to_maximum_value_in_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
-    df = add_region_id_labels_for_reconciliation(df)
+    df = replace_region_id_labels_for_reconciliation(df)
     df = add_parents_or_singles_and_subs_col_to_df(df)
 
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
@@ -137,7 +137,7 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     return cqc_registered_accounts_df, parent_accounts_df
 
 
-def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
+def replace_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
     return df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
 
 

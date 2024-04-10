@@ -111,12 +111,12 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
     @patch("jobs.reconciliation.filter_to_cqc_registration_type_only")
     @patch("jobs.reconciliation.get_ascwds_parent_accounts")
     @patch("jobs.reconciliation.add_parents_or_singles_and_subs_col_to_df")
-    @patch("jobs.reconciliation.add_region_id_labels_for_reconciliation")
+    @patch("jobs.reconciliation.replace_region_id_labels_for_reconciliation")
     @patch("utils.utils.filter_df_to_maximum_value_in_column")
     def test_prepare_latest_cleaned_ascwds_workforce_data_runs(
         self,
         filter_df_to_maximum_value_in_column_patch: Mock,
-        add_region_id_labels_for_reconciliation_patch: Mock,
+        replace_region_id_labels_for_reconciliation_patch: Mock,
         add_parents_or_singles_and_subs_col_to_df_patch: Mock,
         get_ascwds_parent_accounts_patch: Mock,
         filter_to_cqc_registration_type_only_patch: Mock,
@@ -127,7 +127,9 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
         )
 
         self.assertEqual(filter_df_to_maximum_value_in_column_patch.call_count, 1)
-        self.assertEqual(add_region_id_labels_for_reconciliation_patch.call_count, 1)
+        self.assertEqual(
+            replace_region_id_labels_for_reconciliation_patch.call_count, 1
+        )
         self.assertEqual(add_parents_or_singles_and_subs_col_to_df_patch.call_count, 1)
         self.assertEqual(get_ascwds_parent_accounts_patch.call_count, 1)
         self.assertEqual(filter_to_cqc_registration_type_only_patch.call_count, 1)
@@ -140,7 +142,20 @@ class AddRegionLabelsForReconciliation(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        # TODO
+    def test_replace_region_id_labels_for_reconciliation_returns_expected_labels(self):
+        test_input_df = self.spark.createDataFrame(
+            Data.region_id_rows,
+            Schemas.region_id_schema,
+        )
+        returned_df = job.replace_region_id_labels_for_reconciliation(test_input_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_region_id_rows,
+            Schemas.region_id_schema,
+        )
+        returned_data = returned_df.sort(AWPClean.establishment_id).collect()
+        expected_data = expected_df.sort(AWPClean.establishment_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 class AddParentsOrSinglesAndSubsColToDf(ReconciliationTests):
