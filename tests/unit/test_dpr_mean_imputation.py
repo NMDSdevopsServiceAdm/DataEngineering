@@ -1,7 +1,6 @@
 import unittest
 import warnings
 
-from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     StructType,
     StructField,
@@ -10,6 +9,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
+from utils import utils
 import utils.direct_payments_utils.estimate_direct_payments.models.mean_imputation as job
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
@@ -18,7 +18,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 
 class TestMeanImputation(unittest.TestCase):
     def setUp(self):
-        self.spark = SparkSession.builder.appName("test_mean_imputation").getOrCreate()
+        self.spark = utils.get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
 

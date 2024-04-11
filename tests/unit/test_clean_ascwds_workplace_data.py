@@ -1,8 +1,6 @@
-from datetime import date
 import unittest
-from unittest.mock import patch, ANY, Mock
-
-from pyspark.sql.dataframe import DataFrame
+from unittest.mock import patch, Mock
+from pyspark.sql import DataFrame
 
 import jobs.clean_ascwds_workplace_data as job
 
@@ -12,16 +10,16 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.utils import (
-    get_spark,
-    format_date_fields,
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-import utils.cleaning_utils as cUtils
+from utils import utils
 
 
-class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
+class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
-    TEST_DESTINATION = "s3://some_bucket/some_destination_key"
+    TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
+    TEST_COVERAGE_DESTINATION = "s3://some_other_destination_key"
     partition_keys = [
         PartitionKeys.year,
         PartitionKeys.month,
@@ -30,7 +28,7 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
     ]
 
     def setUp(self) -> None:
-        self.spark = get_spark()
+        self.spark = utils.get_spark()
         self.test_ascwds_workplace_df = self.spark.createDataFrame(
             Data.workplace_rows, Schemas.workplace_schema
         )
@@ -38,12 +36,14 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         self.filled_posts_columns = [AWP.total_staff, AWP.worker_records]
 
 
-class MainTests(IngestASCWDSWorkerDatasetTests):
+class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("jobs.clean_ascwds_workplace_data.select_columns_required_for_coverage_df")
     @patch("utils.cleaning_utils.set_column_bounds")
-    @patch("utils.utils.format_date_fields", wraps=format_date_fields)
+    @patch("utils.cleaning_utils.apply_categorical_labels")
+    @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(
@@ -51,25 +51,27 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
         format_date_fields_mock: Mock,
+        apply_categorical_labels_mock: Mock,
         set_column_bounds_mock: Mock,
+        select_columns_required_for_coverage_df_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
-
-        self.assertEqual(format_date_fields_mock.call_count, 1)
-        self.assertEqual(set_column_bounds_mock.call_count, 2)
-
-        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
-        write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
+        job.main(
+            self.TEST_SOURCE,
+            self.TEST_CLEANED_DESTINATION,
+            self.TEST_COVERAGE_DESTINATION,
         )
 
+        read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
+        self.assertEqual(format_date_fields_mock.call_count, 1)
+        self.assertEqual(apply_categorical_labels_mock.call_count, 1)
+        self.assertEqual(set_column_bounds_mock.call_count, 2)
+        self.assertEqual(select_columns_required_for_coverage_df_mock.call_count, 1)
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
 
-class CastToIntTests(IngestASCWDSWorkerDatasetTests):
+
+class CastToIntTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -108,114 +110,189 @@ class CastToIntTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class AddPurgeOutdatedWorkplacesColumnTests(IngestASCWDSWorkerDatasetTests):
+class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
-        self.test_purge_outdated_df = self.spark.createDataFrame(
-            Data.purge_outdated_data, Schemas.purge_outdated_schema
-        )
-        self.test_purge_outdated_df = cUtils.column_to_date(
-            self.test_purge_outdated_df, "import_date", "ascwds_workplace_import_date"
-        )
-        self.test_purge_outdated_df = self.test_purge_outdated_df.select(
-            "locationid",
-            "orgid",
-            "mupddate",
-            "isparent",
-            "ascwds_workplace_import_date",
-        )
 
-    def test_returned_df_has_new_purge_data_column(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, "ascwds_workplace_import_date"
-        )
-        original_cols = self.test_purge_outdated_df.columns
-        expected_cols = original_cols + ["purge_data"]
-        self.assertCountEqual(returned_df.columns, expected_cols)
+    @patch("jobs.clean_ascwds_workplace_data.create_date_column_for_purging_data")
+    @patch("jobs.clean_ascwds_workplace_data.create_workplace_last_active_date_column")
+    @patch("jobs.clean_ascwds_workplace_data.create_data_last_amended_date_column")
+    @patch(
+        "jobs.clean_ascwds_workplace_data.calculate_maximum_master_update_date_for_organisation"
+    )
+    def test_create_purged_dfs_for_coverage_and_data_runs(
+        self,
+        calculate_maximum_master_update_date_for_organisation_patch: Mock,
+        create_data_last_amended_date_column_patch: Mock,
+        create_workplace_last_active_date_column_patch: Mock,
+        create_date_column_for_purging_data_patch: Mock,
+    ):
+        job.create_purged_dfs_for_coverage_and_data(self.test_ascwds_workplace_df)
 
-    def test_returned_df_purge_data_col_is_string(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, "ascwds_workplace_import_date"
-        )
         self.assertEqual(
-            returned_df.select("purge_data").dtypes, [("purge_data", "string")]
+            calculate_maximum_master_update_date_for_organisation_patch.call_count, 1
         )
-
-    def test_adds_correct_value_for_non_parent_workplaces(self):
-        input_df = self.test_purge_outdated_df.where("isparent == 0")
-
-        returned_df = job.add_purge_outdated_workplaces_column(
-            input_df, "ascwds_workplace_import_date"
-        )
-
-        purge_data_list = [
-            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = ["keep", "purge", "keep", "purge"]
-        self.assertEqual(purge_data_list, expected_purge_list)
-
-    def test_adds_correct_value_for_parent_workplaces(self):
-        returned_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, "ascwds_workplace_import_date"
-        )
-
-        returned_df_parents = returned_df.where("isparent == 1")
-        purge_data_list = [
-            row.purge_data
-            for row in returned_df_parents.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = ["keep", "purge"]
-
-        self.assertEqual(purge_data_list, expected_purge_list)
-
-    def test_does_not_use_org_children_with_different_import_dates(self):
-        org_child = self.spark.createDataFrame(
-            [
-                (
-                    "1-000000007",
-                    "20210101",
-                    "2",
-                    date(2021, 1, 1),
-                    0,
-                ),
-            ],
-            Schemas.purge_outdated_schema,
-        )
-        input_df = self.test_purge_outdated_df.union(org_child)
-
-        returned_df = job.add_purge_outdated_workplaces_column(
-            input_df, "ascwds_workplace_import_date"
-        )
-
-        returned_df_parents = returned_df.where("isparent == 1")
-        purge_data_list = [
-            row.purge_data
-            for row in returned_df_parents.sort(AWP.location_id).collect()
-        ]
-        expected_purge_list = ["keep", "purge"]
-
-        self.assertEqual(purge_data_list, expected_purge_list)
+        self.assertEqual(create_data_last_amended_date_column_patch.call_count, 1)
+        self.assertEqual(create_workplace_last_active_date_column_patch.call_count, 1)
+        self.assertEqual(create_date_column_for_purging_data_patch.call_count, 1)
 
 
-class PurgeOutdatedWorkplacesColumn(AddPurgeOutdatedWorkplacesColumnTests):
-    def setUp(self):
+class CalculateMaximumMasterUpdateDateForOrganisationTests(
+    CleanASCWDSWorkplaceDatasetTests
+):
+    def setUp(self) -> None:
         super().setUp()
-        self.test_only_keep_df = job.add_purge_outdated_workplaces_column(
-            self.test_purge_outdated_df, "ascwds_workplace_import_date"
+
+        self.test_mupddate_for_org_df = self.spark.createDataFrame(
+            Data.mupddate_for_org_rows,
+            Schemas.mupddate_for_org_schema,
+        )
+        self.returned_df = job.calculate_maximum_master_update_date_for_organisation(
+            self.test_mupddate_for_org_df,
         )
 
-    def test_data_correctly_purged(self):
-        returned_df = job.purge_outdated_workplaces(self.test_only_keep_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_mupddate_for_org_rows,
+            Schemas.expected_mupddate_for_org_schema,
+        )
 
-        purge_data_list = [
-            row.purge_data for row in returned_df.sort(AWP.location_id).collect()
-        ]
-        expected_list = ["keep", "keep", "keep"]
-        self.assertFalse("purge" in purge_data_list)
-        self.assertEqual(purge_data_list, expected_list)
+    def test_calculate_maximum_master_update_date_for_organisation_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_mupddate_for_org_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_calculate_maximum_master_update_date_for_organisation_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
 
 
-class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
+class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_add_purge_data_col_df = self.spark.createDataFrame(
+            Data.add_purge_data_col_rows,
+            Schemas.add_purge_data_col_schema,
+        )
+        self.returned_df = job.create_data_last_amended_date_column(
+            self.test_add_purge_data_col_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_purge_data_col_rows,
+            Schemas.expected_add_purge_data_col_schema,
+        )
+
+    def test_create_data_last_amended_date_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_add_purge_data_col_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_data_last_amended_date_column_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
+
+
+class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_add_workplace_last_active_date_col_df = self.spark.createDataFrame(
+            Data.add_workplace_last_active_date_col_rows,
+            Schemas.add_workplace_last_active_date_col_schema,
+        )
+        self.returned_df = job.create_workplace_last_active_date_column(
+            self.test_add_workplace_last_active_date_col_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_workplace_last_active_date_col_rows,
+            Schemas.expected_add_workplace_last_active_date_col_schema,
+        )
+
+    def test_create_workplace_last_active_date_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = (
+            len(self.test_add_workplace_last_active_date_col_df.columns) + 1
+        )
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_workplace_last_active_date_column_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
+
+
+class CreateDateColumnForPurgingDataTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_date_col_for_purging_df = self.spark.createDataFrame(
+            Data.date_col_for_purging_rows,
+            Schemas.date_col_for_purging_schema,
+        )
+        self.returned_df = job.create_date_column_for_purging_data(
+            self.test_date_col_for_purging_df,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_date_col_for_purging_rows,
+            Schemas.expected_date_col_for_purging_schema,
+        )
+
+    def test_create_date_column_for_purging_data_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_date_col_for_purging_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_date_column_for_purging_data_returns_expected_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(AWP.location_id).collect(),
+            self.expected_df.sort(AWP.location_id).collect(),
+        )
+
+
+class KeepWorkplacesActiveOnOrAfterPurgeDate(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_workplace_last_active_df = self.spark.createDataFrame(
+            Data.workplace_last_active_rows,
+            Schemas.workplace_last_active_schema,
+        )
+        self.returned_df = job.keep_workplaces_active_on_or_after_purge_date(
+            self.test_workplace_last_active_df, "last_active", AWPClean.purge_date
+        )
+        self.returned_locations = (
+            self.returned_df.select(AWP.establishment_id)
+            .rdd.flatMap(lambda x: x)
+            .collect()
+        )
+
+    def test_remove_workplace_when_last_active_before_purge_date(self):
+        self.assertFalse("1" in self.returned_locations)
+
+    def test_keep_workplace_when_last_active_on_purge_date(self):
+        self.assertTrue("2" in self.returned_locations)
+
+    def test_keep_workplace_when_last_active_after_purge_date(self):
+        self.assertTrue("3" in self.returned_locations)
+
+
+class RemoveWorkplacesWithDuplicateLocationIdsTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -223,7 +300,9 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
             Data.small_location_rows, Schemas.location_schema
         )
 
-        self.returned_df = job.remove_locations_with_duplicates(self.test_location_df)
+        self.returned_df = job.remove_workplaces_with_duplicate_location_ids(
+            self.test_location_df
+        )
 
         self.test_duplicate_loc_df = self.spark.createDataFrame(
             Data.location_rows_with_duplicates, Schemas.location_schema
@@ -236,34 +315,46 @@ class RemoveLocationsWithDuplicatesTests(IngestASCWDSWorkerDatasetTests):
         self.assertCountEqual(
             self.returned_df.columns,
             [
-                "locationid",
-                "import_date",
-                "orgid",
+                AWP.location_id,
+                AWP.import_date,
+                AWP.organisation_id,
             ],
         )
 
     def test_does_not_remove_rows_if_no_duplicates(self):
-        self.assertEqual(self.returned_df.collect(), self.test_location_df.collect())
+        expected_df = self.test_location_df
+        self.assertEqual(
+            self.returned_df.sort(AWP.organisation_id).collect(),
+            expected_df.sort(AWP.organisation_id).collect(),
+        )
 
     def test_removes_duplicate_location_id_with_same_import_date(self):
-        filtered_df = job.remove_locations_with_duplicates(self.test_duplicate_loc_df)
+        returned_df = job.remove_workplaces_with_duplicate_location_ids(
+            self.test_duplicate_loc_df
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_filtered_location_rows, Schemas.location_schema
         )
-        self.assertEqual(filtered_df.collect(), expected_df.collect())
+        self.assertEqual(
+            returned_df.sort(AWP.organisation_id).collect(),
+            expected_df.sort(AWP.organisation_id).collect(),
+        )
 
     def test_does_not_remove_duplicate_location_id_with_different_import_dates(self):
-        locations_with_different_import_dates_df = self.spark.createDataFrame(
-            Data.location_rows_with_different_import_dates,
-            Schemas.location_schema,
-        ).orderBy(AWP.location_id)
-
-        filtered_df = job.remove_locations_with_duplicates(
-            locations_with_different_import_dates_df
-        ).orderBy(AWP.location_id)
+        duplicate_location_id_with_different_import_dates_df = (
+            self.spark.createDataFrame(
+                Data.location_rows_with_different_import_dates,
+                Schemas.location_schema,
+            )
+        )
+        returned_df = job.remove_workplaces_with_duplicate_location_ids(
+            duplicate_location_id_with_different_import_dates_df
+        )
+        expected_df = duplicate_location_id_with_different_import_dates_df
 
         self.assertEqual(
-            filtered_df.collect(), locations_with_different_import_dates_df.collect()
+            returned_df.sort(AWP.organisation_id).collect(),
+            expected_df.sort(AWP.organisation_id).collect(),
         )
 
 

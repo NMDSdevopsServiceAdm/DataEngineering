@@ -2,9 +2,6 @@ import unittest
 import warnings
 from datetime import date
 
-from pyspark.ml.linalg import Vectors
-from pyspark.sql import SparkSession
-
 from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )

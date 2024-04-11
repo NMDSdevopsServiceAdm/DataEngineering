@@ -1,4 +1,3 @@
-from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
 from utils import utils
@@ -15,9 +14,7 @@ def main(
     survey_data_source,
     destination,
 ):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_estimate_direct_payments"
-    ).getOrCreate()
+    spark = utils.get_spark()
 
     survey_df: DataFrame = spark.read.parquet(survey_data_source)
 

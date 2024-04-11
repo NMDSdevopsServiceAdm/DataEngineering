@@ -21,8 +21,8 @@ variable "glue_version" {
   default     = "3.0"
 
   validation {
-    condition     = contains(["1.0", "2.0", "3.0"], var.glue_version)
-    error_message = "Must be one of 1.0, 2.0 of 3.0"
+    condition     = contains(["3.0", "4.0"], var.glue_version)
+    error_message = "Must be one of 3.0 or 4.0"
   }
 }
 

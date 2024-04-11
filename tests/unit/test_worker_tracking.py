@@ -1,7 +1,6 @@
 import shutil
 import unittest
 
-from pyspark.sql import SparkSession
 
 import jobs.worker_tracking as job
 from utils import utils
@@ -23,7 +22,7 @@ class Worker_Tracking(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.spark = SparkSession.builder.appName("test_worker_tracking").getOrCreate()
+        self.spark = utils.get_spark()
         generate_ascwds_stayer_leaver_workplace_data(self.ASCWDS_WORKPLACE)
         generate_ascwds_stayer_leaver_worker_data(self.ASCWDS_WORKER)
         generate_workplace_import_dates(self.WORKPLACE_IMPORT_DATES)

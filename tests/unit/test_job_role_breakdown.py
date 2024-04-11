@@ -1,8 +1,7 @@
 import unittest
 import shutil
 
-from pyspark.sql import SparkSession
-
+from utils import utils
 import jobs.job_role_breakdown as job
 from tests.test_file_generator import (
     generate_estimate_jobs_parquet,
@@ -16,9 +15,7 @@ class JobRoleBreakdownTests(unittest.TestCase):
     TEST_WORKER_FILE = "tests/test_data/tmp/worker_file.parquet"
 
     def setUp(self):
-        self.spark = SparkSession.builder.appName(
-            "test_job_role_breakdown"
-        ).getOrCreate()
+        self.spark = utils.get_spark()
         generate_estimate_jobs_parquet(self.TEST_JOB_ESTIMATES_FILE)
         generate_worker_parquet(self.TEST_WORKER_FILE)
 

@@ -15,22 +15,53 @@
                 "JobName": "${clean_ascwds_workplace_job_name}",
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--coverage_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/"
                 }
               },
-              "Next": "Run clean ascwds worker data job"
+              "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
             },
-            "Run clean ascwds worker data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ascwds_worker_job_name}",
-                "Arguments": {
-                  "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                  "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+            "Clean ASCWDS worker and SfC Reconciliation Parallel": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Run clean ascwds worker data job",
+                  "States": {
+                    "Run clean ascwds worker data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${clean_ascwds_worker_job_name}",
+                        "Arguments": {
+                          "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                          "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run reconciliation job",
+                  "States": {
+                    "Run reconciliation job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${reconciliation_job_name}",
+                        "Arguments": {
+                          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                          "--ascwds_coverage_source": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/",
+                          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
+                          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-              },
+              ],
               "End": true
             }
           }
@@ -54,9 +85,9 @@
           }
         },
         {
-          "StartAt": "Parallel",
+          "StartAt": "Clean ONS and Clean CQC Provider Parallel",
           "States": {
-            "Parallel": {
+            "Clean ONS and Clean CQC Provider Parallel": {
               "Type": "Parallel",
               "Branches": [
                 {
@@ -144,19 +175,56 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Run clean ind cqc data job"
+              "Next": "Clean IND CQC and data validation on Merge IND CQC data Parallel"
             },
-            "Run clean ind cqc data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ind_cqc_filled_posts_job_name}",
-                "Arguments": {
-                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+            "Clean IND CQC and data validation on Merge IND CQC data Parallel": {
+              "Type": "Parallel",
+              "Next": "Feature engineering",
+              "Branches": [
+                {
+                  "StartAt": "Run clean ind cqc data job",
+                  "States": {
+                    "Run clean ind cqc data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${clean_ind_cqc_filled_posts_job_name}",
+                        "Arguments": {
+                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                          "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run validate merged ind cqc data job",
+                  "States": {
+                    "Run validate merged ind cqc data job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${validate_merged_ind_cqc_data_job_name}",
+                        "Arguments": {
+                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
+                        }
+                      },
+                      "Next": "Run data validation crawler"
+                    },
+                    "Run data validation crawler": {
+                      "Type": "Task",
+                      "Parameters": {
+                        "Name": "${data_validation_reports_crawler_name}"
+                      },
+                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                      "End": true
+                    }
+                  }
                 }
-              },
-              "Next": "Feature engineering"
+              ]
             },
             "Feature engineering": {
               "Type": "Parallel",
@@ -219,9 +287,9 @@
               "Parameters": {
                 "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
                 "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
                   "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination" : "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
                 }
               },
               "Next": "run ind crawler"
@@ -270,6 +338,19 @@
               "End": true,
               "Parameters": {
                 "Name": "${cqc_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+            }
+          }
+        },
+        {
+          "StartAt": "Run sfc crawler",
+          "States": {
+            "Run sfc crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
