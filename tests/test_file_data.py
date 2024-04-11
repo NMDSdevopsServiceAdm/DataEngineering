@@ -30,6 +30,7 @@ from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
 
+
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
     # fmt: off
