@@ -29,10 +29,6 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
-from utils.reconciliation_utils.reconciliation_values import (
-    ReconciliationValues as ReconValues,
-)
-
 
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
