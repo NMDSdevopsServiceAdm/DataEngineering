@@ -70,6 +70,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationColumns as ReconColumn,
+)
 
 from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 
@@ -271,13 +274,68 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    purge_outdated_schema = StructType(
+    mupddate_for_org_schema = StructType(
+        [
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+        ]
+    )
+    expected_mupddate_for_org_schema = StructType(
+        [
+            *mupddate_for_org_schema,
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+
+    add_purge_data_col_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
             StructField(AWP.is_parent, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+    expected_add_purge_data_col_schema = StructType(
+        [
+            *add_purge_data_col_schema,
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+        ]
+    )
+
+    add_workplace_last_active_date_col_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+            StructField(AWPClean.last_logged_in_date, DateType(), True),
+        ]
+    )
+    expected_add_workplace_last_active_date_col_schema = StructType(
+        [
+            *add_workplace_last_active_date_col_schema,
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+        ]
+    )
+
+    date_col_for_purging_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+    expected_date_col_for_purging_schema = StructType(
+        [
+            *date_col_for_purging_schema,
+            StructField(AWPClean.purge_date, DateType(), True),
+        ]
+    )
+
+    workplace_last_active_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField("last_active", DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
@@ -587,6 +645,17 @@ class CQCLocationsSchema:
 
 
 @dataclass
+class UtilsSchema:
+    filter_to_max_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("date_type_column", DateType(), True),
+            StructField("import_date_style_col", StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CleaningUtilsSchemas:
     worker_schema = StructType(
         [
@@ -765,7 +834,7 @@ class CQCPIRSchema:
 
 
 @dataclass
-class CQCPPIRCleanSchema:
+class CQCPIRCleanSchema:
     clean_subset_for_grouping_by = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
@@ -902,7 +971,6 @@ class ReconciliationSchema:
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.nmds_id, StringType(), True),
             StructField(AWPClean.is_parent, StringType(), True),
-            StructField(AWPClean.parent_id, StringType(), True),
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(AWPClean.parent_permission, StringType(), True),
             StructField(AWPClean.establishment_type, StringType(), True),
@@ -915,10 +983,56 @@ class ReconciliationSchema:
     )
     input_cqc_location_api_schema = StructType(
         [
-            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.deregistration_date, StringType(), True),
+        ]
+    )
+
+    expected_prepared_most_recent_cqc_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    regtype_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+        ]
+    )
+
+    remove_head_office_accounts_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+        ]
+    )
+
+    filter_to_relevant_schema = StructType(
+        [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.deregistration_date, StringType(), True),
+            StructField(CQCLClean.deregistration_date, DateType(), True),
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
         ]
     )
 

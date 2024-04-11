@@ -1,8 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
-import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, functions as F
 from dataclasses import asdict
 
 import jobs.clean_cqc_location_data as job
@@ -85,7 +84,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(
             raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
         )
-
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
@@ -248,71 +246,52 @@ class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
         self.assertCountEqual(returned_data, expected_data)
 
 
-class SplitDataframeIntoRegAndDeRegTests(CleanCQCLocationDatasetTests):
+class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_splits_data_correctly(
+    def test_select_registered_locations_only_splits_data_correctly(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_rows, Schemas.registration_status_schema
         )
 
-        (
-            returned_registered_df,
-            returned_deregistered_df,
-        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_df = job.select_registered_locations_only(test_df)
         returned_registered_data = returned_registered_df.collect()
-        returned_deregistered_data = returned_deregistered_df.collect()
 
         expected_registered_data = self.spark.createDataFrame(
             Data.expected_registered_rows, Schemas.registration_status_schema
         ).collect()
-        expected_deregistered_data = self.spark.createDataFrame(
-            Data.expected_deregistered_rows, Schemas.registration_status_schema
-        ).collect()
 
         self.assertEqual(returned_registered_data, expected_registered_data)
-        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_raises_a_warning_if_any_rows_are_invalid(
+    def test_select_registered_locations_only_raises_a_warning_if_any_rows_are_invalid(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_with_missing_data_rows,
             Schemas.registration_status_schema,
         )
-        (
-            returned_registered_df,
-            returned_deregistered_df,
-        ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+        returned_registered_df = job.select_registered_locations_only(test_df)
         returned_registered_data = returned_registered_df.collect()
-        returned_deregistered_data = returned_deregistered_df.collect()
 
         expected_registered_data = self.spark.createDataFrame(
             Data.expected_registered_rows, Schemas.registration_status_schema
         ).collect()
-        expected_deregistered_data = self.spark.createDataFrame(
-            Data.expected_deregistered_rows, Schemas.registration_status_schema
-        ).collect()
 
         self.assertEqual(returned_registered_data, expected_registered_data)
-        self.assertEqual(returned_deregistered_data, expected_deregistered_data)
 
         self.assertWarns(Warning)
 
-    def test_split_dataframe_into_registered_and_deregistered_rows_does_not_raise_a_warning_if_all_rows_are_valid(
+    def test_select_registered_locations_only_does_not_raise_a_warning_if_all_rows_are_valid(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.registration_status_rows, Schemas.registration_status_schema
         )
         with warnings.catch_warnings(record=True) as warnings_log:
-            (
-                returned_registered_df,
-                returned_deregistered_df,
-            ) = job.split_dataframe_into_registered_and_deregistered_rows(test_df)
+            returned_registered_df = job.select_registered_locations_only(test_df)
 
             self.assertEqual(warnings_log, [])
 
@@ -379,9 +358,9 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
             Data.expected_ons_join_with_null_rows,
             Schemas.expected_ons_join_schema,
         )
-        input_registered_df = job.split_dataframe_into_registered_and_deregistered_rows(
+        input_registered_df = job.select_registered_locations_only(
             expected_ons_join_df_with_nulls
-        )[0]
+        )
         # At this point, PR19AB has a null curent_ons_import_date emulating a failed join.
         expected_tuple = ("PR19AB", "loc-1", "count: 1")
         with self.assertRaises(TypeError) as context:
