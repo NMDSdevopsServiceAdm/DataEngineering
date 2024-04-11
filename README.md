@@ -89,7 +89,7 @@ python -m unittest tests.unit.<glue_job_test_folder>.<test_class>.<specific_test
 ```
 example:
 ```
-python -m unittest tests.unit.test_prepare_locations.PrepareLocationsTests.test_get_pir_df
+python -m unittest tests.unit.test_clean_ascwds_workplace_data.MainTests.test_main
 ```
 
 
