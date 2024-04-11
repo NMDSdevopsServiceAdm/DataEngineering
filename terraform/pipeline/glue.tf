@@ -184,22 +184,6 @@ module "prepare_locations_job" {
 }
 
 
-module "worker_tracking_job" {
-  source          = "../modules/glue-job"
-  script_name     = "worker_tracking.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
-
-
-  job_parameters = {
-    "--source_ascwds_workplace" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--source_ascwds_worker"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
-    "--destination"             = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=worker_tracking/version=1.0.0/"
-  }
-}
-
 module "prepare_non_res_ind_cqc_features_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_non_res_ind_cqc_features.py"
