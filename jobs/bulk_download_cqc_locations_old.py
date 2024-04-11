@@ -1,9 +1,9 @@
 from datetime import date
 
-from utils import cqc_api_new as cqc
+from utils import cqc_api as cqc
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
-from schemas.cqc_location_schema import LOCATION_SCHEMA_NEW
+from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
@@ -19,11 +19,12 @@ def main(destination):
         ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
     )["partner_code"]
     for paginated_locations in cqc.get_all_objects(
+        stream=True,
         object_type="locations",
         object_identifier=ColNames.location_id,
         partner_code=partner_code_value,
     ):
-        locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA_NEW)
+        locations_df = spark.createDataFrame(paginated_locations, OLD_LOCATION_SCHEMA)
         if df:
             df = df.union(locations_df)
         else:
@@ -47,9 +48,8 @@ if __name__ == "__main__":
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC",
-        dataset="locations_api",
+        dataset="locations_api_old",
         date=todays_date,
-        version="2.0.0",
     )
 
     print(destination)
