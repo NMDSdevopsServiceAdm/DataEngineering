@@ -1877,8 +1877,8 @@ class ReconciliationData:
 
     first_of_most_recent_month = date(2024, 4, 1)
     first_of_previous_month = date(2024, 3, 1)
+    # fmt: off
     filter_to_relevant_rows = [
-        # fmt: off
         ("loc_1", None, date(2024, 3, 31), ReconValues.parents),  # keep
         ("loc_2", None, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
         ("loc_3", None, date(2024, 3, 1), ReconValues.parents),  # keep
@@ -1902,33 +1902,21 @@ class ReconciliationData:
         ("loc_21", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.parents),  # keep
         ("loc_22", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
         ("loc_23", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.parents),  # remove
-        ("loc_24", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),
-        # remove
-        # fmt: on
+        ("loc_24", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
     ]
+    # fmt: on
 
-    region_id_rows = [
-        ("1", "4"),
-        ("2", "2"),
-        ("3", "7"),
-        ("4", "8"),
-        ("5", "5"),
-        ("6", "3"),
-        ("7", "6"),
-        ("8", "1"),
-        ("9", "9"),
+    parents_or_singles_and_subs_rows = [
+        ("1", "Yes", "Parent has ownership"),
+        ("2", "Yes", "Workplace has ownership"),
+        ("3", "No", "Workplace has ownership"),
+        ("4", "No", "Parent has ownership"),
     ]
-
-    expected_region_id_rows = [
-        ("1", "B - North East"),
-        ("2", "C - East Midlands"),
-        ("3", "D - South West"),
-        ("4", "E - West Midlands"),
-        ("5", "F - North West"),
-        ("6", "G - London"),
-        ("7", "H - South East"),
-        ("8", "I - Eastern"),
-        ("9", "J - Yorkshire Humber"),
+    expected_parents_or_singles_and_subs_rows = [
+        ("1", "Yes", "Parent has ownership", ReconValues.parents),
+        ("2", "Yes", "Workplace has ownership", ReconValues.parents),
+        ("3", "No", "Workplace has ownership", ReconValues.singles_and_subs),
+        ("4", "No", "Parent has ownership", ReconValues.parents),
     ]
 
 
