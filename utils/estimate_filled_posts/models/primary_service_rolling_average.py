@@ -28,21 +28,23 @@ def model_primary_service_rolling_average(
 
 
 def filter_to_locations_with_known_filled_posts(df: DataFrame) -> DataFrame:
-    return df.where(
+    df = df.where(
         (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
         & (F.col(IndCqc.ascwds_filled_posts_dedup_clean) > 0)
     )
+    return df
 
 
 def calculate_filled_posts_aggregates_per_service_and_time_period(
     df: DataFrame,
 ) -> DataFrame:
-    return df.groupBy(IndCqc.primary_service_type, IndCqc.unix_time).agg(
+    df = df.groupBy(IndCqc.primary_service_type, IndCqc.unix_time).agg(
         F.count(IndCqc.ascwds_filled_posts_dedup_clean)
         .cast("integer")
         .alias(IndCqc.count_of_filled_posts),
         F.sum(IndCqc.ascwds_filled_posts_dedup_clean).alias(IndCqc.sum_of_filled_posts),
     )
+    return df
 
 
 def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
@@ -59,22 +61,24 @@ def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFra
         IndCqc.rolling_total_count_of_filled_posts,
     )
 
-    return df.withColumn(
+    df = df.withColumn(
         IndCqc.rolling_average_model,
         F.col(IndCqc.rolling_total_sum_of_filled_posts)
         / F.col(IndCqc.rolling_total_count_of_filled_posts),
     )
+    return df
 
 
 def calculate_rolling_sum(
     df: DataFrame, col_to_sum: str, number_of_days: int, new_col_name: str
 ) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         new_col_name,
         F.sum(col_to_sum).over(
             define_window_specifications(IndCqc.unix_time, number_of_days)
         ),
     )
+    return df
 
 
 def define_window_specifications(unix_date_col: str, number_of_days: int) -> Window:
@@ -92,6 +96,7 @@ def join_rolling_average_into_df(
         IndCqc.primary_service_type, IndCqc.unix_time, IndCqc.rolling_average_model
     )
 
-    return df.join(
+    df = df.join(
         rolling_average_df, [IndCqc.primary_service_type, IndCqc.unix_time], "left"
     )
+    return df
