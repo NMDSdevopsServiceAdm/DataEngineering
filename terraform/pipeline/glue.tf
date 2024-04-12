@@ -164,25 +164,6 @@ module "clean_ons_data_job" {
   }
 }
 
-module "prepare_locations_job" {
-  source            = "../modules/glue-job"
-  script_name       = "prepare_locations.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.2X"
-  number_of_workers = 6
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
-  job_parameters = {
-    "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
-    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
-    "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-  }
-}
-
 
 module "prepare_non_res_ind_cqc_features_job" {
   source          = "../modules/glue-job"
