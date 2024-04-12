@@ -69,7 +69,7 @@ def add_cqc_sector_column_to_cqc_provider_dataframe(
     )
 
     cqc_provider_with_sector_column = cqc_provider_with_sector_column.fillna(
-        CQCPValues.independent
+        CQCPValues.independent, subset=CQCPClean.cqc_sector
     )
 
     return cqc_provider_with_sector_column
