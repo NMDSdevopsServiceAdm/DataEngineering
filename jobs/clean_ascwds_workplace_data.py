@@ -186,39 +186,43 @@ def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> Data
         AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date
     ).agg(F.max(AWPClean.master_update_date).alias(AWPClean.master_update_date_org))
 
-    return df.join(
+    df = df.join(
         org_df_with_maximum_update_date,
         [AWPClean.organisation_id, AWPClean.ascwds_workplace_import_date],
         "left",
     )
+    return df
 
 
 def create_data_last_amended_date_column(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         AWPClean.data_last_amended_date,
         F.when(
             (F.col(AWPClean.is_parent) == "Yes"), F.col(AWPClean.master_update_date_org)
         ).otherwise(F.col(AWPClean.master_update_date)),
     )
+    return df
 
 
 def create_workplace_last_active_date_column(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         AWPClean.workplace_last_active_date,
         F.greatest(
             F.col(AWPClean.data_last_amended_date), F.col(AWPClean.last_logged_in_date)
         ),
     )
+    return df
 
 
 def create_date_column_for_purging_data(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         AWPClean.purge_date,
         F.add_months(
             F.col(AWPClean.ascwds_workplace_import_date),
             -MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE,
         ),
     )
+    return df
 
 
 def keep_workplaces_active_on_or_after_purge_date(

@@ -132,18 +132,20 @@ def join_ons_postcode_data_into_cqc_df(
     )
     ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postcode)
 
-    return cqc_df.join(
+    cqc_df = cqc_df.join(
         ons_df,
         [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
         "left",
     )
+    return cqc_df
 
 
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
-    return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+    df = df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+    return df
 
 
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
@@ -154,7 +156,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
 
 
 def allocate_primary_service_type(df: DataFrame):
-    return df.withColumn(
+    df = df.withColumn(
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
@@ -172,6 +174,7 @@ def allocate_primary_service_type(df: DataFrame):
         )
         .otherwise(CQCLValues.non_residential),
     )
+    return df
 
 
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
@@ -208,9 +211,10 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
             f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
         )
 
-    return locations_df.where(
+    locations_df = locations_df.where(
         locations_df[CQCL.registration_status] == CQCLValues.registered
     )
+    return locations_df
 
 
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(

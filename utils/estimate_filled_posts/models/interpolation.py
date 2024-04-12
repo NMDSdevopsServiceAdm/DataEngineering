@@ -60,10 +60,11 @@ def filter_to_locations_with_a_known_filled_posts(
 def calculate_first_and_last_submission_date_per_location(
     df: pyspark.sql.DataFrame,
 ) -> pyspark.sql.DataFrame:
-    return df.groupBy(IndCqc.location_id).agg(
+    df = df.groupBy(IndCqc.location_id).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
         F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
     )
+    return df
 
 
 def convert_first_and_last_known_years_into_exploded_df(
@@ -71,12 +72,14 @@ def convert_first_and_last_known_years_into_exploded_df(
 ) -> pyspark.sql.DataFrame:
     date_range_udf = F.udf(create_date_range, ArrayType(LongType()))
 
-    return df.withColumn(
+    df = df.withColumn(
         IndCqc.unix_time,
         F.explode(
             date_range_udf(IndCqc.first_submission_time, IndCqc.last_submission_time)
         ),
     ).drop(IndCqc.first_submission_time, IndCqc.last_submission_time)
+
+    return df
 
 
 def create_date_range(
@@ -106,13 +109,14 @@ def leftouter_join_on_locationid_and_unix_time(
 
 
 def add_unix_time_for_known_filled_posts(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         IndCqc.filled_posts_unix_time,
         F.when(
             (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull()),
             F.col(IndCqc.unix_time),
         ).otherwise(F.lit(None)),
     )
+    return df
 
 
 def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
@@ -131,20 +135,22 @@ def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
     df = get_next_value_in_new_column(
         df, IndCqc.ascwds_filled_posts_dedup_clean, IndCqc.next_filled_posts
     )
-    return get_next_value_in_new_column(
+    df = get_next_value_in_new_column(
         df, IndCqc.filled_posts_unix_time, IndCqc.next_filled_posts_unix_time
     )
+    return df
 
 
 def get_previous_value_in_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         new_column_name,
         F.last(F.col(column_name), ignorenulls=True).over(
             create_window_for_previous_value()
         ),
     )
+    return df
 
 
 def create_window_for_previous_value() -> Window:
@@ -158,12 +164,13 @@ def create_window_for_previous_value() -> Window:
 def get_next_value_in_new_column(
     df: DataFrame, column_name: str, new_column_name: str
 ) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         new_column_name,
         F.first(F.col(column_name), ignorenulls=True).over(
             create_window_for_next_value()
         ),
     )
+    return df
 
 
 def create_window_for_next_value() -> Window:
@@ -190,8 +197,9 @@ def calculate_interpolated_values_in_new_column(
             IndCqc.next_filled_posts,
         ),
     )
+    df = df.select(IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model)
 
-    return df.select(IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model)
+    return df
 
 
 def interpolate_values(
