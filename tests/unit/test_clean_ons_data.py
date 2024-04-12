@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, patch
+from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 from datetime import date
 
@@ -41,7 +41,7 @@ class MainTests(CleanONSDatasetTests):
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
+    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
         read_from_parquet_patch.return_value = self.test_ons_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
         write_to_parquet_patch.assert_called_once_with(

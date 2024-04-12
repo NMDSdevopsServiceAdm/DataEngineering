@@ -1,7 +1,5 @@
 import sys
-
 from pyspark.sql import DataFrame
-import pyspark.sql.functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -28,8 +26,8 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
     refactored_current_ons_df = prepare_current_ons_data(contemporary_ons_df)
 
-    contemporary_with_current_ons_df = join_current_ons_df_into_contemporary_df(
-        refactored_contemporary_ons_df, refactored_current_ons_df
+    contemporary_with_current_ons_df = refactored_contemporary_ons_df.join(
+        refactored_current_ons_df, ONSClean.postcode, "left"
     )
 
     utils.write_to_parquet(
@@ -102,12 +100,6 @@ def prepare_contemporary_ons_data(df: DataFrame) -> DataFrame:
         df[Keys.import_date],
     )
     return df
-
-
-def join_current_ons_df_into_contemporary_df(
-    contemporary_ons_df: DataFrame, current_ons_df: DataFrame
-) -> DataFrame:
-    return contemporary_ons_df.join(current_ons_df, ONSClean.postcode, "left")
 
 
 if __name__ == "__main__":
