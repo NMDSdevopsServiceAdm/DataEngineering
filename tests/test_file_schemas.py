@@ -1187,12 +1187,26 @@ class ReconciliationSchema:
 
     expected_join_array_of_nmdsids_schema = StructType(
         [
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField("other column", StringType(), True),
+            *unique_schema,
             StructField("new_column", StringType(), True),
         ]
     )
 
+    create_parents_description_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(ReconColumn.new_potential_subs, StringType(), True),
+            StructField(ReconColumn.old_potential_subs, StringType(), True),
+            StructField(ReconColumn.missing_or_incorrect_potential_subs, StringType(), True),
+        ]
+    )
+
+    expected_create_parents_description_schema = StructType(
+        [
+            *create_parents_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
