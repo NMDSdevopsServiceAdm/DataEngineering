@@ -2168,7 +2168,7 @@ class ReconciliationData:
         ("id_2", "remove"),
     ]
 
-    join_array_of_nmdsids_rows = [
+    new_issues_rows = [
         ("org 1", "loc 1", ""),
         ("org 1", "loc 2", ""),
         ("org 1", "loc 3", ""),
@@ -2177,10 +2177,16 @@ class ReconciliationData:
         ("org 3", "loc 6", ""),
     ]
 
+    unique_rows = [
+        ("org 1", ""),
+        ("org 2", ""),
+        ("org 3", ""),
+    ]
+
     expected_join_array_of_nmdsids_rows = [
-        ("org 1", "new_column: loc 2, loc 3, loc 1"),
-        ("org 2", "new_column: loc 5, loc 4"),
-        ("org 3", "new_column: loc 6"),
+        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
+        ("org 2", "", "new_column: loc 5, loc 4"),
+        ("org 3", "", "new_column: loc 6"),
     ]
 
     new_column = "new_column"

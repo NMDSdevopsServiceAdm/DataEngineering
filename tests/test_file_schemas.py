@@ -1171,10 +1171,16 @@ class ReconciliationSchema:
         ]
     )
 
-    join_array_of_nmdsids_schema = StructType(
+    new_issues_schema = StructType(
         [
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(AWPClean.nmds_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    unique_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
             StructField("other column", StringType(), True),
         ]
     )
@@ -1182,6 +1188,7 @@ class ReconciliationSchema:
     expected_join_array_of_nmdsids_schema = StructType(
         [
             StructField(AWPClean.organisation_id, StringType(), True),
+            StructField("other column", StringType(), True),
             StructField("new_column", StringType(), True),
         ]
     )
