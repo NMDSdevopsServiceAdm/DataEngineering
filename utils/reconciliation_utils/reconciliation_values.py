@@ -38,18 +38,3 @@ class ReconciliationValues:
     parent_subject_value: str = "CQC Reconcilliation Work - Parent"
     single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
     single_sub_reg_type_description: str = "Potential (new): Regtype"
-
-
-@dataclass
-class ReconciliationDict:
-    region_id_dict = {
-        "1": "I - Eastern",
-        "2": "C - East Midlands",
-        "3": "G - London",
-        "4": "B - North East",
-        "5": "F - North West",
-        "6": "H - South East",
-        "7": "D - South West",
-        "8": "E - West Midlands",
-        "9": "J - Yorkshire Humber",
-    }

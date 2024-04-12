@@ -138,26 +138,6 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
         )
 
 
-class AddRegionLabelsForReconciliation(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_replace_region_id_labels_for_reconciliation_returns_expected_labels(self):
-        test_input_df = self.spark.createDataFrame(
-            Data.region_id_rows,
-            Schemas.region_id_schema,
-        )
-        returned_df = job.replace_region_id_labels_for_reconciliation(test_input_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_region_id_rows,
-            Schemas.region_id_schema,
-        )
-        returned_data = returned_df.sort(AWPClean.establishment_id).collect()
-        expected_data = expected_df.sort(AWPClean.establishment_id).collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-
 class AddParentsOrSinglesAndSubsColToDf(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
