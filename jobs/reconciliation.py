@@ -142,7 +142,7 @@ def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
 
 
 def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.parents_or_singles_and_subs,
         F.when(
             (
@@ -155,6 +155,7 @@ def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
             F.lit(ReconValues.parents),
         ).otherwise(F.lit(ReconValues.singles_and_subs)),
     )
+    return df
 
 
 def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
@@ -162,7 +163,7 @@ def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(AWPClean.is_parent) == "Yes").select(
+    df = df.filter(F.col(AWPClean.is_parent) == "Yes").select(
         AWPClean.nmds_id,
         AWPClean.establishment_id,
         AWPClean.establishment_name,
@@ -170,18 +171,20 @@ def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
         AWPClean.establishment_type,
         AWPClean.region_id,
     )
+    return df
 
 
 def remove_ascwds_head_office_accounts_without_location_ids(
     df: DataFrame,
 ) -> DataFrame:
-    return df.where(
+    df = df.where(
         (F.col(AWPClean.location_id).isNotNull())
         | (
             (F.col(AWPClean.location_id).isNull())
             & (F.col(AWPClean.main_service_id) != "Head office services")
         )
     )
+    return df
 
 
 def join_cqc_location_data_into_ascwds_workplace_df(
@@ -191,13 +194,16 @@ def join_cqc_location_data_into_ascwds_workplace_df(
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWPClean.location_id, CQCL.location_id
     )
-    return ascwds_workplace_df.join(cqc_location_df, CQCL.location_id, "left")
+    ascwds_workplace_df = ascwds_workplace_df.join(
+        cqc_location_df, CQCL.location_id, "left"
+    )
+    return ascwds_workplace_df
 
 
 def filter_to_locations_relevant_to_reconcilition_process(
     df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
 ) -> DataFrame:
-    return df.where(
+    df = df.where(
         F.col(CQCL.registration_status).isNull()
         | (
             (
@@ -216,6 +222,7 @@ def filter_to_locations_relevant_to_reconcilition_process(
             )
         )
     )
+    return df
 
 
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
@@ -235,13 +242,14 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
 
 
 def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.description,
         F.when(
             F.col(CQCL.deregistration_date).isNotNull(),
             F.lit(ReconValues.single_sub_deregistered_description),
         ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
     )
+    return df
 
 
 def create_reconciliation_output_for_ascwds_parent_accounts(
@@ -287,7 +295,6 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
     )
-
     return final_column_selection(ascwds_parent_accounts_df)
 
 
@@ -310,13 +317,14 @@ def organisation_id_with_array_of_nmdsids(
     subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat_ws(", ", F.col(new_col_name))
     )
-    return subs_at_parent_df.withColumn(
+    subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
     )
+    return subs_at_parent_df
 
 
 def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.description,
         F.concat(
             F.when(
@@ -335,13 +343,14 @@ def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:
             ).otherwise(F.lit("")),
         ),
     )
+    return df
 
 
 def create_missing_columns_required_for_output(df: DataFrame) -> DataFrame:
     df = df.withColumnRenamed(AWPClean.establishment_type, ReconColumn.sector)
     df = df.withColumnRenamed(AWPClean.region_id, ReconColumn.sfc_region)
     df = df.withColumnRenamed(AWPClean.establishment_name, ReconColumn.name)
-    return (
+    df = (
         df.withColumn(ReconColumn.nmds, F.col(AWPClean.nmds_id))
         .withColumn(ReconColumn.workplace_id, F.col(AWPClean.nmds_id))
         .withColumn(
@@ -365,10 +374,11 @@ def create_missing_columns_required_for_output(df: DataFrame) -> DataFrame:
         .withColumn(ReconColumn.item, F.lit("CQC work"))
         .withColumn(ReconColumn.phone, F.lit(0))
     )
+    return df
 
 
 def final_column_selection(df: DataFrame) -> DataFrame:
-    return df.select(
+    df = df.select(
         ReconColumn.subject,
         ReconColumn.nmds,
         ReconColumn.name,
@@ -391,6 +401,8 @@ def final_column_selection(df: DataFrame) -> DataFrame:
         ReconColumn.phone,
         ReconColumn.workplace_id,
     ).sort(ReconColumn.description, ReconColumn.nmds)
+
+    return df
 
 
 def write_to_csv(df: DataFrame, output_dir: str):
