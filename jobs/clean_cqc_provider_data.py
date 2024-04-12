@@ -1,10 +1,9 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import (
     StringType,
 )
-import pyspark.sql.functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -45,7 +44,6 @@ def main(cqc_source: str, cleaned_cqc_destination: str):
 
 
 def create_dataframe_from_la_cqc_provider_list(la_providerids: list) -> DataFrame:
-    # Start a spark session.
     spark = utils.get_spark()
 
     la_providers_dataframe = spark.createDataFrame(
