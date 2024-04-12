@@ -320,7 +320,9 @@ def join_array_of_nmdsids_into_parent_account_df(
     subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
     )
-    df_with_array_of_ids = unique_df.join(subs_at_parent_df, AWPClean.organisation_id, "left")
+    df_with_array_of_ids = unique_df.join(
+        subs_at_parent_df, AWPClean.organisation_id, "left"
+    )
     return df_with_array_of_ids
 
 

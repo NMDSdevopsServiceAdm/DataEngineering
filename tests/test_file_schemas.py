@@ -1197,7 +1197,9 @@ class ReconciliationSchema:
             StructField(AWPClean.organisation_id, StringType(), True),
             StructField(ReconColumn.new_potential_subs, StringType(), True),
             StructField(ReconColumn.old_potential_subs, StringType(), True),
-            StructField(ReconColumn.missing_or_incorrect_potential_subs, StringType(), True),
+            StructField(
+                ReconColumn.missing_or_incorrect_potential_subs, StringType(), True
+            ),
         ]
     )
 
@@ -1207,6 +1209,7 @@ class ReconciliationSchema:
             StructField(ReconColumn.description, StringType(), True),
         ]
     )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
