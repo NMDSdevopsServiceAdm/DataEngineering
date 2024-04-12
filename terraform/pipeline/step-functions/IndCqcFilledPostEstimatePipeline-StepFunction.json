@@ -15,7 +15,8 @@
                 "JobName": "${clean_ascwds_workplace_job_name}",
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--coverage_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/"
                 }
               },
               "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
@@ -51,7 +52,7 @@
                         "JobName": "${reconciliation_job_name}",
                         "Arguments": {
                           "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
-                          "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--ascwds_coverage_source": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/",
                           "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
                           "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
                         }
@@ -115,7 +116,7 @@
                       "Parameters": {
                         "JobName": "${clean_cqc_provider_data_job_name}",
                         "Arguments": {
-                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
+                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
                           "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
                         }
                       },
@@ -132,7 +133,7 @@
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0",
                   "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
@@ -337,6 +338,19 @@
               "End": true,
               "Parameters": {
                 "Name": "${cqc_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+            }
+          }
+        },
+        {
+          "StartAt": "Run sfc crawler",
+          "States": {
+            "Run sfc crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }

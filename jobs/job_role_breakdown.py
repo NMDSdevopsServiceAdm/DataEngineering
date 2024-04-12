@@ -216,7 +216,10 @@ def get_job_estimates_dataset(job_estimates_source):
         F.col("run_day"),
     )
 
-    job_estimates_df = utils.get_latest_partition(job_estimates_df)
+    job_estimates_df = utils.filter_df_to_maximum_value_in_column(
+        job_estimates_df, "snapshot_date"
+    )
+
     job_estimates_df = job_estimates_df.withColumn(
         "snapshot_date", F.date_format(F.col("snapshot_date"), "yyyyMMdd")
     )
