@@ -546,14 +546,13 @@ class JoinArrayOfNmdsIdsTests(ReconciliationTests):
         )
         self.returned_df.show(truncate=False)
 
-    # Rewrite these tests fro function including join
     def test_join_array_of_nmdsids_returns_one_row_per_org_id(self):
-        expected_rows = self.df.dropDuplicates([AWPClean.organisation_id]).count()
+        expected_rows = self.unique_df.count()
         returned_rows = self.returned_df.count()
         self.assertEqual(returned_rows, expected_rows)
 
     def test_join_array_of_nmdsids_adds_one_column(self):
-        expected_columns = 2
+        expected_columns = len(self.unique_df.columns) + 1
         returned_columns = len(self.returned_df.columns)
         self.assertEqual(returned_columns, expected_columns)
 
