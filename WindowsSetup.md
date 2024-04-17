@@ -338,13 +338,3 @@ Python
 7. Run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 
 8. Enter `C:\Users\_your_name_\DataEngineering` to change back to data engineering directory
-
-
-### Connect AWS Athena to Tableau
-1. Open a new Tableau document. On the left-hand side, under `To a server` select `More...` then `Amazon Athena`
-
-2. This will open a screen where you need to add credentials into the fields - to get these go to
-`F:\ASC-WDS Copy Files\Research & Analysis Team Folders\Analysis Team\c. Ongoing Work\Tanya\Data engineering`
-in a file called `Tableau Athena Access Key`.
-
-3. Once connected select `main-data-engineering-database` from the `Database` dropdown in Tableau. All of the tables should now appear and are now available to analyse. Other databases can be selected.
