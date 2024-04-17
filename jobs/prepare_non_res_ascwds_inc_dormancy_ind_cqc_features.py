@@ -151,7 +151,7 @@ if __name__ == "__main__":
         ),
         (
             "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination",
-            "A destination directory for outputting non_res_features_ind_cqc_filled_posts",
+            "A destination directory for outputting non-res ASCWDS inc dormancy model features dataset",
         ),
     )
 
