@@ -27,7 +27,7 @@ resource "aws_iam_policy" "start_state_machines" {
       {
         Effect   = "Allow"
         Action   = ["states:StartExecution"]
-        Resource = [aws_sfn_state_machine.ingest_ascwds_state_machine.arn, aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
+        Resource = [aws_sfn_state_machine.ingest_ascwds_state_machine.arn]
       }
     ]
   })
@@ -77,21 +77,5 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
         }
     }
     EOF
-  }
-}
-
-resource "aws_scheduler_schedule" "example" {
-  name       = "Bulk-Download-CQC-API-Pipeline-schedule"
-  group_name = "default"
-
-  flexible_time_window {
-    mode = "OFF"
-  }
-
-  schedule_expression = "cron(30 01 01,08,15,23 * ? *)"
-
-  target {
-    arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
-    role_arn = aws_iam_role.start_state_machines.arn
   }
 }
