@@ -20,9 +20,9 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
-        #self.cqc_api_primary_key = json.loads(
+        # self.cqc_api_primary_key = json.loads(
         #    ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-        #)["Ocp-Apim-Subscription-Key"]
+        # )["Ocp-Apim-Subscription-Key"]
         self.page = 1
 
 
@@ -101,7 +101,7 @@ class ProviderApiTests(CqcApiIntegrationTests):
         self.assertEqual(
             result[CQCP.organisation_type], self.example_object[CQCP.organisation_type]
         )
-    
+
     @unittest.skip("ignore for now")
     def test_get_page_providers_returns_all_providers_for_page(self):
         url = f"{cqc.CQC_API_BASE_URL}/public/{cqc.CQC_API_VERSION}/{self.object_type}"
