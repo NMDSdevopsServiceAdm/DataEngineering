@@ -4,7 +4,7 @@ import time
 import requests
 
 CQC_API_VERSION = "v1"
-RATE_LIMIT = 400
+RATE_LIMIT = 2000
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
