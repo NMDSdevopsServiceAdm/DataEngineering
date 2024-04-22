@@ -28,7 +28,7 @@ def call_api(url, query_params=None, headers_dict=None):
             )
         )
 
-    if response.status_code is not 200:
+    if response.status_code != 200:
         raise Exception("API response: {}".format(response.status_code))
 
     return response.json()
@@ -97,7 +97,7 @@ def get_object(cqc_location_id, object_type, cqc_api_primary_key):
 
     response = call_api(
         url + cqc_location_id,
-        query_params=None,  # This endpoint no longer supports a Partner Code
+        query_params=None,
         headers_dict={
             "User-Agent": USER_AGENT,
             "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
