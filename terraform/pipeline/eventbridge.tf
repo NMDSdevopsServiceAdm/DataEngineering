@@ -52,6 +52,25 @@ resource "aws_iam_role" "start_state_machines" {
 EOF 
 }
 
+resource "aws_iam_role" "scheduler_execution_role" {
+  name = "${local.workspace_prefix}-scheduler_execution_role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "scheduler.amazonaws.com"
+      },
+      "Effect": "Allow"
+    }
+  ]
+}
+EOF 
+}
+
 resource "aws_iam_role_policy_attachment" "start_state_machines" {
   role       = aws_iam_role.start_state_machines.name
   policy_arn = aws_iam_policy.start_state_machines.arn
@@ -92,6 +111,6 @@ resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
 
   target {
     arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
-    role_arn = aws_iam_role.start_state_machines.arn
+    role_arn = aws_iam_role.scheduler_execution_role.arn
   }
 }
