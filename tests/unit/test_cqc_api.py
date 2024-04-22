@@ -35,7 +35,7 @@ class GetObjectTests(CqcApiTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.cqc_api_new.call_api")
+    @patch("utils.cqc_api.call_api")
     def test_get_object_when_getting_location(self, mock_call_api: Mock):
         mock_call_api.return_value = self.test_data[0]
 
@@ -53,8 +53,8 @@ class GetPageObjectsTests(CqcApiTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.cqc_api_new.call_api")
-    @patch("utils.cqc_api_new.get_object")
+    @patch("utils.cqc_api.call_api")
+    @patch("utils.cqc_api.get_object")
     def test_get_page_objects_when_getting_locations(
         self, mock_get_object: Mock, mock_call_api: Mock
     ):
@@ -185,8 +185,8 @@ class CallApiTests(CqcApiTests):
 
 
 class GetAllObjectsTests(CqcApiTests):
-    @patch("utils.cqc_api_new.get_page_objects")
-    @patch("utils.cqc_api_new.call_api")
+    @patch("utils.cqc_api.get_page_objects")
+    @patch("utils.cqc_api.call_api")
     def test_get_all_objects_returns_correct_generator(
         self, call_api_mock: Mock, get_page_objects_mock: Mock
     ):
