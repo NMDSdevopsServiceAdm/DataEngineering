@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from utils import cqc_api_new as cqc
@@ -8,7 +9,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
-import json
 
 
 def main(destination):

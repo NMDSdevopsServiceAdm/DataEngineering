@@ -1,7 +1,11 @@
 import unittest
 import re
+import json
 
-from utils import cqc_api_new as cqc
+from utils import (
+    cqc_api_new as cqc,
+    aws_secrets_manager_utilities as ars,
+)
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
@@ -10,12 +14,15 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
 
+
 LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
 
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.cqc_api_primary_key_stub = "cqc_api_primary_key"
+        self.cqc_api_primary_key = json.loads(
+            ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
+        )["cqc_api_primary_key"]
         self.page = 1
 
 
@@ -30,7 +37,7 @@ class LocationApiTests(CqcApiIntegrationTests):
         }
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(self.example_object[CQCL.location_id], self.object_type)
+        result = cqc.get_object(self.example_object[CQCL.location_id], self.object_type, self.cqc_api_primary_key)
 
         self.assertEqual(
             result[CQCL.location_id], self.example_object[CQCL.location_id]
@@ -50,7 +57,7 @@ class LocationApiTests(CqcApiIntegrationTests):
             self.page,
             self.object_type,
             CQCL.location_id,
-            self.cqc_api_primary_key_stub,
+            self.cqc_api_primary_key,
             per_page=5,
         )
         self.assertEqual(len(locations), 5)
@@ -72,7 +79,7 @@ class ProviderApiTests(CqcApiIntegrationTests):
         }
 
     def test_get_object_returns_provider(self):
-        result = cqc.get_object(self.example_object[CQCP.provider_id], self.object_type)
+        result = cqc.get_object(self.example_object[CQCP.provider_id], self.object_type, self.cqc_api_primary_key)
 
         self.assertEqual(
             result[CQCP.location_ids], self.example_object[CQCP.location_ids]
@@ -92,7 +99,7 @@ class ProviderApiTests(CqcApiIntegrationTests):
             self.page,
             self.object_type,
             CQCP.provider_id,
-            self.cqc_api_primary_key_stub,
+            self.cqc_api_primary_key,
             per_page=5,
         )
         self.assertEqual(len(providers), 5)
