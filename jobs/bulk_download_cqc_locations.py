@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from utils import cqc_api_new as cqc
@@ -8,8 +9,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as ColNames,
 )
 
-import json
-
 
 def main(destination):
     print("Collecting all locations from API")
@@ -17,7 +16,7 @@ def main(destination):
     df = None
     cqc_api_primary_key_value = json.loads(
         ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-    )["cqc_api_primary_key"]
+    )["Ocp-Apim-Subscription-Key"]
     for paginated_locations in cqc.get_all_objects(
         object_type="locations",
         object_identifier=ColNames.location_id,

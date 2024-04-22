@@ -16,7 +16,7 @@ def main(destination):
     df = None
     cqc_api_primary_key_value = json.loads(
         ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-    )["cqc_api_primary_key"]
+    )["Ocp-Apim-Subscription-Key"]
     for paginated_providers in cqc.get_all_objects(
         object_type="providers",
         object_identifier=ColNames.provider_id,

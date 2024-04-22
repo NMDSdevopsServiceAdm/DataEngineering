@@ -22,7 +22,7 @@ class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.cqc_api_primary_key = json.loads(
             ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-        )["cqc_api_primary_key"]
+        )["Ocp-Apim-Subscription-Key"]
         self.page = 1
 
 
