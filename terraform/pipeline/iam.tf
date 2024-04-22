@@ -123,7 +123,7 @@ resource "aws_iam_role_policy_attachment" "glue_job_cqc_api_primary_key_secrets_
 }
 
 resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
-  name        = "${terraform.workspace}-retrieve-partner-code-secret"
+  name        = "${terraform.workspace}-retrieve-cqc-api-primary-key-secret"
   path        = "/"
   description = "Retrieves a secret specific to the Bulk download jobs"
 
