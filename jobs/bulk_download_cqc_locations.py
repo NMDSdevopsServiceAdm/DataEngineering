@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from utils import cqc_api_new as cqc
+from utils import cqc_api as cqc
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA_NEW

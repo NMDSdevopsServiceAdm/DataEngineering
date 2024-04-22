@@ -3,7 +3,7 @@ import re
 import json
 
 from utils import (
-    cqc_api_new as cqc,
+    cqc_api as cqc,
     aws_secrets_manager_utilities as ars,
 )
 
