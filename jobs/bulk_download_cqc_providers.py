@@ -10,7 +10,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 )
 
 
-
 def main(destination):
     print("Collecting all providers from API")
     spark = utils.get_spark()

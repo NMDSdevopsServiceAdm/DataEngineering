@@ -37,7 +37,11 @@ class LocationApiTests(CqcApiIntegrationTests):
         }
 
     def test_get_object_returns_location(self):
-        result = cqc.get_object(self.example_object[CQCL.location_id], self.object_type, self.cqc_api_primary_key)
+        result = cqc.get_object(
+            self.example_object[CQCL.location_id],
+            self.object_type,
+            self.cqc_api_primary_key,
+        )
 
         self.assertEqual(
             result[CQCL.location_id], self.example_object[CQCL.location_id]
@@ -79,7 +83,11 @@ class ProviderApiTests(CqcApiIntegrationTests):
         }
 
     def test_get_object_returns_provider(self):
-        result = cqc.get_object(self.example_object[CQCP.provider_id], self.object_type, self.cqc_api_primary_key)
+        result = cqc.get_object(
+            self.example_object[CQCP.provider_id],
+            self.object_type,
+            self.cqc_api_primary_key,
+        )
 
         self.assertEqual(
             result[CQCP.location_ids], self.example_object[CQCP.location_ids]

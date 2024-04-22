@@ -4,9 +4,7 @@ import time
 import requests
 
 CQC_API_VERSION = "v1"
-RATE_LIMIT = (
-    400  
-)
+RATE_LIMIT = 400
 ONE_MINUTE = 60
 DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
@@ -49,7 +47,10 @@ def get_all_objects(
         {
             "perPage": per_page,
         },
-        headers_dict={"User-Agent": USER_AGENT, "Ocp-Apim-Subscription-Key": cqc_api_primary_key},
+        headers_dict={
+            "User-Agent": USER_AGENT,
+            "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
+        },
     )["totalPages"]
 
     print(f"Total pages: {total_pages}")
@@ -76,11 +77,16 @@ def get_page_objects(
     response_body = call_api(
         url,
         {"page": page_number, "perPage": per_page},
-        headers_dict={"User-Agent": USER_AGENT, "Ocp-Apim-Subscription-Key": cqc_api_primary_key},
+        headers_dict={
+            "User-Agent": USER_AGENT,
+            "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
+        },
     )
 
     for resource in response_body[object_type]:
-        returned_object = get_object(resource[object_identifier], object_type, cqc_api_primary_key)
+        returned_object = get_object(
+            resource[object_identifier], object_type, cqc_api_primary_key
+        )
         page_objects.append(returned_object)
 
     return page_objects
@@ -92,7 +98,10 @@ def get_object(cqc_location_id, object_type, cqc_api_primary_key):
     response = call_api(
         url + cqc_location_id,
         query_params=None,  # This endpoint no longer supports a Partner Code
-        headers_dict={"User-Agent": USER_AGENT, "Ocp-Apim-Subscription-Key": cqc_api_primary_key},
+        headers_dict={
+            "User-Agent": USER_AGENT,
+            "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
+        },
     )
 
     return response

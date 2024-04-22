@@ -40,7 +40,9 @@ class GetObjectTests(CqcApiTests):
         mock_call_api.return_value = self.test_data[0]
 
         returned_location = cqc.get_object(
-            self.test_data[0][self.test_column], self.location_object_type, self.cqc_api_primary_key_stub
+            self.test_data[0][self.test_column],
+            self.location_object_type,
+            self.cqc_api_primary_key_stub,
         )
         expected_location = self.test_data[0]
 
@@ -61,7 +63,11 @@ class GetPageObjectsTests(CqcApiTests):
         mock_get_object.side_effect = self.test_data
 
         returned_page_objects = cqc.get_page_objects(
-            self.test_url, 1, self.location_object_type, self.test_column, self.cqc_api_primary_key_stub
+            self.test_url,
+            1,
+            self.location_object_type,
+            self.test_column,
+            self.cqc_api_primary_key_stub,
         )
 
         expected_page_objects = self.test_data
@@ -70,14 +76,29 @@ class GetPageObjectsTests(CqcApiTests):
         mock_call_api.assert_called_once_with(
             self.test_url,
             {"page": 1, "perPage": 500},
-            headers_dict={"User-Agent": "SkillsForCare", "Ocp-Apim-Subscription-Key": self.cqc_api_primary_key_stub},
+            headers_dict={
+                "User-Agent": "SkillsForCare",
+                "Ocp-Apim-Subscription-Key": self.cqc_api_primary_key_stub,
+            },
         )
 
         mock_get_object.assert_has_calls(
             [
-                call(self.value_examples[0], self.location_object_type, self.cqc_api_primary_key_stub),
-                call(self.value_examples[1], self.location_object_type, self.cqc_api_primary_key_stub),
-                call(self.value_examples[2], self.location_object_type, self.cqc_api_primary_key_stub),
+                call(
+                    self.value_examples[0],
+                    self.location_object_type,
+                    self.cqc_api_primary_key_stub,
+                ),
+                call(
+                    self.value_examples[1],
+                    self.location_object_type,
+                    self.cqc_api_primary_key_stub,
+                ),
+                call(
+                    self.value_examples[2],
+                    self.location_object_type,
+                    self.cqc_api_primary_key_stub,
+                ),
             ]
         )
 
