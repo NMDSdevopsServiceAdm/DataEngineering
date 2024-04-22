@@ -13,7 +13,7 @@
                 "Parameters": {
                   "JobName": "${bulk_cqc_providers_download_job_name}",
                   "Arguments": {
-                    "--destination_prefix": "${module.datasets_bucket.bucket_uri}",
+                    "--destination_prefix": "${dataset_bucket_uri}",
                     "--additional-python-modules": "ratelimit==2.2.1,"
                   }
                 },
@@ -30,7 +30,7 @@
                 "Parameters": {
                   "JobName": "${bulk_cqc_locations_download_job_name}",
                   "Arguments": {
-                    "--destination_prefix": "${module.datasets_bucket.bucket_uri}",
+                    "--destination_prefix": "${dataset_bucket_uri}",
                     "--additional-python-modules": "ratelimit==2.2.1,"
                   }
                 },
