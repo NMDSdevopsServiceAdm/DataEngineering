@@ -45,7 +45,7 @@ OLD_PROVIDER_SCHEMA = StructType(
     ]
 )
 
-NEW_PROVIDER_SCHEMA = StructType(
+PROVIDER_SCHEMA = StructType(
     [
         StructField(NewColNames.provider_id, StringType(), True),
         StructField(NewColNames.location_ids, ArrayType(StringType(), True), True),

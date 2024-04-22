@@ -2,7 +2,7 @@ import json
 from datetime import date
 
 from utils import cqc_api as cqc
-from schemas.cqc_provider_schema import NEW_PROVIDER_SCHEMA
+from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
@@ -22,7 +22,7 @@ def main(destination):
         object_identifier=ColNames.provider_id,
         cqc_api_primary_key=cqc_api_primary_key_value,
     ):
-        providers_df = spark.createDataFrame(paginated_providers, NEW_PROVIDER_SCHEMA)
+        providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
         if df:
             df = df.union(providers_df)
         else:
