@@ -15,13 +15,13 @@ def main(destination):
     print("Collecting all locations from API")
     spark = utils.get_spark()
     df = None
-    partner_code_value = json.loads(
-        ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
-    )["partner_code"]
+    cqc_api_primary_key_value = json.loads(
+        ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
+    )["cqc_api_primary_key"]
     for paginated_locations in cqc.get_all_objects(
         object_type="locations",
         object_identifier=ColNames.location_id,
-        partner_code=partner_code_value,
+        cqc_api_primary_key=cqc_api_primary_key_value,
     ):
         locations_df = spark.createDataFrame(paginated_locations, LOCATION_SCHEMA_NEW)
         if df:

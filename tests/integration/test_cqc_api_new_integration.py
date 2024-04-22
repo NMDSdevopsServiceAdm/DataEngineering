@@ -15,7 +15,7 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.PARTNER_CODE_STUB = "PARTNERCODE"
+        self.cqc_api_primary_key_STUB = "PARTNERCODE"
         self.page = 1
 
 
@@ -50,7 +50,7 @@ class LocationApiTests(CqcApiIntegrationTests):
             self.page,
             self.object_type,
             CQCL.location_id,
-            self.PARTNER_CODE_STUB,
+            self.cqc_api_primary_key_STUB,
             per_page=5,
         )
         self.assertEqual(len(locations), 5)
@@ -92,7 +92,7 @@ class ProviderApiTests(CqcApiIntegrationTests):
             self.page,
             self.object_type,
             CQCP.provider_id,
-            self.PARTNER_CODE_STUB,
+            self.cqc_api_primary_key_STUB,
             per_page=5,
         )
         self.assertEqual(len(providers), 5)

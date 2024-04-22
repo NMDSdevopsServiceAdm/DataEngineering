@@ -39,7 +39,7 @@ def call_api(url, query_params=None, headers_dict=None):
 def get_all_objects(
     object_type: str,
     object_identifier: str,
-    partner_code: str,
+    cqc_api_primary_key: str,
     per_page=DEFAULT_PAGE_SIZE,
 ):
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
@@ -58,7 +58,7 @@ def get_all_objects(
     for page_number in range(1, total_pages + 1):
         print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
         page_locations = get_page_objects(
-            url, page_number, object_type, object_identifier, partner_code
+            url, page_number, object_type, object_identifier, cqc_api_primary_key
         )
 
         yield page_locations
@@ -69,7 +69,7 @@ def get_page_objects(
     page_number,
     object_type,
     object_identifier,
-    partner_code,
+    cqc_api_primary_key,
     per_page=DEFAULT_PAGE_SIZE,
 ):
     page_objects = []

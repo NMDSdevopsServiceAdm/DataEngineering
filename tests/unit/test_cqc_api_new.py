@@ -179,7 +179,7 @@ class GetAllObjectsTests(CqcApiTests):
         generator = cqc.get_all_objects(
             object_type="locations",
             object_identifier="location_id",
-            partner_code="partner_code",
+            cqc_api_primary_key="cqc_api_primary_key",
         )
 
         self.assertTrue(isinstance(generator, Generator))
