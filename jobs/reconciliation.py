@@ -21,7 +21,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationColumns as ReconColumn,
     ReconciliationValues as ReconValues,
-    ReconciliationDict as ReconDict,
+)
+from utils.value_labels.reconciliation.label_dictionary import (
+    labels_dict as reconciliation_labels_dict,
 )
 
 cqc_locations_columns_to_import = [
@@ -122,7 +124,12 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     df = utils.filter_df_to_maximum_value_in_column(
         ascwds_workplace_df, AWPClean.ascwds_workplace_import_date
     )
-    df = add_region_id_labels_for_reconciliation(df)
+    df = cUtils.apply_categorical_labels(
+        df,
+        reconciliation_labels_dict,
+        reconciliation_labels_dict.keys(),
+        add_as_new_column=False,
+    )
     df = add_parents_or_singles_and_subs_col_to_df(df)
 
     cqc_registered_accounts_df = filter_to_cqc_registration_type_only(df)
@@ -135,10 +142,6 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     parent_accounts_df = get_ascwds_parent_accounts(df)
 
     return cqc_registered_accounts_df, parent_accounts_df
-
-
-def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
-    return df.replace(ReconDict.region_id_dict, subset=[AWPClean.region_id])
 
 
 def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
