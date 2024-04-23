@@ -100,8 +100,10 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 }
 
 resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
-  name       = "Bulk-Download-CQC-API-Pipeline-schedule"
-  group_name = "default"
+  name        = "Bulk-Download-CQC-API-Pipeline-schedule"
+  group_name  = "default"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
     mode = "OFF"
