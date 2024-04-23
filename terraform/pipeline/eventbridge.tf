@@ -107,7 +107,7 @@ resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(30 01 01,08,15,23 * ? *)"
+  schedule_expression = "cron(30 01 01,08,15,23, 24 * ? *)" # 24th added for a test run in main tonight - remove this and cron in glue jobs once successful
 
   target {
     arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
