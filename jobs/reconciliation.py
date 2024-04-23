@@ -30,35 +30,21 @@ cqc_locations_columns_to_import = [
     CQCL.registration_status,
     CQCL.deregistration_date,
 ]
-cleaned_ascwds_workplace_columns_to_import = [
-    AWPClean.ascwds_workplace_import_date,
-    AWPClean.establishment_id,
-    AWPClean.nmds_id,
-    AWPClean.is_parent,
-    AWPClean.organisation_id,
-    AWPClean.parent_permission,
-    AWPClean.establishment_type,
-    AWPClean.registration_type,
-    AWPClean.location_id,
-    AWPClean.main_service_id,
-    AWPClean.establishment_name,
-    AWPClean.region_id,
-]
 
 
 def main(
     cqc_location_api_source: str,
-    cleaned_ascwds_workplace_source: str,
+    ascwds_coverage_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ):
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 1000")
+
     cqc_location_df = utils.read_from_parquet(
         cqc_location_api_source, cqc_locations_columns_to_import
     )
-    ascwds_workplace_df = utils.read_from_parquet(
-        cleaned_ascwds_workplace_source,
-        selected_columns=cleaned_ascwds_workplace_columns_to_import,
-    )
+    ascwds_workplace_df = utils.read_from_parquet(ascwds_coverage_source)
 
     cqc_location_df = prepare_most_recent_cqc_location_df(cqc_location_df)
     (
@@ -74,6 +60,7 @@ def main(
     merged_ascwds_cqc_df = join_cqc_location_data_into_ascwds_workplace_df(
         latest_ascwds_workplace_df, cqc_location_df
     )
+
     latest_ascwds_workplace_df.unpersist()
     cqc_location_df.unpersist()
 
@@ -81,6 +68,7 @@ def main(
         merged_ascwds_cqc_df, first_of_most_recent_month, first_of_previous_month
     )
     merged_ascwds_cqc_df.unpersist()
+
     single_and_sub_df = create_reconciliation_output_for_ascwds_single_and_sub_accounts(
         reconciliation_df
     )
@@ -154,7 +142,7 @@ def add_region_id_labels_for_reconciliation(df: DataFrame) -> DataFrame:
 
 
 def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.parents_or_singles_and_subs,
         F.when(
             (
@@ -167,6 +155,7 @@ def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
             F.lit(ReconValues.parents),
         ).otherwise(F.lit(ReconValues.singles_and_subs)),
     )
+    return df
 
 
 def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
@@ -174,7 +163,7 @@ def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(AWPClean.is_parent) == "Yes").select(
+    df = df.filter(F.col(AWPClean.is_parent) == "Yes").select(
         AWPClean.nmds_id,
         AWPClean.establishment_id,
         AWPClean.establishment_name,
@@ -182,18 +171,20 @@ def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
         AWPClean.establishment_type,
         AWPClean.region_id,
     )
+    return df
 
 
 def remove_ascwds_head_office_accounts_without_location_ids(
     df: DataFrame,
 ) -> DataFrame:
-    return df.where(
+    df = df.where(
         (F.col(AWPClean.location_id).isNotNull())
         | (
             (F.col(AWPClean.location_id).isNull())
             & (F.col(AWPClean.main_service_id) != "Head office services")
         )
     )
+    return df
 
 
 def join_cqc_location_data_into_ascwds_workplace_df(
@@ -203,13 +194,16 @@ def join_cqc_location_data_into_ascwds_workplace_df(
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWPClean.location_id, CQCL.location_id
     )
-    return ascwds_workplace_df.join(cqc_location_df, CQCL.location_id, "left")
+    ascwds_workplace_df = ascwds_workplace_df.join(
+        cqc_location_df, CQCL.location_id, "left"
+    )
+    return ascwds_workplace_df
 
 
 def filter_to_locations_relevant_to_reconcilition_process(
     df: DataFrame, first_of_most_recent_month: date, first_of_previous_month: date
 ) -> DataFrame:
-    return df.where(
+    df = df.where(
         F.col(CQCL.registration_status).isNull()
         | (
             (
@@ -228,6 +222,7 @@ def filter_to_locations_relevant_to_reconcilition_process(
             )
         )
     )
+    return df
 
 
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
@@ -253,13 +248,14 @@ def add_subject_column(df: DataFrame, subject_value: str):
 
 
 def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.description,
         F.when(
             F.col(CQCL.deregistration_date).isNotNull(),
             F.lit(ReconValues.single_sub_deregistered_description),
         ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
     )
+    return df
 
 
 def create_reconciliation_output_for_ascwds_parent_accounts(
@@ -306,7 +302,6 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
     )
-
     return final_column_selection(ascwds_parent_accounts_df)
 
 
@@ -329,13 +324,14 @@ def organisation_id_with_array_of_nmdsids(
     subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat_ws(", ", F.col(new_col_name))
     )
-    return subs_at_parent_df.withColumn(
+    subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
     )
+    return subs_at_parent_df
 
 
 def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         ReconColumn.description,
         F.concat(
             F.when(
@@ -354,13 +350,14 @@ def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:
             ).otherwise(F.lit("")),
         ),
     )
+    return df
 
 
 def create_missing_columns_required_for_output(df: DataFrame) -> DataFrame:
     df = df.withColumnRenamed(AWPClean.establishment_type, ReconColumn.sector)
     df = df.withColumnRenamed(AWPClean.region_id, ReconColumn.sfc_region)
     df = df.withColumnRenamed(AWPClean.establishment_name, ReconColumn.name)
-    return (
+    df = (
         df.withColumn(ReconColumn.nmds, F.col(AWPClean.nmds_id))
         .withColumn(ReconColumn.workplace_id, F.col(AWPClean.nmds_id))
         .withColumn(
@@ -384,10 +381,11 @@ def create_missing_columns_required_for_output(df: DataFrame) -> DataFrame:
         .withColumn(ReconColumn.item, F.lit("CQC work"))
         .withColumn(ReconColumn.phone, F.lit(0))
     )
+    return df
 
 
 def final_column_selection(df: DataFrame) -> DataFrame:
-    return df.select(
+    df = df.select(
         ReconColumn.subject,
         ReconColumn.nmds,
         ReconColumn.name,
@@ -411,6 +409,8 @@ def final_column_selection(df: DataFrame) -> DataFrame:
         ReconColumn.workplace_id,
     ).sort(ReconColumn.description, ReconColumn.nmds)
 
+    return df
+
 
 def write_to_csv(df: DataFrame, output_dir: str):
     df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_dir)
@@ -422,7 +422,7 @@ if __name__ == "__main__":
 
     (
         cqc_location_api_source,
-        cleaned_ascwds_workplace_source,
+        ascwds_coverage_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     ) = utils.collect_arguments(
@@ -431,8 +431,8 @@ if __name__ == "__main__":
             "Source s3 directory for initial CQC location api dataset",
         ),
         (
-            "--cleaned_ascwds_workplace_source",
-            "Source s3 directory for cleaned parquet ASCWDS workplace dataset",
+            "--ascwds_coverage_source",
+            "Source s3 directory for ASCWDS coverage parquet dataset",
         ),
         (
             "--reconciliation_single_and_subs_destination",
@@ -445,7 +445,7 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_api_source,
-        cleaned_ascwds_workplace_source,
+        ascwds_coverage_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     )

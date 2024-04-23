@@ -47,12 +47,12 @@ class GetSecretTests(AWSSecretsManagerUtilitiesTests):
         mock_session.return_value.client.return_value = self.mock_client
 
         self.mock_client.get_secret_value.return_value = {
-            "SecretString": '{"partner_code": "SAMPLECODE"}'
+            "SecretString": '{"cqc_api_primary_key": "SAMPLECODE"}'
         }
 
         secret_value = json.loads(
-            ars.get_secret(secret_name="partner_code", region_name="eu-west-2")
-        )["partner_code"]
+            ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
+        )["cqc_api_primary_key"]
 
         self.assertEqual(secret_value, "SAMPLECODE")
         self.assertNotEqual(type(secret_value), type(dict()))

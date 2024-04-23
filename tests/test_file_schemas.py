@@ -274,13 +274,68 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    purge_outdated_schema = StructType(
+    mupddate_for_org_schema = StructType(
+        [
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+        ]
+    )
+    expected_mupddate_for_org_schema = StructType(
+        [
+            *mupddate_for_org_schema,
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+
+    add_purge_data_col_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
             StructField(AWP.is_parent, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+    expected_add_purge_data_col_schema = StructType(
+        [
+            *add_purge_data_col_schema,
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+        ]
+    )
+
+    add_workplace_last_active_date_col_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+            StructField(AWPClean.last_logged_in_date, DateType(), True),
+        ]
+    )
+    expected_add_workplace_last_active_date_col_schema = StructType(
+        [
+            *add_workplace_last_active_date_col_schema,
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+        ]
+    )
+
+    date_col_for_purging_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+    expected_date_col_for_purging_schema = StructType(
+        [
+            *date_col_for_purging_schema,
+            StructField(AWPClean.purge_date, DateType(), True),
+        ]
+    )
+
+    workplace_last_active_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField("last_active", DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
@@ -694,9 +749,16 @@ class CleaningUtilsSchemas:
 
 @dataclass
 class CQCProviderSchema:
+    rows_without_cqc_sector_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
+        ]
+    )
     expected_rows_with_cqc_sector_schema = StructType(
         [
             StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )
@@ -984,6 +1046,20 @@ class ReconciliationSchema:
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
             StructField(CQCLClean.deregistration_date, DateType(), True),
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
             StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
         ]
     )

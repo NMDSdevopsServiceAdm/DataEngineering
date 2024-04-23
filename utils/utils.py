@@ -50,17 +50,6 @@ def get_s3_objects_list(bucket_source, prefix, s3_resource=None):
     return object_keys
 
 
-def get_s3_sub_folders_for_path(path, s3_client=None):
-    if s3_client is None:
-        s3_client = boto3.client("s3")
-    bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-=_/]*)$", path).groups()
-    response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
-    return [
-        common_prefix["Prefix"].replace(prefix, "").replace("/", "")
-        for common_prefix in response["CommonPrefixes"]
-    ]
-
-
 def get_model_name(path_to_model):
     _, prefix = split_s3_uri(path_to_model)
     return prefix.split("/")[1]
@@ -196,12 +185,6 @@ def construct_destination_path(destination, key):
     return construct_s3_uri(destination_bucket, dir_path)
 
 
-def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(
-        fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
-    )
-
-
 def create_unix_timestamp_variable_from_date_column(
     df: DataFrame, date_col: str, date_format: str, new_col_name: str
 ) -> DataFrame:
@@ -213,40 +196,6 @@ def create_unix_timestamp_variable_from_date_column(
 def convert_days_to_unix_time(days: int):
     NUMBER_OF_SECONDS_IN_ONE_DAY = 86400
     return days * NUMBER_OF_SECONDS_IN_ONE_DAY
-
-
-def get_max_snapshot_date(locations_df):
-    return locations_df.select(F.max("snapshot_date").alias("max")).first().max
-
-
-def get_max_snapshot_partitions(location=None):
-    if not location:
-        return None
-
-    spark = get_spark()
-
-    try:
-        previous_snpashots = spark.read.option("basePath", location).parquet(location)
-    except AnalysisException:
-        return None
-
-    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
-    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
-    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
-
-    return (f"{max_year}", f"{max_month:0>2}", f"{max_day:0>2}")
-
-
-def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")):
-    max_year = df.select(F.max(df[partition_keys[0]])).first()[0]
-    df = df.where(df[partition_keys[0]] == max_year)
-    max_month = df.select(F.max(df[partition_keys[1]])).first()[0]
-    df = df.where(df[partition_keys[1]] == max_month)
-    max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
-    df = df.where(df[partition_keys[2]] == max_day)
-    return df
 
 
 def collect_arguments(*args):

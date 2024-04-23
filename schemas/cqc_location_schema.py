@@ -14,7 +14,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as NewColNames,
 )
 
-LOCATION_SCHEMA_NEW = StructType(
+LOCATION_SCHEMA = StructType(
     [
         StructField(NewColNames.location_id, StringType(), True),
         StructField(NewColNames.provider_id, StringType(), True),
