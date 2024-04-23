@@ -1454,6 +1454,11 @@ class UtilsData:
         ("3", date(2023, 1, 1), "20240101"),
     ]
 
+    select_rows_with_value_rows = [
+        ("id_1", "keep"),
+        ("id_2", "remove"),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
@@ -1923,6 +1928,83 @@ class ReconciliationData:
         ("2", "Yes", "Workplace has ownership", ReconValues.parents),
         ("3", "No", "Workplace has ownership", ReconValues.singles_and_subs),
         ("4", "No", "Parent has ownership", ReconValues.parents),
+    ]
+
+    add_singles_and_subs_description_rows = [
+        ("loc_1", date(2024, 3, 28)),
+        ("loc_2", None),
+    ]
+
+    expected_singles_and_subs_description_rows = [
+        ("loc_1", date(2024, 3, 28), ReconValues.single_sub_deregistered_description),
+        ("loc_2", None, ReconValues.single_sub_reg_type_description),
+    ]
+
+    create_missing_columns_rows = [
+        ("id_1", "care_home", "region", "Care Home Name"),
+    ]
+
+    expected_create_missing_columns_rows = [
+        (
+            "id_1",
+            "care_home",
+            "region",
+            "Care Home Name",
+            "id_1",
+            "id_1",
+            "id_1 Care Home Name",
+            "id_1 Care Home Name",
+            "Open",
+            "_",
+            "No",
+            "Internal",
+            "Priority 5",
+            "Workplace",
+            "Reports",
+            "Yes",
+            "N/A",
+            "ASC-WDS",
+            "CQC work",
+            0,
+        ),
+    ]
+    # fmt: off
+    final_column_selection_rows = [
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "",
+        ),
+    ]
+
+    expected_final_column_selection_rows = [
+        (
+             "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+    ]
+    # fmt: on
+    add_subject_column_rows = [
+        ("loc_1",),
+    ]
+
+    expected_add_subject_column_rows = [
+        ("loc_1", "test_subject"),
     ]
 
 

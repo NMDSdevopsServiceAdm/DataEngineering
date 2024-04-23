@@ -17,6 +17,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values impor
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationColumns as ReconColumn,
+)
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -287,3 +290,198 @@ class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
     ):
         self.assertFalse("loc_23" in self.returned_locations)
         self.assertFalse("loc_24" in self.returned_locations)
+
+
+class CreateReconciliationOutputForSingleAndSubAccountsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_singles_and_subs_df = self.spark.createDataFrame(
+            Data.singles_and_subs_rows,
+            Schemas.singles_and_subs_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_singles_and_subs_rows,
+            Schemas.expected_singles_and_subs_schema,
+        )
+        self.returned_df = job.add_singles_and_sub_description_column(
+            self.test_singles_and_subs_df,
+        )
+
+    @unittest.skip("to do")
+    def test(self):
+        pass
+
+
+class AddSinglesAndSubDescriptionColumnTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_add_singles_and_subs_description_df = self.spark.createDataFrame(
+            Data.add_singles_and_subs_description_rows,
+            Schemas.add_singles_and_subs_description_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_singles_and_subs_description_rows,
+            Schemas.expected_singles_and_subs_description_schema,
+        )
+        self.returned_df = job.add_singles_and_sub_description_column(
+            self.test_add_singles_and_subs_description_df,
+        )
+
+    def test_add_singles_and_subs_description_column_adds_a_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = (
+            len(self.test_add_singles_and_subs_description_df.columns) + 1
+        )
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_add_singles_and_subs_description_column_adds_a_column_with_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(CQCL.location_id).collect()
+        expected_data = self.expected_df.sort(CQCL.location_id).collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class CreateMissingColumnsRequiredForOutputTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_create_missing_columns_df = self.spark.createDataFrame(
+            Data.create_missing_columns_rows,
+            Schemas.create_missing_columns_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_missing_columns_rows,
+            Schemas.expected_create_missing_columns_schema,
+        )
+        self.returned_df = job.create_missing_columns_required_for_output(
+            self.test_create_missing_columns_df,
+        )
+        self.returned_df.show()
+        self.returned_df.printSchema()
+
+    def test_create_missing_columns_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_create_missing_columns_returns_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_create_missing_columns_returns_expected_values_in_new_columns(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(
+            returned_data[0][ReconColumn.nmds], expected_data[0][ReconColumn.nmds]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.workplace_id],
+            expected_data[0][ReconColumn.workplace_id],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.requester_name],
+            expected_data[0][ReconColumn.requester_name],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.requester_name_2],
+            expected_data[0][ReconColumn.requester_name_2],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.status], expected_data[0][ReconColumn.status]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.technician],
+            expected_data[0][ReconColumn.technician],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.manual_call_log],
+            expected_data[0][ReconColumn.manual_call_log],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.mode], expected_data[0][ReconColumn.mode]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.priority],
+            expected_data[0][ReconColumn.priority],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.category],
+            expected_data[0][ReconColumn.category],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.sub_category],
+            expected_data[0][ReconColumn.sub_category],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.is_requester_named],
+            expected_data[0][ReconColumn.is_requester_named],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.security_question],
+            expected_data[0][ReconColumn.security_question],
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.website], expected_data[0][ReconColumn.website]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.item], expected_data[0][ReconColumn.item]
+        )
+        self.assertEqual(
+            returned_data[0][ReconColumn.phone], expected_data[0][ReconColumn.phone]
+        )
+
+
+class FinalColumnSelectionTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_final_column_selection_df = self.spark.createDataFrame(
+            Data.final_column_selection_rows,
+            Schemas.final_column_selection_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_final_column_selection_rows,
+            Schemas.expected_final_column_selection_schema,
+        )
+        self.returned_df = job.final_column_selection(
+            self.test_final_column_selection_df,
+        )
+
+    def test_final_column_selection_contains_correct_columns(self):
+        print(self.returned_df.columns)
+        print(self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_final_column_selection_sorts_data_correctly(self):
+        returned_data = self.returned_df.select(
+            ReconColumn.nmds, ReconColumn.description
+        ).collect()
+        expected_data = self.expected_df.select(
+            ReconColumn.nmds, ReconColumn.description
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_final_column_selection_returns_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+
+class AddSubjectColumnTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.add_subject_column_rows,
+            Schemas.add_subject_column_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_subject_column_rows,
+            Schemas.expected_add_subject_column_schema,
+        )
+        self.returned_df = job.add_subject_column(self.test_df, "test_subject")
+
+    def test_add_subject_column_adds_column(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.test_df.columns) + 1
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_add_subject_column_adds_column_with_correct_value(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)

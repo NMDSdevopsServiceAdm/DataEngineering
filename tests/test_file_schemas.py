@@ -654,6 +654,13 @@ class UtilsSchema:
         ]
     )
 
+    select_rows_with_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("value_to_filter_on", StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:
@@ -1054,6 +1061,120 @@ class ReconciliationSchema:
         [
             *parents_or_singles_and_subs_schema,
             StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    add_singles_and_subs_description_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+        ]
+    )
+
+    expected_singles_and_subs_description_schema = StructType(
+        [
+            *add_singles_and_subs_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
+
+    create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+        ]
+    )
+
+    expected_create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+        ]
+    )
+
+    final_column_selection_schema = StructType(
+        [
+            StructField("extra_column", StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+        ]
+    )
+
+    expected_final_column_selection_schema = StructType(
+        [
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+        ]
+    )
+
+    add_subject_column_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+        ]
+    )
+
+    expected_add_subject_column_schema = StructType(
+        [
+            *add_subject_column_schema,
+            StructField(ReconColumn.subject, StringType(), True),
         ]
     )
 

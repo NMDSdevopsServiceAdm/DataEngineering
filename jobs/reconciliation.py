@@ -231,17 +231,23 @@ def filter_to_locations_relevant_to_reconcilition_process(
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
-    singles_and_subs_df = reconciliation_df.where(
-        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.singles_and_subs
+    singles_and_subs_df = utils.select_rows_with_value(
+        reconciliation_df,
+        ReconColumn.parents_or_singles_and_subs,
+        ReconValues.singles_and_subs,
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
-    singles_and_subs_df = singles_and_subs_df.withColumn(
-        ReconColumn.subject, F.lit(ReconValues.single_sub_subject_value)
+    singles_and_subs_df = add_subject_column(
+        singles_and_subs_df, ReconValues.single_sub_subject_value
     )
     singles_and_subs_df = create_missing_columns_required_for_output(
         singles_and_subs_df
     )
     return final_column_selection(singles_and_subs_df)
+
+
+def add_subject_column(df: DataFrame, subject_value: str):
+    return df.withColumn(ReconColumn.subject, F.lit(subject_value))
 
 
 def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
@@ -260,8 +266,8 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
     first_of_previous_month: str,
 ) -> DataFrame:
-    reconciliation_parents_df = reconciliation_df.where(
-        F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents
+    reconciliation_parents_df = utils.select_rows_with_value(
+        reconciliation_df, ReconColumn.parents_or_singles_and_subs, ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
@@ -292,9 +298,10 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
         F.length(ReconColumn.description) > 1
     )
 
-    ascwds_parent_accounts_df = ascwds_parent_accounts_df.withColumn(
-        ReconColumn.subject, F.lit(ReconValues.parent_subject_value)
+    ascwds_parent_accounts_df = add_subject_column(
+        ascwds_parent_accounts_df, ReconValues.parent_subject_value
     )
+
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
         ascwds_parent_accounts_df
     )

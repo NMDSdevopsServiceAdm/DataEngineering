@@ -273,3 +273,8 @@ def filter_df_to_maximum_value_in_column(
     max_value = df.agg(F.max(column_to_filter_on)).collect()[0][0]
 
     return df.filter(F.col(column_to_filter_on) == max_value)
+
+
+def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> DataFrame:
+    df = df.where(df[column] == value_to_keep)
+    return df
