@@ -102,14 +102,14 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
   name        = "Bulk-Download-CQC-API-Pipeline-schedule"
   group_name  = "default"
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = terraform.workspace == "schedule-cqc-api-calls" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(30 01 01,08,15,23,24 * ? *)" # 24th added for a test run in main tonight - remove this and cron in glue jobs once successful
+  schedule_expression = "cron(10 15 01,08,15,23,24 * ? *)" # 24th added for a test run in main tonight - remove this and cron in glue jobs once successful
 
   target {
     arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
