@@ -1,5 +1,4 @@
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.feature import Bucketizer
 from dataclasses import dataclass
 
@@ -257,19 +256,21 @@ def create_filled_posts_clean_col_in_filtered_df(
 def join_filtered_col_into_care_home_df(
     df: DataFrame, df_with_filtered_column: DataFrame
 ) -> DataFrame:
-    return df.join(
+    df = df.join(
         df_with_filtered_column,
         [IndCQC.location_id, IndCQC.cqc_location_import_date],
         "left",
     )
+    return df
 
 
 def add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
     df: DataFrame,
 ) -> DataFrame:
-    return df.withColumn(
+    df = df.withColumn(
         IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
     )
+    return df
 
 
 def combine_dataframes(first_df: DataFrame, second_df: DataFrame) -> DataFrame:

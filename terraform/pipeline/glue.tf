@@ -164,25 +164,6 @@ module "clean_ons_data_job" {
   }
 }
 
-module "prepare_locations_job" {
-  source            = "../modules/glue-job"
-  script_name       = "prepare_locations.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  worker_type       = "G.2X"
-  number_of_workers = 6
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
-  job_parameters = {
-    "--workplace_source"    = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
-    "--cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
-    "--pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
-    "--ons_source"          = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
-    "--destination"         = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=locations_prepared/version=1.0.0/"
-  }
-}
-
 
 module "prepare_non_res_ind_cqc_features_job" {
   source          = "../modules/glue-job"
@@ -207,38 +188,6 @@ module "clean_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
     "--cleaned_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-  }
-}
-
-module "bulk_cqc_providers_download_job_old" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_providers_old.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
-
-  job_parameters = {
-    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
-  }
-}
-
-module "bulk_cqc_locations_download_job_old" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_locations_old.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
-
-  job_parameters = {
-    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
   }
 }
 
@@ -371,11 +320,13 @@ module "clean_cqc_provider_data_job" {
 }
 
 module "clean_cqc_location_data_job" {
-  source          = "../modules/glue-job"
-  script_name     = "clean_cqc_location_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "clean_cqc_location_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  worker_type       = "G.2X"
+  number_of_workers = 5
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"

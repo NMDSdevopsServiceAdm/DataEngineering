@@ -574,10 +574,16 @@ class CQCProviderData:
         "1-10000000005",
     ]
 
+    rows_without_cqc_sector = [
+        ("1-10000000001", "data"),
+        ("1-10000000002", None),
+        ("1-10000000003", "data"),
+    ]
+
     expected_rows_with_cqc_sector = [
-        ("1-10000000001", CQCPValues.independent),
-        ("1-10000000002", CQCPValues.local_authority),
-        ("1-10000000003", CQCPValues.local_authority),
+        ("1-10000000001", "data", CQCPValues.independent),
+        ("1-10000000002", None, CQCPValues.local_authority),
+        ("1-10000000003", "data", CQCPValues.local_authority),
     ]
 
 
