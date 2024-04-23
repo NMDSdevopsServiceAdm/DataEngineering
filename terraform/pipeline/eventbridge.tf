@@ -27,7 +27,7 @@ resource "aws_iam_policy" "start_state_machines" {
       {
         Effect   = "Allow"
         Action   = ["states:StartExecution"]
-        Resource = [aws_sfn_state_machine.ingest_ascwds_state_machine.arn]
+        Resource = [aws_sfn_state_machine.ingest_ascwds_state_machine.arn, aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
       }
     ]
   })
