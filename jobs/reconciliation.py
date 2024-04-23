@@ -23,7 +23,7 @@ from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
 from utils.value_labels.reconciliation.label_dictionary import (
-    labels_dict,
+    labels_dict as reconciliation_labels_dict,
 )
 
 cqc_locations_columns_to_import = [
@@ -126,8 +126,8 @@ def prepare_latest_cleaned_ascwds_workforce_data(
     )
     df = cUtils.apply_categorical_labels(
         df,
-        labels_dict,
-        labels_dict.keys(),
+        reconciliation_labels_dict,
+        reconciliation_labels_dict.keys(),
         add_as_new_column=False,
     )
     df = add_parents_or_singles_and_subs_col_to_df(df)
