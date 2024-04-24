@@ -3,7 +3,7 @@ from pyspark.sql import DataFrame
 from utils import utils
 
 
-def main(sourcepostcode_directory_source, pa_filled_posts_source, destination): ...
+def main(postcode_directory_source, pa_filled_posts_source, destination): ...
 
 
 if __name__ == "__main__":
