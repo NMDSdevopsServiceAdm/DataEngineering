@@ -306,6 +306,20 @@ module "estimate_direct_payments_job" {
   }
 }
 
+module "split_pa_filled_posts_into_icb_areas" {
+  source          = "../modules/glue-job"
+  script_name     = "split_pa_filled_posts_into_icb_areas.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+  job_parameters = {
+    "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+    "--pa_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
+    "--destination" = ""
+  }
+}
+
 module "clean_cqc_provider_data_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_cqc_provider_data.py"
