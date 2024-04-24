@@ -2,9 +2,15 @@ from pyspark.sql import DataFrame
 
 from utils import utils
 
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
+
 
 def main(postcode_directory_source, pa_filled_posts_source, destination):
     # todo 1 - create a dataframe from the cleaned ons postcode directory.
+
+    postcode_directory_df = create_postcode_directory_df(postcode_directory_source)
 
     # todo 2 - for each LA in the postcode directory, make a list of the ICB areas it grouped up into.
 
@@ -20,6 +26,21 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
 
     # todo 8 - remove the original pa filled post by LA column.
     ...
+
+
+def create_postcode_directory_df(postcode_directory_source):
+    spark = utils.get_spark()
+
+    postcode_directory_df: DataFrame = spark.read.parquet(
+        postcode_directory_source
+    ).select(
+        ONSClean.contemporary_ons_import_date,
+        ONSClean.postcode,
+        ONSClean.contemporary_cssr,
+        ONSClean.contemporary_icb,
+    )
+
+    return postcode_directory_df
 
 
 if __name__ == "__main__":
