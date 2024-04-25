@@ -315,8 +315,8 @@ module "split_pa_filled_posts_into_icb_areas" {
   glue_version    = "3.0"
   job_parameters = {
     "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-    "--pa_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
-    "--destination" = ""
+    "--pa_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
+    "--destination"               = ""
   }
 }
 
