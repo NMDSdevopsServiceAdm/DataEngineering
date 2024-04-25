@@ -81,7 +81,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 }
 ####################
 resource "aws_iam_role" "scheduler" {
-  name = "${local.workspace_prefix}-scheduler_execution_role"
+  name = "${local.workspace_prefix}-scheduler"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -102,7 +102,7 @@ resource "aws_iam_role_policy_attachment" "scheduler" {
 }
 
 resource "aws_iam_policy" "scheduler" {
-  name = "${local.workspace_prefix}-scheduler_execution_role"
+  name = "${local.workspace_prefix}-scheduler"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
