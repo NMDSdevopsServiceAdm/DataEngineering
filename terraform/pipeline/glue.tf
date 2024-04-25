@@ -306,6 +306,19 @@ module "estimate_direct_payments_job" {
   }
 }
 
+module "flatten_cqc_ratings_job" {
+  source          = "../modules/glue-job"
+  script_name     = "flatten_cqc_ratings.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
+    "--cqc_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
+  }
+}
+
 module "clean_cqc_provider_data_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_cqc_provider_data.py"
