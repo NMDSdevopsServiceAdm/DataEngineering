@@ -22,7 +22,6 @@ cqc_location_columns = [
     CQCL.type,
 ]
 
-
 ascwds_workplace_columns =[
     Keys.import_date,
     AWP.establishment_id,
@@ -35,8 +34,8 @@ def main(
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source)
-    ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
+    ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source, ascwds_workplace_columns)
 
 
 
