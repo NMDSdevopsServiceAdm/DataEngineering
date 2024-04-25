@@ -2,17 +2,15 @@ import sys
 
 from utils import utils
 
+
 def main(cqc_location_source: str, cqc_ratings_destination: str):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
-
-
 
     utils.write_to_parquet(
         cqc_location_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
-
 
 
 if __name__ == "__main__":

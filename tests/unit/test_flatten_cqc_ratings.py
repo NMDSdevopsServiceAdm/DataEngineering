@@ -10,11 +10,10 @@ from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schema
 
 
-
 class CleanCQCProviderDatasetTests(unittest.TestCase):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
-    
+
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_cqc_locations_df = self.spark.createDataFrame(
@@ -36,7 +35,6 @@ class MainTests(CleanCQCProviderDatasetTests):
             self.TEST_DESTINATION,
             mode="overwrite",
         )
-
 
 
 if __name__ == "__main__":
