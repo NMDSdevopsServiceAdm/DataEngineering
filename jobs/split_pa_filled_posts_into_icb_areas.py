@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 
 
 def main(postcode_directory_source):
-    # todo 1 - create a dataframe from the cleaned ons postcode directory.
+    # TODO: 1 - create a dataframe from the cleaned ons postcode directory.
 
     postcode_directory_df = utils.read_from_parquet(
         postcode_directory_source,
@@ -20,20 +20,20 @@ def main(postcode_directory_source):
         ],
     )
 
-    # todo 2 - for each LA in the postcode directory, make a list of the ICB areas it grouped up into.
+    # TODO 2 - Create column with count of postcodes by LA.
 
-    # todo 3 - count the number of rows (postcodes) for each LA area, count the number of rows (postcodes) for each hybrid_area.
+    # TODO 3 - Create column with count of postcodes by hybrid area.
 
-    # todo 4 - get the percentage value for hybrid_area_count out of LA_area_count.
+    # TODO 4 - Create column with ratio.
 
-    # todo 5 - remove duplicates of LA area and ICB area.
+    # TODO 5 - Drop duplicates.
 
-    # todo 6 - join pa filled posts on la area name.
+    # TODO 6 - Join pa filled posts.
 
-    # todo 7 - create new column which is pa filled posts multiplied by percentage value.
+    # TODO 7 - Apply ratio to calculate ICB filled posts.
 
-    # todo 8 - remove the original pa filled post by LA column.
-    ...
+
+
 
 
 if __name__ == "__main__":
