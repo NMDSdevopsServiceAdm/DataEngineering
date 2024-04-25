@@ -7,7 +7,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 )
 
 
-def main(postcode_directory_source):
+def main(postcode_directory_source, pa_filled_posts_source, destination):
     postcode_directory_df = utils.read_from_parquet(
         postcode_directory_source,
         [
@@ -32,13 +32,23 @@ def main(postcode_directory_source):
 
 
 if __name__ == "__main__":
-    (postcode_directory_source,) = utils.collect_arguments(
+    (
+        postcode_directory_source,
+        pa_filled_posts_source,
+        destination,
+    ) = utils.collect_arguments(
         (
             "--postcode_directory_source",
             "Source s3 directory for cleaned ons postcode directory",
         ),
+        (
+            "--pa_filled_posts_souce",
+            "Source s3 directory for estimated pa filled posts split by LA area",
+        ),
+        (
+            "--destination",
+            "A destination directory for outputting pa filled posts split by ICB area",
+        ),
     )
 
-    main(
-        postcode_directory_source,
-    )
+    main(postcode_directory_source, pa_filled_posts_source, destination)
