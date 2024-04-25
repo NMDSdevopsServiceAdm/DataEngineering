@@ -47,7 +47,7 @@ def main(
     )
 
 def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
-    monthly_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date]))
+    monthly_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date])).collect()[0][0]
     print(monthly_import_date)
     cqc_location_df = cqc_location_df.where(cqc_location_df[Keys.import_date] == monthly_import_date)
     return cqc_location_df
