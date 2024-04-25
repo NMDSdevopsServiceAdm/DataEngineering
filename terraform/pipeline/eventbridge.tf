@@ -79,3 +79,56 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
     EOF
   }
 }
+####################
+resource "aws_iam_role" "scheduler" {
+  name = "${local.workspace_prefix}-scheduler_execution_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = ["scheduler.amazonaws.com"]
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "scheduler" {
+  policy_arn = aws_iam_policy.scheduler.arn
+  role       = aws_iam_role.scheduler.name
+}
+
+resource "aws_iam_policy" "scheduler" {
+  name = "${local.workspace_prefix}-scheduler_execution_role"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # allow scheduler to execute the task
+        Effect = "Allow",
+        Action = ["states:StartExecution"]
+        Resource = [aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
+      },
+    ]
+  })
+}
+
+resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
+  name        = "Bulk-Download-CQC-API-Pipeline-schedule"
+  state       = terraform.workspace == "schedule-cqc-api-calls" ? "ENABLED" : "DISABLED"
+  description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(25 08 01,08,15,23,25 * ? *)" # 24th added for a test run in main tonight - remove this and cron in glue jobs once successful
+
+  target {
+    arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
+    role_arn = aws_iam_role.scheduler.arn
+  }
+}
