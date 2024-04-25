@@ -2938,3 +2938,83 @@ class FlattenCQCRatings:
     expected_filter_to_monthly_import_date_rows = [
         ("loc_1", "20240101"),
     ]
+
+    flatten_current_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            {
+                {
+                    None, 
+                    "Excellent", 
+                    "report_date", 
+                    None, 
+                    {
+                        None, 
+                        None, 
+                        None, 
+                        None, 
+                        None, 
+                        None, 
+                        None,
+                    }, 
+                    [
+                        {
+                            "Safe", 
+                            "Good", 
+                            None, 
+                            None, 
+                            None,
+                        },
+                        {
+                            "Well-led", 
+                            "Good", 
+                            None, 
+                            None, 
+                            None,
+                        },
+                        {
+                            "Caring", 
+                            "Good", 
+                            None, 
+                            None, 
+                            None,
+                        },
+                        {
+                            "Responsive", 
+                            "Good", 
+                            None, 
+                            None, 
+                            None,
+                        },
+                        {
+                            "Effective", 
+                            "Good", 
+                            None, 
+                            None, 
+                            None,
+                        },
+                    ]
+                }, 
+                [
+                    {
+                        None, 
+                        None, 
+                        None, 
+                        None, 
+                        None, 
+                        [
+                            {
+                                None, 
+                                None,
+                            }
+                        ]
+                    }
+                ]
+            },
+        ),
+    ]
+
+    expected_flatten_current_ratings_rows = [
+        ("loc_1", "registered", "report_date", "Excellent", "Good", "Good", "Good", "Good", "Good")
+    ]

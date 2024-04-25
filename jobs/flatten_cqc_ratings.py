@@ -43,13 +43,38 @@ def main(
 
     cqc_location_df = utils.select_rows_with_value(cqc_location_df, CQCL.type, CQCLValues.social_care_identifier)
 
+    current_ratings_df = prepare_current_ratings(cqc_location_df)
+
     
+    # prepare historic ratings
+        # flatten
+        # for each category
+            # recode unknown ratings to null
+        # join categories
+        # add current/ histric column
+    
+    # join current and historic
+    # remove blanks
+    # add rating sequence column
+    # Add latest rating flag
+    # select columns for saving
+
+    
+
 
     utils.write_to_parquet(
         cqc_location_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
+
+    # select ratings for benchmarks
+    # create flag for good and outsatnding
+    # add establishment ids
+    # select rows and columns to save
+
+    # save ratings for benchmarks
+
 
 def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
     max_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date])).collect()[0][0]
@@ -58,6 +83,22 @@ def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
     monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
     cqc_location_df = cqc_location_df.where(cqc_location_df[Keys.import_date] == monthly_import_date)
     return cqc_location_df
+
+def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    ratings_df = flatten_current_ratings(cqc_location_df)
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
+    ratings_df = add_current_or_historic_column(ratings_df, "current")
+    return cqc_location_df
+
+def flatten_current_ratings(cqc_location_df:DataFrame) -> DataFrame:
+    return cqc_location_df
+
+def recode_unknown_codes_to_null(ratings_df:DataFrame) -> DataFrame:
+    return ratings_df
+
+def add_current_or_historic_column(ratings_df:DataFrame, current_or_historic:str) -> DataFrame:
+    current_or_historic = "current"
+    return ratings_df
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")

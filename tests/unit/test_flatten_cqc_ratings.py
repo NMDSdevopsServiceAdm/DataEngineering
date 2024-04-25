@@ -64,6 +64,27 @@ class FilterToMonthlyImportDate(FlattenCQCRatingsTests):
         returned_data = job.filter_to_monthly_import_date(self.test_cqc_when_not_first_of_month_df).collect()
         self.assertEqual(returned_data, self.expected_data)
 
+class FlattenCurrentRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_cqc_current_ratings_df = self.spark.createDataFrame(Data.flatten_current_ratings_rows, Schema.flatten_current_ratings_schema)
+        self.expected_df = self.spark.createDataFrame(Data.expected_flatten_current_ratings_rows, Schema.expected_flatten_current_ratings_schema)
+        self.returned_df = job.flatten_current_ratings(self.test_cqc_current_ratings_df)
+
+    def test_flatten_current_ratings_returns_correct_columns(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.expected_df.columns)
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_flatten_current_ratings_returns_correct_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_flatten_current_ratings_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
