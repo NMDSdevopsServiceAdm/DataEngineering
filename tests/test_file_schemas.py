@@ -1597,5 +1597,4 @@ class ValidateMergedIndCqcData:
 @dataclass
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema
-    test_cqc_providers_schema = CQCProviderSchema.full_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
