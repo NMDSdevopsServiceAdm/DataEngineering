@@ -14,7 +14,6 @@ import utils.direct_payments_utils.estimate_direct_payments.split_pa_filled_post
 
 
 class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
-
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_sample_rows = self.spark.createDataFrame(
