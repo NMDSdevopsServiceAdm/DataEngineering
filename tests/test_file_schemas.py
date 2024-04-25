@@ -1592,19 +1592,3 @@ class ValidateMergedIndCqcData:
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
-
-
-@dataclass
-class CreateListFromRowsOfICBs:
-    sample_schema = StructType(
-        [
-            StructField(ONS.cssr, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-        ]
-    )
-    expected_schema = StructType(
-        [
-            StructField(ONS.cssr, StringType(), True),
-            StructField("List_of_ICB_areas_within_LA_area", StringType(), True),
-        ]
-    )

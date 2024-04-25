@@ -2920,23 +2920,3 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
     # fmt: on
-
-
-@dataclass
-class CreateListFromRowsOfICBs:
-    sample_rows = [
-        ("Buckinghamshire", "NHS Bedfordshire, Luton and Milton Keynes"),
-        ("Buckinghamshire", "NHS Buckinghamshire, Oxfordshire and Berkshire West"),
-        ("Bury", "NHS Greater Manchester"),
-    ]
-
-    expected_rows = [
-        (
-            "Buckinghamshire",
-            [
-                "NHS Bedfordshire, Luton and Milton Keynes",
-                "NHS Buckinghamshire, Oxfordshire and Berkshire West",
-            ],
-        ),
-        ("Bury", ["NHS Greater Manchester"]),
-    ]
