@@ -3,6 +3,10 @@ import warnings
 
 
 from utils import utils
+
+from tests.test_file_data import ONSData as ONSTestData
+from tests.test_file_schemas import ONSData as ONSTestSchema
+
 from tests.test_file_data import CreateListFromRowsOfICBs as TestData
 from tests.test_file_schemas import CreateListFromRowsOfICBs as TestSchema
 
@@ -26,5 +30,12 @@ class CreatePostCodeDirectoryDfTests(SplitPAFilledPostsIntoICBAreas):
         super().setUp()
 
     def test_create_postcode_directory_df(self):
-        # need to test that the dataframe only has 4 columns and those four columns are import date, postcode, cssr and icb.
-        
+        self.spark = utils.get_spark()
+        self.test_sample_ons_rows = self.spark.createDataFrame(
+            ONSTestData.ons_sample_rows_full, schema=ONSTestSchema.full_schema
+        )
+
+        expected_df = job.create_postcode_directory_df(self.test_sample_ons_rows)
+
+        self.assertGreater(self.test_sample_ons_rows.count(), 4)
+        self.assertEqual(expected_df.count(), 4)
