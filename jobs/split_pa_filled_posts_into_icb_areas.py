@@ -7,7 +7,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 )
 
 
-def main(postcode_directory_source, pa_filled_posts_source, destination):
+def main(postcode_directory_source):
     # todo 1 - create a dataframe from the cleaned ons postcode directory.
 
     postcode_directory_df = utils.read_from_parquet(
