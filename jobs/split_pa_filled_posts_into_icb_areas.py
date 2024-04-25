@@ -8,7 +8,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 
 
 def main(postcode_directory_source):
-
     postcode_directory_df = utils.read_from_parquet(
         postcode_directory_source,
         [
@@ -30,9 +29,6 @@ def main(postcode_directory_source):
     # TODO 5 - Join pa filled posts.
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
-
-
-
 
 
 if __name__ == "__main__":
