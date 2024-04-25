@@ -2921,6 +2921,7 @@ class ValidateMergedIndCqcData:
     ]
     # fmt: on
 
+
 @dataclass
 class FlattenCQCRatings:
     test_cqc_locations_rows = CQCLocationsData.sample_rows_full

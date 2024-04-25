@@ -1593,6 +1593,7 @@ class ValidateMergedIndCqcData:
         ]
     )
 
+
 @dataclass
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema

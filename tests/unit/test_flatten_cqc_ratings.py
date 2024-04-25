@@ -42,7 +42,13 @@ class MainTests(CleanCQCProviderDatasetTests):
             self.test_cqc_providers_df,
             self.test_ascwds_df,
         ]
-        job.main(self.TEST_LOCATIONS_SOURCE, self.TEST_PROVIDERS_SOURCE, self.TEST_WORKPLACE_SOURCE, self.TEST_CQC_RATINGS_DESTINATION, self.TEST_BENCHMARK_RATINGS_DESTINATION)
+        job.main(
+            self.TEST_LOCATIONS_SOURCE,
+            self.TEST_PROVIDERS_SOURCE,
+            self.TEST_WORKPLACE_SOURCE,
+            self.TEST_CQC_RATINGS_DESTINATION,
+            self.TEST_BENCHMARK_RATINGS_DESTINATION,
+        )
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_CQC_RATINGS_DESTINATION,
