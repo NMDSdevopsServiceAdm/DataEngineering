@@ -10,7 +10,7 @@ from tests.test_file_schemas import ONSData as ONSTestSchema
 from tests.test_file_data import CreateListFromRowsOfICBs as TestData
 from tests.test_file_schemas import CreateListFromRowsOfICBs as TestSchema
 
-import utils.direct_payments_utils.estimate_direct_payments.split_pa_filled_posts_into_icb_areas as job
+import jobs.split_pa_filled_posts_into_icb_areas as job
 
 
 class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
