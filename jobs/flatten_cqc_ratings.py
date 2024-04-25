@@ -11,8 +11,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys as Keys,
 )
 
-cqc_ratings_date = "20240401" # TODO: Create function to calculate this
-ascwds_ratings_date = "20240401" # TODO: Create function to calculate this
 
 cqc_location_columns = [
     CQCL.location_id,
@@ -47,8 +45,10 @@ def main(
     )
 
 def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
-    monthly_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date])).collect()[0][0]
-    print(monthly_import_date)
+    max_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date])).collect()[0][0]
+    first_day_of_the_month = "01"
+    month_and_year_of_import_date = max_import_date[0:6]
+    monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
     cqc_location_df = cqc_location_df.where(cqc_location_df[Keys.import_date] == monthly_import_date)
     return cqc_location_df
 
