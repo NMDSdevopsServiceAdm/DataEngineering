@@ -2925,5 +2925,4 @@ class ValidateMergedIndCqcData:
 @dataclass
 class FlattenCQCRatings:
     test_cqc_locations_rows = CQCLocationsData.sample_rows_full
-    test_cqc_providers_rows = CQCProviderData.sample_rows_full
     test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
