@@ -2,17 +2,43 @@ import sys
 
 from utils import utils
 
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+    PartitionKeys as Keys,
+)
+
+cqc_ratings_date = "20240401" # TODO: Create function to calculate this
+ascwds_ratings_date = "20240401" # TODO: Create function to calculate this
+
+cqc_location_columns = [
+    CQCL.location_id,
+    Keys.import_date,
+    CQCL.current_ratings,
+    CQCL.historic_ratings,
+    CQCL.registration_status,
+    CQCL.type,
+]
+
+
+ascwds_workplace_columns =[
+    Keys.import_date,
+    AWP.establishment_id,
+    AWP.location_id,
+]
 
 def main(
     cqc_location_source: str,
-    cqc_provider_source: str,
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source)
-    cqc_provider_df = utils.read_from_parquet(cqc_provider_source)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+
+
 
     utils.write_to_parquet(
         cqc_location_df,
@@ -27,7 +53,6 @@ if __name__ == "__main__":
 
     (
         cqc_location_source,
-        cqc_provider_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
@@ -35,10 +60,6 @@ if __name__ == "__main__":
         (
             "--cqc_location_source",
             "Source s3 directory for parquet CQC locations dataset",
-        ),
-        (
-            "--cqc_provider_source",
-            "Source s3 directory for parquet CQC providers dataset",
         ),
         (
             "--ascwds_workplace_source",
@@ -55,7 +76,6 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_source,
-        cqc_provider_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
