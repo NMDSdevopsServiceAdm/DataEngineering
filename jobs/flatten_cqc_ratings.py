@@ -6,6 +6,9 @@ from utils import utils
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
     PartitionKeys as Keys,
@@ -37,6 +40,10 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source, ascwds_workplace_columns)
 
     cqc_location_df = filter_to_monthly_import_date(cqc_location_df)
+
+    cqc_location_df = utils.select_rows_with_value(cqc_location_df, CQCL.type, CQCLValues.social_care_identifier)
+
+    
 
     utils.write_to_parquet(
         cqc_location_df,
