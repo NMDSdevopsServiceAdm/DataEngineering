@@ -118,14 +118,14 @@ resource "aws_iam_policy" "scheduler" {
 
 resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
   name        = "Bulk-Download-CQC-API-Pipeline-schedule"
-  state       = terraform.workspace == "schedule-cqc-api-calls" ? "ENABLED" : "DISABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(00,10,20,30,40,50 11,12,13,14,15,16 25 * ? *)" # 24th added for a test run in main tonight - remove this and cron in glue jobs once successful
+  schedule_expression = "cron(30 01 01,08,15,23 * ? *)"
 
   target {
     arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn

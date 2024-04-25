@@ -197,8 +197,6 @@ module "bulk_cqc_providers_download_job" {
   glue_role        = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket  = module.pipeline_resources
   datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
   glue_version     = "3.0"
 
   job_parameters = {
@@ -213,8 +211,6 @@ module "bulk_cqc_locations_download_job" {
   glue_role        = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket  = module.pipeline_resources
   datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
   glue_version     = "3.0"
 
   job_parameters = {
