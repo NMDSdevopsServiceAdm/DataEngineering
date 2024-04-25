@@ -8,7 +8,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 
 
 def main(postcode_directory_source):
-    # TODO: 1 - create a dataframe from the cleaned ons postcode directory.
 
     postcode_directory_df = utils.read_from_parquet(
         postcode_directory_source,
@@ -20,17 +19,17 @@ def main(postcode_directory_source):
         ],
     )
 
-    # TODO 2 - Create column with count of postcodes by LA.
+    # TODO 1 - Create column with count of postcodes by LA.
 
-    # TODO 3 - Create column with count of postcodes by hybrid area.
+    # TODO 2 - Create column with count of postcodes by hybrid area.
 
-    # TODO 4 - Create column with ratio.
+    # TODO 3 - Create column with ratio.
 
-    # TODO 5 - Drop duplicates.
+    # TODO 4 - Drop duplicates.
 
-    # TODO 6 - Join pa filled posts.
+    # TODO 5 - Join pa filled posts.
 
-    # TODO 7 - Apply ratio to calculate ICB filled posts.
+    # TODO 6 - Apply ratio to calculate ICB filled posts.
 
 
 
