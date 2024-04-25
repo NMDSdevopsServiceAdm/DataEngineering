@@ -79,7 +79,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
     EOF
   }
 }
-####################
+
 resource "aws_iam_role" "scheduler" {
   name = "${local.workspace_prefix}-scheduler"
   assume_role_policy = jsonencode({
@@ -107,7 +107,6 @@ resource "aws_iam_policy" "scheduler" {
     Version = "2012-10-17"
     Statement = [
       {
-        # allow scheduler to execute the task
         Effect   = "Allow",
         Action   = ["states:StartExecution"]
         Resource = [aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
