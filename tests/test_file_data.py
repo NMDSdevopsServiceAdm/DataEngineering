@@ -2926,3 +2926,15 @@ class ValidateMergedIndCqcData:
 class FlattenCQCRatings:
     test_cqc_locations_rows = CQCLocationsData.sample_rows_full
     test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
+    filter_to_monthly_import_date_rows = [
+        ("loc_1", "20240101"),
+        ("loc_2", "20231201"),
+    ]
+    filter_to_monthly_import_date_when_not_first_of_month_rows = [
+        ("loc_1", "20240101"),
+        ("loc_2", "20231201"),
+        ("loc_3", "20240104"),
+    ]
+    expected_filter_to_monthly_import_date_rows = [
+        ("loc_1", "20240101"),
+    ]

@@ -1598,3 +1598,9 @@ class ValidateMergedIndCqcData:
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
+    filter_to_monthly_import_date_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), False),
+        ]
+    )

@@ -1,4 +1,5 @@
 import sys
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 
@@ -37,7 +38,7 @@ def main(
     cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source, ascwds_workplace_columns)
 
-
+    cqc_location_df = filter_to_monthly_import_date(cqc_location_df)
 
     utils.write_to_parquet(
         cqc_location_df,
@@ -45,6 +46,11 @@ def main(
         mode="overwrite",
     )
 
+def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
+    monthly_import_date = cqc_location_df.agg(F.max(cqc_location_df[Keys.import_date]))
+    print(monthly_import_date)
+    cqc_location_df = cqc_location_df.where(cqc_location_df[Keys.import_date] == monthly_import_date)
+    return cqc_location_df
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")
