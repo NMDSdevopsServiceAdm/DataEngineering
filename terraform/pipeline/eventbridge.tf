@@ -108,8 +108,8 @@ resource "aws_iam_policy" "scheduler" {
     Statement = [
       {
         # allow scheduler to execute the task
-        Effect = "Allow",
-        Action = ["states:StartExecution"]
+        Effect   = "Allow",
+        Action   = ["states:StartExecution"]
         Resource = [aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
       },
     ]
