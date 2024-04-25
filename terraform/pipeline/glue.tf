@@ -314,7 +314,7 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
+    "--cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
     "--cqc_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
   }
 }
