@@ -1592,3 +1592,16 @@ class ValidateMergedIndCqcData:
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
+
+
+@dataclass
+class PAFilledPostsSampleData:
+    pa_filled_post_sample_schema = StructType(
+        [
+            StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )

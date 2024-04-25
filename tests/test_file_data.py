@@ -2920,3 +2920,11 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
     # fmt: on
+
+
+@dataclass
+class PAFilledPostsSampleData:
+    pa_filled_post_sample_rows = [
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+    ]

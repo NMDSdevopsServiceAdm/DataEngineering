@@ -42,7 +42,12 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
 
-    utils.write_to_parquet(pa_filled_posts_df, destination)
+    utils.write_to_parquet(
+        pa_filled_posts_df,
+        destination,
+        mode="overwrite",
+        partitionKeys=[DPColNames.YEAR],
+    )
 
 
 if __name__ == "__main__":
