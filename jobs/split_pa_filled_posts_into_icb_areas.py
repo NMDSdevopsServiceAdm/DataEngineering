@@ -5,6 +5,9 @@ from utils import utils
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DPColNames,
+)
 
 
 def main(postcode_directory_source, pa_filled_posts_source, destination):
@@ -15,6 +18,15 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
             ONSClean.postcode,
             ONSClean.contemporary_cssr,
             ONSClean.contemporary_icb,
+        ],
+    )
+
+    pa_filled_posts_df = utils.read_from_parquet(
+        pa_filled_posts_source,
+        [
+            DPColNames.LA_AREA,
+            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+            DPColNames.YEAR,
         ],
     )
 
@@ -29,6 +41,8 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     # TODO 5 - Join pa filled posts.
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
+
+    utils.write_to_parquet(pa_filled_posts_df, destination)
 
 
 if __name__ == "__main__":
