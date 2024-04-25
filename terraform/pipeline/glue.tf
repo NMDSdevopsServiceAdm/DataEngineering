@@ -314,8 +314,11 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
-    "--cqc_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
+    "--cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
+    "--cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
+    "--ascwds_workplace_source"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
+    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=benchmark_ratings/"
   }
 }
 
