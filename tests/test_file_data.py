@@ -2920,3 +2920,9 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
     # fmt: on
+
+
+@dataclass
+class FlattenCQCRatings:
+    test_cqc_locations_rows = CQCLocationsData.sample_rows_full
+    test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows

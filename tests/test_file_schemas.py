@@ -1592,3 +1592,9 @@ class ValidateMergedIndCqcData:
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
+
+
+@dataclass
+class FlattenCQCRatings:
+    test_cqc_locations_schema = CQCLocationsSchema.full_schema
+    test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
