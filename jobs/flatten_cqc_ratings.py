@@ -74,7 +74,7 @@ def main(
     # select columns for saving
 
     utils.write_to_parquet(
-        cqc_location_df,
+        current_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
