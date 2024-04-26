@@ -8,6 +8,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCLNew,
+)
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
@@ -28,6 +32,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
+)
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsValues,
 )
 
 
@@ -2927,4 +2934,192 @@ class PAFilledPostsSampleData:
     pa_filled_post_sample_rows = [
         ("Leeds", 100.2, "2024"),
         ("Bradford", 200.3, "2024"),
+    ]
+
+
+@dataclass
+class FlattenCQCRatings:
+    test_cqc_locations_rows = CQCLocationsData.sample_rows_full
+    test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
+    filter_to_monthly_import_date_rows = [
+        ("loc_1", "20240101"),
+        ("loc_2", "20231201"),
+    ]
+    filter_to_monthly_import_date_when_not_first_of_month_rows = [
+        ("loc_1", "20240101"),
+        ("loc_2", "20231201"),
+        ("loc_3", "20240104"),
+    ]
+    expected_filter_to_monthly_import_date_rows = [
+        ("loc_1", "20240101"),
+    ]
+
+    flatten_current_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            {
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
+                        {
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                    ],
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ),
+    ]
+
+    expected_flatten_current_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Overall rating Excellent",
+            "Safe rating Good",
+            "Well-led rating Good",
+            "Caring rating Good",
+            "Responsive rating Good",
+            "Effective rating Good",
+        )
+    ]
+    recode_unknown_to_null_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "registered",
+            "report_date",
+            "Inspected but not rated",
+            "No published rating",
+            "Insufficient evidence to rate",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "No published rating",
+            "",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_recode_unknown_to_null_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "registered",
+            "report_date",
+            None,
+            None,
+            None,
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "No published rating",
+            "",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    add_current_or_historic_rows = [
+        ("loc_1",),
+    ]
+    expected_add_current_rows = [
+        ("loc_1", CQCRatingsValues.current),
+    ]
+    expected_add_historic_rows = [
+        ("loc_1", CQCRatingsValues.historic),
     ]
