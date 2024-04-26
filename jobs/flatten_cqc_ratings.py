@@ -104,7 +104,7 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_current_ratings(cqc_location_df)
     ratings_df = recode_unknown_codes_to_null(ratings_df)
     ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.current)
-    return cqc_location_df
+    return ratings_df
 
 
 def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
