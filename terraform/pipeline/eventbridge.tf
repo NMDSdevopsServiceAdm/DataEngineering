@@ -116,7 +116,7 @@ resource "aws_iam_policy" "scheduler" {
 }
 
 resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
-  name        = "Bulk-Download-CQC-API-Pipeline-schedule"
+  name        = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline-schedule"
   state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
