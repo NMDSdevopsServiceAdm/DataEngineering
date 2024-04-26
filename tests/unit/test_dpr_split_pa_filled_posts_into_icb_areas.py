@@ -57,6 +57,13 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-    # test that only 1 column is added.
+    # test that the new column is in the dataframe.
+    def test_count_postcodes_per_la_adds_postcodes_per_la_column(
+        self,
+    ):
+        self.assertTrue("sum_postcodes_per_la" in self.test_sample_ons_rows.columns)
 
     # need to create some test data so I can set an expected result dataframe.
+    def test_count_postcodes_per_la_has_expected_values_in_new_column(
+        self,
+    ): ...
