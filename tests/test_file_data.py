@@ -33,6 +33,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsValues,
+)
 
 
 @dataclass
@@ -3102,3 +3105,14 @@ class FlattenCQCRatings:
             "Good",
         ),
     ]
+
+    add_current_or_historic_rows = [
+        ("loc_1",),
+    ]
+    expected_add_current_rows = [
+        ("loc_1", CQCRatingsValues.current),
+    ]
+    expected_add_historic_rows = [
+        ("loc_1", CQCRatingsValues.historic),
+    ]
+    

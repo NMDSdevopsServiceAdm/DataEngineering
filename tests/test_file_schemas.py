@@ -1769,4 +1769,16 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
         ]
     )
+
+    add_current_or_historic_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+        ]
+    )
+    expected_add_current_or_historic_schema = StructType(
+        [
+            *add_current_or_historic_schema,
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )
     

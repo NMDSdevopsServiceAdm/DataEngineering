@@ -10,3 +10,9 @@ class CQCRatingsColumns:
     caring_rating: str = "Caring_rating"
     responsive_rating: str = "Responsive_rating"
     effective_rating: str = "Effective_rating"
+    current_or_historic: str = "Current_or_historic"
+
+@dataclass
+class CQCRatingsValues:
+    current: str = "Current"
+    historic: str = "Historic"

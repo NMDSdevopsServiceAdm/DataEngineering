@@ -9,6 +9,10 @@ import jobs.flatten_cqc_ratings as job
 from tests.test_file_data import FlattenCQCRatings as Data
 from tests.test_file_schemas import FlattenCQCRatings as Schema
 
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsValues,
+)
+
 
 class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_LOCATIONS_SOURCE = "some/directory"
@@ -119,12 +123,37 @@ class RecodeUnknownToNull(FlattenCQCRatingsTests):
             Schema.expected_flatten_current_ratings_schema,
         )
         self.returned_df = job.recode_unknown_codes_to_null(self.test_current_ratings_df)
-        self.returned_df.show()
-        self.expected_df.show()
-        
+
     def test_recode_unknown_codes_to_null_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+class AddCurrentOrHistoricColumn(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.add_current_or_historic_rows, Schema.add_current_or_historic_schema
+        )
+        self.expected_current_df = self.spark.createDataFrame(
+            Data.expected_add_current_rows,
+            Schema.expected_add_current_or_historic_schema,
+        )
+        self.expected_historic_df = self.spark.createDataFrame(
+            Data.expected_add_historic_rows,
+            Schema.expected_add_current_or_historic_schema,
+        )
+        self.returned_current_df = job.add_current_or_historic_column(self.test_ratings_df, CQCRatingsValues.current)
+        self.returned_historic_df = job.add_current_or_historic_column(self.test_ratings_df, CQCRatingsValues.historic)
+
+    def test_add_current_or_historic_column_returns_correct_values_when_passed_current(self):
+        returned_data = self.returned_current_df.collect()
+        expected_data = self.expected_current_df.collect()
+        self.assertEqual(returned_data, expected_data)
+    
+    def test_add_current_or_historic_column_returns_correct_values_when_passed_historic(self):
+        returned_data = self.returned_historic_df.collect()
+        expected_data = self.expected_historic_df.collect()
         self.assertEqual(returned_data, expected_data)
 
 if __name__ == "__main__":

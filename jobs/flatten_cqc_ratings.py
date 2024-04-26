@@ -18,6 +18,7 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 )
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
+    CQCRatingsValues,
 )
 from utils.value_labels.cqc_ratings.label_dictionary import (
     labels_dict as UnknownCurrentRatings,
@@ -102,7 +103,7 @@ def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
 def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_current_ratings(cqc_location_df)
     ratings_df = recode_unknown_codes_to_null(ratings_df)
-    ratings_df = add_current_or_historic_column(ratings_df, "current")
+    ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.current)
     return cqc_location_df
 
 
@@ -143,7 +144,7 @@ def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
 def add_current_or_historic_column(
     ratings_df: DataFrame, current_or_historic: str
 ) -> DataFrame:
-    current_or_historic = "current"
+    ratings_df = ratings_df.withColumn(CQCRatings.current_or_historic, F.lit(current_or_historic))
     return ratings_df
 
 
