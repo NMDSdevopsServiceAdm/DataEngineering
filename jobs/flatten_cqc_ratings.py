@@ -1,7 +1,10 @@
 import sys
 from pyspark.sql import DataFrame, functions as F
 
-from utils import utils
+from utils import (
+    utils,
+    cleaning_utils as cUtils,
+)
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     CqcLocationApiColumns as CQCL,
@@ -15,6 +18,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 )
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
+)
+from utils.value_labels.cqc_ratings.label_dictionary import (
+    labels_dict as UnknownCurrentRatings,
 )
 
 
@@ -130,6 +136,7 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
+    ratings_df = cUtils.apply_categorical_labels(ratings_df, UnknownCurrentRatings, UnknownCurrentRatings.keys(), add_as_new_column=False)
     return ratings_df
 
 

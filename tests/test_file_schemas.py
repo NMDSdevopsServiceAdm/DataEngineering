@@ -1769,3 +1769,4 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
         ]
     )
+    
