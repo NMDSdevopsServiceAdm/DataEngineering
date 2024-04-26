@@ -51,3 +51,12 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
             mode="overwrite",
             partitionKeys=[DPColNames.YEAR],
         )
+
+
+class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+    # test that only 1 column is added.
+
+    # need to create some test data so I can set an expected result dataframe.
