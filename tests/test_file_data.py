@@ -2930,6 +2930,14 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
+class PAFilledPostsSampleData:
+    pa_filled_post_sample_rows = [
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+    ]
+
+
+@dataclass
 class FlattenCQCRatings:
     test_cqc_locations_rows = CQCLocationsData.sample_rows_full
     test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows

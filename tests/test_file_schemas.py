@@ -1599,6 +1599,19 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
+class PAFilledPostsSampleData:
+    pa_filled_post_sample_schema = StructType(
+        [
+            StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
