@@ -79,3 +79,55 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
     EOF
   }
 }
+
+resource "aws_iam_role" "scheduler" {
+  name = "${local.workspace_prefix}-scheduler"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = ["scheduler.amazonaws.com"]
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "scheduler" {
+  policy_arn = aws_iam_policy.scheduler.arn
+  role       = aws_iam_role.scheduler.name
+}
+
+resource "aws_iam_policy" "scheduler" {
+  name = "${local.workspace_prefix}-scheduler"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = ["states:StartExecution"]
+        Resource = [aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn]
+      },
+    ]
+  })
+}
+
+resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
+  name        = "${local.workspace_prefix}-CqcApiSchedule"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "cron(30 01 01,08,15,23 * ? *)"
+
+  target {
+    arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
+    role_arn = aws_iam_role.scheduler.arn
+  }
+}
