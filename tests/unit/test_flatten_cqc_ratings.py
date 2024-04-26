@@ -124,6 +124,8 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
             Schema.expected_flatten_ratings_schema,
         )
         self.returned_df = job.flatten_historic_ratings(self.test_cqc_historic_ratings_df)
+        self.returned_df.show()
+        self.expected_df.show()
 
     def test_flatten_historic_ratings_returns_correct_columns(self):
         returned_columns = len(self.returned_df.columns)
