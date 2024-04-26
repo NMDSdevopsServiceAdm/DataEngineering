@@ -3022,7 +3022,63 @@ class FlattenCQCRatings:
         ),
     ]
 
-    expected_flatten_current_ratings_rows = [
+    flatten_historic_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            [
+                {
+                    CQCL.report_date: "report_date", 
+                    CQCL.report_link_id : None, 
+                    CQCL.organisation_id : None, 
+                    CQCLNew.service_ratings : [
+                        {
+                            CQCL.name :None, 
+                            CQCL.rating: None, 
+                            CQCL.key_question_ratings:[
+                                {
+                                    CQCL.name :None, 
+                                    CQCL.rating: None, 
+                                },
+                            ],
+                        },
+                    ], 
+                    CQCL.overall : {
+                        CQCL.rating:"Overall rating Excellent", 
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating : None, 
+                            CQCLNew.combined_quality_summary : None, 
+                            CQCLNew.use_of_resources_rating : None,
+                            CQCLNew.use_of_resources_summary : None,
+                        }, 
+                        CQCL.key_question_ratings:[
+                            {
+                                CQCL.name :"Safe", 
+                                CQCL.rating:"Safe rating Good"
+                            }, 
+                            {   
+                                CQCL.name :"Well-led", 
+                                CQCL.rating:"Well-led rating Good"
+                            }, 
+                            {   CQCL.name :"Caring", 
+                                CQCL.rating:"Caring rating Good"
+                            }, 
+                            {
+                                CQCL.name :"Responsive", 
+                                CQCL.rating:"Responsive rating Good"
+                            }, 
+                            {
+                                CQCL.name :"Effective", 
+                                CQCL.rating:"Effective rating Good"
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    ]
+
+    expected_flatten_ratings_rows = [
         (
             "loc_1",
             "registered",
