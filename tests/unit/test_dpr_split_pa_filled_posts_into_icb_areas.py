@@ -66,4 +66,5 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     # need to create some test data so I can set an expected result dataframe.
     def test_count_postcodes_per_la_has_expected_values_in_new_column(
         self,
-    ): ...
+    ):
+        ...
