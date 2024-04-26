@@ -43,6 +43,7 @@ class MainTests(CleanCQCProviderDatasetTests):
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
         )
+        self.assertEqual(read_from_parquet_patch.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_CQC_RATINGS_DESTINATION,
