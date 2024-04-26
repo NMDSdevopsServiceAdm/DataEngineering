@@ -1,4 +1,9 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    Window,
+)
+
+import pyspark.sql.functions as F
 
 from utils import utils
 
@@ -20,6 +25,8 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
             ONSClean.contemporary_icb,
         ],
     )
+
+    postcode_directory_df = count_postcodes_per_la(postcode_directory_df)
 
     pa_filled_posts_df = utils.read_from_parquet(
         pa_filled_posts_source,
@@ -47,6 +54,18 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         destination,
         mode="overwrite",
         partitionKeys=[DPColNames.YEAR],
+    )
+
+
+def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
+    sum_postcodes_per_la: str = "sum_postcodes_per_la"
+
+    w = Window.partitionBy(
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr]
+    ).orderBy([ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr])
+
+    postcode_directory_df = postcode_directory_df.withColumn(
+        sum_postcodes_per_la, F.count(ONSClean.contemporary_ons_import_date).over(w)
     )
 
 
