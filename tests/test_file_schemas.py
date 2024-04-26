@@ -1774,9 +1774,7 @@ class FlattenCQCRatings:
                                 ArrayType(
                                     StructType(
                                         [
-                                            StructField(
-                                                CQCL.name, StringType(), True
-                                            ),
+                                            StructField(CQCL.name, StringType(), True),
                                             StructField(
                                                 CQCL.rating, StringType(), True
                                             ),
@@ -1869,8 +1867,8 @@ class FlattenCQCRatings:
                     ),
                     True,
                 ),
-            True,
-        ),
+                True,
+            ),
         ]
     )
     expected_flatten_ratings_schema = StructType(

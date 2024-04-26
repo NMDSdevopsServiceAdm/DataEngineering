@@ -106,6 +106,7 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.current)
     return ratings_df
 
+
 def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_historic_ratings(cqc_location_df)
     # join categories
@@ -142,71 +143,66 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     )
     return current_ratings_df
 
+
 def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
-    #cqc_location_df.show()
     historic_ratings_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
         cqc_location_df[CQCL.registration_status],
-        F.explode(
-            F.arrays_zip(
-                cqc_location_df[CQCL.historic_ratings][CQCL.report_date],
-                cqc_location_df[CQCL.historic_ratings][CQCL.overall][CQCL.rating],
-                cqc_location_df[CQCL.historic_ratings][CQCL.overall][CQCL.key_question_ratings]
-            )
-        )
-    ).select(
-        CQCL.location_id, CQCL.registration_status, 'col.*'
-    ).withColumnRenamed(
-        "0",CQCRatings.date
-    ).withColumnRenamed(
-        "1",CQCRatings.overall_rating
-    ).withColumnRenamed(
-        "2",CQCL.rating
+        F.explode(cqc_location_df[CQCL.historic_ratings]).alias(CQCL.historic_ratings),
     )
-    #historic_ratings_df.show()
     historic_ratings_df = historic_ratings_df.select(
-        historic_ratings_df[CQCL.location_id], 
+        historic_ratings_df[CQCL.location_id],
+        historic_ratings_df[CQCL.registration_status],
+        historic_ratings_df[CQCL.historic_ratings][CQCL.report_date].alias(
+            CQCRatings.date
+        ),
+        historic_ratings_df[CQCL.historic_ratings][CQCL.overall][CQCL.rating].alias(
+            CQCRatings.overall_rating
+        ),
+        F.explode(
+            historic_ratings_df[CQCL.historic_ratings][CQCL.overall][
+                CQCL.key_question_ratings
+            ]
+        ).alias(CQCL.key_question_ratings),
+    )
+    historic_ratings_df = historic_ratings_df.select(
+        historic_ratings_df[CQCL.location_id],
         historic_ratings_df[CQCL.registration_status],
         historic_ratings_df[CQCRatings.date],
         historic_ratings_df[CQCRatings.overall_rating],
-        F.explode(
-            F.arrays_zip(
-                historic_ratings_df[CQCL.rating]
-            )
-        )
+        historic_ratings_df[CQCL.key_question_ratings][CQCL.name].alias(CQCL.name),
+        historic_ratings_df[CQCL.key_question_ratings][CQCL.rating].alias(CQCL.rating),
     )
-    #historic_ratings_df.show()
-    historic_ratings_df = historic_ratings_df.select(
-        historic_ratings_df[CQCL.location_id], 
-        historic_ratings_df[CQCL.registration_status],
-        historic_ratings_df[CQCRatings.date],
-        historic_ratings_df[CQCRatings.overall_rating],
-        historic_ratings_df.col[CQCL.rating][CQCL.name].alias(CQCL.name),
-        historic_ratings_df.col[CQCL.rating][CQCL.rating].alias(CQCL.rating),
-    )
-    #historic_ratings_df.show()
     ratings_columns = ["Safe", "Well-led", "Caring", "Responsive", "Effective"]
-    #print(ratings_columns)
-    cleaned_historic_ratings_df = historic_ratings_df.select(CQCL.location_id, CQCL.registration_status, CQCRatings.date, CQCRatings.overall_rating).dropDuplicates()
-    cleaned_historic_ratings_df.show()
+    cleaned_historic_ratings_df = historic_ratings_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCRatings.date,
+        CQCRatings.overall_rating,
+    ).dropDuplicates()
     for column in ratings_columns:
         column_name = column + "_rating"
-        #historic_ratings_df.show()
-        #print(column)      
-        df=historic_ratings_df.where(historic_ratings_df[CQCL.name]==column)
-        #df.show()
-        df=df.select(
-            df[CQCL.location_id], 
+        df = historic_ratings_df.where(historic_ratings_df[CQCL.name] == column)
+        df = df.select(
+            df[CQCL.location_id],
             df[CQCL.registration_status],
             df[CQCRatings.date],
             df[CQCRatings.overall_rating],
             df[CQCL.rating].alias(column_name),
         )
-        #df.show()
-        cleaned_historic_ratings_df = cleaned_historic_ratings_df.join(df, [CQCL.location_id, CQCL.registration_status, CQCRatings.date, CQCRatings.overall_rating], "outer")
-    
-    #cleaned_historic_ratings_df.show()
+        cleaned_historic_ratings_df = cleaned_historic_ratings_df.join(
+            df,
+            [
+                CQCL.location_id,
+                CQCL.registration_status,
+                CQCRatings.date,
+                CQCRatings.overall_rating,
+            ],
+            "outer",
+        )
+
     return cleaned_historic_ratings_df
+
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
     ratings_df = cUtils.apply_categorical_labels(

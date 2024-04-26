@@ -113,6 +113,7 @@ class FlattenCurrentRatings(FlattenCQCRatingsTests):
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
+
 class FlattenHistoricRatings(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -123,9 +124,9 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
             Data.expected_flatten_ratings_rows,
             Schema.expected_flatten_ratings_schema,
         )
-        self.returned_df = job.flatten_historic_ratings(self.test_cqc_historic_ratings_df)
-        self.returned_df.show()
-        self.expected_df.show()
+        self.returned_df = job.flatten_historic_ratings(
+            self.test_cqc_historic_ratings_df
+        )
 
     def test_flatten_historic_ratings_returns_correct_columns(self):
         returned_columns = len(self.returned_df.columns)
@@ -141,6 +142,7 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
 
 class RecodeUnknownToNull(FlattenCQCRatingsTests):
     def setUp(self) -> None:
