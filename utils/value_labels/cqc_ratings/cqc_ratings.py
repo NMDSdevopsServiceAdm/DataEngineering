@@ -4,6 +4,7 @@ from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
 )
 
+
 @dataclass
 class CQCRatingsValueLabelsUnknownCodes:
     """The possible values of cqc ratings which signify they are unknown"""

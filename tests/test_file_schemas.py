@@ -1781,4 +1781,3 @@ class FlattenCQCRatings:
             StructField(CQCRatings.current_or_historic, StringType(), True),
         ]
     )
-    

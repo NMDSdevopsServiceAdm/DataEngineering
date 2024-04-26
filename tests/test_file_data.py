@@ -3115,4 +3115,3 @@ class FlattenCQCRatings:
     expected_add_historic_rows = [
         ("loc_1", CQCRatingsValues.historic),
     ]
-    

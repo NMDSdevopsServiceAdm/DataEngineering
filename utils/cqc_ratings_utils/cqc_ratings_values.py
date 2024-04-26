@@ -12,6 +12,7 @@ class CQCRatingsColumns:
     effective_rating: str = "Effective_rating"
     current_or_historic: str = "Current_or_historic"
 
+
 @dataclass
 class CQCRatingsValues:
     current: str = "Current"

@@ -137,14 +137,21 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
-    ratings_df = cUtils.apply_categorical_labels(ratings_df, UnknownCurrentRatings, UnknownCurrentRatings.keys(), add_as_new_column=False)
+    ratings_df = cUtils.apply_categorical_labels(
+        ratings_df,
+        UnknownCurrentRatings,
+        UnknownCurrentRatings.keys(),
+        add_as_new_column=False,
+    )
     return ratings_df
 
 
 def add_current_or_historic_column(
     ratings_df: DataFrame, current_or_historic: str
 ) -> DataFrame:
-    ratings_df = ratings_df.withColumn(CQCRatings.current_or_historic, F.lit(current_or_historic))
+    ratings_df = ratings_df.withColumn(
+        CQCRatings.current_or_historic, F.lit(current_or_historic)
+    )
     return ratings_df
 
 
