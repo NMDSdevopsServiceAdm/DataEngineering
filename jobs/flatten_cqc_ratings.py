@@ -13,6 +13,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
     PartitionKeys as Keys,
 )
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsColumns as CQCRatings,
+)
 
 
 cqc_location_columns = [
@@ -91,7 +94,18 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return cqc_location_df
 
 def flatten_current_ratings(cqc_location_df:DataFrame) -> DataFrame:
-    return cqc_location_df
+    current_ratings_df = cqc_location_df.select(
+        cqc_location_df[CQCL.location_id],
+        cqc_location_df[CQCL.registration_status],
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.report_date].alias(CQCRatings.date),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.rating].alias(CQCRatings.overall_rating),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][0][CQCL.rating].alias(CQCRatings.safe_rating),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][1][CQCL.rating].alias(CQCRatings.well_led_rating),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][2][CQCL.rating].alias(CQCRatings.caring_rating),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][3][CQCL.rating].alias(CQCRatings.responsive_rating),
+        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][4][CQCL.rating].alias(CQCRatings.effective_rating),
+    )
+    return current_ratings_df
 
 def recode_unknown_codes_to_null(ratings_df:DataFrame) -> DataFrame:
     return ratings_df
