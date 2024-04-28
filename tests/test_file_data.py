@@ -626,6 +626,7 @@ class ONSData:
         ("AB10AA", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
         ("AB10AB", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
         ("AB10AC", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AD", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
     ]
     # fmt: on
 

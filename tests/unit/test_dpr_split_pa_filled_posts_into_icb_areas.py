@@ -13,6 +13,10 @@ from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
 
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
+
 import jobs.split_pa_filled_posts_into_icb_areas as job
 
 
@@ -62,12 +66,18 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     def test_count_postcodes_per_la_adds_postcodes_per_la_column(
         self,
     ):
-        self.test_sample_ons_rows = job.count_postcodes_per_la(
-            self.test_sample_ons_rows
-        )
-        self.assertTrue("sum_postcodes_per_la" in self.test_sample_ons_rows.columns)
+        returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows)
+        self.assertTrue("sum_postcodes_per_la" in returned_data.columns)
 
     # need to create some test data so I can set an expected result dataframe.
     def test_count_postcodes_per_la_has_expected_values_in_new_column(
         self,
-    ): ...
+    ):
+        returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows).collect()
+        self.assertEqual(returned_data[0][21], 3)
+        self.assertEqual(returned_data[1][21], 3)
+        self.assertEqual(returned_data[2][21], 3)
+        self.assertEqual(returned_data[3][21], 4)
+        self.assertEqual(returned_data[4][21], 4)
+        self.assertEqual(returned_data[5][21], 4)
+        self.assertEqual(returned_data[6][21], 4)
