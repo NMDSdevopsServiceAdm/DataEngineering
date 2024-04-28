@@ -65,7 +65,6 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
         self.test_sample_ons_rows = job.count_postcodes_per_la(
             self.test_sample_ons_rows
         )
-        self.test_sample_ons_rows.show()
         self.assertTrue("sum_postcodes_per_la" in self.test_sample_ons_rows.columns)
 
     # need to create some test data so I can set an expected result dataframe.

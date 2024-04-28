@@ -68,6 +68,8 @@ def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
         sum_postcodes_per_la, F.count(ONSClean.contemporary_ons_import_date).over(w)
     )
 
+    return postcode_directory_df
+
 
 if __name__ == "__main__":
     (
