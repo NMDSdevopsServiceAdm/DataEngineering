@@ -24,6 +24,7 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
     TEST_ONS_SOURCE = "some/directory"
     TEST_PA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/directory"
+    SUM_POSTCODES_PER_LA = "sum_postcodes_per_la"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -62,22 +63,24 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-    # test that the new column is in the dataframe.
     def test_count_postcodes_per_la_adds_postcodes_per_la_column(
         self,
     ):
         returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows)
-        self.assertTrue("sum_postcodes_per_la" in returned_data.columns)
+        self.assertTrue(self.SUM_POSTCODES_PER_LA in returned_data.columns)
 
-    # need to create some test data so I can set an expected result dataframe.
     def test_count_postcodes_per_la_has_expected_values_in_new_column(
         self,
     ):
         returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows).collect()
-        self.assertEqual(returned_data[0][21], 3)
-        self.assertEqual(returned_data[1][21], 3)
-        self.assertEqual(returned_data[2][21], 3)
-        self.assertEqual(returned_data[3][21], 4)
-        self.assertEqual(returned_data[4][21], 4)
-        self.assertEqual(returned_data[5][21], 4)
-        self.assertEqual(returned_data[6][21], 4)
+        column_index = job.count_postcodes_per_la(
+            self.test_sample_ons_rows
+        ).columns.index(self.SUM_POSTCODES_PER_LA)
+        print(column_index)
+        self.assertEqual(returned_data[0][column_index], 3)
+        self.assertEqual(returned_data[1][column_index], 3)
+        self.assertEqual(returned_data[2][column_index], 3)
+        self.assertEqual(returned_data[3][column_index], 4)
+        self.assertEqual(returned_data[4][column_index], 4)
+        self.assertEqual(returned_data[5][column_index], 4)
+        self.assertEqual(returned_data[6][column_index], 4)
