@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+import datetime
 
 from pyspark.ml.linalg import Vectors
 
@@ -619,12 +620,12 @@ class ONSData:
     
 
     ons_sample_refactored_contemporary_rows = [
-        ("AB10AA", "20240101", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AB", "20240101", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AC", "20240101", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AA", "20240101", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AB", "20240101", "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AC", "20240101", "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AA", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AB", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AC", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AA", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AB", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AC", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
     ]
     # fmt: on
 
