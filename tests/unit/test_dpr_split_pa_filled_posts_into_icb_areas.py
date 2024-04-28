@@ -24,7 +24,8 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_sample_ons_rows = self.spark.createDataFrame(
-            ONSTestData.ons_sample_rows_full, schema=ONSTestSchema.full_schema
+            ONSTestData.ons_sample_refactored_contemporary_rows,
+            schema=ONSTestSchema.expected_refactored_contemporary_schema,
         )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             PATestData.pa_filled_post_sample_rows,
@@ -61,10 +62,13 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     def test_count_postcodes_per_la_adds_postcodes_per_la_column(
         self,
     ):
+        self.test_sample_ons_rows = job.count_postcodes_per_la(
+            self.test_sample_ons_rows
+        )
+        self.test_sample_ons_rows.show()
         self.assertTrue("sum_postcodes_per_la" in self.test_sample_ons_rows.columns)
 
     # need to create some test data so I can set an expected result dataframe.
     def test_count_postcodes_per_la_has_expected_values_in_new_column(
         self,
-    ):
-        ...
+    ): ...
