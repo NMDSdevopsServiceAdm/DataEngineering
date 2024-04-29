@@ -64,6 +64,14 @@
           }
         ]
       },
+      "Start SfC Crawler": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${sfc_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Start CQC Crawler"
+      },
       "Start CQC Crawler": {
         "Type": "Task",
         "Parameters": {
