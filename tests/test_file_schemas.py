@@ -2031,10 +2031,10 @@ class FlattenCQCRatings:
 
     expected_create_benchmark_ratings_dataset_schema = StructType(
         [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(AWP.establishment_id, StringType(), True),
+            StructField(CQCRatings.benchmarks_location_id, StringType(), True),
+            StructField(CQCRatings.benchmarks_establishment_id, StringType(), True),
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
-            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
 
         ]

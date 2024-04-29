@@ -74,9 +74,8 @@ def main(
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
-
-    # add establishment ids
-    # select rows and columns to save
+    benchmark_ratings_df = join_establishment_ids(benchmark_ratings_df, ascwds_workplace_df)
+    benchmark_ratings_df = create_benchmark_ratings_dataset(benchmark_ratings_df)
 
     utils.write_to_parquet(
         standard_ratings_df,
@@ -305,7 +304,17 @@ def join_establishment_ids(
     return benchmark_ratings_df
 
 def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFrame:
-    
+    benchmark_ratings_df = benchmark_ratings_df.select(
+        benchmark_ratings_df[CQCL.location_id].alias(CQCRatings.benchmarks_location_id),
+        benchmark_ratings_df[AWP.establishment_id].alias(CQCRatings.benchmarks_establishment_id),
+        benchmark_ratings_df[CQCRatings.good_or_outstanding_flag],
+        benchmark_ratings_df[CQCRatings.overall_rating].alias(CQCRatings.benchmarks_overall_rating),
+        benchmark_ratings_df[CQCRatings.date].alias(CQCRatings.inspection_date),
+    )
+    benchmark_ratings_df = benchmark_ratings_df.where(
+        benchmark_ratings_df[CQCRatings.benchmarks_establishment_id].isNotNull()
+        & benchmark_ratings_df[CQCRatings.overall_rating].isNotNull()
+    )
     return benchmark_ratings_df
 
 
