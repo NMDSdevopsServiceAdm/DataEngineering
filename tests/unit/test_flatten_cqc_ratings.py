@@ -237,7 +237,7 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         )
         self.expected_reversed_df = self.spark.createDataFrame(
             Data.expected_reversed_add_rating_sequence_rows,
-            Schema.expected_add_rating_sequence_schema,
+            Schema.expected_reversed_add_rating_sequence_schema,
         )
         self.returned_df = job.add_rating_sequence_column(self.test_ratings_df)
         self.returned_reversed_df = job.add_rating_sequence_column(
@@ -279,6 +279,7 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
             CQCL.location_id, CQCRatings.date
         ).collect()
         self.assertEqual(returned_data, expected_data)
+
 
 
 if __name__ == "__main__":

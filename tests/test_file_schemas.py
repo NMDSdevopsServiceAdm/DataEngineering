@@ -1924,3 +1924,11 @@ class FlattenCQCRatings:
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
         ]
     )
+    expected_reversed_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+
+    
