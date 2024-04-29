@@ -3485,21 +3485,15 @@ class FlattenCQCRatings:
         ("loc_1", None, 0),
     ]
     ratings_join_establishment_ids_rows = [
-        ("loc_1", "ratings data", "other data"),
-        ("loc_2", "ratings data", "other data"),
-        ("loc_3", "ratings data", "other data"),
-        ("loc_4", "ratings data", "other data"),
+        ("loc_1", "ratings data"),
+        ("loc_3", "ratings data"),
     ]
+
     ascwds_join_establishment_ids_rows = [
-        ("loc_1", "estab_1", "20240101", "ascwds data", "other data"),
-        ("loc_2", "estab_2", "20240101", "ascwds data", "other data"),
-        ("loc_2", "estab_2b", "20230101", "ascwds data", "other data"),
-        ("loc_3", "estab_3", "20230101", "ascwds data", "other data"),
-        ("loc_5", "estab_5", "20240101", "ascwds data", "other data"),
+        ("loc_1", "estab_1", "20240101"),
+        ("loc_2", "estab_2", "20240101"),
     ]
     expected_join_establishment_ids_rows = [
-        ("loc_1", "ratings data", "other data", "estab_1"),
-        ("loc_2", "ratings data", "other data", "estab_2"),
-        ("loc_3", "ratings data", "other data", None),
-        ("loc_4", "ratings data", "other data", None),
+        ("loc_1", "ratings data", "estab_1"),
+        ("loc_3", "ratings data", None),
     ]

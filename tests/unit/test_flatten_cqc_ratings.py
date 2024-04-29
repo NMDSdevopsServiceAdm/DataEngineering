@@ -397,6 +397,10 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
             Schema.expected_join_establishment_ids_schema,
         )
         self.returned_df = job.join_establishment_ids(self.test_ratings_df, self.test_ascwds_df)
+        self.expected_df.show()
+        self.expected_df.printSchema()
+        self.returned_df.show()
+        self.returned_df.printSchema()
 
     def test_join_establishment_ids_returns_correct_values(self):
         returned_data = self.returned_df.collect()

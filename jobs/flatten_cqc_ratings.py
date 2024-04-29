@@ -57,6 +57,7 @@ def main(
     )
 
     cqc_location_df = filter_to_monthly_import_date(cqc_location_df)
+    ascwds_workplace_df = filter_to_monthly_import_date(ascwds_workplace_df)
 
     cqc_location_df = utils.select_rows_with_value(
         cqc_location_df, CQCL.type, CQCLValues.social_care_identifier
@@ -91,17 +92,17 @@ def main(
     )
 
 
-def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
-    max_import_date = cqc_location_df.agg(
-        F.max(cqc_location_df[Keys.import_date])
+def filter_to_monthly_import_date(df: DataFrame) -> DataFrame:
+    max_import_date = df.agg(
+        F.max(df[Keys.import_date])
     ).collect()[0][0]
     first_day_of_the_month = "01"
     month_and_year_of_import_date = max_import_date[0:6]
     monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
-    cqc_location_df = cqc_location_df.where(
-        cqc_location_df[Keys.import_date] == monthly_import_date
+    df = df.where(
+        df[Keys.import_date] == monthly_import_date
     )
-    return cqc_location_df
+    return df
 
 
 def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
@@ -296,7 +297,11 @@ def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> Dat
     return benchmark_ratings_df
 
 def join_establishment_ids(benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame) -> DataFrame:
-    
+    ascwds_workplace_df = ascwds_workplace_df.select(
+        ascwds_workplace_df[AWP.location_id].alias(CQCL.location_id),
+        ascwds_workplace_df[AWP.establishment_id],
+    )
+    benchmark_ratings_df = benchmark_ratings_df.join(ascwds_workplace_df, CQCL.location_id, "left")
     return benchmark_ratings_df
 
 

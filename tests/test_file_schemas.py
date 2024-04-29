@@ -2003,7 +2003,6 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField("other_ratings_column", StringType(), True),
-            StructField("matching_column", StringType(), True),
         ]
     )
     ascwds_join_establishment_ids_schema = StructType(
@@ -2011,8 +2010,6 @@ class FlattenCQCRatings:
             StructField(AWP.location_id, StringType(), True),
             StructField(AWP.establishment_id, StringType(), True),
             StructField(AWP.import_date, StringType(), True),
-            StructField("other_ascwds_column", StringType(), True),
-            StructField("matching_column", StringType(), True),
         ]
     )
     expected_join_establishment_ids_schema = StructType(
