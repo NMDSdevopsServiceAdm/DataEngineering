@@ -48,6 +48,7 @@ resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
     dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
     bulk_cqc_locations_download_job_name = module.bulk_cqc_locations_download_job.job_name
     bulk_cqc_providers_download_job_name = module.bulk_cqc_providers_download_job.job_name
+    flatten_cqc_ratings_job_name         = module.flatten_cqc_ratings_job.job_name
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
   })
