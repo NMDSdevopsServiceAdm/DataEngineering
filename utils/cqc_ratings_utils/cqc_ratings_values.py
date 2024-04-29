@@ -12,6 +12,7 @@ class CQCRatingsColumns:
     effective_rating: str = "Effective_rating"
     current_or_historic: str = "Current_or_historic"
     rating_sequence: str = "Rating_sequence"
+    reversed_rating_sequence: str = "Reversed_rating_sequence"
 
 
 @dataclass

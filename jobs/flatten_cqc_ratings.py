@@ -66,6 +66,8 @@ def main(
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
+    ratings_df = add_rating_sequence_column(ratings_df)
+    ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
 
     # add rating sequence column
     # Add latest rating flag
@@ -232,12 +234,19 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
-def add_rating_sequence_column(ratings_df: DataFrame) -> DataFrame:
-    rating_sequence_window = Window.partitionBy(CQCL.location_id).orderBy(
-        F.asc(CQCRatings.date)
-    )
+def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
+    if reversed == True: 
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.desc(CQCRatings.date)
+        )
+        new_column_name = CQCRatings.reversed_rating_sequence
+    else:
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.asc(CQCRatings.date)
+        )
+        new_column_name = CQCRatings.rating_sequence
     ratings_df = ratings_df.withColumn(
-        CQCRatings.rating_sequence, F.rank().over(rating_sequence_window)
+        new_column_name, F.rank().over(window)
     )
     return ratings_df
 
