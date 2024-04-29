@@ -63,7 +63,7 @@ class MainTests(FlattenCQCRatingsTests):
                 ANY,
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
                 mode="overwrite",
-            )
+            ),
         ]
         write_to_parquet_patch.assert_has_calls(
             expected_write_to_parquet_calls,
@@ -449,6 +449,7 @@ class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

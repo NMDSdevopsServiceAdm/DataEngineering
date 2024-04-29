@@ -2036,6 +2036,5 @@ class FlattenCQCRatings:
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
-
         ]
     )
