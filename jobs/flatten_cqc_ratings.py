@@ -75,7 +75,6 @@ def main(
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
 
-
     # add establishment ids
     # select rows and columns to save
 
@@ -93,15 +92,11 @@ def main(
 
 
 def filter_to_monthly_import_date(df: DataFrame) -> DataFrame:
-    max_import_date = df.agg(
-        F.max(df[Keys.import_date])
-    ).collect()[0][0]
+    max_import_date = df.agg(F.max(df[Keys.import_date])).collect()[0][0]
     first_day_of_the_month = "01"
     month_and_year_of_import_date = max_import_date[0:6]
     monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
-    df = df.where(
-        df[Keys.import_date] == monthly_import_date
-    )
+    df = df.where(df[Keys.import_date] == monthly_import_date)
     return df
 
 
@@ -296,12 +291,17 @@ def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> Dat
     )
     return benchmark_ratings_df
 
-def join_establishment_ids(benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame) -> DataFrame:
+
+def join_establishment_ids(
+    benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame
+) -> DataFrame:
     ascwds_workplace_df = ascwds_workplace_df.select(
         ascwds_workplace_df[AWP.location_id].alias(CQCL.location_id),
         ascwds_workplace_df[AWP.establishment_id],
     )
-    benchmark_ratings_df = benchmark_ratings_df.join(ascwds_workplace_df, CQCL.location_id, "left")
+    benchmark_ratings_df = benchmark_ratings_df.join(
+        ascwds_workplace_df, CQCL.location_id, "left"
+    )
     return benchmark_ratings_df
 
 

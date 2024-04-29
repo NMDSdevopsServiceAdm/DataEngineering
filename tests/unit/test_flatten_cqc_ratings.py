@@ -294,7 +294,9 @@ class AddLatestRatingFlagColumn(FlattenCQCRatingsTests):
         )
         self.returned_df = job.add_latest_rating_flag_column(self.test_ratings_df)
 
-    def test_add_latest_rating_flag_column_adds_a_new_column_called_rating_sequence(self):
+    def test_add_latest_rating_flag_column_adds_a_new_column_called_rating_sequence(
+        self,
+    ):
         returned_columns = self.returned_df.columns
         expected_columns = self.expected_df.columns
         expected_new_column = CQCRatings.latest_rating_flag
@@ -369,7 +371,9 @@ class AddGoodAndOutstandingFlagColumn(FlattenCQCRatingsTests):
             self.test_ratings_df
         )
 
-    def test_add_good_or_outstanding_column_adds_a_new_column_called_good_or_outstanding(self):
+    def test_add_good_or_outstanding_column_adds_a_new_column_called_good_or_outstanding(
+        self,
+    ):
         returned_columns = self.returned_df.columns
         expected_columns = self.expected_df.columns
         expected_new_column = CQCRatings.good_or_outstanding_flag
@@ -380,6 +384,7 @@ class AddGoodAndOutstandingFlagColumn(FlattenCQCRatingsTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
 
 class JoinEstablishmentIds(FlattenCQCRatingsTests):
     def setUp(self) -> None:
@@ -396,7 +401,9 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
             Data.expected_join_establishment_ids_rows,
             Schema.expected_join_establishment_ids_schema,
         )
-        self.returned_df = job.join_establishment_ids(self.test_ratings_df, self.test_ascwds_df)
+        self.returned_df = job.join_establishment_ids(
+            self.test_ratings_df, self.test_ascwds_df
+        )
         self.expected_df.show()
         self.expected_df.printSchema()
         self.returned_df.show()
@@ -406,6 +413,7 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
