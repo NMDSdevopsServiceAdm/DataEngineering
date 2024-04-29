@@ -69,7 +69,7 @@ def main(
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
 
-    # add rating sequence column
+
     # Add latest rating flag
     # select columns for saving
 
@@ -242,6 +242,16 @@ def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFra
         window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
         new_column_name = CQCRatings.rating_sequence
     ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
+    return ratings_df
+
+def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
+    ratings_df = ratings_df.withColumn(
+        CQCRatings.latest_rating_flag, 
+        F.when(
+            ratings_df[CQCRatings.reversed_rating_sequence]==1, 
+            1
+        ).otherwise(0)
+    )
     return ratings_df
 
 

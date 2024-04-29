@@ -1931,4 +1931,15 @@ class FlattenCQCRatings:
         ]
     )
 
-    
+    add_latest_rating_flag_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+    expected_add_latest_rating_flag_schema = StructType(
+        [
+            *add_latest_rating_flag_schema,
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )

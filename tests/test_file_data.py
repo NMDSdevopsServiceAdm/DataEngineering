@@ -3370,3 +3370,14 @@ class FlattenCQCRatings:
         ("loc_3", "2023-01-01", 2),
         ("loc_3", "2024-01-01", 1),
     ]
+
+    add_latest_rating_flag_rows = [
+        ("loc_1", 1),
+        ("loc_2", 1),
+        ("loc_2", 2),
+    ]
+    expected_add_latest_rating_flag_rows = [
+        ("loc_1", 1, 1),
+        ("loc_2", 1, 1),
+        ("loc_2", 2, 0),
+    ]
