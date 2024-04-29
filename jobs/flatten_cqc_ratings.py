@@ -295,6 +295,10 @@ def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> Dat
     )
     return benchmark_ratings_df
 
+def join_establishment_ids(benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame) -> DataFrame:
+    
+    return benchmark_ratings_df
+
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")

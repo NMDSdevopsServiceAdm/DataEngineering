@@ -1998,3 +1998,26 @@ class FlattenCQCRatings:
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
         ]
     )
+
+    ratings_join_establishment_ids_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("other_ratings_column", StringType(), True),
+            StructField("matching_column", StringType(), True),
+        ]
+    )
+    ascwds_join_establishment_ids_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+            StructField("other_ascwds_column", StringType(), True),
+            StructField("matching_column", StringType(), True),
+        ]
+    )
+    expected_join_establishment_ids_schema = StructType(
+        [
+            *ratings_join_establishment_ids_schema,
+            StructField(AWP.establishment_id, StringType(), True),
+        ]
+    )

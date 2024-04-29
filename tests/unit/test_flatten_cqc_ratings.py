@@ -381,6 +381,27 @@ class AddGoodAndOutstandingFlagColumn(FlattenCQCRatingsTests):
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
+class JoinEstablishmentIds(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.ratings_join_establishment_ids_rows,
+            Schema.ratings_join_establishment_ids_schema,
+        )
+        self.test_ascwds_df = self.spark.createDataFrame(
+            Data.ascwds_join_establishment_ids_rows,
+            Schema.ascwds_join_establishment_ids_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_join_establishment_ids_rows,
+            Schema.expected_join_establishment_ids_schema,
+        )
+        self.returned_df = job.join_establishment_ids(self.test_ratings_df, self.test_ascwds_df)
+
+    def test_join_establishment_ids_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
