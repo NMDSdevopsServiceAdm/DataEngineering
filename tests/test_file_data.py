@@ -3468,7 +3468,7 @@ class FlattenCQCRatings:
         ("loc_3", CQCLValues.deregistered, CQCRatingsValues.current),
         ("loc_4", CQCLValues.deregistered, CQCRatingsValues.historic),
     ]
-    expected_select_ratings_for_benchmarks_rows =[
+    expected_select_ratings_for_benchmarks_rows = [
         ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
     ]
 
