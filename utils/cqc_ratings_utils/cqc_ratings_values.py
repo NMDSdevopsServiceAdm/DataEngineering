@@ -14,9 +14,12 @@ class CQCRatingsColumns:
     rating_sequence: str = "Rating_sequence"
     reversed_rating_sequence: str = "Reversed_rating_sequence"
     latest_rating_flag: str = "Latest_rating_flag"
+    good_or_outstanding_flag: str = "Flag_good_or_outstanding_current_overall_rating"
 
 
 @dataclass
 class CQCRatingsValues:
     current: str = "Current"
     historic: str = "Historic"
+    outstanding: str = "Outstanding"
+    good: str = "Good"

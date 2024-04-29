@@ -1984,3 +1984,17 @@ class FlattenCQCRatings:
             StructField(CQCRatings.current_or_historic, StringType(), True),
         ]
     )
+
+    add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+        ]
+    )
+
+    expected_add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            *add_good_and_outstanding_flag_column_schema,
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+        ]
+    )

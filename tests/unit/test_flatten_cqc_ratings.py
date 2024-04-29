@@ -353,6 +353,34 @@ class SelectRatingsForBenchmarks(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class AddGoodAndOutstandingFlagColumn(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.add_latest_rating_flag_rows,
+            Schema.add_latest_rating_flag_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_latest_rating_flag_rows,
+            Schema.expected_add_latest_rating_flag_schema,
+        )
+        self.returned_df = job.add_good_and_outstanding_flag_column(self.test_ratings_df)
+
+    def test_add_rating_sequence_column_adds_a_new_column_called_rating_sequence(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        expected_new_column = CQCRatings.latest_rating_flag
+        self.assertEqual(len(returned_columns), len(expected_columns))
+        self.assertTrue(expected_new_column in returned_columns)
+
+    def test_add_rating_sequence_column_returns_correct_values(self):
+        returned_data = self.returned_df.sort(
+            CQCL.location_id, CQCRatings.reversed_rating_sequence
+        ).collect()
+        expected_data = self.expected_df.sort(
+            CQCL.location_id, CQCRatings.reversed_rating_sequence
+        ).collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":

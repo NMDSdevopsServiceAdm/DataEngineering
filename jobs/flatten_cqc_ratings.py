@@ -277,6 +277,10 @@ def select_ratings_for_benchmarks(ratings_df:DataFrame)-> DataFrame:
     benchmark_ratings_df = ratings_df.where((ratings_df[CQCL.registration_status] == CQCLValues.registered) & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current))
     return benchmark_ratings_df
 
+def add_good_and_outstanding_flag_column(benchmark_ratings_df:DataFrame)-> DataFrame:
+    
+    return benchmark_ratings_df
+
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")
     print(f"Job parameters: {sys.argv}")

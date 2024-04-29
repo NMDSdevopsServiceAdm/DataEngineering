@@ -3471,3 +3471,16 @@ class FlattenCQCRatings:
     expected_select_ratings_for_benchmarks_rows =[
         ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
     ]
+
+    add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding),
+        ("loc_2", CQCRatingsValues.good),
+        ("loc_3", "other rating"),
+        ("loc_1", None),
+    ]
+    expected_add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding, 1),
+        ("loc_2", CQCRatingsValues.good, 1),
+        ("loc_3", "other rating", 0),
+        ("loc_1", None, 0),
+    ]
