@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, Mock, patch, call
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -52,10 +52,22 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
         )
         self.assertEqual(read_from_parquet_patch.call_count, 2)
-        write_to_parquet_patch.assert_called_once_with(
-            ANY,
-            self.TEST_CQC_RATINGS_DESTINATION,
-            mode="overwrite",
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
+        expected_write_to_parquet_calls = [
+            call(
+                ANY,
+                self.TEST_CQC_RATINGS_DESTINATION,
+                mode="overwrite",
+            ),
+            call(
+                ANY,
+                self.TEST_BENCHMARK_RATINGS_DESTINATION,
+                mode="overwrite",
+            )
+        ]
+        write_to_parquet_patch.assert_has_calls(
+            expected_write_to_parquet_calls,
+            any_order=True,
         )
 
 
