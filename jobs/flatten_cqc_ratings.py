@@ -242,15 +242,14 @@ def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFra
     ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
     return ratings_df
 
+
 def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     ratings_df = ratings_df.withColumn(
-        CQCRatings.latest_rating_flag, 
-        F.when(
-            ratings_df[CQCRatings.reversed_rating_sequence]==1, 
-            1
-        ).otherwise(0)
+        CQCRatings.latest_rating_flag,
+        F.when(ratings_df[CQCRatings.reversed_rating_sequence] == 1, 1).otherwise(0),
     )
     return ratings_df
+
 
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     standard_ratings_df = ratings_df.select(

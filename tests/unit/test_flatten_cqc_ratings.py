@@ -280,6 +280,7 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
+
 class AddLatestRatingFlagColumn(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -292,7 +293,6 @@ class AddLatestRatingFlagColumn(FlattenCQCRatingsTests):
             Schema.expected_add_latest_rating_flag_schema,
         )
         self.returned_df = job.add_latest_rating_flag_column(self.test_ratings_df)
-
 
     def test_add_rating_sequence_column_adds_a_new_column_called_rating_sequence(self):
         returned_columns = self.returned_df.columns
@@ -310,6 +310,7 @@ class AddLatestRatingFlagColumn(FlattenCQCRatingsTests):
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
+
 class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -323,7 +324,6 @@ class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
         )
         self.returned_df = job.create_standard_ratings_dataset(self.test_ratings_df)
 
-
     def test_create_standard_ratings_dataset_selects_correct_columns(self):
         returned_columns = self.returned_df.columns
         expected_columns = self.expected_df.columns
@@ -333,6 +333,7 @@ class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
         returned_rows = self.returned_df.count()
         expected_rows = self.expected_df.count()
         self.assertEqual(returned_rows, expected_rows)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
