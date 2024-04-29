@@ -59,6 +59,8 @@ def main(
     )
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
+    historic_ratings_df = prepare_historic_ratings(cqc_location_df)
+    ratings_df = current_ratings_df.unionByName(historic_ratings_df)
 
     # prepare historic ratings
     # flatten
@@ -74,7 +76,7 @@ def main(
     # select columns for saving
 
     utils.write_to_parquet(
-        current_ratings_df,
+        ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
