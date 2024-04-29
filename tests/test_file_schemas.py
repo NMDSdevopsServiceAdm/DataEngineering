@@ -1943,3 +1943,37 @@ class FlattenCQCRatings:
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
         ]
     )
+
+    create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    expected_create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )

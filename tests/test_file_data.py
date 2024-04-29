@@ -3381,3 +3381,11 @@ class FlattenCQCRatings:
         ("loc_2", 1, 1),
         ("loc_2", 2, 0),
     ]
+
+    create_standard_rating_dataset_rows =[
+        ("loc_1", "Registered", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", "Current", 1, 1, 1),
+        ("loc_1", "Registered", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", "Current", 1, 1, 1),
+    ]
+    expected_create_standard_rating_dataset_rows =[
+        ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", "Current", 1, 1),
+    ]

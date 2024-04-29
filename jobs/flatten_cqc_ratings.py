@@ -68,9 +68,10 @@ def main(
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
+    ratings_df = add_latest_rating_flag_column(ratings_df)
 
 
-    # Add latest rating flag
+
     # select columns for saving
 
     utils.write_to_parquet(
@@ -252,6 +253,10 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
             1
         ).otherwise(0)
     )
+    return ratings_df
+
+def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
+    
     return ratings_df
 
 

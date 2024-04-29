@@ -310,5 +310,29 @@ class AddLatestRatingFlagColumn(FlattenCQCRatingsTests):
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
+class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.create_standard_rating_dataset_rows,
+            Schema.create_standard_ratings_dataset_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_standard_rating_dataset_rows,
+            Schema.expected_create_standard_ratings_dataset_schema,
+        )
+        self.returned_df = job.create_standard_ratings_dataset(self.test_ratings_df)
+
+
+    def test_create_standard_ratings_dataset_selects_correct_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_standard_ratings_dataset_deduplicates_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
