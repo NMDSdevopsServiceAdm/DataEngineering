@@ -304,6 +304,10 @@ def join_establishment_ids(
     )
     return benchmark_ratings_df
 
+def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFrame:
+    
+    return benchmark_ratings_df
+
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")

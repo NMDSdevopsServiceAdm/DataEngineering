@@ -415,5 +415,28 @@ class JoinEstablishmentIds(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.create_benchmark_ratings_dataset_rows,
+            Schema.create_benchmark_ratings_dataset_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_benchmark_ratings_dataset_rows,
+            Schema.expected_create_benchmark_ratings_dataset_schema,
+        )
+        self.returned_df = job.create_benchmark_ratings_dataset(self.test_ratings_df)
+
+    def test_create_benchmark_ratings_dataset_selects_correct_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_benchmark_ratings_dataset_removes_correct_rows(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
