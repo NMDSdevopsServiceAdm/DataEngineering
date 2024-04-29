@@ -73,7 +73,6 @@ def main(
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
 
-    # select ratings for benchmarks
     # create flag for good and outsatnding
     # add establishment ids
     # select rows and columns to save
