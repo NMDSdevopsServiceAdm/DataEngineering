@@ -21,7 +21,7 @@ from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
 )
 from utils.value_labels.cqc_ratings.label_dictionary import (
-    labels_dict as UnknownCurrentRatings,
+    unknown_ratings_labels_dict as UnknownRatings,
 )
 
 
@@ -59,22 +59,16 @@ def main(
     )
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
+    historic_ratings_df = prepare_historic_ratings(cqc_location_df)
+    ratings_df = current_ratings_df.unionByName(historic_ratings_df)
 
-    # prepare historic ratings
-    # flatten
-    # for each category
-    # recode unknown ratings to null
-    # join categories
-    # add current/ histric column
-
-    # join current and historic
     # remove blanks
     # add rating sequence column
     # Add latest rating flag
     # select columns for saving
 
     utils.write_to_parquet(
-        current_ratings_df,
+        ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -107,6 +101,13 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
+def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    ratings_df = flatten_historic_ratings(cqc_location_df)
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
+    ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.historic)
+    return ratings_df
+
+
 def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     current_ratings_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
@@ -136,11 +137,71 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return current_ratings_df
 
 
+def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    historic_ratings_df = cqc_location_df.select(
+        cqc_location_df[CQCL.location_id],
+        cqc_location_df[CQCL.registration_status],
+        F.explode(cqc_location_df[CQCL.historic_ratings]).alias(CQCL.historic_ratings),
+    )
+    historic_ratings_df = historic_ratings_df.select(
+        historic_ratings_df[CQCL.location_id],
+        historic_ratings_df[CQCL.registration_status],
+        historic_ratings_df[CQCL.historic_ratings][CQCL.report_date].alias(
+            CQCRatings.date
+        ),
+        historic_ratings_df[CQCL.historic_ratings][CQCL.overall][CQCL.rating].alias(
+            CQCRatings.overall_rating
+        ),
+        F.explode(
+            historic_ratings_df[CQCL.historic_ratings][CQCL.overall][
+                CQCL.key_question_ratings
+            ]
+        ).alias(CQCL.key_question_ratings),
+    )
+    historic_ratings_df = historic_ratings_df.select(
+        historic_ratings_df[CQCL.location_id],
+        historic_ratings_df[CQCL.registration_status],
+        historic_ratings_df[CQCRatings.date],
+        historic_ratings_df[CQCRatings.overall_rating],
+        historic_ratings_df[CQCL.key_question_ratings][CQCL.name].alias(CQCL.name),
+        historic_ratings_df[CQCL.key_question_ratings][CQCL.rating].alias(CQCL.rating),
+    )
+    ratings_columns = ["Safe", "Well-led", "Caring", "Responsive", "Effective"]
+    cleaned_historic_ratings_df = historic_ratings_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCRatings.date,
+        CQCRatings.overall_rating,
+    ).dropDuplicates()
+    for column in ratings_columns:
+        column_name = column + "_rating"
+        df = historic_ratings_df.where(historic_ratings_df[CQCL.name] == column)
+        df = df.select(
+            df[CQCL.location_id],
+            df[CQCL.registration_status],
+            df[CQCRatings.date],
+            df[CQCRatings.overall_rating],
+            df[CQCL.rating].alias(column_name),
+        )
+        cleaned_historic_ratings_df = cleaned_historic_ratings_df.join(
+            df,
+            [
+                CQCL.location_id,
+                CQCL.registration_status,
+                CQCRatings.date,
+                CQCRatings.overall_rating,
+            ],
+            "outer",
+        )
+
+    return cleaned_historic_ratings_df
+
+
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
     ratings_df = cUtils.apply_categorical_labels(
         ratings_df,
-        UnknownCurrentRatings,
-        UnknownCurrentRatings.keys(),
+        UnknownRatings,
+        UnknownRatings.keys(),
         add_as_new_column=False,
     )
     return ratings_df
