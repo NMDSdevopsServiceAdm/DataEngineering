@@ -278,7 +278,7 @@ def select_ratings_for_benchmarks(ratings_df:DataFrame)-> DataFrame:
     return benchmark_ratings_df
 
 def add_good_and_outstanding_flag_column(benchmark_ratings_df:DataFrame)-> DataFrame:
-    
+    benchmark_ratings_df = benchmark_ratings_df.withColumn(CQCRatings.good_or_outstanding_flag, F.when((benchmarks_ratings_df[CQCRatings.overall_rating] == CQCRatingsValues.good) | (benchmarks_ratings_df[CQCRatings.overall_rating] == CQCRatingsValues.outstanding), F.lit(1)).otherwise(F.lit(0)))
     return benchmark_ratings_df
 
 if __name__ == "__main__":
