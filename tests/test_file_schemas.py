@@ -1911,3 +1911,16 @@ class FlattenCQCRatings:
     )
 
     remove_blank_rows_schema = expected_flatten_ratings_schema
+
+    add_rating_sequence_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+        ]
+    )
+    expected_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+        ]
+    )

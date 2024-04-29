@@ -11,6 +11,7 @@ from tests.test_file_schemas import FlattenCQCRatings as Schema
 
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
+    CQCRatingsColumns as CQCRatings,
 )
 
 
@@ -215,6 +216,35 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
         self.returned_df = job.remove_blank_and_duplicate_rows(self.test_ratings_df)
 
     def test_remove_blank_rows_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+class AddRatingSequenceColumn(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.add_rating_sequence_rows,
+            Schema.add_rating_sequence_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_rating_sequence_rows,
+            Schema.expected_add_rating_sequence_schema,
+        )
+        self.returned_df = job.add_rating_sequence_column(self.test_ratings_df)
+        self.expected_df.show()
+        self.expected_df.printSchema()
+        self.returned_df.show()
+        self.returned_df.printSchema()
+    
+    def test_add_rating_sequence_column_adds_a_new_column_called_rating_sequence(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        expected_new_column = CQCRatings.rating_sequence
+        self.assertEqual(len(returned_columns), len(expected_columns))
+        self.assertTrue(expected_new_column in returned_columns)
+
+    def test_add_rating_sequence_column_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)

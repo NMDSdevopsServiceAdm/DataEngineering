@@ -11,6 +11,7 @@ class CQCRatingsColumns:
     responsive_rating: str = "Responsive_rating"
     effective_rating: str = "Effective_rating"
     current_or_historic: str = "Current_or_historic"
+    rating_sequence:str = "Rating_sequence"
 
 
 @dataclass
