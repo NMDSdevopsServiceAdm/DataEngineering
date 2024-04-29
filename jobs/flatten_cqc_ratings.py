@@ -71,18 +71,26 @@ def main(
     ratings_df = add_latest_rating_flag_column(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
-    utils.write_to_parquet(
-        standard_ratings_df,
-        cqc_ratings_destination,
-        mode="overwrite",
-    )
+    benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
 
     # select ratings for benchmarks
     # create flag for good and outsatnding
     # add establishment ids
     # select rows and columns to save
 
-    # save ratings for benchmarks
+    utils.write_to_parquet(
+        standard_ratings_df,
+        cqc_ratings_destination,
+        mode="overwrite",
+    )
+
+    
+
+    utils.write_to_parquet(
+        benchmark_ratings_df,
+        benchmark_ratings_destination,
+        mode="overwrite",
+    )
 
 
 def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
@@ -267,8 +275,8 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     return standard_ratings_df
 
 def select_ratings_for_benchmarks(ratings_df:DataFrame)-> DataFrame:
-    ratings_for_benchmarks_df = ratings_df.where((ratings_df[CQCL.registration_status] == CQCLValues.registered) & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current))
-    return ratings_for_benchmarks_df
+    benchmark_ratings_df = ratings_df.where((ratings_df[CQCL.registration_status] == CQCLValues.registered) & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current))
+    return benchmark_ratings_df
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")
