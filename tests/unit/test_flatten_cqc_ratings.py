@@ -200,6 +200,7 @@ class AddCurrentOrHistoricColumn(FlattenCQCRatingsTests):
         expected_data = self.expected_historic_df.collect()
         self.assertEqual(returned_data, expected_data)
 
+
 class RemoveBlankRows(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -211,9 +212,7 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
             Data.expected_remove_blank_rows_rows,
             Schema.remove_blank_rows_schema,
         )
-        self.returned_df = job.remove_blank_rows(
-            self.test_ratings_df
-        )
+        self.returned_df = job.remove_blank_rows(self.test_ratings_df)
         self.expected_df.show()
         self.returned_df.show()
 
@@ -221,7 +220,6 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
-
 
 
 if __name__ == "__main__":
