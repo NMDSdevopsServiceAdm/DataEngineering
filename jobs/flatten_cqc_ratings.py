@@ -1,5 +1,9 @@
 import sys
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import (
+    DataFrame,
+    functions as F,
+    Window,
+)
 
 from utils import (
     utils,
@@ -61,14 +65,14 @@ def main(
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
-
-    # remove blanks
-    # add rating sequence column
-    # Add latest rating flag
-    # select columns for saving
+    ratings_df = remove_blank_and_duplicate_rows(ratings_df)
+    ratings_df = add_rating_sequence_column(ratings_df)
+    ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
+    ratings_df = add_latest_rating_flag_column(ratings_df)
+    standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
     utils.write_to_parquet(
-        ratings_df,
+        standard_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -214,6 +218,53 @@ def add_current_or_historic_column(
         CQCRatings.current_or_historic, F.lit(current_or_historic)
     )
     return ratings_df
+
+
+def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
+    ratings_df = ratings_df.where(
+        (ratings_df[CQCRatings.overall_rating].isNotNull())
+        | (ratings_df[CQCRatings.safe_rating].isNotNull())
+        | (ratings_df[CQCRatings.well_led_rating].isNotNull())
+        | (ratings_df[CQCRatings.caring_rating].isNotNull())
+        | (ratings_df[CQCRatings.responsive_rating].isNotNull())
+        | (ratings_df[CQCRatings.effective_rating].isNotNull())
+    ).distinct()
+    return ratings_df
+
+
+def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
+    if reversed == True:
+        window = Window.partitionBy(CQCL.location_id).orderBy(F.desc(CQCRatings.date))
+        new_column_name = CQCRatings.reversed_rating_sequence
+    else:
+        window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
+        new_column_name = CQCRatings.rating_sequence
+    ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
+    return ratings_df
+
+
+def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
+    ratings_df = ratings_df.withColumn(
+        CQCRatings.latest_rating_flag,
+        F.when(ratings_df[CQCRatings.reversed_rating_sequence] == 1, 1).otherwise(0),
+    )
+    return ratings_df
+
+
+def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
+    standard_ratings_df = ratings_df.select(
+        CQCL.location_id,
+        CQCRatings.date,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+        CQCRatings.rating_sequence,
+        CQCRatings.latest_rating_flag,
+    ).distinct()
+    return standard_ratings_df
 
 
 if __name__ == "__main__":

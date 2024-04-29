@@ -1909,3 +1909,70 @@ class FlattenCQCRatings:
             StructField(CQCRatings.current_or_historic, StringType(), True),
         ]
     )
+
+    remove_blank_rows_schema = expected_flatten_ratings_schema
+
+    add_rating_sequence_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+        ]
+    )
+    expected_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+        ]
+    )
+    expected_reversed_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+
+    add_latest_rating_flag_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+    expected_add_latest_rating_flag_schema = StructType(
+        [
+            *add_latest_rating_flag_schema,
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    expected_create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
