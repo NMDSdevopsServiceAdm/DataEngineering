@@ -62,14 +62,6 @@ def main(
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
 
-    # prepare historic ratings
-    # flatten
-    # for each category
-    # recode unknown ratings to null
-    # join categories
-    # add current/ histric column
-
-    # join current and historic
     # remove blanks
     # add rating sequence column
     # Add latest rating flag
