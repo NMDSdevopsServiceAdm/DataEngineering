@@ -215,6 +215,12 @@ def add_current_or_historic_column(
     )
     return ratings_df
 
+def remove_blank_rows(
+    ratings_df: DataFrame
+) -> DataFrame:
+    
+    return ratings_df
+
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")

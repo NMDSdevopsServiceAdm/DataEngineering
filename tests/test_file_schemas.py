@@ -1909,3 +1909,5 @@ class FlattenCQCRatings:
             StructField(CQCRatings.current_or_historic, StringType(), True),
         ]
     )
+
+    remove_blank_rows_schema = expected_flatten_ratings_schema

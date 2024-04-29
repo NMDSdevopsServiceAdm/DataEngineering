@@ -3174,3 +3174,23 @@ class FlattenCQCRatings:
     expected_add_historic_rows = [
         ("loc_1", CQCRatingsValues.historic),
     ]
+
+    remove_blank_rows_rows = [
+        ("loc_1", "Registered", "20240101", "Good", "Good", "Good", "Good", "Good", "Good"),
+        ("loc_2", "Registered", "20240101", None, "Good", "Good", "Good", "Good", "Good"),
+        ("loc_3", "Registered", "20240101", "Good", None, "Good", "Good", "Good", "Good"),
+        ("loc_4", "Registered", "20240101", "Good", "Good", None, "Good", "Good", "Good"),
+        ("loc_5", "Registered", "20240101", "Good", "Good", "Good", None, "Good", "Good"),
+        ("loc_6", "Registered", "20240101", "Good", "Good", "Good", "Good", None, "Good"),
+        ("loc_7", "Registered", "20240101", "Good", "Good", "Good", "Good", "Good", None),
+        ("loc_8", "Registered", "20240101", None, None, None, None, None, None),
+    ]
+    expected_remove_blank_rows_rows = [
+        ("loc_1", "Registered", "20240101", "Good", "Good", "Good", "Good", "Good", "Good"),
+        ("loc_2", "Registered", "20240101", None, "Good", "Good", "Good", "Good", "Good"),
+        ("loc_3", "Registered", "20240101", "Good", None, "Good", "Good", "Good", "Good"),
+        ("loc_4", "Registered", "20240101", "Good", "Good", None, "Good", "Good", "Good"),
+        ("loc_5", "Registered", "20240101", "Good", "Good", "Good", None, "Good", "Good"),
+        ("loc_6", "Registered", "20240101", "Good", "Good", "Good", "Good", None, "Good"),
+        ("loc_7", "Registered", "20240101", "Good", "Good", "Good", "Good", "Good", None),
+    ]
