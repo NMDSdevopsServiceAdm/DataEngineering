@@ -3462,3 +3462,12 @@ class FlattenCQCRatings:
     expected_create_standard_rating_dataset_rows = [
         ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", 1, 1),
     ]
+    select_ratings_for_benchmarks_rows = [
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+        ("loc_2", CQCLValues.registered, CQCRatingsValues.historic),
+        ("loc_3", CQCLValues.deregistered, CQCRatingsValues.current),
+        ("loc_4", CQCLValues.deregistered, CQCRatingsValues.historic),
+    ]
+    expected_select_ratings_for_benchmarks_rows =[
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+    ]

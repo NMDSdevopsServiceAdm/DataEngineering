@@ -334,6 +334,26 @@ class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
         expected_rows = self.expected_df.count()
         self.assertEqual(returned_rows, expected_rows)
 
+class SelectRatingsForBenchmarks(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.select_ratings_for_benchmarks_rows,
+            Schema.select_ratings_for_benchmarks_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_select_ratings_for_benchmarks_rows,
+            Schema.select_ratings_for_benchmarks_schema,
+        )
+        self.returned_df = job.select_ratings_for_benchmarks(self.test_ratings_df)
+
+    def test_select_ratings_for_benchmarks_removes_correct_rows(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

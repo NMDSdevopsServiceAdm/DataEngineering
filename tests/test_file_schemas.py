@@ -1976,3 +1976,11 @@ class FlattenCQCRatings:
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
         ]
     )
+
+    select_ratings_for_benchmarks_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )

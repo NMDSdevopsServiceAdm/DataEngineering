@@ -266,6 +266,8 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     ).distinct()
     return standard_ratings_df
 
+def select_ratings_for_benchmarks(ratings_df:DataFrame)-> DataFrame:
+    return ratings_df
 
 if __name__ == "__main__":
     print("Spark job 'flatten_cqc_ratings' starting...")
