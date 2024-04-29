@@ -13,6 +13,9 @@ from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
     CQCRatingsColumns as CQCRatings,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+)
 
 
 class FlattenCQCRatingsTests(unittest.TestCase):
@@ -216,8 +219,8 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
         self.returned_df = job.remove_blank_and_duplicate_rows(self.test_ratings_df)
 
     def test_remove_blank_rows_returns_correct_values(self):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.sort(CQCL.location_id).collect()
+        expected_data = self.expected_df.sort(CQCL.location_id).collect()
         self.assertEqual(returned_data, expected_data)
 
 class AddRatingSequenceColumn(FlattenCQCRatingsTests):
