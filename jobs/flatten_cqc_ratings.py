@@ -1,6 +1,6 @@
 import sys
 from pyspark.sql import (
-    DataFrame, 
+    DataFrame,
     functions as F,
     Window,
 )
@@ -66,7 +66,6 @@ def main(
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
-
 
     # add rating sequence column
     # Add latest rating flag
@@ -232,9 +231,14 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     ).distinct()
     return ratings_df
 
+
 def add_rating_sequence_column(ratings_df: DataFrame) -> DataFrame:
-    rating_sequence_window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
-    ranked_df = ratings_df.withColumn(CQCRatings.rating_sequence, F.rank().over(rating_sequence_window))
+    rating_sequence_window = Window.partitionBy(CQCL.location_id).orderBy(
+        F.asc(CQCRatings.date)
+    )
+    ratings_df = ratings_df.withColumn(
+        CQCRatings.rating_sequence, F.rank().over(rating_sequence_window)
+    )
     return ratings_df
 
 

@@ -223,6 +223,7 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
         expected_data = self.expected_df.sort(CQCL.location_id).collect()
         self.assertEqual(returned_data, expected_data)
 
+
 class AddRatingSequenceColumn(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -235,11 +236,7 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
             Schema.expected_add_rating_sequence_schema,
         )
         self.returned_df = job.add_rating_sequence_column(self.test_ratings_df)
-        self.expected_df.show()
-        self.expected_df.printSchema()
-        self.returned_df.show()
-        self.returned_df.printSchema()
-    
+
     def test_add_rating_sequence_column_adds_a_new_column_called_rating_sequence(self):
         returned_columns = self.returned_df.columns
         expected_columns = self.expected_df.columns
@@ -248,8 +245,12 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         self.assertTrue(expected_new_column in returned_columns)
 
     def test_add_rating_sequence_column_returns_correct_values(self):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.sort(
+            CQCL.location_id, CQCRatings.date
+        ).collect()
+        expected_data = self.expected_df.sort(
+            CQCL.location_id, CQCRatings.date
+        ).collect()
         self.assertEqual(returned_data, expected_data)
 
 
