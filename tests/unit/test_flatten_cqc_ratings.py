@@ -240,7 +240,9 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
             Schema.expected_add_rating_sequence_schema,
         )
         self.returned_df = job.add_rating_sequence_column(self.test_ratings_df)
-        self.returned_reversed_df = job.add_rating_sequence_column(self.test_ratings_df, reversed=True)
+        self.returned_reversed_df = job.add_rating_sequence_column(
+            self.test_ratings_df, reversed=True
+        )
 
     def test_add_rating_sequence_column_adds_a_new_column_called_rating_sequence(self):
         returned_columns = self.returned_df.columns
@@ -257,15 +259,19 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
             CQCL.location_id, CQCRatings.date
         ).collect()
         self.assertEqual(returned_data, expected_data)
-    
-    def test_add_rating_sequence_column_adds_a_new_column_called_reversed_rating_sequence_when_reversed_equals_true(self):
+
+    def test_add_rating_sequence_column_adds_a_new_column_called_reversed_rating_sequence_when_reversed_equals_true(
+        self,
+    ):
         returned_columns = self.returned_reversed_df.columns
         expected_columns = self.expected_reversed_df.columns
         expected_new_column = CQCRatings.reversed_rating_sequence
         self.assertEqual(len(returned_columns), len(expected_columns))
         self.assertTrue(expected_new_column in returned_columns)
 
-    def test_add_rating_sequence_column_returns_correct_values_when_reversed_equals_true(self):
+    def test_add_rating_sequence_column_returns_correct_values_when_reversed_equals_true(
+        self,
+    ):
         returned_data = self.returned_reversed_df.sort(
             CQCL.location_id, CQCRatings.date
         ).collect()

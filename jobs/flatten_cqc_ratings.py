@@ -235,19 +235,13 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
 
 
 def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
-    if reversed == True: 
-        window = Window.partitionBy(CQCL.location_id).orderBy(
-            F.desc(CQCRatings.date)
-        )
+    if reversed == True:
+        window = Window.partitionBy(CQCL.location_id).orderBy(F.desc(CQCRatings.date))
         new_column_name = CQCRatings.reversed_rating_sequence
     else:
-        window = Window.partitionBy(CQCL.location_id).orderBy(
-            F.asc(CQCRatings.date)
-        )
+        window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
         new_column_name = CQCRatings.rating_sequence
-    ratings_df = ratings_df.withColumn(
-        new_column_name, F.rank().over(window)
-    )
+    ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
     return ratings_df
 
 
