@@ -212,9 +212,7 @@ class RemoveBlankRows(FlattenCQCRatingsTests):
             Data.expected_remove_blank_rows_rows,
             Schema.remove_blank_rows_schema,
         )
-        self.returned_df = job.remove_blank_rows(self.test_ratings_df)
-        self.expected_df.show()
-        self.returned_df.show()
+        self.returned_df = job.remove_blank_and_duplicate_rows(self.test_ratings_df)
 
     def test_remove_blank_rows_returns_correct_values(self):
         returned_data = self.returned_df.collect()

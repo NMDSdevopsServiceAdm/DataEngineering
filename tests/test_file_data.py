@@ -3254,6 +3254,17 @@ class FlattenCQCRatings:
             None,
         ),
         ("loc_8", "Registered", "20240101", None, None, None, None, None, None),
+        (
+            "loc_1",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
     ]
     expected_remove_blank_rows_rows = [
         (

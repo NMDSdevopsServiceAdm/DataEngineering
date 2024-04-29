@@ -216,7 +216,7 @@ def add_current_or_historic_column(
     return ratings_df
 
 
-def remove_blank_rows(ratings_df: DataFrame) -> DataFrame:
+def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     ratings_df = ratings_df.where(
         (ratings_df[CQCRatings.overall_rating].isNotNull())
         | (ratings_df[CQCRatings.safe_rating].isNotNull())
@@ -224,7 +224,7 @@ def remove_blank_rows(ratings_df: DataFrame) -> DataFrame:
         | (ratings_df[CQCRatings.caring_rating].isNotNull())
         | (ratings_df[CQCRatings.responsive_rating].isNotNull())
         | (ratings_df[CQCRatings.effective_rating].isNotNull())
-    )
+    ).distinct()
     return ratings_df
 
 
