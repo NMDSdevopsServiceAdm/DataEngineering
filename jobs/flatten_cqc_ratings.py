@@ -72,8 +72,9 @@ def main(
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
+    benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
 
-    # create flag for good and outsatnding
+
     # add establishment ids
     # select rows and columns to save
 
