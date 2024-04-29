@@ -21,7 +21,7 @@ from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
 )
 from utils.value_labels.cqc_ratings.label_dictionary import (
-    labels_dict as UnknownCurrentRatings,
+    unknown_ratings_labels_dict as UnknownRatings,
 )
 
 
@@ -109,7 +109,6 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_historic_ratings(cqc_location_df)
-    # join categories
     ratings_df = recode_unknown_codes_to_null(ratings_df)
     ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.historic)
     return ratings_df
@@ -207,8 +206,8 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
     ratings_df = cUtils.apply_categorical_labels(
         ratings_df,
-        UnknownCurrentRatings,
-        UnknownCurrentRatings.keys(),
+        UnknownRatings,
+        UnknownRatings.keys(),
         add_as_new_column=False,
     )
     return ratings_df
