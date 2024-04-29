@@ -69,13 +69,10 @@ def main(
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
     ratings_df = add_latest_rating_flag_column(ratings_df)
-
-
-
-    # select columns for saving
+    standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
     utils.write_to_parquet(
-        ratings_df,
+        standard_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -256,8 +253,19 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
-    
-    return ratings_df
+    standard_ratings_df = ratings_df.select(
+        CQCL.location_id,
+        CQCRatings.date,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+        CQCRatings.rating_sequence,
+        CQCRatings.latest_rating_flag,
+    ).distinct()
+    return standard_ratings_df
 
 
 if __name__ == "__main__":
