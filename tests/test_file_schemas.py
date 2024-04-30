@@ -1615,7 +1615,7 @@ class PAFilledPostsSampleData:
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
-    filter_to_monthly_import_date_schema = StructType(
+    filter_to_start_of_most_recent_month_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(Keys.import_date, StringType(), False),
@@ -1974,5 +1974,67 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    select_ratings_for_benchmarks_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )
+
+    add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+        ]
+    )
+
+    expected_add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            *add_good_and_outstanding_flag_column_schema,
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+        ]
+    )
+
+    ratings_join_establishment_ids_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("other_ratings_column", StringType(), True),
+        ]
+    )
+    ascwds_join_establishment_ids_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+    expected_join_establishment_ids_schema = StructType(
+        [
+            *ratings_join_establishment_ids_schema,
+            StructField(AWP.establishment_id, StringType(), True),
+        ]
+    )
+    create_benchmark_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_create_benchmark_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCRatings.benchmarks_location_id, StringType(), True),
+            StructField(CQCRatings.benchmarks_establishment_id, StringType(), True),
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+            StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
+            StructField(CQCRatings.inspection_date, StringType(), True),
         ]
     )

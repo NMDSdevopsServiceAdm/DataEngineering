@@ -56,7 +56,8 @@ def main(
         ascwds_workplace_source, ascwds_workplace_columns
     )
 
-    cqc_location_df = filter_to_monthly_import_date(cqc_location_df)
+    cqc_location_df = filter_to_start_of_most_recent_month(cqc_location_df)
+    ascwds_workplace_df = filter_to_start_of_most_recent_month(ascwds_workplace_df)
 
     cqc_location_df = utils.select_rows_with_value(
         cqc_location_df, CQCL.type, CQCLValues.social_care_identifier
@@ -71,31 +72,33 @@ def main(
     ratings_df = add_latest_rating_flag_column(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
+    benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
+    benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
+    benchmark_ratings_df = join_establishment_ids(
+        benchmark_ratings_df, ascwds_workplace_df
+    )
+    benchmark_ratings_df = create_benchmark_ratings_dataset(benchmark_ratings_df)
+
     utils.write_to_parquet(
         standard_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
 
-    # select ratings for benchmarks
-    # create flag for good and outsatnding
-    # add establishment ids
-    # select rows and columns to save
+    utils.write_to_parquet(
+        benchmark_ratings_df,
+        benchmark_ratings_destination,
+        mode="overwrite",
+    )
 
-    # save ratings for benchmarks
 
-
-def filter_to_monthly_import_date(cqc_location_df: DataFrame) -> DataFrame:
-    max_import_date = cqc_location_df.agg(
-        F.max(cqc_location_df[Keys.import_date])
-    ).collect()[0][0]
+def filter_to_start_of_most_recent_month(df: DataFrame) -> DataFrame:
+    max_import_date = df.agg(F.max(df[Keys.import_date])).collect()[0][0]
     first_day_of_the_month = "01"
     month_and_year_of_import_date = max_import_date[0:6]
-    monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
-    cqc_location_df = cqc_location_df.where(
-        cqc_location_df[Keys.import_date] == monthly_import_date
-    )
-    return cqc_location_df
+    start_of_most_recent_month = month_and_year_of_import_date + first_day_of_the_month
+    df = df.where(df[Keys.import_date] == start_of_most_recent_month)
+    return df
 
 
 def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
@@ -265,6 +268,61 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.latest_rating_flag,
     ).distinct()
     return standard_ratings_df
+
+
+def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
+    benchmark_ratings_df = ratings_df.where(
+        (ratings_df[CQCL.registration_status] == CQCLValues.registered)
+        & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current)
+    )
+    return benchmark_ratings_df
+
+
+def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> DataFrame:
+    benchmark_ratings_df = benchmark_ratings_df.withColumn(
+        CQCRatings.good_or_outstanding_flag,
+        F.when(
+            (benchmark_ratings_df[CQCRatings.overall_rating] == CQCRatingsValues.good)
+            | (
+                benchmark_ratings_df[CQCRatings.overall_rating]
+                == CQCRatingsValues.outstanding
+            ),
+            F.lit(1),
+        ).otherwise(F.lit(0)),
+    )
+    return benchmark_ratings_df
+
+
+def join_establishment_ids(
+    benchmark_ratings_df: DataFrame, ascwds_workplace_df: DataFrame
+) -> DataFrame:
+    ascwds_workplace_df = ascwds_workplace_df.select(
+        ascwds_workplace_df[AWP.location_id].alias(CQCL.location_id),
+        ascwds_workplace_df[AWP.establishment_id],
+    )
+    benchmark_ratings_df = benchmark_ratings_df.join(
+        ascwds_workplace_df, CQCL.location_id, "left"
+    )
+    return benchmark_ratings_df
+
+
+def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFrame:
+    benchmark_ratings_df = benchmark_ratings_df.select(
+        benchmark_ratings_df[CQCL.location_id].alias(CQCRatings.benchmarks_location_id),
+        benchmark_ratings_df[AWP.establishment_id].alias(
+            CQCRatings.benchmarks_establishment_id
+        ),
+        benchmark_ratings_df[CQCRatings.good_or_outstanding_flag],
+        benchmark_ratings_df[CQCRatings.overall_rating].alias(
+            CQCRatings.benchmarks_overall_rating
+        ),
+        benchmark_ratings_df[CQCRatings.date].alias(CQCRatings.inspection_date),
+    )
+    benchmark_ratings_df = benchmark_ratings_df.where(
+        benchmark_ratings_df[CQCRatings.benchmarks_establishment_id].isNotNull()
+        & benchmark_ratings_df[CQCRatings.overall_rating].isNotNull()
+    )
+    return benchmark_ratings_df
 
 
 if __name__ == "__main__":

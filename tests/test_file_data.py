@@ -2945,12 +2945,12 @@ class FlattenCQCRatings:
         ("loc_1", "20240101"),
         ("loc_2", "20231201"),
     ]
-    filter_to_monthly_import_date_when_not_first_of_month_rows = [
+    filter_to_start_of_most_recent_month_when_not_first_of_month_rows = [
         ("loc_1", "20240101"),
         ("loc_2", "20231201"),
         ("loc_3", "20240104"),
     ]
-    expected_filter_to_monthly_import_date_rows = [
+    expected_filter_to_start_of_most_recent_month_rows = [
         ("loc_1", "20240101"),
     ]
 
@@ -3461,4 +3461,50 @@ class FlattenCQCRatings:
     ]
     expected_create_standard_rating_dataset_rows = [
         ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", 1, 1),
+    ]
+    select_ratings_for_benchmarks_rows = [
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+        ("loc_2", CQCLValues.registered, CQCRatingsValues.historic),
+        ("loc_3", CQCLValues.deregistered, CQCRatingsValues.current),
+        ("loc_4", CQCLValues.deregistered, CQCRatingsValues.historic),
+    ]
+    expected_select_ratings_for_benchmarks_rows = [
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+    ]
+
+    add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding),
+        ("loc_2", CQCRatingsValues.good),
+        ("loc_3", "other rating"),
+        ("loc_1", None),
+    ]
+    expected_add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding, 1),
+        ("loc_2", CQCRatingsValues.good, 1),
+        ("loc_3", "other rating", 0),
+        ("loc_1", None, 0),
+    ]
+    ratings_join_establishment_ids_rows = [
+        ("loc_1", "ratings data"),
+        ("loc_3", "ratings data"),
+    ]
+
+    ascwds_join_establishment_ids_rows = [
+        ("loc_1", "estab_1", "20240101"),
+        ("loc_2", "estab_2", "20240101"),
+    ]
+    expected_join_establishment_ids_rows = [
+        ("loc_1", "ratings data", "estab_1"),
+        ("loc_3", "ratings data", None),
+    ]
+    create_benchmark_ratings_dataset_rows = [
+        ("loc_1", "estab_1", 1, "Good", "2024-01-01", ""),
+        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01", ""),
+        ("loc_3", None, 1, "Good", "2024-01-01", ""),
+        ("loc_4", "estab_2", 0, None, "2024-01-01", ""),
+        ("loc_5", None, 0, None, "2024-01-01", ""),
+    ]
+    expected_create_benchmark_ratings_dataset_rows = [
+        ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
+        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
     ]
