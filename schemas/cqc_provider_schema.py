@@ -3,7 +3,6 @@ from pyspark.sql.types import (
     StructType,
     StringType,
     ArrayType,
-    FloatType,
 )
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
