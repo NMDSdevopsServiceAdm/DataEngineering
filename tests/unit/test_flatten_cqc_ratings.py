@@ -90,6 +90,10 @@ class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
             Data.expected_filter_to_first_import_of_most_recent_month_rows,
             Schema.filter_to_first_import_of_most_recent_month_schema,
         ).collect()
+        self.expected_data_when_not_first_of_month = self.spark.createDataFrame(
+            Data.expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows,
+            Schema.filter_to_first_import_of_most_recent_month_schema,
+        ).collect()
 
     def test_filter_to_first_import_of_most_recent_month_returns_correct_rows_when_most_recent_data_is_the_first_of_the_month(
         self,
@@ -113,7 +117,7 @@ class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
         returned_data = job.filter_to_first_import_of_most_recent_month(
             self.test_cqc_when_earliest_date_is_not_first_of_month_df
         ).collect()
-        self.assertEqual(returned_data, self.expected_data)
+        self.assertEqual(returned_data, self.expected_data_when_not_first_of_month)
 
 
 class FlattenCurrentRatings(FlattenCQCRatingsTests):

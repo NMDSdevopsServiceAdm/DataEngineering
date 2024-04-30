@@ -2942,21 +2942,24 @@ class FlattenCQCRatings:
     test_cqc_locations_rows = CQCLocationsData.sample_rows_full
     test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
     filter_to_first_import_of_most_recent_month_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
     ]
     filter_to_first_import_of_most_recent_month_when_two_imports_in_most_recent_month_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
-        ("loc_3", "20240104"),
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
     ]
     filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
-        ("loc_1", "20240102"),
-        ("loc_2", "20231201"),
-        ("loc_3", "20240104"),
+        ("loc_1", "20240102", "2024", "01", "02"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
     ]
     expected_filter_to_first_import_of_most_recent_month_rows = [
-        ("loc_1", "20240101"),
+        ("loc_1", "20240101", "2024", "01", "01"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "02"),
     ]
 
     flatten_current_ratings_rows = [

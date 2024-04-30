@@ -1619,6 +1619,9 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(Keys.import_date, StringType(), False),
+            StructField(Keys.year, StringType(), False),
+            StructField(Keys.month, StringType(), False),
+            StructField(Keys.day, StringType(), False),
         ]
     )
     flatten_current_ratings_schema = StructType(
