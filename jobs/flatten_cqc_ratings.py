@@ -63,7 +63,9 @@ def main(
     )
 
     cqc_location_df = filter_to_first_import_of_most_recent_month(cqc_location_df)
-    ascwds_workplace_df = filter_to_first_import_of_most_recent_month(ascwds_workplace_df)
+    ascwds_workplace_df = filter_to_first_import_of_most_recent_month(
+        ascwds_workplace_df
+    )
 
     cqc_location_df = utils.select_rows_with_value(
         cqc_location_df, CQCL.type, CQCLValues.social_care_identifier
