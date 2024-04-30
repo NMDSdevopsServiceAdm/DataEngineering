@@ -56,8 +56,8 @@ def main(
         ascwds_workplace_source, ascwds_workplace_columns
     )
 
-    cqc_location_df = filter_to_monthly_import_date(cqc_location_df)
-    ascwds_workplace_df = filter_to_monthly_import_date(ascwds_workplace_df)
+    cqc_location_df = filter_to_start_of_most_recent_month(cqc_location_df)
+    ascwds_workplace_df = filter_to_start_of_most_recent_month(ascwds_workplace_df)
 
     cqc_location_df = utils.select_rows_with_value(
         cqc_location_df, CQCL.type, CQCLValues.social_care_identifier
@@ -92,12 +92,12 @@ def main(
     )
 
 
-def filter_to_monthly_import_date(df: DataFrame) -> DataFrame:
+def filter_to_start_of_most_recent_month(df: DataFrame) -> DataFrame:
     max_import_date = df.agg(F.max(df[Keys.import_date])).collect()[0][0]
     first_day_of_the_month = "01"
     month_and_year_of_import_date = max_import_date[0:6]
-    monthly_import_date = month_and_year_of_import_date + first_day_of_the_month
-    df = df.where(df[Keys.import_date] == monthly_import_date)
+    start_of_most_recent_month = month_and_year_of_import_date + first_day_of_the_month
+    df = df.where(df[Keys.import_date] == start_of_most_recent_month)
     return df
 
 
