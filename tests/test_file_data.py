@@ -965,7 +965,6 @@ class CQCLocationsData:
                 }
             ],
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-
             [{"name": "Services for everyone"}],
             {
                 CQCL.overall: {

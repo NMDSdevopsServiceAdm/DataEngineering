@@ -555,15 +555,19 @@ class CQCLocationsSchema:
                                     StructType(
                                         [
                                             StructField(
-                                                CQCL.person_family_name, StringType(), True
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
                                             ),
                                             StructField(
-                                                CQCL.person_given_name, StringType(), True
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
                                             ),
                                             StructField(
-                                            CQCL.person_roles,
-                                            ArrayType(StringType(), True),
-                                            True,
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
                                             ),
                                             StructField(
                                                 CQCL.person_title, StringType(), True
@@ -600,7 +604,7 @@ class CQCLocationsSchema:
                 True,
             ),
             StructField(
-            CQCL.current_ratings,
+                CQCL.current_ratings,
                 StructType(
                     [
                         StructField(
@@ -611,9 +615,7 @@ class CQCLocationsSchema:
                                         CQCL.organisation_id, StringType(), True
                                     ),
                                     StructField(CQCL.rating, StringType(), True),
-                                    StructField(
-                                        CQCL.report_date, StringType(), True
-                                    ),
+                                    StructField(CQCL.report_date, StringType(), True),
                                     StructField(
                                         CQCL.report_link_id, StringType(), True
                                     ),
@@ -756,9 +758,7 @@ class CQCLocationsSchema:
                                 ArrayType(
                                     StructType(
                                         [
-                                            StructField(
-                                                CQCL.name, StringType(), True
-                                            ),
+                                            StructField(CQCL.name, StringType(), True),
                                             StructField(
                                                 CQCL.rating, StringType(), True
                                             ),

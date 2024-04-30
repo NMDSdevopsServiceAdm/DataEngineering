@@ -76,12 +76,8 @@ PROVIDER_SCHEMA = StructType(
             ArrayType(
                 StructType(
                     [
-                        StructField(
-                            ColNames.related_provider_id, StringType(), True
-                        ),
-                        StructField(
-                            ColNames.related_provider_name, StringType(), True
-                        ),
+                        StructField(ColNames.related_provider_id, StringType(), True),
+                        StructField(ColNames.related_provider_name, StringType(), True),
                         StructField(ColNames.type, StringType(), True),
                         StructField(ColNames.reason, StringType(), True),
                     ]
@@ -144,12 +140,8 @@ PROVIDER_SCHEMA = StructType(
                 StructType(
                     [
                         StructField(ColNames.inspection_area_id, StringType(), True),
-                        StructField(
-                            ColNames.inspection_area_name, StringType(), True
-                        ),
-                        StructField(
-                            ColNames.inspection_area_type, StringType(), True
-                        ),
+                        StructField(ColNames.inspection_area_name, StringType(), True),
+                        StructField(ColNames.inspection_area_type, StringType(), True),
                         StructField(ColNames.status, StringType(), True),
                         StructField(ColNames.end_date, StringType(), True),
                         StructField(
@@ -172,9 +164,7 @@ PROVIDER_SCHEMA = StructType(
                         StructType(
                             [
                                 StructField(ColNames.rating, StringType(), True),
-                                StructField(
-                                    ColNames.report_date, StringType(), True
-                                ),
+                                StructField(ColNames.report_date, StringType(), True),
                                 StructField(
                                     ColNames.report_link_id, StringType(), True
                                 ),
@@ -372,9 +362,7 @@ PROVIDER_SCHEMA = StructType(
                             ArrayType(
                                 StructType(
                                     [
-                                        StructField(
-                                            ColNames.name, StringType(), True
-                                        ),
+                                        StructField(ColNames.name, StringType(), True),
                                         StructField(
                                             ColNames.rating, StringType(), True
                                         ),
