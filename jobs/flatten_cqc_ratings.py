@@ -99,11 +99,12 @@ def main(
 
 
 def filter_to_first_import_of_most_recent_month(df: DataFrame) -> DataFrame:
-    import_dates_df = df.select(Keys.year, Keys.month, Keys.day)
-    max_year = import_dates_df.agg(F.max(import_dates_df[Keys.year])).collect()[0][0]
-    max_month = import_dates_df.agg(F.max(import_dates_df[Keys.month])).collect()[0][0]
-    min_day = import_dates_df.agg(F.min(import_dates_df[Keys.day])).collect()[0][0]
-    df = df.where((df[Keys.year] == max_year) & (df[Keys.month] == max_month) & (df[Keys.day] == min_day))
+    max_year = df.agg(F.max(df[Keys.year])).collect()[0][0]
+    df = df.where(df[Keys.year] == max_year)
+    max_month = df.agg(F.max(df[Keys.month])).collect()[0][0]
+    df = df.where(df[Keys.month] == max_month)
+    min_day = df.agg(F.min(df[Keys.day])).collect()[0][0]
+    df = df.where(df[Keys.day] == min_day)
     return df
 
 

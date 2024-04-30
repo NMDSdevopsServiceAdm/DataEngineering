@@ -2959,7 +2959,7 @@ class FlattenCQCRatings:
         ("loc_1", "20240101", "2024", "01", "01"),
     ]
     expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
-        ("loc_1", "20240101", "2024", "01", "02"),
+        ("loc_1", "20240102", "2024", "01", "02"),
     ]
 
     flatten_current_ratings_rows = [
