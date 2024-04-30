@@ -42,7 +42,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
+    NewCqcProviderApiColumns as CQCP,
 )
 from utils.column_names.raw_data_files.cqc_pir_columns import (
     CqcPirColumns as CQCPIR,

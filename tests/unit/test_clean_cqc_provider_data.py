@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from tests.test_file_data import CQCProviderData as Data
 from tests.test_file_schemas import CQCProviderSchema as Schema
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
+    NewCqcProviderApiColumns as CQCP,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,

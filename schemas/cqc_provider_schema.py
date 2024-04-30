@@ -7,9 +7,6 @@ from pyspark.sql.types import (
 )
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as OldColNames,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     NewCqcProviderApiColumns as NewColNames,
 )
 
