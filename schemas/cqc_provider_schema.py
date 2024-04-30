@@ -13,38 +13,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     NewCqcProviderApiColumns as NewColNames,
 )
 
-OLD_PROVIDER_SCHEMA = StructType(
-    fields=[
-        StructField(OldColNames.provider_id, StringType(), True),
-        StructField(
-            OldColNames.location_ids,
-            ArrayType(
-                StringType(),
-            ),
-        ),
-        StructField(OldColNames.organisation_type, StringType(), True),
-        StructField(OldColNames.ownership_type, StringType(), True),
-        StructField(OldColNames.type, StringType(), True),
-        StructField(OldColNames.uprn, StringType(), True),
-        StructField(OldColNames.name, StringType(), True),
-        StructField(OldColNames.registration_status, StringType(), True),
-        StructField(OldColNames.registration_date, StringType(), True),
-        StructField(OldColNames.deregistration_date, StringType(), True),
-        StructField(OldColNames.address_line_one, StringType(), True),
-        StructField(OldColNames.town_or_city, StringType(), True),
-        StructField(OldColNames.county, StringType(), True),
-        StructField(OldColNames.region, StringType(), True),
-        StructField(OldColNames.postcode, StringType(), True),
-        StructField(OldColNames.latitude, FloatType(), True),
-        StructField(OldColNames.longitude, FloatType(), True),
-        StructField(OldColNames.phone_number, StringType(), True),
-        StructField(OldColNames.companies_house_number, StringType(), True),
-        StructField(OldColNames.inspection_directorate, StringType(), True),
-        StructField(OldColNames.constituency, StringType(), True),
-        StructField(OldColNames.local_authority, StringType(), True),
-    ]
-)
-
 PROVIDER_SCHEMA = StructType(
     [
         StructField(NewColNames.provider_id, StringType(), True),
