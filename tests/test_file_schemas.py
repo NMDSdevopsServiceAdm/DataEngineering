@@ -452,7 +452,7 @@ class PAFilledPostsByICBAreaSchema:
     expected_ons_sample_contemporary_schema = StructType(
         [
             *ons_sample_contemporary_schema,
-            StructField(DP.SUM_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
         ]
     )
 
