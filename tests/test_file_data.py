@@ -9,8 +9,8 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 )
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
-    NewCqcLocationApiColumns as CQCLNew,
+    NewCqcLocationApiColumns as CQCL,
+    NewNewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,

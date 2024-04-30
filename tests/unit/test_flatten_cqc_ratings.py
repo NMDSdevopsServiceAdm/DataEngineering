@@ -14,7 +14,7 @@ from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
 )
 
 

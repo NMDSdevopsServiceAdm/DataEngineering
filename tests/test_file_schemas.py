@@ -38,8 +38,8 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
-    NewCqcLocationApiColumns as CQCLNew,
+    NewCqcLocationApiColumns as CQCL,
+    NewNewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
