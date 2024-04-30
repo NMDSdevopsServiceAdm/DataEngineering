@@ -437,7 +437,20 @@ class ONSData:
         ]
     )
 
-    contemporary_schema = expected_refactored_contemporary_schema
+
+@dataclass
+class PAFilledPostsByICBAreaSchema:
+    ons_sample_contemporary_schema = ONSData.expected_refactored_contemporary_schema
+
+    pa_sample_filled_post_schema = StructType(
+        [
+            StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
 
 
 @dataclass
@@ -1596,19 +1609,6 @@ class ValidateMergedIndCqcData:
             *MergeIndCQCData.expected_cqc_and_ascwds_merged_schema,
             StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-        ]
-    )
-
-
-@dataclass
-class PAFilledPostsSampleData:
-    pa_filled_post_sample_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), True),
-            StructField(
-                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
-            ),
-            StructField(DP.YEAR, StringType(), True),
         ]
     )
 

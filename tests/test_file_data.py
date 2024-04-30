@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-import datetime
 
 from pyspark.ml.linalg import Vectors
 
@@ -617,18 +616,27 @@ class ONSData:
         ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
         ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
     ]
-    
+    # fmt: on
 
-    ons_sample_refactored_contemporary_rows = [
-        ("AB10AA", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AB", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AC", datetime.date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AA", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AB", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AC", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
-        ("AB10AD", datetime.date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+
+@dataclass
+class PAFilledPostsByICBArea:
+    # fmt: off
+    ons_sample_contemporary_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AB", date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AC", date(2024,1,1), "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AA", date(2024,1,1), "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AB", date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AC", date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
+        ("AB10AD", date(2024,1,1), "cssr2", "region1", "subicb2", "icb3", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2024", "01", "01", "20240101"),
     ]
     # fmt: on
+
+    pa_sample_filled_post_rows = [
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+    ]
 
 
 @dataclass
@@ -2939,14 +2947,6 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
     # fmt: on
-
-
-@dataclass
-class PAFilledPostsSampleData:
-    pa_filled_post_sample_rows = [
-        ("Leeds", 100.2, "2024"),
-        ("Bradford", 200.3, "2024"),
-    ]
 
 
 @dataclass
