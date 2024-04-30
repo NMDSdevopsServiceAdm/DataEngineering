@@ -56,14 +56,13 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
 
 
 def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
-    sum_postcodes_per_la: str = "sum_postcodes_per_la"
 
     w = Window.partitionBy(
         ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr
     ).orderBy([ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr])
 
     postcode_directory_df = postcode_directory_df.withColumn(
-        sum_postcodes_per_la, F.count(ONSClean.postcode).over(w)
+        DPColNames.SUM_POSTCODES_PER_LA, F.count(ONSClean.postcode).over(w)
     )
 
     return postcode_directory_df
