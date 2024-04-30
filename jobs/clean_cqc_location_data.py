@@ -130,11 +130,11 @@ def join_ons_postcode_data_into_cqc_df(
         CQCLClean.cqc_location_import_date,
         ONSClean.contemporary_ons_import_date,
     )
-    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postcode)
+    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postal_code)
 
     cqc_df = cqc_df.join(
         ons_df,
-        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
+        [ONSClean.contemporary_ons_import_date, CQCLClean.postal_code],
         "left",
     )
     return cqc_df
@@ -235,12 +235,12 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
 
     Raises:
-        AnalysisException: If column_to_check_for_nulls, CQCLClean.postcode or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        AnalysisException: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
         TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
     """
 
     COLUMNS_TO_FILTER = [
-        CQCLClean.postcode,
+        CQCLClean.postal_code,
         CQCLClean.location_id,
     ]
     list_of_columns = cleaned_locations_df.columns
