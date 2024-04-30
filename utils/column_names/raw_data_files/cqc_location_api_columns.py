@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class NewNewCqcLocationApiColumns:
+class NewCqcLocationApiColumns:
     also_known_as: str = "alsoKnownAs"
     brand_id: str = "brandId"
     brand_name: str = "brandName"

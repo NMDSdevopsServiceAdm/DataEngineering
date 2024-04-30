@@ -38,7 +38,7 @@ cqc_location_api_cols_to_import = [
     CQCL.provider_id,
     CQCL.name,
     CQCL.number_of_beds,
-    CQCL.postcode,
+    CQCL.postal_code,
     CQCL.registration_status,
     CQCL.registration_date,
     CQCL.deregistration_date,
@@ -122,7 +122,7 @@ def join_ons_postcode_data_into_cqc_df(
 ) -> DataFrame:
     cqc_df = amend_invalid_postcodes(cqc_df)
 
-    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
+    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postal_code)
 
     cqc_df = cUtils.add_aligned_date_column(
         cqc_df,
@@ -144,7 +144,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
-    df = df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+    df = df.withColumn(CQCL.postal_code, map_func(F.col(CQCL.postal_code)))
     return df
 
 
@@ -265,7 +265,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
         raise TypeError(
-            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
+            f"Error: The following {CQCL.postal_code}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
         )
     else:
         print(

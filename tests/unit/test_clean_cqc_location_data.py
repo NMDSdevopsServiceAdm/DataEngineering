@@ -369,7 +369,7 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
             )
 
         self.assertTrue(
-            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data:"
+            f"Error: The following {CQCL.postal_code}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data:"
             in str(context.exception),
             "Error text is missing correct description of Error",
         )
@@ -396,14 +396,14 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
     def test_raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_only_runs_when_contains_appropriate_columns(
         self,
     ):
-        no_postcode_df = self.expected_split_registered_df.drop(CQCL.postcode)
+        no_postcode_df = self.expected_split_registered_df.drop(CQCL.postal_code)
         no_location_df = self.expected_split_registered_df.drop(CQCL.location_id)
         no_current_date_df = self.expected_split_registered_df.drop(
             CQCLCleaned.current_ons_import_date
         )
 
         list_of_test_tuples = [
-            (no_postcode_df, CQCL.postcode),
+            (no_postcode_df, CQCL.postal_code),
             (no_location_df, CQCL.location_id),
             (no_current_date_df, CQCLCleaned.current_ons_import_date),
         ]

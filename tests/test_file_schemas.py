@@ -39,7 +39,7 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
-    NewNewCqcLocationApiColumns as CQCLNew,
+    NewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
@@ -573,7 +573,7 @@ class CQCLocationsSchema:
     invalid_postcode_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
         ]
     )
 
@@ -616,7 +616,7 @@ class CQCLocationsSchema:
     expected_ons_join_schema = StructType(
         [
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
@@ -1642,7 +1642,7 @@ class FlattenCQCRatings:
                                         CQCL.report_link_id, StringType(), True
                                     ),
                                     StructField(
-                                        CQCLNew.use_of_resources,
+                                        CQCL.use_of_resources,
                                         StructType(
                                             [
                                                 StructField(
@@ -1651,20 +1651,20 @@ class FlattenCQCRatings:
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.summary, StringType(), True
+                                                    CQCL.summary, StringType(), True
                                                 ),
                                                 StructField(
-                                                    CQCLNew.use_of_resources_rating,
+                                                    CQCL.use_of_resources_rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_summary,
+                                                    CQCL.combined_quality_summary,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_rating,
+                                                    CQCL.combined_quality_rating,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -1721,7 +1721,7 @@ class FlattenCQCRatings:
                             True,
                         ),
                         StructField(
-                            CQCLNew.service_ratings,
+                            CQCL.service_ratings,
                             ArrayType(
                                 StructType(
                                     [
@@ -1783,7 +1783,7 @@ class FlattenCQCRatings:
                             StructField(CQCL.report_link_id, StringType(), True),
                             StructField(CQCL.organisation_id, StringType(), True),
                             StructField(
-                                CQCLNew.service_ratings,
+                                CQCL.service_ratings,
                                 ArrayType(
                                     StructType(
                                         [
@@ -1824,26 +1824,26 @@ class FlattenCQCRatings:
                                     [
                                         StructField(CQCL.rating, StringType(), True),
                                         StructField(
-                                            CQCLNew.use_of_resources,
+                                            CQCL.use_of_resources,
                                             StructType(
                                                 [
                                                     StructField(
-                                                        CQCLNew.combined_quality_rating,
+                                                        CQCL.combined_quality_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.combined_quality_summary,
+                                                        CQCL.combined_quality_summary,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_rating,
+                                                        CQCL.use_of_resources_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_summary,
+                                                        CQCL.use_of_resources_summary,
                                                         StringType(),
                                                         True,
                                                     ),

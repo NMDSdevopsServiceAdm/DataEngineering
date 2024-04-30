@@ -10,7 +10,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
-    NewNewCqcLocationApiColumns as CQCLNew,
+    NewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
@@ -2964,12 +2964,12 @@ class FlattenCQCRatings:
                     CQCL.rating: "Overall rating Excellent",
                     CQCL.report_date: "report_date",
                     CQCL.report_link_id: None,
-                    CQCLNew.use_of_resources: {
+                    CQCL.use_of_resources: {
                         CQCL.organisation_id: None,
-                        CQCLNew.summary: None,
-                        CQCLNew.use_of_resources_rating: None,
-                        CQCLNew.combined_quality_summary: None,
-                        CQCLNew.combined_quality_rating: None,
+                        CQCL.summary: None,
+                        CQCL.use_of_resources_rating: None,
+                        CQCL.combined_quality_summary: None,
+                        CQCL.combined_quality_rating: None,
                         CQCL.report_date: None,
                         CQCL.report_link_id: None,
                     },
@@ -3011,7 +3011,7 @@ class FlattenCQCRatings:
                         },
                     ],
                 },
-                CQCLNew.service_ratings: [
+                CQCL.service_ratings: [
                     {
                         CQCL.name: None,
                         CQCL.rating: None,
@@ -3039,7 +3039,7 @@ class FlattenCQCRatings:
                     CQCL.report_date: "report_date",
                     CQCL.report_link_id: None,
                     CQCL.organisation_id: None,
-                    CQCLNew.service_ratings: [
+                    CQCL.service_ratings: [
                         {
                             CQCL.name: None,
                             CQCL.rating: None,
@@ -3053,11 +3053,11 @@ class FlattenCQCRatings:
                     ],
                     CQCL.overall: {
                         CQCL.rating: "Overall rating Excellent",
-                        CQCLNew.use_of_resources: {
-                            CQCLNew.combined_quality_rating: None,
-                            CQCLNew.combined_quality_summary: None,
-                            CQCLNew.use_of_resources_rating: None,
-                            CQCLNew.use_of_resources_summary: None,
+                        CQCL.use_of_resources: {
+                            CQCL.combined_quality_rating: None,
+                            CQCL.combined_quality_summary: None,
+                            CQCL.use_of_resources_rating: None,
+                            CQCL.use_of_resources_summary: None,
                         },
                         CQCL.key_question_ratings: [
                             {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
