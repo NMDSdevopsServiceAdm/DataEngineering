@@ -34,12 +34,58 @@
                     "--additional-python-modules": "ratelimit==2.2.1,"
                   }
                 },
-                "End": true
+                "Next": "Run flatten cqc ratings job"
+              },
+              "Run flatten cqc ratings job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${flatten_cqc_ratings_job_name}",
+                  "Arguments": {
+                    "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/",
+                    "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=cqc_ratings/",
+                    "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=benchmark_ratings/"
+                  }
+                },
+                "Next": "Run crawlers"
+              },
+              "Run crawlers": {
+                "Type": "Parallel",
+                "End": true,
+                "Branches": [
+                  {
+                    "StartAt": "Start SfC Crawler",
+                    "States": {
+                      "Start SfC Crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${sfc_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  },
+                  {
+                    "StartAt": "Start CQC Crawler",
+                    "States": {
+                      "Start CQC Crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${cqc_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
         ],
-        "Next": "Start CQC Crawler",
+        "Next": "Success",
         "Catch": [
           {
             "ErrorEquals": [
@@ -49,14 +95,6 @@
             "ResultPath": "$.error"
           }
         ]
-      },
-      "Start CQC Crawler": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${cqc_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success"
       },
       "Publish error notification": {
         "Type": "Task",
