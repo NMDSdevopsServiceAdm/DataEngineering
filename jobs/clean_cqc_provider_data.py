@@ -11,7 +11,7 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    NewCqcProviderApiColumns as CQCP,
+    CqcProviderApiColumns as CQCP,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,

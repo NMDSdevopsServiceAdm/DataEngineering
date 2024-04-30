@@ -6,7 +6,7 @@ from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    NewCqcProviderApiColumns as ColNames,
+    CqcProviderApiColumns as ColNames,
 )
 
 

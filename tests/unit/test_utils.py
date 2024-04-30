@@ -26,7 +26,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
 )
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    NewCqcProviderApiColumns as CQCColNames,
+    CqcProviderApiColumns as CQCColNames,
 )
 
 
