@@ -926,17 +926,13 @@ class CQCPirCleanedData:
 
 @dataclass
 class CQCLocationsData:
-    sample_rows_full = [
+    sample_rows = [
         (
             "location1",
             "provider1",
             "Location",
             "Social Care Org",
             "name of location",
-            "E00000001",
-            "NHS West Sussex CCG",
-            "ABC1D",
-            "123456789",
             "Registered",
             "2020-01-01",
             None,
@@ -948,94 +944,141 @@ class CQCLocationsData:
             "West Yorkshire",
             "Yorkshire",
             "LS1 2AB",
-            50.123455,
-            -5.6789,
+            "50.123455",
+            "-5.6789",
             "Y",
             "Adult social care",
             "01234567891",
-            "Woking",
             "Trafford",
-            {"date": "2021-01-15"},
-            {"publicationdate": "2021-02-15"},
-            [
-                {
-                    "relatedlocationid": "1-23456",
-                    "relatedlocationname": "CarePlace",
-                    "type": "HSCA Predecessor",
-                    "reason": "Location Move",
-                }
-            ],
             [
                 {
                     "name": "Personal care",
                     "code": "RA1",
                     "contacts": [
                         {
-                            "persontitle": "Mr",
-                            "persongivenname": "John",
                             "personfamilyname": "Doe",
+                            "persongivenname": "John",
                             "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
                         }
                     ],
                 }
             ],
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            [
-                {
-                    "code": "S2",
-                    "primary": "true",
-                    "name": "Community based adult social care services",
-                }
-            ],
+
             [{"name": "Services for everyone"}],
             {
-                "overall": {
-                    "rating": "Good",
-                    "reportdate": "2020-01-01",
-                    "reportlinkid": "1234abcd5678",
-                    "keyquestionratings": [
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
                         {
-                            "name": "Safe",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Well-led",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Caring",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Responsive",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Effective",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                     ],
-                }
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
             },
-            None,
             [
                 {
-                    "linkid": "zyx123",
-                    "reportdate": "2021-02-10",
-                    "reporturi": "/reports/zyx123",
-                    "firstvisitdate": "2020-01-01",
-                    "reporttype": "Location",
-                }
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
             ],
             "2020-01-01",
         ),
@@ -2939,7 +2982,7 @@ class PAFilledPostsSampleData:
 
 @dataclass
 class FlattenCQCRatings:
-    test_cqc_locations_rows = CQCLocationsData.sample_rows_full
+    test_cqc_locations_rows = CQCLocationsData.sample_rows
     test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
     filter_to_monthly_import_date_rows = [
         ("loc_1", "20240101"),

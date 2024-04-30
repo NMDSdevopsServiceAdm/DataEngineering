@@ -518,63 +518,30 @@ class CapacityTrackerDomCareSchema:
 
 @dataclass
 class CQCLocationsSchema:
-    full_schema = StructType(
+    detailed_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCL.organisation_type, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.name, StringType(), True),
-            StructField(CQCL.ccg_code, StringType(), True),
-            StructField(CQCL.ccg_name, StringType(), True),
-            StructField(CQCL.ods_code, StringType(), True),
-            StructField(CQCL.uprn, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCL.registration_date, StringType(), True),
             StructField(CQCL.deregistration_date, StringType(), True),
             StructField(CQCL.dormancy, StringType(), True),
             StructField(CQCL.number_of_beds, IntegerType(), True),
             StructField(CQCL.website, StringType(), True),
-            StructField(CQCL.address_line_one, StringType(), True),
-            StructField(CQCL.town_or_city, StringType(), True),
-            StructField(CQCL.county, StringType(), True),
+            StructField(CQCL.postal_address_line1, StringType(), True),
+            StructField(CQCL.postal_address_town_city, StringType(), True),
+            StructField(CQCL.postal_address_county, StringType(), True),
             StructField(CQCL.region, StringType(), True),
-            StructField(CQCL.postcode, StringType(), True),
-            StructField(CQCL.latitude, FloatType(), True),
-            StructField(CQCL.longitude, FloatType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+            StructField(CQCL.onspd_latitude, StringType(), True),
+            StructField(CQCL.onspd_longitude, StringType(), True),
             StructField(CQCL.care_home, StringType(), True),
             StructField(CQCL.inspection_directorate, StringType(), True),
-            StructField(CQCL.phone_number, StringType(), True),
-            StructField(CQCL.constituancy, StringType(), True),
+            StructField(CQCL.main_phone_number, StringType(), True),
             StructField(CQCL.local_authority, StringType(), True),
-            StructField(
-                CQCL.last_inspection,
-                StructType([StructField(CQCL.date, StringType(), True)]),
-                True,
-            ),
-            StructField(
-                CQCL.last_report,
-                StructType([StructField(CQCL.publication_date, StringType(), True)]),
-                True,
-            ),
-            StructField(
-                CQCL.relationships,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(
-                                CQCL.related_location_id, StringType(), True
-                            ),
-                            StructField(
-                                CQCL.related_location_name, StringType(), True
-                            ),
-                            StructField(CQCL.type, StringType(), True),
-                            StructField(CQCL.reason, StringType(), True),
-                        ]
-                    )
-                ),
-                True,
-            ),
             StructField(
                 CQCL.regulated_activities,
                 ArrayType(
@@ -588,16 +555,18 @@ class CQCLocationsSchema:
                                     StructType(
                                         [
                                             StructField(
-                                                CQCL.title, StringType(), True
+                                                CQCL.person_family_name, StringType(), True
                                             ),
                                             StructField(
-                                                CQCL.given_name, StringType(), True
+                                                CQCL.person_given_name, StringType(), True
                                             ),
                                             StructField(
-                                                CQCL.family_name, StringType(), True
+                                            CQCL.person_roles,
+                                            ArrayType(StringType(), True),
+                                            True,
                                             ),
                                             StructField(
-                                                CQCL.roles, StringType(), True
+                                                CQCL.person_title, StringType(), True
                                             ),
                                         ]
                                     )
@@ -620,19 +589,6 @@ class CQCLocationsSchema:
                 ),
             ),
             StructField(
-                CQCL.inspection_categories,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.code, StringType(), True),
-                            StructField(CQCL.primary, StringType(), True),
-                            StructField(CQCL.name, StringType(), True),
-                        ]
-                    )
-                ),
-                True,
-            ),
-            StructField(
                 CQCL.specialisms,
                 ArrayType(
                     StructType(
@@ -644,19 +600,63 @@ class CQCLocationsSchema:
                 True,
             ),
             StructField(
-                CQCL.current_ratings,
+            CQCL.current_ratings,
                 StructType(
                     [
                         StructField(
                             CQCL.overall,
                             StructType(
                                 [
+                                    StructField(
+                                        CQCL.organisation_id, StringType(), True
+                                    ),
                                     StructField(CQCL.rating, StringType(), True),
                                     StructField(
                                         CQCL.report_date, StringType(), True
                                     ),
                                     StructField(
                                         CQCL.report_link_id, StringType(), True
+                                    ),
+                                    StructField(
+                                        CQCL.use_of_resources,
+                                        StructType(
+                                            [
+                                                StructField(
+                                                    CQCL.organisation_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.summary, StringType(), True
+                                                ),
+                                                StructField(
+                                                    CQCL.use_of_resources_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_summary,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_date,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_link_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                            ]
+                                        ),
+                                        True,
                                     ),
                                     StructField(
                                         CQCL.key_question_ratings,
@@ -677,18 +677,68 @@ class CQCLocationsSchema:
                                                         True,
                                                     ),
                                                     StructField(
+                                                        CQCL.organisation_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
                                                         CQCL.report_link_id,
                                                         StringType(),
                                                         True,
                                                     ),
                                                 ]
-                                            )
+                                            ),
+                                            True,
                                         ),
+                                        True,
                                     ),
                                 ]
                             ),
                             True,
-                        )
+                        ),
+                        StructField(
+                            CQCL.service_ratings,
+                            ArrayType(
+                                StructType(
+                                    [
+                                        StructField(CQCL.name, StringType(), True),
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.report_date, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.organisation_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.report_link_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                            True,
+                        ),
                     ]
                 ),
                 True,
@@ -698,14 +748,80 @@ class CQCLocationsSchema:
                 ArrayType(
                     StructType(
                         [
-                            StructField(CQCL.organisation_id, StringType(), True),
-                            StructField(CQCL.report_link_id, StringType(), True),
                             StructField(CQCL.report_date, StringType(), True),
+                            StructField(CQCL.report_link_id, StringType(), True),
+                            StructField(CQCL.organisation_id, StringType(), True),
+                            StructField(
+                                CQCL.service_ratings,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.name, StringType(), True
+                                            ),
+                                            StructField(
+                                                CQCL.rating, StringType(), True
+                                            ),
+                                            StructField(
+                                                CQCL.key_question_ratings,
+                                                ArrayType(
+                                                    StructType(
+                                                        [
+                                                            StructField(
+                                                                CQCL.name,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                            StructField(
+                                                                CQCL.rating,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    True,
+                                                ),
+                                                True,
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
                             StructField(
                                 CQCL.overall,
                                 StructType(
                                     [
                                         StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.use_of_resources,
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.combined_quality_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.combined_quality_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
                                         StructField(
                                             CQCL.key_question_ratings,
                                             ArrayType(
@@ -734,20 +850,6 @@ class CQCLocationsSchema:
                         ]
                     ),
                     True,
-                ),
-            ),
-            StructField(
-                CQCL.reports,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.link_id, StringType(), True),
-                            StructField(CQCL.report_date, StringType(), True),
-                            StructField(CQCL.report_uri, StringType(), True),
-                            StructField(CQCL.first_visit_date, StringType(), True),
-                            StructField(CQCL.report_type, StringType(), True),
-                        ]
-                    )
                 ),
                 True,
             ),
@@ -1843,7 +1945,7 @@ class PAFilledPostsSampleData:
 
 @dataclass
 class FlattenCQCRatings:
-    test_cqc_locations_schema = CQCLocationsSchema.full_schema
+    test_cqc_locations_schema = CQCLocationsSchema.detailed_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
     filter_to_start_of_most_recent_month_schema = StructType(
         [
