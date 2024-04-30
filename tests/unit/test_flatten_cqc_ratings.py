@@ -71,32 +71,32 @@ class MainTests(FlattenCQCRatingsTests):
         )
 
 
-class FilterToMonthlyImportDate(FlattenCQCRatingsTests):
+class FilterToStartOfMostRecentMonth(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_cqc_df = self.spark.createDataFrame(
             Data.filter_to_monthly_import_date_rows,
-            Schema.filter_to_monthly_import_date_schema,
+            Schema.filter_to_start_of_most_recent_month_schema,
         )
         self.test_cqc_when_not_first_of_month_df = self.spark.createDataFrame(
-            Data.filter_to_monthly_import_date_when_not_first_of_month_rows,
-            Schema.filter_to_monthly_import_date_schema,
+            Data.filter_to_start_of_most_recent_month_when_not_first_of_month_rows,
+            Schema.filter_to_start_of_most_recent_month_schema,
         )
         self.expected_data = self.spark.createDataFrame(
-            Data.expected_filter_to_monthly_import_date_rows,
-            Schema.filter_to_monthly_import_date_schema,
+            Data.expected_filter_to_start_of_most_recent_month_rows,
+            Schema.filter_to_start_of_most_recent_month_schema,
         ).collect()
 
     def test_filter_to_monthly_import_date_returns_correct_rows_when_most_recent_data_is_the_first_of_the_month(
         self,
     ):
-        returned_data = job.filter_to_monthly_import_date(self.test_cqc_df).collect()
+        returned_data = job.filter_to_start_of_most_recent_month(self.test_cqc_df).collect()
         self.assertEqual(returned_data, self.expected_data)
 
     def test_filter_to_monthly_import_date_returns_correct_rows_when_most_recent_data_is_not_the_first_of_the_month(
         self,
     ):
-        returned_data = job.filter_to_monthly_import_date(
+        returned_data = job.filter_to_start_of_most_recent_month(
             self.test_cqc_when_not_first_of_month_df
         ).collect()
         self.assertEqual(returned_data, self.expected_data)
