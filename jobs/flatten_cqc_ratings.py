@@ -92,7 +92,7 @@ def main(
     )
 
 
-def filter_to_start_of_most_recent_month(df: DataFrame) -> DataFrame:
+def filter_to_first_import_of_most_recent_month(df: DataFrame) -> DataFrame:
     max_import_date = df.agg(F.max(df[Keys.import_date])).collect()[0][0]
     first_day_of_the_month = "01"
     month_and_year_of_import_date = max_import_date[0:6]

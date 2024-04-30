@@ -1615,7 +1615,7 @@ class PAFilledPostsSampleData:
 class FlattenCQCRatings:
     test_cqc_locations_schema = CQCLocationsSchema.full_schema
     test_ascwds_workplace_schema = ASCWDSWorkplaceSchemas.workplace_schema
-    filter_to_start_of_most_recent_month_schema = StructType(
+    filter_to_first_import_of_most_recent_month_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(Keys.import_date, StringType(), False),
