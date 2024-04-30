@@ -10,6 +10,9 @@ from tests.test_file_schemas import PAFilledPostsByICBAreaSchema as TestSchema
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
+)
 
 import jobs.split_pa_filled_posts_into_icb_areas as job
 
@@ -24,6 +27,10 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
         self.test_sample_ons_rows = self.spark.createDataFrame(
             TestData.ons_sample_contemporary_rows,
             schema=TestSchema.ons_sample_contemporary_schema,
+        )
+        self.exptected_ons_rows = self.spark.createDataFrame(
+            TestData.expected_ons_sample_contemporary_rows,
+            schema=TestSchema.expected_ons_sample_contemporary_schema,
         )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             TestData.pa_sample_filled_post_rows,
@@ -59,17 +66,19 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
     def test_count_postcodes_per_la_adds_postcodes_per_la_column(
         self,
     ):
-        returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows)
-        self.assertTrue(DPColNames.SUM_POSTCODES_PER_LA in returned_data.columns)
+        self.assertTrue(
+            DPColNames.SUM_POSTCODES_PER_LA
+            in job.count_postcodes_per_la(self.test_sample_ons_rows).columns
+        )
 
     def test_count_postcodes_per_la_has_expected_values_in_new_column(
         self,
     ):
-        returned_data = job.count_postcodes_per_la(self.test_sample_ons_rows).collect()
-        self.assertEqual(returned_data[0][DPColNames.SUM_POSTCODES_PER_LA], 3)
-        self.assertEqual(returned_data[1][DPColNames.SUM_POSTCODES_PER_LA], 3)
-        self.assertEqual(returned_data[2][DPColNames.SUM_POSTCODES_PER_LA], 3)
-        self.assertEqual(returned_data[3][DPColNames.SUM_POSTCODES_PER_LA], 4)
-        self.assertEqual(returned_data[4][DPColNames.SUM_POSTCODES_PER_LA], 4)
-        self.assertEqual(returned_data[5][DPColNames.SUM_POSTCODES_PER_LA], 4)
-        self.assertEqual(returned_data[6][DPColNames.SUM_POSTCODES_PER_LA], 4)
+        self.assertEqual(
+            job.count_postcodes_per_la(self.test_sample_ons_rows)
+            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+            .collect(),
+            self.exptected_ons_rows.sort(
+                [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
+            ).collect(),
+        )

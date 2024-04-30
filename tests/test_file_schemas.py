@@ -440,7 +440,21 @@ class ONSData:
 
 @dataclass
 class PAFilledPostsByICBAreaSchema:
-    ons_sample_contemporary_schema = ONSData.expected_refactored_contemporary_schema
+    ons_sample_contemporary_schema = StructType(
+        [
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+        ]
+    )
+
+    expected_ons_sample_contemporary_schema = StructType(
+        [
+            *ons_sample_contemporary_schema,
+            StructField(DP.SUM_POSTCODES_PER_LA, IntegerType(), True),
+        ]
+    )
 
     pa_sample_filled_post_schema = StructType(
         [
