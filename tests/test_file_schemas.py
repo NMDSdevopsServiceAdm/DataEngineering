@@ -437,6 +437,8 @@ class ONSData:
         ]
     )
 
+    contemporary_schema = expected_refactored_contemporary_schema
+
 
 @dataclass
 class CapacityTrackerCareHomeSchema:
