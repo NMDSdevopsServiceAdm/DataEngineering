@@ -2939,19 +2939,150 @@ class PAFilledPostsSampleData:
 
 @dataclass
 class FlattenCQCRatings:
-    test_cqc_locations_rows = CQCLocationsData.sample_rows_full
-    test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-    filter_to_monthly_import_date_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
+    test_cqc_locations_rows = [
+        (
+            "loc_1",
+            CQCLValues.registered,
+            CQCLValues.social_care_identifier,
+            "20240101",
+            "2024",
+            "01",
+            "01",
+            {
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
+                        {
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                    ],
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
+            },
+            [
+                {
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
     ]
-    filter_to_start_of_most_recent_month_when_not_first_of_month_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
-        ("loc_3", "20240104"),
+    test_ascwds_workplace_rows = [("loc_1", "estab_1", "20240101", "2021", "01", "01")]
+    filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
     ]
-    expected_filter_to_start_of_most_recent_month_rows = [
-        ("loc_1", "20240101"),
+    filter_to_first_import_of_most_recent_month_when_two_imports_in_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
     ]
 
     flatten_current_ratings_rows = [
