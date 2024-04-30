@@ -3,13 +3,9 @@ from pyspark.sql.types import (
     StructType,
     StringType,
     ArrayType,
-    FloatType,
     IntegerType,
 )
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as OldColNames,
-)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as NewColNames,
 )
