@@ -61,7 +61,7 @@ def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
     ).orderBy(ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr)
 
     postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.COUNT_DISTINCT_POSTCODES_PER_LA,
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
         F.size(F.collect_set(ONSClean.postcode).over(w)),
     )
 

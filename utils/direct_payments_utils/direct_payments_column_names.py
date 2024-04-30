@@ -159,7 +159,7 @@ class DirectPaymentColumnNames:
     HISTORIC_RATIO: str = "historic_ratio"
 
     # Split PA filled posts by ICB area
-    COUNT_DISTINCT_POSTCODES_PER_LA: str = "count_of_distinct_postcodes_per_la"
+    COUNT_OF_DISTINCT_POSTCODES_PER_LA: str = "count_of_distinct_postcodes_per_la"
 
 
 @dataclass

@@ -67,7 +67,7 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
         self,
     ):
         self.assertTrue(
-            DPColNames.SUM_POSTCODES_PER_LA
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA
             in job.count_postcodes_per_la(self.test_sample_ons_rows).columns
         )
 
