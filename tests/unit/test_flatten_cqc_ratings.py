@@ -94,7 +94,7 @@ class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
     def test_filter_to_first_import_of_most_recent_month_returns_correct_rows_when_most_recent_data_is_the_first_of_the_month(
         self,
     ):
-        returned_data = job.filter_to_start_of_most_recent_month(
+        returned_data = job.filter_to_first_import_of_most_recent_month(
             self.test_cqc_df
         ).collect()
         self.assertEqual(returned_data, self.expected_data)
@@ -102,7 +102,7 @@ class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
     def test_filter_to_first_import_of_most_recent_month_returns_correct_rows_when_most_recent_data_is_not_the_first_of_the_month(
         self,
     ):
-        returned_data = job.filter_to_start_of_most_recent_month(
+        returned_data = job.filter_to_first_import_of_most_recent_month(
             self.test_cqc_when_two_imports_in_most_recent_month_df
         ).collect()
         self.assertEqual(returned_data, self.expected_data)
@@ -110,7 +110,7 @@ class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
     def test_filter_to_first_import_of_most_recent_month_returns_correct_rows_when_earliest_date_in_month_is_not_the_first_of_the_month(
         self,
     ):
-        returned_data = job.filter_to_start_of_most_recent_month(
+        returned_data = job.filter_to_first_import_of_most_recent_month(
             self.test_cqc_when_earliest_date_is_not_first_of_month_df
         ).collect()
         self.assertEqual(returned_data, self.expected_data)
