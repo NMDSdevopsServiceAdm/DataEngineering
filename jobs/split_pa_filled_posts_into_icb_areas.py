@@ -1,4 +1,8 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    Window,
+    functions as F,
+)
 
 from utils import utils
 
@@ -31,6 +35,7 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 1 - Create column with count of postcodes by LA.
+    postcode_directory_df = count_postcodes_per_la(postcode_directory_df)
 
     # TODO 2 - Create column with count of postcodes by hybrid area.
 
@@ -48,6 +53,19 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         mode="overwrite",
         partitionKeys=[DPColNames.YEAR],
     )
+
+
+def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
+    w = Window.partitionBy(
+        ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr
+    ).orderBy(ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr)
+
+    postcode_directory_df = postcode_directory_df.withColumn(
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+        F.size(F.collect_set(ONSClean.postcode).over(w)),
+    )
+
+    return postcode_directory_df
 
 
 if __name__ == "__main__":

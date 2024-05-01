@@ -439,6 +439,35 @@ class ONSData:
 
 
 @dataclass
+class PAFilledPostsByICBAreaSchema:
+    ons_sample_contemporary_schema = StructType(
+        [
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+        ]
+    )
+
+    expected_ons_sample_contemporary_schema = StructType(
+        [
+            *ons_sample_contemporary_schema,
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+        ]
+    )
+
+    pa_sample_filled_post_schema = StructType(
+        [
+            StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CapacityTrackerCareHomeSchema:
     sample_schema = StructType(
         [
@@ -1594,19 +1623,6 @@ class ValidateMergedIndCqcData:
             *MergeIndCQCData.expected_cqc_and_ascwds_merged_schema,
             StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-        ]
-    )
-
-
-@dataclass
-class PAFilledPostsSampleData:
-    pa_filled_post_sample_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), True),
-            StructField(
-                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
-            ),
-            StructField(DP.YEAR, StringType(), True),
         ]
     )
 
