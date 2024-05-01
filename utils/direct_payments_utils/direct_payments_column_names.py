@@ -160,6 +160,7 @@ class DirectPaymentColumnNames:
 
     # Split PA filled posts by ICB area
     COUNT_OF_DISTINCT_POSTCODES_PER_LA: str = "count_of_distinct_postcodes_per_la"
+    HYBRID_AREA_LA_ICB: str = "hybrid_area_la_icb"
 
 
 @dataclass
