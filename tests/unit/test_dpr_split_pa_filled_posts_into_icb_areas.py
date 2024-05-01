@@ -97,3 +97,13 @@ class CountPostCodesPerHybridArea(SplitPAFilledPostsIntoICBAreas):
             DPColNames.HYBRID_AREA_LA_ICB
             in job.create_hybrid_area_column(self.test_sample_ons_rows).columns
         )
+
+    def test_create_hybrid_area_column_has_expected_values_in_new_column(self):
+        self.assertEqual(
+            job.create_hybrid_area_column(self.test_sample_ons_rows)
+            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+            .collect(),
+            self.expected_hybrid_area_rows.sort(
+                [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
+            ).collect(),
+        )
