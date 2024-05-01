@@ -32,6 +32,10 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             TestData.expected_ons_sample_contemporary_rows,
             schema=TestSchema.expected_ons_sample_contemporary_schema,
         )
+        self.expected_hybrid_area_rows = self.spark.createDataFrame(
+            TestData.expected_hybrid_area_rows,
+            schema=TestSchema.expected_hybrid_area_schema,
+        )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             TestData.pa_sample_filled_post_rows,
             schema=TestSchema.pa_sample_filled_post_schema,
@@ -81,4 +85,15 @@ class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
             self.exptected_ons_rows.sort(
                 [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
             ).collect(),
+        )
+
+
+class CountPostCodesPerHybridArea(SplitPAFilledPostsIntoICBAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_create_hybrid_area_column_adds_column_with_desired_name(self):
+        self.assertTrue(
+            DPColNames.HYBRID_AREA_LA_ICB
+            in job.create_hybrid_area_column(self.test_sample_ons_rows).columns
         )

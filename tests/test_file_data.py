@@ -640,20 +640,37 @@ class PAFilledPostsByICBArea:
     ]
 
     expected_ons_sample_contemporary_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4, "cssr2 - icb2"), 
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4, "cssr2 - icb3"), 
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4, "cssr2 - icb3"), 
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4, "cssr2 - icb3"), 
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3, "cssr1 - icb1"),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3, "cssr2 - icb2"), 
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3, "cssr2 - icb3"), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3, "cssr2 - icb3"), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3, "cssr2 - icb3"), 
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+    ]
+
+    expected_hybrid_area_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2","cssr2 - icb2"), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3"), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3"), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3"), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1"),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2","cssr2 - icb2"), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3"),
     ]
     # fmt: on
 
