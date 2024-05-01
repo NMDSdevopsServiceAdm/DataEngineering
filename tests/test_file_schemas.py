@@ -453,6 +453,7 @@ class PAFilledPostsByICBAreaSchema:
         [
             *ons_sample_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(DP.HYBRID_AREA_LA_ICB, StringType(), True),
         ]
     )
 
