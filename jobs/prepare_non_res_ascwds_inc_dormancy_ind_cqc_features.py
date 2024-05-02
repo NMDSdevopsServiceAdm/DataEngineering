@@ -10,6 +10,7 @@ from utils.feature_engineering_dictionaries import (
     SERVICES_LOOKUP as services_dict,
     RURAL_URBAN_INDICATOR_LOOKUP as rural_urban_indicator_dict,
     REGION_LOOKUP as ons_region_dict,
+    DORMANCY_LOOKUP as dormancy_dict,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -26,21 +27,19 @@ from utils.features.helper import (
 
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
-    non_res_ind_cqc_features_destination: str,
+    non_res_ascwds_inc_dormancy_ind_cqc_features_destination: str,
 ) -> DataFrame:
-    print("Creating non res features dataset...")
+    print("Creating non res ascwds inc dormancy features dataset...")
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    filtered_loc_data = filter_df_to_non_res_only(locations_df)
-
-    filtered_data_with_employee_col = convert_col_to_integer_col(
-        df=filtered_loc_data,
-        col_name=IndCQC.people_directly_employed,
+    non_res_locations_df = filter_df_to_non_res_only(locations_df)
+    non_res_locations_with_dormancy_df = filter_df_to_non_null_dormancy(
+        non_res_locations_df
     )
 
     features_df = add_service_count_to_data(
-        df=filtered_data_with_employee_col,
+        df=non_res_locations_with_dormancy_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
@@ -70,6 +69,15 @@ def main(
         )
     )
 
+    dormancy = list(dormancy_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.dormancy,
+            lookup_dict=dormancy_dict,
+        )
+    )
+
     features_df = add_date_diff_into_df(
         df=features_df,
         new_col_name=IndCQC.date_diff,
@@ -79,9 +87,9 @@ def main(
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
-            IndCQC.people_directly_employed,
             IndCQC.date_diff,
         ]
+        + dormancy
         + service_keys
         + regions
         + rui_indicators
@@ -94,11 +102,10 @@ def main(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
-        IndCQC.number_of_beds,
-        IndCQC.people_directly_employed,
+        IndCQC.dormancy,
         IndCQC.care_home,
-        IndCQC.features,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.features,
         Keys.year,
         Keys.month,
         Keys.day,
@@ -109,10 +116,12 @@ def main(
     print(len(list_for_vectorisation))
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
-    print(f"Exporting as parquet to {non_res_ind_cqc_features_destination}")
+    print(
+        f"Exporting as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
+    )
     utils.write_to_parquet(
         vectorised_features_df,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
@@ -122,31 +131,33 @@ def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "N")
 
 
-def convert_col_to_integer_col(df, col_name):
-    return df.withColumn(col_name, F.col(col_name).cast("int"))
+def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(IndCQC.dormancy).isNotNull())
 
 
 if __name__ == "__main__":
-    print("Spark job 'prepare_non_res_ind_cqc_features' starting...")
+    print(
+        "Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' starting..."
+    )
     print(f"Job parameters: {sys.argv}")
 
     (
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
             "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
         ),
         (
-            "--non_res_ind_cqc_features_destination",
-            "A destination directory for outputting non_res_features_ind_cqc_filled_posts",
+            "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination",
+            "A destination directory for outputting non-res ASCWDS inc dormancy model features dataset",
         ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ind_cqc_features_destination,
+        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_non_res_ind_cqc_features' complete")
+    print("Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' complete")

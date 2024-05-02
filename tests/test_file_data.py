@@ -2118,19 +2118,19 @@ class FilterAscwdsFilledPostsData:
 
 
 @dataclass
-class NonResFeaturesData(object):
+class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", '2022', '02', '01', '20220201'),
-        ("1-1783948", date(2022, 1, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", '2022', '01', '01', '20220101'),
-        ("1-10235302415", date(2022, 1, 12), "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered", '2022', '01', '12', '20220112'),
-        ("1-1060912125", date(2022, 1, 12), "Yorkshire and the Humber", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered", '2022', '01', '12', '20220212'),
-        ("1-107095666", date(2022, 3, 1), "Yorkshire and the Humber", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '01', '20220301'),
-        ("1-108369587", date(2022, 3, 8), "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-000000001", date(2022, 3, 8), "Yorkshire and the Humber", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", "Y", "Local authority", "Urban city and town", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-10894414510", date(2022, 3, 8), "Yorkshire and the Humber", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", "Y", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '08', '20220308'),
-        ("1-108950835", date(2022, 3, 15), "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", "Y", "", "Urban city and town", "rule_1", "Registered", '2022', '03', '15', '20220315'),
-        ("1-108967195", date(2022, 4, 22), "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), "South East", "Y", ["Domiciliary care service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), "South East", "N", ["Domiciliary care service"], "non-residential", 67.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), "South West", "Y", ["Urgent care services", "Supported living service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), "North East", "Y", ["Hospice services at home"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", None, "N", "Urban city and town", '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), "South West", None, ["Specialist college service"], "non-residential", None, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", None, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", 25.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), "North West", None, ["Care home service without nursing"], "Care home without nursing", None, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], "non-residential", None, "N", "Urban city and town", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
@@ -2141,6 +2141,17 @@ class NonResFeaturesData(object):
 
     expected_filtered_to_non_care_home_rows = [
         ("N", CQCLValues.independent),
+    ]
+
+    filter_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00002", None),
+        ("1-00003", "N"),
+    ]
+
+    expected_filtered_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00003", "N"),
     ]
 
 
