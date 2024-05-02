@@ -224,15 +224,46 @@ class RemoveASCWDSHeadOfficeAccountsWithoutLocationIdsTests(ReconciliationTests)
 class GetAscwdsParentAccounts(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_get_parents_df = self.spark.createDataFrame(
+            Data.get_ascwds_parent_accounts_rows,
+            Schemas.get_ascwds_parent_accounts_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_get_ascwds_parent_accounts_rows,
+            Schemas.expected_get_ascwds_parent_accounts_schema,
+        )
+        self.returned_df = job.get_ascwds_parent_accounts(self.test_get_parents_df)
 
-        # TODO
+    def test_get_ascwds_parent_accounts_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_cqc_df = self.spark.createDataFrame(
+            Data.cqc_data_for_join_rows, Schemas.cqc_data_for_join_schema
+        )
+        self.test_ascwds_df = self.spark.createDataFrame(
+            Data.ascwds_data_for_join_rows, Schemas.ascwds_data_for_join_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_data_for_join_rows, Schemas.expected_data_for_join_schema
+        )
+        self.returned_df = job.join_cqc_location_data_into_ascwds_workplace_df(
+            self.test_ascwds_df, self.test_cqc_df
+        )
+        self.expected_df.show()
+        self.returned_df.show()
 
-        # TODO
+    def test_join_cqc_locations_data_into_ascwds_workplace_df_returns_correct_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):

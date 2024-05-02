@@ -166,7 +166,7 @@ def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
-    df = df.filter(F.col(AWPClean.is_parent) == "Yes").select(
+    df = df.filter(F.col(AWPClean.is_parent) == ReconValues.is_parent).select(
         AWPClean.nmds_id,
         AWPClean.establishment_id,
         AWPClean.establishment_name,
