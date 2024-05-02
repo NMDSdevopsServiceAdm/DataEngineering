@@ -756,6 +756,7 @@ class FilterDataframeToMaximumValueTests(UtilsTests):
 
         self.assertEqual(expected_data, returned_data)
 
+
 class SelectRowsWithValueTests(UtilsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -780,7 +781,10 @@ class SelectRowsWithValueTests(UtilsTests):
         self.assertFalse("id_2" in self.returned_ids)
 
     def test_select_rows_with_value_does_not_change_columns(self):
-        self.assertEqual(self.returned_df.schema, UtilsSchema.select_rows_with_value_schema)
+        self.assertEqual(
+            self.returned_df.schema, UtilsSchema.select_rows_with_value_schema
+        )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
