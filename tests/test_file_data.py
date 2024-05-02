@@ -672,6 +672,23 @@ class PAFilledPostsByICBArea:
         ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3"), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3"),
     ]
+
+    expected_hybrid_area_rows_with_postcode_count = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2","cssr2 - icb2",1), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3",3), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3",3), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3","cssr2 - icb3",3), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1","cssr1 - icb1",3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2","cssr2 - icb2",1), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3",2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3",2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3","cssr2 - icb3",2),
+    ]
     # fmt: on
 
     pa_sample_filled_post_rows = [

@@ -463,6 +463,16 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
+    expected_hybrid_area_rows_with_postcode_count_schema = StructType(
+        [
+            *ons_sample_contemporary_schema,
+            StructField(DP.HYBRID_AREA_LA_ICB, StringType(), True),
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+        ]
+    )
+
     pa_sample_filled_post_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),

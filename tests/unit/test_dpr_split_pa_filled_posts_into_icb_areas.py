@@ -36,6 +36,10 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             TestData.expected_hybrid_area_rows,
             schema=TestSchema.expected_hybrid_area_schema,
         )
+        self.expected_hybrid_area_rows_with_postcode_count = self.spark.createDataFrame(
+            TestData.expected_hybrid_area_rows_with_postcode_count,
+            schema=TestSchema.expected_hybrid_area_rows_with_postcode_count_schema,
+        )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             TestData.pa_sample_filled_post_rows,
             schema=TestSchema.pa_sample_filled_post_schema,
@@ -104,6 +108,24 @@ class CountPostCodesPerHybridArea(SplitPAFilledPostsIntoICBAreas):
             .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
             .collect(),
             self.expected_hybrid_area_rows.sort(
+                [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
+            ).collect(),
+        )
+
+    def test_count_postcodes_per_hybrid_area_adds_postcode_per_hybrid_area_column(self):
+        self.assertTrue(
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA
+            in job.count_postcodes_per_hybrid_area(self.test_sample_ons_rows).columns
+        )
+
+    def test_count_postcodes_per_hybrid_area_has_expected_values_in_new_column(
+        self,
+    ):
+        self.assertEqual(
+            job.count_postcodes_per_hybrid_area(self.test_sample_ons_rows)
+            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+            .collect(),
+            self.expected_hybrid_area_rows_with_postcode_count.sort(
                 [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
             ).collect(),
         )
