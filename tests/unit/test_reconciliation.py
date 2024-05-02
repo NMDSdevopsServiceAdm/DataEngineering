@@ -494,9 +494,6 @@ class JoinArrayOfNmdsIdsTests(ReconciliationTests):
             Data.expected_join_array_of_nmdsids_rows,
             Schemas.expected_join_array_of_nmdsids_schema,
         )
-        self.returned_df.show()
-
-        self.expected_df.show()
 
     def test_join_array_of_nmdsids_returns_one_row_per_org_id(self):
         expected_rows = self.unique_df.count()
@@ -516,8 +513,8 @@ class JoinArrayOfNmdsIdsTests(ReconciliationTests):
         self.assertEqual(returned_data_type, expected_data_type)
 
     def test_join_array_of_nmdsids_groups_nmdsids_correctly(self):
-        expected_data = self.expected_df.collect()
-        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.sort(AWPClean.organisation_id).collect()
+        returned_data = self.returned_df.sort(AWPClean.organisation_id).collect()
         self.assertEqual(expected_data, returned_data)
 
 
