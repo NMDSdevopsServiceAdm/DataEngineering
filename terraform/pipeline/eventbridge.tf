@@ -117,14 +117,14 @@ resource "aws_iam_policy" "scheduler" {
 
 resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
   name        = "${local.workspace_prefix}-CqcApiSchedule"
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  state       = terraform.workspace == "add-timezone-to-cron" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API bulk download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(30 01 01,08,15,23 * ? *)"
+  schedule_expression = "cron(00,15,30,45 15,16 01,03,08,15,23 * ? *)"
   schedule_expression_timezone = "GMT"
 
   target {
