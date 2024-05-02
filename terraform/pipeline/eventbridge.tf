@@ -124,8 +124,8 @@ resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
     mode = "OFF"
   }
 
-  schedule_expression          = "cron(00,15,30,45 15,16 01,03,08,15,23 * ? *)"
-  schedule_expression_timezone = "GMT"
+  schedule_expression          = "cron(00,15,30,45 15,16 01,02,08,15,23 * ? *)"
+  schedule_expression_timezone = "Europe/London"
 
   target {
     arn      = aws_sfn_state_machine.bulk-download-cqc-api-state-machine.arn
