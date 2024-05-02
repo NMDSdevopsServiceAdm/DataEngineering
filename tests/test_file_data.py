@@ -2065,18 +2065,21 @@ class ReconciliationData:
         ("org 2", "loc 4", ""),
         ("org 2", "loc 5", ""),
         ("org 3", "loc 6", ""),
+        ("org 5", "loc 7", ""),
     ]
 
     unique_rows = [
         ("org 1", ""),
         ("org 2", ""),
         ("org 3", ""),
+        ("org 6", ""),
     ]
 
     expected_join_array_of_nmdsids_rows = [
         ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
         ("org 2", "", "new_column: loc 5, loc 4"),
         ("org 3", "", "new_column: loc 6"),
+        ("org 6", "", None),
     ]
 
     new_column = "new_column"
