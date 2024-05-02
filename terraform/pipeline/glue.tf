@@ -75,21 +75,6 @@ module "clean_cqc_pir_data_job" {
   }
 }
 
-module "ingest_cqc_care_directory_job" {
-  source          = "../modules/glue-job"
-  script_name     = "ingest_cqc_care_directory.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
-
-  job_parameters = {
-    "--source"               = ""
-    "--provider_destination" = ""
-    "--location_destination" = ""
-  }
-}
-
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ascwds_dataset.py"
@@ -191,47 +176,13 @@ module "clean_ind_cqc_filled_posts_job" {
   }
 }
 
-module "bulk_cqc_providers_download_job_old" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_providers_old.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
-
-  job_parameters = {
-    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
-  }
-}
-
-module "bulk_cqc_locations_download_job_old" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_locations_old.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
-
-  job_parameters = {
-    "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
-    "--additional-python-modules" : "ratelimit==2.2.1,"
-  }
-}
-
 module "bulk_cqc_providers_download_job" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_providers.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_providers.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
@@ -240,14 +191,12 @@ module "bulk_cqc_providers_download_job" {
 }
 
 module "bulk_cqc_locations_download_job" {
-  source           = "../modules/glue-job"
-  script_name      = "bulk_download_cqc_locations.py"
-  glue_role        = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket  = module.pipeline_resources
-  datasets_bucket  = module.datasets_bucket
-  trigger          = true
-  trigger_schedule = "cron(30 01 01,08,15,23 * ? *)"
-  glue_version     = "3.0"
+  source          = "../modules/glue-job"
+  script_name     = "bulk_download_cqc_locations.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
@@ -266,7 +215,7 @@ module "ingest_dpr_external_data_job" {
 
   job_parameters = {
     "--external_data_source"      = ""
-    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2023.01/"
+    "--external_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2024.01/"
   }
 }
 
@@ -280,7 +229,7 @@ module "ingest_dpr_survey_data_job" {
 
   job_parameters = {
     "--survey_data_source"      = ""
-    "--survey_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2023.01/"
+    "--survey_data_destination" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2024.01/"
   }
 }
 
@@ -292,8 +241,8 @@ module "prepare_dpr_external_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2023.01/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2023.01/"
+    "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2024.01/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2024.01/"
   }
 }
 
@@ -305,8 +254,8 @@ module "prepare_dpr_survey_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2023.01/"
-    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/"
+    "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2024.01/"
+    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2024.01/"
   }
 }
 
@@ -318,9 +267,9 @@ module "merge_dpr_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2023.01/"
-    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2023.01/"
-    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
+    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2024.01/"
+    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2024.01/"
+    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2024.01/"
   }
 }
 
@@ -332,9 +281,38 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2023.01/"
-    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2023.01/"
-    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2023.01/"
+    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2024.01/"
+    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2024.01/"
+    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2024.01/"
+  }
+}
+
+module "split_pa_filled_posts_into_icb_areas" {
+  source          = "../modules/glue-job"
+  script_name     = "split_pa_filled_posts_into_icb_areas.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+  job_parameters = {
+    "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2024.01/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2024.01/"
+  }
+}
+
+module "flatten_cqc_ratings_job" {
+  source          = "../modules/glue-job"
+  script_name     = "flatten_cqc_ratings.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
+    "--ascwds_workplace_source"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
+    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=benchmark_ratings/"
   }
 }
 
@@ -352,11 +330,13 @@ module "clean_cqc_provider_data_job" {
 }
 
 module "clean_cqc_location_data_job" {
-  source          = "../modules/glue-job"
-  script_name     = "clean_cqc_location_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "clean_cqc_location_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  worker_type       = "G.2X"
+  number_of_workers = 5
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"

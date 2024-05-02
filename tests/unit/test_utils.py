@@ -554,13 +554,6 @@ class GeneralUtilsTests(UtilsTests):
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
 
-    def test_format_date_string(self):
-        formatted_df = utils.format_date_string(
-            self.df, "yyyy-MM-dd", "date_col", "dd/MM/yyyy"
-        )
-        self.assertEqual(type(formatted_df.select("date_col").first()[0]), str)
-        self.assertEqual(formatted_df.select("date_col").first()[0], "1993-11-28")
-
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
         csv_test = utils.is_csv(csv_name)

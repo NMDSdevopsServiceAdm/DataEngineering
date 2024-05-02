@@ -8,6 +8,10 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
 )
 
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCLNew,
+)
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedValues as CQCPValues,
 )
@@ -29,8 +33,8 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
-from utils.reconciliation_utils.reconciliation_values import (
-    ReconciliationValues as ReconValues,
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsValues,
 )
 
 
@@ -577,10 +581,16 @@ class CQCProviderData:
         "1-10000000005",
     ]
 
+    rows_without_cqc_sector = [
+        ("1-10000000001", "data"),
+        ("1-10000000002", None),
+        ("1-10000000003", "data"),
+    ]
+
     expected_rows_with_cqc_sector = [
-        ("1-10000000001", CQCPValues.independent),
-        ("1-10000000002", CQCPValues.local_authority),
-        ("1-10000000003", CQCPValues.local_authority),
+        ("1-10000000001", "data", CQCPValues.independent),
+        ("1-10000000002", None, CQCPValues.local_authority),
+        ("1-10000000003", "data", CQCPValues.local_authority),
     ]
 
 
@@ -607,6 +617,50 @@ class ONSData:
         ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
     ]
     # fmt: on
+
+
+@dataclass
+class PAFilledPostsByICBArea:
+    # fmt: off
+    ons_sample_contemporary_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2"), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2"), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
+    ]
+
+    expected_ons_sample_contemporary_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+    ]
+    # fmt: on
+
+    pa_sample_filled_post_rows = [
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+    ]
 
 
 @dataclass
@@ -1960,201 +2014,37 @@ class ReconciliationData:
             0,
         ),
     ]
-
+    # fmt: off
     final_column_selection_rows = [
         (
-            "extra_col",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
-            "",
-            "nmds_1",
-            "",
-            "desc_a",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "",
         ),
         (
-            "extra_col",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
-            "",
-            "nmds_2",
-            "",
-            "desc_b",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "",
         ),
         (
-            "extra_col",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
-            "",
-            "nmds_2",
-            "",
-            "desc_a",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "",
         ),
         (
-            "extra_col",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
-            "",
-            "nmds_1",
-            "",
-            "desc_b",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "",
         ),
     ]
 
     expected_final_column_selection_rows = [
         (
-            "",
-            "nmds_1",
-            "",
-            "desc_a",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
+             "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
         ),
         (
-            "",
-            "nmds_2",
-            "",
-            "desc_a",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
+             "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
         ),
         (
-            "",
-            "nmds_1",
-            "",
-            "desc_b",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
+             "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
         ),
         (
-            "",
-            "nmds_2",
-            "",
-            "desc_b",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            "",
+             "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
         ),
     ]
-
+    # fmt: on
     add_subject_column_rows = [
         ("loc_1",),
     ]
@@ -3126,3 +3016,707 @@ class ValidateMergedIndCqcData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
     ]
     # fmt: on
+
+
+@dataclass
+class FlattenCQCRatings:
+    test_cqc_locations_rows = [
+        (
+            "loc_1",
+            CQCLValues.registered,
+            CQCLValues.social_care_identifier,
+            "20240101",
+            "2024",
+            "01",
+            "01",
+            {
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
+                        {
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                    ],
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
+            },
+            [
+                {
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    ]
+    test_ascwds_workplace_rows = [("loc_1", "estab_1", "20240101", "2021", "01", "01")]
+    filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+    ]
+    filter_to_first_import_of_most_recent_month_when_two_imports_in_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
+    ]
+
+    flatten_current_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            {
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
+                        {
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                    ],
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ),
+    ]
+
+    flatten_historic_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            [
+                {
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    ]
+
+    expected_flatten_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Overall rating Excellent",
+            "Safe rating Good",
+            "Well-led rating Good",
+            "Caring rating Good",
+            "Responsive rating Good",
+            "Effective rating Good",
+        )
+    ]
+    recode_unknown_to_null_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "registered",
+            "report_date",
+            "Inspected but not rated",
+            "No published rating",
+            "Insufficient evidence to rate",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "No published rating",
+            "",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_recode_unknown_to_null_rows = [
+        (
+            "loc_1",
+            "registered",
+            "report_date",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "registered",
+            "report_date",
+            None,
+            None,
+            None,
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "No published rating",
+            "",
+            "Excellent",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+
+    add_current_or_historic_rows = [
+        ("loc_1",),
+    ]
+    expected_add_current_rows = [
+        ("loc_1", CQCRatingsValues.current),
+    ]
+    expected_add_historic_rows = [
+        ("loc_1", CQCRatingsValues.historic),
+    ]
+
+    remove_blank_rows_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "Registered",
+            "20240101",
+            None,
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "Registered",
+            "20240101",
+            "Good",
+            None,
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_4",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            None,
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_5",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_6",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            "Good",
+        ),
+        (
+            "loc_7",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            None,
+        ),
+        ("loc_8", "Registered", "20240101", None, None, None, None, None, None),
+        (
+            "loc_1",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+    ]
+    expected_remove_blank_rows_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_2",
+            "Registered",
+            "20240101",
+            None,
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_3",
+            "Registered",
+            "20240101",
+            "Good",
+            None,
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_4",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            None,
+            "Good",
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_5",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            "Good",
+            "Good",
+        ),
+        (
+            "loc_6",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            None,
+            "Good",
+        ),
+        (
+            "loc_7",
+            "Registered",
+            "20240101",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            None,
+        ),
+    ]
+
+    add_rating_sequence_rows = [
+        ("loc_1", "2024-01-01"),
+        ("loc_1", "2024-01-02"),
+        ("loc_2", "2024-01-01"),
+        ("loc_2", "2024-02-01"),
+        ("loc_3", "2023-01-01"),
+        ("loc_3", "2024-01-01"),
+    ]
+    expected_add_rating_sequence_rows = [
+        ("loc_1", "2024-01-02", 2),
+        ("loc_2", "2024-01-01", 1),
+        ("loc_2", "2024-02-01", 2),
+        ("loc_1", "2024-01-01", 1),
+        ("loc_3", "2023-01-01", 1),
+        ("loc_3", "2024-01-01", 2),
+    ]
+    expected_reversed_add_rating_sequence_rows = [
+        ("loc_1", "2024-01-02", 1),
+        ("loc_2", "2024-01-01", 2),
+        ("loc_2", "2024-02-01", 1),
+        ("loc_1", "2024-01-01", 2),
+        ("loc_3", "2023-01-01", 2),
+        ("loc_3", "2024-01-01", 1),
+    ]
+
+    add_latest_rating_flag_rows = [
+        ("loc_1", 1),
+        ("loc_2", 1),
+        ("loc_2", 2),
+    ]
+    expected_add_latest_rating_flag_rows = [
+        ("loc_1", 1, 1),
+        ("loc_2", 1, 1),
+        ("loc_2", 2, 0),
+    ]
+
+    create_standard_rating_dataset_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            1,
+            1,
+            1,
+        ),
+        (
+            "loc_1",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            1,
+            1,
+            1,
+        ),
+        (
+            "loc_1",
+            "Degistered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            1,
+            1,
+            1,
+        ),
+        (
+            "loc_1",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Historic",
+            1,
+            1,
+            1,
+        ),
+        (
+            "loc_1",
+            "Registered",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Current",
+            1,
+            0,
+            1,
+        ),
+    ]
+    expected_create_standard_rating_dataset_rows = [
+        ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", 1, 1),
+    ]
+    select_ratings_for_benchmarks_rows = [
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+        ("loc_2", CQCLValues.registered, CQCRatingsValues.historic),
+        ("loc_3", CQCLValues.deregistered, CQCRatingsValues.current),
+        ("loc_4", CQCLValues.deregistered, CQCRatingsValues.historic),
+    ]
+    expected_select_ratings_for_benchmarks_rows = [
+        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+    ]
+
+    add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding),
+        ("loc_2", CQCRatingsValues.good),
+        ("loc_3", "other rating"),
+        ("loc_1", None),
+    ]
+    expected_add_good_or_outstanding_flag_rows = [
+        ("loc_1", CQCRatingsValues.outstanding, 1),
+        ("loc_2", CQCRatingsValues.good, 1),
+        ("loc_3", "other rating", 0),
+        ("loc_1", None, 0),
+    ]
+    ratings_join_establishment_ids_rows = [
+        ("loc_1", "ratings data"),
+        ("loc_3", "ratings data"),
+    ]
+
+    ascwds_join_establishment_ids_rows = [
+        ("loc_1", "estab_1", "20240101"),
+        ("loc_2", "estab_2", "20240101"),
+    ]
+    expected_join_establishment_ids_rows = [
+        ("loc_1", "ratings data", "estab_1"),
+        ("loc_3", "ratings data", None),
+    ]
+    create_benchmark_ratings_dataset_rows = [
+        ("loc_1", "estab_1", 1, "Good", "2024-01-01", ""),
+        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01", ""),
+        ("loc_3", None, 1, "Good", "2024-01-01", ""),
+        ("loc_4", "estab_2", 0, None, "2024-01-01", ""),
+        ("loc_5", None, 0, None, "2024-01-01", ""),
+    ]
+    expected_create_benchmark_ratings_dataset_rows = [
+        ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
+        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
+    ]

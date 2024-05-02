@@ -40,6 +40,32 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
   ]
 }
 
+resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
+  name     = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/BulkDownloadCQCAPIPipeline-StepFunction.json", {
+    dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
+    bulk_cqc_locations_download_job_name = module.bulk_cqc_locations_download_job.job_name
+    bulk_cqc_providers_download_job_name = module.bulk_cqc_providers_download_job.job_name
+    flatten_cqc_ratings_job_name         = module.flatten_cqc_ratings_job.job_name
+    cqc_crawler_name                     = module.cqc_crawler.crawler_name
+    sfc_crawler_name                     = module.sfc_crawler.crawler_name
+    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "direct-payments-state-machine" {
   name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
