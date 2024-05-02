@@ -311,16 +311,9 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
 def join_array_of_nmdsids_into_parent_account_df(
     df_with_issues: DataFrame, new_col_name: str, unique_df: DataFrame
 ) -> DataFrame:
-    unique_issues_parents_df = organisation_id_with_array_of_nmdsids(
-        df_with_issues, new_col_name
+    subs_at_parent_df = df_with_issues.select(
+        AWPClean.organisation_id, AWPClean.nmds_id
     )
-    return unique_df.join(unique_issues_parents_df, AWPClean.organisation_id, "left")
-
-
-def organisation_id_with_array_of_nmdsids(
-    df: DataFrame, new_col_name: str
-) -> DataFrame:
-    subs_at_parent_df = df.select(AWPClean.organisation_id, AWPClean.nmds_id)
     subs_at_parent_df = subs_at_parent_df.groupby(AWPClean.organisation_id).agg(
         F.collect_set(AWPClean.nmds_id).alias(new_col_name)
     )
@@ -330,7 +323,10 @@ def organisation_id_with_array_of_nmdsids(
     subs_at_parent_df = subs_at_parent_df.withColumn(
         new_col_name, F.concat(F.lit(new_col_name), F.lit(": "), F.col(new_col_name))
     )
-    return subs_at_parent_df
+    df_with_array_of_ids = unique_df.join(
+        subs_at_parent_df, AWPClean.organisation_id, "left"
+    )
+    return df_with_array_of_ids
 
 
 def create_description_column_for_parent_accounts(df: DataFrame) -> DataFrame:

@@ -1097,6 +1097,20 @@ class ReconciliationSchema:
         ]
     )
 
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
     add_singles_and_subs_description_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1208,6 +1222,45 @@ class ReconciliationSchema:
         [
             *add_subject_column_schema,
             StructField(ReconColumn.subject, StringType(), True),
+        ]
+    )
+
+    new_issues_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    unique_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_join_array_of_nmdsids_schema = StructType(
+        [
+            *unique_schema,
+            StructField("new_column", StringType(), True),
+        ]
+    )
+
+    create_parents_description_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(ReconColumn.new_potential_subs, StringType(), True),
+            StructField(ReconColumn.old_potential_subs, StringType(), True),
+            StructField(
+                ReconColumn.missing_or_incorrect_potential_subs, StringType(), True
+            ),
+        ]
+    )
+
+    expected_create_parents_description_schema = StructType(
+        [
+            *create_parents_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
         ]
     )
 

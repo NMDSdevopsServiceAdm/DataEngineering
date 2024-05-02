@@ -2058,6 +2058,54 @@ class ReconciliationData:
         ("loc_1", "test_subject"),
     ]
 
+    new_issues_rows = [
+        ("org 1", "loc 1", ""),
+        ("org 1", "loc 2", ""),
+        ("org 1", "loc 3", ""),
+        ("org 2", "loc 4", ""),
+        ("org 2", "loc 5", ""),
+        ("org 3", "loc 6", ""),
+        ("org 5", "loc 7", ""),
+    ]
+
+    unique_rows = [
+        ("org 1", ""),
+        ("org 2", ""),
+        ("org 3", ""),
+        ("org 6", ""),
+    ]
+
+    expected_join_array_of_nmdsids_rows = [
+        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
+        ("org 2", "", "new_column: loc 5, loc 4"),
+        ("org 3", "", "new_column: loc 6"),
+        ("org 6", "", None),
+    ]
+
+    new_column = "new_column"
+
+    create_parents_description_rows = [
+        ("org 1", None, None, None),
+        ("org 2", None, None, "missing"),
+        ("org 3", None, "old", None),
+        ("org 4", None, "old", "missing"),
+        ("org 5", "new", None, None),
+        ("org 6", "new", None, "missing"),
+        ("org 7", "new", "old", None),
+        ("org 8", "new", "old", "missing"),
+    ]
+
+    expected_create_parents_description_rows = [
+        ("org 1", None, None, None, ""),
+        ("org 2", None, None, "missing", "missing "),
+        ("org 3", None, "old", None, "old "),
+        ("org 4", None, "old", "missing", "old missing "),
+        ("org 5", "new", None, None, "new "),
+        ("org 6", "new", None, "missing", "new missing "),
+        ("org 7", "new", "old", None, "new old "),
+        ("org 8", "new", "old", "missing", "new old missing "),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:

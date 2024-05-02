@@ -228,6 +228,13 @@ class GetAscwdsParentAccounts(ReconciliationTests):
         # TODO
 
 
+class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        # TODO
+
+
 class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
@@ -290,26 +297,6 @@ class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
     ):
         self.assertFalse("loc_23" in self.returned_locations)
         self.assertFalse("loc_24" in self.returned_locations)
-
-
-class CreateReconciliationOutputForSingleAndSubAccountsTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_singles_and_subs_df = self.spark.createDataFrame(
-            Data.singles_and_subs_rows,
-            Schemas.singles_and_subs_schema,
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_singles_and_subs_rows,
-            Schemas.expected_singles_and_subs_schema,
-        )
-        self.returned_df = job.add_singles_and_sub_description_column(
-            self.test_singles_and_subs_df,
-        )
-
-    @unittest.skip("to do")
-    def test(self):
-        pass
 
 
 class AddSinglesAndSubDescriptionColumnTests(ReconciliationTests):
@@ -485,3 +472,132 @@ class AddSubjectColumnTests(ReconciliationTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
+
+class JoinArrayOfNmdsIdsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.new_issues_df = self.spark.createDataFrame(
+            Data.new_issues_rows,
+            Schemas.new_issues_schema,
+        )
+        self.unique_df = self.spark.createDataFrame(
+            Data.unique_rows,
+            Schemas.unique_schema,
+        )
+        self.new_column = Data.new_column
+        self.returned_df = job.join_array_of_nmdsids_into_parent_account_df(
+            self.new_issues_df, self.new_column, self.unique_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_join_array_of_nmdsids_rows,
+            Schemas.expected_join_array_of_nmdsids_schema,
+        )
+
+    def test_join_array_of_nmdsids_returns_one_row_per_org_id(self):
+        expected_rows = self.unique_df.count()
+        returned_rows = self.returned_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_join_array_of_nmdsids_adds_one_column(self):
+        expected_columns = len(self.unique_df.columns) + 1
+        returned_columns = len(self.returned_df.columns)
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_join_array_of_nmdsids_adds_new_column_as_string_type(
+        self,
+    ):
+        expected_data_type = dict(self.expected_df.dtypes)[self.new_column]
+        returned_data_type = dict(self.returned_df.dtypes)[self.new_column]
+        self.assertEqual(returned_data_type, expected_data_type)
+
+    def test_join_array_of_nmdsids_groups_nmdsids_correctly(self):
+        expected_data = self.expected_df.sort(AWPClean.organisation_id).collect()
+        returned_data = self.returned_df.sort(AWPClean.organisation_id).collect()
+        self.assertEqual(expected_data, returned_data)
+
+
+class CreateDescriptionColumnForParentAccountsTests(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.df = self.spark.createDataFrame(
+            Data.create_parents_description_rows,
+            Schemas.create_parents_description_schema,
+        )
+        self.returned_df = job.create_description_column_for_parent_accounts(self.df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_parents_description_rows,
+            Schemas.expected_create_parents_description_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_create_description_column_for_parent_accounts_adds_one_column(self):
+        expected_columns = len(self.df.columns) + 1
+        returned_columns = len(self.returned_df.columns)
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_null_old_is_null_and_missing_is_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[0][ReconColumn.description],
+            self.expected_data[0][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_null_old_is_null_and_missing_is_not_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[1][ReconColumn.description],
+            self.expected_data[1][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_null_old_is_not_null_and_missing_is_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[2][ReconColumn.description],
+            self.expected_data[2][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_null_old_is_not_null_and_missing_is_not_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[3][ReconColumn.description],
+            self.expected_data[3][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_not_null_old_is_null_and_missing_is_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[4][ReconColumn.description],
+            self.expected_data[4][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_not_null_old_is_null_and_missing_is_not_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[5][ReconColumn.description],
+            self.expected_data[5][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_not_null_old_is_not_null_and_missing_is_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[6][ReconColumn.description],
+            self.expected_data[6][ReconColumn.description],
+        )
+
+    def test_create_description_column_for_parent_accounts_formats_sstring_correctly_when_new_is_not_null_old_is_not_null_and_missing_is_not_null(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[7][ReconColumn.description],
+            self.expected_data[7][ReconColumn.description],
+        )
