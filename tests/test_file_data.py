@@ -2112,6 +2112,19 @@ class ReconciliationData:
         ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
     ]
 
+    cqc_data_for_join_rows = [
+        ("loc_1", "name"),
+        ("loc_2", "name"),
+    ]
+    ascwds_data_for_join_rows = [
+        ("loc_1", "estab_1"),
+        ("loc_3", "estab_2"),
+    ]
+    expected_data_for_join_rows = [
+        ("loc_1", "estab_1", "name"),
+        ("loc_3", "estab_2", None),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:

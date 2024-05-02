@@ -1288,6 +1288,26 @@ class ReconciliationSchema:
         ]
     )
 
+    cqc_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+        ]
+    )
+    ascwds_data_for_join_schema = StructType(
+        [
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
+    )
+    expected_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
