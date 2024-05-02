@@ -495,7 +495,7 @@ class JoinArrayOfNmdsIdsTests(ReconciliationTests):
             Schemas.expected_join_array_of_nmdsids_schema,
         )
         self.returned_df.show()
-        
+
         self.expected_df.show()
 
     def test_join_array_of_nmdsids_returns_one_row_per_org_id(self):
