@@ -1264,6 +1264,30 @@ class ReconciliationSchema:
         ]
     )
 
+    get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:

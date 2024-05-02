@@ -224,8 +224,20 @@ class RemoveASCWDSHeadOfficeAccountsWithoutLocationIdsTests(ReconciliationTests)
 class GetAscwdsParentAccounts(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
-
-        # TODO
+        self.test_get_parents_df = self.spark.createDataFrame(
+            Data.get_ascwds_parent_accounts_rows, Schemas.get_ascwds_parent_accounts_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_get_ascwds_parent_accounts_rows, Schemas.expected_get_ascwds_parent_accounts_schema
+        )
+        self.returned_df = job.get_ascwds_parent_accounts(self.test_get_parents_df)
+    
+    def test_get_ascwds_prent_accounts_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(
+            returned_data, expected_data
+        )
 
 
 class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):

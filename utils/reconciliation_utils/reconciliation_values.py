@@ -38,3 +38,5 @@ class ReconciliationValues:
     parent_subject_value: str = "CQC Reconcilliation Work - Parent"
     single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
     single_sub_reg_type_description: str = "Potential (new): Regtype"
+    is_parent: str = "Yes"
+    is_not_parent: str = "No"

@@ -2103,6 +2103,15 @@ class ReconciliationData:
         ("org 8", "new", "old", "missing", "new old missing "),
     ]
 
+    get_ascwds_parent_accounts_rows = [
+        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id", ReconValues.is_parent, "other"),
+        ("nmds_2", "estab_2", "name", "org_2", "type", "region_id", ReconValues.is_not_parent, "other"),
+        ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
+    ]
+    expected_get_ascwds_parent_accounts_rows = [
+        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:
