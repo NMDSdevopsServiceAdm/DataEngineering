@@ -227,6 +227,12 @@ class GetAscwdsParentAccounts(ReconciliationTests):
 
         # TODO
 
+class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        # TODO
+
 
 class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
     def setUp(self) -> None:
@@ -290,26 +296,6 @@ class FilterToLocationsRelevantToReconciliationTests(ReconciliationTests):
     ):
         self.assertFalse("loc_23" in self.returned_locations)
         self.assertFalse("loc_24" in self.returned_locations)
-
-
-class CreateReconciliationOutputForSingleAndSubAccountsTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_singles_and_subs_df = self.spark.createDataFrame(
-            Data.singles_and_subs_rows,
-            Schemas.singles_and_subs_schema,
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_singles_and_subs_rows,
-            Schemas.expected_singles_and_subs_schema,
-        )
-        self.returned_df = job.add_singles_and_sub_description_column(
-            self.test_singles_and_subs_df,
-        )
-
-    @unittest.skip("to do")
-    def test(self):
-        pass
 
 
 class AddSinglesAndSubDescriptionColumnTests(ReconciliationTests):
@@ -485,33 +471,6 @@ class AddSubjectColumnTests(ReconciliationTests):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
-
-
-class SelectRowsWithValueTests(ReconciliationTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.df = self.spark.createDataFrame(
-            Data.select_rows_with_value_rows,
-            Schemas.select_rows_with_value_schema,
-        )
-
-        self.returned_df = job.select_rows_with_value(
-            self.df, "value_to_filter_on", "keep"
-        )
-
-        self.returned_ids = (
-            self.returned_df.select("id").rdd.flatMap(lambda x: x).collect()
-        )
-
-    def test_select_rows_with_value_selects_rows_with_value(self):
-        self.assertTrue("id_1" in self.returned_ids)
-
-    def test_select_rows_with_value_drops_other_rows(self):
-        self.assertFalse("id_2" in self.returned_ids)
-
-    def test_select_rows_with_value_does_not_change_columns(self):
-        self.assertEqual(self.returned_df.schema, Schemas.select_rows_with_value_schema)
 
 
 class JoinArrayOfNmdsIdsTests(ReconciliationTests):

@@ -1505,6 +1505,11 @@ class UtilsData:
         ("3", date(2023, 1, 1), "20240101"),
     ]
 
+    select_rows_with_value_rows = [
+        ("id_1", "keep"),
+        ("id_2", "remove"),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
@@ -2051,11 +2056,6 @@ class ReconciliationData:
 
     expected_add_subject_column_rows = [
         ("loc_1", "test_subject"),
-    ]
-
-    select_rows_with_value_rows = [
-        ("id_1", "keep"),
-        ("id_2", "remove"),
     ]
 
     new_issues_rows = [

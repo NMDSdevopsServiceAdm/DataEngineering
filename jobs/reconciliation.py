@@ -231,7 +231,7 @@ def filter_to_locations_relevant_to_reconcilition_process(
 def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     reconciliation_df: DataFrame,
 ) -> DataFrame:
-    singles_and_subs_df = select_rows_with_value(
+    singles_and_subs_df = utils.select_rows_with_value(
         reconciliation_df,
         ReconColumn.parents_or_singles_and_subs,
         ReconValues.singles_and_subs,
@@ -266,7 +266,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     reconciliation_df: DataFrame,
     first_of_previous_month: str,
 ) -> DataFrame:
-    reconciliation_parents_df = select_rows_with_value(
+    reconciliation_parents_df = utils.select_rows_with_value(
         reconciliation_df, ReconColumn.parents_or_singles_and_subs, ReconValues.parents
     )
     new_issues_df = reconciliation_parents_df.where(
@@ -408,11 +408,6 @@ def final_column_selection(df: DataFrame) -> DataFrame:
         ReconColumn.workplace_id,
     ).sort(ReconColumn.description, ReconColumn.nmds)
 
-    return df
-
-
-def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str):
-    df = df.where(df[column] == value_to_keep)
     return df
 
 
