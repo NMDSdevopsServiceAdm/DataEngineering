@@ -691,20 +691,20 @@ class PAFilledPostsByICBArea:
     ]
 
     expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4,1,0.25), 
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4,3,0.75), 
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4,3,0.75), 
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4,3,0.75), 
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3,3,1.00),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3,1,0.33), 
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3,2,0.66), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3,2,0.66), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3,2,0.66),
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4,1,0.25000), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4,3,0.75000), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4,3,0.75000), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4,3,0.75000), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3,3,1.00000),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3,1,0.33333), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3,2,0.66666), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3,2,0.66666), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3,2,0.66666),
     ]
     # fmt: on
 
