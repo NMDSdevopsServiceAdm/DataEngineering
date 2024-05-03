@@ -98,7 +98,7 @@ def create_ratio_between_columns(
     new_column_name: str,
 ):
     postcode_directory_df = postcode_directory_df.withColumn(
-        new_column_name, F.round(F.col(numerator_column) / F.col(denominator_column), 5)
+        new_column_name, F.col(numerator_column) / F.col(denominator_column)
     )
 
     return postcode_directory_df

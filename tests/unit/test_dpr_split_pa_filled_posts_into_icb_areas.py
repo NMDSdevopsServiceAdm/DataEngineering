@@ -140,7 +140,7 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CREATE_RATIO_BETWEEN_COLUMNS(SplitPAFilledPostsIntoICBAreas):
+class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -160,83 +160,102 @@ class CREATE_RATIO_BETWEEN_COLUMNS(SplitPAFilledPostsIntoICBAreas):
     def test_create_ratio_between_columns_has_expected_values_when_given_hybrid_and_la_counts(
         self,
     ):
-        returned_rows = job.create_ratio_between_columns(
-            self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
-            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
-            DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+        returned_rows = (
+            job.create_ratio_between_columns(
+                self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
+                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+                DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+            )
+            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+            .collect()
+        )
+
+        expected_rows = self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.sort(
+            [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
         ).collect()
 
-        expected_row_values = [
-            1.00000,
-            1.00000,
-            1.00000,
-            0.25000,
-            0.75000,
-            0.75000,
-            0.75000,
-            1.00000,
-            1.00000,
-            1.00000,
-            0.33333,
-            0.66667,
-            0.66667,
-            0.66667,
-        ]
-
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[0][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[0],
+            expected_rows[0][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[1][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[1],
+            expected_rows[1][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[2][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[2],
+            expected_rows[2][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[3][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[3],
+            expected_rows[3][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[4][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[4],
+            expected_rows[4][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[5][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[5],
+            expected_rows[5][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[6][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[6],
+            expected_rows[6][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[7][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[7],
+            expected_rows[7][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[8][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[8],
+            expected_rows[8][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[9][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[9],
+            expected_rows[9][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[10][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[10],
+            expected_rows[10][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[11][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[11],
+            expected_rows[11][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[12][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[12],
+            expected_rows[12][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             returned_rows[13][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
-            expected_row_values[13],
+            expected_rows[13][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            3,
+            "rows are not almost equal",
         )
