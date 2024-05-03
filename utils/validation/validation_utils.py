@@ -1,8 +1,9 @@
 from pydeequ.checks import Check, CheckLevel
-from pydeequ.verification import VerificationResult, VerificationSuite
+from pydeequ.verification import VerificationRunBuilder
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+from utils.validation.validation_rule_names import RuleNames as RuleToCheck
 
 
 def create_check_for_column_completeness(complete_columns: list) -> Check:
@@ -29,4 +30,25 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
         lambda x: x == expected_size,
         f"DataFrame row count should be {expected_size}.",
     )
+    return check
+
+
+def add_checks_to_run(
+    run: VerificationRunBuilder, rules_to_check: dict
+) -> VerificationRunBuilder:
+    for rule in rules_to_check.keys():
+        check = create_check(rule, rules_to_check[rule])
+        run = run.addCheck(check)
+    return run
+
+
+def create_check(rule_name: str, rule) -> Check:
+    if rule_name == RuleToCheck.size_of_dataset:
+        check = create_check_of_size_of_dataset(rule)
+    elif rule_name == RuleToCheck.complete_columns:
+        check = create_check_for_column_completeness(rule)
+    elif rule_name == RuleToCheck.index_columns:
+        check = create_check_of_uniqueness_of_two_index_columns(rule)
+    else:
+        raise ValueError("Unknown rule to check")
     return check

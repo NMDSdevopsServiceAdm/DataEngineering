@@ -19,6 +19,7 @@ from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
 )
 import utils.validation.validation_utils as Vutils
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -42,16 +43,14 @@ def main(
     )
     spark = utils.get_spark()
 
-    expected_size = cqc_location_df.count()
+    rules = Rules.rules_to_check
 
-    check_dataset_size = Vutils.create_check_of_size_of_dataset(expected_size)
-    check_index_columns_are_unique = (
-        Vutils.create_check_of_uniqueness_of_two_index_columns(Rules.index_columns)
-    )
-    check_column_completeness = Vutils.create_check_for_column_completeness(
-        Rules.complete_columns
-    )
+    rules[RuleName.size_of_dataset] = cqc_location_df.count()
 
+    verification_run = VerificationSuite(spark).onData(merged_ind_cqc_df)
+    verification_run = Vutils.add_checks_to_run(verification_run, rules)
+    check_result = verification_run.run()
+    """
     check_result = (
         VerificationSuite(spark)
         .onData(merged_ind_cqc_df)
@@ -60,6 +59,7 @@ def main(
         .addCheck(check_column_completeness)
         .run()
     )
+    """
     check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
     check_result_df.show()
 
