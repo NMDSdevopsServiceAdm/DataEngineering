@@ -55,44 +55,19 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
 
-def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
-    w = Window.partitionBy(
-        ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr
-    ).orderBy(ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr)
+def count_postcodes_per_list_of_columns(
+    postcode_directory_df: DataFrame,
+    list_of_columns_to_group_by: list,
+    new_column_name: str,
+) -> DataFrame:
+    w = Window.partitionBy(list_of_columns_to_group_by).orderBy(
+        list_of_columns_to_group_by
+    )
 
     postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+        new_column_name,
         F.size(F.collect_set(ONSClean.postcode).over(w)),
     )
-
-    return postcode_directory_df
-
-
-def create_hybrid_area_column(postcode_directory_df: DataFrame) -> DataFrame:
-    postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.HYBRID_AREA_LA_ICB,
-        F.concat(ONSClean.contemporary_cssr, F.lit(" - "), ONSClean.contemporary_icb),
-    )
-
-    return postcode_directory_df
-
-
-def count_postcodes_per_hybrid_area(postcode_directory_df: DataFrame) -> DataFrame:
-    postcode_directory_df = create_hybrid_area_column(postcode_directory_df)
-    w = Window.partitionBy(
-        ONSClean.contemporary_ons_import_date,
-        DPColNames.HYBRID_AREA_LA_ICB,
-    ).orderBy(
-        ONSClean.contemporary_ons_import_date,
-        DPColNames.HYBRID_AREA_LA_ICB,
-    )
-
-    postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-        F.size(F.collect_set(ONSClean.postcode).over(w)),
-    )
-
-    postcode_directory_df.show()
 
     return postcode_directory_df
 
