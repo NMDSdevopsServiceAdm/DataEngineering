@@ -35,9 +35,22 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 1 - Create column with count of postcodes by LA.
-    postcode_directory_df = count_postcodes_per_la(postcode_directory_df)
+    postcode_directory_df = count_postcodes_per_list_of_columns(
+        postcode_directory_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+    )
 
     # TODO 2 - Create column with count of postcodes by hybrid area.
+    postcode_directory_df = count_postcodes_per_list_of_columns(
+        postcode_directory_df,
+        [
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_icb,
+        ],
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+    )
 
     # TODO 3 - Create column with ratio.
 
