@@ -2051,9 +2051,33 @@ class ValidateMergedIndCqcData:
     cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
     merged_ind_cqc_schema = StructType(
         [
-            *MergeIndCQCData.expected_cqc_and_ascwds_merged_schema,
-            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.provider_name, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
+            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.services_offered, ArrayType(StructField(StringType())), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_region, StringType(), True),
+            StructField(IndCQC.current_ons_import_date, DateType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.organisation_id, StringType(), True),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
         ]
     )
 
