@@ -1,5 +1,9 @@
 from pydeequ.checks import Check, CheckLevel
-from pydeequ.verification import VerificationRunBuilder
+from pydeequ.verification import (
+    VerificationRunBuilder,
+    VerificationSuite,
+    VerificationResult,
+)
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -52,3 +56,12 @@ def create_check(rule_name: str, rule) -> Check:
     else:
         raise ValueError("Unknown rule to check")
     return check
+
+
+def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:
+    spark = utils.get_spark()
+    verification_run = VerificationSuite(spark).onData(dataset)
+    verification_run = add_checks_to_run(verification_run, rules)
+    check_result = verification_run.run()
+    check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
+    return check_result_df

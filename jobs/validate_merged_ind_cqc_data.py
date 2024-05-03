@@ -18,7 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
 )
-import utils.validation.validation_utils as Vutils
+from utils.validation.validation_utils import validate_dataset
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -47,20 +47,7 @@ def main(
 
     rules[RuleName.size_of_dataset] = cqc_location_df.count()
 
-    verification_run = VerificationSuite(spark).onData(merged_ind_cqc_df)
-    verification_run = Vutils.add_checks_to_run(verification_run, rules)
-    check_result = verification_run.run()
-    """
-    check_result = (
-        VerificationSuite(spark)
-        .onData(merged_ind_cqc_df)
-        .addCheck(check_dataset_size)
-        .addCheck(check_index_columns_are_unique)
-        .addCheck(check_column_completeness)
-        .run()
-    )
-    """
-    check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
+    check_result_df = validate_dataset(merged_ind_cqc_df, rules)
     check_result_df.show()
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
