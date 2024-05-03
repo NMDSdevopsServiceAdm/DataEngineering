@@ -36,6 +36,14 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             TestData.expected_postcode_count_per_la_icb_rows,
             schema=TestSchema.expected_postcode_count_per_la_icb_schema,
         )
+        self.test_sample_rows_with_la_and_hybrid_area_postcode_counts = self.spark.createDataFrame(
+            TestData.sample_rows_with_la_and_hybrid_area_postcode_counts,
+            schema=TestSchema.sample_rows_with_la_and_hybrid_area_postcode_counts_schema,
+        )
+        self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = self.spark.createDataFrame(
+            TestData.expected_ratio_between_hybrid_area_and_la_area_postcodes_rows,
+            schema=TestSchema.expected_ratio_between_hybrid_area_and_la_area_postcodes_schema,
+        )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             TestData.pa_sample_filled_post_rows,
             schema=TestSchema.pa_sample_filled_post_schema,
@@ -129,4 +137,106 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
             self.expected_postcode_count_per_la_icb_rows.sort(
                 [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
             ).collect(),
+        )
+
+
+class CREATE_RATIO_BETWEEN_COLUMNS(SplitPAFilledPostsIntoICBAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_create_ratio_between_columns_adds_new_column_with_given_name_when_given_hybrid_and_la_counts(
+        self,
+    ):
+        self.assertTrue(
+            DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES
+            in job.create_ratio_between_columns(
+                self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
+                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+                DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+            ).columns
+        )
+
+    def test_create_ratio_between_columns_has_expected_values_when_given_hybrid_and_la_counts(
+        self,
+    ):
+        returned_rows = job.create_ratio_between_columns(
+            self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+            DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+        ).collect()
+
+        expected_row_values = [
+            1.00000,
+            1.00000,
+            1.00000,
+            0.25000,
+            0.75000,
+            0.75000,
+            0.75000,
+            1.00000,
+            1.00000,
+            1.00000,
+            0.33333,
+            0.66667,
+            0.66667,
+            0.66667,
+        ]
+
+        self.assertEqual(
+            returned_rows[0][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[0],
+        )
+        self.assertEqual(
+            returned_rows[1][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[1],
+        )
+        self.assertEqual(
+            returned_rows[2][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[2],
+        )
+        self.assertEqual(
+            returned_rows[3][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[3],
+        )
+        self.assertEqual(
+            returned_rows[4][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[4],
+        )
+        self.assertEqual(
+            returned_rows[5][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[5],
+        )
+        self.assertEqual(
+            returned_rows[6][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[6],
+        )
+        self.assertEqual(
+            returned_rows[7][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[7],
+        )
+        self.assertEqual(
+            returned_rows[8][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[8],
+        )
+        self.assertEqual(
+            returned_rows[9][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[9],
+        )
+        self.assertEqual(
+            returned_rows[10][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[10],
+        )
+        self.assertEqual(
+            returned_rows[11][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[11],
+        )
+        self.assertEqual(
+            returned_rows[12][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[12],
+        )
+        self.assertEqual(
+            returned_rows[13][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
+            expected_row_values[13],
         )
