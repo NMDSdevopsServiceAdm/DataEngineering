@@ -126,7 +126,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             .select(self.constraint_message)
             .collect()[0][0]
         )
-        expected_failure_message = "Value: 10 does not meet the constraint requirement! DataFrame row count should be 9"
+        expected_failure_message = "Value: 5 does not meet the constraint requirement! DataFrame row count should be 4."
 
         self.assertEqual(failure_count, expected_failure_count)
         self.assertEqual(failure_message, expected_failure_message)
@@ -160,7 +160,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             .select(self.constraint_message)
             .collect()[0][0]
         )
-        expected_failure_message = "Value: 8 does not meet the constraint requirement! DataFrame row count should be 9"
+        expected_failure_message = "Value: 3 does not meet the constraint requirement! DataFrame row count should be 4."
 
         self.assertEqual(failure_count, expected_failure_count)
         self.assertEqual(failure_message, expected_failure_message)
@@ -194,9 +194,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             .select(self.constraint_message)
             .collect()[0][0]
         )
-        expected_failure_message = (
-            "Value: 0.8888888888888888 does not meet the constraint requirement!"
-        )
+        expected_failure_message = "Value: 0.75 does not meet the constraint requirement! Completeness should be 1."
 
         self.assertEqual(failure_count, expected_failure_count)
         self.assertEqual(failure_message, expected_failure_message)
@@ -231,9 +229,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             .select(self.constraint_message)
             .collect()[0][0]
         )
-        expected_failure_message = (
-            "Value: 0.7777777777777778 does not meet the constraint requirement!"
-        )
+        expected_failure_message = "Value: 0.5 does not meet the constraint requirement! Uniqueness should be 1."
 
         self.assertEqual(failure_count, expected_failure_count)
         self.assertEqual(failure_message, expected_failure_message)

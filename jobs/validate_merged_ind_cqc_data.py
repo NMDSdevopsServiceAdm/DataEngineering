@@ -34,10 +34,10 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
     merged_ind_cqc_df = utils.read_from_parquet(
-            merged_ind_cqc_source,
-        )
-    
-    cqc_location_df_size = cqc_location_df.count()    
+        merged_ind_cqc_source,
+    )
+
+    cqc_location_df_size = cqc_location_df.count()
 
     complete_columns = [
         IndCqcColumns.location_id,
@@ -72,19 +72,21 @@ def main(
         VerificationSuite(spark)
         .onData(merged_ind_cqc_df)
         .addCheck(
-            check.areComplete(complete_columns)
+            check.areComplete(complete_columns, "Completeness should be 1.")
             .hasUniqueness(
                 [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date],
                 lambda x: x == 1,
+                "Uniqueness should be 1.",
             )
             .hasSize(
                 lambda x: x == cqc_location_df_size,
-                f"DataFrame row count should be {cqc_location_df_size}",
+                f"DataFrame row count should be {cqc_location_df_size}.",
             )
         )
         .run()
     )
     check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
+    check_result_df.show()
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 

@@ -2064,7 +2064,13 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.services_offered, ArrayType(StructField(StringType())), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
             StructField(IndCQC.contemporary_cssr, StringType(), True),
