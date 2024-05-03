@@ -194,7 +194,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             .select(self.constraint_message)
             .collect()[0][0]
         )
-        expected_failure_message = "Value: 0.75 does not meet the constraint requirement! Completeness should be 1."
+        expected_failure_message = "Value: 0.75 does not meet the constraint requirement! Completeness of cqc_sector should be 1."
 
         self.assertEqual(failure_count, expected_failure_count)
         self.assertEqual(failure_message, expected_failure_message)
