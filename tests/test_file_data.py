@@ -620,6 +620,50 @@ class ONSData:
 
 
 @dataclass
+class PAFilledPostsByICBArea:
+    # fmt: off
+    ons_sample_contemporary_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2"), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3"), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1"),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2"), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
+    ]
+
+    expected_ons_sample_contemporary_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+    ]
+    # fmt: on
+
+    pa_sample_filled_post_rows = [
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+    ]
+
+
+@dataclass
 class CapacityTrackerCareHomeData:
     sample_rows = [
         (
@@ -2056,6 +2100,94 @@ class ReconciliationData:
         ("loc_1", "test_subject"),
     ]
 
+    new_issues_rows = [
+        ("org 1", "loc 1", ""),
+        ("org 1", "loc 2", ""),
+        ("org 1", "loc 3", ""),
+        ("org 2", "loc 4", ""),
+        ("org 2", "loc 5", ""),
+        ("org 3", "loc 6", ""),
+        ("org 5", "loc 7", ""),
+    ]
+
+    unique_rows = [
+        ("org 1", ""),
+        ("org 2", ""),
+        ("org 3", ""),
+        ("org 6", ""),
+    ]
+
+    expected_join_array_of_nmdsids_rows = [
+        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
+        ("org 2", "", "new_column: loc 5, loc 4"),
+        ("org 3", "", "new_column: loc 6"),
+        ("org 6", "", None),
+    ]
+
+    new_column = "new_column"
+
+    create_parents_description_rows = [
+        ("org 1", None, None, None),
+        ("org 2", None, None, "missing"),
+        ("org 3", None, "old", None),
+        ("org 4", None, "old", "missing"),
+        ("org 5", "new", None, None),
+        ("org 6", "new", None, "missing"),
+        ("org 7", "new", "old", None),
+        ("org 8", "new", "old", "missing"),
+    ]
+
+    expected_create_parents_description_rows = [
+        ("org 1", None, None, None, ""),
+        ("org 2", None, None, "missing", "missing "),
+        ("org 3", None, "old", None, "old "),
+        ("org 4", None, "old", "missing", "old missing "),
+        ("org 5", "new", None, None, "new "),
+        ("org 6", "new", None, "missing", "new missing "),
+        ("org 7", "new", "old", None, "new old "),
+        ("org 8", "new", "old", "missing", "new old missing "),
+    ]
+
+    get_ascwds_parent_accounts_rows = [
+        (
+            "nmds_1",
+            "estab_1",
+            "name",
+            "org_1",
+            "type",
+            "region_id",
+            ReconValues.is_parent,
+            "other",
+        ),
+        (
+            "nmds_2",
+            "estab_2",
+            "name",
+            "org_2",
+            "type",
+            "region_id",
+            ReconValues.is_not_parent,
+            "other",
+        ),
+        ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
+    ]
+    expected_get_ascwds_parent_accounts_rows = [
+        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
+    ]
+
+    cqc_data_for_join_rows = [
+        ("loc_1", "name"),
+        ("loc_2", "name"),
+    ]
+    ascwds_data_for_join_rows = [
+        ("loc_1", "estab_1"),
+        ("loc_3", "estab_2"),
+    ]
+    expected_data_for_join_rows = [
+        ("loc_1", "estab_1", "name"),
+        ("loc_3", "estab_2", None),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:
@@ -2116,19 +2248,19 @@ class FilterAscwdsFilledPostsData:
 
 
 @dataclass
-class NonResFeaturesData(object):
+class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", '2022', '02', '01', '20220201'),
-        ("1-1783948", date(2022, 1, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", '2022', '01', '01', '20220101'),
-        ("1-10235302415", date(2022, 1, 12), "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered", '2022', '01', '12', '20220112'),
-        ("1-1060912125", date(2022, 1, 12), "Yorkshire and the Humber", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered", '2022', '01', '12', '20220212'),
-        ("1-107095666", date(2022, 3, 1), "Yorkshire and the Humber", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '01', '20220301'),
-        ("1-108369587", date(2022, 3, 8), "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-000000001", date(2022, 3, 8), "Yorkshire and the Humber", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", "Y", "Local authority", "Urban city and town", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-10894414510", date(2022, 3, 8), "Yorkshire and the Humber", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", "Y", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '08', '20220308'),
-        ("1-108950835", date(2022, 3, 15), "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", "Y", "", "Urban city and town", "rule_1", "Registered", '2022', '03', '15', '20220315'),
-        ("1-108967195", date(2022, 4, 22), "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), "South East", "Y", ["Domiciliary care service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), "South East", "N", ["Domiciliary care service"], "non-residential", 67.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), "South West", "Y", ["Urgent care services", "Supported living service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), "North East", "Y", ["Hospice services at home"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", None, "N", "Urban city and town", '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), "South West", None, ["Specialist college service"], "non-residential", None, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", None, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", 25.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), "North West", None, ["Care home service without nursing"], "Care home without nursing", None, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], "non-residential", None, "N", "Urban city and town", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
@@ -2139,6 +2271,17 @@ class NonResFeaturesData(object):
 
     expected_filtered_to_non_care_home_rows = [
         ("N", CQCLValues.independent),
+    ]
+
+    filter_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00002", None),
+        ("1-00003", "N"),
+    ]
+
+    expected_filtered_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00003", "N"),
     ]
 
 
@@ -2972,28 +3115,151 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
-class PAFilledPostsSampleData:
-    pa_filled_post_sample_rows = [
-        ("Leeds", 100.2, "2024"),
-        ("Bradford", 200.3, "2024"),
-    ]
-
-
-@dataclass
 class FlattenCQCRatings:
-    test_cqc_locations_rows = CQCLocationsData.sample_rows
-    test_ascwds_workplace_rows = ASCWDSWorkplaceData.workplace_rows
-    filter_to_monthly_import_date_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
+    test_cqc_locations_rows = [
+        (
+            "loc_1",
+            CQCLValues.registered,
+            CQCLValues.social_care_identifier,
+            "20240101",
+            "2024",
+            "01",
+            "01",
+            {
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
+                        {
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                        {
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
+                        },
+                    ],
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
+            },
+            [
+                {
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
     ]
-    filter_to_start_of_most_recent_month_when_not_first_of_month_rows = [
-        ("loc_1", "20240101"),
-        ("loc_2", "20231201"),
-        ("loc_3", "20240104"),
+    test_ascwds_workplace_rows = [("loc_1", "estab_1", "20240101", "2021", "01", "01")]
+    filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
     ]
-    expected_filter_to_start_of_most_recent_month_rows = [
-        ("loc_1", "20240101"),
+    filter_to_first_import_of_most_recent_month_when_two_imports_in_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
+        ("loc_2", "20231201", "2023", "12", "01"),
+        ("loc_3", "20240104", "2024", "01", "04"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_rows = [
+        ("loc_1", "20240101", "2024", "01", "01"),
+    ]
+    expected_filter_to_first_import_of_most_recent_month_when_earliest_date_is_not_first_of_month_rows = [
+        ("loc_1", "20240102", "2024", "01", "02"),
     ]
 
     flatten_current_ratings_rows = [

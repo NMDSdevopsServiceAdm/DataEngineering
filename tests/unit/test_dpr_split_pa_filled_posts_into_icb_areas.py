@@ -4,13 +4,14 @@ from unittest.mock import ANY, Mock, patch
 
 from utils import utils
 
-from tests.test_file_data import ONSData as ONSTestData
-from tests.test_file_schemas import ONSData as ONSTestSchema
-from tests.test_file_data import PAFilledPostsSampleData as PATestData
-from tests.test_file_schemas import PAFilledPostsSampleData as PATestSchema
+from tests.test_file_data import PAFilledPostsByICBArea as TestData
+from tests.test_file_schemas import PAFilledPostsByICBAreaSchema as TestSchema
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+    OnsCleanedColumns as ONSClean,
 )
 
 import jobs.split_pa_filled_posts_into_icb_areas as job
@@ -24,11 +25,16 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_sample_ons_rows = self.spark.createDataFrame(
-            ONSTestData.ons_sample_rows_full, schema=ONSTestSchema.full_schema
+            TestData.ons_sample_contemporary_rows,
+            schema=TestSchema.ons_sample_contemporary_schema,
+        )
+        self.exptected_ons_rows = self.spark.createDataFrame(
+            TestData.expected_ons_sample_contemporary_rows,
+            schema=TestSchema.expected_ons_sample_contemporary_schema,
         )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
-            PATestData.pa_filled_post_sample_rows,
-            schema=PATestSchema.pa_filled_post_sample_schema,
+            TestData.pa_sample_filled_post_rows,
+            schema=TestSchema.pa_sample_filled_post_schema,
         )
 
 
@@ -50,4 +56,29 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=[DPColNames.YEAR],
+        )
+
+
+class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_count_postcodes_per_la_adds_postcodes_per_la_column(
+        self,
+    ):
+        self.assertTrue(
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA
+            in job.count_postcodes_per_la(self.test_sample_ons_rows).columns
+        )
+
+    def test_count_postcodes_per_la_has_expected_values_in_new_column(
+        self,
+    ):
+        self.assertEqual(
+            job.count_postcodes_per_la(self.test_sample_ons_rows)
+            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+            .collect(),
+            self.exptected_ons_rows.sort(
+                [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
+            ).collect(),
         )
