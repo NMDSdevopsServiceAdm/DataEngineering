@@ -9,7 +9,7 @@ from utils import utils
 from tests.test_file_data import ReconciliationData as Data
 from tests.test_file_schemas import ReconciliationSchema as Schemas
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,

@@ -6,7 +6,7 @@ from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as ColNames,
+    NewCqcLocationApiColumns as ColNames,
 )
 
 

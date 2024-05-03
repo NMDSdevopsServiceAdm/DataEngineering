@@ -11,7 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
@@ -38,7 +38,7 @@ cqc_location_api_cols_to_import = [
     CQCL.provider_id,
     CQCL.name,
     CQCL.number_of_beds,
-    CQCL.postcode,
+    CQCL.postal_code,
     CQCL.registration_status,
     CQCL.registration_date,
     CQCL.deregistration_date,
@@ -122,7 +122,7 @@ def join_ons_postcode_data_into_cqc_df(
 ) -> DataFrame:
     cqc_df = amend_invalid_postcodes(cqc_df)
 
-    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
+    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postal_code)
 
     cqc_df = cUtils.add_aligned_date_column(
         cqc_df,
@@ -130,11 +130,11 @@ def join_ons_postcode_data_into_cqc_df(
         CQCLClean.cqc_location_import_date,
         ONSClean.contemporary_ons_import_date,
     )
-    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postcode)
+    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postal_code)
 
     cqc_df = cqc_df.join(
         ons_df,
-        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
+        [ONSClean.contemporary_ons_import_date, CQCLClean.postal_code],
         "left",
     )
     return cqc_df
@@ -144,7 +144,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
-    df = df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+    df = df.withColumn(CQCL.postal_code, map_func(F.col(CQCL.postal_code)))
     return df
 
 
@@ -235,12 +235,12 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
 
     Raises:
-        AnalysisException: If column_to_check_for_nulls, CQCLClean.postcode or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        AnalysisException: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
         TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
     """
 
     COLUMNS_TO_FILTER = [
-        CQCLClean.postcode,
+        CQCLClean.postal_code,
         CQCLClean.location_id,
     ]
     list_of_columns = cleaned_locations_df.columns
@@ -265,7 +265,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
         raise TypeError(
-            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
+            f"Error: The following {CQCL.postal_code}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
         )
     else:
         print(
