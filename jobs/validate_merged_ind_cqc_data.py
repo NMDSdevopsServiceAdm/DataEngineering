@@ -3,8 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pydeequ.checks import Check, CheckLevel
-from pydeequ.verification import VerificationResult, VerificationSuite
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -12,7 +10,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
     PartitionKeys as Keys,
 )
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
