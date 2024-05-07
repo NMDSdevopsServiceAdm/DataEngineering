@@ -2810,9 +2810,12 @@ class ValidationUtils:
         ]
     )
 
-    size_of_dataset_schema = StructType(
+    index_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
+
+    one_column_schema = size_of_dataset_schema
+    two_column_schema = index_column_schema

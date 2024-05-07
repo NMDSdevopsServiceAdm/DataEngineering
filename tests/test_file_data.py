@@ -3888,3 +3888,105 @@ class ValidationUtils:
             "Value: 0.0 does not meet the constraint requirement! Uniqueness should be 1.",
         ),
     ]
+
+    one_complete_column_rule = {
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+        ]
+    }
+    two_complete_columns_rule = {
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ]
+    }
+    one_complete_column_complete_rows = [
+        ("loc_1",),
+    ]
+    one_complete_column_incomplete_rows = [
+        (None,),
+    ]
+    two_complete_columns_both_complete_rows = [
+        ("loc_1", date(2024, 1, 1)),
+    ]
+    two_complete_columns_one_incomplete_rows = [
+        (None, date(2024, 1, 1)),
+    ]
+    two_complete_columns_both_incomplete_rows = [
+        (None, None),
+    ]
+
+    one_complete_column_result_complete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+    ]
+    one_complete_column_result_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+    ]
+    two_complete_columns_result_both_complete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]
+    two_complete_columns_result_one_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]
+    two_complete_columns_result_both_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of cqc_location_import_date should be 1.",
+        ),
+    ]
