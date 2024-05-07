@@ -55,10 +55,34 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
 
 class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
     def setUp(self) -> None:
-        return super().setUp()
+        super().setUp()
+        self.unique_columns_rule = Data.unique_index_columns_rule
 
-    def test_create_check_of_uniqueness_of_two_index_columns(self):
-        pass
+    def test_create_check_of_uniqueness_of_two_index_columns_returns_success_when_columns_are_unique(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unique_index_columns_success_rows, Schemas.size_of_dataset_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.unique_index_columns_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.unique_columns_rule)
+        returned_df.show(truncate=False)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_uniqueness_of_two_index_columns_returns_failure_when_columns_are_not_unique(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unique_index_columns_not_unique_rows, Schemas.size_of_dataset_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.unique_index_columns_result_not_unique_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.unique_columns_rule)
+        returned_df.show(truncate=False)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
@@ -66,7 +90,7 @@ class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
         super().setUp()
         self.size_of_dataset_rule = Data.size_of_dataset_rule
 
-    def test_create_check_of_size_of_dataset_returns_successes_with_valid_data(self):
+    def test_create_check_of_size_of_dataset_returns_success_with_valid_data(self):
         test_df = self.spark.createDataFrame(
             Data.size_of_dataset_success_rows, Schemas.size_of_dataset_schema
         )

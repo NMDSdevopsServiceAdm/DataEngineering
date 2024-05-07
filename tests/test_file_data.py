@@ -3837,3 +3837,54 @@ class ValidationUtils:
             "Value: 4 does not meet the constraint requirement! DataFrame row count should be 3.",
         )
     ]
+
+    unique_index_columns_rule = {
+        RuleName.index_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ]
+    }
+    unique_index_columns_success_rows = [
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+        (
+            "loc_1",
+            date(2024, 1, 2),
+        ),
+        (
+            "loc_2",
+            date(2024, 1, 1),
+        ),
+    ]
+    unique_index_columns_not_unique_rows = [
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+    ]
+    unique_index_columns_result_success_rows = [
+        (
+            "Index columns are unique",
+            "Warning",
+            "Success",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Success",
+            "",
+        ),
+    ]
+    unique_index_columns_result_not_unique_rows = [
+        (
+            "Index columns are unique",
+            "Warning",
+            "Warning",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Uniqueness should be 1.",
+        ),
+    ]
