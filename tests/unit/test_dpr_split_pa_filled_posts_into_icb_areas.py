@@ -28,10 +28,6 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             TestData.ons_sample_contemporary_rows,
             schema=TestSchema.ons_sample_contemporary_schema,
         )
-        self.exptected_ons_rows = self.spark.createDataFrame(
-            TestData.expected_ons_sample_contemporary_rows,
-            schema=TestSchema.expected_ons_sample_contemporary_schema,
-        )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
             TestData.pa_sample_filled_post_rows,
             schema=TestSchema.pa_sample_filled_post_schema,
@@ -59,26 +55,58 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CountPostcodesPerLA(SplitPAFilledPostsIntoICBAreas):
+class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_count_postcodes_per_la_adds_postcodes_per_la_column(
+        self.returned_postcode_count_by_la = job.count_postcodes_per_list_of_columns(
+            self.test_sample_ons_rows,
+            [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+        ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+
+        self.returned_postcode_count_by_la_and_icb = (
+            job.count_postcodes_per_list_of_columns(
+                self.test_sample_ons_rows,
+                [
+                    ONSClean.contemporary_ons_import_date,
+                    ONSClean.contemporary_cssr,
+                    ONSClean.contemporary_icb,
+                ],
+                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+            ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+        )
+
+    def test_count_postcodes_per_list_of_columns_adds_new_column_with_given_name(
         self,
     ):
         self.assertTrue(
             DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA
-            in job.count_postcodes_per_la(self.test_sample_ons_rows).columns
+            in self.returned_postcode_count_by_la.columns
         )
 
-    def test_count_postcodes_per_la_has_expected_values_in_new_column(
+    def test_count_postcodes_per_list_of_columns_has_expected_values_when_grouped_by_import_date_and_la(
         self,
     ):
+        expected_postcode_count_per_la_rows = self.spark.createDataFrame(
+            TestData.expected_postcode_count_per_la_rows,
+            schema=TestSchema.expected_postcode_count_per_la_schema,
+        ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+
         self.assertEqual(
-            job.count_postcodes_per_la(self.test_sample_ons_rows)
-            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
-            .collect(),
-            self.exptected_ons_rows.sort(
-                [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
-            ).collect(),
+            self.returned_postcode_count_by_la.collect(),
+            expected_postcode_count_per_la_rows.collect(),
+        )
+
+    def test_count_postcodes_per_list_of_columns_has_expected_values_when_grouped_by_import_date_and_la_and_icb(
+        self,
+    ):
+        expected_postcode_count_per_la_icb_rows = self.spark.createDataFrame(
+            TestData.expected_postcode_count_per_la_icb_rows,
+            schema=TestSchema.expected_postcode_count_per_la_icb_schema,
+        ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+
+        self.assertEqual(
+            self.returned_postcode_count_by_la_and_icb.collect(),
+            expected_postcode_count_per_la_icb_rows.collect(),
         )

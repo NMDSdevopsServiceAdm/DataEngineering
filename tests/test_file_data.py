@@ -639,7 +639,7 @@ class PAFilledPostsByICBArea:
         ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
     ]
 
-    expected_ons_sample_contemporary_rows = [
+    expected_postcode_count_per_la_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
         ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
         ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
@@ -654,6 +654,23 @@ class PAFilledPostsByICBArea:
         ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+    ]
+
+    expected_postcode_count_per_la_icb_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2",1), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3",3), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3",3), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3",3), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",1), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",2),
     ]
     # fmt: on
 

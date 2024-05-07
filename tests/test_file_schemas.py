@@ -449,10 +449,19 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_ons_sample_contemporary_schema = StructType(
+    expected_postcode_count_per_la_schema = StructType(
         [
             *ons_sample_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+        ]
+    )
+
+    expected_postcode_count_per_la_icb_schema = StructType(
+        [
+            *ons_sample_contemporary_schema,
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
         ]
     )
 

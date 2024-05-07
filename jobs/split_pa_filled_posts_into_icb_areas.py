@@ -35,9 +35,22 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 1 - Create column with count of postcodes by LA.
-    postcode_directory_df = count_postcodes_per_la(postcode_directory_df)
+    postcode_directory_df = count_postcodes_per_list_of_columns(
+        postcode_directory_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+    )
 
     # TODO 2 - Create column with count of postcodes by hybrid area.
+    postcode_directory_df = count_postcodes_per_list_of_columns(
+        postcode_directory_df,
+        [
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_icb,
+        ],
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+    )
 
     # TODO 3 - Create column with ratio.
 
@@ -55,13 +68,17 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
 
-def count_postcodes_per_la(postcode_directory_df: DataFrame) -> DataFrame:
-    w = Window.partitionBy(
-        ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr
-    ).orderBy(ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr)
+def count_postcodes_per_list_of_columns(
+    postcode_directory_df: DataFrame,
+    list_of_columns_to_group_by: list,
+    new_column_name: str,
+) -> DataFrame:
+    w = Window.partitionBy(list_of_columns_to_group_by).orderBy(
+        list_of_columns_to_group_by
+    )
 
     postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+        new_column_name,
         F.size(F.collect_set(ONSClean.postcode).over(w)),
     )
 
