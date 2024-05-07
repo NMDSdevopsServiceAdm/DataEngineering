@@ -61,7 +61,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
             Data.one_complete_column_result_complete_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.one_column_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_for_column_completeness_when_one_column_is_given_and_incomplete(
@@ -74,7 +74,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
             Data.one_complete_column_result_incomplete_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.one_column_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_for_column_completeness_when_two_columns_are_given_and_both_are_complete(
@@ -88,7 +88,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
             Schemas.validation_schema,
         )
         returned_df = job.validate_dataset(test_df, self.two_column_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_for_column_completeness_when_two_columns_are_given_and_one_is_incomplete(
@@ -102,7 +102,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
             Schemas.validation_schema,
         )
         returned_df = job.validate_dataset(test_df, self.two_column_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_for_column_completeness_when_two_columns_are_given_and_both_are_incomplete(
@@ -116,7 +116,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
             Schemas.validation_schema,
         )
         returned_df = job.validate_dataset(test_df, self.two_column_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
@@ -135,7 +135,6 @@ class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
             Data.unique_index_columns_result_success_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.unique_columns_rule)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_uniqueness_of_two_index_columns_returns_failure_when_columns_are_not_unique(
@@ -148,7 +147,7 @@ class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
             Data.unique_index_columns_result_not_unique_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.unique_columns_rule)
-        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
