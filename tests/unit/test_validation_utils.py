@@ -65,17 +65,40 @@ class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.size_of_dataset_rule = Data.size_of_dataset_rule
-        self.test_df = self.spark.createDataFrame(
+
+    def test_create_check_of_size_of_dataset_returns_successes_with_valid_data(self):
+        test_df = self.spark.createDataFrame(
             Data.size_of_dataset_success_rows, Schemas.size_of_dataset_schema
         )
-        self.expected_df = self.spark.createDataFrame(
+        expected_df = self.spark.createDataFrame(
             Data.size_of_dataset_result_success_rows, Schemas.validation_schema
         )
+        returned_df = job.validate_dataset(test_df, self.size_of_dataset_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_create_check_of_size_of_dataset(self):
-        returned_df = job.validate_dataset(self.test_df, self.size_of_dataset_rule)
-        returned_df.show(truncate=False)
-        self.assertEqual(returned_df.collect(), self.expected_df.collect())
+    def test_create_check_of_size_of_dataset_returns_failure_when_rows_are_missing(
+        self,
+    ):
+        missing_rows_df = self.spark.createDataFrame(
+            Data.size_of_dataset_missing_rows, Schemas.size_of_dataset_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.size_of_dataset_result_missing_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(missing_rows_df, self.size_of_dataset_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_size_of_dataset_returns_failure_when_extra_rows_are_present(
+        self,
+    ):
+        extra_rows_df = self.spark.createDataFrame(
+            Data.size_of_dataset_extra_rows, Schemas.size_of_dataset_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.size_of_dataset_result_extra_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(extra_rows_df, self.size_of_dataset_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 if __name__ == "__main__":

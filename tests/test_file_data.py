@@ -3797,7 +3797,13 @@ class ValidationUtils:
         ("loc_2",),
         ("loc_3",),
     ]
-    size_of_dataset_failure_rows = [
+    size_of_dataset_extra_rows = [
+        ("loc_1",),
+        ("loc_2",),
+        ("loc_3",),
+        ("loc_4",),
+    ]
+    size_of_dataset_missing_rows = [
         ("loc_1",),
         ("loc_2",),
     ]
@@ -3811,13 +3817,23 @@ class ValidationUtils:
             "",
         )
     ]
-    size_of_dataset_result_failure_rows = [
+    size_of_dataset_result_missing_rows = [
         (
             "Size of dataset",
             "Warning",
-            "Failure",
+            "Warning",
             "SizeConstraint(Size(None))",
             "Failure",
-            "DataFrame row count should be 3.",
+            "Value: 2 does not meet the constraint requirement! DataFrame row count should be 3.",
+        )
+    ]
+    size_of_dataset_result_extra_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Warning",
+            "SizeConstraint(Size(None))",
+            "Failure",
+            "Value: 4 does not meet the constraint requirement! DataFrame row count should be 3.",
         )
     ]
