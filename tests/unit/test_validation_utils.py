@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 import utils.validation.validation_utils as job
 
 from tests.test_file_data import ValidationUtils as Data
+
 from tests.test_file_schemas import ValidationUtils as Schemas
 
 from utils import utils
@@ -62,10 +63,19 @@ class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
 
 class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
     def setUp(self) -> None:
-        return super().setUp()
+        super().setUp()
+        self.size_of_dataset_rule = Data.size_of_dataset_rule
+        self.test_df = self.spark.createDataFrame(
+            Data.size_of_dataset_rows, Schemas.size_of_dataset_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.size_of_dataset_result_success_rows, Schemas.validation_schema
+        )
 
     def test_create_check_of_size_of_dataset(self):
-        pass
+        returned_df = job.validate_dataset(self.test_df, self.size_of_dataset_rule)
+        returned_df.show()
+        self.assertEqual(returned_df, self.expected_df)
 
 
 if __name__ == "__main__":
