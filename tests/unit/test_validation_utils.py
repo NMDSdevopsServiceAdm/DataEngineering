@@ -10,7 +10,7 @@ from tests.test_file_schemas import ValidationUtils as Schemas
 from utils import utils
 
 
-class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
+class ValidateUtilsTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
