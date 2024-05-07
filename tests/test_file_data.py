@@ -3808,7 +3808,7 @@ class ValidationUtils:
             "Success",
             "SizeConstraint(Size(None))",
             "Success",
-            None,
+            "",
         )
     ]
     size_of_dataset_result_failure_rows = [
