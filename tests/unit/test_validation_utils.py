@@ -20,5 +20,21 @@ class ValidateUtilsTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
+class ValidateDatasetTests(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_validate_dataset(self):
+        pass
+
+
+class AddChecksToRunTests(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_add_checks_to_run(self):
+        pass
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
