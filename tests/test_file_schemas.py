@@ -2787,3 +2787,7 @@ class FlattenCQCRatings:
             StructField(CQCRatings.inspection_date, StringType(), True),
         ]
     )
+
+@dataclass
+class ValidationUtils:
+    schema = []

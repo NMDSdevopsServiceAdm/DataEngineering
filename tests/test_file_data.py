@@ -3786,3 +3786,7 @@ class FlattenCQCRatings:
         ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
     ]
+
+@dataclass
+class ValidationUtils:
+    schema = []
