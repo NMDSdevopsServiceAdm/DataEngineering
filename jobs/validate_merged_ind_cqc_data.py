@@ -45,7 +45,6 @@ def main(
     rules[RuleName.size_of_dataset] = cqc_location_df.count()
 
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
-    check_result_df.show()
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
