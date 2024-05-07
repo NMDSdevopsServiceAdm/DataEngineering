@@ -12,7 +12,6 @@ from utils import utils
 
 
 class ValidateUtilsTests(unittest.TestCase):
-
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
