@@ -36,5 +36,37 @@ class AddChecksToRunTests(ValidateUtilsTests):
         pass
 
 
+class CreateCheckTests(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_create_check(self):
+        pass
+
+
+class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_create_check_for_column_completeness(self):
+        pass
+
+
+class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_create_check_of_uniqueness_of_two_index_columns(self):
+        pass
+
+
+class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_create_check_of_size_of_dataset(self):
+        pass
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
