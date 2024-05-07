@@ -3,8 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pydeequ.checks import Check, CheckLevel
-from pydeequ.verification import VerificationResult, VerificationSuite
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -12,9 +10,13 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
     PartitionKeys as Keys,
 )
+from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
+    MergedIndCqcValidationRules as Rules,
+)
+from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -33,33 +35,16 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
-
-    cqc_location_df_size = cqc_location_df.count()
-
     merged_ind_cqc_df = utils.read_from_parquet(
         merged_ind_cqc_source,
     )
-
     spark = utils.get_spark()
 
-    check = Check(spark, CheckLevel.Warning, "Review Check")
-    check_result = (
-        VerificationSuite(spark)
-        .onData(merged_ind_cqc_df)
-        .addCheck(
-            check.isComplete(IndCqcColumns.cqc_sector)
-            .hasUniqueness(
-                [IndCqcColumns.location_id, IndCqcColumns.cqc_location_import_date],
-                lambda x: x == 1,
-            )
-            .hasSize(
-                lambda x: x == cqc_location_df_size,
-                f"DataFrame row count should be {cqc_location_df_size}",
-            )
-        )
-        .run()
-    )
-    check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
+    rules = Rules.rules_to_check
+
+    rules[RuleName.size_of_dataset] = cqc_location_df.count()
+
+    check_result_df = validate_dataset(merged_ind_cqc_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 

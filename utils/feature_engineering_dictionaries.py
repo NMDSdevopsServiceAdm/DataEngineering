@@ -54,3 +54,8 @@ REGION_LOOKUP = {
     "ons_west_midlands": "West Midlands",
     "ons_yorkshire_and_the_humber": "Yorkshire and the Humber",
 }
+
+DORMANCY_LOOKUP = {
+    "dorm_N": "N",
+    "dorm_Y": "Y",
+}

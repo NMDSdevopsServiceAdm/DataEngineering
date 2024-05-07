@@ -9,7 +9,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 )
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
     NewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
@@ -1021,17 +1021,13 @@ class CQCPirCleanedData:
 
 @dataclass
 class CQCLocationsData:
-    sample_rows_full = [
+    sample_rows = [
         (
             "location1",
             "provider1",
             "Location",
             "Social Care Org",
             "name of location",
-            "E00000001",
-            "NHS West Sussex CCG",
-            "ABC1D",
-            "123456789",
             "Registered",
             "2020-01-01",
             None,
@@ -1043,94 +1039,140 @@ class CQCLocationsData:
             "West Yorkshire",
             "Yorkshire",
             "LS1 2AB",
-            50.123455,
-            -5.6789,
+            "50.123455",
+            "-5.6789",
             "Y",
             "Adult social care",
             "01234567891",
-            "Woking",
             "Trafford",
-            {"date": "2021-01-15"},
-            {"publicationdate": "2021-02-15"},
-            [
-                {
-                    "relatedlocationid": "1-23456",
-                    "relatedlocationname": "CarePlace",
-                    "type": "HSCA Predecessor",
-                    "reason": "Location Move",
-                }
-            ],
             [
                 {
                     "name": "Personal care",
                     "code": "RA1",
                     "contacts": [
                         {
-                            "persontitle": "Mr",
-                            "persongivenname": "John",
                             "personfamilyname": "Doe",
+                            "persongivenname": "John",
                             "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
                         }
                     ],
                 }
             ],
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            [
-                {
-                    "code": "S2",
-                    "primary": "true",
-                    "name": "Community based adult social care services",
-                }
-            ],
             [{"name": "Services for everyone"}],
             {
-                "overall": {
-                    "rating": "Good",
-                    "reportdate": "2020-01-01",
-                    "reportlinkid": "1234abcd5678",
-                    "keyquestionratings": [
+                CQCL.overall: {
+                    CQCL.organisation_id: None,
+                    CQCL.rating: "Overall rating Excellent",
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCLNew.use_of_resources: {
+                        CQCL.organisation_id: None,
+                        CQCLNew.summary: None,
+                        CQCLNew.use_of_resources_rating: None,
+                        CQCLNew.combined_quality_summary: None,
+                        CQCLNew.combined_quality_rating: None,
+                        CQCL.report_date: None,
+                        CQCL.report_link_id: None,
+                    },
+                    CQCL.key_question_ratings: [
                         {
-                            "name": "Safe",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Safe",
+                            CQCL.rating: "Safe rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Well-led",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Well-led",
+                            CQCL.rating: "Well-led rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Caring",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Caring",
+                            CQCL.rating: "Caring rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Responsive",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Responsive",
+                            CQCL.rating: "Responsive rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                         {
-                            "name": "Effective",
-                            "rating": "Good",
-                            "reportdate": "2020-01-01",
-                            "reportlinkid": "1234abcd5678",
+                            CQCL.name: "Effective",
+                            CQCL.rating: "Effective rating Good",
+                            CQCL.report_date: None,
+                            CQCL.organisation_id: None,
+                            CQCL.report_link_id: None,
                         },
                     ],
-                }
+                },
+                CQCLNew.service_ratings: [
+                    {
+                        CQCL.name: None,
+                        CQCL.rating: None,
+                        CQCL.report_date: None,
+                        CQCL.organisation_id: None,
+                        CQCL.report_link_id: None,
+                        CQCL.key_question_ratings: [
+                            {
+                                CQCL.name: None,
+                                CQCL.rating: None,
+                            },
+                        ],
+                    },
+                ],
             },
-            None,
             [
                 {
-                    "linkid": "zyx123",
-                    "reportdate": "2021-02-10",
-                    "reporturi": "/reports/zyx123",
-                    "firstvisitdate": "2020-01-01",
-                    "reporttype": "Location",
-                }
+                    CQCL.report_date: "report_date",
+                    CQCL.report_link_id: None,
+                    CQCL.organisation_id: None,
+                    CQCLNew.service_ratings: [
+                        {
+                            CQCL.name: None,
+                            CQCL.rating: None,
+                            CQCL.key_question_ratings: [
+                                {
+                                    CQCL.name: None,
+                                    CQCL.rating: None,
+                                },
+                            ],
+                        },
+                    ],
+                    CQCL.overall: {
+                        CQCL.rating: "Overall rating Excellent",
+                        CQCLNew.use_of_resources: {
+                            CQCLNew.combined_quality_rating: None,
+                            CQCLNew.combined_quality_summary: None,
+                            CQCLNew.use_of_resources_rating: None,
+                            CQCLNew.use_of_resources_summary: None,
+                        },
+                        CQCL.key_question_ratings: [
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
+                            {
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
+                            },
+                            {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Responsive",
+                                CQCL.rating: "Responsive rating Good",
+                            },
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
+                        ],
+                    },
+                },
             ],
             "2020-01-01",
         ),
@@ -2109,6 +2151,94 @@ class ReconciliationData:
         ("loc_1", "test_subject"),
     ]
 
+    new_issues_rows = [
+        ("org 1", "loc 1", ""),
+        ("org 1", "loc 2", ""),
+        ("org 1", "loc 3", ""),
+        ("org 2", "loc 4", ""),
+        ("org 2", "loc 5", ""),
+        ("org 3", "loc 6", ""),
+        ("org 5", "loc 7", ""),
+    ]
+
+    unique_rows = [
+        ("org 1", ""),
+        ("org 2", ""),
+        ("org 3", ""),
+        ("org 6", ""),
+    ]
+
+    expected_join_array_of_nmdsids_rows = [
+        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
+        ("org 2", "", "new_column: loc 5, loc 4"),
+        ("org 3", "", "new_column: loc 6"),
+        ("org 6", "", None),
+    ]
+
+    new_column = "new_column"
+
+    create_parents_description_rows = [
+        ("org 1", None, None, None),
+        ("org 2", None, None, "missing"),
+        ("org 3", None, "old", None),
+        ("org 4", None, "old", "missing"),
+        ("org 5", "new", None, None),
+        ("org 6", "new", None, "missing"),
+        ("org 7", "new", "old", None),
+        ("org 8", "new", "old", "missing"),
+    ]
+
+    expected_create_parents_description_rows = [
+        ("org 1", None, None, None, ""),
+        ("org 2", None, None, "missing", "missing "),
+        ("org 3", None, "old", None, "old "),
+        ("org 4", None, "old", "missing", "old missing "),
+        ("org 5", "new", None, None, "new "),
+        ("org 6", "new", None, "missing", "new missing "),
+        ("org 7", "new", "old", None, "new old "),
+        ("org 8", "new", "old", "missing", "new old missing "),
+    ]
+
+    get_ascwds_parent_accounts_rows = [
+        (
+            "nmds_1",
+            "estab_1",
+            "name",
+            "org_1",
+            "type",
+            "region_id",
+            ReconValues.is_parent,
+            "other",
+        ),
+        (
+            "nmds_2",
+            "estab_2",
+            "name",
+            "org_2",
+            "type",
+            "region_id",
+            ReconValues.is_not_parent,
+            "other",
+        ),
+        ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
+    ]
+    expected_get_ascwds_parent_accounts_rows = [
+        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
+    ]
+
+    cqc_data_for_join_rows = [
+        ("loc_1", "name"),
+        ("loc_2", "name"),
+    ]
+    ascwds_data_for_join_rows = [
+        ("loc_1", "estab_1"),
+        ("loc_3", "estab_2"),
+    ]
+    expected_data_for_join_rows = [
+        ("loc_1", "estab_1", "name"),
+        ("loc_3", "estab_2", None),
+    ]
+
 
 @dataclass
 class FilterAscwdsFilledPostsData:
@@ -2169,19 +2299,19 @@ class FilterAscwdsFilledPostsData:
 
 
 @dataclass
-class NonResFeaturesData(object):
+class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-1783948", date(2022, 2, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered", '2022', '02', '01', '20220201'),
-        ("1-1783948", date(2022, 1, 1), "South East", 0, ["Domiciliary care service"], "non-residential", 5, 67.0, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "rule_2", "Registered", '2022', '01', '01', '20220101'),
-        ("1-10235302415", date(2022, 1, 12), "South West", 0, ["Urgent care services", "Supported living service"], "non-residential", 17, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_3", "Registered", '2022', '01', '12', '20220112'),
-        ("1-1060912125", date(2022, 1, 12), "Yorkshire and the Humber", 0, ["Hospice services at home"], "non-residential", 34, None, "Surrey", "N", "Independent", "Rural hamlet and isolated dwellings", "rule_2", "Registered", '2022', '01', '12', '20220212'),
-        ("1-107095666", date(2022, 3, 1), "Yorkshire and the Humber", 0, ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", 34, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '01', '20220301'),
-        ("1-108369587", date(2022, 3, 8), "South West", 0, ["Specialist college service"], "non-residential", 15, None, "Lewisham", "N", "Independent", "Rural town and fringe in a sparse setting", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-000000001", date(2022, 3, 8), "Yorkshire and the Humber", 67, ["Care home service with nursing"], "Care home with nursing", None, None, "Lewisham", "Y", "Local authority", "Urban city and town", "rule_1", "Registered", '2022', '03', '08', '20220308'),
-        ("1-10894414510", date(2022, 3, 8), "Yorkshire and the Humber", 10, ["Care home service with nursing"], "Care home with nursing", 0, 25.0, "Lewisham", "Y", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '03', '08', '20220308'),
-        ("1-108950835", date(2022, 3, 15), "Merseyside", 20, ["Care home service without nursing"], "Care home without nursing", 23, None, "Lewisham", "Y", "", "Urban city and town", "rule_1", "Registered", '2022', '03', '15', '20220315'),
-        ("1-108967195", date(2022, 4, 22), "North West", 0, ["Supported living service", "Acute services with overnight beds"], "non-residential", 11, None, "Lewisham", "N", "Independent", "Urban city and town", "rule_3", "Registered", '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), "South East", "Y", ["Domiciliary care service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), "South East", "N", ["Domiciliary care service"], "non-residential", 67.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), "South West", "Y", ["Urgent care services", "Supported living service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), "North East", "Y", ["Hospice services at home"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", None, "N", "Urban city and town", '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), "South West", None, ["Specialist college service"], "non-residential", None, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", None, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", 25.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), "North West", None, ["Care home service without nursing"], "Care home without nursing", None, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], "non-residential", None, "N", "Urban city and town", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
@@ -2192,6 +2322,17 @@ class NonResFeaturesData(object):
 
     expected_filtered_to_non_care_home_rows = [
         ("N", CQCLValues.independent),
+    ]
+
+    filter_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00002", None),
+        ("1-00003", "N"),
+    ]
+
+    expected_filtered_to_dormancy_rows = [
+        ("1-00001", "Y"),
+        ("1-00003", "N"),
     ]
 
 
@@ -2953,73 +3094,43 @@ class ValidateMergedIndCqcData:
     cqc_locations_rows = [
         (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
         (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
         (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
         (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
     ]
 
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5, None, date(2024, 2, 1)),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
 
     merged_ind_cqc_extra_row_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5, None, date(2024, 2, 1)),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
-        ("1-000000004", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000003", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
 
     merged_ind_cqc_missing_row_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5, None, date(2024, 2, 1)),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
 
     merged_ind_cqc_with_cqc_sector_null_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5, None, date(2024, 2, 1)),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), None, "N", None, "4", 6, None, date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", None, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
 
     merged_ind_cqc_with_duplicate_data_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1, 10, date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, 20, date(2024, 1, 1)),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2, None, date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Independent", "Y", 10, "1", 4, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5, None, date(2024, 2, 1)),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, 1, date(2024, 2, 1)),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, 4, date(2024, 2, 1)),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6, None, date(2024, 2, 1)),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
     # fmt: on
 
@@ -3182,12 +3293,12 @@ class FlattenCQCRatings:
                     CQCL.rating: "Overall rating Excellent",
                     CQCL.report_date: "report_date",
                     CQCL.report_link_id: None,
-                    CQCLNew.use_of_resources: {
+                    CQCL.use_of_resources: {
                         CQCL.organisation_id: None,
-                        CQCLNew.summary: None,
-                        CQCLNew.use_of_resources_rating: None,
-                        CQCLNew.combined_quality_summary: None,
-                        CQCLNew.combined_quality_rating: None,
+                        CQCL.summary: None,
+                        CQCL.use_of_resources_rating: None,
+                        CQCL.combined_quality_summary: None,
+                        CQCL.combined_quality_rating: None,
                         CQCL.report_date: None,
                         CQCL.report_link_id: None,
                     },
@@ -3229,7 +3340,7 @@ class FlattenCQCRatings:
                         },
                     ],
                 },
-                CQCLNew.service_ratings: [
+                CQCL.service_ratings: [
                     {
                         CQCL.name: None,
                         CQCL.rating: None,
@@ -3257,7 +3368,7 @@ class FlattenCQCRatings:
                     CQCL.report_date: "report_date",
                     CQCL.report_link_id: None,
                     CQCL.organisation_id: None,
-                    CQCLNew.service_ratings: [
+                    CQCL.service_ratings: [
                         {
                             CQCL.name: None,
                             CQCL.rating: None,
@@ -3271,11 +3382,11 @@ class FlattenCQCRatings:
                     ],
                     CQCL.overall: {
                         CQCL.rating: "Overall rating Excellent",
-                        CQCLNew.use_of_resources: {
-                            CQCLNew.combined_quality_rating: None,
-                            CQCLNew.combined_quality_summary: None,
-                            CQCLNew.use_of_resources_rating: None,
-                            CQCLNew.use_of_resources_summary: None,
+                        CQCL.use_of_resources: {
+                            CQCL.combined_quality_rating: None,
+                            CQCL.combined_quality_summary: None,
+                            CQCL.use_of_resources_rating: None,
+                            CQCL.use_of_resources_summary: None,
                         },
                         CQCL.key_question_ratings: [
                             {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
