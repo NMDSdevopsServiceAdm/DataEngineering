@@ -45,7 +45,7 @@ class CreateCheckTests(ValidateUtilsTests):
         pass
 
 
-class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
+class CheckForColumnCompletenessTests(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.one_column_rule = Data.one_complete_column_rule
@@ -120,7 +120,7 @@ class CreateCheckForColumnCompletenessTests(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
+class CheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.unique_columns_rule = Data.unique_index_columns_rule
@@ -151,7 +151,7 @@ class CreateCheckOfUniquenessOfTwoIndexColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
+class CheckOfSizeOfDataset(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.size_of_dataset_rule = Data.size_of_dataset_rule
