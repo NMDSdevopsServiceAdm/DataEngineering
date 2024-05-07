@@ -77,6 +77,8 @@ from utils.reconciliation_utils.reconciliation_values import (
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
 )
+from utils.column_names.validation_table_columns import Validation
+
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
@@ -2788,6 +2790,22 @@ class FlattenCQCRatings:
         ]
     )
 
+
 @dataclass
 class ValidationUtils:
-    schema = []
+    validation_schema = StructType(
+        [
+            StructField(Validation.check, StringType(), True),
+            StructField(Validation.check_level, StringType(), True),
+            StructField(Validation.check_status, StringType(), True),
+            StructField(Validation.constraint, StringType(), True),
+            StructField(Validation.constraint_status, StringType(), True),
+            StructField(Validation.constraint_message, StringType(), True),
+        ]
+    )
+
+    size_of_dataset_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )

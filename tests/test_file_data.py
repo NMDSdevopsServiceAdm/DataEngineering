@@ -36,6 +36,7 @@ from utils.reconciliation_utils.reconciliation_values import (
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
@@ -3787,6 +3788,16 @@ class FlattenCQCRatings:
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
     ]
 
+
 @dataclass
 class ValidationUtils:
-    schema = []
+    size_of_dataset_rule = {RuleName.size_of_dataset: 3}
+    size_of_dataset_rows = [
+        ("loc_1",),
+        ("loc_2",),
+        ("loc_3",),
+    ]
+    size_of_dataset_result_success_rows = [
+        ("Size of dataset", "Warning", "Success", "", "", "")
+    ]
+    size_of_dataset_result_failure_rows = []
