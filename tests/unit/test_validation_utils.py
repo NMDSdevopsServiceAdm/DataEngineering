@@ -66,7 +66,7 @@ class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
         super().setUp()
         self.size_of_dataset_rule = Data.size_of_dataset_rule
         self.test_df = self.spark.createDataFrame(
-            Data.size_of_dataset_rows, Schemas.size_of_dataset_schema
+            Data.size_of_dataset_success_rows, Schemas.size_of_dataset_schema
         )
         self.expected_df = self.spark.createDataFrame(
             Data.size_of_dataset_result_success_rows, Schemas.validation_schema
@@ -74,8 +74,8 @@ class CreateCheckOfSizeOfDataset(ValidateUtilsTests):
 
     def test_create_check_of_size_of_dataset(self):
         returned_df = job.validate_dataset(self.test_df, self.size_of_dataset_rule)
-        returned_df.show()
-        self.assertEqual(returned_df, self.expected_df)
+        returned_df.show(truncate=False)
+        self.assertEqual(returned_df.collect(), self.expected_df.collect())
 
 
 if __name__ == "__main__":

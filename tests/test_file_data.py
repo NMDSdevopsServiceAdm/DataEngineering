@@ -3792,12 +3792,32 @@ class FlattenCQCRatings:
 @dataclass
 class ValidationUtils:
     size_of_dataset_rule = {RuleName.size_of_dataset: 3}
-    size_of_dataset_rows = [
+    size_of_dataset_success_rows = [
         ("loc_1",),
         ("loc_2",),
         ("loc_3",),
     ]
-    size_of_dataset_result_success_rows = [
-        ("Size of dataset", "Warning", "Success", "", "", "")
+    size_of_dataset_failure_rows = [
+        ("loc_1",),
+        ("loc_2",),
     ]
-    size_of_dataset_result_failure_rows = []
+    size_of_dataset_result_success_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Success",
+            "SizeConstraint(Size(None))",
+            "Success",
+            None,
+        )
+    ]
+    size_of_dataset_result_failure_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Failure",
+            "SizeConstraint(Size(None))",
+            "Failure",
+            "DataFrame row count should be 3.",
+        )
+    ]
