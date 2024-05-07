@@ -23,26 +23,19 @@ class ValidateUtilsTests(unittest.TestCase):
 
 class ValidateDatasetTests(ValidateUtilsTests):
     def setUp(self) -> None:
-        return super().setUp()
+        super().setUp()
+        self.rules = Data.multiple_rules
+        self.test_df = self.spark.createDataFrame(
+            Data.multiple_rules_rows, Schemas.multiple_rules_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.multiple_rules_results_rows, Schemas.validation_schema
+        )
+        self.returned_df = job.validate_dataset(self.test_df, self.rules)
+        self.returned_df.show()
 
-    def test_validate_dataset(self):
-        pass
-
-
-class AddChecksToRunTests(ValidateUtilsTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def test_add_checks_to_run(self):
-        pass
-
-
-class CreateCheckTests(ValidateUtilsTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def test_create_check(self):
-        pass
+    def test_validate_dataset_can_run_checks_with_multiple_rules(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 class CheckForColumnCompletenessTests(ValidateUtilsTests):

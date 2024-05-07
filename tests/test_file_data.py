@@ -3990,3 +3990,53 @@ class ValidationUtils:
             "Value: 0.0 does not meet the constraint requirement! Completeness of cqc_location_import_date should be 1.",
         ),
     ]
+
+    multiple_rules = {
+        RuleName.size_of_dataset: 1,
+        RuleName.index_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ],
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ],
+    }
+
+    multiple_rules_rows = [
+        ("loc_1", date(2024, 1, 1)),
+    ]
+    multiple_rules_results_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Success",
+            "SizeConstraint(Size(None))",
+            "Success",
+            "",
+        ),
+        (
+            "Index columns are unique",
+            "Warning",
+            "Success",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]

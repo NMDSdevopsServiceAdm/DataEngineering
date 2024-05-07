@@ -2819,3 +2819,4 @@ class ValidationUtils:
 
     one_column_schema = size_of_dataset_schema
     two_column_schema = index_column_schema
+    multiple_rules_schema = index_column_schema
