@@ -4040,3 +4040,8 @@ class ValidationUtils:
             "",
         ),
     ]
+
+    unknown_rules = {
+        RuleName.size_of_dataset: 1,
+        "unknown_rule": "some_value",
+    }

@@ -25,17 +25,23 @@ class ValidateDatasetTests(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.rules = Data.multiple_rules
+        self.unknown_rules = Data.unknown_rules
         self.test_df = self.spark.createDataFrame(
             Data.multiple_rules_rows, Schemas.multiple_rules_schema
         )
         self.expected_df = self.spark.createDataFrame(
             Data.multiple_rules_results_rows, Schemas.validation_schema
         )
-        self.returned_df = job.validate_dataset(self.test_df, self.rules)
-        self.returned_df.show()
 
     def test_validate_dataset_can_run_checks_with_multiple_rules(self):
+        self.returned_df = job.validate_dataset(self.test_df, self.rules)
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_validate_dataset_raises_error_with_unknown_rules(self):
+        with self.assertRaises(ValueError) as context:
+            job.validate_dataset(self.test_df, self.unknown_rules)
+
+        self.assertTrue("Unknown rule to check" in str(context.exception))
 
 
 class CheckForColumnCompletenessTests(ValidateUtilsTests):
