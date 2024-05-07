@@ -116,36 +116,36 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_create_ratio_between_columns_adds_new_column_with_given_name_when_given_hybrid_and_la_counts(
-        self,
-    ):
-        self.assertTrue(
-            DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES
-            in job.create_ratio_between_columns(
+        self.test_sample_rows_with_la_and_hybrid_area_postcode_counts = self.spark.createDataFrame(
+            TestData.sample_rows_with_la_and_hybrid_area_postcode_counts,
+            schema=TestSchema.sample_rows_with_la_and_hybrid_area_postcode_counts_schema,
+        )
+
+        self.returned_ratio_between_hybrid_area_and_la_area_counts = (
+            job.create_ratio_between_columns(
                 self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
                 DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
                 DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
                 DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
-            ).columns
+            ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+        )
+
+        self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = self.spark.createDataFrame(
+            TestData.expected_ratio_between_hybrid_area_and_la_area_postcodes_rows,
+            schema=TestSchema.expected_ratio_between_hybrid_area_and_la_area_postcodes_schema,
+        ).sort(
+            [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
         )
 
     def test_create_ratio_between_columns_has_expected_values_when_given_hybrid_and_la_counts(
         self,
     ):
         returned_rows = (
-            job.create_ratio_between_columns(
-                self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
-                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
-                DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
-            )
-            .sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
-            .collect()
+            self.returned_ratio_between_hybrid_area_and_la_area_counts.collect()
         )
-
-        expected_rows = self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.sort(
-            [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
-        ).collect()
+        expected_rows = (
+            self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.collect()
+        )
 
         self.assertAlmostEqual(
             returned_rows[0][DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES],
