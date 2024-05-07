@@ -1,3 +1,8 @@
+import os
+import sys
+
+os.environ["SPARK_VERSION"] = "3.3"
+
 from pydeequ.checks import Check, CheckLevel
 from pydeequ.verification import (
     VerificationRunBuilder,
