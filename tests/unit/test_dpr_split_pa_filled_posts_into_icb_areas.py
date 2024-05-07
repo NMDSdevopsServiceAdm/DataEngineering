@@ -122,7 +122,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
         )
 
         self.returned_ratio_between_hybrid_area_and_la_area_counts = (
-            job.create_ratio_between_columns(
+            job.create_ratio_between_hybrid_area_and_la_area_postcode_counts(
                 self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
                 DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
                 DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
@@ -144,7 +144,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.collect()
         )
 
-    def test_create_ratio_between_columns_has_expected_columns(
+    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_columns(
         self,
     ):
         self.assertEqual(
@@ -152,12 +152,12 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.columns,
         )
 
-    def test_create_ratio_between_columns_has_expected_length(
+    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_length(
         self,
     ):
         self.assertEqual(len(self.returned_rows), len(self.expected_rows))
 
-    def test_create_ratio_between_columns_has_expected_values_when_given_hybrid_and_la_counts(
+    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_values_when_given_hybrid_and_la_counts(
         self,
     ):
         for i in range(len(self.returned_rows)):
