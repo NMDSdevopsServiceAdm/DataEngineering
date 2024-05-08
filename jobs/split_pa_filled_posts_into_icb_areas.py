@@ -60,6 +60,11 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 4 - Drop duplicates.
+    postcode_directory_df = (
+        deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+            postcode_directory_df
+        )
+    )
 
     # TODO 5 - Join pa filled posts.
 
@@ -98,6 +103,20 @@ def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
         F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA)
         / F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA),
     )
+
+    return postcode_directory_df
+
+
+def deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+    postcode_directory_df: DataFrame,
+):
+    postcode_directory_df = postcode_directory_df.drop(
+        ONSClean.postcode,
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
+        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
+    )
+
+    postcode_directory_df = postcode_directory_df.distinct()
 
     return postcode_directory_df
 
