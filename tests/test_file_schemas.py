@@ -482,6 +482,15 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
+    expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema = StructType(
+        [
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+            StructField(DP.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES, FloatType(), True),
+        ]
+    )
+
     pa_sample_filled_post_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
