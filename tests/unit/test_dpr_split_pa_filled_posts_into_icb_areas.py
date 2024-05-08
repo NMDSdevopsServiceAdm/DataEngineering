@@ -187,7 +187,6 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
     def test_deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts_returns_expected_data(
         self,
     ):
-
         returned_rows_dedupicated_on_importdate_la_area_and_hybrid_area = (
             job.deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
                 self.test_sample_rows_ratio_between_hybrid_area_and_la_area_postcodes_rows
