@@ -56,9 +56,6 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     postcode_directory_df = (
         create_ratio_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df,
-            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-            DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
-            DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
         )
     )
 
@@ -95,13 +92,11 @@ def count_postcodes_per_list_of_columns(
 
 def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
-    hybrid_area_postcode_count: str,
-    la_area_postcode_count: str,
-    new_column_name: str,
 ):
     postcode_directory_df = postcode_directory_df.withColumn(
-        new_column_name,
-        F.col(hybrid_area_postcode_count) / F.col(la_area_postcode_count),
+        DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+        F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA)
+        / F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA),
     )
 
     return postcode_directory_df

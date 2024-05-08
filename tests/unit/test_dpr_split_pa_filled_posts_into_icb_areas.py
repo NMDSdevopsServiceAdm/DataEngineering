@@ -124,9 +124,6 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
         self.returned_ratio_between_hybrid_area_and_la_area_counts = (
             job.create_ratio_between_hybrid_area_and_la_area_postcode_counts(
                 self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
-                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-                DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
-                DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
             ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
         )
 
