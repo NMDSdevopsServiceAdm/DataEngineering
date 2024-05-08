@@ -79,8 +79,16 @@ def main(
     )
     reconciliation_df.unpersist()
 
-    write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
-    write_to_csv(parents_df, reconciliation_parents_destination)
+    utils.write_to_parquet(
+        single_and_sub_df,
+        reconciliation_single_and_subs_destination,
+        mode="overwrite",
+    )
+    utils.write_to_parquet(
+        parents_df,
+        reconciliation_parents_destination,
+        mode="overwrite",
+    )
 
 
 def prepare_most_recent_cqc_location_df(cqc_location_df: DataFrame) -> DataFrame:
@@ -409,10 +417,6 @@ def final_column_selection(df: DataFrame) -> DataFrame:
     ).sort(ReconColumn.description, ReconColumn.nmds)
 
     return df
-
-
-def write_to_csv(df: DataFrame, output_dir: str):
-    df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_dir)
 
 
 if __name__ == "__main__":
