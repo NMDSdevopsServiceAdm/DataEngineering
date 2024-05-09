@@ -483,7 +483,7 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    full_rows_with_la_and_hybrid_area_postcode_schema = StructType(
+    full_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
         [
             *ons_sample_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),

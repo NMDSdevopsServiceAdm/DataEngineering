@@ -170,7 +170,7 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
 
         self.sample_df = self.spark.createDataFrame(
             TestData.full_rows_with_la_and_hybrid_area_postcode_counts,
-            schema=TestSchema.full_rows_with_la_and_hybrid_area_postcode_schema,
+            schema=TestSchema.full_rows_with_la_and_hybrid_area_postcode_counts_schema,
         )
 
         self.returned_df = (

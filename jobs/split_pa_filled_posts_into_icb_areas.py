@@ -109,7 +109,7 @@ def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
 
 def deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
-):
+) -> DataFrame:
     postcode_directory_df = postcode_directory_df.drop(
         ONSClean.postcode,
         DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
