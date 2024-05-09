@@ -138,6 +138,9 @@ def join_pa_filled_posts_to_hybrid_area_proportions_table(
         ONSClean.contemporary_ons_import_date,
     )
 
+    # TODO join the pa filled posts into the postcode directory df. The column names have to the same, so do something like
+    #      "with ONSClean.date as DPColName.date"
+
 
 if __name__ == "__main__":
     (
