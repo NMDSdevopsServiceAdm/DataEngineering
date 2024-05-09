@@ -164,6 +164,9 @@ class DirectPaymentColumnNames:
     COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA: str = (
         "count_of_distinct_postcodes_per_hybrid_area"
     )
+    PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: str = (
+        "proportion_of_ICB_postcodes_in_la_area"
+    )
 
 
 @dataclass

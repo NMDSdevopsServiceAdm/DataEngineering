@@ -53,6 +53,11 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 3 - Create column with ratio.
+    postcode_directory_df = (
+        create_ratio_between_hybrid_area_and_la_area_postcode_counts(
+            postcode_directory_df,
+        )
+    )
 
     # TODO 4 - Drop duplicates.
 
@@ -80,6 +85,18 @@ def count_postcodes_per_list_of_columns(
     postcode_directory_df = postcode_directory_df.withColumn(
         new_column_name,
         F.size(F.collect_set(ONSClean.postcode).over(w)),
+    )
+
+    return postcode_directory_df
+
+
+def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
+    postcode_directory_df: DataFrame,
+) -> DataFrame:
+    postcode_directory_df = postcode_directory_df.withColumn(
+        DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
+        F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA)
+        / F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA),
     )
 
     return postcode_directory_df

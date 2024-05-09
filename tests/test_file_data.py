@@ -672,6 +672,24 @@ class PAFilledPostsByICBArea:
         ("AB10AC", date(2023,1,1), "cssr2", "icb3",2), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3",2),
     ]
+
+    sample_rows_with_la_and_hybrid_area_postcode_counts = [
+        ("Group1", date(2024,1,1), 3, 3),
+        ("Group2", date(2024,1,1), 4, 1), 
+        ("Group3", date(2024,1,1), 4, 3), 
+        ("Group4", date(2023,1,1), 3, 3),
+        ("Group5", date(2023,1,1), 3, 1), 
+        ("Group6", date(2023,1,1), 3, 2),
+    ]
+
+    expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
+        ("Group1", date(2024,1,1), 3, 3, 1.00000),
+        ("Group2", date(2024,1,1), 4, 1, 0.25000), 
+        ("Group3", date(2024,1,1), 4, 3, 0.75000), 
+        ("Group4", date(2023,1,1), 3, 3, 1.00000),
+        ("Group5", date(2023,1,1), 3, 1, 0.33333), 
+        ("Group6", date(2023,1,1), 3, 2, 0.66666),
+    ]
     # fmt: on
 
     pa_sample_filled_post_rows = [

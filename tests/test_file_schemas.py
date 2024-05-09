@@ -465,6 +465,24 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
+    sample_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
+        [
+            StructField("GroupID", StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+        ]
+    )
+
+    expected_ratio_between_hybrid_area_and_la_area_postcodes_schema = StructType(
+        [
+            *sample_rows_with_la_and_hybrid_area_postcode_counts_schema,
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
     pa_sample_filled_post_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
