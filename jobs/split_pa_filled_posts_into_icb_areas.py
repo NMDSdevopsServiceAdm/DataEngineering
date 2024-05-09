@@ -97,9 +97,9 @@ def count_postcodes_per_list_of_columns(
 
 def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
-):
+) -> DataFrame:
     postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES,
+        DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
         F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA)
         / F.col(DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA),
     )

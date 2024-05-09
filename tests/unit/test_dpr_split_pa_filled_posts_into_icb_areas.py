@@ -116,37 +116,31 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_sample_rows_with_la_and_hybrid_area_postcode_counts = self.spark.createDataFrame(
+        self.sample_df = self.spark.createDataFrame(
             TestData.sample_rows_with_la_and_hybrid_area_postcode_counts,
             schema=TestSchema.sample_rows_with_la_and_hybrid_area_postcode_counts_schema,
         )
 
-        self.returned_ratio_between_hybrid_area_and_la_area_counts = (
+        self.returned_df = (
             job.create_ratio_between_hybrid_area_and_la_area_postcode_counts(
-                self.test_sample_rows_with_la_and_hybrid_area_postcode_counts,
-            ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
+                self.sample_df,
+            )
         )
 
-        self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = self.spark.createDataFrame(
+        self.expected_df = self.spark.createDataFrame(
             TestData.expected_ratio_between_hybrid_area_and_la_area_postcodes_rows,
             schema=TestSchema.expected_ratio_between_hybrid_area_and_la_area_postcodes_schema,
-        ).sort(
-            [ONSClean.postcode, ONSClean.contemporary_ons_import_date]
         )
 
-        self.returned_rows = (
-            self.returned_ratio_between_hybrid_area_and_la_area_counts.collect()
-        )
-        self.expected_rows = (
-            self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.collect()
-        )
+        self.returned_rows = self.returned_df.sort("GroupID").collect()
+        self.expected_rows = self.expected_df.sort("GroupID").collect()
 
     def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_columns(
         self,
     ):
         self.assertEqual(
-            self.returned_ratio_between_hybrid_area_and_la_area_counts.columns,
-            self.test_expected_ratio_between_hybrid_area_and_la_area_postcodes_rows.columns,
+            self.returned_df.columns,
+            self.expected_df.columns,
         )
 
     def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_length(
@@ -160,10 +154,10 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
         for i in range(len(self.returned_rows)):
             self.assertAlmostEqual(
                 self.returned_rows[i][
-                    DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES
+                    DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA
                 ],
                 self.expected_rows[i][
-                    DPColNames.RATIO_HYBRID_AREA_TO_LA_AREA_POSTCODES
+                    DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA
                 ],
                 3,
                 "rows are not almost equal",
