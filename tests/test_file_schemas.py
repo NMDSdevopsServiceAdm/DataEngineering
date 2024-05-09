@@ -467,7 +467,8 @@ class PAFilledPostsByICBAreaSchema:
 
     sample_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            StructField("Group", StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
             StructField(
                 DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
