@@ -168,12 +168,18 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_sample_rows_ratio_between_hybrid_area_and_la_area_postcodes_rows = self.spark.createDataFrame(
-            TestData.expected_ratio_between_hybrid_area_and_la_area_postcodes_rows,
-            schema=TestSchema.expected_ratio_between_hybrid_area_and_la_area_postcodes_schema,
+        self.sample_df = self.spark.createDataFrame(
+            TestData.full_rows_with_la_and_hybrid_area_postcode_counts,
+            schema=TestSchema.full_rows_with_la_and_hybrid_area_postcode_schema,
         )
 
-        self.expected_rows_dedupicated_on_importdate_la_area_and_hybrid_area = self.spark.createDataFrame(
+        self.returned_df = (
+            job.deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+                self.sample_df
+            )
+        )
+
+        self.expected_df = self.spark.createDataFrame(
             TestData.expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows,
             schema=TestSchema.expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
         )
@@ -181,25 +187,17 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
     def test_deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts_returns_expected_data(
         self,
     ):
-        returned_rows = (
-            job.deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
-                self.test_sample_rows_ratio_between_hybrid_area_and_la_area_postcodes_rows
-            )
-            .sort(
-                ONSClean.contemporary_ons_import_date,
-                ONSClean.contemporary_cssr,
-                ONSClean.contemporary_icb,
-            )
-            .collect()
-        )
+        returned_rows = self.returned_df.sort(
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_icb,
+        ).collect()
 
-        expected_rows = (
-            self.expected_rows_dedupicated_on_importdate_la_area_and_hybrid_area.sort(
-                ONSClean.contemporary_ons_import_date,
-                ONSClean.contemporary_cssr,
-                ONSClean.contemporary_icb,
-            ).collect()
-        )
+        expected_rows = self.expected_df.sort(
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_icb,
+        ).collect()
 
         self.assertEqual(
             returned_rows,
