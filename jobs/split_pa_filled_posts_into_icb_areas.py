@@ -158,7 +158,7 @@ def create_date_column_from_year_in_pa_estimates(
     return pa_filled_posts_df
 
 
-def align_dates_to_pa_filled_posts_from_postcode_proportions(
+def align_dates_from_pa_filled_posts_to_postcode_proportions(
     pa_filled_posts_df: DataFrame,
     postcode_directory_df: DataFrame,
 ) -> DataFrame:

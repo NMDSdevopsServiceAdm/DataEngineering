@@ -514,10 +514,16 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_pa_filled_posts_with_year_as_date_schema = StructType(
+    expected_after_adding_date_from_year_column_schema = StructType(
         [
             StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
             *sample_pa_filled_post_schema,
+        ]
+    )
+
+    expected_after_adding_aligned_dates_column_schema = StructType(
+        [
+            *expected_after_adding_date_from_year_column_schema,
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
         ]
     )
