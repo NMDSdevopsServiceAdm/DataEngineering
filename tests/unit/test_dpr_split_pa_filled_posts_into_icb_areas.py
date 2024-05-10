@@ -187,10 +187,7 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
     def test_deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts_returns_expected_columns(
         self,
     ):
-        returned_columns = self.returned_df.columns
-        expected_columns = self.expected_df.columns
-
-        self.assertEqual(returned_columns, expected_columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts_returns_expected_data(
         self,
