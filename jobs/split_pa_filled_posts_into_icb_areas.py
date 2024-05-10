@@ -56,14 +56,14 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
 
     # TODO 3 - Create column with ratio.
     postcode_directory_df = (
-        create_ratio_between_hybrid_area_and_la_area_postcode_counts(
+        create_proportion_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df,
         )
     )
 
     # TODO 4 - Drop duplicates.
     postcode_directory_df = (
-        deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+        deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df
         )
     )
@@ -106,7 +106,7 @@ def count_postcodes_per_list_of_columns(
     return postcode_directory_df
 
 
-def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
+def create_proportion_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
 ) -> DataFrame:
     postcode_directory_df = postcode_directory_df.withColumn(
@@ -118,18 +118,17 @@ def create_ratio_between_hybrid_area_and_la_area_postcode_counts(
     return postcode_directory_df
 
 
-def deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+def deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
 ) -> DataFrame:
-    postcode_directory_df = postcode_directory_df.drop(
-        ONSClean.postcode,
-        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
-        DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
-    )
+    deduplicated_df = postcode_directory_df.select(
+        ONSClean.contemporary_ons_import_date,
+        ONSClean.contemporary_cssr,
+        ONSClean.contemporary_icb,
+        DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
+    ).distinct()
 
-    postcode_directory_df = postcode_directory_df.distinct()
-
-    return postcode_directory_df
+    return deduplicated_df
 
 
 def create_date_column_from_year_in_pa_estimates(

@@ -122,7 +122,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
         )
 
         self.returned_df = (
-            job.create_ratio_between_hybrid_area_and_la_area_postcode_counts(
+            job.create_proportion_between_hybrid_area_and_la_area_postcode_counts(
                 self.sample_df,
             )
         )
@@ -135,7 +135,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
         self.returned_rows = self.returned_df.sort("GroupID").collect()
         self.expected_rows = self.expected_df.sort("GroupID").collect()
 
-    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_columns(
+    def test_create_proportion_between_hybrid_area_and_la_area_postcode_counts_has_expected_columns(
         self,
     ):
         self.assertEqual(
@@ -143,12 +143,12 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             self.expected_df.columns,
         )
 
-    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_length(
+    def test_create_proportion_between_hybrid_area_and_la_area_postcode_counts_has_expected_length(
         self,
     ):
         self.assertEqual(len(self.returned_rows), len(self.expected_rows))
 
-    def test_create_ratio_between_hybrid_area_and_la_area_postcode_counts_has_expected_values_when_given_hybrid_and_la_counts(
+    def test_create_proportion_between_hybrid_area_and_la_area_postcode_counts_has_expected_values_when_given_hybrid_and_la_counts(
         self,
     ):
         for i in range(len(self.returned_rows)):
@@ -174,7 +174,7 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
         )
 
         self.returned_df = (
-            job.deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
+            job.deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
                 self.sample_df
             )
         )
@@ -184,7 +184,12 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
             schema=TestSchema.expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
         )
 
-    def test_deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts_returns_expected_data(
+    def test_deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts_returns_expected_data(
         self,
     ):
         returned_rows = self.returned_df.sort(
