@@ -516,8 +516,8 @@ class PAFilledPostsByICBAreaSchema:
 
     expected_after_adding_date_from_year_column_schema = StructType(
         [
-            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
             *sample_pa_filled_post_schema,
+            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
         ]
     )
 

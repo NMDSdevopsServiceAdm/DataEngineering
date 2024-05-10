@@ -716,15 +716,15 @@ class PAFilledPostsByICBArea:
     ]
 
     expected_after_adding_date_from_year_column_rows = [
-        (date(2024, 3, 31), "Group1", "Leeds", 100.2, "2024"),
-        (date(2024, 3, 31), "Group2", "Bradford", 200.3, "2024"),
-        (date(2023, 3, 31), "Group3", "Hull", 200.3, "2023"),
+        ("Group1", "Leeds", 100.2, "2024", date(2024, 3, 31)),
+        ("Group2", "Bradford", 200.3, "2024", date(2024, 3, 31)),
+        ("Group3", "Hull", 200.3, "2023", date(2023, 3, 31)),
     ]
 
     expected_after_adding_aligned_dates_column_rows = [
-        (date(2024, 3, 31), "Group1", "Leeds", 100.2, "2024", date(2023, 5, 1)),
-        (date(2024, 3, 31), "Group2", "Bradford", 200.3, "2024", date(2023, 5, 1)),
-        (date(2023, 3, 31), "Group3", "Hull", 200.3, "2023", date(2022, 5, 1)),
+        ("Group1", "Leeds", 100.2, "2024", date(2024, 3, 31), date(2023, 5, 1)),
+        ("Group2", "Bradford", 200.3, "2024", date(2024, 3, 31), date(2023, 5, 1)),
+        ("Group3", "Hull", 200.3, "2023", date(2023, 3, 31), date(2022, 5, 1)),
     ]
 
 

@@ -219,24 +219,27 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
             schema=TestSchema.expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
         )
 
-        self.returned_after_adding_date_from_year_column = (
+        self.returned_after_adding_date_from_year_column_df = (
             job.create_date_column_from_year_in_pa_estimates(
                 self.sample_pa_filled_posts_df
             )
         )
 
-        self.expected_after_adding_date_from_year_column = self.spark.createDataFrame(
-            TestData.expected_after_adding_date_from_year_column_rows,
-            schema=TestSchema.expected_after_adding_date_from_year_column_schema,
-        )
-
-        self.returned_after_adding_aligned_dates_column = (
-            job.align_dates_from_pa_filled_posts_to_postcode_proportions(
-                self.sample_pa_filled_posts_df, self.sample_proportions_df
+        self.expected_after_adding_date_from_year_column_df = (
+            self.spark.createDataFrame(
+                TestData.expected_after_adding_date_from_year_column_rows,
+                schema=TestSchema.expected_after_adding_date_from_year_column_schema,
             )
         )
 
-        self.expected_after_adding_aligned_dates_column = self.spark.createDataFrame(
+        self.returned_after_adding_aligned_dates_column_df = (
+            job.align_dates_from_pa_filled_posts_to_postcode_proportions(
+                self.returned_after_adding_date_from_year_column_df,
+                self.sample_proportions_df,
+            )
+        )
+
+        self.expected_after_adding_aligned_dates_column_df = self.spark.createDataFrame(
             TestData.expected_after_adding_aligned_dates_column_rows,
             schema=TestSchema.expected_after_adding_aligned_dates_column_schema,
         )
@@ -244,21 +247,36 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     def test_create_date_column_from_year_in_pa_estimates_has_expected_values(
         self,
     ):
-        returned_rows = self.returned_after_adding_date_from_year_column.sort(
+        returned_rows = self.returned_after_adding_date_from_year_column_df.sort(
             "Group"
         ).collect()
-        expected_rows = self.expected_after_adding_date_from_year_column.sort(
+
+        expected_rows = self.expected_after_adding_date_from_year_column_df.sort(
             "Group"
         ).collect()
+
         self.assertEqual(returned_rows, expected_rows)
 
     def test_align_dates_from_pa_filled_posts_to_postcode_proportions(
         self,
     ):
-        returned_rows = self.returned_after_adding_aligned_dates_column.sort(
+        self.returned_after_adding_aligned_dates_column_df = (
+            self.returned_after_adding_aligned_dates_column_df.select(
+                "Group",
+                DPColNames.LA_AREA,
+                DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+                DPColNames.YEAR,
+                DPColNames.ESTIMATE_PERIOD_AS_DATE,
+                ONSClean.contemporary_ons_import_date,
+            )
+        )
+
+        returned_rows = self.returned_after_adding_aligned_dates_column_df.sort(
             "Group"
         ).collect()
-        expected_rows = self.expected_after_adding_aligned_dates_column.sort(
+
+        expected_rows = self.expected_after_adding_aligned_dates_column_df.sort(
             "Group"
         ).collect()
+
         self.assertEqual(returned_rows, expected_rows)

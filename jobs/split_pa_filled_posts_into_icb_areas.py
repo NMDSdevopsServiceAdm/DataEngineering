@@ -130,7 +130,7 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
     pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
         pa_filled_posts_df
     )
-    pa_filled_posts_df = align_dates_to_pa_filled_posts_from_postcode_proportions(
+    pa_filled_posts_df = align_dates_from_pa_filled_posts_to_postcode_proportions(
         pa_filled_posts_df, postcode_directory_df
     )
 
