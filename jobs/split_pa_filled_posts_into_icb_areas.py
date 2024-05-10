@@ -69,6 +69,15 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 5 - Join pa filled posts.
+    pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
+        pa_filled_posts_df
+    )
+    pa_filled_posts_df = align_dates_from_pa_filled_posts_to_postcode_proportions(
+        pa_filled_posts_df, postcode_directory_df
+    )
+    postcode_directory_df = join_pa_filled_posts_to_hybrid_area_proportions(
+        postcode_directory_df, pa_filled_posts_df
+    )
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
 
@@ -123,30 +132,6 @@ def deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
     return postcode_directory_df
 
 
-def join_pa_filled_posts_to_hybrid_area_proportions(
-    postcode_directory_df: DataFrame,
-    pa_filled_posts_df: DataFrame,
-) -> DataFrame:
-    pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
-        pa_filled_posts_df
-    )
-    pa_filled_posts_df = align_dates_from_pa_filled_posts_to_postcode_proportions(
-        pa_filled_posts_df, postcode_directory_df
-    )
-
-    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
-        DPColNames.LA_AREA, ONSClean.contemporary_cssr
-    )
-
-    postcode_directory_df.join(
-        pa_filled_posts_df,
-        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
-        "left",
-    )
-
-    return pa_filled_posts_df
-
-
 def create_date_column_from_year_in_pa_estimates(
     pa_filled_posts_df: DataFrame,
 ) -> DataFrame:
@@ -170,6 +155,23 @@ def align_dates_from_pa_filled_posts_to_postcode_proportions(
     )
 
     return pa_filled_posts_df
+
+
+def join_pa_filled_posts_to_hybrid_area_proportions(
+    postcode_directory_df: DataFrame,
+    pa_filled_posts_df: DataFrame,
+) -> DataFrame:
+    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
+        DPColNames.LA_AREA, ONSClean.contemporary_cssr
+    )
+
+    postcode_directory_df = postcode_directory_df.join(
+        pa_filled_posts_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        "left",
+    )
+
+    return postcode_directory_df
 
 
 if __name__ == "__main__":
