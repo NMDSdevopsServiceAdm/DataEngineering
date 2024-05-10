@@ -657,20 +657,20 @@ class PAFilledPostsByICBArea:
     ]
 
     expected_postcode_count_per_la_icb_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2",1), 
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3",3), 
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3",3), 
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3",3), 
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2",1), 
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3",2), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",2), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",2),
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1", 3),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1", 3),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1", 3),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2", 1), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3", 3), 
+        ("AB10AC", date(2024,1,1), "cssr2", "icb3", 3), 
+        ("AB10AD", date(2024,1,1), "cssr2", "icb3", 3), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1", 3),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1", 3),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1", 3),
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2", 1), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3", 2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2),
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
@@ -689,6 +689,23 @@ class PAFilledPostsByICBArea:
         ("Group4", date(2023,1,1), 3, 3, 1.00000),
         ("Group5", date(2023,1,1), 3, 1, 0.33333), 
         ("Group6", date(2023,1,1), 3, 2, 0.66666),
+    ]
+
+    full_rows_with_la_and_hybrid_area_postcode_counts = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AA", date(2024,1,1), "cssr2", "icb2", 4, 1, 0.25000), 
+        ("AB10AB", date(2024,1,1), "cssr2", "icb3", 4, 3, 0.75000), 
+        ("AB10AA", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AB", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AC", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+    ]
+
+    expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows = [
+        (date(2024,1,1), "cssr1", "icb1", 1.00000),
+        (date(2024,1,1), "cssr2", "icb2", 0.25000), 
+        (date(2024,1,1), "cssr2", "icb3", 0.75000), 
+        (date(2023,1,1), "cssr1", "icb1", 1.00000),
     ]
     # fmt: on
 

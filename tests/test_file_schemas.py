@@ -483,6 +483,26 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
+    full_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
+        [
+            *ons_sample_contemporary_schema,
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
+    expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema = StructType(
+        [
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
     pa_sample_filled_post_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
