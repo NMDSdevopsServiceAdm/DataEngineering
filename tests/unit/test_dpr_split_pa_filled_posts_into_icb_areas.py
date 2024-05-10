@@ -29,8 +29,8 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             schema=TestSchema.ons_sample_contemporary_schema,
         )
         self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
-            TestData.pa_sample_filled_post_rows,
-            schema=TestSchema.pa_sample_filled_post_schema,
+            TestData.sample_pa_filled_post_rows,
+            schema=TestSchema.sample_pa_filled_post_schema,
         )
 
 
@@ -203,3 +203,35 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
             returned_rows,
             expected_rows,
         )
+
+
+class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.sample_pa_filled_posts_df = self.spark.createDataFrame(
+            TestData.sample_pa_filled_post_rows,
+            schema=TestSchema.sample_pa_filled_post_schema,
+        )
+
+        self.sample_proportions_df = self.spark.createDataFrame(
+            TestData.expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows,
+            schema=TestSchema.expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
+        )
+
+        self.returned_df = job.join_pa_filled_posts_to_hybrid_area_proportions(
+            self.sample_proportions_df, self.sample_pa_filled_posts_df
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            TestData.expected_pa_filled_posts_with_year_as_date_rows,
+            schema=TestSchema.expected_pa_filled_posts_with_year_as_date_schema,
+        )
+
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_creates_date_column(
+        self,
+    ):
+        self.returned_df.show()
+        returned_rows = self.returned_df.sort("Group").collect()
+        expected_rows = self.expected_df.sort("Group").collect()
+        self.assertEqual(returned_rows, expected_rows)

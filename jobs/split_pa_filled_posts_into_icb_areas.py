@@ -123,12 +123,13 @@ def deduplicate_ratio_between_hybrid_area_and_la_area_postcode_counts(
     return postcode_directory_df
 
 
-def join_pa_filled_posts_to_hybrid_area_proportions_table(
+def join_pa_filled_posts_to_hybrid_area_proportions(
     postcode_directory_df: DataFrame,
     pa_filled_posts_df: DataFrame,
 ) -> DataFrame:
     pa_filled_posts_df = pa_filled_posts_df.withColumn(
-        DPColNames.ESTIMATE_PERIOD_AS_DATE, date(DPColNames.YEAR, 3, 31)
+        DPColNames.ESTIMATE_PERIOD_AS_DATE,
+        F.make_date(DPColNames.YEAR, F.lit("03"), F.lit("31")),
     )
 
     pa_filled_posts_df = cleaning_utils.add_aligned_date_column(
@@ -138,8 +139,19 @@ def join_pa_filled_posts_to_hybrid_area_proportions_table(
         ONSClean.contemporary_ons_import_date,
     )
 
-    # TODO join the pa filled posts into the postcode directory df. The column names have to the same, so do something like
-    #      "with ONSClean.date as DPColName.date"
+    # rename cssr column in pa filled posts to match ons contempory.
+    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
+        DPColNames.LA_AREA, ONSClean.contemporary_cssr
+    )
+
+    # Need to join using the ons import date and contemporary cssr.
+    postcode_directory_df.join(
+        pa_filled_posts_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        "left",
+    )
+
+    return pa_filled_posts_df
 
 
 if __name__ == "__main__":

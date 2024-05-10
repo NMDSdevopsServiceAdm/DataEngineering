@@ -503,13 +503,22 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    pa_sample_filled_post_schema = StructType(
+    sample_pa_filled_post_schema = StructType(
         [
+            StructField("Group", StringType(), True),
             StructField(DP.LA_AREA, StringType(), True),
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
             StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+    expected_pa_filled_posts_with_year_as_date_schema = StructType(
+        [
+            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+            *sample_pa_filled_post_schema,
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
         ]
     )
 

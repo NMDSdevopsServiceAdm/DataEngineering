@@ -709,9 +709,16 @@ class PAFilledPostsByICBArea:
     ]
     # fmt: on
 
-    pa_sample_filled_post_rows = [
-        ("Leeds", 100.2, "2024"),
-        ("Bradford", 200.3, "2024"),
+    sample_pa_filled_post_rows = [
+        ("Group1", "Leeds", 100.2, "2024"),
+        ("Group2", "Bradford", 200.3, "2024"),
+        ("Group3", "Hull", 200.3, "2023"),
+    ]
+
+    expected_pa_filled_posts_with_year_as_date_rows = [
+        (date(2024, 3, 31), "Group1", "Leeds", 100.2, "2024", date(2024, 1, 1)),
+        (date(2024, 3, 31), "Group2", "Bradford", 200.3, "2024", date(2024, 1, 1)),
+        (date(2023, 3, 31), "Group3", "Hull", 200.3, "2023", date(2023, 1, 1)),
     ]
 
 
