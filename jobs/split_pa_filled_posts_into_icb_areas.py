@@ -127,28 +127,46 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
     postcode_directory_df: DataFrame,
     pa_filled_posts_df: DataFrame,
 ) -> DataFrame:
+    pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
+        pa_filled_posts_df
+    )
+    pa_filled_posts_df = align_dates_to_pa_filled_posts_from_postcode_proportions(
+        pa_filled_posts_df, postcode_directory_df
+    )
+
+    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
+        DPColNames.LA_AREA, ONSClean.contemporary_cssr
+    )
+
+    postcode_directory_df.join(
+        pa_filled_posts_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        "left",
+    )
+
+    return pa_filled_posts_df
+
+
+def create_date_column_from_year_in_pa_estimates(
+    pa_filled_posts_df: DataFrame,
+) -> DataFrame:
     pa_filled_posts_df = pa_filled_posts_df.withColumn(
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
         F.make_date(DPColNames.YEAR, F.lit("03"), F.lit("31")),
     )
 
+    return pa_filled_posts_df
+
+
+def align_dates_to_pa_filled_posts_from_postcode_proportions(
+    pa_filled_posts_df: DataFrame,
+    postcode_directory_df: DataFrame,
+) -> DataFrame:
     pa_filled_posts_df = cleaning_utils.add_aligned_date_column(
         pa_filled_posts_df,
         postcode_directory_df,
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
         ONSClean.contemporary_ons_import_date,
-    )
-
-    # rename cssr column in pa filled posts to match ons contempory.
-    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
-        DPColNames.LA_AREA, ONSClean.contemporary_cssr
-    )
-
-    # Need to join using the ons import date and contemporary cssr.
-    postcode_directory_df.join(
-        pa_filled_posts_df,
-        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
-        "left",
     )
 
     return pa_filled_posts_df
