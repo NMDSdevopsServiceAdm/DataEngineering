@@ -42,5 +42,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.number_of_beds: 500,
             IndCqcColumns.people_directly_employed: 10000,
             IndCqcColumns.total_staff_bounded: 3000,
+            IndCqcColumns.worker_records_bounded: 3000,
         },
     }
