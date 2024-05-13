@@ -3,6 +3,8 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -42,13 +44,22 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = cqc_location_df.where(
-        IndCQC.cqc_sector == CQCLValues.independent
-    ).count()
+    rules[RuleName.size_of_dataset] = calculate_expected_size_of_merged_ind_cqc_dataset(
+        cqc_location_df
+    )
 
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
+
+def calculate_expected_size_of_merged_ind_cqc_dataset(
+    cqc_location_df: DataFrame,
+) -> int:
+    expected_size = cqc_location_df.where(
+        cqc_location_df[IndCQC.cqc_sector] == CQCLValues.independent
+    ).count()
+    return expected_size
 
 
 if __name__ == "__main__":

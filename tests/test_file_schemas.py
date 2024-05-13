@@ -2135,6 +2135,12 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
         ]
     )
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
 
 
 @dataclass

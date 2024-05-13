@@ -3108,6 +3108,12 @@ class ValidateMergedIndCqcData:
     ]
     # fmt: on
 
+    calculate_expected_size_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
+    ]
+
 
 @dataclass
 class FlattenCQCRatings:
