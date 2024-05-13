@@ -204,8 +204,6 @@ class CheckOfMaxValues(ValidateUtilsTests):
             Data.max_values_result_success_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.max_values_rule)
-        returned_df.show(truncate=False)
-        expected_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_max_values_returns_success_when_highest_value_equals_maximum(
@@ -218,8 +216,6 @@ class CheckOfMaxValues(ValidateUtilsTests):
             Data.max_values_result_success_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.max_values_rule)
-        returned_df.show(truncate=False)
-        expected_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_max_values_returns_failure_when_highest_value_is_above_maximum(
@@ -232,8 +228,6 @@ class CheckOfMaxValues(ValidateUtilsTests):
             Data.max_values_result_above_maximum_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.max_values_rule)
-        returned_df.show(truncate=False)
-        expected_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
