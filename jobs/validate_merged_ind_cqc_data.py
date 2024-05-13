@@ -38,8 +38,6 @@ def main(
     merged_ind_cqc_df = utils.read_from_parquet(
         merged_ind_cqc_source,
     )
-    spark = utils.get_spark()
-
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = cqc_location_df.count()
@@ -47,21 +45,6 @@ def main(
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
-
-    parse_data_quality_errors(check_result_df)
-
-
-def parse_data_quality_errors(check_results: DataFrame):
-    failures_df = check_results.where(check_results["constraint_status"] == "Failure")
-
-    failures_count = failures_df.count()
-    if failures_count == 0:
-        return
-
-    print(f"{failures_count} data quaility failures detected, printing errors")
-
-    for failure in failures_df.collect():
-        print(failure.asDict()["constraint_message"])
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ from utils.reconciliation_utils.reconciliation_values import (
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsValues,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
@@ -3105,34 +3106,6 @@ class ValidateMergedIndCqcData:
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
-
-    merged_ind_cqc_extra_row_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000003", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-    ]
-
-    merged_ind_cqc_missing_row_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-    ]
-
-    merged_ind_cqc_with_cqc_sector_null_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", None, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-    ]
-
-    merged_ind_cqc_with_duplicate_data_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-    ]
     # fmt: on
 
 
@@ -3838,3 +3811,261 @@ class FlattenCQCRatings:
         ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
     ]
+
+
+@dataclass
+class ValidationUtils:
+    size_of_dataset_rule = {RuleName.size_of_dataset: 3}
+    size_of_dataset_success_rows = [
+        ("loc_1",),
+        ("loc_2",),
+        ("loc_3",),
+    ]
+    size_of_dataset_extra_rows = [
+        ("loc_1",),
+        ("loc_2",),
+        ("loc_3",),
+        ("loc_4",),
+    ]
+    size_of_dataset_missing_rows = [
+        ("loc_1",),
+        ("loc_2",),
+    ]
+    size_of_dataset_result_success_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Success",
+            "SizeConstraint(Size(None))",
+            "Success",
+            "",
+        )
+    ]
+    size_of_dataset_result_missing_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Warning",
+            "SizeConstraint(Size(None))",
+            "Failure",
+            "Value: 2 does not meet the constraint requirement! DataFrame row count should be 3.",
+        )
+    ]
+    size_of_dataset_result_extra_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Warning",
+            "SizeConstraint(Size(None))",
+            "Failure",
+            "Value: 4 does not meet the constraint requirement! DataFrame row count should be 3.",
+        )
+    ]
+
+    unique_index_columns_rule = {
+        RuleName.index_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ]
+    }
+    unique_index_columns_success_rows = [
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+        (
+            "loc_1",
+            date(2024, 1, 2),
+        ),
+        (
+            "loc_2",
+            date(2024, 1, 1),
+        ),
+    ]
+    unique_index_columns_not_unique_rows = [
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+        (
+            "loc_1",
+            date(2024, 1, 1),
+        ),
+    ]
+    unique_index_columns_result_success_rows = [
+        (
+            "Index columns are unique",
+            "Warning",
+            "Success",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Success",
+            "",
+        ),
+    ]
+    unique_index_columns_result_not_unique_rows = [
+        (
+            "Index columns are unique",
+            "Warning",
+            "Warning",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Uniqueness should be 1.",
+        ),
+    ]
+
+    one_complete_column_rule = {
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+        ]
+    }
+    two_complete_columns_rule = {
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ]
+    }
+    one_complete_column_complete_rows = [
+        ("loc_1",),
+    ]
+    one_complete_column_incomplete_rows = [
+        (None,),
+    ]
+    two_complete_columns_both_complete_rows = [
+        ("loc_1", date(2024, 1, 1)),
+    ]
+    two_complete_columns_one_incomplete_rows = [
+        (None, date(2024, 1, 1)),
+    ]
+    two_complete_columns_both_incomplete_rows = [
+        (None, None),
+    ]
+
+    one_complete_column_result_complete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+    ]
+    one_complete_column_result_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+    ]
+    two_complete_columns_result_both_complete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]
+    two_complete_columns_result_one_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]
+    two_complete_columns_result_both_incomplete_rows = [
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Warning",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! Completeness of cqc_location_import_date should be 1.",
+        ),
+    ]
+
+    multiple_rules = {
+        RuleName.size_of_dataset: 1,
+        RuleName.index_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ],
+        RuleName.complete_columns: [
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+        ],
+    }
+
+    multiple_rules_rows = [
+        ("loc_1", date(2024, 1, 1)),
+    ]
+    multiple_rules_results_rows = [
+        (
+            "Size of dataset",
+            "Warning",
+            "Success",
+            "SizeConstraint(Size(None))",
+            "Success",
+            "",
+        ),
+        (
+            "Index columns are unique",
+            "Warning",
+            "Success",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(locationId,None))",
+            "Success",
+            "",
+        ),
+        (
+            "Column is complete",
+            "Warning",
+            "Success",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "Success",
+            "",
+        ),
+    ]
+
+    unknown_rules = {
+        RuleName.size_of_dataset: 1,
+        "unknown_rule": "some_value",
+    }
