@@ -27,6 +27,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
+    CQCLClean.cqc_sector,
 ]
 
 
