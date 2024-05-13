@@ -8,6 +8,10 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -40,7 +44,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = cqc_location_df.count()
+    rules[RuleName.size_of_dataset] = cqc_location_df.where(
+        IndCQC.cqc_sector == CQCLValues.independent
+    ).count()
 
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
 
