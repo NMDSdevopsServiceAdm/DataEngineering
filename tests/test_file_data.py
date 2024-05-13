@@ -4069,3 +4069,39 @@ class ValidationUtils:
         RuleName.size_of_dataset: 1,
         "unknown_rule": "some_value",
     }
+
+    max_values_rule = {
+        RuleName.max_values: {
+            IndCQC.number_of_beds: 10,
+        }
+    }
+    max_values_below_maximum_rows = [
+        ("loc_1", 9),
+    ]
+    max_values_equal_maximum_rows = [
+        ("loc_1", 10),
+    ]
+    max_values_above_maximum_rows = [
+        ("loc_1", 11),
+    ]
+
+    max_values_result_success_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    max_values_result_above_maximum_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
