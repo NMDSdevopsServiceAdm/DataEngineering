@@ -3,8 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pyspark.sql.dataframe import DataFrame
-
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
