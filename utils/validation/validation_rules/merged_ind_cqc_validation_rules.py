@@ -38,6 +38,12 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.location_id,
             IndCqcColumns.cqc_location_import_date,
         ],
+        RuleName.min_values: {
+            IndCqcColumns.number_of_beds: 1,
+            IndCqcColumns.people_directly_employed: 0,
+            IndCqcColumns.total_staff_bounded: 1,
+            IndCqcColumns.worker_records_bounded: 1,
+        },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
             IndCqcColumns.people_directly_employed: 10000,

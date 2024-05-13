@@ -189,6 +189,48 @@ class CheckOfSizeOfDataset(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class CheckOfMinValues(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.min_values_rule = Data.min_values_rule
+
+    def test_create_check_of_min_values_returns_success_when_values_are_above_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_above_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_min_values_returns_success_when_lowest_value_equals_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_equal_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_min_values_returns_failure_when_lowest_value_is_below_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_below_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_below_minimum_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class CheckOfMaxValues(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
