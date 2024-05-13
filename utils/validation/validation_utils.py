@@ -1,5 +1,4 @@
 import os
-import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
