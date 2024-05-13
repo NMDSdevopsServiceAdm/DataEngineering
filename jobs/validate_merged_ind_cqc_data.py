@@ -57,7 +57,7 @@ def calculate_expected_size_of_merged_ind_cqc_dataset(
     cqc_location_df: DataFrame,
 ) -> int:
     expected_size = cqc_location_df.where(
-        cqc_location_df[IndCQC.cqc_sector] == CQCLValues.independent
+        cqc_location_df[CQCLClean.cqc_sector] == CQCLValues.independent
     ).count()
     return expected_size
 
