@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -38,4 +41,8 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.location_id,
             IndCqcColumns.cqc_location_import_date,
         ],
+        RuleName.categorical_values_in_columns: {
+            IndCqcColumns.cqc_sector: [CQCLValues.independent],
+            IndCqcColumns.registration_status: [CQCLValues.registered],
+        },
     }

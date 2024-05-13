@@ -4069,3 +4069,43 @@ class ValidationUtils:
         RuleName.size_of_dataset: 1,
         "unknown_rule": "some_value",
     }
+
+    categorical_values_rule = {
+        RuleName.categorical_values_in_columns: {
+            IndCQC.cqc_sector: [CQCLValues.independent, CQCLValues.local_authority]
+        }
+    }
+    categorical_values_all_present_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+    ]
+    categorical_values_some_present_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", None),
+    ]
+    categorical_values_extra_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", "other value"),
+    ]
+
+    categorical_values_result_success_rows = [
+        (
+            "Categorical values are in list of expected values",
+            "Warning",
+            "Success",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "Success",
+            "",
+        ),
+    ]
+    categorical_values_result_failure_rows = [
+        (
+            "Categorical values are in list of expected values",
+            "Warning",
+            "Warning",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "Failure",
+            "Value: 0.6666666666666666 does not meet the constraint requirement! Values in cqc_sector should be one of :['Independent', 'Local authority'].",
+        ),
+    ]
