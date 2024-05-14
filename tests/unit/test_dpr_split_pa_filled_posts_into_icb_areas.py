@@ -271,7 +271,14 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_values(
         self,
     ):
+        # get the test to pass.
+        # remove the ordering column and use the date, la and icb.
+        # add test for number of columns is as expected.
+        # add test for number of rows is as expected.
         returned_df = self.returned_df.select(self.expected_df.columns)
+
+        returned_df.show()
+        self.expected_df.show()
 
         returned_rows = returned_df.sort("ordering_column").collect()
         expected_rows = self.expected_df.sort("ordering_column").collect()

@@ -725,13 +725,15 @@ class PAFilledPostsByICBArea:
         ("1", date(2023, 5, 1), "Leeds", "icb1", 1.00000),
         ("2", date(2023, 5, 1), "Bradford", "icb2", 0.25000),
         ("3", date(2023, 5, 1), "Bradford", "icb3", 0.75000),
-        ("4", date(2022, 5, 1), "Hull", "icb4", 1.00000),
+        ("4", date(2022, 5, 1), "Leeds", "icb1", 1.00000),
+        ("5", date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000),
     ]
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
         ("Leeds", 100.2, date(2024, 3, 31)),
         ("Bradford", 200.3, date(2024, 3, 31)),
         ("Hull", 300.3, date(2023, 3, 31)),
+        ("Barking and Dagenham", 300.3, date(2023, 3, 31)),
     ]
 
     # fmt: off
@@ -739,7 +741,8 @@ class PAFilledPostsByICBArea:
         ("1", date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2),
         ("2", date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3), 
         ("3", date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3), 
-        ("4", date(2022,5,1), "Hull", "icb4", 1.00000, 300.3),
+        ("4", date(2022,5,1), "Leeds", "icb1", 1.00000, None),
+        ("5", date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None),
     ]
     # fmt: on
 
