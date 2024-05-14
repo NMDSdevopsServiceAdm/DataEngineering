@@ -154,6 +154,12 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
         ONSClean.contemporary_ons_import_date,
     )
 
+    pa_filled_posts_df = pa_filled_posts_df.select(
+        DPColNames.LA_AREA,
+        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+        ONSClean.contemporary_ons_import_date,
+    )
+
     pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
         DPColNames.LA_AREA, ONSClean.contemporary_cssr
     )

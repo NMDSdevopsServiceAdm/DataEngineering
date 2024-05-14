@@ -674,21 +674,21 @@ class PAFilledPostsByICBArea:
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
-        ("Group1", date(2024,1,1), 3, 3),
-        ("Group2", date(2024,1,1), 4, 1), 
-        ("Group3", date(2024,1,1), 4, 3), 
-        ("Group4", date(2023,1,1), 3, 3),
-        ("Group5", date(2023,1,1), 3, 1), 
-        ("Group6", date(2023,1,1), 3, 2),
+        ("1", date(2024,1,1), 3, 3),
+        ("2", date(2024,1,1), 4, 1), 
+        ("3", date(2024,1,1), 4, 3), 
+        ("4", date(2023,1,1), 3, 3),
+        ("5", date(2023,1,1), 3, 1), 
+        ("6", date(2023,1,1), 3, 2),
     ]
 
     expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
-        ("Group1", date(2024,1,1), 3, 3, 1.00000),
-        ("Group2", date(2024,1,1), 4, 1, 0.25000), 
-        ("Group3", date(2024,1,1), 4, 3, 0.75000), 
-        ("Group4", date(2023,1,1), 3, 3, 1.00000),
-        ("Group5", date(2023,1,1), 3, 1, 0.33333), 
-        ("Group6", date(2023,1,1), 3, 2, 0.66666),
+        ("1", date(2024,1,1), 3, 3, 1.00000),
+        ("2", date(2024,1,1), 4, 1, 0.25000), 
+        ("3", date(2024,1,1), 4, 3, 0.75000), 
+        ("4", date(2023,1,1), 3, 3, 1.00000),
+        ("5", date(2023,1,1), 3, 1, 0.33333), 
+        ("6", date(2023,1,1), 3, 2, 0.66666),
     ]
 
     full_rows_with_la_and_hybrid_area_postcode_counts = [
@@ -710,36 +710,36 @@ class PAFilledPostsByICBArea:
     # fmt: on
 
     sample_pa_filled_post_rows = [
-        ("Group1", "Leeds", 100.2, "2024"),
-        ("Group2", "Bradford", 200.3, "2024"),
-        ("Group3", "Hull", 300.3, "2023"),
+        ("1", "Leeds", 100.2, "2024"),
+        ("2", "Bradford", 200.3, "2024"),
+        ("3", "Hull", 300.3, "2023"),
     ]
 
     expected_after_adding_date_from_year_column_rows = [
-        ("Group1", "Leeds", 100.2, "2024", date(2024, 3, 31)),
-        ("Group2", "Bradford", 200.3, "2024", date(2024, 3, 31)),
-        ("Group3", "Hull", 300.3, "2023", date(2023, 3, 31)),
+        ("1", "Leeds", 100.2, "2024", date(2024, 3, 31)),
+        ("2", "Bradford", 200.3, "2024", date(2024, 3, 31)),
+        ("3", "Hull", 300.3, "2023", date(2023, 3, 31)),
     ]
 
     sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
-        ("Group1", date(2023, 5, 1), "Leeds", "icb1", 1.00000),
-        ("Group2", date(2023, 5, 1), "Bradford", "icb2", 0.25000),
-        ("Group3", date(2023, 5, 1), "Bradford", "icb3", 0.75000),
-        ("Group4", date(2022, 5, 1), "Hull", "icb4", 1.00000),
+        ("1", date(2023, 5, 1), "Leeds", "icb1", 1.00000),
+        ("2", date(2023, 5, 1), "Bradford", "icb2", 0.25000),
+        ("3", date(2023, 5, 1), "Bradford", "icb3", 0.75000),
+        ("4", date(2022, 5, 1), "Hull", "icb4", 1.00000),
     ]
 
-    sample_pa_filled_posts_before_being_joined_rows = [
-        ("Leeds", 100.2, "2024", date(2024, 3, 31), date(2023, 5, 1)),
-        ("Bradford", 200.3, "2024", date(2024, 3, 31), date(2023, 5, 1)),
-        ("Hull", 300.3, "2023", date(2023, 3, 31), date(2022, 5, 1)),
+    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
+        ("Leeds", 100.2, date(2023, 5, 1)),
+        ("Bradford", 200.3, date(2023, 5, 1)),
+        ("Hull", 300.3, date(2022, 5, 1)),
     ]
 
     # fmt: off
-    expected_after_joining_pa_filled_posts_to_postcode_proportion_rows = [
-        ("Group1", date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2, "2024", date(2024, 3, 31)),
-        ("Group2", date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3, "2024", date(2024, 3, 31)), 
-        ("Group3", date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2024", date(2024, 3, 31)), 
-        ("Group4", date(2022,5,1), "Hull", "icb4", 1.00000, 300.3, "2023", date(2023, 3, 31)),
+    expected_postcode_proportions_after_joining_pa_filled_posts_rows = [
+        ("1", date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2),
+        ("2", date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3), 
+        ("3", date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3), 
+        ("4", date(2022,5,1), "Hull", "icb4", 1.00000, 300.3),
     ]
     # fmt: on
 

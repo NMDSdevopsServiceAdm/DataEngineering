@@ -528,19 +528,21 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    sample_pa_filled_posts_before_being_joined_schema = StructType(
-        [
-            StructField(DP.LA_AREA, StringType(), True),
-            StructField(
-                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
-            ),
-            StructField(DP.YEAR, StringType(), True),
-            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
-            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-        ]
+    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
+        StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), True),
+                StructField(
+                    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+                    DoubleType(),
+                    True,
+                ),
+                StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            ]
+        )
     )
 
-    expected_after_joining_pa_filled_posts_to_postcode_proportion_schema = StructType(
+    expected_postcode_proportions_after_joining_pa_filled_posts_schema = StructType(
         [
             *sample_postcode_proportions_before_joining_pa_filled_posts_schema,
             StructField(
