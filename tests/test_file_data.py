@@ -715,7 +715,7 @@ class PAFilledPostsByICBArea:
         ("3", "Hull", 300.3, "2023"),
     ]
 
-    expected_after_adding_date_from_year_column_rows = [
+    expected_pa_filled_post_after_adding_date_from_year_column_rows = [
         ("1", "Leeds", 100.2, "2024", date(2024, 3, 31)),
         ("2", "Bradford", 200.3, "2024", date(2024, 3, 31)),
         ("3", "Hull", 300.3, "2023", date(2023, 3, 31)),
