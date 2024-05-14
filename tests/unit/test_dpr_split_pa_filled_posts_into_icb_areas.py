@@ -1,7 +1,6 @@
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
-from pyspark.sql import functions as F
 
 from utils import utils
 
