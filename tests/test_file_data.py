@@ -3108,6 +3108,12 @@ class ValidateMergedIndCqcData:
     ]
     # fmt: on
 
+    calculate_expected_size_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
+    ]
+
 
 @dataclass
 class FlattenCQCRatings:
@@ -4069,6 +4075,78 @@ class ValidationUtils:
         RuleName.size_of_dataset: 1,
         "unknown_rule": "some_value",
     }
+
+    min_values_rule = {
+        RuleName.min_values: {
+            IndCQC.number_of_beds: 1,
+        }
+    }
+    min_values_below_minimum_rows = [
+        ("loc_1", 0),
+    ]
+    min_values_equal_minimum_rows = [
+        ("loc_1", 1),
+    ]
+    min_values_above_minimum_rows = [
+        ("loc_1", 2),
+    ]
+
+    min_values_result_success_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Success",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    min_values_result_below_minimum_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Warning",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+    ]
+
+    max_values_rule = {
+        RuleName.max_values: {
+            IndCQC.number_of_beds: 10,
+        }
+    }
+    max_values_below_maximum_rows = [
+        ("loc_1", 9),
+    ]
+    max_values_equal_maximum_rows = [
+        ("loc_1", 10),
+    ]
+    max_values_above_maximum_rows = [
+        ("loc_1", 11),
+    ]
+
+    max_values_result_success_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    max_values_result_above_maximum_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
 
     categorical_values_rule = {
         RuleName.categorical_values_in_columns: {

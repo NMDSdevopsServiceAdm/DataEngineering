@@ -39,6 +39,10 @@ def create_check(rule_name: str, rule) -> Check:
         check = create_check_for_column_completeness(rule)
     elif rule_name == RuleToCheck.index_columns:
         check = create_check_of_uniqueness_of_two_index_columns(rule)
+    elif rule_name == RuleToCheck.min_values:
+        check = create_check_of_min_values(rule)
+    elif rule_name == RuleToCheck.max_values:
+        check = create_check_of_max_values(rule)
     elif rule_name == RuleToCheck.categorical_values_in_columns:
         check = create_check_of_categorical_values_in_columns(rule)
     else:
@@ -70,6 +74,30 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
         lambda x: x == expected_size,
         f"DataFrame row count should be {expected_size}.",
     )
+    return check
+
+
+def create_check_of_min_values(column_minimums: dict) -> Check:
+    spark = utils.get_spark()
+    check = Check(spark, CheckLevel.Warning, "Min value in column")
+    for column in column_minimums.keys():
+        check = check.hasMin(
+            column,
+            lambda x: x >= column_minimums[column],
+            f"The minimum value for {column} should be {column_minimums[column]}.",
+        )
+    return check
+
+
+def create_check_of_max_values(column_maximums: dict) -> Check:
+    spark = utils.get_spark()
+    check = Check(spark, CheckLevel.Warning, "Max value in column")
+    for column in column_maximums.keys():
+        check = check.hasMax(
+            column,
+            lambda x: x <= column_maximums[column],
+            f"The maximum value for {column} should be {column_maximums[column]}.",
+        )
     return check
 
 
