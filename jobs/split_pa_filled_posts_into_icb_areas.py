@@ -143,7 +143,6 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
     postcode_directory_df: DataFrame,
     pa_filled_posts_df: DataFrame,
 ) -> DataFrame:
-
     pa_filled_posts_df = cleaning_utils.add_aligned_date_column(
         pa_filled_posts_df,
         postcode_directory_df,
