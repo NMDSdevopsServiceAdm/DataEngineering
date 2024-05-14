@@ -721,12 +721,6 @@ class PAFilledPostsByICBArea:
         ("Group3", "Hull", 300.3, "2023", date(2023, 3, 31)),
     ]
 
-    expected_after_adding_aligned_dates_column_rows = [
-        ("Group1", "Leeds", 100.2, "2024", date(2024, 3, 31), date(2023, 5, 1)),
-        ("Group2", "Bradford", 200.3, "2024", date(2024, 3, 31), date(2023, 5, 1)),
-        ("Group3", "Hull", 300.3, "2023", date(2023, 3, 31), date(2022, 5, 1)),
-    ]
-
     sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
         ("Group1", date(2023, 5, 1), "Leeds", "icb1", 1.00000),
         ("Group2", date(2023, 5, 1), "Bradford", "icb2", 0.25000),
