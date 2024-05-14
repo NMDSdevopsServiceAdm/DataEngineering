@@ -248,33 +248,22 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.sample_postcode_proportions_before_joining_pa_filled_posts_df = self.spark.createDataFrame(
+        self.sample_postcode_proportions_df = self.spark.createDataFrame(
             TestData.sample_postcode_proportions_before_joining_pa_filled_posts_rows,
             schema=TestSchema.sample_postcode_proportions_before_joining_pa_filled_posts_schema,
         )
 
-        self.sample_pa_filled_posts_before_being_joined_df = self.spark.createDataFrame(
+        self.sample_pa_filled_posts_df = self.spark.createDataFrame(
             TestData.sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows,
             schema=TestSchema.sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema,
         )
 
-        self.returned_postcode_proportions_after_joining_pa_filled_posts_df = (
-            job.join_pa_filled_posts_to_hybrid_area_proportions(
-                self.sample_postcode_proportions_before_joining_pa_filled_posts_df,
-                self.sample_pa_filled_posts_before_being_joined_df,
-            )
-        ).select(
-            "ordering_column",
-            ONSClean.contemporary_ons_import_date,
-            ONSClean.contemporary_cssr,
-            ONSClean.contemporary_icb,
-            DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
-            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
-            DPColNames.YEAR,
-            DPColNames.ESTIMATE_PERIOD_AS_DATE,
+        self.returned_df = job.join_pa_filled_posts_to_hybrid_area_proportions(
+            self.sample_postcode_proportions_df,
+            self.sample_pa_filled_posts_df,
         )
 
-        self.expected_after_joining_pa_filled_posts_to_postcode_proportion_df = self.spark.createDataFrame(
+        self.expected_df = self.spark.createDataFrame(
             TestData.expected_postcode_proportions_after_joining_pa_filled_posts_rows,
             schema=TestSchema.expected_postcode_proportions_after_joining_pa_filled_posts_schema,
         )
@@ -282,14 +271,8 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_values(
         self,
     ):
-        returned_rows = (
-            self.returned_postcode_proportions_after_joining_pa_filled_posts_df.sort(
-                "ordering_column"
-            ).collect()
-        )
-        expected_rows = (
-            self.expected_after_joining_pa_filled_posts_to_postcode_proportion_df.sort(
-                "ordering_column"
-            ).collect()
-        )
+        returned_df = self.returned_df.select(self.expected_df.columns)
+
+        returned_rows = returned_df.sort("ordering_column").collect()
+        expected_rows = self.expected_df.sort("ordering_column").collect()
         self.assertEqual(returned_rows, expected_rows)

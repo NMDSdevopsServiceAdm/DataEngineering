@@ -537,7 +537,7 @@ class PAFilledPostsByICBAreaSchema:
                     DoubleType(),
                     True,
                 ),
-                StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+                StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
             ]
         )
     )
@@ -548,8 +548,6 @@ class PAFilledPostsByICBAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
-            StructField(DP.YEAR, StringType(), True),
-            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
         ]
     )
 

@@ -729,9 +729,9 @@ class PAFilledPostsByICBArea:
     ]
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
-        ("Leeds", 100.2, date(2023, 5, 1)),
-        ("Bradford", 200.3, date(2023, 5, 1)),
-        ("Hull", 300.3, date(2022, 5, 1)),
+        ("Leeds", 100.2, date(2024, 3, 31)),
+        ("Bradford", 200.3, date(2024, 3, 31)),
+        ("Hull", 300.3, date(2023, 3, 31)),
     ]
 
     # fmt: off
