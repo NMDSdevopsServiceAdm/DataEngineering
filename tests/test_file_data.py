@@ -743,6 +743,20 @@ class PAFilledPostsByICBArea:
         (date(2022,5,1), "Leeds", "icb1", 1.00000, None),
         (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None),
     ]
+
+    sample_proportions_and_pa_filled_posts_rows = [
+        (1.00000, 100.2),
+        (0.25000, 200.3),
+        (0.75000, 200.3),
+        (1.00000, None),
+    ]
+
+    expected_pa_filled_posts_after_applying_proportions_rows = [
+        (1.00000, 100.2, 100.2),
+        (0.25000, 200.3, 50.07500),
+        (0.75000, 200.3, 150.22500),
+        (1.00000, None, None),
+    ]
     # fmt: on
 
 

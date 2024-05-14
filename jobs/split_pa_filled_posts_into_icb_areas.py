@@ -77,9 +77,13 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
+    postcode_directory_df = apply_icb_proportions_to_pa_filled_posts(
+        postcode_directory_df
+    )
 
+    # Need to create year in the proportions table so it can used as a partition key.
     utils.write_to_parquet(
-        pa_filled_posts_df,
+        postcode_directory_df,
         destination,
         mode="overwrite",
         partitionKeys=[DPColNames.YEAR],
@@ -164,6 +168,18 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
         pa_filled_posts_df,
         [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
         "left",
+    )
+
+    return postcode_directory_df
+
+
+def apply_icb_proportions_to_pa_filled_posts(
+    postcode_directory_df: DataFrame,
+) -> DataFrame:
+    postcode_directory_df = postcode_directory_df.withColumn(
+        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB,
+        F.col(DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA)
+        * F.col(DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS),
     )
 
     return postcode_directory_df
