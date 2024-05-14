@@ -142,10 +142,11 @@ def create_date_column_from_year_in_pa_estimates(
     return pa_filled_posts_df
 
 
-def align_dates_from_pa_filled_posts_to_postcode_proportions(
-    pa_filled_posts_df: DataFrame,
+def join_pa_filled_posts_to_hybrid_area_proportions(
     postcode_directory_df: DataFrame,
+    pa_filled_posts_df: DataFrame,
 ) -> DataFrame:
+
     pa_filled_posts_df = cleaning_utils.add_aligned_date_column(
         pa_filled_posts_df,
         postcode_directory_df,
@@ -153,13 +154,6 @@ def align_dates_from_pa_filled_posts_to_postcode_proportions(
         ONSClean.contemporary_ons_import_date,
     )
 
-    return pa_filled_posts_df
-
-
-def join_pa_filled_posts_to_hybrid_area_proportions(
-    postcode_directory_df: DataFrame,
-    pa_filled_posts_df: DataFrame,
-) -> DataFrame:
     pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
         DPColNames.LA_AREA, ONSClean.contemporary_cssr
     )
