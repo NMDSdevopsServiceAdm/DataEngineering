@@ -29,6 +29,11 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
+
+class MainTests(ValidateMergedIndCQCDatasetTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -49,6 +54,23 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
+
+
+class CalculateExpectedSizeofDataset(ValidateMergedIndCQCDatasetTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_calculate_expected_size_of_merged_ind_cqc_dataset_returns_correct_row_count(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
+        )
+        expected_row_count = 1
+        returned_row_count = job.calculate_expected_size_of_merged_ind_cqc_dataset(
+            test_df
+        )
+        self.assertEqual(returned_row_count, expected_row_count)
 
 
 if __name__ == "__main__":
