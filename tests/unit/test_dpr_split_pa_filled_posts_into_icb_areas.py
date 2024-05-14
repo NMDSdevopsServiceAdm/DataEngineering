@@ -1,6 +1,7 @@
 import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
+from pyspark.sql import functions as F
 
 from utils import utils
 
@@ -268,18 +269,40 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
             schema=TestSchema.expected_postcode_proportions_after_joining_pa_filled_posts_schema,
         )
 
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_column_count(
+        self,
+    ):
+        self.assertEqual(
+            len(self.returned_df.columns),
+            len(self.sample_postcode_proportions_df.columns) + 1,
+        )
+
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_row_count(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.count(), self.sample_postcode_proportions_df.count()
+        )
+
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_has_no_duplicate_columns(
+        self,
+    ):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(list(set(self.returned_df.columns))),
+        )
+
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_values(
         self,
     ):
-        # get the test to pass.
-        # remove the ordering column and use the date, la and icb.
-        # add test for number of columns is as expected.
-        # add test for number of rows is as expected.
         returned_df = self.returned_df.select(self.expected_df.columns)
 
-        returned_df.show()
-        self.expected_df.show()
+        sort_by_list = [
+            ONSClean.contemporary_ons_import_date,
+            ONSClean.contemporary_cssr,
+            ONSClean.contemporary_icb,
+        ]
 
-        returned_rows = returned_df.sort("ordering_column").collect()
-        expected_rows = self.expected_df.sort("ordering_column").collect()
+        returned_rows = returned_df.sort(sort_by_list).collect()
+        expected_rows = self.expected_df.sort(sort_by_list).collect()
         self.assertEqual(returned_rows, expected_rows)
