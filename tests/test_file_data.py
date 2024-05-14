@@ -4070,6 +4070,42 @@ class ValidationUtils:
         "unknown_rule": "some_value",
     }
 
+    min_values_rule = {
+        RuleName.min_values: {
+            IndCQC.number_of_beds: 1,
+        }
+    }
+    min_values_below_minimum_rows = [
+        ("loc_1", 0),
+    ]
+    min_values_equal_minimum_rows = [
+        ("loc_1", 1),
+    ]
+    min_values_above_minimum_rows = [
+        ("loc_1", 2),
+    ]
+
+    min_values_result_success_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Success",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    min_values_result_below_minimum_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Warning",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+    ]
+
     max_values_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
