@@ -267,7 +267,7 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     ):
         self.assertEqual(
             len(self.returned_df.columns),
-            len(self.sample_postcode_proportions_df.columns) + 1,
+            len(self.sample_postcode_proportions_df.columns) + 2,
         )
 
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_row_count(
