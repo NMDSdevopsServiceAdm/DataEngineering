@@ -236,11 +236,11 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         self,
     ):
         returned_rows = self.returned_after_adding_date_from_year_column_df.sort(
-            "Group"
+            "ordering_column"
         ).collect()
 
         expected_rows = self.expected_after_adding_date_from_year_column_df.sort(
-            "Group"
+            "ordering_column"
         ).collect()
 
         self.assertEqual(returned_rows, expected_rows)
@@ -266,7 +266,7 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
                 self.sample_pa_filled_posts_before_being_joined_df,
             )
         ).select(
-            "Group",
+            "ordering_column",
             ONSClean.contemporary_ons_import_date,
             ONSClean.contemporary_cssr,
             ONSClean.contemporary_icb,
@@ -286,12 +286,12 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
     ):
         returned_rows = (
             self.returned_postcode_proportions_after_joining_pa_filled_posts_df.sort(
-                "Group"
+                "ordering_column"
             ).collect()
         )
         expected_rows = (
             self.expected_after_joining_pa_filled_posts_to_postcode_proportion_df.sort(
-                "Group"
+                "ordering_column"
             ).collect()
         )
         self.assertEqual(returned_rows, expected_rows)
