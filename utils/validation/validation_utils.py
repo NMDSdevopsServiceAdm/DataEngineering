@@ -39,6 +39,8 @@ def create_check(rule_name: str, rule) -> Check:
         check = create_check_for_column_completeness(rule)
     elif rule_name == RuleToCheck.index_columns:
         check = create_check_of_uniqueness_of_two_index_columns(rule)
+    elif rule_name == RuleToCheck.distinct_values:
+        check = create_check_of_number_of_distinct_values(rule)
     else:
         raise ValueError("Unknown rule to check")
     return check
@@ -68,4 +70,20 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
         lambda x: x == expected_size,
         f"DataFrame row count should be {expected_size}.",
     )
+    return check
+
+
+def create_check_of_number_of_distinct_values(distinct_values: dict) -> Check:
+    spark = utils.get_spark()
+    check = Check(
+        spark, CheckLevel.Warning, "Column contains correct number of distinct values"
+    )
+    for column in distinct_values.keys():
+        check = check.hasNumberOfDistinctValues(
+            column=column,
+            assertion=lambda x: x == distinct_values[column],
+            binningUdf=None,
+            maxBins=distinct_values[column],
+            hint=f"The number of distinct values in {column} should be {distinct_values[column]}.",
+        )
     return check
