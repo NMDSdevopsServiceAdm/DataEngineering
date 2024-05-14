@@ -132,8 +132,8 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             schema=TestSchema.expected_ratio_between_hybrid_area_and_la_area_postcodes_schema,
         )
 
-        self.returned_rows = self.returned_df.sort("ordering_column").collect()
-        self.expected_rows = self.expected_df.sort("ordering_column").collect()
+        self.returned_rows = self.returned_df.collect()
+        self.expected_rows = self.expected_df.collect()
 
     def test_create_proportion_between_hybrid_area_and_la_area_postcode_counts_has_expected_columns(
         self,
@@ -233,14 +233,8 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
     def test_create_date_column_from_year_in_pa_estimates_has_expected_values(
         self,
     ):
-        returned_rows = self.returned_after_adding_date_from_year_column_df.sort(
-            "ordering_column"
-        ).collect()
-
-        expected_rows = self.expected_after_adding_date_from_year_column_df.sort(
-            "ordering_column"
-        ).collect()
-
+        returned_rows = self.returned_after_adding_date_from_year_column_df.collect()
+        expected_rows = self.expected_after_adding_date_from_year_column_df.collect()
         self.assertEqual(returned_rows, expected_rows)
 
 

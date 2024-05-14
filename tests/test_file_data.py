@@ -674,21 +674,21 @@ class PAFilledPostsByICBArea:
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
-        ("1", date(2024,1,1), 3, 3),
-        ("2", date(2024,1,1), 4, 1), 
-        ("3", date(2024,1,1), 4, 3), 
-        ("4", date(2023,1,1), 3, 3),
-        ("5", date(2023,1,1), 3, 1), 
-        ("6", date(2023,1,1), 3, 2),
+        (date(2024,1,1), 3, 3),
+        (date(2024,1,1), 4, 1), 
+        (date(2024,1,1), 4, 3), 
+        (date(2023,1,1), 3, 3),
+        (date(2023,1,1), 3, 1), 
+        (date(2023,1,1), 3, 2),
     ]
 
     expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
-        ("1", date(2024,1,1), 3, 3, 1.00000),
-        ("2", date(2024,1,1), 4, 1, 0.25000), 
-        ("3", date(2024,1,1), 4, 3, 0.75000), 
-        ("4", date(2023,1,1), 3, 3, 1.00000),
-        ("5", date(2023,1,1), 3, 1, 0.33333), 
-        ("6", date(2023,1,1), 3, 2, 0.66666),
+        (date(2024,1,1), 3, 3, 1.00000),
+        (date(2024,1,1), 4, 1, 0.25000), 
+        (date(2024,1,1), 4, 3, 0.75000), 
+        (date(2023,1,1), 3, 3, 1.00000),
+        (date(2023,1,1), 3, 1, 0.33333), 
+        (date(2023,1,1), 3, 2, 0.66666),
     ]
 
     full_rows_with_la_and_hybrid_area_postcode_counts = [
@@ -710,15 +710,15 @@ class PAFilledPostsByICBArea:
     # fmt: on
 
     sample_pa_filled_post_rows = [
-        ("1", "Leeds", 100.2, "2024"),
-        ("2", "Bradford", 200.3, "2024"),
-        ("3", "Hull", 300.3, "2023"),
+        ("Leeds", 100.2, "2024"),
+        ("Bradford", 200.3, "2024"),
+        ("Hull", 300.3, "2023"),
     ]
 
     expected_pa_filled_post_after_adding_date_from_year_column_rows = [
-        ("1", "Leeds", 100.2, "2024", date(2024, 3, 31)),
-        ("2", "Bradford", 200.3, "2024", date(2024, 3, 31)),
-        ("3", "Hull", 300.3, "2023", date(2023, 3, 31)),
+        ("Leeds", 100.2, "2024", date(2024, 3, 31)),
+        ("Bradford", 200.3, "2024", date(2024, 3, 31)),
+        ("Hull", 300.3, "2023", date(2023, 3, 31)),
     ]
 
     sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
