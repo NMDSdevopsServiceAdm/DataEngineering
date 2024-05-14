@@ -180,8 +180,8 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
         )
 
         self.expected_df = self.spark.createDataFrame(
-            TestData.expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows,
-            schema=TestSchema.expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
+            TestData.expected_deduplicated_import_date_hybrid_and_la_and_ratio_rows,
+            schema=TestSchema.expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema,
         )
 
     def test_deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts_returns_expected_columns(

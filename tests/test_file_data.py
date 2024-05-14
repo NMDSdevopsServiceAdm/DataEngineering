@@ -701,7 +701,7 @@ class PAFilledPostsByICBArea:
         ("AB10AC", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
     ]
 
-    expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows = [
+    expected_deduplicated_import_date_hybrid_and_la_and_ratio_rows = [
         (date(2023,5,1), "cssr1", "icb1", 1.00000),
         (date(2023,5,1), "cssr2", "icb2", 0.25000), 
         (date(2023,5,1), "cssr2", "icb3", 0.75000), 
