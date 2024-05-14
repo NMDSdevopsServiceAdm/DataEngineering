@@ -494,7 +494,7 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema = StructType(
+    expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema = StructType(
         [
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(ONSClean.contemporary_cssr, StringType(), True),
@@ -524,7 +524,7 @@ class PAFilledPostsByICBAreaSchema:
     sample_postcode_proportions_before_joining_pa_filled_posts_schema = StructType(
         [
             StructField("ordering_column", StringType(), True),
-            *expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema,
+            *expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema,
         ]
     )
 
