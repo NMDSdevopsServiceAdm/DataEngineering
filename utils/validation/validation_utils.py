@@ -43,6 +43,8 @@ def create_check(rule_name: str, rule) -> Check:
         check = create_check_of_min_values(rule)
     elif rule_name == RuleToCheck.max_values:
         check = create_check_of_max_values(rule)
+    elif rule_name == RuleToCheck.categorical_values_in_columns:
+        check = create_check_of_categorical_values_in_columns(rule)
     else:
         raise ValueError("Unknown rule to check")
     return check
@@ -95,5 +97,19 @@ def create_check_of_max_values(column_maximums: dict) -> Check:
             column,
             lambda x: x <= column_maximums[column],
             f"The maximum value for {column} should be {column_maximums[column]}.",
+        )
+    return check
+
+
+def create_check_of_categorical_values_in_columns(categorical_values: dict) -> Check:
+    spark = utils.get_spark()
+    check = Check(
+        spark, CheckLevel.Warning, "Categorical values are in list of expected values"
+    )
+    for column in categorical_values.keys():
+        check = check.isContainedIn(
+            column,
+            categorical_values[column],
+            hint=f"Values in {column} should be one of :{categorical_values[column]}.",
         )
     return check

@@ -8,3 +8,4 @@ class RuleNames:
     index_columns: str = "index_columns"
     min_values: str = "min_values"
     max_values: str = "max_values"
+    categorical_values_in_columns: str = "categorical_values_in_columns"
