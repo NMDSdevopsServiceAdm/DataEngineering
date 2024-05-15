@@ -322,6 +322,14 @@ class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoICBAreas):
     ):
         self.assertEqual(len(self.returned_df.columns), len(self.sample_df.columns) + 1)
 
+    def test_apply_icb_proportions_to_pa_filled_posts_adds_given_column(
+        self,
+    ):
+        self.assertTrue(
+            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+            in self.returned_df.columns
+        )
+
     def test_apply_icb_proportions_to_pa_filled_posts_has_expected_values(
         self,
     ):
