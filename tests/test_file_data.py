@@ -148,6 +148,15 @@ class CalculatePaRatioData:
         (2023, 2.2),
     ]
 
+    reduce_year_by_one_rows = [
+        (2024, "some data"),
+        (2023, "other data"),
+    ]
+    expected_reduce_year_by_one_rows = [
+        (2023, "some data"),
+        (2022, "other data"),
+    ]
+
 
 @dataclass
 class ASCWDSWorkerData:

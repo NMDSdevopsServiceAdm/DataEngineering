@@ -113,3 +113,15 @@ class TestCalculatePARatio(unittest.TestCase):
         )
 
         self.assertEqual(len(output_rows), len(expected_rows))
+
+    def test_reduce_year_by_one_to_match_external_data_returns_correct_values(self):
+        df = self.spark.createDataFrame(
+            Data.reduce_year_by_one_rows, Schemas.reduce_year_by_one_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_reduce_year_by_one_rows, Schemas.reduce_year_by_one_schema
+        )
+        returned_df = job.reduce_year_by_one_to_match_external_data(df)
+        expected_data = expected_df.sort(DP.YEAR_AS_INTEGER).collect()
+        returned_data = returned_df.sort(DP.YEAR_AS_INTEGER).collect()
+        self.assertEqual(returned_data, expected_data)

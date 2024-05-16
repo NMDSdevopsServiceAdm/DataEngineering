@@ -221,6 +221,12 @@ class CalculatePaRatioSchemas:
             ),
         ]
     )
+    reduce_year_by_one_schema = StructType(
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
 
 
 @dataclass
