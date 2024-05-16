@@ -519,10 +519,8 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    sample_postcode_proportions_before_joining_pa_filled_posts_schema = StructType(
-        [
-            *expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema,
-        ]
+    sample_postcode_proportions_before_joining_pa_filled_posts_schema = (
+        expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema
     )
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
