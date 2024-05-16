@@ -3,7 +3,15 @@ from dataclasses import dataclass
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedValues as CQCLValues,
+)
+
 from utils.validation.validation_rule_names import RuleNames as RuleName
+from utils.validation.categorical_column_values import (
+    CQCCategoricalValues,
+    ONSCategoricalValues,
+)
 
 
 @dataclass
@@ -38,4 +46,28 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.location_id,
             IndCqcColumns.cqc_location_import_date,
         ],
+        RuleName.min_values: {
+            IndCqcColumns.number_of_beds: 1,
+            IndCqcColumns.people_directly_employed: 0,
+            IndCqcColumns.total_staff_bounded: 1,
+            IndCqcColumns.worker_records_bounded: 1,
+        },
+        RuleName.max_values: {
+            IndCqcColumns.number_of_beds: 500,
+            IndCqcColumns.people_directly_employed: 10000,
+            IndCqcColumns.total_staff_bounded: 3000,
+            IndCqcColumns.worker_records_bounded: 3000,
+        },
+        RuleName.categorical_values_in_columns: {
+            IndCqcColumns.care_home: CQCCategoricalValues.care_home_values,
+            IndCqcColumns.cqc_sector: [CQCLValues.independent],
+            IndCqcColumns.registration_status: [CQCLValues.registered],
+            IndCqcColumns.dormancy: CQCCategoricalValues.dormancy_values,
+            IndCqcColumns.primary_service_type: CQCCategoricalValues.primary_service_types,
+            IndCqcColumns.contemporary_cssr: ONSCategoricalValues.cssrs,
+            IndCqcColumns.contemporary_region: ONSCategoricalValues.regions,
+            IndCqcColumns.current_cssr: ONSCategoricalValues.cssrs,
+            IndCqcColumns.current_region: ONSCategoricalValues.regions,
+            IndCqcColumns.current_rural_urban_indicator_2011: ONSCategoricalValues.rural_urban_indicators,
+        },
     }

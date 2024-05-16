@@ -2135,6 +2135,12 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
         ]
     )
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
 
 
 @dataclass
@@ -2864,9 +2870,30 @@ class ValidationUtils:
         ]
     )
 
+    min_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    max_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
     one_column_schema = size_of_dataset_schema
     two_column_schema = index_column_schema
     multiple_rules_schema = index_column_schema
+
+    categorical_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
 
     distinct_values_schema = StructType(
         [

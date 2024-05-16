@@ -189,6 +189,133 @@ class CheckOfSizeOfDataset(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class CheckOfMinValues(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.min_values_rule = Data.min_values_rule
+
+    def test_create_check_of_min_values_returns_success_when_values_are_above_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_above_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_min_values_returns_success_when_lowest_value_equals_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_equal_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_min_values_returns_failure_when_lowest_value_is_below_minimum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_below_minimum_rows, Schemas.min_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_below_minimum_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class CheckOfMaxValues(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.max_values_rule = Data.max_values_rule
+
+    def test_create_check_of_max_values_returns_success_when_values_are_below_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_values_below_maximum_rows, Schemas.max_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.max_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_values_returns_success_when_highest_value_equals_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_values_equal_maximum_rows, Schemas.max_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.max_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_values_returns_failure_when_highest_value_is_above_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_values_above_maximum_rows, Schemas.max_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_values_result_above_maximum_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.max_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class CheckCategoricalValues(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.categorical_values_rule = Data.categorical_values_rule
+
+    def test_create_check_of_categorical_values_in_columns_returns_success_when_all_values_are_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.categorical_values_all_present_rows, Schemas.categorical_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.categorical_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.categorical_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_categorical_values_in_columns_returns_success_when_some_values_are_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.categorical_values_some_present_rows, Schemas.categorical_values_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.categorical_values_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.categorical_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_categorical_values_in_columns_returns_failure_when_additional_values_are_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.categorical_values_extra_rows,
+            Schemas.categorical_values_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.categorical_values_result_failure_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.categorical_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()

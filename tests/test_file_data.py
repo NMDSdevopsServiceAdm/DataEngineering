@@ -3108,6 +3108,12 @@ class ValidateMergedIndCqcData:
     ]
     # fmt: on
 
+    calculate_expected_size_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
+    ]
+
 
 @dataclass
 class FlattenCQCRatings:
@@ -4069,6 +4075,118 @@ class ValidationUtils:
         RuleName.size_of_dataset: 1,
         "unknown_rule": "some_value",
     }
+
+    min_values_rule = {
+        RuleName.min_values: {
+            IndCQC.number_of_beds: 1,
+        }
+    }
+    min_values_below_minimum_rows = [
+        ("loc_1", 0),
+    ]
+    min_values_equal_minimum_rows = [
+        ("loc_1", 1),
+    ]
+    min_values_above_minimum_rows = [
+        ("loc_1", 2),
+    ]
+
+    min_values_result_success_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Success",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    min_values_result_below_minimum_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Warning",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+    ]
+
+    max_values_rule = {
+        RuleName.max_values: {
+            IndCQC.number_of_beds: 10,
+        }
+    }
+    max_values_below_maximum_rows = [
+        ("loc_1", 9),
+    ]
+    max_values_equal_maximum_rows = [
+        ("loc_1", 10),
+    ]
+    max_values_above_maximum_rows = [
+        ("loc_1", 11),
+    ]
+
+    max_values_result_success_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    max_values_result_above_maximum_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
+
+    categorical_values_rule = {
+        RuleName.categorical_values_in_columns: {
+            IndCQC.cqc_sector: [CQCLValues.independent, CQCLValues.local_authority]
+        }
+    }
+    categorical_values_all_present_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+    ]
+    categorical_values_some_present_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", None),
+    ]
+    categorical_values_extra_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", "other value"),
+    ]
+
+    categorical_values_result_success_rows = [
+        (
+            "Categorical values are in list of expected values",
+            "Warning",
+            "Success",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "Success",
+            "",
+        ),
+    ]
+    categorical_values_result_failure_rows = [
+        (
+            "Categorical values are in list of expected values",
+            "Warning",
+            "Warning",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "Failure",
+            "Value: 0.6666666666666666 does not meet the constraint requirement! Values in cqc_sector should be one of :['Independent', 'Local authority'].",
+        ),
+    ]
 
     distinct_values_rule = {
         RuleName.distinct_values: {
