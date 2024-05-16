@@ -622,7 +622,7 @@ class ONSData:
 @dataclass
 class PAFilledPostsByICBArea:
     # fmt: off
-    ons_sample_contemporary_rows = [
+    sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
         ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
         ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
@@ -715,7 +715,7 @@ class PAFilledPostsByICBArea:
         ("Hull", 300.3, "2023"),
     ]
 
-    expected_pa_filled_posts_after_adding_date_from_year_column_rows = [
+    expected_create_date_column_from_year_in_pa_estimates_rows = [
         ("Leeds", 100.2, "2024", date(2024, 3, 31)),
         ("Bradford", 200.3, "2024", date(2024, 3, 31)),
         ("Hull", 300.3, "2023", date(2023, 3, 31)),
