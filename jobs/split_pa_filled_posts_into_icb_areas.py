@@ -14,6 +14,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
+from utils.direct_payments_utils.direct_payments_configuration import (
+    EstimatePeriodAsDate,
+)
 
 
 def main(postcode_directory_source, pa_filled_posts_source, destination):
@@ -133,7 +136,11 @@ def create_date_column_from_year_in_pa_estimates(
 ) -> DataFrame:
     pa_filled_posts_df = pa_filled_posts_df.withColumn(
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
-        F.make_date(DPColNames.YEAR, F.lit("03"), F.lit("31")),
+        F.make_date(
+            DPColNames.YEAR,
+            F.lit(EstimatePeriodAsDate.MONTH),
+            F.lit(EstimatePeriodAsDate.DAY),
+        ),
     )
 
     return pa_filled_posts_df
