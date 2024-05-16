@@ -28,9 +28,9 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
             TestData.ons_sample_contemporary_rows,
             schema=TestSchema.ons_sample_contemporary_schema,
         )
-        self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
-            TestData.sample_pa_filled_post_rows,
-            schema=TestSchema.sample_pa_filled_post_schema,
+        self.test_sample_pa_filled_posts_rows = self.spark.createDataFrame(
+            TestData.sample_pa_filled_posts_rows,
+            schema=TestSchema.sample_pa_filled_posts_schema,
         )
 
 
@@ -43,7 +43,7 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
         read_from_parquet_mock.side_effect = [
             self.test_sample_ons_rows,
-            self.test_sample_pa_filled_post_rows,
+            self.test_sample_pa_filled_posts_rows,
         ]
         job.main(self.TEST_ONS_SOURCE, self.TEST_PA_SOURCE, self.TEST_DESTINATION)
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -215,8 +215,8 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         super().setUp()
 
         self.sample_pa_filled_posts_df = self.spark.createDataFrame(
-            TestData.sample_pa_filled_post_rows,
-            schema=TestSchema.sample_pa_filled_post_schema,
+            TestData.sample_pa_filled_posts_rows,
+            schema=TestSchema.sample_pa_filled_posts_schema,
         )
 
         self.returned_after_adding_date_from_year_column_df = (
@@ -226,8 +226,8 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         )
 
         self.expected_after_adding_date_from_year_column_df = self.spark.createDataFrame(
-            TestData.expected_pa_filled_post_after_adding_date_from_year_column_rows,
-            schema=TestSchema.expected_pa_filled_post_after_adding_date_from_year_column_schema,
+            TestData.expected_pa_filled_posts_after_adding_date_from_year_column_rows,
+            schema=TestSchema.expected_pa_filled_posts_after_adding_date_from_year_column_schema,
         )
 
     def test_create_date_column_from_year_in_pa_estimates_has_expected_values(

@@ -502,7 +502,7 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    sample_pa_filled_post_schema = StructType(
+    sample_pa_filled_posts_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
             StructField(
@@ -512,9 +512,9 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_pa_filled_post_after_adding_date_from_year_column_schema = StructType(
+    expected_pa_filled_posts_after_adding_date_from_year_column_schema = StructType(
         [
-            *sample_pa_filled_post_schema,
+            *sample_pa_filled_posts_schema,
             StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
         ]
     )
