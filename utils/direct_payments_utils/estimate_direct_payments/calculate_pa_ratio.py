@@ -17,7 +17,7 @@ def calculate_pa_ratio(survey_df: DataFrame, spark: SparkSession) -> DataFrame:
     survey_df = exclude_outliers(survey_df)
     average_survey_df = calculate_average_ratios(survey_df)
     pa_ratio_df = add_in_missing_historic_ratios(average_survey_df, spark)
-    pa_ratio_df = adjust_year_to_match_external_data(pa_ratio_df)
+    pa_ratio_df = reduce_year_by_one_to_match_external_data(pa_ratio_df)
     pa_ratio_df = apply_rolling_average(pa_ratio_df)
     pa_ratio_df = pa_ratio_df.select(DP.YEAR_AS_INTEGER, DP.RATIO_ROLLING_AVERAGE)
     return pa_ratio_df
