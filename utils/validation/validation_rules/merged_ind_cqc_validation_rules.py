@@ -11,6 +11,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.categorical_column_values import (
     CQCCategoricalValues,
     ONSCategoricalValues,
+    ONSDistinctValues,
 )
 
 
@@ -69,5 +70,17 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr: ONSCategoricalValues.cssrs,
             IndCqcColumns.current_region: ONSCategoricalValues.regions,
             IndCqcColumns.current_rural_urban_indicator_2011: ONSCategoricalValues.rural_urban_indicators,
+        },
+        RuleName.distinct_values: {
+            IndCqcColumns.care_home: 2,
+            IndCqcColumns.cqc_sector: 1,
+            IndCqcColumns.registration_status: 1,
+            IndCqcColumns.dormancy: 2,
+            IndCqcColumns.primary_service_type: 3,
+            IndCqcColumns.contemporary_cssr: ONSDistinctValues.cssrs,
+            IndCqcColumns.contemporary_region: ONSDistinctValues.regions,
+            IndCqcColumns.current_cssr: ONSDistinctValues.cssrs,
+            IndCqcColumns.current_region: ONSDistinctValues.regions,
+            IndCqcColumns.current_rural_urban_indicator_2011: ONSDistinctValues.rural_urban_indicators,
         },
     }

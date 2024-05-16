@@ -182,3 +182,10 @@ class ONSCategoricalValues:
         "Worcestershire",
         "York",
     ]
+
+
+@dataclass
+class ONSDistinctValues:
+    rural_urban_indicators = len(ONSCategoricalValues.rural_urban_indicators)
+    regions = len(ONSCategoricalValues.regions)
+    cssrs = len(ONSCategoricalValues.cssrs)
