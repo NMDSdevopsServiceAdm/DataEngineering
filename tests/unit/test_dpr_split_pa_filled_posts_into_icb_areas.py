@@ -275,7 +275,7 @@ class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
             len(
                 self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.columns
             ),
-            len(self.sample_hybrid_area_proportions_df) + 2,
+            len(self.sample_hybrid_area_proportions_df.columns) + 2,
         )
 
     def test_join_pa_filled_posts_to_hybrid_area_proportions_does_not_add_any_rows(
