@@ -44,7 +44,9 @@ def create_check(run: VerificationRunBuilder, rule_name: str, rule) -> Check:
             check = create_check_of_min_values(column_name, rule[column_name])
             run = run.addCheck(check)
     elif rule_name == RuleToCheck.max_values:
-        check = create_check_of_max_values(rule)
+        for column_name in rule.keys():
+            check = create_check_of_max_values(column_name, rule[column_name])
+            run = run.addCheck(check)
     elif rule_name == RuleToCheck.categorical_values_in_columns:
         check = create_check_of_categorical_values_in_columns(rule)
     elif rule_name == RuleToCheck.distinct_values:
@@ -92,15 +94,14 @@ def create_check_of_min_values(column_name: str, min_value: int) -> Check:
     return check
 
 
-def create_check_of_max_values(column_maximums: dict) -> Check:
+def create_check_of_max_values(column_name: str, max_value: int) -> Check:
     spark = utils.get_spark()
     check = Check(spark, CheckLevel.Warning, "Max value in column")
-    for column in column_maximums.keys():
-        check = check.hasMax(
-            column,
-            lambda x: x <= column_maximums[column],
-            f"The maximum value for {column} should be {column_maximums[column]}.",
-        )
+    check = check.hasMax(
+        column_name,
+        lambda x: x <= max_value,
+        f"The maximum value for {column_name} should be {max_value}.",
+    )
     return check
 
 
