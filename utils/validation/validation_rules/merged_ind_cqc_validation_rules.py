@@ -23,7 +23,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.location_id,
             IndCqcColumns.ascwds_workplace_import_date,
             IndCqcColumns.cqc_location_import_date,
-            IndCqcColumns.cqc_pir_import_date,
             IndCqcColumns.care_home,
             IndCqcColumns.provider_id,
             IndCqcColumns.cqc_sector,
