@@ -28,7 +28,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.cqc_sector,
             IndCqcColumns.registration_status,
             IndCqcColumns.registration_date,
-            IndCqcColumns.number_of_beds,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.contemporary_ons_import_date,
             IndCqcColumns.contemporary_cssr,
