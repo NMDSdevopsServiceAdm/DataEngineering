@@ -49,8 +49,11 @@ def add_checks_to_run(
             check = create_check_of_categorical_values_in_columns(rule)
             run = run.addCheck(check)
         elif rule_name == RuleToCheck.distinct_values:
-            check = create_check_of_number_of_distinct_values(rule)
-            run = run.addCheck(check)
+            for column_name in rule.keys():
+                check = create_check_of_number_of_distinct_values(
+                    column_name, rule[column_name]
+                )
+                run = run.addCheck(check)
         else:
             raise ValueError("Unknown rule to check")
     return run
@@ -119,17 +122,18 @@ def create_check_of_categorical_values_in_columns(categorical_values: dict) -> C
     return check
 
 
-def create_check_of_number_of_distinct_values(distinct_values: dict) -> Check:
+def create_check_of_number_of_distinct_values(
+    column_name: str, distinct_values: int
+) -> Check:
     spark = utils.get_spark()
     check = Check(
         spark, CheckLevel.Warning, "Column contains correct number of distinct values"
     )
-    for column in distinct_values.keys():
-        check = check.hasNumberOfDistinctValues(
-            column=column,
-            assertion=lambda x: x == distinct_values[column],
-            binningUdf=None,
-            maxBins=distinct_values[column],
-            hint=f"The number of distinct values in {column} should be {distinct_values[column]}.",
-        )
+    check = check.hasNumberOfDistinctValues(
+        column=column_name,
+        assertion=lambda x: x == distinct_values,
+        binningUdf=None,
+        maxBins=distinct_values,
+        hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
+    )
     return check
