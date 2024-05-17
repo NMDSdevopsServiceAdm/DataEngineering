@@ -10,6 +10,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.categorical_column_values import (
     CQCCategoricalValues,
+    CQCDistinctValues,
     ONSCategoricalValues,
     ONSDistinctValues,
 )
@@ -72,11 +73,11 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_rural_urban_indicator_2011: ONSCategoricalValues.rural_urban_indicators,
         },
         RuleName.distinct_values: {
-            IndCqcColumns.care_home: 2,
+            IndCqcColumns.care_home: CQCDistinctValues.care_home_values,
             IndCqcColumns.cqc_sector: 1,
             IndCqcColumns.registration_status: 1,
-            IndCqcColumns.dormancy: 2,
-            IndCqcColumns.primary_service_type: 3,
+            IndCqcColumns.dormancy: CQCDistinctValues.dormancy_values,
+            IndCqcColumns.primary_service_type: CQCDistinctValues.primary_service_types,
             IndCqcColumns.contemporary_cssr: ONSDistinctValues.cssrs,
             IndCqcColumns.contemporary_region: ONSDistinctValues.regions,
             IndCqcColumns.current_cssr: ONSDistinctValues.cssrs,
