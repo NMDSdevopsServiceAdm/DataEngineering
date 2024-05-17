@@ -82,7 +82,7 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         postcode_directory_df,
         destination,
         mode="overwrite",
-        partitionKeys=[DPColNames.YEAR],
+        partitionKeys=[ONSClean.contemporary_cssr],
     )
 
 
