@@ -4185,6 +4185,12 @@ class ValidationUtils:
             IndCQC.number_of_beds: 10,
         }
     }
+    max_values_multiple_columns_rule = {
+        RuleName.max_values: {
+            IndCQC.number_of_beds: 10,
+            IndCQC.people_directly_employed: 20,
+        }
+    }
     max_values_below_maximum_rows = [
         ("loc_1", 9),
     ]
@@ -4193,6 +4199,9 @@ class ValidationUtils:
     ]
     max_values_above_maximum_rows = [
         ("loc_1", 11),
+    ]
+    max_values_multiple_columns_rows = [
+        ("loc_1", 20, 20),
     ]
 
     max_values_result_success_rows = [
@@ -4213,6 +4222,24 @@ class ValidationUtils:
             "MaximumConstraint(Maximum(numberOfBeds,None))",
             "Failure",
             "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
+    max_values_result_multiple_columns_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 20.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(people_directly_employed,None))",
+            "Success",
+            "",
         ),
     ]
 
