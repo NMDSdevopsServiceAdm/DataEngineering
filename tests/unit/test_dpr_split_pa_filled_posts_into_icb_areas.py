@@ -51,7 +51,7 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
-            partitionKeys=[DPColNames.YEAR],
+            partitionKeys=[ONSClean.contemporary_cssr],
         )
 
 
