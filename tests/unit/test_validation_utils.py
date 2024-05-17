@@ -331,8 +331,6 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             Data.distinct_values_result_success_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_number_of_distinct_values_returns_failure_when_column_has_fewer_distinct_values_than_expected(
@@ -345,8 +343,6 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             Data.fewer_distinct_values_result_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_number_of_distinct_values_returns_failure_when_column_has_more_distinct_values_than_expected(
@@ -359,8 +355,6 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             Data.more_distinct_values_result_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
