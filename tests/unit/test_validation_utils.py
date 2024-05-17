@@ -193,6 +193,7 @@ class CheckOfMinValues(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.min_values_rule = Data.min_values_rule
+        self.min_values_multiple_columns_rule = Data.min_values_multiple_columns_rule
 
     def test_create_check_of_min_values_returns_success_when_values_are_above_minimum(
         self,
@@ -228,6 +229,23 @@ class CheckOfMinValues(ValidateUtilsTests):
             Data.min_values_result_below_minimum_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.min_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_min_values_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_multiple_columns_rows,
+            Schemas.min_values_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_multiple_columns_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.min_values_multiple_columns_rule
+        )
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 

@@ -4122,6 +4122,12 @@ class ValidationUtils:
             IndCQC.number_of_beds: 1,
         }
     }
+    min_values_multiple_columns_rule = {
+        RuleName.min_values: {
+            IndCQC.number_of_beds: 1,
+            IndCQC.people_directly_employed: 0,
+        }
+    }
     min_values_below_minimum_rows = [
         ("loc_1", 0),
     ]
@@ -4130,6 +4136,9 @@ class ValidationUtils:
     ]
     min_values_above_minimum_rows = [
         ("loc_1", 2),
+    ]
+    min_values_multiple_columns_rows = [
+        ("loc_1", 0, 0),
     ]
 
     min_values_result_success_rows = [
@@ -4150,6 +4159,24 @@ class ValidationUtils:
             "MinimumConstraint(Minimum(numberOfBeds,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+    ]
+    min_values_result_multiple_columns_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Warning",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+        (
+            "Min value in column",
+            "Warning",
+            "Success",
+            "MinimumConstraint(Minimum(people_directly_employed,None))",
+            "Success",
+            "",
         ),
     ]
 

@@ -2917,6 +2917,13 @@ class ValidationUtils:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
         ]
     )
+    min_values_multiple_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
 
     max_values_schema = StructType(
         [
