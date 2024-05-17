@@ -39,14 +39,12 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         ],
     )
 
-    # TODO 1 - Create column with count of postcodes by LA.
     postcode_directory_df = count_postcodes_per_list_of_columns(
         postcode_directory_df,
         [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
         DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
     )
 
-    # TODO 2 - Create column with count of postcodes by hybrid area.
     postcode_directory_df = count_postcodes_per_list_of_columns(
         postcode_directory_df,
         [
@@ -57,21 +55,18 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA,
     )
 
-    # TODO 3 - Create column with ratio.
     postcode_directory_df = (
         create_proportion_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df,
         )
     )
 
-    # TODO 4 - Drop duplicates.
     postcode_directory_df = (
         deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df
         )
     )
 
-    # TODO 5 - Join pa filled posts.
     pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
         pa_filled_posts_df
     )
@@ -79,12 +74,10 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         postcode_directory_df, pa_filled_posts_df
     )
 
-    # TODO 6 - Apply ratio to calculate ICB filled posts.
     postcode_directory_df = apply_icb_proportions_to_pa_filled_posts(
         postcode_directory_df
     )
 
-    # Need to create year in the proportions table so it can used as a partition key.
     utils.write_to_parquet(
         postcode_directory_df,
         destination,
