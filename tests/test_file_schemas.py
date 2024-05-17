@@ -2950,6 +2950,6 @@ class ValidationUtils:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
