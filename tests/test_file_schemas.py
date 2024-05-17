@@ -2945,3 +2945,11 @@ class ValidationUtils:
             StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
+
+    distinct_values_multiple_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )

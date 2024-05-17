@@ -352,6 +352,9 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.distinct_values_rule = Data.distinct_values_rule
+        self.distinct_values_multiple_columns_rule = (
+            Data.distinct_values_multiple_columns_rule
+        )
 
     def test_create_check_of_number_of_distinct_values_returns_success_when_column_has_correct_number_of_distinct_values(
         self,
@@ -387,6 +390,23 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             Data.more_distinct_values_result_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_number_of_distinct_values_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.distinct_values_multiple_columns_rows,
+            Schemas.distinct_values_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.distinct_values_result_multiple_columns_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.distinct_values_multiple_columns_rule
+        )
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 

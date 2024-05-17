@@ -4289,6 +4289,13 @@ class ValidationUtils:
         }
     }
 
+    distinct_values_multiple_columns_rule = {
+        RuleName.distinct_values: {
+            IndCQC.cqc_sector: 2,
+            IndCQC.care_home: 2,
+        }
+    }
+
     distinct_values_success_rows = [
         ("loc_1", CQCLValues.independent),
         ("loc_2", CQCLValues.local_authority),
@@ -4301,6 +4308,11 @@ class ValidationUtils:
         ("loc_1", CQCLValues.independent),
         ("loc_2", CQCLValues.local_authority),
         ("loc_3", None),
+    ]
+    distinct_values_multiple_columns_rows = [
+        ("loc_1", CQCLValues.independent, "Y"),
+        ("loc_2", CQCLValues.local_authority, "N"),
+        ("loc_3", None, "Y"),
     ]
 
     distinct_values_result_success_rows = [
@@ -4331,5 +4343,23 @@ class ValidationUtils:
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
             "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+    ]
+    distinct_values_result_multiple_columns_rows = [
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Warning",
+            "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
+            "Failure",
+            "Value: 3.0 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Success",
+            "HistogramBinConstraint(Histogram(care_home,null,2,None,false,Count))",
+            "Success",
+            "",
         ),
     ]
