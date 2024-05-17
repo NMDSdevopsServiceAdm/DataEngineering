@@ -138,11 +138,8 @@ def create_date_column_from_year_in_pa_estimates(
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
         F.to_date(
             F.concat(
-                DPColNames.YEAR,
-                F.lit("-"),
-                F.lit(EstimatePeriodAsDate.MONTH),
-                F.lit("-"),
-                F.lit(EstimatePeriodAsDate.DAY),
+                F.col(DPColNames.YEAR),
+                F.lit(f"-{EstimatePeriodAsDate.MONTH}-{EstimatePeriodAsDate.DAY}"),
             )
         ),
     )
