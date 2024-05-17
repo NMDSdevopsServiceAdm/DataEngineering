@@ -334,36 +334,49 @@ class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.sample_df = self.spark.createDataFrame(
-            TestData.sample_proportions_and_pa_filled_posts_rows,
-            schema=TestSchema.sample_proportions_and_pa_filled_posts_schema,
+        self.sample_apply_icb_proportions_to_pa_filled_posts_df = (
+            self.spark.createDataFrame(
+                TestData.sample_proportions_and_pa_filled_posts_rows,
+                schema=TestSchema.sample_proportions_and_pa_filled_posts_schema,
+            )
         )
 
-        self.returned_df = job.apply_icb_proportions_to_pa_filled_posts(self.sample_df)
+        self.returned_apply_icb_proportions_to_pa_filled_posts_df = (
+            job.apply_icb_proportions_to_pa_filled_posts(
+                self.sample_apply_icb_proportions_to_pa_filled_posts_df
+            )
+        )
 
-        self.expected_df = self.spark.createDataFrame(
+        self.expected_apply_icb_proportions_to_pa_filled_posts_df = self.spark.createDataFrame(
             TestData.expected_pa_filled_posts_after_applying_proportions_rows,
             schema=TestSchema.expected_pa_filled_posts_after_applying_proportions_schema,
         )
 
-    def test_apply_icb_proportions_to_pa_filled_posts_has_expected_column_count(
+    def test_apply_icb_proportions_to_pa_filled_posts_adds_1_column(
         self,
     ):
-        self.assertEqual(len(self.returned_df.columns), len(self.sample_df.columns) + 1)
+        self.assertEqual(
+            len(self.returned_apply_icb_proportions_to_pa_filled_posts_df.columns),
+            len(self.sample_apply_icb_proportions_to_pa_filled_posts_df.columns) + 1,
+        )
 
-    def test_apply_icb_proportions_to_pa_filled_posts_adds_given_column(
+    def test_apply_icb_proportions_to_pa_filled_posts_adds_given_column_name(
         self,
     ):
         self.assertTrue(
             DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
-            in self.returned_df.columns
+            in self.returned_apply_icb_proportions_to_pa_filled_posts_df.columns
         )
 
     def test_apply_icb_proportions_to_pa_filled_posts_has_expected_values(
         self,
     ):
-        returned_rows = self.returned_df.collect()
-        expected_rows = self.expected_df.collect()
+        returned_rows = (
+            self.returned_apply_icb_proportions_to_pa_filled_posts_df.collect()
+        )
+        expected_rows = (
+            self.expected_apply_icb_proportions_to_pa_filled_posts_df.collect()
+        )
 
         for i in range(len(returned_rows)):
             self.assertAlmostEqual(
