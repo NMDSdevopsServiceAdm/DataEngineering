@@ -136,10 +136,14 @@ def create_date_column_from_year_in_pa_estimates(
 ) -> DataFrame:
     pa_filled_posts_df = pa_filled_posts_df.withColumn(
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
-        F.make_date(
-            DPColNames.YEAR,
-            F.lit(EstimatePeriodAsDate.MONTH),
-            F.lit(EstimatePeriodAsDate.DAY),
+        F.to_date(
+            F.concat(
+                DPColNames.YEAR,
+                F.lit("-"),
+                F.lit(EstimatePeriodAsDate.MONTH),
+                F.lit("-"),
+                F.lit(EstimatePeriodAsDate.DAY),
+            )
         ),
     )
 
