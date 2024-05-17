@@ -29,7 +29,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.cqc_sector,
             IndCqcColumns.registration_status,
             IndCqcColumns.registration_date,
-            IndCqcColumns.dormancy,
             IndCqcColumns.number_of_beds,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.contemporary_ons_import_date,
@@ -39,9 +38,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
-            IndCqcColumns.people_directly_employed,
-            IndCqcColumns.establishment_id,
-            IndCqcColumns.organisation_id,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
