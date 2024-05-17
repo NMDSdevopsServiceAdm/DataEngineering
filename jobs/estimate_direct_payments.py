@@ -13,9 +13,6 @@ from utils.direct_payments_utils.estimate_direct_payments.calculate_remaining_va
 from utils.direct_payments_utils.estimate_direct_payments.create_summary_table import (
     create_summary_table,
 )
-from utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio import (
-    calculate_pa_ratio,
-)
 
 
 def main(

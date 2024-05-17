@@ -24,13 +24,13 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_sample_ons_rows = self.spark.createDataFrame(
-            TestData.ons_sample_contemporary_rows,
-            schema=TestSchema.ons_sample_contemporary_schema,
+        self.sample_ons_contemporary_df = self.spark.createDataFrame(
+            TestData.sample_ons_contemporary_rows,
+            schema=TestSchema.sample_ons_contemporary_schema,
         )
-        self.test_sample_pa_filled_post_rows = self.spark.createDataFrame(
-            TestData.sample_pa_filled_post_rows,
-            schema=TestSchema.sample_pa_filled_post_schema,
+        self.sample_pa_filled_posts_df = self.spark.createDataFrame(
+            TestData.sample_pa_filled_posts_rows,
+            schema=TestSchema.sample_pa_filled_posts_schema,
         )
 
 
@@ -42,8 +42,8 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
         read_from_parquet_mock.side_effect = [
-            self.test_sample_ons_rows,
-            self.test_sample_pa_filled_post_rows,
+            self.sample_ons_contemporary_df,
+            self.sample_pa_filled_posts_df,
         ]
         job.main(self.TEST_ONS_SOURCE, self.TEST_PA_SOURCE, self.TEST_DESTINATION)
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -59,15 +59,15 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.returned_postcode_count_by_la = job.count_postcodes_per_list_of_columns(
-            self.test_sample_ons_rows,
+        self.returned_postcode_count_by_la_df = job.count_postcodes_per_list_of_columns(
+            self.sample_ons_contemporary_df,
             [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
             DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA,
         ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
 
-        self.returned_postcode_count_by_la_and_icb = (
+        self.returned_postcode_count_by_la_and_icb_df = (
             job.count_postcodes_per_list_of_columns(
-                self.test_sample_ons_rows,
+                self.sample_ons_contemporary_df,
                 [
                     ONSClean.contemporary_ons_import_date,
                     ONSClean.contemporary_cssr,
@@ -82,33 +82,33 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
     ):
         self.assertTrue(
             DPColNames.COUNT_OF_DISTINCT_POSTCODES_PER_LA
-            in self.returned_postcode_count_by_la.columns
+            in self.returned_postcode_count_by_la_df.columns
         )
 
     def test_count_postcodes_per_list_of_columns_has_expected_values_when_grouped_by_import_date_and_la(
         self,
     ):
-        expected_postcode_count_per_la_rows = self.spark.createDataFrame(
+        expected_df = self.spark.createDataFrame(
             TestData.expected_postcode_count_per_la_rows,
             schema=TestSchema.expected_postcode_count_per_la_schema,
         ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
 
         self.assertEqual(
-            self.returned_postcode_count_by_la.collect(),
-            expected_postcode_count_per_la_rows.collect(),
+            self.returned_postcode_count_by_la_df.collect(),
+            expected_df.collect(),
         )
 
     def test_count_postcodes_per_list_of_columns_has_expected_values_when_grouped_by_import_date_and_la_and_icb(
         self,
     ):
-        expected_postcode_count_per_la_icb_rows = self.spark.createDataFrame(
+        expected_df = self.spark.createDataFrame(
             TestData.expected_postcode_count_per_la_icb_rows,
             schema=TestSchema.expected_postcode_count_per_la_icb_schema,
         ).sort([ONSClean.postcode, ONSClean.contemporary_ons_import_date])
 
         self.assertEqual(
-            self.returned_postcode_count_by_la_and_icb.collect(),
-            expected_postcode_count_per_la_icb_rows.collect(),
+            self.returned_postcode_count_by_la_and_icb_df.collect(),
+            expected_df.collect(),
         )
 
 
@@ -215,34 +215,38 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         super().setUp()
 
         self.sample_pa_filled_posts_df = self.spark.createDataFrame(
-            TestData.sample_pa_filled_post_rows,
-            schema=TestSchema.sample_pa_filled_post_schema,
+            TestData.sample_pa_filled_posts_rows,
+            schema=TestSchema.sample_pa_filled_posts_schema,
         )
 
-        self.returned_after_adding_date_from_year_column_df = (
+        self.returned_create_date_column_from_year_in_pa_estimates_df = (
             job.create_date_column_from_year_in_pa_estimates(
                 self.sample_pa_filled_posts_df
             )
         )
 
-        self.expected_after_adding_date_from_year_column_df = self.spark.createDataFrame(
-            TestData.expected_pa_filled_post_after_adding_date_from_year_column_rows,
-            schema=TestSchema.expected_pa_filled_post_after_adding_date_from_year_column_schema,
+        self.expected_create_date_column_from_year_in_pa_estimates_df = self.spark.createDataFrame(
+            TestData.expected_create_date_column_from_year_in_pa_estimates_rows,
+            schema=TestSchema.expected_create_date_column_from_year_in_pa_estimates_schema,
         )
 
     def test_create_date_column_from_year_in_pa_estimates_has_expected_values(
         self,
     ):
-        returned_rows = self.returned_after_adding_date_from_year_column_df.collect()
-        expected_rows = self.expected_after_adding_date_from_year_column_df.collect()
+        returned_rows = (
+            self.returned_create_date_column_from_year_in_pa_estimates_df.collect()
+        )
+        expected_rows = (
+            self.expected_create_date_column_from_year_in_pa_estimates_df.collect()
+        )
         self.assertEqual(returned_rows, expected_rows)
 
 
-class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
+class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
     def setUp(self) -> None:
         super().setUp()
 
-        self.sample_postcode_proportions_df = self.spark.createDataFrame(
+        self.sample_hybrid_area_proportions_df = self.spark.createDataFrame(
             TestData.sample_postcode_proportions_before_joining_pa_filled_posts_rows,
             schema=TestSchema.sample_postcode_proportions_before_joining_pa_filled_posts_schema,
         )
@@ -252,43 +256,60 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
             schema=TestSchema.sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema,
         )
 
-        self.returned_df = job.join_pa_filled_posts_to_hybrid_area_proportions(
-            self.sample_postcode_proportions_df,
-            self.sample_pa_filled_posts_df,
+        self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df = (
+            job.join_pa_filled_posts_to_hybrid_area_proportions(
+                self.sample_hybrid_area_proportions_df,
+                self.sample_pa_filled_posts_df,
+            )
         )
 
-        self.expected_df = self.spark.createDataFrame(
+        self.expected_join_pa_filled_posts_to_hybrid_area_proportions_df = self.spark.createDataFrame(
             TestData.expected_postcode_proportions_after_joining_pa_filled_posts_rows,
             schema=TestSchema.expected_postcode_proportions_after_joining_pa_filled_posts_schema,
         )
 
-    def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_column_count(
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_adds_2_columns(
         self,
     ):
         self.assertEqual(
-            len(self.returned_df.columns),
-            len(self.sample_postcode_proportions_df.columns) + 1,
+            len(
+                self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.columns
+            ),
+            len(self.sample_hybrid_area_proportions_df.columns) + 2,
         )
 
-    def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_row_count(
+    def test_join_pa_filled_posts_to_hybrid_area_proportions_does_not_add_any_rows(
         self,
     ):
         self.assertEqual(
-            self.returned_df.count(), self.sample_postcode_proportions_df.count()
+            self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.count(),
+            self.sample_hybrid_area_proportions_df.count(),
         )
 
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_no_duplicate_columns(
         self,
     ):
         self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(list(set(self.returned_df.columns))),
+            sorted(
+                self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.columns
+            ),
+            sorted(
+                list(
+                    set(
+                        self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.columns
+                    )
+                )
+            ),
         )
 
     def test_join_pa_filled_posts_to_hybrid_area_proportions_has_expected_values(
         self,
     ):
-        returned_df = self.returned_df.select(self.expected_df.columns)
+        returned_sorted_join_pa_filled_posts_to_hybrid_area_proportions_df = (
+            self.returned_join_pa_filled_posts_to_hybrid_area_proportions_df.select(
+                self.expected_join_pa_filled_posts_to_hybrid_area_proportions_df.columns
+            )
+        )
 
         sort_by_list = [
             ONSClean.contemporary_ons_import_date,
@@ -296,8 +317,16 @@ class JoinPaFilledPostsToPostcodeProportions(SplitPAFilledPostsIntoICBAreas):
             ONSClean.contemporary_icb,
         ]
 
-        returned_rows = returned_df.sort(sort_by_list).collect()
-        expected_rows = self.expected_df.sort(sort_by_list).collect()
+        returned_rows = (
+            returned_sorted_join_pa_filled_posts_to_hybrid_area_proportions_df.sort(
+                sort_by_list
+            ).collect()
+        )
+        expected_rows = (
+            self.expected_join_pa_filled_posts_to_hybrid_area_proportions_df.sort(
+                sort_by_list
+            ).collect()
+        )
         self.assertEqual(returned_rows, expected_rows)
 
 

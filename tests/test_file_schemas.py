@@ -77,6 +77,8 @@ from utils.reconciliation_utils.reconciliation_values import (
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
 )
+from utils.column_names.validation_table_columns import Validation
+
 
 from schemas.cqc_location_schema import LOCATION_SCHEMA
 
@@ -217,6 +219,12 @@ class CalculatePaRatioSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    reduce_year_by_one_schema = StructType(
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField("other column", StringType(), True),
         ]
     )
 
@@ -440,7 +448,7 @@ class ONSData:
 
 @dataclass
 class PAFilledPostsByICBAreaSchema:
-    ons_sample_contemporary_schema = StructType(
+    sample_ons_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
@@ -451,14 +459,14 @@ class PAFilledPostsByICBAreaSchema:
 
     expected_postcode_count_per_la_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
         ]
     )
 
     expected_postcode_count_per_la_icb_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(
                 DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
             ),
@@ -484,7 +492,7 @@ class PAFilledPostsByICBAreaSchema:
 
     full_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
             StructField(
                 DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
@@ -502,7 +510,7 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    sample_pa_filled_post_schema = StructType(
+    sample_pa_filled_posts_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
             StructField(
@@ -512,17 +520,15 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_pa_filled_post_after_adding_date_from_year_column_schema = StructType(
+    expected_create_date_column_from_year_in_pa_estimates_schema = StructType(
         [
-            *sample_pa_filled_post_schema,
+            *sample_pa_filled_posts_schema,
             StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
         ]
     )
 
-    sample_postcode_proportions_before_joining_pa_filled_posts_schema = StructType(
-        [
-            *expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema,
-        ]
+    sample_postcode_proportions_before_joining_pa_filled_posts_schema = (
+        expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema
     )
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
@@ -534,6 +540,7 @@ class PAFilledPostsByICBAreaSchema:
                     DoubleType(),
                     True,
                 ),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
             ]
         )
@@ -545,6 +552,7 @@ class PAFilledPostsByICBAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
+            StructField(DP.YEAR, StringType(), True),
         ]
     )
 
@@ -2188,6 +2196,12 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
         ]
     )
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
 
 
 @dataclass
@@ -2887,5 +2901,64 @@ class FlattenCQCRatings:
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidationUtils:
+    validation_schema = StructType(
+        [
+            StructField(Validation.check, StringType(), True),
+            StructField(Validation.check_level, StringType(), True),
+            StructField(Validation.check_status, StringType(), True),
+            StructField(Validation.constraint, StringType(), True),
+            StructField(Validation.constraint_status, StringType(), True),
+            StructField(Validation.constraint_message, StringType(), True),
+        ]
+    )
+
+    size_of_dataset_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )
+
+    index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    min_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    max_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    one_column_schema = size_of_dataset_schema
+    two_column_schema = index_column_schema
+    multiple_rules_schema = index_column_schema
+
+    categorical_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
+    distinct_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
