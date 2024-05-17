@@ -20,6 +20,26 @@ class CQCCategoricalValues:
     dormancy_values = ["Y", "N"]
 
 
+@dataclass
+class CQCDistinctValues:
+    primary_service_types = len(CQCCategoricalValues.primary_service_types)
+    care_home_values = len(CQCCategoricalValues.care_home_values)
+    dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
+
+
+@dataclass
+class IndCQCCategoricalValues:
+    cqc_sector = [CQCLValues.independent]
+    registration_status = [CQCLValues.registered]
+
+
+@dataclass
+class IndCQCDistinctValues:
+    cqc_sector = len(IndCQCCategoricalValues.cqc_sector)
+    registration_status = len(IndCQCCategoricalValues.registration_status)
+
+
+@dataclass
 class ONSCategoricalValues:
     rural_urban_indicators = list(RURAL_URBAN_INDICATOR_LOOKUP.values())
     regions = list(REGION_LOOKUP.values())
@@ -182,3 +202,10 @@ class ONSCategoricalValues:
         "Worcestershire",
         "York",
     ]
+
+
+@dataclass
+class ONSDistinctValues:
+    rural_urban_indicators = len(ONSCategoricalValues.rural_urban_indicators)
+    regions = len(ONSCategoricalValues.regions)
+    cssrs = len(ONSCategoricalValues.cssrs)

@@ -2900,3 +2900,10 @@ class ValidationUtils:
             StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
+
+    distinct_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )

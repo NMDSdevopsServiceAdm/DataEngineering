@@ -4196,3 +4196,54 @@ class ValidationUtils:
             "Value: 0.6666666666666666 does not meet the constraint requirement! Values in cqc_sector should be one of :['Independent', 'Local authority'].",
         ),
     ]
+
+    distinct_values_rule = {
+        RuleName.distinct_values: {
+            IndCQC.cqc_sector: 2,
+        }
+    }
+
+    distinct_values_success_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+    ]
+    fewer_distinct_values_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.independent),
+    ]
+    more_distinct_values_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
+    ]
+
+    distinct_values_result_success_rows = [
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Success",
+            "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
+            "Success",
+            "",
+        ),
+    ]
+    fewer_distinct_values_result_rows = [
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Warning",
+            "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
+            "Failure",
+            "Value: 1 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+    ]
+    more_distinct_values_result_rows = [
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Warning",
+            "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
+            "Failure",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+    ]

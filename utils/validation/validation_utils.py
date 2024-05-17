@@ -45,6 +45,8 @@ def create_check(rule_name: str, rule) -> Check:
         check = create_check_of_max_values(rule)
     elif rule_name == RuleToCheck.categorical_values_in_columns:
         check = create_check_of_categorical_values_in_columns(rule)
+    elif rule_name == RuleToCheck.distinct_values:
+        check = create_check_of_number_of_distinct_values(rule)
     else:
         raise ValueError("Unknown rule to check")
     return check
@@ -111,5 +113,21 @@ def create_check_of_categorical_values_in_columns(categorical_values: dict) -> C
             column,
             categorical_values[column],
             hint=f"Values in {column} should be one of :{categorical_values[column]}.",
+        )
+    return check
+
+
+def create_check_of_number_of_distinct_values(distinct_values: dict) -> Check:
+    spark = utils.get_spark()
+    check = Check(
+        spark, CheckLevel.Warning, "Column contains correct number of distinct values"
+    )
+    for column in distinct_values.keys():
+        check = check.hasNumberOfDistinctValues(
+            column=column,
+            assertion=lambda x: x == distinct_values[column],
+            binningUdf=None,
+            maxBins=distinct_values[column],
+            hint=f"The number of distinct values in {column} should be {distinct_values[column]}.",
         )
     return check
