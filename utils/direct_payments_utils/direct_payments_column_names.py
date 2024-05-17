@@ -167,6 +167,7 @@ class DirectPaymentColumnNames:
     PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA: str = (
         "proportion_of_ICB_postcodes_in_la_area"
     )
+    ESTIMATE_PERIOD_AS_DATE: str = "estimate_period_as_date"
 
 
 @dataclass

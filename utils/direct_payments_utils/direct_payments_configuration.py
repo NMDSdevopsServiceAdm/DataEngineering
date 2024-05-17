@@ -51,3 +51,9 @@ class DirectPaymentsMissingPARatios:
             ),
         ]
     )
+
+
+@dataclass
+class EstimatePeriodAsDate:
+    MONTH: str = "03"
+    DAY: str = "31"

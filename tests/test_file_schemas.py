@@ -448,7 +448,7 @@ class ONSData:
 
 @dataclass
 class PAFilledPostsByICBAreaSchema:
-    ons_sample_contemporary_schema = StructType(
+    sample_ons_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
@@ -459,14 +459,14 @@ class PAFilledPostsByICBAreaSchema:
 
     expected_postcode_count_per_la_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
         ]
     )
 
     expected_postcode_count_per_la_icb_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(
                 DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
             ),
@@ -475,7 +475,6 @@ class PAFilledPostsByICBAreaSchema:
 
     sample_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
         [
-            StructField("GroupID", StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
             StructField(
@@ -493,7 +492,7 @@ class PAFilledPostsByICBAreaSchema:
 
     full_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
         [
-            *ons_sample_contemporary_schema,
+            *sample_ons_contemporary_schema,
             StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
             StructField(
                 DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
@@ -502,7 +501,7 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    expected_deduplicated_importdate_hybrid_and_la_and_ratio_schema = StructType(
+    expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema = StructType(
         [
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
             StructField(ONSClean.contemporary_cssr, StringType(), True),
@@ -511,9 +510,45 @@ class PAFilledPostsByICBAreaSchema:
         ]
     )
 
-    pa_sample_filled_post_schema = StructType(
+    sample_pa_filled_posts_schema = StructType(
         [
             StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+    expected_create_date_column_from_year_in_pa_estimates_schema = StructType(
+        [
+            *sample_pa_filled_posts_schema,
+            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+        ]
+    )
+
+    sample_postcode_proportions_before_joining_pa_filled_posts_schema = (
+        expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema
+    )
+
+    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
+        StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), True),
+                StructField(
+                    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+                    DoubleType(),
+                    True,
+                ),
+                StructField(DP.YEAR, StringType(), True),
+                StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+            ]
+        )
+    )
+
+    expected_postcode_proportions_after_joining_pa_filled_posts_schema = StructType(
+        [
+            *sample_postcode_proportions_before_joining_pa_filled_posts_schema,
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),

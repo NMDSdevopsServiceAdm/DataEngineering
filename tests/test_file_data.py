@@ -632,7 +632,7 @@ class ONSData:
 @dataclass
 class PAFilledPostsByICBArea:
     # fmt: off
-    ons_sample_contemporary_rows = [
+    sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
         ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
         ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
@@ -684,45 +684,77 @@ class PAFilledPostsByICBArea:
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
-        ("Group1", date(2024,1,1), 3, 3),
-        ("Group2", date(2024,1,1), 4, 1), 
-        ("Group3", date(2024,1,1), 4, 3), 
-        ("Group4", date(2023,1,1), 3, 3),
-        ("Group5", date(2023,1,1), 3, 1), 
-        ("Group6", date(2023,1,1), 3, 2),
+        (date(2024,1,1), 3, 3),
+        (date(2024,1,1), 4, 1), 
+        (date(2024,1,1), 4, 3), 
+        (date(2023,1,1), 3, 3),
+        (date(2023,1,1), 3, 1), 
+        (date(2023,1,1), 3, 2),
     ]
 
     expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
-        ("Group1", date(2024,1,1), 3, 3, 1.00000),
-        ("Group2", date(2024,1,1), 4, 1, 0.25000), 
-        ("Group3", date(2024,1,1), 4, 3, 0.75000), 
-        ("Group4", date(2023,1,1), 3, 3, 1.00000),
-        ("Group5", date(2023,1,1), 3, 1, 0.33333), 
-        ("Group6", date(2023,1,1), 3, 2, 0.66666),
+        (date(2024,1,1), 3, 3, 1.00000),
+        (date(2024,1,1), 4, 1, 0.25000), 
+        (date(2024,1,1), 4, 3, 0.75000), 
+        (date(2023,1,1), 3, 3, 1.00000),
+        (date(2023,1,1), 3, 1, 0.33333), 
+        (date(2023,1,1), 3, 2, 0.66666),
     ]
 
     full_rows_with_la_and_hybrid_area_postcode_counts = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2", 4, 1, 0.25000), 
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3", 4, 3, 0.75000), 
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AA", date(2023,5,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AB", date(2023,5,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AA", date(2023,5,1), "cssr2", "icb2", 4, 1, 0.25000), 
+        ("AB10AB", date(2023,5,1), "cssr2", "icb3", 4, 3, 0.75000), 
+        ("AB10AA", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AB", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
+        ("AB10AC", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
     ]
 
-    expected_deduplicated_importdate_hybrid_and_la_and_ratio_rows = [
-        (date(2024,1,1), "cssr1", "icb1", 1.00000),
-        (date(2024,1,1), "cssr2", "icb2", 0.25000), 
-        (date(2024,1,1), "cssr2", "icb3", 0.75000), 
-        (date(2023,1,1), "cssr1", "icb1", 1.00000),
+    expected_deduplicated_import_date_hybrid_and_la_and_ratio_rows = [
+        (date(2023,5,1), "cssr1", "icb1", 1.00000),
+        (date(2023,5,1), "cssr2", "icb2", 0.25000), 
+        (date(2023,5,1), "cssr2", "icb3", 0.75000), 
+        (date(2022,5,1), "cssr1", "icb1", 1.00000),
     ]
     # fmt: on
 
-    pa_sample_filled_post_rows = [
+    sample_pa_filled_posts_rows = [
         ("Leeds", 100.2, "2024"),
         ("Bradford", 200.3, "2024"),
+        ("Hull", 300.3, "2023"),
     ]
+
+    expected_create_date_column_from_year_in_pa_estimates_rows = [
+        ("Leeds", 100.2, "2024", date(2024, 3, 31)),
+        ("Bradford", 200.3, "2024", date(2024, 3, 31)),
+        ("Hull", 300.3, "2023", date(2023, 3, 31)),
+    ]
+
+    sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
+        (date(2023, 5, 1), "Leeds", "icb1", 1.00000),
+        (date(2023, 5, 1), "Bradford", "icb2", 0.25000),
+        (date(2023, 5, 1), "Bradford", "icb3", 0.75000),
+        (date(2022, 5, 1), "Leeds", "icb1", 1.00000),
+        (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000),
+    ]
+
+    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
+        ("Leeds", 100.2, "2024", date(2024, 3, 31)),
+        ("Bradford", 200.3, "2024", date(2024, 3, 31)),
+        ("Leeds", 300.3, "2023", date(2023, 3, 31)),
+        ("Barking and Dagenham", 300.3, "2023", date(2023, 3, 31)),
+    ]
+
+    # fmt: off
+    expected_postcode_proportions_after_joining_pa_filled_posts_rows = [
+        (date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2, "2024"),
+        (date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3, "2024"), 
+        (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2024"), 
+        (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2023"),
+        (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None, None),
+    ]
+    # fmt: on
 
 
 @dataclass

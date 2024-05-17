@@ -4,13 +4,18 @@ from pyspark.sql import (
     functions as F,
 )
 
-from utils import utils
+from datetime import date
+
+from utils import utils, cleaning_utils
 
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
+)
+from utils.direct_payments_utils.direct_payments_configuration import (
+    EstimatePeriodAsDate,
 )
 
 
@@ -67,6 +72,12 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
     # TODO 5 - Join pa filled posts.
+    pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
+        pa_filled_posts_df
+    )
+    postcode_directory_df = join_pa_filled_posts_to_hybrid_area_proportions(
+        postcode_directory_df, pa_filled_posts_df
+    )
 
     # TODO 6 - Apply ratio to calculate ICB filled posts.
 
@@ -118,6 +129,53 @@ def deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
     ).distinct()
 
     return deduplicated_df
+
+
+def create_date_column_from_year_in_pa_estimates(
+    pa_filled_posts_df: DataFrame,
+) -> DataFrame:
+    pa_filled_posts_df = pa_filled_posts_df.withColumn(
+        DPColNames.ESTIMATE_PERIOD_AS_DATE,
+        F.to_date(
+            F.concat(
+                F.col(DPColNames.YEAR),
+                F.lit(f"-{EstimatePeriodAsDate.MONTH}-{EstimatePeriodAsDate.DAY}"),
+            )
+        ),
+    )
+
+    return pa_filled_posts_df
+
+
+def join_pa_filled_posts_to_hybrid_area_proportions(
+    postcode_directory_df: DataFrame,
+    pa_filled_posts_df: DataFrame,
+) -> DataFrame:
+    pa_filled_posts_df = cleaning_utils.add_aligned_date_column(
+        pa_filled_posts_df,
+        postcode_directory_df,
+        DPColNames.ESTIMATE_PERIOD_AS_DATE,
+        ONSClean.contemporary_ons_import_date,
+    )
+
+    pa_filled_posts_df = pa_filled_posts_df.select(
+        DPColNames.LA_AREA,
+        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+        DPColNames.YEAR,
+        ONSClean.contemporary_ons_import_date,
+    )
+
+    pa_filled_posts_df = pa_filled_posts_df.withColumnRenamed(
+        DPColNames.LA_AREA, ONSClean.contemporary_cssr
+    )
+
+    postcode_directory_df = postcode_directory_df.join(
+        pa_filled_posts_df,
+        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+        "left",
+    )
+
+    return postcode_directory_df
 
 
 if __name__ == "__main__":
