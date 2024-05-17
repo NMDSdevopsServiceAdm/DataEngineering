@@ -27,12 +27,12 @@ def add_checks_to_run(
     run: VerificationRunBuilder, rules_to_check: dict
 ) -> VerificationRunBuilder:
     for rule in rules_to_check.keys():
-        check = create_check(rule, rules_to_check[rule])
+        check = create_check(run, rule, rules_to_check[rule])
         run = run.addCheck(check)
     return run
 
 
-def create_check(rule_name: str, rule) -> Check:
+def create_check(run: VerificationRunBuilder, rule_name: str, rule) -> Check:
     if rule_name == RuleToCheck.size_of_dataset:
         check = create_check_of_size_of_dataset(rule)
     elif rule_name == RuleToCheck.complete_columns:
@@ -40,7 +40,9 @@ def create_check(rule_name: str, rule) -> Check:
     elif rule_name == RuleToCheck.index_columns:
         check = create_check_of_uniqueness_of_two_index_columns(rule)
     elif rule_name == RuleToCheck.min_values:
-        check = create_check_of_min_values(rule)
+        for column_name in rule.keys():
+            check = create_check_of_min_values(column_name, rule[column_name])
+            run = run.addCheck(check)
     elif rule_name == RuleToCheck.max_values:
         check = create_check_of_max_values(rule)
     elif rule_name == RuleToCheck.categorical_values_in_columns:
@@ -79,15 +81,14 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
     return check
 
 
-def create_check_of_min_values(column_minimums: dict) -> Check:
+def create_check_of_min_values(column_name: str, min_value: int) -> Check:
     spark = utils.get_spark()
-    check = Check(spark, CheckLevel.Warning, "Min value in column")
-    for column in column_minimums.keys():
-        check = check.hasMin(
-            column,
-            lambda x: x >= column_minimums[column],
-            f"The minimum value for {column} should be {column_minimums[column]}.",
-        )
+    check = Check(spark, CheckLevel.Warning, f"Min value in column")
+    check = check.hasMin(
+        column_name,
+        lambda x: x >= min_value,
+        f"The minimum value for {column_name} should be {min_value}.",
+    )
     return check
 
 
