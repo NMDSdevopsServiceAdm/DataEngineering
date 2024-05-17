@@ -26,34 +26,34 @@ def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:
 def add_checks_to_run(
     run: VerificationRunBuilder, rules_to_check: dict
 ) -> VerificationRunBuilder:
-    for rule in rules_to_check.keys():
-        check = create_check(run, rule, rules_to_check[rule])
-        run = run.addCheck(check)
+    for rule_name in rules_to_check.keys():
+        rule = rules_to_check[rule_name]
+        if rule_name == RuleToCheck.size_of_dataset:
+            check = create_check_of_size_of_dataset(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.complete_columns:
+            check = create_check_for_column_completeness(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.index_columns:
+            check = create_check_of_uniqueness_of_two_index_columns(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.min_values:
+            for column_name in rule.keys():
+                check = create_check_of_min_values(column_name, rule[column_name])
+                run = run.addCheck(check)
+        elif rule_name == RuleToCheck.max_values:
+            for column_name in rule.keys():
+                check = create_check_of_max_values(column_name, rule[column_name])
+                run = run.addCheck(check)
+        elif rule_name == RuleToCheck.categorical_values_in_columns:
+            check = create_check_of_categorical_values_in_columns(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.distinct_values:
+            check = create_check_of_number_of_distinct_values(rule)
+            run = run.addCheck(check)
+        else:
+            raise ValueError("Unknown rule to check")
     return run
-
-
-def create_check(run: VerificationRunBuilder, rule_name: str, rule) -> Check:
-    if rule_name == RuleToCheck.size_of_dataset:
-        check = create_check_of_size_of_dataset(rule)
-    elif rule_name == RuleToCheck.complete_columns:
-        check = create_check_for_column_completeness(rule)
-    elif rule_name == RuleToCheck.index_columns:
-        check = create_check_of_uniqueness_of_two_index_columns(rule)
-    elif rule_name == RuleToCheck.min_values:
-        for column_name in rule.keys():
-            check = create_check_of_min_values(column_name, rule[column_name])
-            run = run.addCheck(check)
-    elif rule_name == RuleToCheck.max_values:
-        for column_name in rule.keys():
-            check = create_check_of_max_values(column_name, rule[column_name])
-            run = run.addCheck(check)
-    elif rule_name == RuleToCheck.categorical_values_in_columns:
-        check = create_check_of_categorical_values_in_columns(rule)
-    elif rule_name == RuleToCheck.distinct_values:
-        check = create_check_of_number_of_distinct_values(rule)
-    else:
-        raise ValueError("Unknown rule to check")
-    return check
 
 
 def create_check_for_column_completeness(complete_columns: list) -> Check:
