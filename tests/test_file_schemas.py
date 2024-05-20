@@ -2986,3 +2986,15 @@ class ValidateProvidersAPICleanedData:
         ]
     )
     calculate_expected_size_schema = raw_cqc_providers_schema
+
+
+@dataclass
+class ValidatePIRCleanedData:
+    cleaned_cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.people_directly_employed, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+        ]
+    )
