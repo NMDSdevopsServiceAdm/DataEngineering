@@ -34,13 +34,11 @@ class CQCDistinctValues:
 @dataclass
 class IndCQCCategoricalValues:
     cqc_sector = [CQCLValues.independent]
-    registration_status = [CQCLValues.registered]
 
 
 @dataclass
 class IndCQCDistinctValues:
     cqc_sector = len(IndCQCCategoricalValues.cqc_sector)
-    registration_status = len(IndCQCCategoricalValues.registration_status)
 
 
 @dataclass
