@@ -4296,3 +4296,15 @@ class ValidatePIRCleanedData:
         ("1-000000002", date(2024, 1, 9), 10, "Y"),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateASCWDSWorkplaceCleanedData:
+    # fmt: off
+    cleaned_ascwds_workplace_rows = [
+        ("estab_1", date(2024, 1, 1), "org_id", "location_id", 10, 10),
+        ("estab_2", date(2024, 1, 1), "org_id", "location_id", 10, 10),
+        ("estab_1", date(2024, 1, 9), "org_id", "location_id", 10, 10),
+        ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
+    ]
+    # fmt: on

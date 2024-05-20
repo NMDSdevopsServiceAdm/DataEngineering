@@ -3004,10 +3004,10 @@ class ValidatePIRCleanedData:
 class ValidateASCWDSWorkplaceCleanedData:
     cleaned_ascwds_workplace_schema = StructType(
         [
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
         ]
