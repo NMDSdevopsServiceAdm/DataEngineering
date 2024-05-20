@@ -405,8 +405,6 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         returned_df = job.validate_dataset(
             test_df, self.distinct_values_multiple_columns_rule
         )
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
