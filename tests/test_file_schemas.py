@@ -1386,6 +1386,34 @@ class MergeIndCQCData:
 
 
 @dataclass
+class IndCQCDataUtils:
+    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("model_name_1", FloatType(), True),
+            StructField("model_name_2", FloatType(), True),
+            StructField("model_name_3", FloatType(), True),
+        ]
+    )
+
+    expected_schema_with_estimate_filled_posts_and_source = StructType(
+        [
+            *input_schema_for_adding_estimate_filled_posts_and_source,
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+    estimated_source_description_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CleanIndCQCData:
     merged_schema_for_cleaning_job = StructType(
         [
@@ -1860,16 +1888,6 @@ class EstimateIndCQCFilledPostsSchemas:
         ]
     )
 
-    populate_known_jobs_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -1924,8 +1942,6 @@ class ModelExtrapolation:
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
@@ -2095,8 +2111,6 @@ class ModelInterpolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
     calculating_submission_dates_schema = StructType(

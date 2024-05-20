@@ -1907,6 +1907,35 @@ class MergeIndCQCData:
 
 
 @dataclass
+class IndCQCDataUtils:
+    input_rows_for_adding_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0),
+        ("1-000002", None, 30.0, 50.0),
+        ("1-000003", 20.0, 70.0, 60.0),
+        ("1-000004", None, None, 40.0),
+    ]
+
+    expected_rows_with_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
+        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
+    ]
+
+    source_missing_rows = [
+        ("1-000001", 8.0, None),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+    expected_source_added_rows = [
+        ("1-000001", 8.0, "model_name"),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+
+@dataclass
 class CleanIndCQCData:
     # fmt: off
     merged_rows_for_cleaning_job = [
@@ -2548,22 +2577,6 @@ class EstimateIndCQCFilledPostsData:
     ]
     # fmt: on
 
-    populate_known_jobs_rows = [
-        ("1-000000001", 1.0, date(2022, 3, 4), None, None),
-        ("1-000000002", None, date(2022, 3, 4), None, None),
-        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
-        ("1-000000004", 10.0, date(2022, 3, 4), None, None),
-        ("1-000000002", 7.0, date(2022, 2, 4), None, None),
-    ]
-
-    expected_populate_known_jobs_rows = [
-        ("1-000000001", 1.0, date(2022, 3, 4), 1.0, "ascwds_filled_posts"),
-        ("1-000000002", None, date(2022, 3, 4), None, None),
-        ("1-000000003", 5.0, date(2022, 3, 4), 4.0, "already_populated"),
-        ("1-000000004", 10.0, date(2022, 3, 4), 10.0, "ascwds_filled_posts"),
-        ("1-000000002", 7.0, date(2022, 2, 4), 7.0, "ascwds_filled_posts"),
-    ]
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -2625,116 +2638,17 @@ class ModelPrimaryServiceRollingAverage:
 @dataclass
 class ModelExtrapolation:
     extrapolation_rows = [
-        (
-            "1-000000001",
-            "2023-01-01",
-            1672531200,
-            15.0,
-            "Care home with nursing",
-            None,
-            None,
-            15.0,
-        ),
-        (
-            "1-000000001",
-            "2023-02-01",
-            1675209600,
-            None,
-            "Care home with nursing",
-            None,
-            None,
-            15.1,
-        ),
-        (
-            "1-000000001",
-            "2023-03-01",
-            1677628800,
-            30.0,
-            "Care home with nursing",
-            30.0,
-            "already_populated",
-            15.2,
-        ),
-        (
-            "1-000000002",
-            "2023-01-01",
-            1672531200,
-            4.0,
-            "non-residential",
-            None,
-            None,
-            50.3,
-        ),
-        (
-            "1-000000002",
-            "2023-02-01",
-            1675209600,
-            None,
-            "non-residential",
-            None,
-            None,
-            50.5,
-        ),
-        (
-            "1-000000002",
-            "2023-03-01",
-            1677628800,
-            None,
-            "non-residential",
-            5.0,
-            "already_populated",
-            50.7,
-        ),
-        (
-            "1-000000002",
-            "2023-04-01",
-            1680303600,
-            None,
-            "non-residential",
-            None,
-            None,
-            50.1,
-        ),
-        (
-            "1-000000003",
-            "2023-01-01",
-            1672531200,
-            None,
-            "non-residential",
-            None,
-            None,
-            50.3,
-        ),
-        (
-            "1-000000003",
-            "2023-02-01",
-            1675209600,
-            20.0,
-            "non-residential",
-            None,
-            None,
-            50.5,
-        ),
-        (
-            "1-000000003",
-            "2023-03-01",
-            1677628800,
-            None,
-            "non-residential",
-            30.0,
-            "already_populated",
-            50.7,
-        ),
-        (
-            "1-000000004",
-            "2023-03-01",
-            1677628800,
-            None,
-            "non-residential",
-            None,
-            None,
-            50.7,
-        ),
+        ("1-000000001", "2023-01-01", 1672531200, 15.0, "Care home with nursing", 15.0),
+        ("1-000000001", "2023-02-01", 1675209600, None, "Care home with nursing", 15.1),
+        ("1-000000001", "2023-03-01", 1677628800, 30.0, "Care home with nursing", 15.2),
+        ("1-000000002", "2023-01-01", 1672531200, 4.0, "non-residential", 50.3),
+        ("1-000000002", "2023-02-01", 1675209600, None, "non-residential", 50.5),
+        ("1-000000002", "2023-03-01", 1677628800, None, "non-residential", 50.7),
+        ("1-000000002", "2023-04-01", 1680303600, None, "non-residential", 50.1),
+        ("1-000000003", "2023-01-01", 1672531200, None, "non-residential", 50.3),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", 50.5),
+        ("1-000000003", "2023-03-01", 1677628800, None, "non-residential", 50.7),
+        ("1-000000004", "2023-03-01", 1677628800, None, "non-residential", 50.7),
     ]
     data_to_filter_rows = [
         ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
@@ -3064,33 +2978,19 @@ class MLModelMetrics:
 @dataclass
 class ModelInterpolation:
     interpolation_rows = [
-        ("1-000000001", date(2023, 1, 1), 1672531200, None, None, None),
-        (
-            "1-000000001",
-            date(2023, 1, 2),
-            1672617600,
-            30.0,
-            30.0,
-            "ascwds_filled_posts",
-        ),
-        ("1-000000001", date(2023, 1, 3), 1672704000, None, None, None),
-        ("1-000000002", date(2023, 1, 1), 1672531200, None, None, None),
-        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0, 4.0, "ascwds_filled_posts"),
-        ("1-000000002", date(2023, 1, 5), 1672876800, None, None, None),
-        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0, 5.0, "ascwds_filled_posts"),
-        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0, 5.0, "ascwds_filled_posts"),
-        ("1-000000002", date(2023, 1, 11), 1673395200, None, None, None),
-        ("1-000000002", date(2023, 1, 13), 1673568000, None, None, None),
-        (
-            "1-000000002",
-            date(2023, 1, 15),
-            1673740800,
-            20.0,
-            20.0,
-            "ascwds_filled_posts",
-        ),
-        ("1-000000002", date(2023, 1, 17), 1673913600, None, 21.0, "other_source"),
-        ("1-000000002", date(2023, 1, 19), 1674086400, None, None, None),
+        ("1-000000001", date(2023, 1, 1), 1672531200, None),
+        ("1-000000001", date(2023, 1, 2), 1672617600, 30.0),
+        ("1-000000001", date(2023, 1, 3), 1672704000, None),
+        ("1-000000002", date(2023, 1, 1), 1672531200, None),
+        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0),
+        ("1-000000002", date(2023, 1, 5), 1672876800, None),
+        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0),
+        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0),
+        ("1-000000002", date(2023, 1, 11), 1673395200, None),
+        ("1-000000002", date(2023, 1, 13), 1673568000, None),
+        ("1-000000002", date(2023, 1, 15), 1673740800, 20.0),
+        ("1-000000002", date(2023, 1, 17), 1673913600, None),
+        ("1-000000002", date(2023, 1, 19), 1674086400, None),
     ]
 
     calculating_submission_dates_rows = [

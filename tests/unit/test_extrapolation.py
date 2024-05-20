@@ -56,8 +56,6 @@ class TestModelExtrapolation(unittest.TestCase):
                 IndCqc.unix_time,
                 IndCqc.ascwds_filled_posts_dedup_clean,
                 IndCqc.primary_service_type,
-                IndCqc.estimate_filled_posts,
-                IndCqc.estimate_filled_posts_source,
                 IndCqc.rolling_average_model,
                 IndCqc.extrapolation_model,
             ],

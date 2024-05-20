@@ -8,7 +8,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     average_of_two_columns,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
+    add_source_description_to_source_column,
 )
 
 ascwds_filled_posts_absolute_difference_within_range_source_description: str = (
@@ -20,7 +20,8 @@ def calculate_ascwds_filled_posts_absolute_difference_within_range(
     df: DataFrame,
     total_staff_column: str,
     worker_records_column: str,
-    output_column_name,
+    output_column_name: str,
+    source_output_column_name: str,
 ) -> DataFrame:
     df = df.withColumn(
         output_column_name,
@@ -42,9 +43,10 @@ def calculate_ascwds_filled_posts_absolute_difference_within_range(
         ).otherwise(F.col(output_column_name)),
     )
 
-    df = update_dataframe_with_identifying_rule(
+    df = add_source_description_to_source_column(
         df,
-        ascwds_filled_posts_absolute_difference_within_range_source_description,
         output_column_name,
+        source_output_column_name,
+        ascwds_filled_posts_absolute_difference_within_range_source_description,
     )
     return df

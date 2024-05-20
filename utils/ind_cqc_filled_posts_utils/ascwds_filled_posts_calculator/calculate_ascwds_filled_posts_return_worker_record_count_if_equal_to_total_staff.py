@@ -5,7 +5,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_chec
     two_cols_are_equal_and_at_least_minimum_permitted_value,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
-    update_dataframe_with_identifying_rule,
+    add_source_description_to_source_column,
 )
 
 ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description: str = (
@@ -17,7 +17,8 @@ def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
     df: DataFrame,
     total_staff_column: str,
     worker_records_column: str,
-    output_column_name,
+    output_column_name: str,
+    source_output_column_name: str,
 ) -> DataFrame:
     df = df.withColumn(
         output_column_name,
@@ -32,9 +33,10 @@ def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
         ).otherwise(F.col(output_column_name)),
     )
 
-    df = update_dataframe_with_identifying_rule(
+    df = add_source_description_to_source_column(
         df,
-        ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
         output_column_name,
+        source_output_column_name,
+        ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
     )
     return df
