@@ -12,7 +12,7 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class ProvidersAPICleanedValidationRules:
+class PIRCleanedValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
             CQCPIRClean.cqc_pir_import_date,
