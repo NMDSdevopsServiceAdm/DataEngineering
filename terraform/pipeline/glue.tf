@@ -444,6 +444,7 @@ module "validate_postcode_directory_cleaned_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
+    "--raw_postcode_directory_source"     = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
     "--cleaned_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_cleaned_data_report/"
   }
