@@ -4266,7 +4266,7 @@ class ValidationUtils:
 
 
 @dataclass
-class ValidateProvidersAPICleanedData:
+class ValidatePIRCleanedData:
     # fmt: off
     cleaned_cqc_pir_rows = [
         ("1-000000001", date(2024, 1, 1), 10, "Y"),

@@ -11,16 +11,11 @@ from utils import utils
 
 
 class ValidatePIRCleanedDatasetTests(unittest.TestCase):
-    TEST_RAW_CQC_PIR_SOURCE = "some/directory"
     TEST_CQC_PIR_CLEANED_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_raw_cqc_pir_df = self.spark.createDataFrame(
-            Data.raw_cqc_pir_rows,
-            Schemas.raw_cqc_pir_schema,
-        )
         self.test_cleaned_cqc_pir_df = self.spark.createDataFrame(
             Data.cleaned_cqc_pir_rows, Schemas.cleaned_cqc_pir_schema
         )
@@ -42,17 +37,15 @@ class MainTests(ValidatePIRCleanedDatasetTests):
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_raw_cqc_pir_df,
             self.test_cleaned_cqc_pir_df,
         ]
 
         job.main(
-            self.TEST_RAW_CQC_PIR_SOURCE,
             self.TEST_CQC_PIR_CLEANED_SOURCE,
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(read_from_parquet_patch.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
