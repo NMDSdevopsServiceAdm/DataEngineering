@@ -68,7 +68,7 @@ class MergedIndCqcValidationRules:
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CQCDistinctValues.care_home_values,
             IndCqcColumns.cqc_sector: IndCQCDistinctValues.cqc_sector,
-            IndCqcColumns.registration_status: IndCQCDistinctValues.registration_status,
+            IndCqcColumns.registration_status: CQCDistinctValues.registration_status_values,
             IndCqcColumns.dormancy: CQCDistinctValues.dormancy_values,
             IndCqcColumns.primary_service_type: CQCDistinctValues.primary_service_types,
             IndCqcColumns.contemporary_cssr: ONSDistinctValues.cssrs,
