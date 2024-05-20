@@ -50,8 +50,6 @@ class TestModelInterpolation(unittest.TestCase):
                 IndCqc.unix_time,
                 IndCqc.cqc_location_import_date,
                 IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.estimate_filled_posts,
-                IndCqc.estimate_filled_posts_source,
                 IndCqc.interpolation_model,
             ],
         )

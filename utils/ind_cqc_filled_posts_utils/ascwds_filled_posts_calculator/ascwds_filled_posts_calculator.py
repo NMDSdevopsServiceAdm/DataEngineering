@@ -18,9 +18,8 @@ def calculate_ascwds_filled_posts(
     total_staff_column: str,
     worker_records_column: str,
     output_column_name: str,
+    source_output_column_name: str,
 ) -> DataFrame:
-    source_output_column_name = output_column_name + "_source"
-
     print("Calculating ascwds_filled_posts...")
 
     input_df = input_df.withColumn(output_column_name, F.lit(None).cast(IntegerType()))
@@ -29,19 +28,35 @@ def calculate_ascwds_filled_posts(
     )
 
     input_df = calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
-        input_df, total_staff_column, worker_records_column, output_column_name
+        input_df,
+        total_staff_column,
+        worker_records_column,
+        output_column_name,
+        source_output_column_name,
     )
 
     input_df = calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
-        input_df, worker_records_column, total_staff_column, output_column_name
+        input_df,
+        worker_records_column,
+        total_staff_column,
+        output_column_name,
+        source_output_column_name,
     )
 
     input_df = calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
-        input_df, total_staff_column, worker_records_column, output_column_name
+        input_df,
+        total_staff_column,
+        worker_records_column,
+        output_column_name,
+        source_output_column_name,
     )
 
     input_df = calculate_ascwds_filled_posts_absolute_difference_within_range(
-        input_df, total_staff_column, worker_records_column, output_column_name
+        input_df,
+        total_staff_column,
+        worker_records_column,
+        output_column_name,
+        source_output_column_name,
     )
 
     return input_df

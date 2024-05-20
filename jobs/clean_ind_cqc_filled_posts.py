@@ -39,6 +39,7 @@ def main(
         IndCQC.total_staff_bounded,
         IndCQC.worker_records_bounded,
         IndCQC.ascwds_filled_posts,
+        IndCQC.ascwds_filled_posts_source,
     )
 
     locations_df = null_ascwds_filled_post_outliers(locations_df)

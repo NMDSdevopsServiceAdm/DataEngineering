@@ -193,6 +193,7 @@ class CheckOfMinValues(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.min_values_rule = Data.min_values_rule
+        self.min_values_multiple_columns_rule = Data.min_values_multiple_columns_rule
 
     def test_create_check_of_min_values_returns_success_when_values_are_above_minimum(
         self,
@@ -230,11 +231,27 @@ class CheckOfMinValues(ValidateUtilsTests):
         returned_df = job.validate_dataset(test_df, self.min_values_rule)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
+    def test_create_check_of_min_values_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.min_values_multiple_columns_rows,
+            Schemas.min_values_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.min_values_result_multiple_columns_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.min_values_multiple_columns_rule
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
 
 class CheckOfMaxValues(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.max_values_rule = Data.max_values_rule
+        self.max_values_multiple_columns_rule = Data.max_values_multiple_columns_rule
 
     def test_create_check_of_max_values_returns_success_when_values_are_below_maximum(
         self,
@@ -270,6 +287,21 @@ class CheckOfMaxValues(ValidateUtilsTests):
             Data.max_values_result_above_maximum_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.max_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_values_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_values_multiple_columns_rows,
+            Schemas.max_values_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_values_result_multiple_columns_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.max_values_multiple_columns_rule
+        )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
@@ -320,6 +352,9 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.distinct_values_rule = Data.distinct_values_rule
+        self.distinct_values_multiple_columns_rule = (
+            Data.distinct_values_multiple_columns_rule
+        )
 
     def test_create_check_of_number_of_distinct_values_returns_success_when_column_has_correct_number_of_distinct_values(
         self,
@@ -355,6 +390,21 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             Data.more_distinct_values_result_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_number_of_distinct_values_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.distinct_values_multiple_columns_rows,
+            Schemas.distinct_values_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.distinct_values_result_multiple_columns_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.distinct_values_multiple_columns_rule
+        )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
