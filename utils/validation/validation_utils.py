@@ -26,30 +26,37 @@ def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:
 def add_checks_to_run(
     run: VerificationRunBuilder, rules_to_check: dict
 ) -> VerificationRunBuilder:
-    for rule in rules_to_check.keys():
-        check = create_check(rule, rules_to_check[rule])
-        run = run.addCheck(check)
+    for rule_name in rules_to_check.keys():
+        rule = rules_to_check[rule_name]
+        if rule_name == RuleToCheck.size_of_dataset:
+            check = create_check_of_size_of_dataset(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.complete_columns:
+            check = create_check_for_column_completeness(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.index_columns:
+            check = create_check_of_uniqueness_of_two_index_columns(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.min_values:
+            for column_name in rule.keys():
+                check = create_check_of_min_values(column_name, rule[column_name])
+                run = run.addCheck(check)
+        elif rule_name == RuleToCheck.max_values:
+            for column_name in rule.keys():
+                check = create_check_of_max_values(column_name, rule[column_name])
+                run = run.addCheck(check)
+        elif rule_name == RuleToCheck.categorical_values_in_columns:
+            check = create_check_of_categorical_values_in_columns(rule)
+            run = run.addCheck(check)
+        elif rule_name == RuleToCheck.distinct_values:
+            for column_name in rule.keys():
+                check = create_check_of_number_of_distinct_values(
+                    column_name, rule[column_name]
+                )
+                run = run.addCheck(check)
+        else:
+            raise ValueError("Unknown rule to check")
     return run
-
-
-def create_check(rule_name: str, rule) -> Check:
-    if rule_name == RuleToCheck.size_of_dataset:
-        check = create_check_of_size_of_dataset(rule)
-    elif rule_name == RuleToCheck.complete_columns:
-        check = create_check_for_column_completeness(rule)
-    elif rule_name == RuleToCheck.index_columns:
-        check = create_check_of_uniqueness_of_two_index_columns(rule)
-    elif rule_name == RuleToCheck.min_values:
-        check = create_check_of_min_values(rule)
-    elif rule_name == RuleToCheck.max_values:
-        check = create_check_of_max_values(rule)
-    elif rule_name == RuleToCheck.categorical_values_in_columns:
-        check = create_check_of_categorical_values_in_columns(rule)
-    elif rule_name == RuleToCheck.distinct_values:
-        check = create_check_of_number_of_distinct_values(rule)
-    else:
-        raise ValueError("Unknown rule to check")
-    return check
 
 
 def create_check_for_column_completeness(complete_columns: list) -> Check:
@@ -79,27 +86,25 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
     return check
 
 
-def create_check_of_min_values(column_minimums: dict) -> Check:
+def create_check_of_min_values(column_name: str, min_value: int) -> Check:
     spark = utils.get_spark()
-    check = Check(spark, CheckLevel.Warning, "Min value in column")
-    for column in column_minimums.keys():
-        check = check.hasMin(
-            column,
-            lambda x: x >= column_minimums[column],
-            f"The minimum value for {column} should be {column_minimums[column]}.",
-        )
+    check = Check(spark, CheckLevel.Warning, f"Min value in column")
+    check = check.hasMin(
+        column_name,
+        lambda x: x >= min_value,
+        f"The minimum value for {column_name} should be {min_value}.",
+    )
     return check
 
 
-def create_check_of_max_values(column_maximums: dict) -> Check:
+def create_check_of_max_values(column_name: str, max_value: int) -> Check:
     spark = utils.get_spark()
     check = Check(spark, CheckLevel.Warning, "Max value in column")
-    for column in column_maximums.keys():
-        check = check.hasMax(
-            column,
-            lambda x: x <= column_maximums[column],
-            f"The maximum value for {column} should be {column_maximums[column]}.",
-        )
+    check = check.hasMax(
+        column_name,
+        lambda x: x <= max_value,
+        f"The maximum value for {column_name} should be {max_value}.",
+    )
     return check
 
 
@@ -117,17 +122,18 @@ def create_check_of_categorical_values_in_columns(categorical_values: dict) -> C
     return check
 
 
-def create_check_of_number_of_distinct_values(distinct_values: dict) -> Check:
+def create_check_of_number_of_distinct_values(
+    column_name: str, distinct_values: int
+) -> Check:
     spark = utils.get_spark()
     check = Check(
         spark, CheckLevel.Warning, "Column contains correct number of distinct values"
     )
-    for column in distinct_values.keys():
-        check = check.hasNumberOfDistinctValues(
-            column=column,
-            assertion=lambda x: x == distinct_values[column],
-            binningUdf=None,
-            maxBins=distinct_values[column],
-            hint=f"The number of distinct values in {column} should be {distinct_values[column]}.",
-        )
+    check = check.hasNumberOfDistinctValues(
+        column=column_name,
+        assertion=lambda x: x == distinct_values,
+        binningUdf=None,
+        maxBins=distinct_values,
+        hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
+    )
     return check

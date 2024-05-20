@@ -4122,6 +4122,12 @@ class ValidationUtils:
             IndCQC.number_of_beds: 1,
         }
     }
+    min_values_multiple_columns_rule = {
+        RuleName.min_values: {
+            IndCQC.number_of_beds: 1,
+            IndCQC.people_directly_employed: 0,
+        }
+    }
     min_values_below_minimum_rows = [
         ("loc_1", 0),
     ]
@@ -4130,6 +4136,9 @@ class ValidationUtils:
     ]
     min_values_above_minimum_rows = [
         ("loc_1", 2),
+    ]
+    min_values_multiple_columns_rows = [
+        ("loc_1", 0, 0),
     ]
 
     min_values_result_success_rows = [
@@ -4152,10 +4161,34 @@ class ValidationUtils:
             "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
         ),
     ]
+    min_values_result_multiple_columns_rows = [
+        (
+            "Min value in column",
+            "Warning",
+            "Warning",
+            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
+        ),
+        (
+            "Min value in column",
+            "Warning",
+            "Success",
+            "MinimumConstraint(Minimum(people_directly_employed,None))",
+            "Success",
+            "",
+        ),
+    ]
 
     max_values_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
+        }
+    }
+    max_values_multiple_columns_rule = {
+        RuleName.max_values: {
+            IndCQC.number_of_beds: 10,
+            IndCQC.people_directly_employed: 20,
         }
     }
     max_values_below_maximum_rows = [
@@ -4166,6 +4199,9 @@ class ValidationUtils:
     ]
     max_values_above_maximum_rows = [
         ("loc_1", 11),
+    ]
+    max_values_multiple_columns_rows = [
+        ("loc_1", 20, 20),
     ]
 
     max_values_result_success_rows = [
@@ -4186,6 +4222,24 @@ class ValidationUtils:
             "MaximumConstraint(Maximum(numberOfBeds,None))",
             "Failure",
             "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
+    max_values_result_multiple_columns_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 20.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(people_directly_employed,None))",
+            "Success",
+            "",
         ),
     ]
 
@@ -4235,6 +4289,13 @@ class ValidationUtils:
         }
     }
 
+    distinct_values_multiple_columns_rule = {
+        RuleName.distinct_values: {
+            IndCQC.cqc_sector: 2,
+            IndCQC.dormancy: 3,
+        }
+    }
+
     distinct_values_success_rows = [
         ("loc_1", CQCLValues.independent),
         ("loc_2", CQCLValues.local_authority),
@@ -4247,6 +4308,11 @@ class ValidationUtils:
         ("loc_1", CQCLValues.independent),
         ("loc_2", CQCLValues.local_authority),
         ("loc_3", None),
+    ]
+    distinct_values_multiple_columns_rows = [
+        ("loc_1", CQCLValues.independent, "Y"),
+        ("loc_2", CQCLValues.local_authority, "N"),
+        ("loc_3", None, None),
     ]
 
     distinct_values_result_success_rows = [
@@ -4277,5 +4343,23 @@ class ValidationUtils:
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
             "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+    ]
+    distinct_values_result_multiple_columns_rows = [
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Warning",
+            "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
+            "Failure",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+        ),
+        (
+            "Column contains correct number of distinct values",
+            "Warning",
+            "Success",
+            "HistogramBinConstraint(Histogram(dormancy,null,3,None,false,Count))",
+            "Success",
+            "",
         ),
     ]

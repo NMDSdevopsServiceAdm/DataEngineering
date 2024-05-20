@@ -2917,13 +2917,16 @@ class ValidationUtils:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
         ]
     )
-
-    max_values_schema = StructType(
+    min_values_multiple_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
         ]
     )
+
+    max_values_schema = min_values_schema
+    max_values_multiple_columns_schema = min_values_multiple_columns_schema
 
     one_column_schema = size_of_dataset_schema
     two_column_schema = index_column_schema
@@ -2940,5 +2943,13 @@ class ValidationUtils:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
+    distinct_values_multiple_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
