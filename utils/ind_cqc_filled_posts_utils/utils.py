@@ -33,6 +33,8 @@ def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
         IndCQC.estimate_filled_posts_source, F.lit(None).cast(StringType())
     )
 
+    # TODO - replace for loop with better functionality
+    # see https://trello.com/c/94jAj8cd/428-update-how-we-populate-estimates
     for model_name in order_of_models_to_populate_estimate_filled_posts_with:
         df = df.withColumn(
             IndCQC.estimate_filled_posts,
