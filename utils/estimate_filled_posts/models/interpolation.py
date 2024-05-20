@@ -35,11 +35,12 @@ def filter_to_locations_with_a_known_filled_posts(df: DataFrame) -> DataFrame:
         IndCqc.location_id, IndCqc.unix_time, IndCqc.ascwds_filled_posts_dedup_clean
     )
 
-    return df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+    df = df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+    return df
 
 
 def calculate_first_and_last_submission_date_per_location(df: DataFrame) -> DataFrame:
-    return df.groupBy(IndCqc.location_id).agg(
+    df = df.groupBy(IndCqc.location_id).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
         F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
     )
