@@ -62,6 +62,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
@@ -3010,5 +3013,18 @@ class ValidateASCWDSWorkplaceCleanedData:
             StructField(AWPClean.location_id, StringType(), True),
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateASCWDSWorkerCleanedData:
+    cleaned_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.location_id, StringType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+            StructField(AWKClean.main_job_role_labelled, StringType(), True),
         ]
     )
