@@ -2993,13 +2993,6 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.registration_date, DateType(), True),
             StructField(CQCLClean.dormancy, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(
-                CQCLClean.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
             StructField(CQCLClean.primary_service_type, StringType(), True),
             StructField(CQCLClean.contemporary_ons_import_date, DateType(), True),
             StructField(CQCLClean.contemporary_cssr, StringType(), True),

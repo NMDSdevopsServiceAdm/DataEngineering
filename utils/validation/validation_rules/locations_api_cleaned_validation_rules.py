@@ -28,7 +28,6 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.registration_date,
             CQCLClean.primary_service_type,
             CQCLClean.name,
-            CQCLClean.services_offered,
             CQCLClean.provider_name,
             CQCLClean.contemporary_ons_import_date,
             CQCLClean.contemporary_cssr,
