@@ -56,7 +56,7 @@ class MergedIndCqcValidationRules:
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CQCCategoricalValues.care_home_values,
             IndCqcColumns.cqc_sector: IndCQCCategoricalValues.cqc_sector,
-            IndCqcColumns.registration_status: IndCQCCategoricalValues.registration_status,
+            IndCqcColumns.registration_status: CQCCategoricalValues.registration_status,
             IndCqcColumns.dormancy: CQCCategoricalValues.dormancy_values,
             IndCqcColumns.primary_service_type: CQCCategoricalValues.primary_service_types,
             IndCqcColumns.contemporary_cssr: ONSCategoricalValues.cssrs,

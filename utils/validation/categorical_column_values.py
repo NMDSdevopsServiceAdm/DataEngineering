@@ -18,6 +18,8 @@ class CQCCategoricalValues:
     ]
     care_home_values = ["Y", "N"]
     dormancy_values = ["Y", "N"]
+    cqc_sector = [CQCLValues.independent, CQCLValues.local_authority]
+    registration_status = [CQCLValues.registered]
 
 
 @dataclass
@@ -25,18 +27,18 @@ class CQCDistinctValues:
     primary_service_types = len(CQCCategoricalValues.primary_service_types)
     care_home_values = len(CQCCategoricalValues.care_home_values)
     dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
+    registration_status_values = len(CQCCategoricalValues.registration_status)
+    cqc_sector_values = len(CQCCategoricalValues.cqc_sector)
 
 
 @dataclass
 class IndCQCCategoricalValues:
     cqc_sector = [CQCLValues.independent]
-    registration_status = [CQCLValues.registered]
 
 
 @dataclass
 class IndCQCDistinctValues:
     cqc_sector = len(IndCQCCategoricalValues.cqc_sector)
-    registration_status = len(IndCQCCategoricalValues.registration_status)
 
 
 @dataclass
