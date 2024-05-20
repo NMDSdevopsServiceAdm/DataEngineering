@@ -421,6 +421,20 @@ module "validate_ascwds_workplace_cleaned_data_job" {
   }
 }
 
+module "validate_ascwds_worker_cleaned_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_ascwds_worker_cleaned_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+    "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=worker_cleaned_data_report/"
+  }
+}
+
 module "validate_merged_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_merged_ind_cqc_data.py"
