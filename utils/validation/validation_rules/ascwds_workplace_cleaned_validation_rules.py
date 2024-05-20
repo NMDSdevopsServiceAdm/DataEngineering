@@ -12,7 +12,6 @@ class ASCWDSWorkplaceCleanedValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
             AWPClean.organisation_id,
-            AWPClean.location_id,
             AWPClean.ascwds_workplace_import_date,
             AWPClean.establishment_id,
         ],
