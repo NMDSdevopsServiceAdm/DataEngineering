@@ -4268,19 +4268,10 @@ class ValidationUtils:
 @dataclass
 class ValidateProvidersAPICleanedData:
     # fmt: off
-    raw_cqc_providers_rows = [
-        ("1-000000001", "20240101"),
-        ("1-000000002", "20240101"),
-        ("1-000000001", "20240201"),
-        ("1-000000002", "20240201"),
-    ]
-
-    cleaned_cqc_providers_rows = [
-        ("1-000000001", date(2024, 1, 1), "name", CQCPValues.independent),
-        ("1-000000002", date(2024, 1, 1), "name", CQCPValues.independent),
-        ("1-000000001", date(2024, 1, 9), "name", CQCPValues.independent),
-        ("1-000000002", date(2024, 1, 9), "name", CQCPValues.independent),
+    cleaned_cqc_pir_rows = [
+        ("1-000000001", date(2024, 1, 1), 10, "Y"),
+        ("1-000000002", date(2024, 1, 1), 10, "Y"),
+        ("1-000000001", date(2024, 1, 9), 10, "Y"),
+        ("1-000000002", date(2024, 1, 9), 10, "Y"),
     ]
     # fmt: on
-
-    calculate_expected_size_rows = raw_cqc_providers_rows
