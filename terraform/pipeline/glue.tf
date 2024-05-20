@@ -402,7 +402,6 @@ module "validate_pir_cleaned_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_pir_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
     "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=pir_cleaned_data_report/"
   }

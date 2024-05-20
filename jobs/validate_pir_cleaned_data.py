@@ -20,22 +20,14 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 raw_cqc_pir_columns_to_import = [
     Keys.import_date,
-    Keys.year,
-    Keys.month,
-    Keys.day,
     CQCPIR.location_id,
 ]
 
 
 def main(
-    raw_cqc_pir_source: str,
     cleaned_cqc_pir_source: str,
     report_destination: str,
 ):
-    raw_pir_df = utils.read_from_parquet(
-        raw_cqc_pir_source,
-        selected_columns=raw_cqc_pir_columns_to_import,
-    )
     cleaned_cqc_pir_df = utils.read_from_parquet(
         cleaned_cqc_pir_source,
     )
@@ -51,14 +43,9 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        raw_cqc_pir_source,
         cleaned_cqc_pir_source,
         report_destination,
     ) = utils.collect_arguments(
-        (
-            "--raw_cqc_pir_source",
-            "Source s3 directory for parquet pir api dataset",
-        ),
         (
             "--cleaned_cqc_pir_source",
             "Source s3 directory for parquet pir api cleaned dataset",
@@ -70,7 +57,6 @@ if __name__ == "__main__":
     )
     try:
         main(
-            raw_cqc_pir_source,
             cleaned_cqc_pir_source,
             report_destination,
         )
