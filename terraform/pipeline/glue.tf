@@ -408,6 +408,19 @@ module "validate_providers_api_cleaned_data_job" {
     "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
   }
 }
+module "validate_pir_cleaned_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_pir_cleaned_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
+    "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=pir_cleaned_data_report/"
+  }
+}
 
 module "validate_merged_ind_cqc_data_job" {
   source          = "../modules/glue-job"

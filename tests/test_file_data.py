@@ -4312,3 +4312,15 @@ class ValidateProvidersAPICleanedData:
     # fmt: on
 
     calculate_expected_size_rows = raw_cqc_providers_rows
+
+
+@dataclass
+class ValidatePIRCleanedData:
+    # fmt: off
+    cleaned_cqc_pir_rows = [
+        ("1-000000001", date(2024, 1, 1), 10, "Y"),
+        ("1-000000002", date(2024, 1, 1), 10, "Y"),
+        ("1-000000001", date(2024, 1, 9), 10, "Y"),
+        ("1-000000002", date(2024, 1, 9), 10, "Y"),
+    ]
+    # fmt: on
