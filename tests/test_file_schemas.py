@@ -3010,3 +3010,22 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCL.registration_status, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidateProvidersAPICleanedData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+    cleaned_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
+        ]
+    )
+    calculate_expected_size_schema = raw_cqc_providers_schema
