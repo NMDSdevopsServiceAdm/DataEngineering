@@ -2979,9 +2979,9 @@ class ValidateProvidersAPICleanedData:
     )
     cleaned_cqc_providers_schema = StructType(
         [
+            StructField(CQCPClean.provider_id, StringType(), True),
             StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
             StructField(CQCPClean.name, StringType(), True),
-            StructField(CQCPClean.provider_id, StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )
