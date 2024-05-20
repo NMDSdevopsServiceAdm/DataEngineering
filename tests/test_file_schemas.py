@@ -3023,7 +3023,7 @@ class ValidateASCWDSWorkerCleanedData:
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.location_id, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_id, StringType(), True),
             StructField(AWKClean.main_job_role_labelled, StringType(), True),
         ]
