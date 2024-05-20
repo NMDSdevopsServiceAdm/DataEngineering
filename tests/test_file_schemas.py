@@ -38,7 +38,8 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCLNew,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
@@ -70,8 +71,16 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.reconciliation_utils.reconciliation_values import (
+    ReconciliationColumns as ReconColumn,
+)
+from utils.cqc_ratings_utils.cqc_ratings_values import (
+    CQCRatingsColumns as CQCRatings,
+)
+from utils.column_names.validation_table_columns import Validation
 
-from schemas.cqc_location_schema import OLD_LOCATION_SCHEMA
+
+from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -212,6 +221,12 @@ class CalculatePaRatioSchemas:
             ),
         ]
     )
+    reduce_year_by_one_schema = StructType(
+        [
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
 
 
 @dataclass
@@ -271,13 +286,68 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
-    purge_outdated_schema = StructType(
+    mupddate_for_org_schema = StructType(
+        [
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+        ]
+    )
+    expected_mupddate_for_org_schema = StructType(
+        [
+            *mupddate_for_org_schema,
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+
+    add_purge_data_col_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.import_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.master_update_date, DateType(), True),
             StructField(AWP.is_parent, StringType(), True),
+            StructField(AWP.master_update_date, DateType(), True),
+            StructField(AWPClean.master_update_date_org, DateType(), True),
+        ]
+    )
+    expected_add_purge_data_col_schema = StructType(
+        [
+            *add_purge_data_col_schema,
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+        ]
+    )
+
+    add_workplace_last_active_date_col_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.data_last_amended_date, DateType(), True),
+            StructField(AWPClean.last_logged_in_date, DateType(), True),
+        ]
+    )
+    expected_add_workplace_last_active_date_col_schema = StructType(
+        [
+            *add_workplace_last_active_date_col_schema,
+            StructField(AWPClean.workplace_last_active_date, DateType(), True),
+        ]
+    )
+
+    date_col_for_purging_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+        ]
+    )
+    expected_date_col_for_purging_schema = StructType(
+        [
+            *date_col_for_purging_schema,
+            StructField(AWPClean.purge_date, DateType(), True),
+        ]
+    )
+
+    workplace_last_active_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField("last_active", DateType(), True),
+            StructField(AWPClean.purge_date, DateType(), True),
         ]
     )
 
@@ -377,6 +447,117 @@ class ONSData:
 
 
 @dataclass
+class PAFilledPostsByICBAreaSchema:
+    sample_ons_contemporary_schema = StructType(
+        [
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+        ]
+    )
+
+    expected_postcode_count_per_la_schema = StructType(
+        [
+            *sample_ons_contemporary_schema,
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+        ]
+    )
+
+    expected_postcode_count_per_la_icb_schema = StructType(
+        [
+            *sample_ons_contemporary_schema,
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+        ]
+    )
+
+    sample_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
+        [
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+        ]
+    )
+
+    expected_ratio_between_hybrid_area_and_la_area_postcodes_schema = StructType(
+        [
+            *sample_rows_with_la_and_hybrid_area_postcode_counts_schema,
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
+    full_rows_with_la_and_hybrid_area_postcode_counts_schema = StructType(
+        [
+            *sample_ons_contemporary_schema,
+            StructField(DP.COUNT_OF_DISTINCT_POSTCODES_PER_LA, IntegerType(), True),
+            StructField(
+                DP.COUNT_OF_DISTINCT_POSTCODES_PER_HYBRID_AREA, IntegerType(), True
+            ),
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
+    expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema = StructType(
+        [
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_icb, StringType(), True),
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+        ]
+    )
+
+    sample_pa_filled_posts_schema = StructType(
+        [
+            StructField(DP.LA_AREA, StringType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+    expected_create_date_column_from_year_in_pa_estimates_schema = StructType(
+        [
+            *sample_pa_filled_posts_schema,
+            StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+        ]
+    )
+
+    sample_postcode_proportions_before_joining_pa_filled_posts_schema = (
+        expected_deduplicated_import_date_hybrid_and_la_and_ratio_schema
+    )
+
+    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
+        StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), True),
+                StructField(
+                    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+                    DoubleType(),
+                    True,
+                ),
+                StructField(DP.YEAR, StringType(), True),
+                StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+            ]
+        )
+    )
+
+    expected_postcode_proportions_after_joining_pa_filled_posts_schema = StructType(
+        [
+            *sample_postcode_proportions_before_joining_pa_filled_posts_schema,
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+            StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CapacityTrackerCareHomeSchema:
     sample_schema = StructType(
         [
@@ -456,9 +637,341 @@ class CapacityTrackerDomCareSchema:
 
 @dataclass
 class CQCLocationsSchema:
-    full_schema = StructType(
+    detailed_schema = StructType(
         [
-            *OLD_LOCATION_SCHEMA,
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCL.organisation_type, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(CQCL.deregistration_date, StringType(), True),
+            StructField(CQCL.dormancy, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+            StructField(CQCL.website, StringType(), True),
+            StructField(CQCL.postal_address_line1, StringType(), True),
+            StructField(CQCL.postal_address_town_city, StringType(), True),
+            StructField(CQCL.postal_address_county, StringType(), True),
+            StructField(CQCL.region, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+            StructField(CQCL.onspd_latitude, StringType(), True),
+            StructField(CQCL.onspd_longitude, StringType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.inspection_directorate, StringType(), True),
+            StructField(CQCL.main_phone_number, StringType(), True),
+            StructField(CQCL.local_authority, StringType(), True),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(
+                CQCL.specialisms,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                CQCL.current_ratings,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.overall,
+                            StructType(
+                                [
+                                    StructField(
+                                        CQCL.organisation_id, StringType(), True
+                                    ),
+                                    StructField(CQCL.rating, StringType(), True),
+                                    StructField(CQCL.report_date, StringType(), True),
+                                    StructField(
+                                        CQCL.report_link_id, StringType(), True
+                                    ),
+                                    StructField(
+                                        CQCL.use_of_resources,
+                                        StructType(
+                                            [
+                                                StructField(
+                                                    CQCL.organisation_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.summary, StringType(), True
+                                                ),
+                                                StructField(
+                                                    CQCL.use_of_resources_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_summary,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_date,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_link_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                            ]
+                                        ),
+                                        True,
+                                    ),
+                                    StructField(
+                                        CQCL.key_question_ratings,
+                                        ArrayType(
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.name, StringType(), True
+                                                    ),
+                                                    StructField(
+                                                        CQCL.rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_date,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.organisation_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_link_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        True,
+                                    ),
+                                ]
+                            ),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.service_ratings,
+                            ArrayType(
+                                StructType(
+                                    [
+                                        StructField(CQCL.name, StringType(), True),
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.report_date, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.organisation_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.report_link_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                            True,
+                        ),
+                    ]
+                ),
+                True,
+            ),
+            StructField(
+                CQCL.historic_ratings,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.report_date, StringType(), True),
+                            StructField(CQCL.report_link_id, StringType(), True),
+                            StructField(CQCL.organisation_id, StringType(), True),
+                            StructField(
+                                CQCL.service_ratings,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(CQCL.name, StringType(), True),
+                                            StructField(
+                                                CQCL.rating, StringType(), True
+                                            ),
+                                            StructField(
+                                                CQCL.key_question_ratings,
+                                                ArrayType(
+                                                    StructType(
+                                                        [
+                                                            StructField(
+                                                                CQCL.name,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                            StructField(
+                                                                CQCL.rating,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    True,
+                                                ),
+                                                True,
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                            StructField(
+                                CQCL.overall,
+                                StructType(
+                                    [
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.use_of_resources,
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.combined_quality_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.combined_quality_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -511,7 +1024,7 @@ class CQCLocationsSchema:
     invalid_postcode_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
         ]
     )
 
@@ -534,7 +1047,7 @@ class CQCLocationsSchema:
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.provider_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
         ]
     )
@@ -554,7 +1067,7 @@ class CQCLocationsSchema:
     expected_ons_join_schema = StructType(
         [
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(CQCL.postcode, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
@@ -582,6 +1095,24 @@ class CQCLocationsSchema:
                     StringType(),
                 ),
             ),
+        ]
+    )
+
+
+@dataclass
+class UtilsSchema:
+    filter_to_max_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("date_type_column", DateType(), True),
+            StructField("import_date_style_col", StringType(), True),
+        ]
+    )
+
+    select_rows_with_value_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("value_to_filter_on", StringType(), True),
         ]
     )
 
@@ -673,9 +1204,16 @@ class CleaningUtilsSchemas:
 
 @dataclass
 class CQCProviderSchema:
+    rows_without_cqc_sector_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
+        ]
+    )
     expected_rows_with_cqc_sector_schema = StructType(
         [
             StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
             StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )
@@ -697,14 +1235,14 @@ class CQCProviderSchema:
             StructField(CQCP.registration_status, StringType(), True),
             StructField(CQCP.registration_date, StringType(), True),
             StructField(CQCP.deregistration_date, StringType(), True),
-            StructField(CQCP.address_line_one, StringType(), True),
-            StructField(CQCP.town_or_city, StringType(), True),
-            StructField(CQCP.county, StringType(), True),
+            StructField(CQCP.postal_address_line1, StringType(), True),
+            StructField(CQCP.postal_address_town_city, StringType(), True),
+            StructField(CQCP.postal_address_county, StringType(), True),
             StructField(CQCP.region, StringType(), True),
-            StructField(CQCP.postcode, StringType(), True),
-            StructField(CQCP.latitude, FloatType(), True),
-            StructField(CQCP.longitude, FloatType(), True),
-            StructField(CQCP.phone_number, StringType(), True),
+            StructField(CQCP.postal_code, StringType(), True),
+            StructField(CQCP.onspd_latitude, FloatType(), True),
+            StructField(CQCP.onspd_longitude, FloatType(), True),
+            StructField(CQCP.main_phone_number, StringType(), True),
             StructField(CQCP.companies_house_number, StringType(), True),
             StructField(CQCP.inspection_directorate, StringType(), True),
             StructField(CQCP.constituency, StringType(), True),
@@ -765,7 +1303,7 @@ class CQCPIRSchema:
 
 
 @dataclass
-class CQCPPIRCleanSchema:
+class CQCPIRCleanSchema:
     clean_subset_for_grouping_by = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
@@ -923,6 +1461,305 @@ class CleanIndCQCData:
 
 
 @dataclass
+class ReconciliationSchema:
+    input_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+    input_cqc_location_api_schema = StructType(
+        [
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.deregistration_date, StringType(), True),
+        ]
+    )
+
+    expected_prepared_most_recent_cqc_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    regtype_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+        ]
+    )
+
+    remove_head_office_accounts_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+        ]
+    )
+
+    filter_to_relevant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.deregistration_date, DateType(), True),
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    add_singles_and_subs_description_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+        ]
+    )
+
+    expected_singles_and_subs_description_schema = StructType(
+        [
+            *add_singles_and_subs_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
+
+    create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+        ]
+    )
+
+    expected_create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+        ]
+    )
+
+    final_column_selection_schema = StructType(
+        [
+            StructField("extra_column", StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+        ]
+    )
+
+    expected_final_column_selection_schema = StructType(
+        [
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+        ]
+    )
+
+    add_subject_column_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+        ]
+    )
+
+    expected_add_subject_column_schema = StructType(
+        [
+            *add_subject_column_schema,
+            StructField(ReconColumn.subject, StringType(), True),
+        ]
+    )
+
+    new_issues_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    unique_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_join_array_of_nmdsids_schema = StructType(
+        [
+            *unique_schema,
+            StructField("new_column", StringType(), True),
+        ]
+    )
+
+    create_parents_description_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(ReconColumn.new_potential_subs, StringType(), True),
+            StructField(ReconColumn.old_potential_subs, StringType(), True),
+            StructField(
+                ReconColumn.missing_or_incorrect_potential_subs, StringType(), True
+            ),
+        ]
+    )
+
+    expected_create_parents_description_schema = StructType(
+        [
+            *create_parents_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
+
+    get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+
+    cqc_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+        ]
+    )
+    ascwds_data_for_join_schema = StructType(
+        [
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
+    )
+    expected_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class FilterAscwdsFilledPostsSchema:
     input_schema = StructType(
         [
@@ -945,13 +1782,13 @@ class FilterAscwdsFilledPostsSchema:
 
 
 @dataclass
-class NonResFeaturesSchema(object):
+class NonResAscwdsWithDormancyFeaturesSchema(object):
     basic_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
             StructField(
                 IndCQC.services_offered,
                 ArrayType(
@@ -960,14 +1797,9 @@ class NonResFeaturesSchema(object):
                 True,
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -979,6 +1811,13 @@ class NonResFeaturesSchema(object):
         [
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
+    filter_to_dormancy_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
 
@@ -1307,5 +2146,813 @@ class ModelInterpolation:
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.filled_posts_unix_time, LongType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateMergedIndCqcData:
+    cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
+    merged_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.provider_name, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
+            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+                True,
+            ),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
+            StructField(IndCQC.contemporary_cssr, StringType(), True),
+            StructField(IndCQC.contemporary_region, StringType(), True),
+            StructField(IndCQC.current_ons_import_date, DateType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.organisation_id, StringType(), True),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+        ]
+    )
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class FlattenCQCRatings:
+    test_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+            StructField(Keys.import_date, StringType(), False),
+            StructField(Keys.year, StringType(), False),
+            StructField(Keys.month, StringType(), False),
+            StructField(Keys.day, StringType(), False),
+            StructField(
+                CQCL.current_ratings,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.overall,
+                            StructType(
+                                [
+                                    StructField(
+                                        CQCL.organisation_id, StringType(), True
+                                    ),
+                                    StructField(CQCL.rating, StringType(), True),
+                                    StructField(CQCL.report_date, StringType(), True),
+                                    StructField(
+                                        CQCL.report_link_id, StringType(), True
+                                    ),
+                                    StructField(
+                                        CQCLNew.use_of_resources,
+                                        StructType(
+                                            [
+                                                StructField(
+                                                    CQCL.organisation_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCLNew.summary, StringType(), True
+                                                ),
+                                                StructField(
+                                                    CQCLNew.use_of_resources_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCLNew.combined_quality_summary,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCLNew.combined_quality_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_date,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_link_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                            ]
+                                        ),
+                                        True,
+                                    ),
+                                    StructField(
+                                        CQCL.key_question_ratings,
+                                        ArrayType(
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.name, StringType(), True
+                                                    ),
+                                                    StructField(
+                                                        CQCL.rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_date,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.organisation_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_link_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        True,
+                                    ),
+                                ]
+                            ),
+                            True,
+                        ),
+                        StructField(
+                            CQCLNew.service_ratings,
+                            ArrayType(
+                                StructType(
+                                    [
+                                        StructField(CQCL.name, StringType(), True),
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.report_date, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.organisation_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.report_link_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                            True,
+                        ),
+                    ]
+                ),
+                True,
+            ),
+            StructField(
+                CQCL.historic_ratings,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.report_date, StringType(), True),
+                            StructField(CQCL.report_link_id, StringType(), True),
+                            StructField(CQCL.organisation_id, StringType(), True),
+                            StructField(
+                                CQCLNew.service_ratings,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(CQCL.name, StringType(), True),
+                                            StructField(
+                                                CQCL.rating, StringType(), True
+                                            ),
+                                            StructField(
+                                                CQCL.key_question_ratings,
+                                                ArrayType(
+                                                    StructType(
+                                                        [
+                                                            StructField(
+                                                                CQCL.name,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                            StructField(
+                                                                CQCL.rating,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    True,
+                                                ),
+                                                True,
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                            StructField(
+                                CQCL.overall,
+                                StructType(
+                                    [
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCLNew.use_of_resources,
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCLNew.combined_quality_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCLNew.combined_quality_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCLNew.use_of_resources_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCLNew.use_of_resources_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    test_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), False),
+            StructField(Keys.year, StringType(), False),
+            StructField(Keys.month, StringType(), False),
+            StructField(Keys.day, StringType(), False),
+        ]
+    )
+    filter_to_first_import_of_most_recent_month_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), False),
+            StructField(Keys.year, StringType(), False),
+            StructField(Keys.month, StringType(), False),
+            StructField(Keys.day, StringType(), False),
+        ]
+    )
+    flatten_current_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.current_ratings,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.overall,
+                            StructType(
+                                [
+                                    StructField(
+                                        CQCL.organisation_id, StringType(), True
+                                    ),
+                                    StructField(CQCL.rating, StringType(), True),
+                                    StructField(CQCL.report_date, StringType(), True),
+                                    StructField(
+                                        CQCL.report_link_id, StringType(), True
+                                    ),
+                                    StructField(
+                                        CQCL.use_of_resources,
+                                        StructType(
+                                            [
+                                                StructField(
+                                                    CQCL.organisation_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.summary, StringType(), True
+                                                ),
+                                                StructField(
+                                                    CQCL.use_of_resources_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_summary,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.combined_quality_rating,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_date,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                                StructField(
+                                                    CQCL.report_link_id,
+                                                    StringType(),
+                                                    True,
+                                                ),
+                                            ]
+                                        ),
+                                        True,
+                                    ),
+                                    StructField(
+                                        CQCL.key_question_ratings,
+                                        ArrayType(
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.name, StringType(), True
+                                                    ),
+                                                    StructField(
+                                                        CQCL.rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_date,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.organisation_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.report_link_id,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        True,
+                                    ),
+                                ]
+                            ),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.service_ratings,
+                            ArrayType(
+                                StructType(
+                                    [
+                                        StructField(CQCL.name, StringType(), True),
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.report_date, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.organisation_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.report_link_id, StringType(), True
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                            True,
+                        ),
+                    ]
+                ),
+                True,
+            ),
+        ]
+    )
+
+    flatten_historic_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.historic_ratings,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.report_date, StringType(), True),
+                            StructField(CQCL.report_link_id, StringType(), True),
+                            StructField(CQCL.organisation_id, StringType(), True),
+                            StructField(
+                                CQCL.service_ratings,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(CQCL.name, StringType(), True),
+                                            StructField(
+                                                CQCL.rating, StringType(), True
+                                            ),
+                                            StructField(
+                                                CQCL.key_question_ratings,
+                                                ArrayType(
+                                                    StructType(
+                                                        [
+                                                            StructField(
+                                                                CQCL.name,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                            StructField(
+                                                                CQCL.rating,
+                                                                StringType(),
+                                                                True,
+                                                            ),
+                                                        ]
+                                                    ),
+                                                    True,
+                                                ),
+                                                True,
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                            StructField(
+                                CQCL.overall,
+                                StructType(
+                                    [
+                                        StructField(CQCL.rating, StringType(), True),
+                                        StructField(
+                                            CQCL.use_of_resources,
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        CQCL.combined_quality_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.combined_quality_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        CQCL.use_of_resources_summary,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                ]
+                                            ),
+                                            True,
+                                        ),
+                                        StructField(
+                                            CQCL.key_question_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                ),
+                                                True,
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_flatten_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+        ]
+    )
+
+    add_current_or_historic_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+        ]
+    )
+    expected_add_current_or_historic_schema = StructType(
+        [
+            *add_current_or_historic_schema,
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )
+
+    remove_blank_rows_schema = expected_flatten_ratings_schema
+
+    add_rating_sequence_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+        ]
+    )
+    expected_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+        ]
+    )
+    expected_reversed_add_rating_sequence_schema = StructType(
+        [
+            *add_rating_sequence_schema,
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+
+    add_latest_rating_flag_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+        ]
+    )
+    expected_add_latest_rating_flag_schema = StructType(
+        [
+            *add_latest_rating_flag_schema,
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    expected_create_standard_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.rating_sequence, IntegerType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+        ]
+    )
+
+    select_ratings_for_benchmarks_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )
+
+    add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+        ]
+    )
+
+    expected_add_good_and_outstanding_flag_column_schema = StructType(
+        [
+            *add_good_and_outstanding_flag_column_schema,
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+        ]
+    )
+
+    ratings_join_establishment_ids_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("other_ratings_column", StringType(), True),
+        ]
+    )
+    ascwds_join_establishment_ids_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+    expected_join_establishment_ids_schema = StructType(
+        [
+            *ratings_join_establishment_ids_schema,
+            StructField(AWP.establishment_id, StringType(), True),
+        ]
+    )
+    create_benchmark_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_create_benchmark_ratings_dataset_schema = StructType(
+        [
+            StructField(CQCRatings.benchmarks_location_id, StringType(), True),
+            StructField(CQCRatings.benchmarks_establishment_id, StringType(), True),
+            StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
+            StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
+            StructField(CQCRatings.inspection_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidationUtils:
+    validation_schema = StructType(
+        [
+            StructField(Validation.check, StringType(), True),
+            StructField(Validation.check_level, StringType(), True),
+            StructField(Validation.check_status, StringType(), True),
+            StructField(Validation.constraint, StringType(), True),
+            StructField(Validation.constraint_status, StringType(), True),
+            StructField(Validation.constraint_message, StringType(), True),
+        ]
+    )
+
+    size_of_dataset_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )
+
+    index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    min_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    max_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    one_column_schema = size_of_dataset_schema
+    two_column_schema = index_column_schema
+    multiple_rules_schema = index_column_schema
+
+    categorical_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
+
+    distinct_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )

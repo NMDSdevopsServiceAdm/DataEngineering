@@ -112,11 +112,12 @@ def add_extrapolated_values(df: DataFrame, extrapolation_df: DataFrame) -> DataF
         df_with_extrapolation_models
     )
 
-    return df.join(
+    df = df.join(
         df_with_extrapolation_models,
         [IndCqc.location_id, IndCqc.cqc_location_import_date],
         "leftouter",
     )
+    return df
 
 
 def create_extrapolation_ratio_column(df: DataFrame) -> DataFrame:
@@ -159,9 +160,11 @@ def create_extrapolation_model_column(df: DataFrame) -> DataFrame:
         ),
     )
 
-    return df.select(
+    df = df.select(
         IndCqc.location_id, IndCqc.cqc_location_import_date, IndCqc.extrapolation_model
     )
+
+    return df
 
 
 def left_join_on_locationid(main_df: DataFrame, data_to_add_df: DataFrame) -> DataFrame:

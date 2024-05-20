@@ -14,13 +14,13 @@ ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description: str = (
 
 
 def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
-    input_df: DataFrame,
+    df: DataFrame,
     total_staff_column: str,
     worker_records_column: str,
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
-    input_df = input_df.withColumn(
+    df = df.withColumn(
         output_column_name,
         F.when(
             (
@@ -33,9 +33,10 @@ def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
         ).otherwise(F.col(output_column_name)),
     )
 
-    return add_source_description_to_source_column(
-        input_df,
+    df = add_source_description_to_source_column(
+        df,
         output_column_name,
         source_output_column_name,
         ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
     )
+    return df

@@ -2,7 +2,6 @@ import unittest
 import warnings
 import pyspark.sql.functions as F
 
-from pyspark.sql import SparkSession
 
 import utils.estimate_filled_posts.models.primary_service_rolling_average as job
 from tests.test_file_data import ModelPrimaryServiceRollingAverage as Data

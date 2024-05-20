@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, patch
+from unittest.mock import ANY, Mock, patch
 import pyspark.sql.functions as F
 
 from utils import utils
@@ -29,6 +29,28 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
             Data.sample_rows_full, schema=Schema.full_schema
         )
 
+
+class MainTests(CleanCQCProviderDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_from_parquet")
+    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
+        read_from_parquet_patch.return_value = self.test_cqc_providers_parquet
+        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
+        write_to_parquet_patch.assert_called_once_with(
+            ANY,
+            self.TEST_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
+
+
+class CreateLaCqcProviderDataframeTests(CleanCQCProviderDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_create_dataframe_from_la_cqc_provider_list_creates_a_dataframe_with_a_column_of_providerids_and_a_column_of_strings(
         self,
     ):
@@ -52,41 +74,43 @@ class CleanCQCProviderDatasetTests(unittest.TestCase):
             ],
         )
 
-    def test_add_cqc_sector_column_to_cqc_provider_dataframe(self):
-        test_cqc_provider_with_sector = (
+
+class AddCqcSectorColumnTests(CleanCQCProviderDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_cqc_provider_df = self.spark.createDataFrame(
+            Data.rows_without_cqc_sector,
+            Schema.rows_without_cqc_sector_schema,
+        )
+        self.test_cqc_provider_with_sector = (
             job.add_cqc_sector_column_to_cqc_provider_dataframe(
-                self.test_cqc_providers_parquet, Data.sector_rows
+                test_cqc_provider_df, Data.sector_rows
             )
         )
-        self.assertTrue(CQCPClean.cqc_sector in test_cqc_provider_with_sector.columns)
-
-        test_expected_dataframe = self.spark.createDataFrame(
+        self.test_expected_dataframe = self.spark.createDataFrame(
             Data.expected_rows_with_cqc_sector,
             Schema.expected_rows_with_cqc_sector_schema,
         )
-        expected_data = test_expected_dataframe.sort(CQCP.provider_id).collect()
 
-        returned_data = (
-            test_cqc_provider_with_sector.select(CQCP.provider_id, CQCPClean.cqc_sector)
-            .sort(CQCP.provider_id)
-            .collect()
+    def test_add_cqc_sector_column_to_cqc_provider_dataframe_adds_cqc_sector_column(
+        self,
+    ):
+        self.assertTrue(
+            CQCPClean.cqc_sector in self.test_cqc_provider_with_sector.columns
         )
+
+    def test_add_cqc_sector_column_to_cqc_provider_dataframe_returns_expected_df(
+        self,
+    ):
+        expected_data = self.test_expected_dataframe.sort(CQCP.provider_id).collect()
+        returned_data = self.test_cqc_provider_with_sector.sort(
+            CQCP.provider_id
+        ).collect()
 
         self.assertEqual(
             returned_data,
             expected_data,
-        )
-
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch, write_to_parquet_patch):
-        read_from_parquet_patch.return_value = self.test_cqc_providers_parquet
-        job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
-        write_to_parquet_patch.assert_called_once_with(
-            ANY,
-            self.TEST_DESTINATION,
-            mode="overwrite",
-            partitionKeys=self.partition_keys,
         )
 
 

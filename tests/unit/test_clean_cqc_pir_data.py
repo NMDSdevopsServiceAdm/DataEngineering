@@ -7,7 +7,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
 )
 from tests.test_file_schemas import (
     CQCPIRSchema as Schemas,
-    CQCPPIRCleanSchema as CleanSchemas,
+    CQCPIRCleanSchema as CleanSchemas,
 )
 from tests.test_file_data import CQCPirCleanedData as CleanedData, CQCpirData as Data
 

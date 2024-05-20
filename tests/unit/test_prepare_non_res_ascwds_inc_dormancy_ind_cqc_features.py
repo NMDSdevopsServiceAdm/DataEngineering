@@ -2,15 +2,15 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-import jobs.prepare_non_res_ind_cqc_features as job
+import jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
-from tests.test_file_data import NonResFeaturesData as Data
-from tests.test_file_schemas import NonResFeaturesSchema as Schemas
+from tests.test_file_data import NonResAscwdsWithDormancyFeaturesData as Data
+from tests.test_file_schemas import NonResAscwdsWithDormancyFeaturesSchema as Schemas
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
@@ -24,13 +24,21 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_non_res_ind_cqc_features.vectorise_dataframe")
-    @patch("jobs.prepare_non_res_ind_cqc_features.add_date_diff_into_df")
     @patch(
-        "jobs.prepare_non_res_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.vectorise_dataframe"
     )
-    @patch("jobs.prepare_non_res_ind_cqc_features.column_expansion_with_dict")
-    @patch("jobs.prepare_non_res_ind_cqc_features.add_service_count_to_data")
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_date_diff_into_df"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.column_expansion_with_dict"
+    )
+    @patch(
+        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_service_count_to_data"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
@@ -53,7 +61,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
-            2,
+            3,
         )
         self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
@@ -72,23 +80,34 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        input_df_length = self.test_df.count()
-        self.assertEqual(input_df_length, 10)
-
         job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
 
         result = write_to_parquet_mock.call_args[0][0]
 
-        self.assertEqual(result.count(), 7)
+        self.assertEqual(self.test_df.count(), 10)
+        self.assertEqual(result.count(), 6)
 
     def test_filter_df_for_non_res_care_home_data(self):
-        filter_to_ind_care_home_df = self.spark.createDataFrame(
+        ind_cqc_df = self.spark.createDataFrame(
             Data.filter_to_non_care_home_rows, Schemas.filter_to_non_care_home_schema
         )
-        returned_df = job.filter_df_to_non_res_only(filter_to_ind_care_home_df)
+        returned_df = job.filter_df_to_non_res_only(ind_cqc_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_filtered_to_non_care_home_rows,
             Schemas.filter_to_non_care_home_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_filter_df_non_null_dormancy_data(self):
+        ind_cqc_df = self.spark.createDataFrame(
+            Data.filter_to_dormancy_rows, Schemas.filter_to_dormancy_schema
+        )
+        returned_df = job.filter_df_to_non_null_dormancy(ind_cqc_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_to_dormancy_rows,
+            Schemas.filter_to_dormancy_schema,
         )
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()

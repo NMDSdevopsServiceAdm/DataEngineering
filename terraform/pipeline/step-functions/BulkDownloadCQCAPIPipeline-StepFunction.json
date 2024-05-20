@@ -1,0 +1,122 @@
+{
+    "StartAt": "Bulk download from CQC API",
+    "States": {
+      "Bulk download from CQC API": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "Run bulk cqc providers download job",
+            "States": {
+              "Run bulk cqc providers download job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${bulk_cqc_providers_download_job_name}",
+                  "Arguments": {
+                    "--destination_prefix": "${dataset_bucket_uri}",
+                    "--additional-python-modules": "ratelimit==2.2.1,"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "Run bulk cqc locations download job",
+            "States": {
+              "Run bulk cqc locations download job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${bulk_cqc_locations_download_job_name}",
+                  "Arguments": {
+                    "--destination_prefix": "${dataset_bucket_uri}",
+                    "--additional-python-modules": "ratelimit==2.2.1,"
+                  }
+                },
+                "Next": "Run flatten cqc ratings job"
+              },
+              "Run flatten cqc ratings job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${flatten_cqc_ratings_job_name}",
+                  "Arguments": {
+                    "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/",
+                    "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=cqc_ratings/",
+                    "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=benchmark_ratings/"
+                  }
+                },
+                "Next": "Run crawlers"
+              },
+              "Run crawlers": {
+                "Type": "Parallel",
+                "End": true,
+                "Branches": [
+                  {
+                    "StartAt": "Start SfC Crawler",
+                    "States": {
+                      "Start SfC Crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${sfc_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  },
+                  {
+                    "StartAt": "Start CQC Crawler",
+                    "States": {
+                      "Start CQC Crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${cqc_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "Next": "Success",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Publish error notification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "Publish error notification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+        "Parameters": {
+          "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+          "Payload": {
+            "Error.$": "$.error.Cause",
+            "ExecutionId.$": "$$.Execution.Id",
+            "StateMachineName.$": "$$.StateMachine.Name",
+            "StateMachineId.$": "$$.StateMachine.Id",
+            "ExecutionStartTime.$": "$$.Execution.StartTime",
+            "CallbackToken.$": "$$.Task.Token"
+          }
+        },
+        "Next": "Fail"
+      },
+      "Fail": {
+        "Type": "Fail"
+      },
+      "Success": {
+        "Type": "Succeed"
+      }
+    }
+  }

@@ -4,9 +4,7 @@ import shutil
 import unittest
 from io import BytesIO
 from enum import Enum
-from pyspark.shell import spark
-from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -19,13 +17,10 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import CQCPirCleanedData
-from tests.test_file_schemas import (
-    CQCPPIRCleanSchema,
-)
+from tests.test_file_data import UtilsData, CQCPirCleanedData
+from tests.test_file_schemas import UtilsSchema, CQCPIRCleanSchema
 
 from utils import utils
-from tests.test_file_generator import generate_ascwds_workplace_file
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns,
 )
@@ -106,15 +101,12 @@ class UtilsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.df = self.spark.read.csv(self.test_csv_path, header=True)
-        self.test_workplace_df = generate_ascwds_workplace_file(
-            self.TEST_ASCWDS_WORKPLACE_FILE
-        )
         self.df_with_extra_col = self.spark.read.csv(
             self.example_csv_for_schema_tests_extra_column, header=True
         )
         self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
             data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPPIRCleanSchema.clean_subset_for_grouping_by,
+            schema=CQCPIRCleanSchema.clean_subset_for_grouping_by,
         )
         self.test_grouping_list = [
             F.col(CqcPIRCleanedColumns.location_id),
@@ -131,6 +123,11 @@ class UtilsTests(unittest.TestCase):
             shutil.rmtree(self.TEST_ASCWDS_WORKPLACE_FILE)
         except OSError:
             pass  # Ignore dir does not exist
+
+
+class GeneralUtilsTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_get_s3_objects_list_returns_all_objects(self):
         partial_response = {
@@ -243,45 +240,6 @@ class UtilsTests(unittest.TestCase):
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
         )
         self.assertEqual(len(object_list), 1)
-
-    def test_get_s3_sub_folders_returns_one_common_prefix(self):
-        response = {"CommonPrefixes": [{"Prefix": "models/my-model/versions/1.0.0/"}]}
-
-        expected_params = {
-            "Bucket": "test-bucket",
-            "Prefix": "models/my-model/versions/",
-            "Delimiter": "/",
-        }
-
-        stubber = StubberClass(StubberType.client)
-        stubber.add_response("list_objects_v2", response, expected_params)
-
-        sub_directory_list = utils.get_s3_sub_folders_for_path(
-            "s3://test-bucket/models/my-model/versions/", stubber.get_s3_client()
-        )
-        self.assertEqual(sub_directory_list, ["1.0.0"])
-
-    def test_get_s3_sub_folders_returns_multiple_common_prefix(self):
-        response = {
-            "CommonPrefixes": [
-                {"Prefix": "models/my-model/1.0.0/"},
-                {"Prefix": "models/my-model/apples/"},
-            ]
-        }
-
-        expected_params = {
-            "Bucket": "model-bucket",
-            "Prefix": "models/my-model/",
-            "Delimiter": "/",
-        }
-
-        stubber = StubberClass(StubberType.client)
-        stubber.add_response("list_objects_v2", response, expected_params)
-
-        sub_directory_list = utils.get_s3_sub_folders_for_path(
-            "s3://model-bucket/models/my-model/", stubber.get_s3_client()
-        )
-        self.assertEqual(sub_directory_list, ["1.0.0", "apples"])
 
     def test_get_model_name_returns_model_name(self):
         path_to_model = (
@@ -506,26 +464,26 @@ class UtilsTests(unittest.TestCase):
         self.assertCountEqual(
             df.columns,
             [
-                CQCColNames.address_line_one,
+                CQCColNames.postal_address_line1,
                 CQCColNames.companies_house_number,
                 CQCColNames.constituency,
-                CQCColNames.county,
+                CQCColNames.postal_address_county,
                 CQCColNames.deregistration_date,
                 CQCColNames.inspection_directorate,
-                CQCColNames.latitude,
+                CQCColNames.onspd_latitude,
                 CQCColNames.local_authority,
                 CQCColNames.location_ids,
-                CQCColNames.longitude,
+                CQCColNames.onspd_longitude,
                 CQCColNames.name,
                 CQCColNames.organisation_type,
                 CQCColNames.ownership_type,
-                CQCColNames.phone_number,
-                CQCColNames.postcode,
+                CQCColNames.main_phone_number,
+                CQCColNames.postal_code,
                 CQCColNames.provider_id,
                 CQCColNames.region,
                 CQCColNames.registration_date,
                 CQCColNames.registration_status,
-                CQCColNames.town_or_city,
+                CQCColNames.postal_address_town_city,
                 CQCColNames.type,
                 CQCColNames.uprn,
             ],
@@ -596,13 +554,6 @@ class UtilsTests(unittest.TestCase):
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
 
-    def test_format_date_string(self):
-        formatted_df = utils.format_date_string(
-            self.df, "yyyy-MM-dd", "date_col", "dd/MM/yyyy"
-        )
-        self.assertEqual(type(formatted_df.select("date_col").first()[0]), str)
-        self.assertEqual(formatted_df.select("date_col").first()[0], "1993-11-28")
-
     def test_is_csv(self):
         csv_name = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331/Provision - March 2013 - IND - NMDS-SC - ASCWDS format.csv"
         csv_test = utils.is_csv(csv_name)
@@ -653,12 +604,6 @@ class UtilsTests(unittest.TestCase):
             "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/version=0.0.1/year=2013/month=03/day=31/import_date=20130331",
         )
 
-    def test_format_import_date_returns_date_format(self):
-        df = utils.format_import_date(self.test_workplace_df)
-
-        self.assertEqual(df.schema["import_date"].dataType, DateType())
-        self.assertEqual(str(df.select("import_date").first()[0]), "2020-01-01")
-
     def test_create_unix_timestamp_variable_from_date_column(self):
         column_schema = StructType(
             [
@@ -669,7 +614,7 @@ class UtilsTests(unittest.TestCase):
         row = [
             ("1-000000001", "2023-01-01"),
         ]
-        df = spark.createDataFrame(row, schema=column_schema)
+        df = self.spark.createDataFrame(row, schema=column_schema)
         df = utils.create_unix_timestamp_variable_from_date_column(
             df, "snapshot_date", "yyyy-MM-dd", "snapshot_date_unix_conv"
         )
@@ -684,110 +629,8 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(utils.convert_days_to_unix_time(1), 86400)
         self.assertEqual(utils.convert_days_to_unix_time(90), 7776000)
 
-    def test_get_max_date_partition_returns_only_partition(self):
-        columns = ["id", "snapshot_year", "snapshot_month", "snapshot_day"]
-        rows = [(1, "2021", "01", "01")]
-        self.spark.createDataFrame(rows, columns).write.mode("overwrite").partitionBy(
-            "snapshot_year", "snapshot_month", "snapshot_day"
-        ).parquet(self.tmp_dir)
 
-        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
-
-        self.assertEqual(max_snapshot, ("2021", "01", "01"))
-
-    def test_get_max_date_partition_returns_max_partition(self):
-        columns = ["id", "snapshot_year", "snapshot_month", "snapshot_day"]
-        rows = [
-            (1, "2021", "01", "01"),
-            (1, "2022", "01", "01"),
-            (1, "2022", "02", "01"),
-            (1, "2021", "04", "01"),
-            (1, "2022", "02", "14"),
-            (1, "2022", "01", "22"),
-        ]
-        self.spark.createDataFrame(rows, columns).write.mode("overwrite").partitionBy(
-            "snapshot_year", "snapshot_month", "snapshot_day"
-        ).parquet(self.tmp_dir)
-
-        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
-
-        self.assertEqual(max_snapshot, ("2022", "02", "14"))
-
-    def test_get_max_date_partition_if_theres_no_data_returns_none(self):
-        max_snapshot = utils.get_max_snapshot_partitions(self.tmp_dir)
-
-        self.assertIsNone(max_snapshot)
-
-    def test_get_max_date_partition_if_theres_no_location_returns_none(self):
-        max_snapshot = utils.get_max_snapshot_partitions()
-
-        self.assertIsNone(max_snapshot)
-
-    def test_get_latest_partition_returns_only_partitions(self):
-        columns = ["id", "run_year", "run_month", "run_day"]
-        rows = [
-            (1, "2021", "01", "01"),
-            (2, "2021", "01", "01"),
-            (3, "2021", "01", "01"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        result_df = utils.get_latest_partition(df)
-
-        self.assertEqual(result_df.count(), 3)
-
-    def test_get_latest_partition_returns_only_latest_partition(self):
-        columns = ["id", "run_year", "run_month", "run_day"]
-        rows = [
-            (1, "2021", "01", "01"),
-            (2, "2021", "01", "01"),
-            (1, "2020", "01", "01"),
-            (2, "2020", "01", "01"),
-            (1, "2021", "03", "01"),
-            (2, "2021", "03", "01"),
-            (1, "2021", "03", "05"),
-            (2, "2021", "03", "05"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        result_df = utils.get_latest_partition(df)
-
-        self.assertEqual(result_df.count(), 2)
-
-        for idx, row in enumerate(result_df.collect()):
-            with self.subTest("Check row has correct partition", i=idx):
-                self.assertEqual(row.run_year, "2021")
-                self.assertEqual(row.run_month, "03")
-                self.assertEqual(row.run_day, "05")
-
-    def test_get_latest_partition_uses_correct_partition_keys(self):
-        columns = ["id", "process_year", "process_month", "process_day"]
-        rows = [
-            (1, "2021", "01", "01"),
-            (2, "2021", "01", "01"),
-            (1, "2020", "01", "01"),
-            (2, "2020", "01", "01"),
-            (1, "2021", "03", "01"),
-            (2, "2021", "03", "01"),
-            (1, "2021", "03", "05"),
-            (2, "2021", "03", "05"),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        result_df = utils.get_latest_partition(
-            df, partition_keys=("process_year", "process_month", "process_day")
-        )
-
-        self.assertEqual(result_df.count(), 2)
-
-        for idx, row in enumerate(result_df.collect()):
-            with self.subTest("Check row has correct partition", i=idx):
-                self.assertEqual(row.process_year, "2021")
-                self.assertEqual(row.process_month, "03")
-                self.assertEqual(row.process_day, "05")
-
-
-class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
+class LatestDatefieldForGroupingTests(UtilsTests):
     def setup(self) -> None:
         super(LatestDatefieldForGroupingTests, self).setUp()
 
@@ -872,6 +715,75 @@ class LatestDatefieldForGroupingTests(UtilsTests, unittest.TestCase):
         self.assertEqual(returned_df.collect()[0][0], "LOWER_CASE")
         self.assertEqual(returned_df.collect()[1][0], "WITHSPACES")
         self.assertEqual(returned_df.collect()[2][0], "UPPER_CASE")
+
+
+class FilterDataframeToMaximumValueTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.df = self.spark.createDataFrame(
+            UtilsData.filter_to_max_value_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+    def test_filter_df_to_maximum_value_in_column_filters_correctly_with_date(self):
+        returned_df = utils.filter_df_to_maximum_value_in_column(
+            self.df, "date_type_column"
+        )
+
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_filter_to_max_date_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+        returned_data = returned_df.sort("ID").collect()
+        expected_data = expected_df.sort("ID").collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+    def test_filter_df_to_maximum_value_in_column_filters_correctly_with_string(self):
+        returned_df = utils.filter_df_to_maximum_value_in_column(
+            self.df, "import_date_style_col"
+        )
+
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_filter_to_max_string_rows,
+            UtilsSchema.filter_to_max_value_schema,
+        )
+
+        returned_data = returned_df.sort("ID").collect()
+        expected_data = expected_df.sort("ID").collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+
+class SelectRowsWithValueTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.df = self.spark.createDataFrame(
+            UtilsData.select_rows_with_value_rows,
+            UtilsSchema.select_rows_with_value_schema,
+        )
+
+        self.returned_df = utils.select_rows_with_value(
+            self.df, "value_to_filter_on", "keep"
+        )
+
+        self.returned_ids = (
+            self.returned_df.select("id").rdd.flatMap(lambda x: x).collect()
+        )
+
+    def test_select_rows_with_value_selects_rows_with_value(self):
+        self.assertTrue("id_1" in self.returned_ids)
+
+    def test_select_rows_with_value_drops_other_rows(self):
+        self.assertFalse("id_2" in self.returned_ids)
+
+    def test_select_rows_with_value_does_not_change_columns(self):
+        self.assertEqual(
+            self.returned_df.schema, UtilsSchema.select_rows_with_value_schema
+        )
 
 
 if __name__ == "__main__":

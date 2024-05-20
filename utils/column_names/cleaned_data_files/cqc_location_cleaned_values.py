@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns,
+    NewCqcLocationApiColumns,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
@@ -13,7 +13,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 
 
 @dataclass
-class CqcLocationCleanedColumns(CqcLocationApiColumns, ONSClean):
+class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     import_date: str = "import_date"
     services_offered: str = "services_offered"
     primary_service_type: str = "primary_service_type"

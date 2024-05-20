@@ -3,10 +3,8 @@ import re
 import csv
 import argparse
 
-from pyspark.sql import SparkSession, DataFrame, Column, Window
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
-import pyspark.sql
 from typing import List
 
 import boto3
@@ -26,7 +24,11 @@ class SetupSpark(object):
         return self.spark
 
     def setupSpark(self) -> SparkSession:
-        spark = SparkSession.builder.appName("sfc_data_engineering").getOrCreate()
+        spark = (
+            SparkSession.builder.appName("sfc_data_engineering")
+            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.4-spark-3.3")
+            .getOrCreate()
+        )
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
         spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInRead=LEGACY")
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
@@ -46,17 +48,6 @@ def get_s3_objects_list(bucket_source, prefix, s3_resource=None):
         if obj.size > 0:  # Ignore s3 directories
             object_keys.append(obj.key)
     return object_keys
-
-
-def get_s3_sub_folders_for_path(path, s3_client=None):
-    if s3_client is None:
-        s3_client = boto3.client("s3")
-    bucket, prefix = re.search("^s3://([a-zA-Z-_]*)/([a-zA-Z-=_/]*)$", path).groups()
-    response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
-    return [
-        common_prefix["Prefix"].replace(prefix, "").replace("/", "")
-        for common_prefix in response["CommonPrefixes"]
-    ]
 
 
 def get_model_name(path_to_model):
@@ -99,7 +90,7 @@ def generate_s3_datasets_dir_date_path(
 
 def read_from_parquet(
     data_source: str, selected_columns: List[str] = None
-) -> pyspark.sql.DataFrame:
+) -> DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
 
@@ -133,9 +124,7 @@ def read_csv(source, delimiter=","):
 
 
 def read_csv_with_defined_schema(source, schema):
-    spark = SparkSession.builder.appName(
-        "sfc_data_engineering_spss_csv_to_parquet"
-    ).getOrCreate()
+    spark = get_spark()
 
     df = spark.read.schema(schema).option("header", "true").csv(source)
 
@@ -150,20 +139,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
             continue
         else:
             df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
-
-    return df
-
-
-def format_date_string(
-    df, new_date_format, date_column_identifier="date", raw_date_format=None
-):
-    date_columns = [column for column in df.columns if date_column_identifier in column]
-
-    for date_column in date_columns:
-        df = df.withColumn(
-            date_column,
-            F.date_format(F.to_date(date_column, raw_date_format), new_date_format),
-        )
 
     return df
 
@@ -196,15 +171,9 @@ def construct_destination_path(destination, key):
     return construct_s3_uri(destination_bucket, dir_path)
 
 
-def format_import_date(df, fieldname="import_date"):
-    return df.withColumn(
-        fieldname, F.to_date(F.col(fieldname).cast("string"), "yyyyMMdd")
-    )
-
-
 def create_unix_timestamp_variable_from_date_column(
-    df: pyspark.sql.DataFrame, date_col: str, date_format: str, new_col_name: str
-) -> pyspark.sql.DataFrame:
+    df: DataFrame, date_col: str, date_format: str, new_col_name: str
+) -> DataFrame:
     return df.withColumn(
         new_col_name, F.unix_timestamp(F.col(date_col), format=date_format)
     )
@@ -213,40 +182,6 @@ def create_unix_timestamp_variable_from_date_column(
 def convert_days_to_unix_time(days: int):
     NUMBER_OF_SECONDS_IN_ONE_DAY = 86400
     return days * NUMBER_OF_SECONDS_IN_ONE_DAY
-
-
-def get_max_snapshot_date(locations_df):
-    return locations_df.select(F.max("snapshot_date").alias("max")).first().max
-
-
-def get_max_snapshot_partitions(location=None):
-    if not location:
-        return None
-
-    spark = get_spark()
-
-    try:
-        previous_snpashots = spark.read.option("basePath", location).parquet(location)
-    except AnalysisException:
-        return None
-
-    max_year = previous_snpashots.select(F.max("snapshot_year")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_year") == max_year)
-    max_month = previous_snpashots.select(F.max("snapshot_month")).first()[0]
-    previous_snpashots = previous_snpashots.where(F.col("snapshot_month") == max_month)
-    max_day = previous_snpashots.select(F.max("snapshot_day")).first()[0]
-
-    return (f"{max_year}", f"{max_month:0>2}", f"{max_day:0>2}")
-
-
-def get_latest_partition(df, partition_keys=("run_year", "run_month", "run_day")):
-    max_year = df.select(F.max(df[partition_keys[0]])).first()[0]
-    df = df.where(df[partition_keys[0]] == max_year)
-    max_month = df.select(F.max(df[partition_keys[1]])).first()[0]
-    df = df.where(df[partition_keys[1]] == max_month)
-    max_day = df.select(F.max(df[partition_keys[2]])).first()[0]
-    df = df.where(df[partition_keys[2]] == max_day)
-    return df
 
 
 def collect_arguments(*args):
@@ -316,3 +251,16 @@ def latest_datefield_for_grouping(
 
 def normalise_column_values(df: DataFrame, col_name: str):
     return df.withColumn(col_name, F.upper(F.regexp_replace(F.col(col_name), " ", "")))
+
+
+def filter_df_to_maximum_value_in_column(
+    df: DataFrame, column_to_filter_on: str
+) -> DataFrame:
+    max_value = df.agg(F.max(column_to_filter_on)).collect()[0][0]
+
+    return df.filter(F.col(column_to_filter_on) == max_value)
+
+
+def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> DataFrame:
+    df = df.where(df[column] == value_to_keep)
+    return df

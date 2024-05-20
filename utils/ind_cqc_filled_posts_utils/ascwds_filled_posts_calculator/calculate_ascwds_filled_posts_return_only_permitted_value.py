@@ -16,13 +16,13 @@ def ascwds_filled_posts_select_only_value_source_description(permitted_column: s
 
 
 def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_permitted_value(
-    input_df: DataFrame,
+    df: DataFrame,
     permitted_column: str,
     non_permitted_column: str,
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
-    input_df = input_df.withColumn(
+    df = df.withColumn(
         output_column_name,
         F.when(
             (
@@ -39,9 +39,10 @@ def calculate_ascwds_filled_posts_select_only_value_which_is_at_least_minimum_pe
         ).otherwise(F.col(output_column_name)),
     )
 
-    return add_source_description_to_source_column(
-        input_df,
+    df = add_source_description_to_source_column(
+        df,
         output_column_name,
         source_output_column_name,
         ascwds_filled_posts_select_only_value_source_description(permitted_column),
     )
+    return df

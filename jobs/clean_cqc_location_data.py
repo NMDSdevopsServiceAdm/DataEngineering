@@ -5,16 +5,13 @@ from typing import Tuple
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql.dataframe import DataFrame
-
-import pyspark.sql.functions as F
-from pyspark.sql.utils import AnalysisException
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    CqcLocationApiColumns as CQCL,
+    NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
@@ -41,9 +38,10 @@ cqc_location_api_cols_to_import = [
     CQCL.provider_id,
     CQCL.name,
     CQCL.number_of_beds,
-    CQCL.postcode,
-    CQCL.registration_date,
+    CQCL.postal_code,
     CQCL.registration_status,
+    CQCL.registration_date,
+    CQCL.deregistration_date,
     CQCL.regulated_activities,
     CQCL.specialisms,
     CQCL.type,
@@ -91,10 +89,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
-    (
-        registered_locations_df,
-        deregistered_locations_df,
-    ) = split_dataframe_into_registered_and_deregistered_rows(cqc_location_df)
+    registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -127,7 +122,7 @@ def join_ons_postcode_data_into_cqc_df(
 ) -> DataFrame:
     cqc_df = amend_invalid_postcodes(cqc_df)
 
-    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postcode)
+    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postal_code)
 
     cqc_df = cUtils.add_aligned_date_column(
         cqc_df,
@@ -135,20 +130,22 @@ def join_ons_postcode_data_into_cqc_df(
         CQCLClean.cqc_location_import_date,
         ONSClean.contemporary_ons_import_date,
     )
-    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postcode)
+    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postal_code)
 
-    return cqc_df.join(
+    cqc_df = cqc_df.join(
         ons_df,
-        [ONSClean.contemporary_ons_import_date, CQCLClean.postcode],
+        [ONSClean.contemporary_ons_import_date, CQCLClean.postal_code],
         "left",
     )
+    return cqc_df
 
 
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
-    return df.withColumn(CQCL.postcode, map_func(F.col(CQCL.postcode)))
+    df = df.withColumn(CQCL.postal_code, map_func(F.col(CQCL.postal_code)))
+    return df
 
 
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
@@ -159,7 +156,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
 
 
 def allocate_primary_service_type(df: DataFrame):
-    return df.withColumn(
+    df = df.withColumn(
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
@@ -177,6 +174,7 @@ def allocate_primary_service_type(df: DataFrame):
         )
         .otherwise(CQCLValues.non_residential),
     )
+    return df
 
 
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
@@ -202,9 +200,7 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     return joined_df
 
 
-def split_dataframe_into_registered_and_deregistered_rows(
-    locations_df: DataFrame,
-) -> Tuple[DataFrame, DataFrame]:
+def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != CQCLValues.registered)
         & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
@@ -215,14 +211,10 @@ def split_dataframe_into_registered_and_deregistered_rows(
             f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
         )
 
-    registered_df = locations_df.where(
+    locations_df = locations_df.where(
         locations_df[CQCL.registration_status] == CQCLValues.registered
     )
-    deregistered_df = locations_df.where(
-        locations_df[CQCL.registration_status] == CQCLValues.deregistered
-    )
-
-    return registered_df, deregistered_df
+    return locations_df
 
 
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
@@ -243,18 +235,18 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
 
     Raises:
-        AnalysisException: If column_to_check_for_nulls, CQCLClean.postcode or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        AnalysisException: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
         TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
     """
 
     COLUMNS_TO_FILTER = [
-        CQCLClean.postcode,
+        CQCLClean.postal_code,
         CQCLClean.location_id,
     ]
     list_of_columns = cleaned_locations_df.columns
     for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
-        if not column in list_of_columns:
-            raise AnalysisException(
+        if column not in list_of_columns:
+            raise ValueError(
                 f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
             )
 
@@ -273,7 +265,7 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         for row in data_to_log:
             list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
         raise TypeError(
-            f"Error: The following {CQCL.postcode}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
+            f"Error: The following {CQCL.postal_code}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
         )
     else:
         print(

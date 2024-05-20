@@ -3,25 +3,55 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IndCqcFilledPostEstimatePipeline-StepFunction.json", {
-    dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
-    pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
-    clean_ascwds_workplace_job_name                    = module.clean_ascwds_workplace_job.job_name
-    clean_ascwds_worker_job_name                       = module.clean_ascwds_worker_job.job_name
-    clean_cqc_pir_data_job_name                        = module.clean_cqc_pir_data_job.job_name
-    clean_cqc_provider_data_job_name                   = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                   = module.clean_cqc_location_data_job.job_name
-    clean_ons_data_job_name                            = module.clean_ons_data_job.job_name
-    merge_ind_cqc_data_job_name                        = module.merge_ind_cqc_data_job.job_name
-    clean_ind_cqc_filled_posts_job_name                = module.clean_ind_cqc_filled_posts_job.job_name
-    prepare_care_home_ind_cqc_features_job_name        = module.prepare_care_home_ind_cqc_features_job.job_name
-    prepare_non_res_ind_cqc_features_job_name          = module.prepare_non_res_ind_cqc_features_job.job_name
-    estimate_ind_cqc_filled_posts_job_name             = module.estimate_ind_cqc_filled_posts_job.job_name
-    estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
-    ascwds_crawler_name                                = module.ascwds_crawler.crawler_name
-    cqc_crawler_name                                   = module.cqc_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name                  = module.ind_cqc_filled_posts_crawler.crawler_name
-    ons_crawler_name                                   = module.ons_crawler.crawler_name
-    pipeline_failure_lambda_function_arn               = aws_lambda_function.error_notification_lambda.arn
+    dataset_bucket_uri                                            = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                                 = module.pipeline_resources.bucket_uri
+    clean_ascwds_workplace_job_name                               = module.clean_ascwds_workplace_job.job_name
+    clean_ascwds_worker_job_name                                  = module.clean_ascwds_worker_job.job_name
+    clean_cqc_pir_data_job_name                                   = module.clean_cqc_pir_data_job.job_name
+    clean_cqc_provider_data_job_name                              = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name                              = module.clean_cqc_location_data_job.job_name
+    clean_ons_data_job_name                                       = module.clean_ons_data_job.job_name
+    reconciliation_job_name                                       = module.reconciliation_job.job_name
+    merge_ind_cqc_data_job_name                                   = module.merge_ind_cqc_data_job.job_name
+    clean_ind_cqc_filled_posts_job_name                           = module.clean_ind_cqc_filled_posts_job.job_name
+    validate_merged_ind_cqc_data_job_name                         = module.validate_merged_ind_cqc_data_job.job_name
+    prepare_care_home_ind_cqc_features_job_name                   = module.prepare_care_home_ind_cqc_features_job.job_name
+    prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job_name = module.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job.job_name
+    estimate_ind_cqc_filled_posts_job_name                        = module.estimate_ind_cqc_filled_posts_job.job_name
+    estimate_ind_cqc_filled_posts_by_job_role_job_name            = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
+    ascwds_crawler_name                                           = module.ascwds_crawler.crawler_name
+    cqc_crawler_name                                              = module.cqc_crawler.crawler_name
+    sfc_crawler_name                                              = module.sfc_crawler.crawler_name
+    ind_cqc_filled_posts_crawler_name                             = module.ind_cqc_filled_posts_crawler.crawler_name
+    ons_crawler_name                                              = module.ons_crawler.crawler_name
+    data_validation_reports_crawler_name                          = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn                          = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
+resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
+  name     = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/BulkDownloadCQCAPIPipeline-StepFunction.json", {
+    dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
+    bulk_cqc_locations_download_job_name = module.bulk_cqc_locations_download_job.job_name
+    bulk_cqc_providers_download_job_name = module.bulk_cqc_providers_download_job.job_name
+    flatten_cqc_ratings_job_name         = module.flatten_cqc_ratings_job.job_name
+    cqc_crawler_name                     = module.cqc_crawler.crawler_name
+    sfc_crawler_name                     = module.sfc_crawler.crawler_name
+    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
