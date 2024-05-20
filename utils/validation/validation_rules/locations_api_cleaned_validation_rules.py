@@ -14,7 +14,7 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class MergedIndCqcValidationRules:
+class LocationsAPICleanedValidationRules:
     rules_to_check = {
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [

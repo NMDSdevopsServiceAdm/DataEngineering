@@ -16,7 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
-    LocationsApiCleanedValidationRules as Rules,
+    LocationsAPICleanedValidationRules as Rules,
 )
 from utils.validation.validation_utils import validate_dataset
 from utils.validation.validation_rule_names import RuleNames as RuleName
