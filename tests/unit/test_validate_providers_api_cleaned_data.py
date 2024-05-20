@@ -66,7 +66,7 @@ class CalculateExpectedSizeofDataset(ValidateProvidersAPICleanedDatasetTests):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 1
+        expected_row_count = 4
         returned_row_count = (
             job.calculate_expected_size_of_cleaned_cqc_providers_dataset(test_df)
         )
