@@ -12,7 +12,7 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class PIRCleanedValidationRules:
+class ASCWDSWorkerCleanedValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
             AWKClean.establishment_id,
