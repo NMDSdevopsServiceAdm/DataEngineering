@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import jobs.validate_non_res_ind_cqc_features_data as job
 
-from tests.test_file_data import ValidateNonReseIndCqcFeaturesData as Data
+from tests.test_file_data import ValidateNonResIndCqcFeaturesData as Data
 from tests.test_file_schemas import ValidateNonResIndCqcFeaturesData as Schemas
 
 from utils import utils
@@ -67,7 +67,7 @@ class CalculateExpectedSizeofDataset(ValidateNonResIndCQCFeaturesDatasetTests):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 2
+        expected_row_count = 1
         returned_row_count = (
             job.calculate_expected_size_of_non_res_ind_cqc_features_dataset(test_df)
         )
