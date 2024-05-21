@@ -490,7 +490,7 @@ module "validate_care_home_ind_cqc_features_data_job" {
 
   job_parameters = {
     "--cleaned_ind_cqc_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--care_home_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features_data/"
+    "--care_home_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
     "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=care_home_ind_cqc_features_data_report/"
   }
 }
