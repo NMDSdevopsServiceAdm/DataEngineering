@@ -16,7 +16,7 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class MergedIndCqcValidationRules:
+class CleanedIndCqcValidationRules:
     rules_to_check = {
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
@@ -29,6 +29,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.registration_status,
             IndCqcColumns.registration_date,
             IndCqcColumns.primary_service_type,
+            IndCqcColumns.number_of_beds,
             IndCqcColumns.contemporary_ons_import_date,
             IndCqcColumns.contemporary_cssr,
             IndCqcColumns.contemporary_region,
@@ -43,7 +44,7 @@ class MergedIndCqcValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 1,
-            IndCqcColumns.people_directly_employed: 0,
+            IndCqcColumns.people_directly_employed: 1,
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,
         },
@@ -64,6 +65,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr: ONSCategoricalValues.cssrs,
             IndCqcColumns.current_region: ONSCategoricalValues.regions,
             IndCqcColumns.current_rural_urban_indicator_2011: ONSCategoricalValues.rural_urban_indicators,
+            IndCqcColumns.ascwds_filled_posts_source: IndCQCCategoricalValues.ascwds_filled_posts_source,
         },
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CQCDistinctValues.care_home_values,
@@ -76,5 +78,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr: ONSDistinctValues.cssrs,
             IndCqcColumns.current_region: ONSDistinctValues.regions,
             IndCqcColumns.current_rural_urban_indicator_2011: ONSDistinctValues.rural_urban_indicators,
+            IndCqcColumns.ascwds_filled_posts_source: IndCQCDistinctValues.ascwds_filled_posts_source,
         },
     }
