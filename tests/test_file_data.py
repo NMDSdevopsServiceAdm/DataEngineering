@@ -4266,6 +4266,34 @@ class ValidationUtils:
 
 
 @dataclass
+class ValidateLocationsAPICleanedData:
+    # fmt: off
+    raw_cqc_locations_rows = [
+        ("1-000000001", "20240101", CQCLValues.social_care_identifier, CQCLValues.registered),
+        ("1-000000002", "20240101", CQCLValues.social_care_identifier, CQCLValues.deregistered),
+        ("1-000000001", "20240201", CQCLValues.social_care_identifier, CQCLValues.registered),
+        ("1-000000002", "20240201", "not social care org", CQCLValues.deregistered),
+    ]
+
+    cleaned_cqc_locations_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        ("loc_1", CQCLValues.social_care_identifier, CQCLValues.registered),
+        ("loc_2", "non social care org", CQCLValues.registered),
+        ("loc_3", None, CQCLValues.registered),
+        ("loc_4", CQCLValues.social_care_identifier, CQCLValues.deregistered),
+        ("loc_5", "non social care org", CQCLValues.deregistered),
+        ("loc_6", None, CQCLValues.deregistered),
+    ]
+
+
+@dataclass
 class ValidateProvidersAPICleanedData:
     # fmt: off
     raw_cqc_providers_rows = [
@@ -4314,10 +4342,10 @@ class ValidateASCWDSWorkplaceCleanedData:
 class ValidateASCWDSWorkerCleanedData:
     # fmt: off
     cleaned_ascwds_worker_rows = [
-        ("estab_1", date(2024, 1, 1), "location_id", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 1), "location_id", "8", "Care Worker"),
-        ("estab_1", date(2024, 1, 9), "location_id", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 9), "location_id", "8", "Care Worker"),
+        ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
+        ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
     ]
     # fmt: on
 

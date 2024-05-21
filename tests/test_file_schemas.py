@@ -2973,6 +2973,49 @@ class ValidationUtils:
 
 
 @dataclass
+class ValidateLocationsAPICleanedData:
+    raw_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+    cleaned_cqc_locations_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_provider_import_date, DateType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.provider_id, StringType(), True),
+            StructField(CQCLClean.provider_name, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.registration_date, DateType(), True),
+            StructField(CQCLClean.dormancy, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+            StructField(CQCLClean.contemporary_ons_import_date, DateType(), True),
+            StructField(CQCLClean.contemporary_cssr, StringType(), True),
+            StructField(CQCLClean.contemporary_region, StringType(), True),
+            StructField(CQCLClean.current_ons_import_date, DateType(), True),
+            StructField(CQCLClean.current_cssr, StringType(), True),
+            StructField(CQCLClean.current_region, StringType(), True),
+            StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+        ]
+    )
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidateProvidersAPICleanedData:
     raw_cqc_providers_schema = StructType(
         [
@@ -3023,7 +3066,7 @@ class ValidateASCWDSWorkerCleanedData:
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.location_id, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_id, StringType(), True),
             StructField(AWKClean.main_job_role_labelled, StringType(), True),
         ]

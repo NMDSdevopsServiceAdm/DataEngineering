@@ -17,6 +17,7 @@ from utils.value_labels.ascwds_worker.worker_label_dictionary import (
 
 WORKER_COLUMNS = [
     AWKClean.location_id,
+    AWKClean.worker_id,
     AWKClean.import_date,
     AWKClean.establishment_id,
     AWKClean.main_job_role_id,

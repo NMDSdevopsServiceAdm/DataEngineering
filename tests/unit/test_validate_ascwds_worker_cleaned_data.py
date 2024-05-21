@@ -2,7 +2,7 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_pir_cleaned_data as job
+import jobs.validate_ascwds_worker_cleaned_data as job
 
 from tests.test_file_data import ValidateASCWDSWorkerCleanedData as Data
 from tests.test_file_schemas import ValidateASCWDSWorkerCleanedData as Schemas

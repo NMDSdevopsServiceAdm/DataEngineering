@@ -12,17 +12,17 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class PIRCleanedValidationRules:
+class ASCWDSWorkerCleanedValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
             AWKClean.establishment_id,
-            AWKClean.location_id,
+            AWKClean.worker_id,
             AWKClean.main_job_role_id,
             AWKClean.main_job_role_labelled,
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.index_columns: [
-            AWKClean.location_id,
+            AWKClean.worker_id,
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.categorical_values_in_columns: {
