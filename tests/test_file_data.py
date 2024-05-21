@@ -4398,7 +4398,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResIndCqcFeaturesData:
+class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential),
@@ -4407,7 +4407,7 @@ class ValidateNonResIndCqcFeaturesData:
         ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential),
     ]
 
-    non_res_ind_cqc_features_rows = [
+    non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
         ("1-000000001", date(2024, 1, 1),),
         ("1-000000002", date(2024, 1, 1),),
         ("1-000000001", date(2024, 1, 9),),

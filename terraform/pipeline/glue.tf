@@ -504,9 +504,9 @@ module "validate_non_res_ind_cqc_features_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--cleaned_ind_cqc_source"          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--non_res_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ind_cqc_features_data/"
-    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=non_res_ind_cqc_features_data_report/"
+    "--cleaned_ind_cqc_source"                              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--non_res_ascwds_inc_dormancy_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
+    "--report_destination"                                  = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features_data_report/"
   }
 }
 

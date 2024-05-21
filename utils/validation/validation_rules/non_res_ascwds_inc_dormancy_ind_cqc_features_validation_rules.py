@@ -8,7 +8,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
-class NonResIndCqcFeaturesValidationRules:
+class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
     rules_to_check = {
         RuleName.size_of_dataset: None,
         RuleName.index_columns: [
