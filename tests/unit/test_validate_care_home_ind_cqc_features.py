@@ -2,27 +2,28 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_merged_ind_cqc_data as job
+import jobs.validate_care_home_ind_cqc_features_data as job
 
-from tests.test_file_data import ValidateMergedIndCqcData as Data
-from tests.test_file_schemas import ValidateMergedIndCqcData as Schemas
+from tests.test_file_data import ValidateCareHomeIndCqcFeaturesData as Data
+from tests.test_file_schemas import ValidateCareHomeIndCqcFeaturesData as Schemas
 
 from utils import utils
 
 
-class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
-    TEST_CQC_LOCATION_SOURCE = "some/directory"
-    TEST_MERGED_IND_CQC_SOURCE = "some/other/directory"
+class ValidateCareHomeIndCQCFeaturesDatasetTests(unittest.TestCase):
+    TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
+    TEST_CARE_HOME_IND_CQC_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_clean_cqc_location_df = self.spark.createDataFrame(
-            Data.cqc_locations_rows,
-            Schemas.cqc_locations_schema,
+        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
+            Data.cleaned_ind_cqc_rows,
+            Schemas.cleaned_ind_cqc_schema,
         )
-        self.test_merged_ind_cqc_df = self.spark.createDataFrame(
-            Data.merged_ind_cqc_rows, Schemas.merged_ind_cqc_schema
+        self.test_care_home_ind_cqc_features_df = self.spark.createDataFrame(
+            Data.care_home_ind_cqc_features_rows,
+            Schemas.care_home_ind_cqc_features_schema,
         )
 
     def tearDown(self) -> None:
@@ -30,7 +31,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateMergedIndCQCDatasetTests):
+class MainTests(ValidateCareHomeIndCQCFeaturesDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -42,13 +43,13 @@ class MainTests(ValidateMergedIndCQCDatasetTests):
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_clean_cqc_location_df,
-            self.test_merged_ind_cqc_df,
+            self.test_cleaned_ind_cqc_df,
+            self.test_care_home_ind_cqc_features_df,
         ]
 
         job.main(
-            self.TEST_CQC_LOCATION_SOURCE,
-            self.TEST_MERGED_IND_CQC_SOURCE,
+            self.TEST_CLEANED_IND_CQC_SOURCE,
+            self.TEST_CARE_HOME_IND_CQC_FEATURES_SOURCE,
             self.TEST_DESTINATION,
         )
 
@@ -56,19 +57,19 @@ class MainTests(ValidateMergedIndCQCDatasetTests):
         self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class CalculateExpectedSizeofDataset(ValidateMergedIndCQCDatasetTests):
+class CalculateExpectedSizeofDataset(ValidateCareHomeIndCQCFeaturesDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_merged_ind_cqc_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_care_home_ind_cqc_features_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = job.calculate_expected_size_of_merged_ind_cqc_dataset(
-            test_df
+        returned_row_count = (
+            job.calculate_expected_size_of_care_home_ind_cqc_features_dataset(test_df)
         )
         self.assertEqual(returned_row_count, expected_row_count)
 
