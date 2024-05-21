@@ -31,10 +31,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(estimated_ind_cqc_filled_posts_df, rules)
@@ -50,12 +50,12 @@ def calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_estimate_ind_cqc_filled_posts_source_data' starting...")
+    print("Spark job 'validate_estimated_ind_cqc_filled_posts_source_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_ind_cqc_source,
-        estimate_ind_cqc_filled_posts_source,
+        estimated_ind_cqc_filled_posts_source,
         report_destination,
     ) = utils.collect_arguments(
         (
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             "Source s3 directory for parquet cleaned independent CQC dataset",
         ),
         (
-            "--estimate_ind_cqc_filled_posts_source",
+            "--estimated_ind_cqc_filled_posts_source",
             "Source s3 directory for parquet estimated independent CQC filled posts dataset",
         ),
         (
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     try:
         main(
             cleaned_ind_cqc_source,
-            estimate_ind_cqc_filled_posts_source,
+            estimated_ind_cqc_filled_posts_source,
             report_destination,
         )
     finally:
@@ -83,4 +83,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_estimate_ind_cqc_filled_posts_source_data' complete")
+    print("Spark job 'validate_estimated_ind_cqc_filled_posts_source_data' complete")
