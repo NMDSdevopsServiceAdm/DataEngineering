@@ -4387,12 +4387,11 @@ class ValidateCareHomeIndCqcFeaturesData:
         ("1-000000001", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
         ("1-000000002", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
     ]
-    # fmt: on
 
     calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            date(2024, 1, 1),
-            CQCLValues.care_home_only,
-        ),
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000002", date(2024, 1, 9), None),
     ]
+    # fmt: on
