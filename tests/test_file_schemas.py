@@ -3071,3 +3071,27 @@ class ValidateASCWDSWorkerCleanedData:
             StructField(AWKClean.main_job_role_labelled, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    raw_postcode_directory_schema = StructType(
+        [
+            StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+    cleaned_postcode_directory_schema = StructType(
+        [
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_region, StringType(), True),
+            StructField(ONSClean.current_ons_import_date, DateType(), True),
+            StructField(ONSClean.current_cssr, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = raw_postcode_directory_schema
