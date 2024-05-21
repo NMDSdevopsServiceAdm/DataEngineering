@@ -15,7 +15,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.validation.validation_rules.care_home_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.non_res_ind_cqc_features_validation_rules import (
     CareHomeIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import validate_dataset
@@ -32,52 +32,46 @@ cleaned_ind_cqc_columns_to_import = [
 
 def main(
     cleaned_ind_cqc_source: str,
-    care_home_ind_cqc_features_source: str,
+    non_res_ind_cqc_features_source: str,
     report_destination: str,
 ):
     cleaned_ind_cqc_df = utils.read_from_parquet(
         cleaned_ind_cqc_source,
         selected_columns=cleaned_ind_cqc_columns_to_import,
     )
-    care_home_ind_cqc_features_df = utils.read_from_parquet(
-        care_home_ind_cqc_features_source,
+    non_res_ind_cqc_features_df = utils.read_from_parquet(
+        non_res_ind_cqc_features_source,
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_care_home_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ind_cqc_features_dataset(cleaned_ind_cqc_df)
     )
 
-    check_result_df = validate_dataset(care_home_ind_cqc_features_df, rules)
+    check_result_df = validate_dataset(non_res_ind_cqc_features_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
-def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+def calculate_expected_size_of_non_res_ind_cqc_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
     expected_size = cleaned_ind_cqc_df.where(
         (
             cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == CQCLCleanValues.care_home_only
-        )
-        | (
-            cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == CQCLCleanValues.care_home_with_nursing
+            == CQCLCleanValues.non_residential
         )
     ).count()
     return expected_size
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_care_home_ind_cqc_features_data' starting...")
+    print("Spark job 'validate_non_res_ind_cqc_features_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_ind_cqc_source,
-        care_home_ind_cqc_features_source,
+        non_res_ind_cqc_features_source,
         report_destination,
     ) = utils.collect_arguments(
         (
@@ -85,8 +79,8 @@ if __name__ == "__main__":
             "Source s3 directory for parquet cleaned independent CQC dataset",
         ),
         (
-            "--care_home_ind_cqc_features_source",
-            "Source s3 directory for parquet care home independent CQC features dataset",
+            "--non_res_ind_cqc_features_source",
+            "Source s3 directory for parquet non residential independent CQC features dataset",
         ),
         (
             "--report_destination",
@@ -96,7 +90,7 @@ if __name__ == "__main__":
     try:
         main(
             cleaned_ind_cqc_source,
-            care_home_ind_cqc_features_source,
+            non_res_ind_cqc_features_source,
             report_destination,
         )
     finally:
@@ -105,4 +99,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_care_home_ind_cqc_features_data' complete")
+    print("Spark job 'validate_non_res_ind_cqc_features_data' complete")
