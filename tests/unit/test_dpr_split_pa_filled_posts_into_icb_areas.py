@@ -4,8 +4,8 @@ from unittest.mock import ANY, Mock, patch
 
 from utils import utils
 
-from tests.test_file_data import PAFilledPostsByICBArea as TestData
-from tests.test_file_schemas import PAFilledPostsByICBAreaSchema as TestSchema
+from tests.test_file_data import PAFilledPostsByIcbArea as TestData
+from tests.test_file_schemas import PAFilledPostsByIcbAreaSchema as TestSchema
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
@@ -17,7 +17,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 import jobs.split_pa_filled_posts_into_icb_areas as job
 
 
-class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
+class SplitPAFilledPostsIntoIcbAreas(unittest.TestCase):
     TEST_ONS_SOURCE = "some/directory"
     TEST_PA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/directory"
@@ -34,7 +34,7 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
         )
 
 
-class MainTests(SplitPAFilledPostsIntoICBAreas):
+class MainTests(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -55,7 +55,7 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
+class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -112,7 +112,7 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
+class CreateRatioBetweenColumns(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -164,7 +164,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             )
 
 
-class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
+class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -210,7 +210,7 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
+class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -242,7 +242,7 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         self.assertEqual(returned_rows, expected_rows)
 
 
-class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
+class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -330,7 +330,7 @@ class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
         self.assertEqual(returned_rows, expected_rows)
 
 
-class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoICBAreas):
+class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 

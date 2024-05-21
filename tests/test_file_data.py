@@ -630,7 +630,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBArea:
+class PAFilledPostsByIcbArea:
     # fmt: off
     sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),

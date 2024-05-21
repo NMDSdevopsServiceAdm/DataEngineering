@@ -447,7 +447,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBAreaSchema:
+class PAFilledPostsByIcbAreaSchema:
     sample_ons_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
