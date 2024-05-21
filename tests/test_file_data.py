@@ -4351,6 +4351,27 @@ class ValidateASCWDSWorkerCleanedData:
 
 
 @dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    # fmt: off
+    raw_postcode_directory_rows = [
+        ("AB1 2CD", "20240101"),
+        ("AB2 2CD", "20240101"),
+        ("AB1 2CD", "20240201"),
+        ("AB2 2CD", "20240201"),
+    ]
+
+    cleaned_postcode_directory_rows = [
+        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = raw_postcode_directory_rows
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
