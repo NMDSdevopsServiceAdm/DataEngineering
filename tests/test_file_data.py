@@ -756,17 +756,17 @@ class PAFilledPostsByICBArea:
     ]
 
     sample_proportions_and_pa_filled_posts_rows = [
-        (1.00000, 100.2),
-        (0.25000, 200.3),
-        (0.75000, 200.3),
-        (1.00000, None),
+        (0.25000, 100.2),
+        (None, 200.3),
+        (0.75000, None),
+        (None, None),
     ]
 
     expected_pa_filled_posts_after_applying_proportions_rows = [
-        (1.00000, 100.2, 100.2),
-        (0.25000, 200.3, 50.07500),
-        (0.75000, 200.3, 150.22500),
-        (1.00000, None, None),
+        (0.25000, 100.2, 25.05000),
+        (None, 200.3, None),
+        (0.75000, None, None),
+        (None, None, None),
     ]
     # fmt: on
 
