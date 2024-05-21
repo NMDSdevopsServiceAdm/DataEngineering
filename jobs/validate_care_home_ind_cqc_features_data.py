@@ -58,6 +58,7 @@ def main(
 def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
+    # TODO: change this to use the care home column instead of the primary service type column
     expected_size = cleaned_ind_cqc_df.where(
         (
             cleaned_ind_cqc_df[IndCQC.primary_service_type]

@@ -49,11 +49,20 @@ class ASCWDSDistinctValues:
 @dataclass
 class IndCQCCategoricalValues:
     cqc_sector = [CQCLValues.independent]
+    ascwds_filled_posts_source = [
+        "worker records and total staff were the same",
+        "only totalstaff was provided",
+        "only wkrrecs was provided",
+        "average of total staff and worker records as both were similar",
+    ]
 
 
 @dataclass
 class IndCQCDistinctValues:
     cqc_sector = len(IndCQCCategoricalValues.cqc_sector)
+    ascwds_filled_posts_source = (
+        len(IndCQCCategoricalValues.ascwds_filled_posts_source) + 1
+    )  # can be null
 
 
 @dataclass
