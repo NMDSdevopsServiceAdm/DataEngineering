@@ -4348,3 +4348,28 @@ class ValidateASCWDSWorkerCleanedData:
         ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateCleanedIndCqcData:
+    # fmt: off
+    merged_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ]
+
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
+    ]
