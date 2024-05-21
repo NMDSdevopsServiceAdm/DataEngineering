@@ -4377,7 +4377,7 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ValidateEstimatedIndCQCFilledPostsData:
+class ValidateEstimatedIndCqcFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-000000001", date(2024, 1, 1),),
