@@ -4336,3 +4336,15 @@ class ValidateASCWDSWorkplaceCleanedData:
         ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateASCWDSWorkerCleanedData:
+    # fmt: off
+    cleaned_ascwds_worker_rows = [
+        ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
+        ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
+    ]
+    # fmt: on

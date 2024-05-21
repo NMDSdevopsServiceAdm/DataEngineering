@@ -7,6 +7,9 @@ from utils.feature_engineering_dictionaries import (
     REGION_LOOKUP,
     RURAL_URBAN_INDICATOR_LOOKUP,
 )
+from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
+    AscwdsWorkerValueLabelsMainjrid as MainJobRole,
+)
 
 
 @dataclass
@@ -29,6 +32,18 @@ class CQCDistinctValues:
     dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
     registration_status_values = len(CQCCategoricalValues.registration_status)
     cqc_sector_values = len(CQCCategoricalValues.cqc_sector)
+
+
+@dataclass
+class ASCWDSCategoricalValues:
+    main_job_role_id = list(MainJobRole.labels_dict.keys())
+    main_job_role_labelled = list(MainJobRole.labels_dict.values())
+
+
+@dataclass
+class ASCWDSDistinctValues:
+    main_job_role_id_values = len(ASCWDSCategoricalValues.main_job_role_id)
+    main_job_role_labelled_values = len(ASCWDSCategoricalValues.main_job_role_labelled)
 
 
 @dataclass
