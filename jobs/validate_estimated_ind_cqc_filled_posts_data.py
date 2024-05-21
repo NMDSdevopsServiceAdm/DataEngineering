@@ -32,7 +32,9 @@ def main(
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_cleaned_ind_cqc_dataset(cleaned_ind_cqc_df)
+        calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(estimated_ind_cqc_filled_posts_df, rules)
@@ -40,7 +42,7 @@ def main(
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
-def calculate_expected_size_of_cleaned_ind_cqc_dataset(
+def calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
     expected_size = cleaned_ind_cqc_df.count()
