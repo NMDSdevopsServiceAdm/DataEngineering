@@ -61,7 +61,7 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         )
     )
 
-    postcode_directory_df = (
+    proportion_of_postcodes_per_hybrid_area_df = (
         deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
             postcode_directory_df
         )
@@ -70,16 +70,21 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     pa_filled_posts_df = create_date_column_from_year_in_pa_estimates(
         pa_filled_posts_df
     )
-    postcode_directory_df = join_pa_filled_posts_to_hybrid_area_proportions(
-        postcode_directory_df, pa_filled_posts_df
+
+    proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df = (
+        join_pa_filled_posts_to_hybrid_area_proportions(
+            proportion_of_postcodes_per_hybrid_area_df, pa_filled_posts_df
+        )
     )
 
-    postcode_directory_df = apply_icb_proportions_to_pa_filled_posts(
-        postcode_directory_df
+    proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df = (
+        apply_icb_proportions_to_pa_filled_posts(
+            proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df
+        )
     )
 
     utils.write_to_parquet(
-        postcode_directory_df,
+        proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df,
         destination,
         mode="overwrite",
         partitionKeys=[ONSClean.contemporary_cssr],
@@ -118,14 +123,14 @@ def create_proportion_between_hybrid_area_and_la_area_postcode_counts(
 def deduplicate_proportion_between_hybrid_area_and_la_area_postcode_counts(
     postcode_directory_df: DataFrame,
 ) -> DataFrame:
-    deduplicated_df = postcode_directory_df.select(
+    proportion_of_postcodes_per_hybrid_area_df = postcode_directory_df.select(
         ONSClean.contemporary_ons_import_date,
         ONSClean.contemporary_cssr,
         ONSClean.contemporary_icb,
         DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA,
     ).distinct()
 
-    return deduplicated_df
+    return proportion_of_postcodes_per_hybrid_area_df
 
 
 def create_date_column_from_year_in_pa_estimates(
@@ -166,13 +171,15 @@ def join_pa_filled_posts_to_hybrid_area_proportions(
         DPColNames.LA_AREA, ONSClean.contemporary_cssr
     )
 
-    postcode_directory_df = postcode_directory_df.join(
-        pa_filled_posts_df,
-        [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
-        "left",
+    proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df = (
+        postcode_directory_df.join(
+            pa_filled_posts_df,
+            [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
+            "left",
+        )
     )
 
-    return postcode_directory_df
+    return proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df
 
 
 def apply_icb_proportions_to_pa_filled_posts(
