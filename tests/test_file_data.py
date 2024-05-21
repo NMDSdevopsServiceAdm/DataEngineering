@@ -4395,3 +4395,29 @@ class ValidateCareHomeIndCqcFeaturesData:
         ("1-000000002", date(2024, 1, 9), None),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateNonResIndCqcFeaturesData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.non_residential),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential),
+    ]
+
+    non_res_ind_cqc_features_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 1, 9),),
+        ("1-000000002", date(2024, 1, 9),),
+    ]
+
+    calculate_expected_size_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000002", date(2024, 1, 9), None),
+    ]
+    # fmt: on
