@@ -60,7 +60,9 @@ class IndCQCCategoricalValues:
 @dataclass
 class IndCQCDistinctValues:
     cqc_sector = len(IndCQCCategoricalValues.cqc_sector)
-    ascwds_filled_posts_source = len(IndCQCCategoricalValues.ascwds_filled_posts_source)
+    ascwds_filled_posts_source = (
+        len(IndCQCCategoricalValues.ascwds_filled_posts_source) + 1
+    )  # can be null
 
 
 @dataclass
