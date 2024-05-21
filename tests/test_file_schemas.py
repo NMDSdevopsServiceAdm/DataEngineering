@@ -3119,9 +3119,4 @@ class ValidateCareHomeIndCqcFeaturesData:
         ]
     )
 
-    calculate_expected_size_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
