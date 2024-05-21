@@ -3075,10 +3075,12 @@ class ValidateASCWDSWorkerCleanedData:
 
 @dataclass
 class ValidateCleanedIndCqcData:
-    merged_ind_cqc_schema = [
-        StructField(IndCQC.location_id, StringType(), True),
-        StructField(IndCQC.cqc_location_import_date, DateType(), True),
-    ]
+    merged_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
