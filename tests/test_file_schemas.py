@@ -3129,6 +3129,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
     non_res_ascwds_inc_dormancy_ind_cqc_features_schema = StructType(

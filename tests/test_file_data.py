@@ -4401,10 +4401,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.non_residential),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
-        ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
     ]
 
     non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
@@ -4415,9 +4415,17 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
-        ("1-000000002", date(2024, 1, 9), None),
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only, "Y"),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "Y"),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 9), None, "Y"),
+        ("1-000000003", date(2024, 1, 1), CQCLValues.care_home_only, "N"),
+        ("1-000000004", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "N"),
+        ("1-000000003", date(2024, 1, 9), CQCLValues.non_residential, "N"),
+        ("1-000000004", date(2024, 1, 9), None, "N"),
+        ("1-000000005", date(2024, 1, 1), CQCLValues.care_home_only, None),
+        ("1-000000006", date(2024, 1, 1), CQCLValues.care_home_with_nursing, None),
+        ("1-000000005", date(2024, 1, 9), CQCLValues.non_residential, None),
+        ("1-000000006", date(2024, 1, 9), None, None),
     ]
     # fmt: on

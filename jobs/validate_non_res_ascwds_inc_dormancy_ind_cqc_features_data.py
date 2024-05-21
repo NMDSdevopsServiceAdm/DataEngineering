@@ -27,6 +27,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
     IndCQC.primary_service_type,
+    IndCQC.dormancy,
 ]
 
 
@@ -44,10 +45,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(
@@ -65,6 +66,7 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
             cleaned_ind_cqc_df[IndCQC.primary_service_type]
             == CQCLCleanValues.non_residential
         )
+        & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
     ).count()
     return expected_size
 
