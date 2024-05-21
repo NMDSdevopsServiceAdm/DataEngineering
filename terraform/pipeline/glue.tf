@@ -495,9 +495,9 @@ module "validate_care_home_ind_cqc_features_data_job" {
   }
 }
 
-module "validate_non_res_ind_cqc_features_data_job" {
+module "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "validate_non_res_ind_cqc_features_data.py"
+  script_name     = "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
