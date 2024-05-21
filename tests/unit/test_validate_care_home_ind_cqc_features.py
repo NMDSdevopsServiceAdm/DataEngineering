@@ -67,7 +67,7 @@ class CalculateExpectedSizeofDataset(ValidateCareHomeIndCQCFeaturesDatasetTests)
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 1
+        expected_row_count = 2
         returned_row_count = (
             job.calculate_expected_size_of_care_home_ind_cqc_features_dataset(test_df)
         )
