@@ -6,76 +6,87 @@ os.environ["SPARK_VERSION"] = "3.3"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
+    CqcLocationCleanedValues as CQCLCleanValues,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
-    MergedIndCqcValidationRules as Rules,
+from utils.validation.validation_rules.care_home_ind_cqc_features_validation_rules import (
+    CareHomeIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import validate_dataset
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-cleaned_cqc_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
-    CQCLClean.location_id,
-    CQCLClean.cqc_sector,
+cleaned_ind_cqc_columns_to_import = [
+    IndCQC.cqc_location_import_date,
+    IndCQC.location_id,
+    IndCQC.primary_service_type,
 ]
 
 
 def main(
-    cleaned_cqc_location_source: str,
-    merged_ind_cqc_source: str,
+    cleaned_ind_cqc_source: str,
+    care_home_ind_cqc_features_source: str,
     report_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(
-        cleaned_cqc_location_source,
-        selected_columns=cleaned_cqc_locations_columns_to_import,
+    cleaned_ind_cqc_df = utils.read_from_parquet(
+        cleaned_ind_cqc_source,
+        selected_columns=cleaned_ind_cqc_columns_to_import,
     )
-    merged_ind_cqc_df = utils.read_from_parquet(
-        merged_ind_cqc_source,
+    care_home_ind_cqc_features_df = utils.read_from_parquet(
+        care_home_ind_cqc_features_source,
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = calculate_expected_size_of_merged_ind_cqc_dataset(
-        cqc_location_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
-    check_result_df = validate_dataset(merged_ind_cqc_df, rules)
+    check_result_df = validate_dataset(care_home_ind_cqc_features_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
-def calculate_expected_size_of_merged_ind_cqc_dataset(
-    cqc_location_df: DataFrame,
+def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+    cleaned_ind_cqc_df: DataFrame,
 ) -> int:
-    expected_size = cqc_location_df.where(
-        cqc_location_df[CQCLClean.cqc_sector] == CQCLValues.independent
+    expected_size = cleaned_ind_cqc_df.where(
+        (
+            cleaned_ind_cqc_df[IndCQC.primary_service_type]
+            == CQCLCleanValues.care_home_only
+        )
+        | (
+            cleaned_ind_cqc_df[IndCQC.primary_service_type]
+            == CQCLCleanValues.care_home_with_nursing
+        )
     ).count()
     return expected_size
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_merge_ind_cqc_data' starting...")
+    print("Spark job 'validate_care_home_ind_cqc_features_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
-        cleaned_cqc_location_source,
-        merged_ind_cqc_source,
+        cleaned_ind_cqc_source,
+        care_home_ind_cqc_features_source,
         report_destination,
     ) = utils.collect_arguments(
         (
-            "--cleaned_cqc_location_source",
-            "Source s3 directory for parquet CQC locations cleaned dataset",
+            "--cleaned_ind_cqc_source",
+            "Source s3 directory for parquet cleaned independent CQC dataset",
         ),
         (
-            "--merged_ind_cqc_source",
-            "Source s3 directory for parquet merged independent CQC dataset",
+            "--care_home_ind_cqc_features_source",
+            "Source s3 directory for parquet care home independent CQC features dataset",
         ),
         (
             "--report_destination",
@@ -84,8 +95,8 @@ if __name__ == "__main__":
     )
     try:
         main(
-            cleaned_cqc_location_source,
-            merged_ind_cqc_source,
+            cleaned_ind_cqc_source,
+            care_home_ind_cqc_features_source,
             report_destination,
         )
     finally:
@@ -94,4 +105,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_merge_ind_cqc_data' complete")
+    print("Spark job 'validate_care_home_ind_cqc_features_data' complete")
