@@ -97,7 +97,7 @@ def main(
             ],
         )
     )
-
+    # test
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
     utils.write_to_parquet(
