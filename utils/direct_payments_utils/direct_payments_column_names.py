@@ -172,6 +172,9 @@ class DirectPaymentColumnNames:
         "estimated_total_personal_assistant_filled_posts_per_icb"
     )
 
+    # Make DPR LA names match ONS Cleaned LA names.
+    LA_AREA_SPELLED_CORRECTLY: str = "la_area_spelled_correctly"
+
 
 @dataclass
 class DirectPaymentColumnValues:
