@@ -771,15 +771,17 @@ class PAFilledPostsByIcbArea:
     # fmt: on
 
     sample_la_name_rows = [
-        ("Bath & N E Somerset"),
-        ("Bedford"),
-        (None),
+        ("Bath & N E Somerset",),
+        ("Southend",),
+        ("Bedford",),
+        (None,),
     ]
 
     expected_la_names_with_correct_spelling_rows = [
-        ("Bath & N E Somerset", "Bath and North East Somerset"),
-        ("Bedford", "Bedford"),
-        (None, None),
+        ("Bath and North East Somerset",),
+        ("Southend on Sea",),
+        ("Bedford",),
+        (None,),
     ]
 
 
