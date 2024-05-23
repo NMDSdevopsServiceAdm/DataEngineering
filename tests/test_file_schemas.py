@@ -450,7 +450,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBAreaSchema:
+class PAFilledPostsByIcbAreaSchema:
     sample_ons_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
@@ -556,6 +556,26 @@ class PAFilledPostsByICBAreaSchema:
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
             StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+    sample_proportions_and_pa_filled_posts_schema = StructType(
+        [
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+        ]
+    )
+
+    expected_pa_filled_posts_after_applying_proportions_schema = StructType(
+        [
+            *sample_proportions_and_pa_filled_posts_schema,
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB,
+                DoubleType(),
+                True,
+            ),
         ]
     )
 

@@ -4,8 +4,8 @@ from unittest.mock import ANY, Mock, patch
 
 from utils import utils
 
-from tests.test_file_data import PAFilledPostsByICBArea as TestData
-from tests.test_file_schemas import PAFilledPostsByICBAreaSchema as TestSchema
+from tests.test_file_data import PAFilledPostsByIcbArea as TestData
+from tests.test_file_schemas import PAFilledPostsByIcbAreaSchema as TestSchema
 
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
@@ -17,7 +17,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 import jobs.split_pa_filled_posts_into_icb_areas as job
 
 
-class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
+class SplitPAFilledPostsIntoIcbAreas(unittest.TestCase):
     TEST_ONS_SOURCE = "some/directory"
     TEST_PA_SOURCE = "some/directory"
     TEST_DESTINATION = "some/directory"
@@ -34,7 +34,7 @@ class SplitPAFilledPostsIntoICBAreas(unittest.TestCase):
         )
 
 
-class MainTests(SplitPAFilledPostsIntoICBAreas):
+class MainTests(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -51,11 +51,11 @@ class MainTests(SplitPAFilledPostsIntoICBAreas):
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
-            partitionKeys=[DPColNames.YEAR],
+            partitionKeys=[ONSClean.contemporary_cssr],
         )
 
 
-class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
+class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -112,7 +112,7 @@ class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
+class CreateRatioBetweenColumns(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -164,7 +164,7 @@ class CreateRatioBetweenColumns(SplitPAFilledPostsIntoICBAreas):
             )
 
 
-class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
+class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -210,7 +210,7 @@ class DeduplicateRatioBetweenAreaCounts(SplitPAFilledPostsIntoICBAreas):
         )
 
 
-class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
+class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -242,7 +242,7 @@ class CreateDateColumnFromYearInPaFilledPosts(SplitPAFilledPostsIntoICBAreas):
         self.assertEqual(returned_rows, expected_rows)
 
 
-class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
+class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
 
@@ -328,3 +328,64 @@ class JoinPaFilledPostsToHybridAreaProportions(SplitPAFilledPostsIntoICBAreas):
             ).collect()
         )
         self.assertEqual(returned_rows, expected_rows)
+
+
+class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoIcbAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.sample_apply_icb_proportions_to_pa_filled_posts_df = (
+            self.spark.createDataFrame(
+                TestData.sample_proportions_and_pa_filled_posts_rows,
+                schema=TestSchema.sample_proportions_and_pa_filled_posts_schema,
+            )
+        )
+
+        self.returned_apply_icb_proportions_to_pa_filled_posts_df = (
+            job.apply_icb_proportions_to_pa_filled_posts(
+                self.sample_apply_icb_proportions_to_pa_filled_posts_df
+            )
+        )
+
+        self.expected_apply_icb_proportions_to_pa_filled_posts_df = self.spark.createDataFrame(
+            TestData.expected_pa_filled_posts_after_applying_proportions_rows,
+            schema=TestSchema.expected_pa_filled_posts_after_applying_proportions_schema,
+        )
+
+    def test_apply_icb_proportions_to_pa_filled_posts_adds_1_column(
+        self,
+    ):
+        self.assertEqual(
+            len(self.returned_apply_icb_proportions_to_pa_filled_posts_df.columns),
+            len(self.sample_apply_icb_proportions_to_pa_filled_posts_df.columns) + 1,
+        )
+
+    def test_apply_icb_proportions_to_pa_filled_posts_adds_given_column_name(
+        self,
+    ):
+        self.assertTrue(
+            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+            in self.returned_apply_icb_proportions_to_pa_filled_posts_df.columns
+        )
+
+    def test_apply_icb_proportions_to_pa_filled_posts_has_expected_values(
+        self,
+    ):
+        returned_rows = (
+            self.returned_apply_icb_proportions_to_pa_filled_posts_df.collect()
+        )
+        expected_rows = (
+            self.expected_apply_icb_proportions_to_pa_filled_posts_df.collect()
+        )
+
+        for i in range(len(returned_rows)):
+            self.assertAlmostEqual(
+                returned_rows[i][
+                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+                ],
+                expected_rows[i][
+                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+                ],
+                3,
+                "rows are not almost equal",
+            )

@@ -630,7 +630,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBArea:
+class PAFilledPostsByIcbArea:
     # fmt: off
     sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
@@ -753,6 +753,20 @@ class PAFilledPostsByICBArea:
         (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2024"), 
         (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2023"),
         (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None, None),
+    ]
+
+    sample_proportions_and_pa_filled_posts_rows = [
+        (0.25000, 100.2),
+        (None, 200.3),
+        (0.75000, None),
+        (None, None),
+    ]
+
+    expected_pa_filled_posts_after_applying_proportions_rows = [
+        (0.25000, 100.2, 25.05000),
+        (None, 200.3, None),
+        (0.75000, None, None),
+        (None, None, None),
     ]
     # fmt: on
 
