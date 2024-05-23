@@ -3173,3 +3173,23 @@ class ValidateCareHomeIndCqcFeaturesData:
     )
 
     calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
+class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+    non_res_ascwds_inc_dormancy_ind_cqc_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
