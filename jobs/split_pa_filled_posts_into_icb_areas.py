@@ -87,7 +87,7 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df,
         destination,
         mode="overwrite",
-        partitionKeys=[ONSClean.contemporary_cssr],
+        partitionKeys=[DPColNames.YEAR],
     )
 
 
