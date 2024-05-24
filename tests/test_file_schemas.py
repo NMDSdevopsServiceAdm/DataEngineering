@@ -450,7 +450,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBAreaSchema:
+class PAFilledPostsByIcbAreaSchema:
     sample_ons_contemporary_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
@@ -556,6 +556,26 @@ class PAFilledPostsByICBAreaSchema:
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
             StructField(DP.YEAR, StringType(), True),
+        ]
+    )
+
+    sample_proportions_and_pa_filled_posts_schema = StructType(
+        [
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
+            ),
+        ]
+    )
+
+    expected_pa_filled_posts_after_applying_proportions_schema = StructType(
+        [
+            *sample_proportions_and_pa_filled_posts_schema,
+            StructField(
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB,
+                DoubleType(),
+                True,
+            ),
         ]
     )
 
@@ -3074,6 +3094,30 @@ class ValidateASCWDSWorkerCleanedData:
 
 
 @dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    raw_postcode_directory_schema = StructType(
+        [
+            StructField(ONS.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+        ]
+    )
+    cleaned_postcode_directory_schema = StructType(
+        [
+            StructField(ONSClean.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONSClean.contemporary_cssr, StringType(), True),
+            StructField(ONSClean.contemporary_region, StringType(), True),
+            StructField(ONSClean.current_ons_import_date, DateType(), True),
+            StructField(ONSClean.current_cssr, StringType(), True),
+            StructField(ONSClean.current_region, StringType(), True),
+            StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = raw_postcode_directory_schema
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     merged_ind_cqc_schema = StructType(
         [
@@ -3124,6 +3168,51 @@ class ValidateCleanedIndCqcData:
         ]
     )
     calculate_expected_size_schema = merged_ind_cqc_schema
+
+
+@dataclass
+class ValidateCareHomeIndCqcFeaturesData:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+        ]
+    )
+    care_home_ind_cqc_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.features, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
+class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+    non_res_ascwds_inc_dormancy_ind_cqc_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
 
 
 @dataclass

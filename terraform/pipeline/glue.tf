@@ -450,6 +450,21 @@ module "validate_ascwds_worker_cleaned_data_job" {
   }
 }
 
+module "validate_postcode_directory_cleaned_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_postcode_directory_cleaned_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--raw_postcode_directory_source"     = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
+    "--cleaned_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
+    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_cleaned_data_report/"
+  }
+}
+
 module "validate_merged_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_merged_ind_cqc_data.py"
@@ -477,6 +492,36 @@ module "validate_cleaned_ind_cqc_data_job" {
     "--merged_ind_cqc_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
     "--cleaned_ind_cqc_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
     "--report_destination"     = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=cleaned_ind_cqc_data_report/"
+  }
+}
+
+module "validate_care_home_ind_cqc_features_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_care_home_ind_cqc_features_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_ind_cqc_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--care_home_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
+    "--report_destination"                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=care_home_ind_cqc_features_data_report/"
+  }
+}
+
+module "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_ind_cqc_source"                              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+    "--non_res_ascwds_inc_dormancy_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
+    "--report_destination"                                  = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features_data_report/"
   }
 }
 

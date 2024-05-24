@@ -630,7 +630,7 @@ class ONSData:
 
 
 @dataclass
-class PAFilledPostsByICBArea:
+class PAFilledPostsByIcbArea:
     # fmt: off
     sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
@@ -753,6 +753,20 @@ class PAFilledPostsByICBArea:
         (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2024"), 
         (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2023"),
         (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None, None),
+    ]
+
+    sample_proportions_and_pa_filled_posts_rows = [
+        (0.25000, 100.2),
+        (None, 200.3),
+        (0.75000, None),
+        (None, None),
+    ]
+
+    expected_pa_filled_posts_after_applying_proportions_rows = [
+        (0.25000, 100.2, 25.05000),
+        (None, 200.3, None),
+        (0.75000, None, None),
+        (None, None, None),
     ]
     # fmt: on
 
@@ -4351,6 +4365,27 @@ class ValidateASCWDSWorkerCleanedData:
 
 
 @dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    # fmt: off
+    raw_postcode_directory_rows = [
+        ("AB1 2CD", "20240101"),
+        ("AB2 2CD", "20240101"),
+        ("AB1 2CD", "20240201"),
+        ("AB2 2CD", "20240201"),
+    ]
+
+    cleaned_postcode_directory_rows = [
+        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = raw_postcode_directory_rows
+
+
+@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
@@ -4374,6 +4409,66 @@ class ValidateCleanedIndCqcData:
             date(2024, 1, 1),
         ),
     ]
+
+
+@dataclass
+class ValidateCareHomeIndCqcFeaturesData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_only),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.care_home_only),
+        ("1-000000002", date(2024, 1, 9), CQCLValues.care_home_only),
+    ]
+
+    care_home_ind_cqc_features_rows = [
+        ("1-000000001", date(2024, 1, 1), "region", 5, 5, "Y", "features", 5.0),
+        ("1-000000002", date(2024, 1, 1), "region", 5, 5, "Y", "features", 5.0),
+        ("1-000000001", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
+        ("1-000000002", date(2024, 1, 9), "region", 5, 5, "Y", "features", 5.0),
+    ]
+
+    calculate_expected_size_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000002", date(2024, 1, 9), None),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+    ]
+
+    non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 1, 9),),
+        ("1-000000002", date(2024, 1, 9),),
+    ]
+
+    calculate_expected_size_rows = [
+        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only, "Y"),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "Y"),
+        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 9), None, "Y"),
+        ("1-000000003", date(2024, 1, 1), CQCLValues.care_home_only, "N"),
+        ("1-000000004", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "N"),
+        ("1-000000003", date(2024, 1, 9), CQCLValues.non_residential, "N"),
+        ("1-000000004", date(2024, 1, 9), None, "N"),
+        ("1-000000005", date(2024, 1, 1), CQCLValues.care_home_only, None),
+        ("1-000000006", date(2024, 1, 1), CQCLValues.care_home_with_nursing, None),
+        ("1-000000005", date(2024, 1, 9), CQCLValues.non_residential, None),
+        ("1-000000006", date(2024, 1, 9), None, None),
+    ]
+    # fmt: on
 
 
 @dataclass
