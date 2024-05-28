@@ -571,6 +571,34 @@ module "validate_ascwds_workplace_raw_data_job" {
   }
 }
 
+module "validate_ascwds_worker_raw_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_ascwds_worker_raw_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
+    "--report_destination"       = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=worker_raw_data_report/"
+  }
+}
+
+module "validate_locations_api_raw_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_locations_api_raw_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
+  }
+}
+
 module "validate_providers_api_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_providers_api_raw_data.py"
