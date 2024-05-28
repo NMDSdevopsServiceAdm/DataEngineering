@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import jobs.validate_ascwds_workplace_raw_data as job
 
 from tests.test_file_data import ValidateASCWDSWorkplaceRawData as Data
-from tests.test_file_schemas import ValidateASCWDSWorkplaceRawSchemas as Schemas
+from tests.test_file_schemas import ValidateASCWDSWorkplaceRawData as Schemas
 
 from utils import utils
 
