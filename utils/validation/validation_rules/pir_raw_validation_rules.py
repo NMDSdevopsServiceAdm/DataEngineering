@@ -10,7 +10,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
-class PIRCleanedValidationRules:
+class PIRRawValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
             Keys.import_date,
