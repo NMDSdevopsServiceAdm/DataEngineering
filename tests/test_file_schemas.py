@@ -3280,3 +3280,14 @@ class ValidateASCWDSWorkplaceRawData:
             StructField(Keys.import_date, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidatePIRRawData:
+    raw_cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, StringType(), True),
+        ]
+    )

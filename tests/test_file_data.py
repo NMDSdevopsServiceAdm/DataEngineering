@@ -4531,3 +4531,14 @@ class ValidateASCWDSWorkplaceRawData:
         ("estab_1", "20240109"),
         ("estab_2", "20240109"),
     ]
+
+@dataclass
+class ValidatePIRRawData:
+    # fmt: off
+    raw_cqc_pir_rows = [
+        ("1-000000001", "20240101", 10),
+        ("1-000000002", "20240101", 10),
+        ("1-000000001", "20240109", 10),
+        ("1-000000002", "20240109", 10),
+    ]
+    # fmt: on
