@@ -4524,6 +4524,28 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
 
 
 @dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_rows = [
+        ("estab_1", "20240101"),
+        ("estab_2", "20240101"),
+        ("estab_1", "20240109"),
+        ("estab_2", "20240109"),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkerRawData:
+    # fmt: off
+    raw_ascwds_worker_rows = [
+        ("estab_1", "20240101", "worker_1", "8"),
+        ("estab_2", "20240101", "worker_2", "8"),
+        ("estab_1", "20240109", "worker_3", "8"),
+        ("estab_2", "20240109", "worker_4", "8"),
+    ]
+    # fmt: on
+
+
+@dataclass
 class ValidateLocationsAPIRawData:
     # fmt: off
     raw_cqc_locations_rows = [

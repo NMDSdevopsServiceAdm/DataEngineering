@@ -3273,6 +3273,28 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas:
 
 
 @dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateASCWDSWorkerRawData:
+    raw_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidateLocationsAPIRawData:
     raw_cqc_locations_schema = StructType(
         [
