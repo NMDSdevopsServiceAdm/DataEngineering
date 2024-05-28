@@ -408,6 +408,7 @@ module "validate_providers_api_cleaned_data_job" {
     "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
   }
 }
+
 module "validate_pir_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_pir_cleaned_data.py"
@@ -595,6 +596,20 @@ module "validate_locations_api_raw_data_job" {
   job_parameters = {
     "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
+  }
+}
+
+module "validate_providers_api_raw_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_providers_api_raw_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
+    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=providers_api_raw_data_report/"
   }
 }
 
