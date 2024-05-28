@@ -4498,6 +4498,42 @@ class ValidateEstimatedIndCqcFilledPostsData:
 
 
 @dataclass
+class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ]
+
+    estimated_ind_cqc_filled_posts_by_job_role_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 1, 9),),
+        ("1-000000002", date(2024, 1, 9),),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            date(2024, 1, 1),
+        ),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_rows = [
+        ("estab_1", "20240101"),
+        ("estab_2", "20240101"),
+        ("estab_1", "20240109"),
+        ("estab_2", "20240109"),
+    ]
+
+
+@dataclass
 class ValidateASCWDSWorkerRawData:
     # fmt: off
     raw_ascwds_worker_rows = [
