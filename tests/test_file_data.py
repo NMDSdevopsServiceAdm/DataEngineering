@@ -4496,6 +4496,7 @@ class ValidateEstimatedIndCqcFilledPostsData:
         ),
     ]
 
+
 @dataclass
 class ValidateASCWDSWorkerRawData:
     # fmt: off
