@@ -3312,7 +3312,7 @@ class ValidateLocationsAPIRawData:
 
 
 @dataclass
-class ValidatePostcodeDirectoryCleanedData:
+class ValidatePostcodeDirectoryRawData:
     raw_postcode_directory_schema = StructType(
         [
             StructField(Keys.import_date, StringType(), True),
