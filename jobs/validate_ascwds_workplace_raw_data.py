@@ -7,8 +7,8 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.validation.validation_rules.ascwds_workplace_cleaned_validation_rules import (
-    ASCWDSWorkplaceCleanedValidationRules as Rules,
+from utils.validation.validation_rules.ascwds_workplace_raw_validation_rules import (
+    ASCWDSWorkplaceRawValidationRules as Rules,
 )
 from utils.validation.validation_utils import validate_dataset
 
@@ -16,30 +16,30 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
-    cleaned_ascwds_workplace_source: str,
+    raw_ascwds_workplace_source: str,
     report_destination: str,
 ):
-    cleaned_ascwds_workplace_df = utils.read_from_parquet(
-        cleaned_ascwds_workplace_source,
+    raw_ascwds_workplace_df = utils.read_from_parquet(
+        raw_ascwds_workplace_source,
     )
     rules = Rules.rules_to_check
 
-    check_result_df = validate_dataset(cleaned_ascwds_workplace_df, rules)
+    check_result_df = validate_dataset(raw_ascwds_workplace_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_ascwds_workplace_cleaned_data' starting...")
+    print("Spark job 'validate_ascwds_workplace_raw_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
-        cleaned_ascwds_workplace_source,
+        raw_ascwds_workplace_source,
         report_destination,
     ) = utils.collect_arguments(
         (
-            "--cleaned_ascwds_workplace_source",
-            "Source s3 directory for parquet ascwds workplace cleaned dataset",
+            "--raw_ascwds_workplace_source",
+            "Source s3 directory for parquet ascwds workplace raw dataset",
         ),
         (
             "--report_destination",
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     )
     try:
         main(
-            cleaned_ascwds_workplace_source,
+            raw_ascwds_workplace_source,
             report_destination,
         )
     finally:
@@ -57,4 +57,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_ascwds_workplace_cleaned_data' complete")
+    print("Spark job 'validate_ascwds_workplace_raw_data' complete")
