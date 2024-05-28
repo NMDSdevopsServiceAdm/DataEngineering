@@ -3312,6 +3312,28 @@ class ValidateLocationsAPIRawData:
 
 
 @dataclass
+class ValidateProvidersAPIRawData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidatePIRRawData:
+    raw_cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidatePostcodeDirectoryRawData:
     raw_postcode_directory_schema = StructType(
         [

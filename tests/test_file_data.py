@@ -4558,6 +4558,29 @@ class ValidateLocationsAPIRawData:
 
 
 @dataclass
+class ValidateProvidersAPIRawData:
+    # fmt: off
+    raw_cqc_providers_rows = [
+        ("1-000000001", "20240101", "name"),
+        ("1-000000002", "20240101", "name"),
+        ("1-000000001", "20240201", "name"),
+        ("1-000000002", "20240201", "name"),
+    ]
+
+
+@dataclass
+class ValidatePIRRawData:
+    # fmt: off
+    raw_cqc_pir_rows = [
+        ("1-000000001", "20240101", 10),
+        ("1-000000002", "20240101", 10),
+        ("1-000000001", "20240109", 10),
+        ("1-000000002", "20240109", 10),
+    ]
+    # fmt: on
+
+
+@dataclass
 class ValidatePostcodeDirectoryRawData:
     # fmt: off
     raw_postcode_directory_rows = [
