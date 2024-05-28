@@ -20,6 +20,8 @@ class PIRRawValidationRules:
         RuleName.index_columns: [
             CQCPIR.location_id,
             Keys.import_date,
+            CQCPIR.pir_type,
+            CQCPIR.pir_submission_date,
         ],
         RuleName.max_values: {
             CQCPIR.people_directly_employed: 10000,
