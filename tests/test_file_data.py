@@ -4555,3 +4555,14 @@ class ValidateLocationsAPIRawData:
         ("1-000000002", "20240201", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidatePostcodeDirectoryRawData:
+    # fmt: off
+    raw_postcode_directory_rows = [
+        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
+        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
+        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
+        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
+    ]
