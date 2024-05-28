@@ -3253,3 +3253,15 @@ class ValidateEstimatedIndCqcFilledPostsData:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
+class ValidateASCWDSWorkerRawData:
+    raw_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+        ]
+    )
