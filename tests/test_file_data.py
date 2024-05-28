@@ -4534,6 +4534,41 @@ class ValidateASCWDSWorkplaceRawData:
 
 
 @dataclass
+class ValidateASCWDSWorkerRawData:
+    # fmt: off
+    raw_ascwds_worker_rows = [
+        ("estab_1", "20240101", "worker_1", "8"),
+        ("estab_2", "20240101", "worker_2", "8"),
+        ("estab_1", "20240109", "worker_3", "8"),
+        ("estab_2", "20240109", "worker_4", "8"),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    # fmt: off
+    raw_cqc_locations_rows = [
+        ("1-000000001", "20240101", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240101", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000001", "20240201", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240201", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    # fmt: off
+    raw_cqc_providers_rows = [
+        ("1-000000001", "20240101", "name"),
+        ("1-000000002", "20240101", "name"),
+        ("1-000000001", "20240201", "name"),
+        ("1-000000002", "20240201", "name"),
+    ]
+
+
+@dataclass
 class ValidatePIRRawData:
     # fmt: off
     raw_cqc_pir_rows = [

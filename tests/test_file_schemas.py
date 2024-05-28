@@ -3283,6 +3283,46 @@ class ValidateASCWDSWorkplaceRawData:
 
 
 @dataclass
+class ValidateASCWDSWorkerRawData:
+    raw_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    raw_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+            StructField(CQCL.dormancy, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ValidatePIRRawData:
     raw_cqc_pir_schema = StructType(
         [
