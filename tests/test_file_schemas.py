@@ -3256,6 +3256,23 @@ class ValidateEstimatedIndCqcFilledPostsData:
 
 
 @dataclass
+class ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    estimated_ind_cqc_filled_posts_by_job_role_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
 class ValidateASCWDSWorkplaceRawData:
     raw_ascwds_workplace_schema = StructType(
         [
