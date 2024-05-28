@@ -4532,6 +4532,7 @@ class ValidateASCWDSWorkplaceRawData:
         ("estab_2", "20240109"),
     ]
 
+
 @dataclass
 class ValidatePIRRawData:
     # fmt: off
