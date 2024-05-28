@@ -3292,3 +3292,20 @@ class ValidateASCWDSWorkerRawData:
             StructField(AWKClean.main_job_role_id, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    raw_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+            StructField(CQCL.dormancy, StringType(), True),
+        ]
+    )

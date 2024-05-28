@@ -23,6 +23,7 @@ class CQCCategoricalValues:
     dormancy_values = ["Y", "N"]
     cqc_sector = [CQCLValues.independent, CQCLValues.local_authority]
     registration_status = [CQCLValues.registered]
+    registration_status_raw = [CQCLValues.registered, CQCLValues.deregistered]
 
 
 @dataclass
@@ -32,6 +33,7 @@ class CQCDistinctValues:
     dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
     registration_status_values = len(CQCCategoricalValues.registration_status)
     cqc_sector_values = len(CQCCategoricalValues.cqc_sector)
+    registration_status_raw_values = len(CQCCategoricalValues.registration_status_raw)
 
 
 @dataclass

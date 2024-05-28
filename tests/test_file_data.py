@@ -4543,3 +4543,15 @@ class ValidateASCWDSWorkerRawData:
         ("estab_2", "20240109", "worker_4", "8"),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    # fmt: off
+    raw_cqc_locations_rows = [
+        ("1-000000001", "20240101", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240101", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000001", "20240201", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240201", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
+    ]
+    # fmt: on
