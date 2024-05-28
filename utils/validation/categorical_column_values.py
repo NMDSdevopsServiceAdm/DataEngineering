@@ -55,6 +55,14 @@ class IndCQCCategoricalValues:
         "only wkrrecs was provided",
         "average of total staff and worker records as both were similar",
     ]
+    estimate_filled_posts_source = [
+        "rolling_average_model",
+        "care_home_model",
+        "interpolation_model",
+        "extrapolation_model",
+        "ascwds_filled_posts_clean_deduplicated",
+        "non_res_with_pir_model",
+    ]
 
 
 @dataclass
@@ -63,6 +71,9 @@ class IndCQCDistinctValues:
     ascwds_filled_posts_source = (
         len(IndCQCCategoricalValues.ascwds_filled_posts_source) + 1
     )  # can be null
+    estimate_filled_posts_source = len(
+        IndCQCCategoricalValues.estimate_filled_posts_source
+    )
 
 
 @dataclass

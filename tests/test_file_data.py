@@ -4469,3 +4469,29 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
         ("1-000000006", date(2024, 1, 9), None, None),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateEstimatedIndCqcFilledPostsData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ]
+
+    estimated_ind_cqc_filled_posts_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            date(2024, 1, 1),
+        ),
+    ]

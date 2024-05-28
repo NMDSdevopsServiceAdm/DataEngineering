@@ -98,8 +98,6 @@ def main(
         )
     )
 
-    cleaned_ind_cqc_df = cleaned_ind_cqc_df.drop(IndCQC.unix_time)
-
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
     utils.write_to_parquet(
