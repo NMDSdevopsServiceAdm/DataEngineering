@@ -4521,3 +4521,13 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
             date(2024, 1, 1),
         ),
     ]
+
+
+@dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_rows = [
+        ("estab_1", "20240101"),
+        ("estab_2", "20240101"),
+        ("estab_1", "20240109"),
+        ("estab_2", "20240109"),
+    ]
