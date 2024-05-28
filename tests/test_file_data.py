@@ -4531,3 +4531,14 @@ class ValidateASCWDSWorkplaceRawData:
         ("estab_1", "20240109"),
         ("estab_2", "20240109"),
     ]
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    # fmt: off
+    raw_cqc_providers_rows = [
+        ("1-000000001", "20240101", "name"),
+        ("1-000000002", "20240101", "name"),
+        ("1-000000001", "20240201", "name"),
+        ("1-000000002", "20240201", "name"),
+    ]

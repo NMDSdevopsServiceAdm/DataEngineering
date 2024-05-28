@@ -3280,3 +3280,14 @@ class ValidateASCWDSWorkplaceRawData:
             StructField(Keys.import_date, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+        ]
+    )
