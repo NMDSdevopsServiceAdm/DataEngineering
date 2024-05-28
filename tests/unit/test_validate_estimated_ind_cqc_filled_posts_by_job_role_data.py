@@ -2,17 +2,19 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_estimated_ind_cqc_filled_posts_data as job
+import jobs.validate_estimated_ind_cqc_filled_posts_by_job_role_data as job
 
-from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsData as Data
-from tests.test_file_schemas import ValidateEstimatedIndCqcFilledPostsData as Schemas
+from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsByJobRoleData as Data
+from tests.test_file_schemas import (
+    ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas as Schemas,
+)
 
 from utils import utils
 
 
-class ValidateEstimatedIndCqcFilledPostsDatasetTests(unittest.TestCase):
+class ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
-    TEST_ESTIMATED_IND_CQC_FILLED_POSTS_SOURCE = "some/other/directory"
+    TEST_ESTIMATED_IND_CQC_FILLED_POSTS_BY_JOB_ROLE_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -21,9 +23,11 @@ class ValidateEstimatedIndCqcFilledPostsDatasetTests(unittest.TestCase):
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,
         )
-        self.test_estimated_ind_cqc_filled_posts_df = self.spark.createDataFrame(
-            Data.estimated_ind_cqc_filled_posts_rows,
-            Schemas.estimated_ind_cqc_filled_posts_schema,
+        self.test_estimated_ind_cqc_filled_posts_by_job_roledf = (
+            self.spark.createDataFrame(
+                Data.estimated_ind_cqc_filled_posts_by_job_role_rows,
+                Schemas.estimated_ind_cqc_filled_posts_by_job_role_schema,
+            )
         )
 
     def tearDown(self) -> None:
@@ -31,7 +35,7 @@ class ValidateEstimatedIndCqcFilledPostsDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):
+class MainTests(ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -44,12 +48,12 @@ class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
-            self.test_estimated_ind_cqc_filled_posts_df,
+            self.test_estimated_ind_cqc_filled_posts_by_job_roledf,
         ]
 
         job.main(
             self.TEST_CLEANED_IND_CQC_SOURCE,
-            self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_SOURCE,
+            self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_BY_JOB_ROLE_SOURCE,
             self.TEST_DESTINATION,
         )
 
@@ -57,21 +61,21 @@ class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):
         self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class CalculateExpectedSizeofDataset(ValidateEstimatedIndCqcFilledPostsDatasetTests):
+class CalculateExpectedSizeofDataset(
+    ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests
+):
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_estimated_ind_cqc_filled_posts_by_job_role_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = (
-            job.calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
-                test_df
-            )
+        returned_row_count = job.calculate_expected_size_of_estimated_ind_cqc_filled_posts_by_job_role_dataset(
+            test_df
         )
         self.assertEqual(returned_row_count, expected_row_count)
 
