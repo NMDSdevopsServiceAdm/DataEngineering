@@ -3309,3 +3309,16 @@ class ValidateLocationsAPIRawData:
             StructField(CQCL.dormancy, StringType(), True),
         ]
     )
+
+
+@dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    raw_postcode_directory_schema = StructType(
+        [
+            StructField(Keys.import_date, StringType(), True),
+            StructField(ONS.postcode, StringType(), True),
+            StructField(ONS.cssr, StringType(), True),
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
