@@ -37,7 +37,7 @@ class MainTests(ValidatePostcodeDirectoryRawDatasetTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
-        read_from_parquet_patch.return_value = (self.test_raw_postcode_directory_df,)
+        read_from_parquet_patch.return_value = self.test_raw_postcode_directory_df
 
         job.main(
             self.TEST_RAW_POSTCODE_DIRECTORY_SOURCE,
