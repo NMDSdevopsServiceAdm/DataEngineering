@@ -4495,3 +4495,29 @@ class ValidateEstimatedIndCqcFilledPostsData:
             date(2024, 1, 1),
         ),
     ]
+
+
+@dataclass
+class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ]
+
+    estimated_ind_cqc_filled_posts_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 1, 9),),
+        ("1-000000002", date(2024, 1, 9),),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            date(2024, 1, 1),
+        ),
+    ]
