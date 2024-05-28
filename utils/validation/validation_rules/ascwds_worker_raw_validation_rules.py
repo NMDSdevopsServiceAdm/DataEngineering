@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
-    AscwdsWorkerCleanedColumns as AWKClean,
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+    PartitionKeys as Keys,
 )
 
 from utils.validation.validation_rule_names import RuleNames as RuleName
@@ -12,25 +13,22 @@ from utils.validation.categorical_column_values import (
 
 
 @dataclass
-class ASCWDSWorkerCleanedValidationRules:
+class ASCWDSWorkerRawValidationRules:
     rules_to_check = {
         RuleName.complete_columns: [
-            AWKClean.establishment_id,
-            AWKClean.worker_id,
-            AWKClean.main_job_role_id,
-            AWKClean.main_job_role_labelled,
-            AWKClean.ascwds_worker_import_date,
+            AWK.establishment_id,
+            AWK.worker_id,
+            AWK.main_job_role_id,
+            Keys.import_date,
         ],
         RuleName.index_columns: [
-            AWKClean.worker_id,
-            AWKClean.ascwds_worker_import_date,
+            AWK.worker_id,
+            Keys.import_date,
         ],
         RuleName.categorical_values_in_columns: {
-            AWKClean.main_job_role_id: ASCWDSCategoricalValues.main_job_role_id,
-            AWKClean.main_job_role_labelled: ASCWDSCategoricalValues.main_job_role_labelled,
+            AWK.main_job_role_id: ASCWDSCategoricalValues.main_job_role_id,
         },
         RuleName.distinct_values: {
-            AWKClean.main_job_role_id: ASCWDSDistinctValues.main_job_role_id_values,
-            AWKClean.main_job_role_labelled: ASCWDSDistinctValues.main_job_role_labelled_values,
+            AWK.main_job_role_id: ASCWDSDistinctValues.main_job_role_id_values,
         },
     }
