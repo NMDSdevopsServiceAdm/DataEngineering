@@ -40,7 +40,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             Schemas.clean_ascwds_workplace_for_merge_schema,
         )
 
-    @patch("jobs.merge_ind_cqc_data.join_ascwds_data_into_merged_df")
+    @patch("jobs.merge_datasets_for_ind_cqc_pipeline.join_ascwds_data_into_merged_df")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
