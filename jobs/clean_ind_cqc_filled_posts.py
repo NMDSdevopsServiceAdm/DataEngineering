@@ -35,7 +35,7 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
-    ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
+    locations_df = filter_df_to_independent_sector_only(locations_df)
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 

@@ -1400,8 +1400,6 @@ class MergeIndCQCData:
         ]
     )
 
-    
-
 
 @dataclass
 class IndCQCDataUtils:
@@ -1447,6 +1445,7 @@ class CleanIndCQCData:
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
 
