@@ -74,9 +74,10 @@ def main(
         add_as_new_column=False,
     )
 
-    ascwds_workplace_df, reconciliation_df = (
-        create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
-    )
+    (
+        ascwds_workplace_df,
+        reconciliation_df,
+    ) = create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
 
     ascwds_workplace_df = remove_workplaces_with_duplicate_location_ids(
         ascwds_workplace_df
