@@ -16,7 +16,7 @@
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--coverage_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/"
+                  "--reconciliation_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
                 }
               },
               "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
@@ -52,7 +52,7 @@
                         "JobName": "${reconciliation_job_name}",
                         "Arguments": {
                           "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
-                          "--ascwds_coverage_source": "${dataset_bucket_uri}/domain=SfC/dataset=coverage/",
+                          "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/",
                           "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
                           "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
                         }
