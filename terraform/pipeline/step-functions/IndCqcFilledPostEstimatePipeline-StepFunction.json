@@ -161,13 +161,13 @@
       "Next": "Success",
       "Branches": [
         {
-          "StartAt": "Run merge ind cqc data job",
+          "StartAt": "Run merge datasets for ind cqc pipeline job",
           "States": {
-            "Run merge ind cqc data job": {
+            "Run merge datasets for ind cqc pipeline job": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${merge_ind_cqc_data_job_name}",
+                "JobName": "${merge_datasets_for_ind_cqc_pipeline_job_name}",
                 "Arguments": {
                   "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
                   "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",

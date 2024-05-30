@@ -361,9 +361,9 @@ module "reconciliation_job" {
   }
 }
 
-module "merge_ind_cqc_data_job" {
+module "merge_datasets_for_ind_cqc_pipeline_job" {
   source            = "../modules/glue-job"
-  script_name       = "merge_ind_cqc_data.py"
+  script_name       = "merge_datasets_for_ind_cqc_pipeline.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
