@@ -81,22 +81,6 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
-    def test_filter_df_to_independent_sector_only_keeps_independent_locations(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.cqc_sector_rows, Schemas.cqc_sector_schema
-        )
-
-        returned_ind_cqc_df = job.filter_df_to_independent_sector_only(test_df)
-        returned_ind_cqc_data = returned_ind_cqc_df.collect()
-
-        expected_ind_cqc_data = self.spark.createDataFrame(
-            Data.expected_cqc_sector_rows, Schemas.cqc_sector_schema
-        ).collect()
-
-        self.assertEqual(returned_ind_cqc_data, expected_ind_cqc_data)
-
     def test_join_ascwds_data_into_merged_df(self):
         returned_df = job.join_ascwds_data_into_merged_df(
             self.test_clean_cqc_location_df,

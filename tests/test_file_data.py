@@ -1908,16 +1908,7 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
-    # fmt: off
-    cqc_sector_rows = [
-        ("loc-1", "Local Authority",),
-        ("loc-2", None,),
-        ("loc-3", "Independent",),
-    ]
-    expected_cqc_sector_rows = [
-        ("loc-3", "Independent",),
-    ]
-    # fmt: on
+    
 
 
 @dataclass
@@ -2030,6 +2021,17 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 1, 1), 3),
         ("2", 3, date(2024, 2, 1), None),
     ]
+
+    # fmt: off
+    cqc_sector_rows = [
+        ("loc-1", "Local Authority",),
+        ("loc-2", None,),
+        ("loc-3", "Independent",),
+    ]
+    expected_cqc_sector_rows = [
+        ("loc-3", "Independent",),
+    ]
+    # fmt: on
 
 
 @dataclass

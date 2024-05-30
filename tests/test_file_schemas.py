@@ -1400,12 +1400,7 @@ class MergeIndCQCData:
         ]
     )
 
-    cqc_sector_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-        ]
-    )
+    
 
 
 @dataclass
@@ -1479,6 +1474,13 @@ class CleanIndCQCData:
             StructField("integer_column", IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
+    cqc_sector_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
 
