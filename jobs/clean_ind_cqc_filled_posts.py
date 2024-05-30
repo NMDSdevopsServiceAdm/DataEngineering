@@ -7,6 +7,10 @@ from pyspark.sql import (
 import pyspark.sql.functions as F
 
 from utils import utils
+from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+    CqcLocationCleanedColumns as CQCLClean,
+    CqcLocationCleanedValues as CQCLValues,
+)
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -31,6 +35,7 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
+    ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 
@@ -63,6 +68,10 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
+    return df.where(F.col(CQCLClean.cqc_sector) == CQCLValues.independent)
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
