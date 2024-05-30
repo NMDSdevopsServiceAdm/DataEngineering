@@ -19,7 +19,7 @@ from utils import utils
 class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
     TEST_SOURCE = "s3://some_bucket/some_source_key"
     TEST_CLEANED_DESTINATION = "s3://some_bucket/some_destination_key"
-    TEST_COVERAGE_DESTINATION = "s3://some_other_destination_key"
+    TEST_RECONCILIATION_DESTINATION = "s3://some_other_destination_key"
     partition_keys = [
         PartitionKeys.year,
         PartitionKeys.month,
@@ -40,7 +40,9 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("jobs.clean_ascwds_workplace_data.select_columns_required_for_coverage_df")
+    @patch(
+        "jobs.clean_ascwds_workplace_data.select_columns_required_for_reconciliation_df"
+    )
     @patch("utils.cleaning_utils.set_column_bounds")
     @patch("utils.cleaning_utils.apply_categorical_labels")
     @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
@@ -53,21 +55,23 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         format_date_fields_mock: Mock,
         apply_categorical_labels_mock: Mock,
         set_column_bounds_mock: Mock,
-        select_columns_required_for_coverage_df_mock: Mock,
+        select_columns_required_for_reconciliation_df_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
         job.main(
             self.TEST_SOURCE,
             self.TEST_CLEANED_DESTINATION,
-            self.TEST_COVERAGE_DESTINATION,
+            self.TEST_RECONCILIATION_DESTINATION,
         )
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
         self.assertEqual(format_date_fields_mock.call_count, 1)
         self.assertEqual(apply_categorical_labels_mock.call_count, 1)
         self.assertEqual(set_column_bounds_mock.call_count, 2)
-        self.assertEqual(select_columns_required_for_coverage_df_mock.call_count, 1)
+        self.assertEqual(
+            select_columns_required_for_reconciliation_df_mock.call_count, 1
+        )
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
@@ -110,7 +114,7 @@ class CastToIntTests(CleanASCWDSWorkplaceDatasetTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
+class CreatePurgedDfsForReconciliationAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
 
@@ -120,14 +124,14 @@ class CreatePurgedDfsForCoverageAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     @patch(
         "jobs.clean_ascwds_workplace_data.calculate_maximum_master_update_date_for_organisation"
     )
-    def test_create_purged_dfs_for_coverage_and_data_runs(
+    def test_create_purged_dfs_for_reconciliation_and_data_runs(
         self,
         calculate_maximum_master_update_date_for_organisation_patch: Mock,
         create_data_last_amended_date_column_patch: Mock,
         create_workplace_last_active_date_column_patch: Mock,
         create_date_column_for_purging_data_patch: Mock,
     ):
-        job.create_purged_dfs_for_coverage_and_data(self.test_ascwds_workplace_df)
+        job.create_purged_dfs_for_reconciliation_and_data(self.test_ascwds_workplace_df)
 
         self.assertEqual(
             calculate_maximum_master_update_date_for_organisation_patch.call_count, 1
@@ -201,7 +205,7 @@ class CreateDataPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
 
-class CreateCoveragePurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
+class CreateReconciliationPurgeDateColumnTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
