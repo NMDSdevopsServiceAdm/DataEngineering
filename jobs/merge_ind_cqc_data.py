@@ -93,17 +93,17 @@ def main(
         cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
 
-    ind_cqc_location_df = join_pir_data_into_merged_df(ind_cqc_location_df, cqc_pir_df)
+    cqc_location_df = join_pir_data_into_merged_df(cqc_location_df, cqc_pir_df)
 
-    ind_cqc_location_df = join_ascwds_data_into_merged_df(
-        ind_cqc_location_df,
+    cqc_location_df = join_ascwds_data_into_merged_df(
+        cqc_location_df,
         ascwds_workplace_df,
         CQCLClean.cqc_location_import_date,
         AWPClean.ascwds_workplace_import_date,
     )
 
     utils.write_to_parquet(
-        ind_cqc_location_df,
+        cqc_location_df,
         destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
