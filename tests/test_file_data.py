@@ -4409,7 +4409,6 @@ class ValidateCleanedIndCqcData:
         ("loc_2", CQCLValues.local_authority),
         ("loc_3", None),
     ]
-    
 
 
 @dataclass
