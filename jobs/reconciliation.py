@@ -36,7 +36,7 @@ cqc_locations_columns_to_import = [
 
 def main(
     cqc_location_api_source: str,
-    ascwds_coverage_source: str,
+    ascwds_reconciliation_source: str,
     reconciliation_single_and_subs_destination: str,
     reconciliation_parents_destination: str,
 ):
@@ -46,7 +46,7 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_api_source, cqc_locations_columns_to_import
     )
-    ascwds_workplace_df = utils.read_from_parquet(ascwds_coverage_source)
+    ascwds_workplace_df = utils.read_from_parquet(ascwds_reconciliation_source)
 
     cqc_location_df = prepare_most_recent_cqc_location_df(cqc_location_df)
     (
@@ -421,7 +421,7 @@ if __name__ == "__main__":
 
     (
         cqc_location_api_source,
-        ascwds_coverage_source,
+        ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     ) = utils.collect_arguments(
@@ -430,8 +430,8 @@ if __name__ == "__main__":
             "Source s3 directory for initial CQC location api dataset",
         ),
         (
-            "--ascwds_coverage_source",
-            "Source s3 directory for ASCWDS coverage parquet dataset",
+            "--ascwds_reconciliation_source",
+            "Source s3 directory for ASCWDS reconciliation parquet dataset",
         ),
         (
             "--reconciliation_single_and_subs_destination",
@@ -444,7 +444,7 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_api_source,
-        ascwds_coverage_source,
+        ascwds_reconciliation_source,
         reconciliation_single_and_subs_destination,
         reconciliation_parents_destination,
     )
