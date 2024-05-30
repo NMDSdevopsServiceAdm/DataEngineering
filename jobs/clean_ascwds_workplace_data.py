@@ -47,7 +47,7 @@ cols_required_for_reconciliation_df = [
 def main(
     ascwds_workplace_source: str,
     cleaned_ascwds_workplace_destination: str,
-    reconciliation_file_destination: str,
+    workplace_for_reconciliation_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
 
@@ -102,11 +102,11 @@ def main(
     reconciliation_df = select_columns_required_for_reconciliation_df(reconciliation_df)
 
     print(
-        f"Exporting ascwds workplace reconciliation data as parquet to {reconciliation_file_destination}"
+        f"Exporting ascwds workplace reconciliation data as parquet to {workplace_for_reconciliation_destination}"
     )
     utils.write_to_parquet(
         reconciliation_df,
-        reconciliation_file_destination,
+        workplace_for_reconciliation_destination,
         mode="overwrite",
         partitionKeys=partition_keys,
     )
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     (
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        reconciliation_file_destination,
+        workplace_for_reconciliation_destination,
     ) = utils.collect_arguments(
         (
             "--ascwds_workplace_source",
@@ -254,14 +254,14 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet ascwds workplace dataset",
         ),
         (
-            "--reconciliation_file_destination",
+            "--workplace_for_reconciliation_destination",
             "Destination s3 directory for ascwds reconciliation dataset",
         ),
     )
     main(
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        reconciliation_file_destination,
+        workplace_for_reconciliation_destination,
     )
 
     print("Spark job 'clean_ascwds_workplace_data' complete")

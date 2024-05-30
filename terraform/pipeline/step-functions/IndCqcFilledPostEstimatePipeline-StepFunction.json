@@ -16,7 +16,7 @@
                 "Arguments": {
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--reconciliation_file_destination": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
+                  "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
                 }
               },
               "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
