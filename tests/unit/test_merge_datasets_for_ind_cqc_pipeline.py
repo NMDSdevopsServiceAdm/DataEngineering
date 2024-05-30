@@ -2,7 +2,7 @@ import unittest
 
 from unittest.mock import ANY, Mock, patch
 
-import jobs.merge_ind_cqc_data as job
+import jobs.merge_datasets_for_ind_cqc_pipeline as job
 
 from tests.test_file_data import MergeIndCQCData as Data
 from tests.test_file_schemas import MergeIndCQCData as Schemas
