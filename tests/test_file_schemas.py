@@ -1456,6 +1456,7 @@ class CleanIndCQCData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
 

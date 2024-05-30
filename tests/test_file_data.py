@@ -1955,46 +1955,46 @@ class CleanIndCQCData:
     # fmt: off
     calculate_ascwds_filled_posts_rows = [
         # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
+        ("1-000001", 0, None, None, None, CQCLValues.independent),
         # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
+        ("1-000002", 500, 500, None, None, CQCLValues.independent),
         # Only know total_staff: Return totalstaff (10)
-        ("1-000003", 10, None, None, None,),
+        ("1-000003", 10, None, None, None, CQCLValues.independent),
         # worker_record_count below min permitted: return totalstaff (23)
-        ("1-000004", 23, 1, None, None,),
+        ("1-000004", 23, 1, None, None, CQCLValues.independent),
         # Only know worker_records: Return worker_record_count (100)
-        ("1-000005", None, 100, None, None,),
+        ("1-000005", None, 100, None, None, CQCLValues.independent),
         # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
+        ("1-000006", 900, 600, None, None, CQCLValues.independent),
         # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
+        ("1-000007", 12, 11, None, None, CQCLValues.independent),
         # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
+        ("1-000008", 500, 475, None, None, CQCLValues.independent),
         # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
+        ("1-000009", 10, 10, 8.0, "already populated", CQCLValues.independent),
     ]
     # fmt: on
 
     # fmt: off
     expected_ascwds_filled_posts_rows = [
         # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
+        ("1-000001", 0, None, None, None, CQCLValues.independent),
         # Both 500: Return 500
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
+        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description, CQCLValues.independent),
         # Only know total_staff: Return totalstaff (10)
-        ("1-000003", 10, None, 10.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
+        ("1-000003", 10, None, 10.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded), CQCLValues.independent),
         # worker_record_count below min permitted: return totalstaff (23)
-        ("1-000004", 23, 1, 23.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
+        ("1-000004", 23, 1, 23.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded), CQCLValues.independent),
         # Only know worker_records: Return worker_record_count (100)
-        ("1-000005", None, 100, 100.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.worker_records_bounded),),
+        ("1-000005", None, 100, 100.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.worker_records_bounded), CQCLValues.independent),
         # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
+        ("1-000006", 900, 600, None, None, CQCLValues.independent),
         # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
+        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_absolute_difference_within_range_source_description, CQCLValues.independent),
         # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
+        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_absolute_difference_within_range_source_description, CQCLValues.independent),
         # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description, CQCLValues.independent),
     ]
     # fmt: on
 
