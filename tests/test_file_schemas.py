@@ -2217,7 +2217,7 @@ class ValidateMergedIndCqcData:
     calculate_expected_size_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
 
@@ -3168,7 +3168,12 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
         ]
     )
-    calculate_expected_size_schema = merged_ind_cqc_schema
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
+        ]
+    )
 
 
 @dataclass

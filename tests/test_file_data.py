@@ -3064,9 +3064,10 @@ class ValidateMergedIndCqcData:
     # fmt: on
 
     calculate_expected_size_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
-        ("loc_3", None),
+        (
+            "1-000000001",
+            date(2024, 1, 1),
+        ),
     ]
 
 
@@ -4404,11 +4405,11 @@ class ValidateCleanedIndCqcData:
     # fmt: on
 
     calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            date(2024, 1, 1),
-        ),
+        ("loc_1", CQCLValues.independent),
+        ("loc_2", CQCLValues.local_authority),
+        ("loc_3", None),
     ]
+    
 
 
 @dataclass
