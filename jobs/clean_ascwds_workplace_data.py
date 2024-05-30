@@ -23,7 +23,7 @@ DATE_COLUMN_IDENTIFIER = "date"
 COLUMNS_TO_BOUND = [AWPClean.total_staff, AWPClean.worker_records]
 MONTHS_BEFORE_COMPARISON_DATE_TO_PURGE = 24
 
-cols_required_for_coverage_df = [
+cols_required_for_reconciliation_df = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.establishment_id,
     AWPClean.nmds_id,
@@ -47,7 +47,7 @@ cols_required_for_coverage_df = [
 def main(
     ascwds_workplace_source: str,
     cleaned_ascwds_workplace_destination: str,
-    coverage_file_destination: str,
+    reconciliation_file_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
 
@@ -74,8 +74,8 @@ def main(
         add_as_new_column=False,
     )
 
-    ascwds_workplace_df, coverage_df = create_purged_dfs_for_coverage_and_data(
-        ascwds_workplace_df
+    ascwds_workplace_df, reconciliation_df = (
+        create_purged_dfs_for_reconciliation_and_data(ascwds_workplace_df)
     )
 
     ascwds_workplace_df = remove_workplaces_with_duplicate_location_ids(
@@ -98,14 +98,14 @@ def main(
         AscwdsScaleVariableLimits.worker_records_lower_limit,
     )
 
-    coverage_df = select_columns_required_for_coverage_df(coverage_df)
+    reconciliation_df = select_columns_required_for_reconciliation_df(reconciliation_df)
 
     print(
-        f"Exporting ascwds workplace coverage data as parquet to {coverage_file_destination}"
+        f"Exporting ascwds workplace reconciliation data as parquet to {reconciliation_file_destination}"
     )
     utils.write_to_parquet(
-        coverage_df,
-        coverage_file_destination,
+        reconciliation_df,
+        reconciliation_file_destination,
         mode="overwrite",
         partitionKeys=partition_keys,
     )
@@ -148,7 +148,7 @@ def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
     )
 
 
-def create_purged_dfs_for_coverage_and_data(
+def create_purged_dfs_for_reconciliation_and_data(
     df: DataFrame,
 ) -> Tuple[DataFrame, DataFrame]:
     """
@@ -163,7 +163,7 @@ def create_purged_dfs_for_coverage_and_data(
 
     Returns:
         ascwds_workplace_df (DataFrame): a dataframe where old data has been removed based on mupddate date
-        coverage_df (DataFrame): a dataframe where old data has been removed based on the maximum of mupddate and lastloggedin date
+        reconciliation_df (DataFrame): a dataframe where old data has been removed based on the maximum of mupddate and lastloggedin date
 
     """
     df = calculate_maximum_master_update_date_for_organisation(df)
@@ -174,11 +174,11 @@ def create_purged_dfs_for_coverage_and_data(
     ascwds_workplace_df = keep_workplaces_active_on_or_after_purge_date(
         df, AWPClean.data_last_amended_date, AWPClean.purge_date
     )
-    coverage_df = keep_workplaces_active_on_or_after_purge_date(
+    reconciliation_df = keep_workplaces_active_on_or_after_purge_date(
         df, AWPClean.workplace_last_active_date, AWPClean.purge_date
     )
 
-    return ascwds_workplace_df, coverage_df
+    return ascwds_workplace_df, reconciliation_df
 
 
 def calculate_maximum_master_update_date_for_organisation(df: DataFrame) -> DataFrame:
@@ -231,8 +231,8 @@ def keep_workplaces_active_on_or_after_purge_date(
     return df.where(F.col(last_active_date_col) >= F.col(purge_date_col))
 
 
-def select_columns_required_for_coverage_df(df: DataFrame) -> DataFrame:
-    return df.select(cols_required_for_coverage_df)
+def select_columns_required_for_reconciliation_df(df: DataFrame) -> DataFrame:
+    return df.select(cols_required_for_reconciliation_df)
 
 
 if __name__ == "__main__":
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     (
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        coverage_file_destination,
+        reconciliation_file_destination,
     ) = utils.collect_arguments(
         (
             "--ascwds_workplace_source",
@@ -253,14 +253,14 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet ascwds workplace dataset",
         ),
         (
-            "--coverage_file_destination",
-            "Destination s3 directory for ascwds coverage dataset",
+            "--reconciliation_file_destination",
+            "Destination s3 directory for ascwds reconciliation dataset",
         ),
     )
     main(
         ascwds_workplace_source,
         cleaned_ascwds_workplace_destination,
-        coverage_file_destination,
+        reconciliation_file_destination,
     )
 
     print("Spark job 'clean_ascwds_workplace_data' complete")
