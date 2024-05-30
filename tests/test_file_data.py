@@ -1908,8 +1908,6 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
-    
-
 
 @dataclass
 class IndCQCDataUtils:
