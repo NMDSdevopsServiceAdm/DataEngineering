@@ -35,9 +35,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    )
 
     check_result_df = validate_dataset(cleaned_ind_cqc_df, rules)
 
@@ -47,7 +47,9 @@ def main(
 def calculate_expected_size_of_cleaned_ind_cqc_dataset(
     merged_ind_cqc_df: DataFrame,
 ) -> int:
-    expected_size = merged_ind_cqc_df.count()
+    expected_size = merged_ind_cqc_df.where(
+        merged_ind_cqc_df[CQCLClean.cqc_sector] == CQCLValues.independent
+    ).count()
     return expected_size
 
 
