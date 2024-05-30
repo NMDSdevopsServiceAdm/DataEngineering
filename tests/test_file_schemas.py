@@ -3125,6 +3125,7 @@ class ValidateCleanedIndCqcData:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
     cleaned_ind_cqc_schema = StructType(

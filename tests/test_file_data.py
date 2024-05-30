@@ -4390,10 +4390,10 @@ class ValidatePostcodeDirectoryCleanedData:
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 2, 1),),
-        ("1-000000002", date(2024, 2, 1),),
+        ("1-000000001", date(2024, 1, 1), CQCLValues.independent),
+        ("1-000000002", date(2024, 1, 1), CQCLValues.independent),
+        ("1-000000001", date(2024, 2, 1), CQCLValues.independent),
+        ("1-000000002", date(2024, 2, 1), CQCLValues.independent),
     ]
 
     cleaned_ind_cqc_rows = [
