@@ -1,18 +1,18 @@
 {
-    "Comment": "A state machine for validating Silver layer data",
-    "StartAt": "Silver validation",
+    "Comment": "A state machine for validating Gold layer data",
+    "StartAt": "Gold validation",
     "States": {
-      "Silver validation": {
+      "Gold validation": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "Run validate ascwds workplace cleaned data job",
+            "StartAt": "Run validate merged ind cqc data",
             "States": {
-              "Run validate ascwds workplace cleaned data job": {
+              "Run validate merged ind cqc data": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "JobName": "${validate_merged_ind_cqc_data_job_name}",
                   "Arguments": {
                     "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=workplace_cleaned_data_report/"
@@ -23,13 +23,13 @@
             }
           },
           {
-            "StartAt": "Run validate ascwds worker cleaned job",
+            "StartAt": "Run validate cleaned ind cqc data job",
             "States": {
-              "Run validate ascwds worker cleaned job": {
+              "Run validate cleaned ind cqc data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "JobName": "${validate_cleaned_ind_cqc_data_job_name  }",
                   "Arguments": {
                     "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=worker_cleaned_data_report/"
@@ -41,13 +41,13 @@
             }
           },
           {
-            "StartAt": "Run validate locations api cleaned job",
+            "StartAt": "Run validate care home ind cqc features data job",
             "States": {
-                "Run validate locations api cleaned job": {
+                "Run validate care home ind cqc features data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_locations_api_cleaned_data_job_name}",
+                  "JobName": "${validate_care_home_ind_cqc_features_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
                     "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
@@ -59,13 +59,13 @@
             }
           },
           {
-            "StartAt": "Run validate providers api cleaned job",
+            "StartAt": "Run non res ascwds inc dormancy ind cqc features data job",
             "States": {
-                "Run validate providers api cleaned job": {
+                "Run non res ascwds inc dormancy ind cqc features data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_providers_api_cleaned_data_job_name}",
+                  "JobName": "${validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
                     "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
@@ -77,13 +77,13 @@
             }
           },
           {
-            "StartAt": "Run validate pir cleaned job",
+            "StartAt": "Run validate estimated ind cqc filled posts data job",
             "States": {
-                "Run validate pir cleaned job": {
+                "Run validate estimated ind cqc filled posts data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_pir_cleaned_data_job_name }",
+                  "JobName": "${validate_estimated_ind_cqc_filled_posts_data_job_name}",
                   "Arguments": {
                     "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=pir_cleaned_data_report/"
@@ -94,13 +94,13 @@
             }
           },
           {
-            "StartAt": "Run validate postcode directory cleaned job",
+            "StartAt": "Run validate estimated ind cqc filled posts by job role data job",
             "States": {
-                "Run validate postcode directory cleaned job": {
+                "Run validate estimated ind cqc filled posts by job role data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
+                  "JobName": "${validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name}",
                   "Arguments": {
                     "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
                     "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
@@ -113,7 +113,7 @@
           }
         ],
         "Next": "StartCrawler",
-        "Comment": "A state machine for validating Silver layer data",
+        "Comment": "A state machine for validating Gold layer data",
         "Catch": [
           {
             "ErrorEquals": [
