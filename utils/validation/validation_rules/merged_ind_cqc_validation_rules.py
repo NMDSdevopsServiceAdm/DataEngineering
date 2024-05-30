@@ -55,7 +55,7 @@ class MergedIndCqcValidationRules:
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CQCCategoricalValues.care_home_values,
-            IndCqcColumns.cqc_sector: IndCQCCategoricalValues.cqc_sector,
+            IndCqcColumns.cqc_sector: CQCCategoricalValues.cqc_sector,
             IndCqcColumns.registration_status: CQCCategoricalValues.registration_status,
             IndCqcColumns.dormancy: CQCCategoricalValues.dormancy_values,
             IndCqcColumns.primary_service_type: CQCCategoricalValues.primary_service_types,
@@ -67,7 +67,7 @@ class MergedIndCqcValidationRules:
         },
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CQCDistinctValues.care_home_values,
-            IndCqcColumns.cqc_sector: IndCQCDistinctValues.cqc_sector,
+            IndCqcColumns.cqc_sector: CQCDistinctValues.cqc_sector,
             IndCqcColumns.registration_status: CQCDistinctValues.registration_status_values,
             IndCqcColumns.dormancy: CQCDistinctValues.dormancy_values,
             IndCqcColumns.primary_service_type: CQCDistinctValues.primary_service_types,
