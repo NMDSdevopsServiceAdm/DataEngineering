@@ -25,11 +25,11 @@ class EstimateFilledPostsSource:
 
     column_name: str = IndCQC.estimate_filled_posts_source
 
-    rolling_average_model: str = ("rolling_average_model",)
-    care_home_model: str = ("care_home_model",)
-    interpolation_model: str = ("interpolation_model",)
-    extrapolation_model: str = ("extrapolation_model",)
+    rolling_average_model: str = "rolling_average_model"
+    care_home_model: str = "care_home_model"
+    interpolation_model: str = "interpolation_model"
+    extrapolation_model: str = "extrapolation_model"
     ascwds_filled_posts_clean_deduplicated: str = (
-        "ascwds_filled_posts_clean_deduplicated",
+        "ascwds_filled_posts_clean_deduplicated"
     )
-    non_res_with_pir_model: str = ("non_res_with_pir_model",)
+    non_res_with_pir_model: str = "non_res_with_pir_model"
