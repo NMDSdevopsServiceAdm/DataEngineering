@@ -10,6 +10,7 @@ class CQCLocationsValueLabelsType:
     """The possible values of the type column in CQC locations data"""
 
     column_name: str = CQCL.type
+
     social_care_identifier: str = "Social Care Org"
     nhs_healthcare_identifier: str = "NHS Healthcare Organisation"
     independent_healthcare_identifier: str = "Independent Healthcare Org"

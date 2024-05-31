@@ -10,6 +10,7 @@ class CQCLocationsValueLabelsDormancy:
     """The possible values of the dormancy column in CQC locations data"""
 
     column_name: str = CQCL.dormancy
+
     dormant: str = "Y"
     not_dormant: str = "N"
 

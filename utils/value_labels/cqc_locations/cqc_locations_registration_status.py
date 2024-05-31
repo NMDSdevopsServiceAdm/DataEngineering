@@ -10,6 +10,7 @@ class CQCLocationsValueLabelsRegistrationStatus:
     """The possible values of the registration status column in CQC locations data"""
 
     column_name: str = CQCL.registration_status
+
     registered: str = "Registered"
     deregistered: str = "Deregistered"
 

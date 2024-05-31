@@ -10,6 +10,7 @@ class CQCLocationsValueLabelsPrimaryServiceType:
     """The possible values of the primary service type column in CQC locations data"""
 
     column_name: str = CQCLClean.primary_service_type
+
     care_home_with_nursing: str = "Care home with nursing"
     care_home_only: str = "Care home without nursing"
     non_residential: str = "non-residential"
