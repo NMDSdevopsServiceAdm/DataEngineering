@@ -9,6 +9,10 @@ from utils.column_values.cqc_locations_values import (
 from utils.column_values.cqc_pir_values import (
     CareHome,
 )
+from utils.column_values.ind_cqc_pipeline_values import (
+    ASCWDSFilledPostsSource as ASCWDSSource,
+    EstimateFilledPostsSource as EstimateSource,
+)
 from utils.feature_engineering_dictionaries.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as Region,
 )
@@ -63,18 +67,18 @@ class ASCWDSDistinctValues:
 class IndCQCCategoricalValues:
     cqc_sector = [Sector.independent]
     ascwds_filled_posts_source = [
-        "worker records and total staff were the same",
-        "only totalstaff was provided",
-        "only wkrrecs was provided",
-        "average of total staff and worker records as both were similar",
+        ASCWDSSource.worker_records_and_total_staff,
+        ASCWDSSource.only_total_staff,
+        ASCWDSSource.only_worker_records,
+        ASCWDSSource.average_of_total_staff_and_worker_records,
     ]
     estimate_filled_posts_source = [
-        "rolling_average_model",
-        "care_home_model",
-        "interpolation_model",
-        "extrapolation_model",
-        "ascwds_filled_posts_clean_deduplicated",
-        "non_res_with_pir_model",
+        EstimateSource.rolling_average_model,
+        EstimateSource.care_home_model,
+        EstimateSource.interpolation_model,
+        EstimateSource.extrapolation_model,
+        EstimateSource.ascwds_filled_posts_clean_deduplicated,
+        EstimateSource.non_res_with_pir_model,
     ]
 
 
