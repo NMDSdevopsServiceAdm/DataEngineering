@@ -4,6 +4,9 @@ from utils import utils
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.direct_payments_utils.prepare_direct_payments.fix_la_names import (
+    change_la_names_to_match_ons_cleaned,
+)
 from utils.direct_payments_utils.estimate_direct_payments.estimate_service_users_employing_staff import (
     estimate_service_users_employing_staff,
 )
@@ -36,6 +39,7 @@ def main(
         DP.FILLED_POSTS_PER_EMPLOYER,
     )
 
+    direct_payments_df = change_la_names_to_match_ons_cleaned(direct_payments_df)
     direct_payments_df = estimate_service_users_employing_staff(direct_payments_df)
     direct_payments_df = calculate_remaining_variables(direct_payments_df)
     summary_direct_payments_df = create_summary_table(direct_payments_df)

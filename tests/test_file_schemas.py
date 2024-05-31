@@ -579,6 +579,10 @@ class PAFilledPostsByIcbAreaSchema:
         ]
     )
 
+    sample_la_name_schema = StructType([StructField(DP.LA_AREA, StringType(), True)])
+
+    expected_la_names_with_correct_spelling_schema = sample_la_name_schema
+
 
 @dataclass
 class CapacityTrackerCareHomeSchema:
