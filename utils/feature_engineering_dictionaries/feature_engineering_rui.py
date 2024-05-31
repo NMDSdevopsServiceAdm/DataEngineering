@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utils.value_lists.ons_postcode_directory_value_lists import CurrentRUI
+from utils.column_values.ons_postcode_directory_values import CurrentRUI
 
 
 @dataclass

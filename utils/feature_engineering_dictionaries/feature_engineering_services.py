@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utils.value_lists.cqc_locations_value_lists import Services
+from utils.column_values.cqc_locations_values import Services
 
 
 @dataclass

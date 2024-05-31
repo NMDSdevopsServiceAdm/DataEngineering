@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
-from utils.value_lists.cqc_providers_value_lists import Sector
+from utils.column_values.cqc_providers_values import Sector
 
 
 @dataclass

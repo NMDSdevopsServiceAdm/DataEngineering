@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utils.value_lists.ons_postcode_directory_value_lists import CurrentRegion
+from utils.column_values.ons_postcode_directory_values import CurrentRegion
 
 
 @dataclass
