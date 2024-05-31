@@ -1,11 +1,19 @@
 from dataclasses import dataclass
 
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
-    CqcLocationCleanedValues as CQCLValues,
+from utils.column_values.cqc_locations_values import (
+    PrimaryServiceType,
+    Sector,
+    RegistrationStatus,
+    Dormancy,
 )
-from utils.feature_engineering_dictionaries import (
-    REGION_LOOKUP,
-    RURAL_URBAN_INDICATOR_LOOKUP,
+from utils.column_values.cqc_pir_values import (
+    CareHome,
+)
+from utils.feature_engineering_dictionaries.feature_engineering_region import (
+    FeatureEngineeringValueLabelsRegion as Region,
+)
+from utils.feature_engineering_dictionaries.feature_engineering_rui import (
+    FeatureEngineeringValueLabelsRUI as RUI,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as MainJobRole,
@@ -15,15 +23,18 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 @dataclass
 class CQCCategoricalValues:
     primary_service_types = [
-        CQCLValues.care_home_only,
-        CQCLValues.care_home_with_nursing,
-        CQCLValues.non_residential,
+        PrimaryServiceType.care_home_only,
+        PrimaryServiceType.care_home_with_nursing,
+        PrimaryServiceType.non_residential,
     ]
-    care_home_values = ["Y", "N"]
-    dormancy_values = ["Y", "N"]
-    cqc_sector = [CQCLValues.independent, CQCLValues.local_authority]
-    registration_status = [CQCLValues.registered]
-    registration_status_raw = [CQCLValues.registered, CQCLValues.deregistered]
+    care_home_values = [CareHome.care_home, CareHome.not_care_home]
+    dormancy_values = [Dormancy.dormant, Dormancy.not_dormant]
+    cqc_sector = [Sector.independent, Sector.local_authority]
+    registration_status = [RegistrationStatus.registered]
+    registration_status_raw = [
+        RegistrationStatus.registered,
+        RegistrationStatus.deregistered,
+    ]
 
 
 @dataclass
@@ -50,7 +61,7 @@ class ASCWDSDistinctValues:
 
 @dataclass
 class IndCQCCategoricalValues:
-    cqc_sector = [CQCLValues.independent]
+    cqc_sector = [Sector.independent]
     ascwds_filled_posts_source = [
         "worker records and total staff were the same",
         "only totalstaff was provided",
@@ -80,8 +91,8 @@ class IndCQCDistinctValues:
 
 @dataclass
 class ONSCategoricalValues:
-    rural_urban_indicators = list(RURAL_URBAN_INDICATOR_LOOKUP.values())
-    regions = list(REGION_LOOKUP.values())
+    rural_urban_indicators = list(RUI.labels_dict.values())
+    regions = list(Region.labels_dict.values())
     cssrs = [
         "Barking & Dagenham",
         "Barnet",
