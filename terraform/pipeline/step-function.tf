@@ -136,6 +136,34 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "bronze-validation-state-machine" {
+  name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/BronzeValidationPipeline-StepFunction.json", {
+    dataset_bucket_uri                            = module.datasets_bucket.bucket_uri
+    validate_ascwds_worker_raw_data_job_name      = module.validate_ascwds_worker_raw_data_job.job_name
+    validate_ascwds_workplace_raw_data_job_name   = module.validate_ascwds_workplace_raw_data_job.job_name
+    validate_locations_api_raw_data_job_name      = module.validate_locations_api_raw_data_job.job_name
+    validate_providers_api_raw_data_job_name      = module.validate_providers_api_raw_data_job.job_name
+    validate_pir_raw_data_job_name                = module.validate_pir_raw_data_job.job_name
+    validate_postcode_directory_raw_data_job_name = module.validate_postcode_directory_raw_data_job.job_name
+    data_validation_reports_crawler_name          = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn          = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "silver-validation-state-machine" {
   name     = "${local.workspace_prefix}-Silver-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
