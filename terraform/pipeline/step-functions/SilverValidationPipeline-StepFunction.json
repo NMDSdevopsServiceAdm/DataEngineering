@@ -1,5 +1,5 @@
 {
-    "Comment": "A state machine indicating the transformation steps from Bronze -> Silver -> Gold data layers, as divided by the stages",
+    "Comment": "A state machine for validating Silver layer data",
     "StartAt": "Silver validation",
     "States": {
       "Silver validation": {
@@ -113,7 +113,7 @@
           }
         ],
         "Next": "StartCrawler",
-        "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer",
+        "Comment": "A state machine for validating Silver layer data",
         "Catch": [
           {
             "ErrorEquals": [
