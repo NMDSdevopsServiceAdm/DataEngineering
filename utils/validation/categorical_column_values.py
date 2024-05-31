@@ -13,10 +13,10 @@ from utils.column_values.ind_cqc_pipeline_values import (
     ASCWDSFilledPostsSource as ASCWDSSource,
     EstimateFilledPostsSource as EstimateSource,
 )
-from utils.feature_engineering_dictionaries.feature_engineering_region import (
+from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as Region,
 )
-from utils.feature_engineering_dictionaries.feature_engineering_rui import (
+from utils.feature_engineering_resources.feature_engineering_rui import (
     FeatureEngineeringValueLabelsRUI as RUI,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
