@@ -1,21 +1,21 @@
 {
-    "Comment": "A state machine for validating Silver layer data",
-    "StartAt": "Silver validation",
+    "Comment": "A state machine for validating Bronze layer data",
+    "StartAt": "Bronze validation",
     "States": {
-      "Silver validation": {
+      "Bronze validation": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "Run validate ascwds workplace cleaned data job",
+            "StartAt": "Run validate ascwds workplace raw data job",
             "States": {
-              "Run validate ascwds workplace cleaned data job": {
+              "Run validate ascwds workplace raw data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=workplace_cleaned_data_report/"
+                    "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=workplace_raw_data_report/"
                   }
                 },
                 "End": true
@@ -23,16 +23,16 @@
             }
           },
           {
-            "StartAt": "Run validate ascwds worker cleaned job",
+            "StartAt": "Run validate ascwds worker raw job",
             "States": {
-              "Run validate ascwds worker cleaned job": {
+              "Run validate ascwds worker raw job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "JobName": "${validate_ascwds_worker_raw_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=worker_cleaned_data_report/"
+                    "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=worker_raw_data_report/"
                   }
                 },
                 "ResultPath": null,
@@ -41,17 +41,16 @@
             }
           },
           {
-            "StartAt": "Run validate locations api cleaned job",
+            "StartAt": "Run validate locations api raw job",
             "States": {
-                "Run validate locations api cleaned job": {
+                "Run validate locations api raw job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_locations_api_cleaned_data_job_name}",
+                  "JobName": "${validate_locations_api_raw_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
-                    "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
                   }
                 },
                 "End": true
@@ -59,17 +58,16 @@
             }
           },
           {
-            "StartAt": "Run validate providers api cleaned job",
+            "StartAt": "Run validate providers api raw job",
             "States": {
-                "Run validate providers api cleaned job": {
+                "Run validate providers api raw job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_providers_api_cleaned_data_job_name}",
+                  "JobName": "${validate_providers_api_raw_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
-                    "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_raw_data_report/"
                   }
                 },
                 "End": true
@@ -77,16 +75,16 @@
             }
           },
           {
-            "StartAt": "Run validate pir cleaned job",
+            "StartAt": "Run validate pir raw job",
             "States": {
-                "Run validate pir cleaned job": {
+                "Run validate pir raw job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_pir_cleaned_data_job_name }",
+                  "JobName": "${validate_pir_raw_data_job_name }",
                   "Arguments": {
-                    "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=pir_cleaned_data_report/"
+                    "--raw_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=pir_raw_data_report/"
                   }
                 },
                 "End": true
@@ -94,17 +92,16 @@
             }
           },
           {
-            "StartAt": "Run validate postcode directory cleaned job",
+            "StartAt": "Run validate postcode directory raw job",
             "States": {
-                "Run validate postcode directory cleaned job": {
+                "Run validate postcode directory raw job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
+                  "JobName": "${validate_postcode_directory_raw_data_job_name}",
                   "Arguments": {
                     "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                    "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_raw_data_report/"
                   }
                 },
                 "End": true
@@ -113,7 +110,7 @@
           }
         ],
         "Next": "StartCrawler",
-        "Comment": "A state machine for validating Silver layer data",
+        "Comment": "A state machine for validating Bronze layer data",
         "Catch": [
           {
             "ErrorEquals": [
