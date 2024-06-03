@@ -10,13 +10,15 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    RegistrationStatus,
 )
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationColumns as ReconColumn,
@@ -210,7 +212,7 @@ def filter_to_locations_relevant_to_reconcilition_process(
         F.col(CQCL.registration_status).isNull()
         | (
             (
-                (F.col(CQCL.registration_status) == CQCLValues.deregistered)
+                (F.col(CQCL.registration_status) == RegistrationStatus.deregistered)
                 & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
             )
             & (
