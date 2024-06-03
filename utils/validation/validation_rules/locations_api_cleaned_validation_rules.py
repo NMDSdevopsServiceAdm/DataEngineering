@@ -3,14 +3,10 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-
-from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.validation.categorical_column_values import (
-    CQCCategoricalValues,
-    CQCDistinctValues,
-    ONSCategoricalValues,
-    ONSDistinctValues,
+from utils.column_values.categorical_columns_by_dataset import (
+    LocationsApiCleanedCategoricalValues as CatValues,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
@@ -48,27 +44,27 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.number_of_beds: 500,
         },
         RuleName.categorical_values_in_columns: {
-            CQCLClean.care_home: CQCCategoricalValues.care_home_values,
-            CQCLClean.cqc_sector: CQCCategoricalValues.cqc_sector,
-            CQCLClean.registration_status: CQCCategoricalValues.registration_status,
-            CQCLClean.dormancy: CQCCategoricalValues.dormancy_values,
-            CQCLClean.primary_service_type: CQCCategoricalValues.primary_service_types,
-            CQCLClean.contemporary_cssr: ONSCategoricalValues.cssrs,
-            CQCLClean.contemporary_region: ONSCategoricalValues.regions,
-            CQCLClean.current_cssr: ONSCategoricalValues.cssrs,
-            CQCLClean.current_region: ONSCategoricalValues.regions,
-            CQCLClean.current_rural_urban_ind_11: ONSCategoricalValues.rural_urban_indicators,
+            CQCLClean.care_home: CatValues.care_home_column_values.categorical_values,
+            CQCLClean.cqc_sector: CatValues.sector_column_values.categorical_values,
+            CQCLClean.registration_status: CatValues.registration_status_column_values.categorical_values,
+            CQCLClean.dormancy: CatValues.dormancy_column_values.categorical_values,
+            CQCLClean.primary_service_type: CatValues.primary_service_type_column_values.categorical_values,
+            CQCLClean.contemporary_cssr: CatValues.contemporary_cssr_column_values.categorical_values,
+            CQCLClean.contemporary_region: CatValues.contemporary_region_column_values.categorical_values,
+            CQCLClean.current_cssr: CatValues.current_cssr_column_values.categorical_values,
+            CQCLClean.current_region: CatValues.current_region_column_values.categorical_values,
+            CQCLClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            CQCLClean.care_home: CQCDistinctValues.care_home_values,
-            CQCLClean.cqc_sector: CQCDistinctValues.cqc_sector_values,
-            CQCLClean.registration_status: CQCDistinctValues.registration_status_values,
-            CQCLClean.dormancy: CQCDistinctValues.dormancy_values,
-            CQCLClean.primary_service_type: CQCDistinctValues.primary_service_types,
-            CQCLClean.contemporary_cssr: ONSDistinctValues.cssrs,
-            CQCLClean.contemporary_region: ONSDistinctValues.regions,
-            CQCLClean.current_cssr: ONSDistinctValues.cssrs,
-            CQCLClean.current_region: ONSDistinctValues.regions,
-            CQCLClean.current_rural_urban_ind_11: ONSDistinctValues.rural_urban_indicators,
+            CQCLClean.care_home: CatValues.care_home_column_values.count_of_categorical_values,
+            CQCLClean.cqc_sector: CatValues.sector_column_values.count_of_categorical_values,
+            CQCLClean.registration_status: CatValues.registration_status_column_values.count_of_categorical_values,
+            CQCLClean.dormancy: CatValues.dormancy_column_values.count_of_categorical_values,
+            CQCLClean.primary_service_type: CatValues.primary_service_type_column_values.count_of_categorical_values,
+            CQCLClean.contemporary_cssr: CatValues.contemporary_cssr_column_values.count_of_categorical_values,
+            CQCLClean.contemporary_region: CatValues.contemporary_region_column_values.count_of_categorical_values,
+            CQCLClean.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
+            CQCLClean.current_region: CatValues.current_region_column_values.count_of_categorical_values,
+            CQCLClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.count_of_categorical_values,
         },
     }

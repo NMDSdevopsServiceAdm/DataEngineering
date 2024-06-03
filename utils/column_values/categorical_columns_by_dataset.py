@@ -52,6 +52,25 @@ class ASCWDSWorkerCleanedCategoricalValues:
     main_job_role_column_values = MainJobRole(AWKClean.main_job_role_labelled)
 
 
+@dataclass
+class LocationsApiCleanedCategoricalValues:
+    care_home_column_values = CareHome(CQCLClean.care_home)
+    sector_column_values = Sector(CQCLClean.cqc_sector)
+    dormancy_column_values = Dormancy(CQCLClean.dormancy, contains_null_values=True)
+    registration_status_column_values = RegistrationStatus(
+        CQCLClean.registration_status,
+        filtered_values_to_remove=[RegistrationStatus.deregistered],
+    )
+    primary_service_type_column_values = PrimaryServiceType(
+        CQCLClean.primary_service_type
+    )
+    current_region_column_values = Region(CQCLClean.current_region)
+    contemporary_region_column_values = Region(CQCLClean.contemporary_region)
+    current_rui_column_values = RUI(CQCLClean.current_rural_urban_ind_11)
+    current_cssr_column_values = CSSR(CQCLClean.current_cssr)
+    contemporary_cssr_column_values = CSSR(CQCLClean.contemporary_cssr)
+
+
 services_column_values = Services(CQCLClean.gac_service_types)
 location_column_values = LocationType(CQCL.type)
 primary_service_type_column_values = PrimaryServiceType(CQCLClean.primary_service_type)
@@ -101,3 +120,17 @@ class FeatureEngineeringCategoricalValues:
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     care_home_column_values = CareHome(IndCQC.care_home)
+
+
+@dataclass
+class EstimatedIndCQCFilledPostsCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    current_region_column_values = Region(IndCQC.current_region)
+    current_cssr_column_values = CSSR(IndCQC.current_cssr)
+    ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
+        IndCQC.ascwds_filled_posts_source
+    )
+    estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
+        IndCQC.estimate_filled_posts_source
+    )
