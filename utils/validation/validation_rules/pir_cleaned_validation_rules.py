@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-
+from utils.column_values.categorical_columns_by_dataset import (
+    PIRCleanedCategoricalValues as CatValues,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.categorical_column_values import (
     CQCCategoricalValues,
@@ -31,9 +33,9 @@ class PIRCleanedValidationRules:
             CQCPIRClean.people_directly_employed: 0,
         },
         RuleName.categorical_values_in_columns: {
-            CQCPIRClean.care_home: CQCCategoricalValues.care_home_values,
+            CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            CQCPIRClean.care_home: CQCDistinctValues.care_home_values,
+            CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
         },
     }

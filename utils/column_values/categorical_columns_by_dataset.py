@@ -71,6 +71,11 @@ class LocationsApiCleanedCategoricalValues:
     contemporary_cssr_column_values = CSSR(CQCLClean.contemporary_cssr)
 
 
+@dataclass
+class PIRCleanedCategoricalValues:
+    care_home_column_values = CareHome(PIRClean.care_home)
+
+
 services_column_values = Services(CQCLClean.gac_service_types)
 location_column_values = LocationType(CQCL.type)
 primary_service_type_column_values = PrimaryServiceType(CQCLClean.primary_service_type)
