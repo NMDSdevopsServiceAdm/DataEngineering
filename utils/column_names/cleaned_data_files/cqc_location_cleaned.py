@@ -5,7 +5,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
-    CqcProviderCleanedValues as CQCPValues,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
