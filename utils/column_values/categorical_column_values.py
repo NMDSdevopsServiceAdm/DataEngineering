@@ -1,14 +1,16 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 
 @dataclass
 class ColumnValues:
     column_name: str
     contains_null_values: bool = False
+    filtered_values_to_remove: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         self.categorical_values = self.list_values()
         self.count_of_categorical_values = self.count_values()
+        self.filtered_categorical_values = self.remove_filtered_values_from_list()
 
     def list_values(self) -> list:
         dict_values = asdict(self)
@@ -21,6 +23,12 @@ class ColumnValues:
         count = len(self.categorical_values)
         total_count = count + 1 if self.contains_null_values == True else count
         return total_count
+
+    def remove_filtered_values_from_list(self):
+        filtered_categorical_values = self.categorical_values
+        for x in self.filtered_values_to_remove:
+            filtered_categorical_values.remove(x)
+        return filtered_categorical_values
 
 
 @dataclass

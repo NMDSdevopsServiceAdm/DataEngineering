@@ -73,8 +73,33 @@ estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
 
 
 @dataclass
-class FeatureEngineeringCategoricalValues:
-    current_region_column_values = Region(ONS.current_region)
-    services_column_values = Services(CQCLClean.gac_service_types)
-    current_rui_column_values = RUI(ONS.current_rural_urban_ind_11)
+class CleanedIndCQCCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    sector_column_values = Sector(
+        CQCPClean.cqc_sector, filtered_values_to_remove=[Sector.local_authority]
+    )
     dormancy_column_values = Dormancy(CQCL.dormancy, contains_null_values=True)
+    registration_status_column_values = RegistrationStatus(
+        CQCL.registration_status,
+        filtered_values_to_remove=[RegistrationStatus.deregistered],
+    )
+    primary_service_type_column_values = PrimaryServiceType(
+        CQCLClean.primary_service_type
+    )
+    current_region_column_values = Region(ONS.current_region)
+    contemporary_region_column_values = Region(ONS.contemporary_region)
+    current_rui_column_values = RUI(ONS.current_rural_urban_ind_11)
+    current_cssr_column_values = CSSR(ONS.current_cssr)
+    contemporary_cssr_column_values = CSSR(ONS.contemporary_cssr)
+    ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
+        IndCQC.ascwds_filled_posts_source
+    )
+
+
+@dataclass
+class FeatureEngineeringCategoricalValues:
+    current_region_column_values = Region(IndCQC.current_region)
+    services_column_values = Services(IndCQC.gac_service_types)
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
+    care_home_column_values = CareHome(IndCQC.care_home)
