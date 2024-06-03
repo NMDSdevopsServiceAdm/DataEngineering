@@ -12,7 +12,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
     NewCqcLocationApiColumns as CQCLNew,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedValues as CQCPValues,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
