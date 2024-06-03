@@ -37,10 +37,10 @@ class CareHomeIndCqcFeaturesValidationRules:
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
-            IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
+            IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
+            IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
         },
     }
