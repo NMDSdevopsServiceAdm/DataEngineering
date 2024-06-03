@@ -20,7 +20,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_column_values import (
     RegistrationStatus,
 )
-from utils.column_names.reconciliation_values import (
+from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
     ReconciliationValues as ReconValues,
 )

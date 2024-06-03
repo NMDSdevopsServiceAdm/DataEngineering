@@ -41,7 +41,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-from utils.column_names.reconciliation_values import (
+from utils.column_names.reconciliation_columns import (
     ReconciliationValues as ReconValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
