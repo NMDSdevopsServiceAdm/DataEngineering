@@ -16,16 +16,15 @@ from utils.column_values.column_values import ColumnValues
 class Dormancy(ColumnValues):
     """The possible values of the dormancy column in CQC locations data"""
 
-    column_name: str = CQCL.dormancy
-
     dormant: str = "Y"
     not_dormant: str = "N"
 
-    # values_list = [dormant, not_dormant]
+
+dormancy_column_values = Dormancy(CQCL.dormancy)
 
 
 @dataclass
-class LocationType:
+class LocationType(ColumnValues):
     """The possible values of the type column in CQC locations data"""
 
     column_name: str = CQCL.type
@@ -37,18 +36,9 @@ class LocationType:
     independent_ambulance_identifier: str = "Independent Ambulance"
     primary_dental_identifier: str = "Primary Dental Care"
 
-    values_list = [
-        social_care_identifier,
-        nhs_healthcare_identifier,
-        independent_healthcare_identifier,
-        primary_medical_identifier,
-        independent_ambulance_identifier,
-        primary_dental_identifier,
-    ]
-
 
 @dataclass
-class RegistrationStatus:
+class RegistrationStatus(ColumnValues):
     """The possible values of the registration status column in CQC locations data"""
 
     column_name: str = CQCL.registration_status
@@ -56,11 +46,9 @@ class RegistrationStatus:
     registered: str = "Registered"
     deregistered: str = "Deregistered"
 
-    values_list = [registered, deregistered]
-
 
 @dataclass
-class PrimaryServiceType:
+class PrimaryServiceType(ColumnValues):
     """The possible values of the primary service type column in CQC locations data"""
 
     column_name: str = CQCLClean.primary_service_type
@@ -69,11 +57,9 @@ class PrimaryServiceType:
     care_home_only: str = "Care home without nursing"
     non_residential: str = "non-residential"
 
-    values_list = [care_home_with_nursing, care_home_only, non_residential]
-
 
 @dataclass
-class Services:
+class Services(ColumnValues):
     """The possible values of the GAC service types column in CQC locations data"""
 
     column_name: str = CQCLClean.gac_service_types
@@ -121,35 +107,3 @@ class Services:
     hospital_services_for_people_with_mental_health_needs: str = (
         "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
     )
-
-    values_list = [
-        care_home_service_with_nursing,
-        care_home_service_without_nursing,
-        community_based_services_for_people_who_misuse_substances,
-        hospice_services,
-        domiciliary_care_service,
-        remote_clinical_advice_service,
-        acute_services_without_overnight_beds,
-        specialist_college_service,
-        ambulance_service,
-        extra_care_housing_services,
-        urgent_care_services,
-        supported_living_service,
-        prison_healthcare_services,
-        community_based_services_for_people_with_mental_health_needs,
-        community_healthcare_service,
-        community_based_services_for_people_with_a_learning_disability,
-        community_health_care_services_nurses_agency_only,
-        dental_service,
-        mobile_doctors_service,
-        long_term_conditions_services,
-        doctors_consultation_service,
-        shared_lives,
-        acute_services_with_overnight_beds,
-        diagnostic_and_screening_service,
-        residential_substance_misuse_treatment_and_rehabilitation_service,
-        rehabilitation_services,
-        doctors_treatment_service,
-        hospice_services_at_home,
-        hospital_services_for_people_with_mental_health_needs,
-    ]
