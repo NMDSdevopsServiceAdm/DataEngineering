@@ -87,6 +87,13 @@ class PostcodeDirectoryCleanedCategoricalValues:
     contemporary_cssr_column_values = CSSR(ONSClean.contemporary_cssr)
 
 
+@dataclass
+class PostcodeDirectoryRawCategoricalValues:
+    region_column_values = Region(ONS.region)
+    rui_column_values = RUI(ONS.rural_urban_indicator_2011)
+    cssr_column_values = CSSR(ONS.cssr)
+
+
 services_column_values = Services(CQCLClean.gac_service_types)
 location_column_values = LocationType(CQCL.type)
 primary_service_type_column_values = PrimaryServiceType(CQCLClean.primary_service_type)
