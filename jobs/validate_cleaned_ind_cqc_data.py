@@ -6,10 +6,6 @@ os.environ["SPARK_VERSION"] = "3.3"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -35,9 +31,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    )
 
     check_result_df = validate_dataset(cleaned_ind_cqc_df, rules)
 
