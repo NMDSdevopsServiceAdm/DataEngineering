@@ -7,7 +7,7 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
     CqcProviderCleanedValues as CQCPValues,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 

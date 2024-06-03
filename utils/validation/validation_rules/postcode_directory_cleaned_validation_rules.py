@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_values.categorical_columns_by_dataset import (

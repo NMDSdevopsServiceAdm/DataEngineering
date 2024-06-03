@@ -10,7 +10,7 @@ from tests.test_file_schemas import PAFilledPostsByIcbAreaSchema as TestSchema
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 
