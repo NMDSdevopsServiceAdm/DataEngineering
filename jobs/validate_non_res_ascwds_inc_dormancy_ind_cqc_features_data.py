@@ -9,11 +9,11 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedValues as CQCLCleanValues,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceType,
 )
 from utils.validation.validation_rules.non_res_ascwds_inc_dormancy_ind_cqc_features_validation_rules import (
     NonResASCWDSIncDormancyIndCqcFeaturesValidationRules as Rules,
@@ -45,10 +45,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(
@@ -64,7 +64,7 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
     expected_size = cleaned_ind_cqc_df.where(
         (
             cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == CQCLCleanValues.non_residential
+            == PrimaryServiceType.non_residential
         )
         & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
     ).count()
