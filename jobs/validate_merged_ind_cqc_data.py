@@ -8,10 +8,12 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    Sector,
 )
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
@@ -55,7 +57,7 @@ def calculate_expected_size_of_merged_ind_cqc_dataset(
     cqc_location_df: DataFrame,
 ) -> int:
     expected_size = cqc_location_df.where(
-        cqc_location_df[CQCLClean.cqc_sector] == CQCLValues.independent
+        cqc_location_df[CQCLClean.cqc_sector] == Sector.independent
     ).count()
     return expected_size
 
