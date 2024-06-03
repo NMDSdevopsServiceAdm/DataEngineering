@@ -11,7 +11,7 @@ from tests.test_file_schemas import ReconciliationSchema as Schemas
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
