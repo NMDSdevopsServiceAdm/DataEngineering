@@ -73,6 +73,11 @@ class LocationsApiCleanedCategoricalValues:
 
 
 @dataclass
+class ProvidersApiCleanedCategoricalValues:
+    sector_column_values = Sector(CQCPClean.cqc_sector)
+
+
+@dataclass
 class PIRCleanedCategoricalValues:
     care_home_column_values = CareHome(PIRClean.care_home)
 
