@@ -15,11 +15,24 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedValues as CQCPValues,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedValues as CQCLValues,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+)
+from utils.column_values.categorical_column_values import (
+    Dormancy,
+    RegistrationStatus,
+    PrimaryServiceType,
+    Services,
+    CareHome,
+    Sector,
+    MainJobRoleLabels,
+    MainJobRoleID,
+    Region,
+    RUI,
+    CSSR,
+    ASCWDSFilledPostsSource,
+    EstimateFilledPostsSource,
+    LocationType,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -2142,22 +2155,22 @@ class ReconciliationData:
         ("loc_6", None, date(2024, 2, 29), ReconValues.singles_and_subs),  # keep
         ("loc_7", None, date(2024, 4, 1), ReconValues.parents),  # keep
         ("loc_8", None, date(2024, 4, 1), ReconValues.singles_and_subs),  # keep
-        ("loc_9", CQCLValues.registered, date(2024, 3, 31), ReconValues.parents),  # remove
-        ("loc_10", CQCLValues.registered, date(2024, 3, 31), ReconValues.singles_and_subs),  # remove
-        ("loc_11", CQCLValues.registered, date(2024, 3, 1), ReconValues.parents),  # remove
-        ("loc_12", CQCLValues.registered, date(2024, 3, 1), ReconValues.singles_and_subs),  # remove
-        ("loc_13", CQCLValues.registered, date(2024, 2, 29), ReconValues.parents),  # remove
-        ("loc_14", CQCLValues.registered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
-        ("loc_15", CQCLValues.registered, date(2024, 4, 1), ReconValues.parents),  # remove
-        ("loc_16", CQCLValues.registered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
-        ("loc_17", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.parents),  # keep
-        ("loc_18", CQCLValues.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
-        ("loc_19", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.parents),  # keep
-        ("loc_20", CQCLValues.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
-        ("loc_21", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.parents),  # keep
-        ("loc_22", CQCLValues.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
-        ("loc_23", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.parents),  # remove
-        ("loc_24", CQCLValues.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_9", RegistrationStatus.registered, date(2024, 3, 31), ReconValues.parents),  # remove
+        ("loc_10", RegistrationStatus.registered, date(2024, 3, 31), ReconValues.singles_and_subs),  # remove
+        ("loc_11", RegistrationStatus.registered, date(2024, 3, 1), ReconValues.parents),  # remove
+        ("loc_12", RegistrationStatus.registered, date(2024, 3, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_13", RegistrationStatus.registered, date(2024, 2, 29), ReconValues.parents),  # remove
+        ("loc_14", RegistrationStatus.registered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
+        ("loc_15", RegistrationStatus.registered, date(2024, 4, 1), ReconValues.parents),  # remove
+        ("loc_16", RegistrationStatus.registered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_17", RegistrationStatus.deregistered, date(2024, 3, 31), ReconValues.parents),  # keep
+        ("loc_18", RegistrationStatus.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
+        ("loc_19", RegistrationStatus.deregistered, date(2024, 3, 1), ReconValues.parents),  # keep
+        ("loc_20", RegistrationStatus.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
+        ("loc_21", RegistrationStatus.deregistered, date(2024, 2, 29), ReconValues.parents),  # keep
+        ("loc_22", RegistrationStatus.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
+        ("loc_23", RegistrationStatus.deregistered, date(2024, 4, 1), ReconValues.parents),  # remove
+        ("loc_24", RegistrationStatus.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
     ]
     # fmt: on
 
@@ -2416,12 +2429,12 @@ class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: on
 
     filter_to_non_care_home_rows = [
-        ("Y", CQCLValues.independent),
-        ("N", CQCLValues.independent),
+        ("Y", Sector.independent),
+        ("N", Sector.independent),
     ]
 
     expected_filtered_to_non_care_home_rows = [
-        ("N", CQCLValues.independent),
+        ("N", Sector.independent),
     ]
 
     filter_to_dormancy_rows = [
@@ -2575,12 +2588,12 @@ class CareHomeFeaturesData:
     # fmt: on
 
     filter_to_care_home_rows = rows = [
-        ("Y", CQCLValues.independent),
-        ("N", CQCLValues.independent),
+        ("Y", Sector.independent),
+        ("N", Sector.independent),
     ]
 
     expected_filtered_to_care_home_rows = rows = [
-        ("Y", CQCLValues.independent),
+        ("Y", Sector.independent),
     ]
 
 
@@ -3070,16 +3083,16 @@ class ValidateMergedIndCqcData:
     ]
 
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
     ]
     # fmt: on
 
     calculate_expected_size_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.local_authority),
         ("loc_3", None),
     ]
 
@@ -3089,8 +3102,8 @@ class FlattenCQCRatings:
     test_cqc_locations_rows = [
         (
             "loc_1",
-            CQCLValues.registered,
-            CQCLValues.social_care_identifier,
+            RegistrationStatus.registered,
+            LocationType.social_care_identifier,
             "20240101",
             "2024",
             "01",
@@ -3741,13 +3754,13 @@ class FlattenCQCRatings:
         ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", 1, 1),
     ]
     select_ratings_for_benchmarks_rows = [
-        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
-        ("loc_2", CQCLValues.registered, CQCRatingsValues.historic),
-        ("loc_3", CQCLValues.deregistered, CQCRatingsValues.current),
-        ("loc_4", CQCLValues.deregistered, CQCRatingsValues.historic),
+        ("loc_1", RegistrationStatus.registered, CQCRatingsValues.current),
+        ("loc_2", RegistrationStatus.registered, CQCRatingsValues.historic),
+        ("loc_3", RegistrationStatus.deregistered, CQCRatingsValues.current),
+        ("loc_4", RegistrationStatus.deregistered, CQCRatingsValues.historic),
     ]
     expected_select_ratings_for_benchmarks_rows = [
-        ("loc_1", CQCLValues.registered, CQCRatingsValues.current),
+        ("loc_1", RegistrationStatus.registered, CQCRatingsValues.current),
     ]
 
     add_good_or_outstanding_flag_rows = [
@@ -4173,20 +4186,20 @@ class ValidationUtils:
 
     categorical_values_rule = {
         RuleName.categorical_values_in_columns: {
-            IndCQC.cqc_sector: [CQCLValues.independent, CQCLValues.local_authority]
+            IndCQC.cqc_sector: [Sector.independent, Sector.local_authority]
         }
     }
     categorical_values_all_present_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.local_authority),
     ]
     categorical_values_some_present_rows = [
-        ("loc_1", CQCLValues.independent),
+        ("loc_1", Sector.independent),
         ("loc_2", None),
     ]
     categorical_values_extra_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.local_authority),
         ("loc_3", "other value"),
     ]
 
@@ -4225,21 +4238,21 @@ class ValidationUtils:
     }
 
     distinct_values_success_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.local_authority),
     ]
     fewer_distinct_values_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.independent),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.independent),
     ]
     more_distinct_values_rows = [
-        ("loc_1", CQCLValues.independent),
-        ("loc_2", CQCLValues.local_authority),
+        ("loc_1", Sector.independent),
+        ("loc_2", Sector.local_authority),
         ("loc_3", None),
     ]
     distinct_values_multiple_columns_rows = [
-        ("loc_1", CQCLValues.independent, "Y"),
-        ("loc_2", CQCLValues.local_authority, "N"),
+        ("loc_1", Sector.independent, "Y"),
+        ("loc_2", Sector.local_authority, "N"),
         ("loc_3", None, None),
     ]
 
@@ -4297,27 +4310,27 @@ class ValidationUtils:
 class ValidateLocationsAPICleanedData:
     # fmt: off
     raw_cqc_locations_rows = [
-        ("1-000000001", "20240101", CQCLValues.social_care_identifier, CQCLValues.registered),
-        ("1-000000002", "20240101", CQCLValues.social_care_identifier, CQCLValues.deregistered),
-        ("1-000000001", "20240201", CQCLValues.social_care_identifier, CQCLValues.registered),
-        ("1-000000002", "20240201", "not social care org", CQCLValues.deregistered),
+        ("1-000000001", "20240101", LocationType.social_care_identifier, RegistrationStatus.registered),
+        ("1-000000002", "20240101", LocationType.social_care_identifier, RegistrationStatus.deregistered),
+        ("1-000000001", "20240201", LocationType.social_care_identifier, RegistrationStatus.registered),
+        ("1-000000002", "20240201", "not social care org", RegistrationStatus.deregistered),
     ]
 
     cleaned_cqc_locations_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
     ]
     # fmt: on
 
     calculate_expected_size_rows = [
-        ("loc_1", CQCLValues.social_care_identifier, CQCLValues.registered),
-        ("loc_2", "non social care org", CQCLValues.registered),
-        ("loc_3", None, CQCLValues.registered),
-        ("loc_4", CQCLValues.social_care_identifier, CQCLValues.deregistered),
-        ("loc_5", "non social care org", CQCLValues.deregistered),
-        ("loc_6", None, CQCLValues.deregistered),
+        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered),
+        ("loc_2", "non social care org", RegistrationStatus.registered),
+        ("loc_3", None, RegistrationStatus.registered),
+        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered),
+        ("loc_5", "non social care org", RegistrationStatus.deregistered),
+        ("loc_6", None, RegistrationStatus.deregistered),
     ]
 
 
@@ -4410,10 +4423,10 @@ class ValidateCleanedIndCqcData:
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, CQCLValues.registered, date(2024, 1, 1), "Y", 5, ["service"], CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", CQCPValues.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
     ]
     # fmt: on
 
@@ -4429,10 +4442,10 @@ class ValidateCleanedIndCqcData:
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_only),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.care_home_only),
-        ("1-000000002", date(2024, 1, 9), CQCLValues.care_home_only),
+        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
+        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_only),
+        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.care_home_only),
+        ("1-000000002", date(2024, 1, 9), PrimaryServiceType.care_home_only),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -4443,9 +4456,9 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential),
+        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
+        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing),
+        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.non_residential),
         ("1-000000002", date(2024, 1, 9), None),
     ]
     # fmt: on
@@ -4455,10 +4468,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.non_residential, "Y"),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
-        ("1-000000002", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.non_residential, "Y"),
+        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.non_residential, "Y"),
+        ("1-000000002", date(2024, 1, 9), PrimaryServiceType.non_residential, "Y"),
     ]
 
     non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
@@ -4469,17 +4482,17 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CQCLValues.care_home_only, "Y"),
-        ("1-000000002", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "Y"),
-        ("1-000000001", date(2024, 1, 9), CQCLValues.non_residential, "Y"),
+        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only, "Y"),
+        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, "Y"),
+        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.non_residential, "Y"),
         ("1-000000002", date(2024, 1, 9), None, "Y"),
-        ("1-000000003", date(2024, 1, 1), CQCLValues.care_home_only, "N"),
-        ("1-000000004", date(2024, 1, 1), CQCLValues.care_home_with_nursing, "N"),
-        ("1-000000003", date(2024, 1, 9), CQCLValues.non_residential, "N"),
+        ("1-000000003", date(2024, 1, 1), PrimaryServiceType.care_home_only, "N"),
+        ("1-000000004", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, "N"),
+        ("1-000000003", date(2024, 1, 9), PrimaryServiceType.non_residential, "N"),
         ("1-000000004", date(2024, 1, 9), None, "N"),
-        ("1-000000005", date(2024, 1, 1), CQCLValues.care_home_only, None),
-        ("1-000000006", date(2024, 1, 1), CQCLValues.care_home_with_nursing, None),
-        ("1-000000005", date(2024, 1, 9), CQCLValues.non_residential, None),
+        ("1-000000005", date(2024, 1, 1), PrimaryServiceType.care_home_only, None),
+        ("1-000000006", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, None),
+        ("1-000000005", date(2024, 1, 9), PrimaryServiceType.non_residential, None),
         ("1-000000006", date(2024, 1, 9), None, None),
     ]
     # fmt: on
@@ -4496,10 +4509,10 @@ class ValidateEstimatedIndCqcFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", CQCLValues.independent, 5, CQCLValues.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
     ]
     # fmt: on
 
@@ -4563,10 +4576,10 @@ class ValidateASCWDSWorkerRawData:
 class ValidateLocationsAPIRawData:
     # fmt: off
     raw_cqc_locations_rows = [
-        ("1-000000001", "20240101", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000002", "20240101", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000001", "20240201", "Y", "prov_1", CQCLValues.registered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000002", "20240201", "Y", "prov_1", CQCLValues.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000001", "20240101", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240101", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
     ]
     # fmt: on
 
