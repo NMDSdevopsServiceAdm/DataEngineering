@@ -16,7 +16,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (

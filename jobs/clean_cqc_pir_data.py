@@ -8,7 +8,7 @@ import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
     CqcPIRCleanedValues as PIRCleanValues,
 )
