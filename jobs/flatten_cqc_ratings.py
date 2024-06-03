@@ -13,12 +13,13 @@ from utils import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedValues as CQCLValues,
-)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
 )
 from utils.cqc_ratings_utils.cqc_ratings_values import (
     CQCRatingsColumns as CQCRatings,
@@ -68,7 +69,7 @@ def main(
     )
 
     cqc_location_df = utils.select_rows_with_value(
-        cqc_location_df, CQCL.type, CQCLValues.social_care_identifier
+        cqc_location_df, CQCL.type, LocationType.social_care_identifier
     )
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
@@ -281,7 +282,7 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
     benchmark_ratings_df = ratings_df.where(
-        (ratings_df[CQCL.registration_status] == CQCLValues.registered)
+        (ratings_df[CQCL.registration_status] == RegistrationStatus.registered)
         & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current)
     )
     return benchmark_ratings_df
