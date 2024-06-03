@@ -7,10 +7,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     PIRCleanedCategoricalValues as CatValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.validation.categorical_column_values import (
-    CQCCategoricalValues,
-    CQCDistinctValues,
-)
 
 
 @dataclass
