@@ -28,15 +28,3 @@ class ReconciliationColumns:
     item: str = "Item"
     phone: str = "Phone"
     workplace_id: str = "Workplace Id"
-
-
-@dataclass
-class ReconciliationValues:
-    singles_and_subs: str = "singles_and_subs"
-    parents: str = "parents"
-    single_sub_subject_value: str = "CQC Reconcilliation Work"
-    parent_subject_value: str = "CQC Reconcilliation Work - Parent"
-    single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
-    single_sub_reg_type_description: str = "Potential (new): Regtype"
-    is_parent: str = "Yes"
-    is_not_parent: str = "No"
