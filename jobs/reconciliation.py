@@ -19,10 +19,13 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import (
     RegistrationStatus,
+    ParentsOrSinglesAndSubs,
+    IsParent,
+    Subject,
+    SingleSubDescription,
 )
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
-    ReconciliationValues as ReconValues,
 )
 from utils.value_labels.reconciliation.label_dictionary import (
     labels_dict as reconciliation_labels_dict,
@@ -157,8 +160,8 @@ def add_parents_or_singles_and_subs_col_to_df(df: DataFrame) -> DataFrame:
                     & (F.col(AWPClean.parent_permission) == "Parent has ownership")
                 )
             ),
-            F.lit(ReconValues.parents),
-        ).otherwise(F.lit(ReconValues.singles_and_subs)),
+            F.lit(ParentsOrSinglesAndSubs.parents),
+        ).otherwise(F.lit(ParentsOrSinglesAndSubs.singles_and_subs)),
     )
     return df
 
@@ -168,7 +171,7 @@ def filter_to_cqc_registration_type_only(df: DataFrame) -> DataFrame:
 
 
 def get_ascwds_parent_accounts(df: DataFrame) -> DataFrame:
-    df = df.filter(F.col(AWPClean.is_parent) == ReconValues.is_parent).select(
+    df = df.filter(F.col(AWPClean.is_parent) == IsParent.is_parent).select(
         AWPClean.nmds_id,
         AWPClean.establishment_id,
         AWPClean.establishment_name,
@@ -216,11 +219,14 @@ def filter_to_locations_relevant_to_reconcilition_process(
                 & (F.col(CQCL.deregistration_date) < first_of_most_recent_month)
             )
             & (
-                (F.col(ReconColumn.parents_or_singles_and_subs) == ReconValues.parents)
+                (
+                    F.col(ReconColumn.parents_or_singles_and_subs)
+                    == ParentsOrSinglesAndSubs.parents
+                )
                 | (
                     (
                         F.col(ReconColumn.parents_or_singles_and_subs)
-                        == ReconValues.singles_and_subs
+                        == ParentsOrSinglesAndSubs.singles_and_subs
                     )
                     & (F.col(CQCL.deregistration_date) >= first_of_previous_month)
                 )
@@ -236,11 +242,11 @@ def create_reconciliation_output_for_ascwds_single_and_sub_accounts(
     singles_and_subs_df = utils.select_rows_with_value(
         reconciliation_df,
         ReconColumn.parents_or_singles_and_subs,
-        ReconValues.singles_and_subs,
+        ParentsOrSinglesAndSubs.singles_and_subs,
     )
     singles_and_subs_df = add_singles_and_sub_description_column(singles_and_subs_df)
     singles_and_subs_df = add_subject_column(
-        singles_and_subs_df, ReconValues.single_sub_subject_value
+        singles_and_subs_df, Subject.single_sub_subject_value
     )
     singles_and_subs_df = create_missing_columns_required_for_output(
         singles_and_subs_df
@@ -257,8 +263,8 @@ def add_singles_and_sub_description_column(df: DataFrame) -> DataFrame:
         ReconColumn.description,
         F.when(
             F.col(CQCL.deregistration_date).isNotNull(),
-            F.lit(ReconValues.single_sub_deregistered_description),
-        ).otherwise(F.lit(ReconValues.single_sub_reg_type_description)),
+            F.lit(SingleSubDescription.single_sub_deregistered_description),
+        ).otherwise(F.lit(SingleSubDescription.single_sub_reg_type_description)),
     )
     return df
 
@@ -269,7 +275,9 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     first_of_previous_month: str,
 ) -> DataFrame:
     reconciliation_parents_df = utils.select_rows_with_value(
-        reconciliation_df, ReconColumn.parents_or_singles_and_subs, ReconValues.parents
+        reconciliation_df,
+        ReconColumn.parents_or_singles_and_subs,
+        ParentsOrSinglesAndSubs.parents,
     )
     new_issues_df = reconciliation_parents_df.where(
         F.col(CQCL.deregistration_date) >= first_of_previous_month
@@ -301,7 +309,7 @@ def create_reconciliation_output_for_ascwds_parent_accounts(
     )
 
     ascwds_parent_accounts_df = add_subject_column(
-        ascwds_parent_accounts_df, ReconValues.parent_subject_value
+        ascwds_parent_accounts_df, Subject.parent_subject_value
     )
 
     ascwds_parent_accounts_df = create_missing_columns_required_for_output(
