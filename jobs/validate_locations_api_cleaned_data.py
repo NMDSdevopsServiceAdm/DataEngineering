@@ -45,9 +45,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
-    )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
 
