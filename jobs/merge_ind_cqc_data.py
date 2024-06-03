@@ -8,7 +8,6 @@ import utils.cleaning_utils as cUtils
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -21,6 +20,12 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    PrimaryServiceType,
+    RegistrationStatus,
+    Sector,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -116,7 +121,7 @@ def main(
 
 
 def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(F.col(CQCLClean.cqc_sector) == CQCLValues.independent)
+    return df.where(F.col(CQCLClean.cqc_sector) == Sector.independent)
 
 
 def join_pir_data_into_merged_df(ind_df: DataFrame, pir_df: DataFrame):
