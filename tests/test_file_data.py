@@ -31,6 +31,10 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     LocationType,
     CQCRatingsValues,
+    ParentsOrSinglesAndSubs,
+    IsParent,
+    Subject,
+    SingleSubDescription,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -40,9 +44,6 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
-)
-from utils.column_names.reconciliation_columns import (
-    ReconciliationValues as ReconValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
@@ -2142,30 +2143,30 @@ class ReconciliationData:
     first_of_previous_month = date(2024, 3, 1)
     # fmt: off
     filter_to_relevant_rows = [
-        ("loc_1", None, date(2024, 3, 31), ReconValues.parents),  # keep
-        ("loc_2", None, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
-        ("loc_3", None, date(2024, 3, 1), ReconValues.parents),  # keep
-        ("loc_4", None, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
-        ("loc_5", None, date(2024, 2, 29), ReconValues.parents),  # keep
-        ("loc_6", None, date(2024, 2, 29), ReconValues.singles_and_subs),  # keep
-        ("loc_7", None, date(2024, 4, 1), ReconValues.parents),  # keep
-        ("loc_8", None, date(2024, 4, 1), ReconValues.singles_and_subs),  # keep
-        ("loc_9", RegistrationStatus.registered, date(2024, 3, 31), ReconValues.parents),  # remove
-        ("loc_10", RegistrationStatus.registered, date(2024, 3, 31), ReconValues.singles_and_subs),  # remove
-        ("loc_11", RegistrationStatus.registered, date(2024, 3, 1), ReconValues.parents),  # remove
-        ("loc_12", RegistrationStatus.registered, date(2024, 3, 1), ReconValues.singles_and_subs),  # remove
-        ("loc_13", RegistrationStatus.registered, date(2024, 2, 29), ReconValues.parents),  # remove
-        ("loc_14", RegistrationStatus.registered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
-        ("loc_15", RegistrationStatus.registered, date(2024, 4, 1), ReconValues.parents),  # remove
-        ("loc_16", RegistrationStatus.registered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
-        ("loc_17", RegistrationStatus.deregistered, date(2024, 3, 31), ReconValues.parents),  # keep
-        ("loc_18", RegistrationStatus.deregistered, date(2024, 3, 31), ReconValues.singles_and_subs),  # keep
-        ("loc_19", RegistrationStatus.deregistered, date(2024, 3, 1), ReconValues.parents),  # keep
-        ("loc_20", RegistrationStatus.deregistered, date(2024, 3, 1), ReconValues.singles_and_subs),  # keep
-        ("loc_21", RegistrationStatus.deregistered, date(2024, 2, 29), ReconValues.parents),  # keep
-        ("loc_22", RegistrationStatus.deregistered, date(2024, 2, 29), ReconValues.singles_and_subs),  # remove
-        ("loc_23", RegistrationStatus.deregistered, date(2024, 4, 1), ReconValues.parents),  # remove
-        ("loc_24", RegistrationStatus.deregistered, date(2024, 4, 1), ReconValues.singles_and_subs),  # remove
+        ("loc_1", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_2", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_3", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_4", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_5", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_6", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_7", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_8", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_9", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_10", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_11", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_12", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_13", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_14", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_15", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_16", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_17", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_18", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_19", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_20", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_21", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_22", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_23", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_24", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
     ]
     # fmt: on
 
@@ -2176,10 +2177,15 @@ class ReconciliationData:
         ("4", "No", "Parent has ownership"),
     ]
     expected_parents_or_singles_and_subs_rows = [
-        ("1", "Yes", "Parent has ownership", ReconValues.parents),
-        ("2", "Yes", "Workplace has ownership", ReconValues.parents),
-        ("3", "No", "Workplace has ownership", ReconValues.singles_and_subs),
-        ("4", "No", "Parent has ownership", ReconValues.parents),
+        ("1", "Yes", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
+        ("2", "Yes", "Workplace has ownership", ParentsOrSinglesAndSubs.parents),
+        (
+            "3",
+            "No",
+            "Workplace has ownership",
+            ParentsOrSinglesAndSubs.singles_and_subs,
+        ),
+        ("4", "No", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
     ]
 
     add_singles_and_subs_description_rows = [
@@ -2188,8 +2194,12 @@ class ReconciliationData:
     ]
 
     expected_singles_and_subs_description_rows = [
-        ("loc_1", date(2024, 3, 28), ReconValues.single_sub_deregistered_description),
-        ("loc_2", None, ReconValues.single_sub_reg_type_description),
+        (
+            "loc_1",
+            date(2024, 3, 28),
+            SingleSubDescription.single_sub_deregistered_description,
+        ),
+        ("loc_2", None, SingleSubDescription.single_sub_reg_type_description),
     ]
 
     create_missing_columns_rows = [
@@ -2315,7 +2325,7 @@ class ReconciliationData:
             "org_1",
             "type",
             "region_id",
-            ReconValues.is_parent,
+            IsParent.is_parent,
             "other",
         ),
         (
@@ -2325,7 +2335,7 @@ class ReconciliationData:
             "org_2",
             "type",
             "region_id",
-            ReconValues.is_not_parent,
+            IsParent.is_not_parent,
             "other",
         ),
         ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
