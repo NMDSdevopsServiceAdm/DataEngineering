@@ -14,11 +14,3 @@ class CqcPIRCleanedColumns(CqcPirColumns):
     people_directly_employed: str = "people_directly_employed"
 
     care_home: str = NewCqcLocationApiColumns.care_home
-
-
-@dataclass
-class CqcPIRCleanedValues:
-    yes: str = "Y"
-    no: str = "N"
-    residential: str = "Residential"
-    community: str = "Community"
