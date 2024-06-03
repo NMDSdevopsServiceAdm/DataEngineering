@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import time
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
