@@ -30,6 +30,7 @@ from utils.column_values.categorical_column_values import (
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
     LocationType,
+    CQCRatingsValues,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -42,9 +43,6 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
-)
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
