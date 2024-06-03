@@ -62,7 +62,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.raw_data_files.ons_columns import (

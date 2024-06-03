@@ -10,7 +10,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned_values import (
