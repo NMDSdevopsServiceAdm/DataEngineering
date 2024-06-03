@@ -18,7 +18,11 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-    CqcLocationCleanedValues as CQCLValues,
+)
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    PrimaryServiceType,
+    RegistrationStatus,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -114,7 +118,7 @@ def main(
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
-    return df.where(df[CQCL.type] == CQCLValues.social_care_identifier)
+    return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
 def join_ons_postcode_data_into_cqc_df(
@@ -163,16 +167,16 @@ def allocate_primary_service_type(df: DataFrame):
                 df[CQCL.gac_service_types].description,
                 "Care home service with nursing",
             ),
-            CQCLValues.care_home_with_nursing,
+            PrimaryServiceType.care_home_with_nursing,
         )
         .when(
             F.array_contains(
                 df[CQCL.gac_service_types].description,
                 "Care home service without nursing",
             ),
-            CQCLValues.care_home_only,
+            PrimaryServiceType.care_home_only,
         )
-        .otherwise(CQCLValues.non_residential),
+        .otherwise(PrimaryServiceType.non_residential),
     )
     return df
 
@@ -202,8 +206,8 @@ def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
 
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != CQCLValues.registered)
-        & (locations_df[CQCL.registration_status] != CQCLValues.deregistered)
+        (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
+        & (locations_df[CQCL.registration_status] != RegistrationStatus.deregistered)
     ).count()
 
     if invalid_rows != 0:
@@ -212,7 +216,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
         )
 
     locations_df = locations_df.where(
-        locations_df[CQCL.registration_status] == CQCLValues.registered
+        locations_df[CQCL.registration_status] == RegistrationStatus.registered
     )
     return locations_df
 
