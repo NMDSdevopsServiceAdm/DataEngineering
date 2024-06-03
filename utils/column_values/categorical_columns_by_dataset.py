@@ -47,6 +47,11 @@ class LocationApiRawCategoricalValues:
     care_home_column_values = CareHome(CQCL.care_home)
 
 
+@dataclass
+class ASCWDSWorkerCleanedCategoricalValues:
+    main_job_role_column_values = MainJobRole(AWKClean.main_job_role_labelled)
+
+
 services_column_values = Services(CQCLClean.gac_service_types)
 location_column_values = LocationType(CQCL.type)
 primary_service_type_column_values = PrimaryServiceType(CQCLClean.primary_service_type)

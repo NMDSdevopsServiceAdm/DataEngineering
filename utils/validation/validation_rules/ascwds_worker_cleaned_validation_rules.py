@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-
+from utils.column_values.categorical_columns_by_dataset import (
+    ASCWDSWorkerCleanedCategoricalValues as CatValues,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.validation.categorical_column_values import (
-    ASCWDSCategoricalValues,
-    ASCWDSDistinctValues,
+from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
+    AscwdsWorkerValueLabelsMainjrid as ValueCodes,
 )
 
 
@@ -26,11 +27,11 @@ class ASCWDSWorkerCleanedValidationRules:
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.categorical_values_in_columns: {
-            AWKClean.main_job_role_id: ASCWDSCategoricalValues.main_job_role_id,
-            AWKClean.main_job_role_labelled: ASCWDSCategoricalValues.main_job_role_labelled,
+            AWKClean.main_job_role_id: ValueCodes.labels_dict.keys(),
+            AWKClean.main_job_role_labelled: CatValues.main_job_role_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            AWKClean.main_job_role_id: ASCWDSDistinctValues.main_job_role_id_values,
-            AWKClean.main_job_role_labelled: ASCWDSDistinctValues.main_job_role_labelled_values,
+            AWKClean.main_job_role_id: len(ValueCodes.labels_dict),
+            AWKClean.main_job_role_labelled: CatValues.main_job_role_column_values.count_of_categorical_values,
         },
     }

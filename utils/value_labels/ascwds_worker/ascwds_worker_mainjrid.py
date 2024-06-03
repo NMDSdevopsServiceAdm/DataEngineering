@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from utils.column_values.ascwds_worker_values import (
+from utils.column_values.categorical_column_values import (
     MainJobRole,
 )
 
