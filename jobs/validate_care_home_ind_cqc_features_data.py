@@ -44,10 +44,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_care_home_ind_cqc_features_dataset(
-            cleaned_ind_cqc_df
-        )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+        cleaned_ind_cqc_df
     )
 
     check_result_df = validate_dataset(care_home_ind_cqc_features_df, rules)
