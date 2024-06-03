@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from utils.column_values.cqc_locations_values import (
-    PrimaryServiceType,
+    primary_service_type_column_values,
     Sector,
-    RegistrationStatus,
+    registration_status_column_values,
     dormancy_column_values,
 )
 from utils.column_values.cqc_pir_values import (
@@ -29,18 +29,14 @@ from utils.column_values.ons_postcode_directory_values import (
 
 @dataclass
 class CQCCategoricalValues:
-    primary_service_types = [
-        PrimaryServiceType.care_home_only,
-        PrimaryServiceType.care_home_with_nursing,
-        PrimaryServiceType.non_residential,
-    ]
+    primary_service_types = primary_service_type_column_values.categorical_values
     care_home_values = [CareHome.care_home, CareHome.not_care_home]
     dormancy_values = dormancy_column_values.categorical_values
     cqc_sector = [Sector.independent, Sector.local_authority]
-    registration_status = [RegistrationStatus.registered]
+    registration_status = registration_status_column_values.categorical_values
     registration_status_raw = [
-        RegistrationStatus.registered,
-        RegistrationStatus.deregistered,
+        registration_status_column_values.registered,
+        registration_status_column_values.deregistered,
     ]
 
 
@@ -48,7 +44,7 @@ class CQCCategoricalValues:
 class CQCDistinctValues:
     primary_service_types = len(CQCCategoricalValues.primary_service_types)
     care_home_values = len(CQCCategoricalValues.care_home_values)
-    dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
+    dormancy_values = len(CQCCategoricalValues.dormancy_values)
     registration_status_values = len(CQCCategoricalValues.registration_status)
     cqc_sector_values = len(CQCCategoricalValues.cqc_sector)
     registration_status_raw_values = len(CQCCategoricalValues.registration_status_raw)
