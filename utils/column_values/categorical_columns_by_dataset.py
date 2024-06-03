@@ -25,7 +25,3 @@ class LocationApiRawCategoricalValues:
     primary_service_type_column_values = PrimaryServiceType(
         CQCLClean.primary_service_type
     )
-
-
-services_column_values = Services(CQCLClean.gac_service_types)
-location_column_values = LocationType(CQCL.type)

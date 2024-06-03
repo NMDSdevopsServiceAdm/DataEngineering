@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 
 from utils.column_values.cqc_locations_values import (
-    primary_service_type_column_values,
+    LocationApiRawCategoricalValues as CatValues,
     Sector,
-    registration_status_column_values,
-    dormancy_column_values,
 )
 from utils.column_values.cqc_pir_values import (
     CareHome,
@@ -29,14 +27,16 @@ from utils.column_values.ons_postcode_directory_values import (
 
 @dataclass
 class CQCCategoricalValues:
-    primary_service_types = primary_service_type_column_values.categorical_values
+    primary_service_types = (
+        CatValues.primary_service_type_column_values.categorical_values
+    )
     care_home_values = [CareHome.care_home, CareHome.not_care_home]
-    dormancy_values = dormancy_column_values.categorical_values
+    dormancy_values = CatValues.dormancy_column_values.categorical_values
     cqc_sector = [Sector.independent, Sector.local_authority]
-    registration_status = registration_status_column_values.categorical_values
+    registration_status = CatValues.registration_status_column_values.categorical_values
     registration_status_raw = [
-        registration_status_column_values.registered,
-        registration_status_column_values.deregistered,
+        CatValues.registration_status_column_values.registered,
+        CatValues.registration_status_column_values.deregistered,
     ]
 
 
