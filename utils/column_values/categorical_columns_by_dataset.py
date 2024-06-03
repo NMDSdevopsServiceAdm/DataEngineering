@@ -59,7 +59,7 @@ class LocationsApiCleanedCategoricalValues:
     dormancy_column_values = Dormancy(CQCLClean.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
         CQCLClean.registration_status,
-        filtered_values_to_remove=[RegistrationStatus.deregistered],
+        value_to_remove=RegistrationStatus.deregistered,
     )
     primary_service_type_column_values = PrimaryServiceType(
         CQCLClean.primary_service_type
@@ -103,7 +103,7 @@ class MergedIndCQCCategoricalValues:
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
         IndCQC.registration_status,
-        filtered_values_to_remove=[RegistrationStatus.deregistered],
+        value_to_remove=RegistrationStatus.deregistered,
     )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
@@ -117,12 +117,12 @@ class MergedIndCQCCategoricalValues:
 class CleanedIndCQCCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
-        IndCQC.cqc_sector, filtered_values_to_remove=[Sector.local_authority]
+        IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
         IndCQC.registration_status,
-        filtered_values_to_remove=[RegistrationStatus.deregistered],
+        value_to_remove=RegistrationStatus.deregistered,
     )
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
