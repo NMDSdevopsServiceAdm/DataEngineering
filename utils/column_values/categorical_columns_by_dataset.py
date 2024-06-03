@@ -22,15 +22,12 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-
 from utils.column_values.categorical_column_values import (
     Dormancy,
-    LocationType,
     RegistrationStatus,
     PrimaryServiceType,
     Services,
     CareHome,
-    PIRType,
     Sector,
     MainJobRole,
     Region,
@@ -97,26 +94,6 @@ class PostcodeDirectoryRawCategoricalValues:
     region_column_values = Region(ONS.region)
     rui_column_values = RUI(ONS.rural_urban_indicator_2011)
     cssr_column_values = CSSR(ONS.cssr)
-
-
-services_column_values = Services(CQCLClean.gac_service_types)
-location_column_values = LocationType(CQCL.type)
-primary_service_type_column_values = PrimaryServiceType(CQCLClean.primary_service_type)
-pir_type_column_values = PIRType(PIR.pir_type)
-sector_column_values = Sector(CQCPClean.cqc_sector)
-main_job_role_column_values = MainJobRole(AWKClean.main_job_role_labelled)
-current_region_column_values = Region(ONSClean.current_region)
-contemporary_region_column_values = Region(ONSClean.contemporary_region)
-current_rui_column_values = RUI(ONSClean.current_rural_urban_ind_11)
-contemporary_rui_column_values = RUI(ONSClean.contemporary_rural_urban_ind_11)
-current_cssr_column_values = CSSR(ONSClean.current_cssr)
-contemporary_cssr_column_values = CSSR(ONSClean.contemporary_cssr)
-ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
-    IndCQC.ascwds_filled_posts_source
-)
-estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
-    IndCQC.estimate_filled_posts_source
-)
 
 
 @dataclass
