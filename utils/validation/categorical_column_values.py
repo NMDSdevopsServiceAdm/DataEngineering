@@ -35,7 +35,7 @@ class CQCCategoricalValues:
         PrimaryServiceType.non_residential,
     ]
     care_home_values = [CareHome.care_home, CareHome.not_care_home]
-    dormancy_values = [Dormancy.dormant, Dormancy.not_dormant]
+    dormancy_values = Dormancy.list_values()
     cqc_sector = [Sector.independent, Sector.local_authority]
     registration_status = [RegistrationStatus.registered]
     registration_status_raw = [
@@ -48,7 +48,7 @@ class CQCCategoricalValues:
 class CQCDistinctValues:
     primary_service_types = len(CQCCategoricalValues.primary_service_types)
     care_home_values = len(CQCCategoricalValues.care_home_values)
-    dormancy_values = len(CQCCategoricalValues.dormancy_values) + 1  # can be null
+    dormancy_values = Dormancy.count_values() + 1  # can be null
     registration_status_values = len(CQCCategoricalValues.registration_status)
     cqc_sector_values = len(CQCCategoricalValues.cqc_sector)
     registration_status_raw_values = len(CQCCategoricalValues.registration_status_raw)

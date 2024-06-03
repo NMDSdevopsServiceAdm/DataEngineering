@@ -9,10 +9,11 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
 )
 
 from utils.column_values.cqc_providers_values import Sector
+from utils.column_values.column_values import ColumnValues
 
 
 @dataclass
-class Dormancy:
+class Dormancy(ColumnValues):
     """The possible values of the dormancy column in CQC locations data"""
 
     column_name: str = CQCL.dormancy
@@ -20,7 +21,7 @@ class Dormancy:
     dormant: str = "Y"
     not_dormant: str = "N"
 
-    values_list = [dormant, not_dormant]
+    # values_list = [dormant, not_dormant]
 
 
 @dataclass
@@ -85,7 +86,9 @@ class Services:
     hospice_services: str = "Hospice services"
     domiciliary_care_service: str = "Domiciliary care service"
     remote_clinical_advice_service: str = "Remote clinical advice service"
-    acute_services_without_overnight_beds: str = "Acute services without overnight beds / listed acute services with or without overnight beds"
+    acute_services_without_overnight_beds: str = (
+        "Acute services without overnight beds / listed acute services with or without overnight beds"
+    )
     specialist_college_service: str = "Specialist college service"
     ambulance_service: str = "Ambulance service"
     extra_care_housing_services: str = "Extra Care housing services"
@@ -115,7 +118,9 @@ class Services:
     rehabilitation_services: str = "Rehabilitation services"
     doctors_treatment_service: str = "Doctors treatment service"
     hospice_services_at_home: str = "Hospice services at home"
-    hospital_services_for_people_with_mental_health_needs: str = "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    hospital_services_for_people_with_mental_health_needs: str = (
+        "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    )
 
     values_list = [
         care_home_service_with_nursing,
