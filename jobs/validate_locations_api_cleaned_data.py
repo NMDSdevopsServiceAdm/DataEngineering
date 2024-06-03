@@ -6,14 +6,15 @@ os.environ["SPARK_VERSION"] = "3.3"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedValues as CQCLValues,
-)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
 )
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
     LocationsAPICleanedValidationRules as Rules,
@@ -45,9 +46,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
 
@@ -58,8 +59,8 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
     expected_size = raw_location_df.where(
-        (raw_location_df[CQCL.type] == CQCLValues.social_care_identifier)
-        & (raw_location_df[CQCL.registration_status] == CQCLValues.registered)
+        (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
+        & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
     ).count()
     return expected_size
 
