@@ -74,7 +74,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.reconciliation_utils.reconciliation_values import (
+from utils.column_names.reconciliation_values import (
     ReconciliationColumns as ReconColumn,
 )
 from utils.column_names.cqc_ratings_columns import (
