@@ -27,11 +27,11 @@ class ASCWDSWorkerCleanedValidationRules:
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.categorical_values_in_columns: {
-            AWKClean.main_job_role_id: ValueCodes.labels_dict.keys(),
-            AWKClean.main_job_role_labelled: CatValues.main_job_role_column_values.categorical_values,
+            AWKClean.main_job_role_id: CatValues.main_job_role_id_column_values.categorical_values,
+            AWKClean.main_job_role_labelled: CatValues.main_job_role_labels_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            AWKClean.main_job_role_id: len(ValueCodes.labels_dict),
-            AWKClean.main_job_role_labelled: CatValues.main_job_role_column_values.count_of_categorical_values,
+            AWKClean.main_job_role_id: CatValues.main_job_role_id_column_values.count_of_categorical_values,
+            AWKClean.main_job_role_labelled: CatValues.main_job_role_labels_column_values.count_of_categorical_values,
         },
     }

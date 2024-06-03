@@ -77,7 +77,9 @@ class Services(ColumnValues):
     hospice_services: str = "Hospice services"
     domiciliary_care_service: str = "Domiciliary care service"
     remote_clinical_advice_service: str = "Remote clinical advice service"
-    acute_services_without_overnight_beds: str = "Acute services without overnight beds / listed acute services with or without overnight beds"
+    acute_services_without_overnight_beds: str = (
+        "Acute services without overnight beds / listed acute services with or without overnight beds"
+    )
     specialist_college_service: str = "Specialist college service"
     ambulance_service: str = "Ambulance service"
     extra_care_housing_services: str = "Extra Care housing services"
@@ -107,7 +109,9 @@ class Services(ColumnValues):
     rehabilitation_services: str = "Rehabilitation services"
     doctors_treatment_service: str = "Doctors treatment service"
     hospice_services_at_home: str = "Hospice services at home"
-    hospital_services_for_people_with_mental_health_needs: str = "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    hospital_services_for_people_with_mental_health_needs: str = (
+        "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    )
 
 
 @dataclass
@@ -135,7 +139,7 @@ class Sector(ColumnValues):
 
 
 @dataclass
-class MainJobRole(ColumnValues):
+class MainJobRoleLabels(ColumnValues):
     """The possible values of the main job role column in ASCWDS data"""
 
     not_known: str = "Not known"
@@ -173,6 +177,45 @@ class MainJobRole(ColumnValues):
     deputy_manager: str = "Deputy manager"
     learning_and_development_lead: str = "Learning and development lead"
     team_leader: str = "Team leader"
+
+
+@dataclass
+class MainJobRoleID(ColumnValues):
+    """The possible values of the main job role column in ASCWDS data"""
+
+    not_known: str = "-1"
+    senior_management: str = "1"
+    middle_management: str = "2"
+    first_line_manager: str = "3"
+    registered_manager: str = "4"
+    supervisor: str = "5"
+    social_worker: str = "6"
+    senior_care_worker: str = "7"
+    care_worker: str = "8"
+    community_support_and_outreach: str = "9"
+    employment_support: str = "10"
+    advocacy: str = "11"
+    occupational_therapist: str = "15"
+    registered_nurse: str = "16"
+    allied_health_professional: str = "17"
+    technician: str = "22"
+    other_care_role: str = "23"
+    care_related_staff: str = "24"
+    admin_staff: str = "25"
+    ancillary_staff: str = "26"
+    other_non_care_related_staff: str = "27"
+    activites_worker: str = "34"
+    safeguarding_officer: str = "35"
+    occupational_therapist_assistant: str = "36"
+    registered_nursing_associate: str = "37"
+    nursing_assistant: str = "38"
+    assessment_officer: str = "39"
+    care_coordinator: str = "40"
+    care_navigator: str = "41"
+    childrens_roles: str = "42"
+    deputy_manager: str = "43"
+    learning_and_development_lead: str = "44"
+    team_leader: str = "45"
 
 
 @dataclass

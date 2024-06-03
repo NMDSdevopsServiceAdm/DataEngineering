@@ -5,7 +5,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
-    CqcPirColumns as PIR,
     CqcPIRCleanedColumns as PIRClean,
 )
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
@@ -29,7 +28,8 @@ from utils.column_values.categorical_column_values import (
     Services,
     CareHome,
     Sector,
-    MainJobRole,
+    MainJobRoleLabels,
+    MainJobRoleID,
     Region,
     RUI,
     CSSR,
@@ -47,7 +47,10 @@ class LocationApiRawCategoricalValues:
 
 @dataclass
 class ASCWDSWorkerCleanedCategoricalValues:
-    main_job_role_column_values = MainJobRole(AWKClean.main_job_role_labelled)
+    main_job_role_labels_column_values = MainJobRoleLabels(
+        AWKClean.main_job_role_labelled
+    )
+    main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_id)
 
 
 @dataclass
