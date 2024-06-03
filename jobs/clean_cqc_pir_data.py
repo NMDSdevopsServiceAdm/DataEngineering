@@ -10,9 +10,11 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
-    CqcPIRCleanedValues as PIRCleanValues,
 )
-
+from utils.column_values.categorical_column_values import (
+    PIRType,
+    CareHome,
+)
 
 pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -50,12 +52,12 @@ def add_care_home_column(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         PIRCleanCols.care_home,
         F.when(
-            F.col(PIRCleanCols.pir_type) == PIRCleanValues.residential,
-            PIRCleanValues.yes,
+            F.col(PIRCleanCols.pir_type) == PIRType.residential,
+            CareHome.care_home,
         )
         .when(
-            F.col(PIRCleanCols.pir_type) == PIRCleanValues.community,
-            PIRCleanValues.no,
+            F.col(PIRCleanCols.pir_type) == PIRType.community,
+            CareHome.not_care_home,
         )
         .otherwise(None),
     )
