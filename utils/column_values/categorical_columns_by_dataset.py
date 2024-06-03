@@ -154,7 +154,7 @@ class CleanedIndCQCCategoricalValues:
     current_cssr_column_values = CSSR(IndCQC.current_cssr)
     contemporary_cssr_column_values = CSSR(IndCQC.contemporary_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
-        IndCQC.ascwds_filled_posts_source
+        IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
 
 
@@ -174,7 +174,7 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     current_cssr_column_values = CSSR(IndCQC.current_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
-        IndCQC.ascwds_filled_posts_source
+        IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
