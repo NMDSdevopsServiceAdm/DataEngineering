@@ -9,7 +9,7 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedValues as CQCLCleanValues,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -44,10 +44,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_care_home_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(care_home_ind_cqc_features_df, rules)
