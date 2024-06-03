@@ -32,6 +32,6 @@ class PIRCleanedValidationRules:
             CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
+            CQCPIRClean.care_home: CatValues.care_home_column_values.count_of_categorical_values,
         },
     }
