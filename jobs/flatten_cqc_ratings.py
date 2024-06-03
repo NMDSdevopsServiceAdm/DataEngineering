@@ -20,10 +20,10 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
+    CQCRatingsValues,
 )
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
-    CQCRatingsValues,
 )
 from utils.value_labels.cqc_ratings.label_dictionary import (
     unknown_ratings_labels_dict as UnknownRatings,
