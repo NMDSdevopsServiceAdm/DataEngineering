@@ -43,7 +43,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationValues as ReconValues,
 )
-from utils.cqc_ratings_utils.cqc_ratings_values import (
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName

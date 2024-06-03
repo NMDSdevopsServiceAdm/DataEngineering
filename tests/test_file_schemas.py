@@ -77,7 +77,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.reconciliation_utils.reconciliation_values import (
     ReconciliationColumns as ReconColumn,
 )
-from utils.cqc_ratings_utils.cqc_ratings_values import (
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
 from utils.column_names.validation_table_columns import Validation

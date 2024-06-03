@@ -9,7 +9,7 @@ import jobs.flatten_cqc_ratings as job
 from tests.test_file_data import FlattenCQCRatings as Data
 from tests.test_file_schemas import FlattenCQCRatings as Schema
 
-from utils.cqc_ratings_utils.cqc_ratings_values import (
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsValues,
     CQCRatingsColumns as CQCRatings,
 )

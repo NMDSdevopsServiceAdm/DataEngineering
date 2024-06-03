@@ -21,7 +21,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
-from utils.cqc_ratings_utils.cqc_ratings_values import (
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
     CQCRatingsValues,
 )
