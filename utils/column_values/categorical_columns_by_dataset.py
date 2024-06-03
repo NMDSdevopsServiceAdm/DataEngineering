@@ -76,21 +76,19 @@ estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
 class CleanedIndCQCCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
-        CQCPClean.cqc_sector, filtered_values_to_remove=[Sector.local_authority]
+        IndCQC.cqc_sector, filtered_values_to_remove=[Sector.local_authority]
     )
-    dormancy_column_values = Dormancy(CQCL.dormancy, contains_null_values=True)
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
-        CQCL.registration_status,
+        IndCQC.registration_status,
         filtered_values_to_remove=[RegistrationStatus.deregistered],
     )
-    primary_service_type_column_values = PrimaryServiceType(
-        CQCLClean.primary_service_type
-    )
-    current_region_column_values = Region(ONS.current_region)
-    contemporary_region_column_values = Region(ONS.contemporary_region)
-    current_rui_column_values = RUI(ONS.current_rural_urban_ind_11)
-    current_cssr_column_values = CSSR(ONS.current_cssr)
-    contemporary_cssr_column_values = CSSR(ONS.contemporary_cssr)
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    current_region_column_values = Region(IndCQC.current_region)
+    contemporary_region_column_values = Region(IndCQC.contemporary_region)
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    current_cssr_column_values = CSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = CSSR(IndCQC.contemporary_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source
     )
