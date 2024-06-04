@@ -4,16 +4,10 @@ import time
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
 )
-
-from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.validation.categorical_column_values import (
-    CQCCategoricalValues,
-    CQCDistinctValues,
-    ONSCategoricalValues,
-    ONSDistinctValues,
-    IndCQCCategoricalValues,
-    IndCQCDistinctValues,
+from utils.column_values.categorical_columns_by_dataset import (
+    EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
@@ -67,19 +61,19 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.non_res_model: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
-            IndCqcColumns.care_home: CQCCategoricalValues.care_home_values,
-            IndCqcColumns.primary_service_type: CQCCategoricalValues.primary_service_types,
-            IndCqcColumns.current_cssr: ONSCategoricalValues.cssrs,
-            IndCqcColumns.current_region: ONSCategoricalValues.regions,
-            IndCqcColumns.ascwds_filled_posts_source: IndCQCCategoricalValues.ascwds_filled_posts_source,
-            IndCqcColumns.estimate_filled_posts_source: IndCQCCategoricalValues.estimate_filled_posts_source,
+            IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
+            IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.categorical_values,
+            IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.categorical_values,
+            IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
+            IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.categorical_values,
+            IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            IndCqcColumns.care_home: CQCDistinctValues.care_home_values,
-            IndCqcColumns.primary_service_type: CQCDistinctValues.primary_service_types,
-            IndCqcColumns.current_cssr: ONSDistinctValues.cssrs,
-            IndCqcColumns.current_region: ONSDistinctValues.regions,
-            IndCqcColumns.ascwds_filled_posts_source: IndCQCDistinctValues.ascwds_filled_posts_source,
-            IndCqcColumns.estimate_filled_posts_source: IndCQCDistinctValues.estimate_filled_posts_source,
+            IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
+            IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.count_of_categorical_values,
+            IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
+            IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
+            IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
+            IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
         },
     }

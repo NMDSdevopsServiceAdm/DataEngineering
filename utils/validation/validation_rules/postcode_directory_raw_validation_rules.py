@@ -6,12 +6,10 @@ from utils.column_names.raw_data_files.ons_columns import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-
-from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.validation.categorical_column_values import (
-    ONSCategoricalValues,
-    ONSDistinctValues,
+from utils.column_values.categorical_columns_by_dataset import (
+    PostcodeDirectoryRawCategoricalValues as CatValues,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
@@ -29,13 +27,13 @@ class PostcodeDirectoryRawValidationRules:
             Keys.import_date,
         ],
         RuleName.categorical_values_in_columns: {
-            ONS.cssr: ONSCategoricalValues.cssrs,
-            ONS.region: ONSCategoricalValues.regions,
-            ONS.rural_urban_indicator_2011: ONSCategoricalValues.rural_urban_indicators,
+            ONS.cssr: CatValues.cssr_column_values.categorical_values,
+            ONS.region: CatValues.region_column_values.categorical_values,
+            ONS.rural_urban_indicator_2011: CatValues.rui_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            ONS.cssr: ONSDistinctValues.cssrs,
-            ONS.region: ONSDistinctValues.regions,
-            ONS.rural_urban_indicator_2011: ONSDistinctValues.rural_urban_indicators,
+            ONS.cssr: CatValues.cssr_column_values.count_of_categorical_values,
+            ONS.region: CatValues.region_column_values.count_of_categorical_values,
+            ONS.rural_urban_indicator_2011: CatValues.rui_column_values.count_of_categorical_values,
         },
     }
