@@ -1412,7 +1412,6 @@ class MergeIndCQCData:
     )
 
 
-
 @dataclass
 class MergeCoverageData:
     clean_cqc_location_for_merge_schema = StructType(
