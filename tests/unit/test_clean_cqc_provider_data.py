@@ -12,9 +12,11 @@ from tests.test_file_schemas import CQCProviderSchema as Schema
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
-    CqcProviderCleanedValues as CQCPValues,
+)
+from utils.column_values.categorical_column_values import (
+    Sector,
 )
 
 
@@ -67,10 +69,10 @@ class CreateLaCqcProviderDataframeTests(CleanCQCProviderDatasetTests):
         self.assertEqual(
             test_cqc_sector_list,
             [
-                CQCPValues.local_authority,
-                CQCPValues.local_authority,
-                CQCPValues.local_authority,
-                CQCPValues.local_authority,
+                Sector.local_authority,
+                Sector.local_authority,
+                Sector.local_authority,
+                Sector.local_authority,
             ],
         )
 

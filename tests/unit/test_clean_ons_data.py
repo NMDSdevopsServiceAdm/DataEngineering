@@ -13,7 +13,7 @@ from tests.test_file_schemas import ONSData as Schema
 from utils.column_names.raw_data_files.ons_columns import (
     ONSPartitionKeys as Keys,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 

@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, ANY
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 from tests.test_file_schemas import (

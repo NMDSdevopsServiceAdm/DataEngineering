@@ -21,7 +21,7 @@ from tests.test_file_data import UtilsData, CQCPirCleanedData
 from tests.test_file_schemas import UtilsSchema, CQCPIRCleanSchema
 
 from utils import utils
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns,
 )
 

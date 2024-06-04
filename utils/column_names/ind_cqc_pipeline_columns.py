@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 

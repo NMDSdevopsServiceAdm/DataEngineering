@@ -5,10 +5,10 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.value_labels.ascwds_worker.worker_label_dictionary import (

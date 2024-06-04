@@ -432,3 +432,35 @@ class EstimateFilledPostsSource(ColumnValues):
         "ascwds_filled_posts_clean_deduplicated"
     )
     non_res_with_pir_model: str = "non_res_with_pir_model"
+
+
+@dataclass
+class CQCRatingsValues(ColumnValues):
+    current: str = "Current"
+    historic: str = "Historic"
+    outstanding: str = "Outstanding"
+    good: str = "Good"
+
+
+@dataclass
+class ParentsOrSinglesAndSubs(ColumnValues):
+    singles_and_subs: str = "singles_and_subs"
+    parents: str = "parents"
+
+
+@dataclass
+class IsParent(ColumnValues):
+    is_parent: str = "Yes"
+    is_not_parent: str = "No"
+
+
+@dataclass
+class Subject(ColumnValues):
+    single_sub_subject_value: str = "CQC Reconcilliation Work"
+    parent_subject_value: str = "CQC Reconcilliation Work - Parent"
+
+
+@dataclass
+class SingleSubDescription(ColumnValues):
+    single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
+    single_sub_reg_type_description: str = "Potential (new): Regtype"

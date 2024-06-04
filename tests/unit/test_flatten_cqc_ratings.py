@@ -9,12 +9,14 @@ import jobs.flatten_cqc_ratings as job
 from tests.test_file_data import FlattenCQCRatings as Data
 from tests.test_file_schemas import FlattenCQCRatings as Schema
 
-from utils.cqc_ratings_utils.cqc_ratings_values import (
-    CQCRatingsValues,
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import (
+    CQCRatingsValues,
 )
 
 

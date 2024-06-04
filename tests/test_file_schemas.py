@@ -50,34 +50,34 @@ from utils.column_names.raw_data_files.cqc_pir_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.reconciliation_utils.reconciliation_values import (
+from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
-from utils.cqc_ratings_utils.cqc_ratings_values import (
+from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
 from utils.column_names.validation_table_columns import Validation

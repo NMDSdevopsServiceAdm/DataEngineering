@@ -8,7 +8,7 @@ from datetime import date
 
 from utils import utils, cleaning_utils
 
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.direct_payments_utils.direct_payments_column_names import (

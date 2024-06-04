@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 
-from utils.column_names.cleaned_data_files.cqc_location_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRClean,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned_values import (
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned_values import (
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned_values import (
+from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
     ONScol as ONS,
 )

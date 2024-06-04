@@ -19,11 +19,3 @@ class CQCRatingsColumns:
     benchmarks_location_id: str = "cqc_location_id"
     benchmarks_establishment_id: str = "ascwds_establishment_id"
     benchmarks_overall_rating: str = "overall_rating"
-
-
-@dataclass
-class CQCRatingsValues:
-    current: str = "Current"
-    historic: str = "Historic"
-    outstanding: str = "Outstanding"
-    good: str = "Good"
