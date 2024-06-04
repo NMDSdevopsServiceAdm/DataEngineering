@@ -48,4 +48,11 @@ class AscwdsWorkerValueLabelsMainjrid:
         "43": MainJobRoleLabels.deputy_manager,
         "44": MainJobRoleLabels.learning_and_development_lead,
         "45": MainJobRoleLabels.team_leader,
+        "46": MainJobRoleLabels.data_analyst,
+        "47": MainJobRoleLabels.data_governance_manager,
+        "48": MainJobRoleLabels.it_and_digital_support,
+        "49": MainJobRoleLabels.it_manager,
+        "50": MainJobRoleLabels.it_service_desk_manager,
+        "51": MainJobRoleLabels.software_developer,
+        "52": MainJobRoleLabels.support_worker,
     }
