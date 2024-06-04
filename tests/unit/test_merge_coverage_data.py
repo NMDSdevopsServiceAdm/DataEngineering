@@ -56,7 +56,7 @@ class MergeCoverageDatasetTests(unittest.TestCase):
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
+        self.assertEqual(read_from_parquet_patch.call_count, 2)
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
 
