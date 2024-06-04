@@ -181,7 +181,7 @@ class MainJobRoleLabels(ColumnValues):
     data_governance_manager: str = "Data Governance Manager"
     it_and_digital_support: str = "IT and Digital Support"
     it_manager: str = "IT Manager"
-    it_service_desk_worker: str = "IT Service Desk Manager"
+    it_service_desk_manager: str = "IT Service Desk Manager"
     software_developer: str = "Software Developer"
     support_worker: str = "Support Worker"
 
@@ -227,7 +227,7 @@ class MainJobRoleID(ColumnValues):
     data_governance_manager: str = "47"
     it_and_digital_support: str = "48"
     it_manager: str = "49"
-    it_service_desk_worker: str = "50"
+    it_service_desk_manager: str = "50"
     software_developer: str = "51"
     support_worker: str = "52"
 
