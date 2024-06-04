@@ -13,6 +13,7 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     clean_ons_data_job_name                                       = module.clean_ons_data_job.job_name
     reconciliation_job_name                                       = module.reconciliation_job.job_name
     merge_ind_cqc_data_job_name                                   = module.merge_ind_cqc_data_job.job_name
+    merge_coverage_data_job_name                                  = module.merge_coverage_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                           = module.clean_ind_cqc_filled_posts_job.job_name
     validate_merged_ind_cqc_data_job_name                         = module.validate_merged_ind_cqc_data_job.job_name
     prepare_care_home_ind_cqc_features_job_name                   = module.prepare_care_home_ind_cqc_features_job.job_name
