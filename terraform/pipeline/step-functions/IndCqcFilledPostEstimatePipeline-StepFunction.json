@@ -318,7 +318,15 @@
                   "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=merged_coverage_data/"
                 }
               },
-              "End": true
+              "Next": "Run sfc crawler"
+            },
+            "Run sfc crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
           }
         },
@@ -356,19 +364,6 @@
               "End": true,
               "Parameters": {
                 "Name": "${cqc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-            }
-          }
-        },
-        {
-          "StartAt": "Run sfc crawler",
-          "States": {
-            "Run sfc crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${sfc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
