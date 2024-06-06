@@ -1413,6 +1413,41 @@ class MergeIndCQCData:
 
 
 @dataclass
+class MergeCoverageData:
+    clean_cqc_location_for_merge_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    clean_ascwds_workplace_for_merge_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    expected_cqc_and_ascwds_merged_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
 class IndCQCDataUtils:
     input_schema_for_adding_estimate_filled_posts_and_source = StructType(
         [

@@ -37,6 +37,8 @@ cols_required_for_reconciliation_df = [
     AWPClean.main_service_id,
     AWPClean.establishment_name,
     AWPClean.region_id,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
     Keys.year,
     Keys.month,
     Keys.day,
