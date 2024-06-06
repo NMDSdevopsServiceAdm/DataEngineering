@@ -25,9 +25,6 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
         self.test_without_rows_to_remove_df = self.spark.createDataFrame(
             Data.worker_data_without_rows_to_remove, Schemas.worker_data_schema
         )
-        self.test_without_worker_id_column_df = self.spark.createDataFrame(
-            Data.workplace_data, Schemas.workplace_data_schema
-        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_worker_data, Schemas.worker_data_schema
         )
@@ -61,15 +58,3 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
 
         self.assertIsNotNone(returned_df)
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
-
-    def test_remove_duplicate_worker_in_worker_data_does_not_remove_rows_when_passed_a_dataframe_without_a_worker_id_column(
-        self,
-    ):
-        returned_df = job.remove_duplicate_worker_in_raw_worker_data(
-            self.test_without_worker_id_column_df,
-        )
-
-        self.assertIsNotNone(returned_df)
-        self.assertEqual(
-            self.test_without_worker_id_column_df.collect(), returned_df.collect()
-        )

@@ -3360,11 +3360,3 @@ class RawDataAdjustments:
             StructField("other_column", StringType(), True),
         ]
     )
-
-    workplace_data_schema = StructType(
-        [
-            StructField(AWP.import_date, StringType(), True),
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField("other_column", StringType(), True),
-        ]
-    )

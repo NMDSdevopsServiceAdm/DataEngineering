@@ -4645,13 +4645,3 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
-
-    workplace_data = [
-        ("20240101", "estab_1", "other"),
-        ("20240101", "estab_1", "other"),
-        ("20230802", "estab_1", "other"),
-        ("20240101", "28208", "other"),
-        ("20230802", "estab_1", "other"),
-        ("20230802", "28208", "other"),
-        ("20240101", "28208", "other"),
-    ]
