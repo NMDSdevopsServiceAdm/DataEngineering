@@ -4621,3 +4621,27 @@ class ValidatePostcodeDirectoryRawData:
         ("AB1 2CD", "20240201", "cssr", "region", "rui"),
         ("AB2 2CD", "20240201", "cssr", "region", "rui"),
     ]
+
+
+@dataclass
+class RawDataAdjustments:
+    expected_worker_data = [
+        ("worker_1", "20240101", "estab_1", "other"),
+        ("1737540", "20240101", "estab_1", "other"),
+        ("1737540", "20230802", "estab_1", "other"),
+        ("1737540", "20240101", "28208", "other"),
+        ("worker_1", "20230802", "estab_1", "other"),
+        ("worker_1", "20230802", "28208", "other"),
+        ("worker_1", "20240101", "28208", "other"),
+    ]
+    worker_data_with_single_row_to_remove = [
+        *expected_worker_data,
+        ("1737540", "20230802", "28208", "other"),
+    ]
+    worker_data_with_multiple_rows_to_remove = [
+        *expected_worker_data,
+        ("1737540", "20230802", "28208", "other"),
+        ("1737540", "20230802", "28208", "something else"),
+    ]
+
+    worker_data_without_rows_to_remove = expected_worker_data
