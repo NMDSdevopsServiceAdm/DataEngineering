@@ -36,10 +36,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
-    ONSClean.contemporary_ons_import_date,
-    ONSClean.contemporary_cssr,
-    ONSClean.contemporary_icb,
-    ONSClean.contemporary_region,
     ONSClean.current_ons_import_date,
     ONSClean.current_cssr,
     ONSClean.current_icb,
@@ -55,8 +51,8 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.location_id,
     AWPClean.establishment_id,
     AWPClean.organisation_id,
-    AWPClean.total_staff_bounded,
-    AWPClean.worker_records_bounded,
+    AWPClean.total_staff,
+    AWPClean.worker_records,
 ]
 
 
