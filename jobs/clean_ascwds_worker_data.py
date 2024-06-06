@@ -4,7 +4,6 @@ from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 import utils.cleaning_utils as cUtils
-from utils.raw_data_adjustments import remove_duplicate_worker_in_raw_worker_data
 from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -44,8 +43,6 @@ def main(
         cleaned_workplace_source,
         WORKPLACE_COLUMNS,
     )
-
-    ascwds_worker_df = remove_duplicate_worker_in_raw_worker_data(ascwds_worker_df)
 
     ascwds_worker_df = remove_workers_without_workplaces(
         ascwds_worker_df, ascwds_workplace_cleaned_df
