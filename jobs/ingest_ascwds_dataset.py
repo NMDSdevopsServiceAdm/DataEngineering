@@ -4,6 +4,7 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
 from utils import utils
+from utils.raw_data_adjustments import remove_duplicate_worker_in_raw_worker_data
 
 
 def main(source: str, destination: str):
@@ -40,6 +41,7 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     df = utils.read_csv(source, delimiter)
     df = filter_test_accounts(df)
     df = remove_white_space_from_nmdsid(df)
+    df = remove_duplicate_worker_in_raw_worker_data(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
