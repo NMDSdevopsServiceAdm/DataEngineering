@@ -386,8 +386,6 @@ module "merge_coverage_data_job" {
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
   glue_version      = "3.0"
-  worker_type       = "G.2X"
-  number_of_workers = 5
 
   job_parameters = {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
