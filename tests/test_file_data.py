@@ -1080,6 +1080,16 @@ class CQCpirData:
         ("loc 4", "Community", "N"),
     ]
 
+    remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+
+    expected_remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+    ]
+
 
 @dataclass
 class CQCPirCleanedData:

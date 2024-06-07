@@ -1328,6 +1328,13 @@ class CQCPIRSchema:
         ]
     )
 
+    remove_rows_missing_people_directly_employed_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCPIRCleanSchema:

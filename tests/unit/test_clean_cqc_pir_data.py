@@ -63,6 +63,21 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+    def test_remove_rows_without_people_directly_employed_removes_null_and_zero_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.remove_rows_missing_people_directly_employed,
+            Schemas.remove_rows_missing_people_directly_employed_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_rows_missing_people_directly_employed,
+            Schemas.remove_rows_missing_people_directly_employed_schema,
+        )
+        returned_df = job.remove_rows_without_people_directly_employed(test_df)
+
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
     def test_add_care_home_column_adds_a_column(self):
         returned_df = job.add_care_home_column(self.test_add_care_home_column_df)
 
