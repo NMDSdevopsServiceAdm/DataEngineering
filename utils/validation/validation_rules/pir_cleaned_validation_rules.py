@@ -26,7 +26,7 @@ class PIRCleanedValidationRules:
             CQCPIRClean.people_directly_employed: 10000,
         },
         RuleName.min_values: {
-            CQCPIRClean.people_directly_employed: 0,
+            CQCPIRClean.people_directly_employed: 1,
         },
         RuleName.categorical_values_in_columns: {
             CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
