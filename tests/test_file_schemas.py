@@ -3383,3 +3383,15 @@ class ValidatePostcodeDirectoryRawData:
             StructField(ONS.rural_urban_indicator_2011, StringType(), True),
         ]
     )
+
+
+@dataclass
+class RawDataAdjustments:
+    worker_data_schema = StructType(
+        [
+            StructField(AWK.worker_id, StringType(), True),
+            StructField(AWK.import_date, StringType(), True),
+            StructField(AWK.establishment_id, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )

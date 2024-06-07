@@ -19,10 +19,6 @@ class ASCWDSWorkerRawValidationRules:
             AWK.main_job_role_id,
             Keys.import_date,
         ],
-        RuleName.index_columns: [
-            AWK.worker_id,
-            Keys.import_date,
-        ],
         RuleName.categorical_values_in_columns: {
             AWK.main_job_role_id: CatValues.main_job_role_id_column_values.categorical_values,
         },
