@@ -54,6 +54,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
 
 def remove_rows_without_people_directly_employed(df: DataFrame) -> DataFrame:
+    df = df.where((df[PIRCols.people_directly_employed] > 0))
     return df
 
 
