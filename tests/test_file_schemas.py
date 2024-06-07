@@ -3402,6 +3402,7 @@ class RawDataAdjustments:
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCPIR.pir_type, StringType(), True),
             StructField(CQCPIR.pir_submission_date, StringType(), True),
+            StructField(CQCPIR.domiciliary_care, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )
