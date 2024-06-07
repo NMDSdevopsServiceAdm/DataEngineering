@@ -20,6 +20,7 @@ class PIRCleanedValidationRules:
         ],
         RuleName.index_columns: [
             CQCPIRClean.location_id,
+            CQCPIRClean.care_home,
             CQCPIRClean.cqc_pir_import_date,
         ],
         RuleName.max_values: {
