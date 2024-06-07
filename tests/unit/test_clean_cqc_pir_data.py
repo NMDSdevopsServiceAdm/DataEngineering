@@ -36,6 +36,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.expected_care_home_column_schema,
         )
 
+    @patch("jobs.clean_cqc_pir_data.remove_rows_without_people_directly_employed")
     @patch("jobs.clean_cqc_pir_data.filter_latest_submission_date")
     @patch("jobs.clean_cqc_pir_data.add_care_home_column")
     @patch("utils.cleaning_utils.column_to_date")
@@ -48,11 +49,13 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         column_to_date_patch,
         add_care_home_column,
         filter_latest_submission_date_patch,
+        remove_rows_without_people_directly_employed_patch,
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
         self.assertTrue(column_to_date_patch.call_count, 2)
+        remove_rows_without_people_directly_employed_patch.assert_called_once_with(ANY)
         add_care_home_column.assert_called_once_with(ANY)
         filter_latest_submission_date_patch.assert_called_once_with(ANY)
 
