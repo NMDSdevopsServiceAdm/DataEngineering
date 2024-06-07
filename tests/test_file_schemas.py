@@ -535,7 +535,18 @@ class PAFilledPostsByIcbAreaSchema:
     )
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_schema = (
-        expected_create_date_column_from_year_in_pa_estimates_schema
+        StructType(
+            [
+                StructField(DP.LA_AREA, StringType(), True),
+                StructField(
+                    DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
+                    DoubleType(),
+                    True,
+                ),
+                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
+            ]
+        )
     )
 
     expected_postcode_proportions_after_joining_pa_filled_posts_schema = StructType(
@@ -544,7 +555,7 @@ class PAFilledPostsByIcbAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
-            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField(DP.YEAR, IntegerType(), True),
         ]
     )
 

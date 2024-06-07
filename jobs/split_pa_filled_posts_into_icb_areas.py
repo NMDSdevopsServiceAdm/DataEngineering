@@ -6,6 +6,8 @@ from pyspark.sql import (
 
 from datetime import date
 
+from pyspark.sql.types import StringType
+
 from utils import utils, cleaning_utils
 
 from utils.column_names.cleaned_data_files.ons_cleaned import (
@@ -36,6 +38,7 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
             DPColNames.LA_AREA,
             DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS,
             DPColNames.YEAR,
+            DPColNames.YEAR_AS_INTEGER,
         ],
     )
 
@@ -140,7 +143,7 @@ def create_date_column_from_year_in_pa_estimates(
         DPColNames.ESTIMATE_PERIOD_AS_DATE,
         F.to_date(
             F.concat(
-                F.col(DPColNames.YEAR),
+                F.lit(F.col(DPColNames.YEAR_AS_INTEGER) + 1).cast(StringType()),
                 F.lit(f"-{EstimatePeriodAsDate.MONTH}-{EstimatePeriodAsDate.DAY}"),
             )
         ),
