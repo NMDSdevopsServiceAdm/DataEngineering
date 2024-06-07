@@ -520,6 +520,7 @@ class PAFilledPostsByIcbAreaSchema:
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
             StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
+            StructField(DP.YEAR, StringType(), True),
         ]
     )
 
@@ -543,7 +544,7 @@ class PAFilledPostsByIcbAreaSchema:
                     DoubleType(),
                     True,
                 ),
-                StructField(DP.YEAR, IntegerType(), True),
+                StructField(DP.YEAR, StringType(), True),
                 StructField(DP.ESTIMATE_PERIOD_AS_DATE, DateType(), True),
             ]
         )
@@ -555,7 +556,7 @@ class PAFilledPostsByIcbAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
-            StructField(DP.YEAR, IntegerType(), True),
+            StructField(DP.YEAR, StringType(), True),
         ]
     )
 

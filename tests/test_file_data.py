@@ -729,15 +729,15 @@ class PAFilledPostsByIcbArea:
     # fmt: on
 
     sample_pa_filled_posts_rows = [
-        ("Leeds", 100.2, 2023),
-        ("Bradford", 200.3, 2023),
-        ("Hull", 300.3, 2022),
+        ("Leeds", 100.2, 2023, "2023"),
+        ("Bradford", 200.3, 2023, "2023"),
+        ("Hull", 300.3, 2022, "2023"),
     ]
 
     expected_create_date_column_from_year_in_pa_estimates_rows = [
-        ("Leeds", 100.2, 2023, date(2024, 3, 31)),
-        ("Bradford", 200.3, 2023, date(2024, 3, 31)),
-        ("Hull", 300.3, 2022, date(2023, 3, 31)),
+        ("Leeds", 100.2, 2023, "2023", date(2024, 3, 31)),
+        ("Bradford", 200.3, 2023, "2023", date(2024, 3, 31)),
+        ("Hull", 300.3, 2022, "2023", date(2023, 3, 31)),
     ]
 
     sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
