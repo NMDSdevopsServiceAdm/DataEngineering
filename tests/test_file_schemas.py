@@ -3395,3 +3395,13 @@ class RawDataAdjustments:
             StructField("other_column", StringType(), True),
         ]
     )
+
+    pir_data_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.pir_type, StringType(), True),
+            StructField(CQCPIR.pir_submission_date, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )

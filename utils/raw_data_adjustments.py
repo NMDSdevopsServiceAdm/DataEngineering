@@ -12,3 +12,7 @@ def remove_duplicate_worker_in_raw_worker_data(raw_worker_df: DataFrame) -> Data
         | (raw_worker_df[AWKClean.establishment_id] != "28208")
     )
     return raw_worker_df
+
+
+def remove_duplicate_record_in_raw_pir_data(raw_pir_df: DataFrame) -> DataFrame:
+    return raw_pir_df

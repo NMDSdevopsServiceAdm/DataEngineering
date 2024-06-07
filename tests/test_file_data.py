@@ -4687,3 +4687,31 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
+
+    expected_pir_data = [
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", "other"),
+    ]
+    pir_data_with_single_row_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", "other"),
+    ]
+    pir_data_with_multiple_rows_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", "other"),
+        ("1-1199876096", "20230601", "Residential", "24-May-23", "something else"),
+    ]
+
+    pir_data_without_rows_to_remove = expected_pir_data
