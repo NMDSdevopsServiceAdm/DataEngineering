@@ -21,6 +21,13 @@ def remove_duplicate_worker_in_raw_worker_data(raw_worker_df: DataFrame) -> Data
 
 
 def remove_duplicate_record_in_raw_pir_data(raw_pir_df: DataFrame) -> DataFrame:
+    """
+    This function removes a record known to be a duplicate in the raw data.
+
+    The location ID for this import date, PIR type and PIR submission date
+    exists twice. One of these records had a zero value for cdomicilary
+    care and one had a null value, so this function removes the null value.
+    """
     raw_pir_df = raw_pir_df.where(
         (raw_pir_df[CQCPIR.location_id] != "1-1199876096")
         | (raw_pir_df[Keys.import_date] != "20230601")
