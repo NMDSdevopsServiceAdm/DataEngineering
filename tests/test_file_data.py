@@ -1698,13 +1698,11 @@ class CQCLocationsData:
         ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
         ("loc_1", "2017-01-01 00:00:00", "20231201", "2017-01-01"),
         ("loc_1", None, "20231101", None),
-        ("loc_2", None, "20231101", None),
     ]
     expected_impute_missing_registration_dates_different_rows=[
         ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
         ("loc_1", "2017-01-01 00:00:00", "20231201", "2017-01-01"),
         ("loc_1", None, "20231101", "2017-01-01"),
-        ("loc_2", None, "20231101", None),
     ]
     impute_missing_registration_dates_missing_rows=[
         ("loc_2", None, "20240101", None),

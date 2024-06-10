@@ -143,6 +143,17 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
             ),
         ).otherwise(df[CQCLClean.imputed_registration_date]),
     )
+    df = df.withColumn(
+        CQCLClean.imputed_registration_date,
+        F.when(
+            df[CQCLClean.imputed_registration_date].isNull(),
+            F.regexp_replace(
+                F.min(Keys.import_date).over(Window.partitionBy(CQCL.location_id)),
+                "(\d{4})(\d{2})(\d{2})",
+                "$1-$2-$3",
+            ),
+        ).otherwise(df[CQCLClean.imputed_registration_date]),
+    )
     return df
 
 
