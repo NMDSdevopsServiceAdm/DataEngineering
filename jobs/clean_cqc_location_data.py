@@ -134,6 +134,7 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
 
 
 def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
+
     return df
 
 

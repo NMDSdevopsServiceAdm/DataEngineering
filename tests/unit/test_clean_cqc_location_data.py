@@ -131,13 +131,41 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
-    def test_impute_missing_registration_dates(self):
+    def test_impute_missing_registration_dates_where_dates_are_the_same(self):
         test_df = self.spark.createDataFrame(
             Data.impute_missing_registration_dates_rows,
             Schemas.expected_clean_registration_column_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_impute_missing_registration_dates_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        returned_df = job.impute_missing_registration_dates(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_impute_missing_registration_dates_where_dates_are_different_return_min_registration_date(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_missing_registration_dates_different_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_missing_registration_dates_different_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        returned_df = job.impute_missing_registration_dates(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_impute_missing_registration_dates_where_dates_are_all_missing_returns_min_import_date(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_missing_registration_dates_missing_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_missing_registration_dates_missing_rows,
             Schemas.expected_clean_registration_column_schema,
         )
         returned_df = job.impute_missing_registration_dates(test_df)
