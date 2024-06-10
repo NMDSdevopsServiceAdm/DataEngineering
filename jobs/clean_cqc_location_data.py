@@ -120,7 +120,10 @@ def main(
 
 
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
-    cqc_df = remove_time_from_date_column(cqc_df, CQCL.registration_date)
+    cqc_df = cqc_df.withColumn(
+        CQCLClean.imputed_registration_date, cqc_df[CQCL.registration_date]
+    )
+    cqc_df = remove_time_from_date_column(cqc_df, CQCLClean.imputed_registration_date)
     cqc_df = impute_missing_registration_dates(cqc_df)
     return cqc_df
 
