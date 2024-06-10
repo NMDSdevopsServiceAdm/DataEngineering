@@ -126,9 +126,7 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
 
 
 def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
-    df = df.withColumn(
-        CQCL.registration_date, F.substring(CQCL.registration_date, 1, 10)
-    )
+    df = df.withColumn(column_name, F.substring(column_name, 1, 10))
     return df
 
 
