@@ -5,7 +5,7 @@ from typing import Tuple
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -134,7 +134,15 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
 
 
 def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
-
+    df = df.withColumn(
+        CQCLClean.imputed_registration_date,
+        F.when(
+            df[CQCLClean.imputed_registration_date].isNull(),
+            F.min(CQCLClean.imputed_registration_date).over(
+                Window.partitionBy(CQCL.location_id)
+            ),
+        ).otherwise(df[CQCLClean.imputed_registration_date]),
+    )
     return df
 
 
