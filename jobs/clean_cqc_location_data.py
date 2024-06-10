@@ -83,6 +83,8 @@ def main(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
 
+    cqc_location_df = create_cleaned_registration_date_column(cqc_location_df)
+
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -115,6 +117,20 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = remove_time_from_date_column(cqc_df, CQCL.registration_date)
+    cqc_df = impute_missing_registration_dates(cqc_df)
+    return cqc_df
+
+
+def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
+    return df
+
+
+def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
+    return df
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
