@@ -113,8 +113,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
             Schemas.expected_clean_registration_column_schema,
         )
         returned_df = job.create_cleaned_registration_date_column(test_df)
-        expected_df.show()
-        returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_remove_time_from_date_column(self):
@@ -129,8 +127,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         returned_df = job.remove_time_from_date_column(
             test_df, CQCLCleaned.imputed_registration_date
         )
-        expected_df.show()
-        returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_impute_missing_registration_dates_where_dates_are_the_same(self):
@@ -143,8 +139,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
             Schemas.expected_clean_registration_column_schema,
         )
         returned_df = job.impute_missing_registration_dates(test_df)
-        expected_df.show()
-        returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_impute_missing_registration_dates_where_dates_are_different_return_min_registration_date(
@@ -159,9 +153,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
             Schemas.expected_clean_registration_column_schema,
         )
         returned_df = job.impute_missing_registration_dates(test_df)
-        test_df.show()
-        expected_df.show()
-        returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_impute_missing_registration_dates_where_dates_are_all_missing_returns_min_import_date(
@@ -176,8 +167,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
             Schemas.expected_clean_registration_column_schema,
         )
         returned_df = job.impute_missing_registration_dates(test_df)
-        expected_df.show()
-        returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 
