@@ -103,16 +103,44 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_remove_time_from_date_column(self):
+    def test_create_cleaned_registration_date_column(self):
         test_df = self.spark.createDataFrame(
-            Data.remove_time_from_date_column_rows,
+            Data.clean_registration_date_column_rows,
             Schemas.clean_registration_column_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_time_from_date_column_rows,
-            Schemas.clean_registration_column_schema,
+            Data.expected_clean_registration_date_column_rows,
+            Schemas.expected_clean_registration_column_schema,
         )
-        returned_df = job.remove_time_from_date_column(test_df, CQCL.registration_date)
+        returned_df = job.create_cleaned_registration_date_column(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_remove_time_from_date_column(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_time_from_date_column_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_time_from_date_column_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        returned_df = job.remove_time_from_date_column(
+            test_df, CQCLCleaned.imputed_registration_date
+        )
+        expected_df.show()
+        returned_df.show()
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_impute_missing_registration_dates(self):
+        test_df = self.spark.createDataFrame(
+            Data.impute_missing_registration_dates_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_missing_registration_dates_rows,
+            Schemas.expected_clean_registration_column_schema,
+        )
+        returned_df = job.impute_missing_registration_dates(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 

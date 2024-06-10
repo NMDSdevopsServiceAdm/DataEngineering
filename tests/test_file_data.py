@@ -1661,16 +1661,42 @@ class CQCLocationsData:
             ["Care home service without nursing", "Fake service"],
         ),
     ]
+    # fmt: off
     remove_time_from_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01 00:00:00"),
+        ("loc_1", None, "20231101", None),
+        ("loc_2", None, "20240101", None),
+        ("loc_2", None, "20231201", None),
+        ("loc_2", None, "20231101", None),
+    ]
+    expected_remove_time_from_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
+        ("loc_1", None, "20231101", None),
+        ("loc_2", None, "20240101", None),
+        ("loc_2", None, "20231201", None),
+        ("loc_2", None, "20231101", None),
+    ]
+    clean_registration_date_column_rows = [
         ("loc_1", "2018-01-01", "20240101"),
         ("loc_1", "2018-01-01 00:00:00", "20231201"),
         ("loc_1", None, "20231101"),
+        ("loc_2", None, "20240101"),
+        ("loc_2", None, "20231201"),
+        ("loc_2", None, "20231101"),
     ]
-    expected_remove_time_from_date_column_rows = [
-        ("loc_1", "2018-01-01", "20240101"),
-        ("loc_1", "2018-01-01", "20231201"),
-        ("loc_1", None, "20231101"),
+    expected_clean_registration_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
+        ("loc_1", None, "20231101", "2018-01-01"),
+        ("loc_2", None, "20240101", "2023-11-01"),
+        ("loc_2", None, "20231201", "2023-11-01"),
+        ("loc_2", None, "20231101", "2023-11-01"),
     ]
+    impute_missing_registration_dates_rows=expected_remove_time_from_date_column_rows
+    expected_impute_missing_registration_dates_rows=expected_clean_registration_date_column_rows
+    # fmt: on
 
 
 @dataclass
