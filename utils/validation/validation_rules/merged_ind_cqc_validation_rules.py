@@ -21,7 +21,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.provider_id,
             IndCqcColumns.cqc_sector,
             IndCqcColumns.registration_status,
-            IndCqcColumns.registration_date,
+            IndCqcColumns.imputed_registration_date,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.contemporary_ons_import_date,
             IndCqcColumns.contemporary_cssr,

@@ -2244,7 +2244,7 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.provider_name, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(
@@ -3069,7 +3069,7 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.provider_name, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.registration_date, DateType(), True),
+            StructField(CQCLClean.imputed_registration_date, DateType(), True),
             StructField(CQCLClean.dormancy, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
@@ -3193,7 +3193,7 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.provider_name, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(

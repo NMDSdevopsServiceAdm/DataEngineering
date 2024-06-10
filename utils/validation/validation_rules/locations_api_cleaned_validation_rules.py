@@ -21,7 +21,7 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.provider_id,
             CQCLClean.cqc_sector,
             CQCLClean.registration_status,
-            CQCLClean.registration_date,
+            CQCLClean.imputed_registration_date,
             CQCLClean.primary_service_type,
             CQCLClean.name,
             CQCLClean.provider_name,

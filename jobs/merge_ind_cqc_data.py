@@ -38,7 +38,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.provider_name,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
-    CQCLClean.registration_date,
+    CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
