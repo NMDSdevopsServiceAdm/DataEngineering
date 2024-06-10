@@ -99,6 +99,23 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.assertIn(col, expected_cols)
 
 
+class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_time_from_date_column(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_time_from_date_column_rows,
+            Schemas.clean_registration_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_time_from_date_column_rows,
+            Schemas.clean_registration_column_schema,
+        )
+        returned_df = job.remove_time_from_date_column(test_df, CQCL.registration_date)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()

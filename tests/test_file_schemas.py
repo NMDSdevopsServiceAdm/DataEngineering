@@ -1125,6 +1125,14 @@ class CQCLocationsSchema:
         ]
     )
 
+    clean_registration_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class UtilsSchema:

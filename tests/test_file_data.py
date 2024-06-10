@@ -1661,6 +1661,16 @@ class CQCLocationsData:
             ["Care home service without nursing", "Fake service"],
         ),
     ]
+    remove_time_from_date_column_rows =[
+        ("loc_1", "2018-01-01", "20240101"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201"),
+        ("loc_1", None, "202311201"),
+    ]
+    expected_remove_time_from_date_column_rows =[
+        ("loc_1", "2018-01-01", "20240101"),
+        ("loc_1", "2018-01-01", "20231201"),
+        ("loc_1", None, "20231101"),
+    ]
 
 
 @dataclass
