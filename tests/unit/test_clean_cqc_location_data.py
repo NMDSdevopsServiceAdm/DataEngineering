@@ -535,7 +535,7 @@ class CleanProviderIdColumn(CleanCQCLocationDatasetTests):
         returned_df = job.fill_missing_provider_ids_from_other_rows(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
-    def test_remove_rows_that_cannot_be_imputed(self):
+    def test_remove_remaining_rows_without_a_provider_id(self):
         test_df = self.spark.createDataFrame(
             Data.remove_unknown_provider_id_column_rows,
             Schemas.clean_provider_id_column_schema,
@@ -544,7 +544,7 @@ class CleanProviderIdColumn(CleanCQCLocationDatasetTests):
             Data.expected_remove_unknown_provider_id_column_rows,
             Schemas.clean_provider_id_column_schema,
         )
-        returned_df = job.remove_rows_that_cannot_be_imputed(test_df)
+        returned_df = job.remove_remaining_rows_without_a_provider_id(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 

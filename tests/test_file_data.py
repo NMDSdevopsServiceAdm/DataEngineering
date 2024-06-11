@@ -1757,7 +1757,6 @@ class CQCLocationsData:
     ]
     remove_unknown_provider_id_column_rows = [
         ("loc_1", "123456789", "20240201"),
-        ("loc_1", None, "20240101"),
         ("loc_2", "223456789", "20240201"),
         ("loc_3", None, "20240101"),
         ("loc_3", None, "20240201"),
@@ -1765,7 +1764,6 @@ class CQCLocationsData:
     ]
     expected_remove_unknown_provider_id_column_rows = [
         ("loc_1", "123456789", "20240201"),
-        ("loc_1", None, "20240101"),
         ("loc_2", "223456789", "20240201"),
     ]
 
