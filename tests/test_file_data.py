@@ -26,7 +26,6 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     Region,
     RUI,
-    CSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
     LocationType,
