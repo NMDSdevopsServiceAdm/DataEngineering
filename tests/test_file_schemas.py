@@ -3054,7 +3054,7 @@ class ValidationUtils:
     expected_add_column_with_length_of_string_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField("locationId_length", IntegerType(), True),
+            StructField(Validation.location_id_length, IntegerType(), True),
         ]
     )
 
