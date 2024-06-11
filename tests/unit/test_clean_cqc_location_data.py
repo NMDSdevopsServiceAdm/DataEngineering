@@ -497,5 +497,56 @@ class RaiseErrorIfCQCPostcodeWasNotFoundInONSDataset(CleanCQCLocationDatasetTest
             )
 
 
+class CleanProviderIdColumn(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_clean_provider_id_column(self):
+        test_df = self.spark.createDataFrame(
+            Data.clean_provider_id_column_rows, Schemas.clean_provider_id_column_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        returned_df = job.clean_provider_id_column(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_remove_values_with_too_many_characters(self):
+        test_df = self.spark.createDataFrame(
+            Data.long_provider_id_column_rows, Schemas.clean_provider_id_column_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_long_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        returned_df = job.remove_provider_ids_with_too_many_characters(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_fill_missing_values_if_present_in_other_rows(self):
+        test_df = self.spark.createDataFrame(
+            Data.fill_missing_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_fill_missing_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        returned_df = job.fill_missing_provider_ids_from_other_rows(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_remove_rows_that_cannot_be_imputed(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_unknown_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_unknown_provider_id_column_rows,
+            Schemas.clean_provider_id_column_schema,
+        )
+        returned_df = job.remove_rows_that_cannot_be_imputed(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

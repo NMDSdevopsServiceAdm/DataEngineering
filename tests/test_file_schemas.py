@@ -1141,6 +1141,13 @@ class CQCLocationsSchema:
             StructField(CQCLClean.imputed_registration_date, StringType(), True),
         ]
     )
+    clean_provider_id_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
 
 
 @dataclass
