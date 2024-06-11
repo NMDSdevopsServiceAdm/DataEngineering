@@ -54,6 +54,12 @@ def add_checks_to_run(
                     column_name, rule[column_name]
                 )
                 run = run.addCheck(check)
+        elif rule_name == RuleToCheck.max_length_of_string:
+            for column_name in rule.keys():
+                check = create_check_of_max_length_of_string(
+                    column_name, rule[column_name]
+                )
+                run = run.addCheck(check)
         else:
             raise ValueError("Unknown rule to check")
     return run
@@ -135,5 +141,18 @@ def create_check_of_number_of_distinct_values(
         binningUdf=None,
         maxBins=distinct_values,
         hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
+    )
+    return check
+
+
+def create_check_of_max_length_of_string(
+    column_name: str, max_length_of_string: int
+) -> Check:
+    spark = utils.get_spark()
+    check = Check(spark, CheckLevel.Warning, "Max length of string in column")
+    check = check.hasMaxLength(
+        column_name,
+        lambda x: x <= max_length_of_string,
+        f"The maximum number of characters in {column_name} should be {max_length_of_string}.",
     )
     return check

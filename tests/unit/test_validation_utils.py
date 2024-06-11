@@ -427,6 +427,8 @@ class CheckMaxLengthOfString(ValidateUtilsTests):
             Data.max_length_of_string_result_success_rows, Schemas.validation_schema
         )
         returned_df = job.validate_dataset(test_df, self.max_length_of_string_rule)
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_max_length_of_string_returns_success_when_highest_value_equals_maximum(
