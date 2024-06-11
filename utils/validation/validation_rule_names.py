@@ -10,4 +10,3 @@ class RuleNames:
     max_values: str = "max_values"
     categorical_values_in_columns: str = "categorical_values_in_columns"
     distinct_values: str = "distinct_values"
-    max_length_of_string: str = "max_length_of_string"
