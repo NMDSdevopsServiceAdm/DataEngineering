@@ -132,6 +132,15 @@ def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame
 
 
 def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = cqc_df.withColumn(
+        CQCL.provider_id,
+        F.when(
+            cqc_df[CQCL.provider_id].isNull(),
+            F.first(CQCL.provider_id, ignorenulls=True).over(
+                Window.partitionBy(CQCL.location_id)
+            ),
+        ).otherwise(cqc_df[CQCL.provider_id]),
+    )
     return cqc_df
 
 
