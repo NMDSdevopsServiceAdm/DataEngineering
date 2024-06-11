@@ -61,20 +61,11 @@ class EstimatePeriodAsDate:
 
 @dataclass
 class DirectPaymentsMisspelledLaNames:
-    LIST_OF_INCORRECT_LA_NAMES = [
-        "Bath & N E Somerset",
-        "Blackburn",
-        "Bournemouth, Christchurch and Poole",
-        "East Riding",
-        "Medway Towns",
-        "Southend",
-    ]
-
-    LIST_OF_CORRECT_LA_NAMES = [
-        "Bath and North East Somerset",
-        "Blackburn with Darwen",
-        "Bournemouth Christchurch and Poole",
-        "East Riding of Yorkshire",
-        "Medway",
-        "Southend on Sea",
-    ]
+    DICT_TO_CORRECT_LA_NAMES = {
+        "Bath & N E Somerset": "Bath and North East Somerset",
+        "Blackburn": "Blackburn with Darwen",
+        "Bournemouth, Christchurch and Poole": "Bournemouth Christchurch and Poole",
+        "East Riding": "East Riding of Yorkshire",
+        "Medway Towns": "Medway",
+        "Southend": "Southend on Sea",
+    }
