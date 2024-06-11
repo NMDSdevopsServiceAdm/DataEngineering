@@ -120,6 +120,9 @@ def main(
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
+    cqc_df = fill_missing_provider_ids_from_other_rows(cqc_df)
+    cqc_df = remove_remaining_rows_without_a_provider_id(cqc_df)
     return cqc_df
 
 
