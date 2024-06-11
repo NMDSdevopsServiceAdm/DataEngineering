@@ -8,6 +8,7 @@ from pydeequ.verification import (
     VerificationSuite,
     VerificationResult,
 )
+import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -140,4 +141,6 @@ def create_check_of_number_of_distinct_values(
 
 
 def add_column_with_length_of_string(df: DataFrame, column_name: str) -> DataFrame:
+    new_column_name = column_name + "_length"
+    df = df.withColumn(new_column_name, F.length(column_name))
     return df
