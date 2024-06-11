@@ -5,10 +5,12 @@ from unittest.mock import Mock, patch
 import utils.validation.validation_utils as job
 
 from tests.test_file_data import ValidationUtils as Data
-
 from tests.test_file_schemas import ValidationUtils as Schemas
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 
 
 class ValidateUtilsTests(unittest.TestCase):
@@ -406,6 +408,31 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
             test_df, self.distinct_values_multiple_columns_rule
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class AddColumnWithLengthOfString(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.column_name = IndCQC.location_id
+        self.test_df = self.spark.createDataFrame(
+            Data.add_column_with_length_of_string_rows,
+            Schemas.add_column_with_length_of_string_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_column_with_length_of_string_rows,
+            Schemas.expected_add_column_with_length_of_string_schema,
+        )
+        self.returned_df = job.add_column_with_length_of_string(
+            self.test_df, self.column_name
+        )
+
+    def test_add_column_with_length_of_string_adds_a_new_length_column(self):
+        self.assertEqual(self.expected_df.columns, self.returned_df.columns)
+
+    def test_add_column_with_length_of_string_calculate_length_of_string_correctly(
+        self,
+    ):
+        self.assertEqual(self.expected_df.collect(), self.returned_df.collect())
 
 
 if __name__ == "__main__":
