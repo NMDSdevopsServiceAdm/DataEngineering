@@ -124,6 +124,10 @@ def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
 
 
 def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = cqc_df.withColumn(
+        CQCL.provider_id,
+        F.when(F.length(CQCL.provider_id) <= 14, cqc_df[CQCL.provider_id]),
+    )
     return cqc_df
 
 
