@@ -15,7 +15,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.validation.validation_rules.providers_api_cleaned_validation_rules import (
     ProvidersAPICleanedValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    add_column_with_length_of_string,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -40,9 +43,12 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_providers_dataset(raw_provider_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_providers_dataset(raw_provider_df)
+    )
+    cleaned_cqc_providers_df = add_column_with_length_of_string(
+        cleaned_cqc_providers_df, [CQCP.provider_id]
+    )
 
     check_result_df = validate_dataset(cleaned_cqc_providers_df, rules)
 
