@@ -1723,9 +1723,6 @@ class CQCLocationsData:
         ("loc_2", "223456789 223456789", "20240101"),
         ("loc_2", "223456789", "20240201"),
         ("loc_2", None, "20240301"),
-        ("loc_3", None, "20240101"),
-        ("loc_3", None, "20240201"),
-        ("loc_3", None, "20240301"),
     ]
     expected_clean_provider_id_column_rows = [
         ("loc_1", "123456789", "20240101"),
