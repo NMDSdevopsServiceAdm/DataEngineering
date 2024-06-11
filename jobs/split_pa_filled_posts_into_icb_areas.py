@@ -189,7 +189,7 @@ def apply_icb_proportions_to_pa_filled_posts(
     postcode_directory_df: DataFrame,
 ) -> DataFrame:
     postcode_directory_df = postcode_directory_df.withColumn(
-        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB,
+        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA,
         F.col(DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
         * F.col(DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA),
     )

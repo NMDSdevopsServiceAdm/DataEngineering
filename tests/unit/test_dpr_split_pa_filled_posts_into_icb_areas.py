@@ -364,7 +364,7 @@ class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoIcbAreas):
         self,
     ):
         self.assertTrue(
-            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA
             in self.returned_apply_icb_proportions_to_pa_filled_posts_df.columns
         )
 
@@ -381,10 +381,10 @@ class ApplyIcbProportionsToPAEstimates(SplitPAFilledPostsIntoIcbAreas):
         for i in range(len(returned_rows)):
             self.assertAlmostEqual(
                 returned_rows[i][
-                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA
                 ],
                 expected_rows[i][
-                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB
+                    DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA
                 ],
                 3,
                 "rows are not almost equal",

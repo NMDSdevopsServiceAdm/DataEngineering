@@ -168,8 +168,8 @@ class DirectPaymentColumnNames:
         "proportion_of_ICB_postcodes_in_la_area"
     )
     ESTIMATE_PERIOD_AS_DATE: str = "estimate_period_as_date"
-    ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB: str = (
-        "estimated_total_personal_assistant_filled_posts_per_icb"
+    ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA: str = (
+        "estimated_total_personal_assistant_filled_posts_per_hybrid_area"
     )
 
 
