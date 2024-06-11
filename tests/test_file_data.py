@@ -4406,6 +4406,69 @@ class ValidationUtils:
         ),
     ]
 
+    max_length_of_string_rule = {
+        RuleName.max_length_of_string: {
+            IndCQC.location_id: 6,
+        }
+    }
+    max_length_of_string_multiple_columns_rule = {
+        RuleName.max_length_of_string: {
+            IndCQC.location_id: 6,
+            IndCQC.provider_id: 6,
+        }
+    }
+    max_length_of_string_below_maximum_rows = [
+        ("loc_1",),
+    ]
+    max_length_of_string_equal_maximum_rows = [
+        ("loc_10",),
+    ]
+    max_length_of_string_above_maximum_rows = [
+        ("loc_100",),
+    ]
+    max_length_of_string_multiple_columns_rows = [
+        ("loc_1", "prov_1",),
+    ]
+
+    max_length_of_string_result_success_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Success",
+            "",
+        ),
+    ]
+    max_length_of_string_result_above_maximum_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+    ]
+    max_length_of_string_result_multiple_columns_rows = [
+        (
+            "Max value in column",
+            "Warning",
+            "Warning",
+            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "Failure",
+            "Value: 20.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
+        ),
+        (
+            "Max value in column",
+            "Warning",
+            "Success",
+            "MaximumConstraint(Maximum(people_directly_employed,None))",
+            "Success",
+            "",
+        ),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:

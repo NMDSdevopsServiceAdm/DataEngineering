@@ -408,5 +408,70 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class CheckMaxLengthOfString(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.max_length_of_string_rule = Data.max_length_of_string_rule
+        self.max_length_of_string_multiple_columns_rule = (
+            Data.max_length_of_string_multiple_columns_rule
+        )
+
+    def test_create_check_of_max_length_of_string_returns_success_when_values_are_below_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_length_of_string_below_maximum_rows,
+            Schemas.max_length_of_string_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_length_of_string_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.max_length_of_string_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_length_of_string_returns_success_when_highest_value_equals_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_length_of_string_equal_maximum_rows,
+            Schemas.max_length_of_string_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_length_of_string_result_success_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.max_length_of_string_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_length_of_string_returns_failure_when_highest_value_is_above_maximum(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_length_of_string_above_maximum_rows,
+            Schemas.max_length_of_string_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_length_of_string_result_above_maximum_rows,
+            Schemas.validation_schema,
+        )
+        returned_df = job.validate_dataset(test_df, self.max_length_of_string_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_max_length_of_string_returns_correct_results_when_multiple_columns_supplied(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.max_length_of_string_multiple_columns_rows,
+            Schemas.max_length_of_string_multiple_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.max_length_of_string_result_multiple_columns_rows,
+            Schemas.validation_schema,
+        )
+        returned_df = job.validate_dataset(
+            test_df, self.max_length_of_string_multiple_columns_rule
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

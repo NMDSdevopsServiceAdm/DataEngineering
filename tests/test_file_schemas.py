@@ -3047,6 +3047,19 @@ class ValidationUtils:
         ]
     )
 
+    max_length_of_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )
+
+    max_length_of_string_multiple_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:
