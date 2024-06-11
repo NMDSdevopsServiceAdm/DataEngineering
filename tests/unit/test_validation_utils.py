@@ -423,7 +423,7 @@ class AddColumnWithLengthOfString(ValidateUtilsTests):
             Schemas.expected_add_column_with_length_of_string_schema,
         )
         self.returned_df = job.add_column_with_length_of_string(
-            self.test_df, self.column_name
+            self.test_df, [self.column_name]
         )
 
     def test_add_column_with_length_of_string_adds_a_new_length_column(self):

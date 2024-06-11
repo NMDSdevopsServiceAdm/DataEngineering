@@ -4,10 +4,16 @@ import sys
 os.environ["SPARK_VERSION"] = "3.3"
 
 from utils import utils
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.validation.validation_rules.locations_api_raw_validation_rules import (
     LocationsAPIRawValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    add_column_with_length_of_string,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -19,6 +25,10 @@ def main(
         raw_cqc_location_source,
     )
     rules = Rules.rules_to_check
+
+    raw_location_df = add_column_with_length_of_string(
+        raw_location_df, [CQCL.location_id, CQCL.provider_id]
+    )
 
     check_result_df = validate_dataset(raw_location_df, rules)
 

@@ -9,6 +9,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationApiRawCategoricalValues as CatValues,
 )
+from utils.column_names.validation_table_columns import (
+    Validation,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -29,9 +32,13 @@ class LocationsAPIRawValidationRules:
         ],
         RuleName.min_values: {
             CQCL.number_of_beds: 0,
+            Validation.location_id_length: 3,
+            Validation.provider_id_length: 3,
         },
         RuleName.max_values: {
             CQCL.number_of_beds: 500,
+            Validation.location_id_length: 14,
+            Validation.provider_id_length: 14,
         },
         RuleName.categorical_values_in_columns: {
             CQCL.care_home: CatValues.care_home_column_values.categorical_values,

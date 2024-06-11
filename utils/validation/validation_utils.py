@@ -140,7 +140,10 @@ def create_check_of_number_of_distinct_values(
     return check
 
 
-def add_column_with_length_of_string(df: DataFrame, column_name: str) -> DataFrame:
-    new_column_name = column_name + "_length"
-    df = df.withColumn(new_column_name, F.length(column_name))
+def add_column_with_length_of_string(
+    df: DataFrame, column_names: list[str]
+) -> DataFrame:
+    for column_name in column_names:
+        new_column_name = column_name + "_length"
+        df = df.withColumn(new_column_name, F.length(column_name))
     return df
