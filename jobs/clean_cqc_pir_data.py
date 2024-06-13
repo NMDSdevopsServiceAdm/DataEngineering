@@ -51,6 +51,10 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
 
 def remove_unused_pir_types(df: DataFrame) -> DataFrame:
+    df = df.where(
+        (df[PIRCols.pir_type] == PIRType.residential)
+        | (df[PIRCols.pir_type] == PIRType.community)
+    )
     return df
 
 
