@@ -8,8 +8,10 @@ from pydeequ.verification import (
     VerificationSuite,
     VerificationResult,
 )
-import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    functions as F,
+)
 
 from utils import utils
 from utils.validation.validation_rule_names import RuleNames as RuleToCheck
