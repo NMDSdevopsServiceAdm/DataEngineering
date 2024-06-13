@@ -61,7 +61,7 @@ class TestModelExtrapolation(unittest.TestCase):
             ],
         )
 
-    def test_model_extrapolation_outputted_values_correct(self):
+    def test_model_extrapolation_outputted_values_correct(self):  # TODO: Refactor
         df = job.model_extrapolation(self.extrapolation_df)
         df = df.sort(IndCqc.location_id, IndCqc.cqc_location_import_date).collect()
 
@@ -135,7 +135,9 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[5][IndCqc.first_submission_time], 1672531200)
         self.assertEqual(output_df[5][IndCqc.last_submission_time], 1675209600)
 
-    def test_add_filled_posts_and_rolling_average_for_first_and_last_submission(self):
+    def test_add_filled_posts_and_rolling_average_for_first_and_last_submission(
+        self,
+    ):  # TODO: Refactor
         output_df = (
             job.add_filled_posts_and_rolling_average_for_first_and_last_submission(
                 self.data_for_first_and_last_submissions_df
@@ -155,7 +157,7 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[4][IndCqc.last_filled_posts], 6.0)
         self.assertEqual(output_df[4][IndCqc.last_rolling_average], 15.0)
 
-    def test_create_extrapolation_ratio_column(self):
+    def test_create_extrapolation_ratio_column(self):  # TODO: Refactor
         output_df = job.create_extrapolation_ratio_column(
             self.data_for_extrapolated_ratios_df
         )

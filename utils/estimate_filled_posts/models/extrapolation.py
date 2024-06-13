@@ -41,7 +41,7 @@ def filter_to_known_values_only(df: DataFrame) -> DataFrame:
     return df.where(F.col(IndCqc.max_filled_posts) > 0.0)
 
 
-def add_filled_posts_and_rolling_average_for_first_and_last_submission(
+def add_filled_posts_and_rolling_average_for_first_and_last_submission(  # TODO: Refactor
     df: DataFrame,
 ) -> DataFrame:
     df = add_first_and_last_submission_date_cols(df)
@@ -78,7 +78,7 @@ def add_first_and_last_submission_date_cols(df: DataFrame) -> DataFrame:
     return left_join_on_locationid(df, first_and_last_submission_date_df)
 
 
-def add_filled_posts_and_rolling_average_for_specific_time_period(
+def add_filled_posts_and_rolling_average_for_specific_time_period(  # TODO: Refactor
     df: DataFrame,
     unix_time_period: str,
     new_filled_posts_col_name: str,
@@ -120,7 +120,7 @@ def add_extrapolated_values(df: DataFrame, extrapolation_df: DataFrame) -> DataF
     return df
 
 
-def create_extrapolation_ratio_column(df: DataFrame) -> DataFrame:
+def create_extrapolation_ratio_column(df: DataFrame) -> DataFrame:  # TODO: Refactor
     df_with_extrapolation_ratio_column = df.withColumn(
         IndCqc.extrapolation_ratio,
         F.when(

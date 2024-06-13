@@ -74,7 +74,7 @@ def main(
         cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
     )
 
-    cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)
+    cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df)  # TODO: Refactor
 
     cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
