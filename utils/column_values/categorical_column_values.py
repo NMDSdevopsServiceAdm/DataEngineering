@@ -260,7 +260,7 @@ class RUI(ColumnValues):
 
 
 @dataclass
-class CSSR(ColumnValues):
+class CurrentCSSR(ColumnValues):
     """The possible values of the local authority columns in ONS data"""
 
     barking_and_dagenham: str = "Barking & Dagenham"
@@ -273,7 +273,6 @@ class CSSR(ColumnValues):
     blackburn_with_darwen: str = "Blackburn with Darwen"
     blackpool: str = "Blackpool"
     bolton: str = "Bolton"
-    bournemouth: str = "Bournemouth"
     bournemouth_christchurch_and_poole: str = "Bournemouth Christchurch and Poole"
     bracknell_forest: str = "Bracknell Forest"
     bradford: str = "Bradford"
@@ -294,7 +293,6 @@ class CSSR(ColumnValues):
     coventry: str = "Coventry"
     croydon: str = "Croydon"
     cumberland: str = "Cumberland"
-    cumbria: str = "Cumbria"
     darlington: str = "Darlington"
     derby: str = "Derby"
     derbyshire: str = "Derbyshire"
@@ -355,7 +353,6 @@ class CSSR(ColumnValues):
     north_somerset: str = "North Somerset"
     north_tyneside: str = "North Tyneside"
     north_yorkshire: str = "North Yorkshire"
-    northamptonshire: str = "Northamptonshire"
     northumberland: str = "Northumberland"
     nottingham: str = "Nottingham"
     nottinghamshire: str = "Nottinghamshire"
@@ -363,7 +360,6 @@ class CSSR(ColumnValues):
     oxfordshire: str = "Oxfordshire"
     peterborough: str = "Peterborough"
     plymouth: str = "Plymouth"
-    poole: str = "Poole"
     portsmouth: str = "Portsmouth"
     reading: str = "Reading"
     redbridge: str = "Redbridge"
@@ -420,6 +416,16 @@ class CSSR(ColumnValues):
     wolverhampton: str = "Wolverhampton"
     worcestershire: str = "Worcestershire"
     york: str = "York"
+
+
+@dataclass
+class ContemporaryCSSR(CurrentCSSR):
+    """The possible values of the local authority columns in ONS data"""
+
+    bournemouth: str = "Bournemouth"
+    cumbria: str = "Cumbria"
+    northamptonshire: str = "Northamptonshire"
+    poole: str = "Poole"
 
 
 @dataclass
