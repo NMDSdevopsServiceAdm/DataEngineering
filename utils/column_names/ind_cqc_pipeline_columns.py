@@ -32,6 +32,7 @@ class IndCqcColumns:
     cqc_sector: str = CQCLClean.cqc_sector
     registration_status: str = CQCLClean.registration_status
     registration_date: str = CQCLClean.registration_date
+    imputed_registration_date: str = CQCLClean.imputed_registration_date
     dormancy: str = CQCLClean.dormancy
     care_home: str = CQCLClean.care_home
     number_of_beds: str = CQCLClean.number_of_beds

@@ -22,3 +22,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
+    imputed_registration_date: str = "imputed_registration_date"

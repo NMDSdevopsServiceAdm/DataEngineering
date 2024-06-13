@@ -21,7 +21,6 @@ class LocationsAPIRawValidationRules:
             CQCL.care_home,
             CQCL.provider_id,
             CQCL.registration_status,
-            CQCL.registration_date,
             CQCL.name,
         ],
         RuleName.index_columns: [
