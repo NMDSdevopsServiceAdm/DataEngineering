@@ -26,7 +26,6 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     Region,
     RUI,
-    CSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
     LocationType,
@@ -729,15 +728,15 @@ class PAFilledPostsByIcbArea:
     # fmt: on
 
     sample_pa_filled_posts_rows = [
-        ("Leeds", 100.2, "2024"),
-        ("Bradford", 200.3, "2024"),
-        ("Hull", 300.3, "2023"),
+        ("Leeds", 100.2, 2023, "2023"),
+        ("Bradford", 200.3, 2023, "2023"),
+        ("Hull", 300.3, 2022, "2023"),
     ]
 
     expected_create_date_column_from_year_in_pa_estimates_rows = [
-        ("Leeds", 100.2, "2024", date(2024, 3, 31)),
-        ("Bradford", 200.3, "2024", date(2024, 3, 31)),
-        ("Hull", 300.3, "2023", date(2023, 3, 31)),
+        ("Leeds", 100.2, 2023, "2023", date(2024, 3, 31)),
+        ("Bradford", 200.3, 2023, "2023", date(2024, 3, 31)),
+        ("Hull", 300.3, 2022, "2023", date(2023, 3, 31)),
     ]
 
     sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
@@ -749,18 +748,18 @@ class PAFilledPostsByIcbArea:
     ]
 
     sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
-        ("Leeds", 100.2, "2024", date(2024, 3, 31)),
-        ("Bradford", 200.3, "2024", date(2024, 3, 31)),
-        ("Leeds", 300.3, "2023", date(2023, 3, 31)),
-        ("Barking and Dagenham", 300.3, "2023", date(2023, 3, 31)),
+        ("Leeds", 100.2, "2023", date(2024, 3, 31)),
+        ("Bradford", 200.3, "2023", date(2024, 3, 31)),
+        ("Leeds", 300.3, "2022", date(2023, 3, 31)),
+        ("Barking and Dagenham", 300.3, "2022", date(2023, 3, 31)),
     ]
 
     # fmt: off
     expected_postcode_proportions_after_joining_pa_filled_posts_rows = [
-        (date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2, "2024"),
-        (date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3, "2024"), 
-        (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2024"), 
-        (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2023"),
+        (date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2, "2023"),
+        (date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3, "2023"), 
+        (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2023"), 
+        (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2022"),
         (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None, None),
     ]
 
@@ -1078,6 +1077,16 @@ class CQCpirData:
         ("loc 2", "Shared Lives", None),
         ("loc 3", None, None),
         ("loc 4", "Community", "N"),
+    ]
+
+    remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+
+    expected_remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
     ]
 
 
@@ -4785,3 +4794,52 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
+
+    expected_pir_data = [
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", None, "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_single_row_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_multiple_rows_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+        (
+            "1-1199876096",
+            "20230601",
+            "Residential",
+            "24-May-23",
+            None,
+            "something else",
+        ),
+    ]
+
+    pir_data_without_rows_to_remove = expected_pir_data

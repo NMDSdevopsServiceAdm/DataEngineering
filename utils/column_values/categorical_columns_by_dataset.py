@@ -32,7 +32,8 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     Region,
     RUI,
-    CSSR,
+    CurrentCSSR,
+    ContemporaryCSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
 )
@@ -68,8 +69,8 @@ class LocationsApiCleanedCategoricalValues:
     current_region_column_values = Region(CQCLClean.current_region)
     contemporary_region_column_values = Region(CQCLClean.contemporary_region)
     current_rui_column_values = RUI(CQCLClean.current_rural_urban_ind_11)
-    current_cssr_column_values = CSSR(CQCLClean.current_cssr)
-    contemporary_cssr_column_values = CSSR(CQCLClean.contemporary_cssr)
+    current_cssr_column_values = CurrentCSSR(CQCLClean.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(CQCLClean.contemporary_cssr)
 
 
 @dataclass
@@ -88,15 +89,15 @@ class PostcodeDirectoryCleanedCategoricalValues:
     contemporary_region_column_values = Region(ONSClean.contemporary_region)
     current_rui_column_values = RUI(ONSClean.current_rural_urban_ind_11)
     contemporary_rui_column_values = RUI(ONSClean.contemporary_rural_urban_ind_11)
-    current_cssr_column_values = CSSR(ONSClean.current_cssr)
-    contemporary_cssr_column_values = CSSR(ONSClean.contemporary_cssr)
+    current_cssr_column_values = CurrentCSSR(ONSClean.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(ONSClean.contemporary_cssr)
 
 
 @dataclass
 class PostcodeDirectoryRawCategoricalValues:
     region_column_values = Region(ONS.region)
     rui_column_values = RUI(ONS.rural_urban_indicator_2011)
-    cssr_column_values = CSSR(ONS.cssr)
+    cssr_column_values = ContemporaryCSSR(ONS.cssr)
 
 
 @dataclass
@@ -112,8 +113,8 @@ class MergedIndCQCCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    current_cssr_column_values = CSSR(IndCQC.current_cssr)
-    contemporary_cssr_column_values = CSSR(IndCQC.contemporary_cssr)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
 
 
 @dataclass
@@ -131,8 +132,8 @@ class CleanedIndCQCCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     contemporary_region_column_values = Region(IndCQC.contemporary_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    current_cssr_column_values = CSSR(IndCQC.current_cssr)
-    contemporary_cssr_column_values = CSSR(IndCQC.contemporary_cssr)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    contemporary_cssr_column_values = ContemporaryCSSR(IndCQC.contemporary_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )
@@ -152,7 +153,7 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
-    current_cssr_column_values = CSSR(IndCQC.current_cssr)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
     )

@@ -58,3 +58,50 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
 
         self.assertIsNotNone(returned_df)
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
+
+
+class RemoveDuplicatePIRTests(TestRawDataAdjustments):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_with_multiple_rows_to_remove_df = self.spark.createDataFrame(
+            Data.pir_data_with_multiple_rows_to_remove, Schemas.pir_data_schema
+        )
+        self.test_with_single_row_to_remove_df = self.spark.createDataFrame(
+            Data.pir_data_with_single_row_to_remove, Schemas.pir_data_schema
+        )
+        self.test_without_rows_to_remove_df = self.spark.createDataFrame(
+            Data.pir_data_without_rows_to_remove, Schemas.pir_data_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_pir_data, Schemas.pir_data_schema
+        )
+
+    def test_remove_duplicate_record_in_pir_data_removes_multiple_rows_when_they_match_the_criteria(
+        self,
+    ):
+        returned_df = job.remove_duplicate_record_in_raw_pir_data(
+            self.test_with_multiple_rows_to_remove_df,
+        )
+
+        self.assertIsNotNone(returned_df)
+        self.assertEqual(self.expected_df.collect(), returned_df.collect())
+
+    def test_remove_duplicate_record_in_pir_data_removes_single_row_when_it_matches_the_criteria(
+        self,
+    ):
+        returned_df = job.remove_duplicate_record_in_raw_pir_data(
+            self.test_with_single_row_to_remove_df,
+        )
+
+        self.assertIsNotNone(returned_df)
+        self.assertEqual(self.expected_df.collect(), returned_df.collect())
+
+    def test_remove_duplicate_record_in_pir_data_does_not_remove_rows_when_they_do_not_match_the_criteria(
+        self,
+    ):
+        returned_df = job.remove_duplicate_record_in_raw_pir_data(
+            self.test_without_rows_to_remove_df,
+        )
+
+        self.assertIsNotNone(returned_df)
+        self.assertEqual(self.expected_df.collect(), returned_df.collect())

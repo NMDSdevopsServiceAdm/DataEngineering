@@ -519,6 +519,7 @@ class PAFilledPostsByIcbAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
             StructField(DP.YEAR, StringType(), True),
         ]
     )
@@ -1349,6 +1350,13 @@ class CQCPIRSchema:
         [
             *add_care_home_column_schema,
             StructField(CQCPIRClean.care_home, StringType(), True),
+        ]
+    )
+
+    remove_rows_missing_people_directly_employed_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -3427,6 +3435,17 @@ class RawDataAdjustments:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
             StructField(AWK.establishment_id, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )
+
+    pir_data_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.pir_type, StringType(), True),
+            StructField(CQCPIR.pir_submission_date, StringType(), True),
+            StructField(CQCPIR.domiciliary_care, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )
