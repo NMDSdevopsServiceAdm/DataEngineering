@@ -83,6 +83,7 @@ def main(
     )
 
     cqc_location_df = create_cleaned_registration_date_column(cqc_location_df)
+    cqc_location_df = clean_provider_id_column(cqc_location_df)
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
@@ -116,6 +117,33 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
+    cqc_df = fill_missing_provider_ids_from_other_rows(cqc_df)
+    return cqc_df
+
+
+def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = cqc_df.withColumn(
+        CQCL.provider_id,
+        F.when(F.length(CQCL.provider_id) <= 14, cqc_df[CQCL.provider_id]),
+    )
+    return cqc_df
+
+
+def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = cqc_df.withColumn(
+        CQCL.provider_id,
+        F.when(
+            cqc_df[CQCL.provider_id].isNull(),
+            F.first(CQCL.provider_id, ignorenulls=True).over(
+                Window.partitionBy(CQCL.location_id)
+            ),
+        ).otherwise(cqc_df[CQCL.provider_id]),
+    )
+    return cqc_df
 
 
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:

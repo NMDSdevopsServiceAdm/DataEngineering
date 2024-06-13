@@ -20,7 +20,6 @@ class LocationsAPIRawValidationRules:
             CQCL.location_id,
             Keys.import_date,
             CQCL.care_home,
-            CQCL.provider_id,
             CQCL.registration_status,
             CQCL.name,
         ],
