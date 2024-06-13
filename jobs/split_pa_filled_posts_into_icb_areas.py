@@ -86,12 +86,6 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         )
     )
 
-    proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df = (
-        proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df.drop(
-            DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS
-        )
-    )
-
     utils.write_to_parquet(
         proportion_of_postcodes_per_hybrid_area_with_pa_filled_posts_df,
         destination,
@@ -198,6 +192,10 @@ def apply_icb_proportions_to_pa_filled_posts(
         DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA,
         F.col(DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS)
         * F.col(DPColNames.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA),
+    )
+
+    postcode_directory_df = postcode_directory_df.drop(
+        DPColNames.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS
     )
 
     return postcode_directory_df
