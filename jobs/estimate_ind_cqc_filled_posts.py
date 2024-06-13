@@ -86,7 +86,7 @@ def main(
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df, IndCQC.care_home_model)
     cleaned_ind_cqc_df = model_extrapolation(
         cleaned_ind_cqc_df, IndCQC.rolling_average_model
-    )
+    )  # remove this before merging with main
 
     cleaned_ind_cqc_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
