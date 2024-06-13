@@ -135,14 +135,12 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[5][IndCqc.first_submission_time], 1672531200)
         self.assertEqual(output_df[5][IndCqc.last_submission_time], 1675209600)
 
-    def test_add_filled_posts_and_rolling_average_for_first_and_last_submission(
+    def test_add_filled_posts_and_model_value_for_first_and_last_submission(
         self,
-    ):  # TODO: Refactor
-        output_df = (
-            job.add_filled_posts_and_rolling_average_for_first_and_last_submission(
-                self.data_for_first_and_last_submissions_df,
-                IndCqc.rolling_average_model,
-            )
+    ):
+        output_df = job.add_filled_posts_and_model_value_for_first_and_last_submission(
+            self.data_for_first_and_last_submissions_df,
+            IndCqc.rolling_average_model,
         )
 
         self.assertEqual(output_df.count(), 6)

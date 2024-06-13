@@ -9,7 +9,7 @@ def model_extrapolation(df: DataFrame) -> DataFrame:
     filtered_df = filter_to_locations_who_have_a_filled_posts_at_some_point(df)
 
     filtered_with_first_and_last_submitted_data_df = (
-        add_filled_posts_and_rolling_average_for_first_and_last_submission(filtered_df)
+        add_filled_posts_and_model_value_for_first_and_last_submission(filtered_df)
     )
 
     df_with_extrapolated_values = add_extrapolated_values(
@@ -41,7 +41,7 @@ def filter_to_known_values_only(df: DataFrame) -> DataFrame:
     return df.where(F.col(IndCqc.max_filled_posts) > 0.0)
 
 
-def add_filled_posts_and_rolling_average_for_first_and_last_submission(
+def add_filled_posts_and_model_value_for_first_and_last_submission(
     df: DataFrame,
     model_column_name: str,
 ) -> DataFrame:
