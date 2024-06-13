@@ -127,7 +127,8 @@ def add_extrapolated_values(
     )
 
     df_with_extrapolation_models = create_extrapolation_model_column(
-        df_with_extrapolation_models
+        df_with_extrapolation_models,
+        model_column_name,
     )
 
     df = df.join(
@@ -165,9 +166,12 @@ def create_extrapolation_ratio_column(
     return df_with_extrapolation_ratio_column
 
 
-def create_extrapolation_model_column(df: DataFrame) -> DataFrame:
+def create_extrapolation_model_column(
+    df: DataFrame, model_column_name: str
+) -> DataFrame:
+    extrapolation_model_column_name: str = "extrapolation_" + model_column_name
     df = df.withColumn(
-        IndCqc.extrapolation_model,
+        extrapolation_model_column_name,
         F.when(
             (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time)),
             (F.col(IndCqc.first_filled_posts) * F.col(IndCqc.extrapolation_ratio)),
@@ -178,7 +182,9 @@ def create_extrapolation_model_column(df: DataFrame) -> DataFrame:
     )
 
     df = df.select(
-        IndCqc.location_id, IndCqc.cqc_location_import_date, IndCqc.extrapolation_model
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        extrapolation_model_column_name,
     )
 
     return df
