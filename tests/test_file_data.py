@@ -4415,6 +4415,13 @@ class ValidationUtils:
         ),
     ]
 
+    add_column_with_length_of_string_rows = [
+        ("loc_1",),
+    ]
+    expected_add_column_with_length_of_string_rows = [
+        ("loc_1", 5),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:

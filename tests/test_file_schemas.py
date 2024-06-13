@@ -3054,6 +3054,17 @@ class ValidationUtils:
             StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
+    add_column_with_length_of_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )
+    expected_add_column_with_length_of_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(Validation.location_id_length, IntegerType(), True),
+        ]
+    )
 
 
 @dataclass

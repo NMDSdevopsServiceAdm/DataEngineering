@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLCLean,
+)
+
 
 @dataclass
 class Validation:
@@ -9,3 +13,5 @@ class Validation:
     constraint: str = "constraint"
     constraint_status: str = "constraint_status"
     constraint_message: str = "constraint_message"
+    location_id_length: str = CQCLCLean.location_id + "_length"
+    provider_id_length: str = CQCLCLean.provider_id + "_length"

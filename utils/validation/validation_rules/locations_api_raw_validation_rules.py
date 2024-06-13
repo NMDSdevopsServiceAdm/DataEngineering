@@ -9,6 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationApiRawCategoricalValues as CatValues,
 )
+
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
