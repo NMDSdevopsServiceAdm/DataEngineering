@@ -134,28 +134,27 @@ def add_extrapolated_values(df: DataFrame, extrapolation_df: DataFrame) -> DataF
     return df
 
 
-def create_extrapolation_ratio_column(df: DataFrame) -> DataFrame:  # TODO: Refactor
+def create_extrapolation_ratio_column(
+    df: DataFrame, model_column_name: str
+) -> DataFrame:
+    first_model_column_name, last_model_column_name = create_new_column_names(
+        model_column_name
+    )
     df_with_extrapolation_ratio_column = df.withColumn(
         IndCqc.extrapolation_ratio,
         F.when(
             (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time)),
             (
                 1
-                + (
-                    F.col(IndCqc.rolling_average_model)
-                    - F.col(IndCqc.first_rolling_average)
-                )
-                / F.col(IndCqc.first_rolling_average)
+                + (F.col(model_column_name) - F.col(first_model_column_name))
+                / F.col(first_model_column_name)
             ),
         ).when(
             (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time)),
             (
                 1
-                + (
-                    F.col(IndCqc.rolling_average_model)
-                    - F.col(IndCqc.last_rolling_average)
-                )
-                / F.col(IndCqc.last_rolling_average)
+                + (F.col(model_column_name) - F.col(last_model_column_name))
+                / F.col(last_model_column_name)
             ),
         ),
     )

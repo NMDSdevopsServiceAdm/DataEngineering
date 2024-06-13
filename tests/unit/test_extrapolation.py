@@ -158,7 +158,8 @@ class TestModelExtrapolation(unittest.TestCase):
 
     def test_create_extrapolation_ratio_column(self):  # TODO: Refactor
         output_df = job.create_extrapolation_ratio_column(
-            self.data_for_extrapolated_ratios_df
+            self.data_for_extrapolated_ratios_df,
+            IndCqc.rolling_average_model,
         )
 
         self.assertEqual(output_df.count(), 3)
