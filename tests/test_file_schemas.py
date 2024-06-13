@@ -519,6 +519,7 @@ class PAFilledPostsByIcbAreaSchema:
             StructField(
                 DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS, DoubleType(), True
             ),
+            StructField(DP.YEAR_AS_INTEGER, IntegerType(), True),
             StructField(DP.YEAR, StringType(), True),
         ]
     )
