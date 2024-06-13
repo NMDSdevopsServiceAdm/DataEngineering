@@ -5,15 +5,17 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def model_extrapolation(df: DataFrame) -> DataFrame:
+def model_extrapolation(df: DataFrame, model_column_name: str) -> DataFrame:
     filtered_df = filter_to_locations_who_have_a_filled_posts_at_some_point(df)
 
     filtered_with_first_and_last_submitted_data_df = (
-        add_filled_posts_and_model_value_for_first_and_last_submission(filtered_df)
+        add_filled_posts_and_model_value_for_first_and_last_submission(
+            filtered_df, model_column_name
+        )
     )
 
     df_with_extrapolated_values = add_extrapolated_values(
-        df, filtered_with_first_and_last_submitted_data_df
+        df, filtered_with_first_and_last_submitted_data_df, model_column_name
     )
 
     return df_with_extrapolated_values
@@ -112,14 +114,16 @@ def add_filled_posts_and_modelled_value_for_specific_time_period(
     return left_join_on_locationid(df, unix_time_df)
 
 
-def add_extrapolated_values(df: DataFrame, extrapolation_df: DataFrame) -> DataFrame:
+def add_extrapolated_values(
+    df: DataFrame, extrapolation_df: DataFrame, model_column_name: str
+) -> DataFrame:
     df_with_extrapolation_models = extrapolation_df.where(
         (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time))
         | (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time))
     )
 
     df_with_extrapolation_models = create_extrapolation_ratio_column(
-        df_with_extrapolation_models
+        df_with_extrapolation_models, model_column_name
     )
 
     df_with_extrapolation_models = create_extrapolation_model_column(

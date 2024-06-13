@@ -45,7 +45,9 @@ class TestModelExtrapolation(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_model_extrapolation_row_count_unchanged(self):
-        output_df = job.model_extrapolation(self.extrapolation_df)
+        output_df = job.model_extrapolation(
+            self.extrapolation_df, IndCqc.rolling_average_model
+        )
         self.assertEqual(output_df.count(), self.extrapolation_df.count())
 
         self.assertEqual(
@@ -61,8 +63,10 @@ class TestModelExtrapolation(unittest.TestCase):
             ],
         )
 
-    def test_model_extrapolation_outputted_values_correct(self):  # TODO: Refactor
-        df = job.model_extrapolation(self.extrapolation_df)
+    def test_model_extrapolation_outputted_values_correct(self):
+        df = job.model_extrapolation(
+            self.extrapolation_df, IndCqc.rolling_average_model
+        )
         df = df.sort(IndCqc.location_id, IndCqc.cqc_location_import_date).collect()
 
         self.assertEqual(df[1][IndCqc.extrapolation_model], None)
@@ -197,6 +201,7 @@ class TestModelExtrapolation(unittest.TestCase):
         output_df = job.add_extrapolated_values(
             self.data_for_extrapolated_values_to_be_added_into_df,
             self.data_for_extrapolated_values_df,
+            IndCqc.rolling_average_model,
         )
 
         self.assertEqual(output_df.count(), 11)
