@@ -32,6 +32,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cUtils.pir_submission_date_uri_format,
     )
 
+    cqc_pir_df = remove_unused_pir_types(cqc_pir_df)
+
     cqc_pir_df = add_care_home_column(cqc_pir_df)
 
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
@@ -46,6 +48,10 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         mode="overwrite",
         partitionKeys=pirPartitionKeys,
     )
+
+
+def remove_unused_pir_types(df: DataFrame) -> DataFrame:
+    return df
 
 
 def add_care_home_column(df: DataFrame) -> DataFrame:

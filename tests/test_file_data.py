@@ -1079,6 +1079,11 @@ class CQCpirData:
         ("loc 3", None, None),
         ("loc 4", "Community", "N"),
     ]
+    remove_unused_pir_types_rows = add_care_home_column_rows
+    expected_remove_unused_pir_types_rows = [
+        ("loc 1", "Residential"),
+        ("loc 4", "Community"),
+    ]
 
 
 @dataclass
