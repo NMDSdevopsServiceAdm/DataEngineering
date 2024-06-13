@@ -94,7 +94,7 @@ def main(
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 IndCQC.interpolation_model,
-                IndCQC.extrapolation_model,
+                "extrapolation_" + IndCQC.care_home_model,
                 IndCQC.care_home_model,
                 IndCQC.rolling_average_model,
             ],
