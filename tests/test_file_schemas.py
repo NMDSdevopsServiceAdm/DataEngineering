@@ -1346,6 +1346,13 @@ class CQCPIRSchema:
         ]
     )
 
+    remove_rows_missing_people_directly_employed_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCPIRCleanSchema:
@@ -3410,6 +3417,17 @@ class RawDataAdjustments:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
             StructField(AWK.establishment_id, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )
+
+    pir_data_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.pir_type, StringType(), True),
+            StructField(CQCPIR.pir_submission_date, StringType(), True),
+            StructField(CQCPIR.domiciliary_care, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )

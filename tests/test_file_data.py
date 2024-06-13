@@ -1079,6 +1079,16 @@ class CQCpirData:
         ("loc 4", "Community", "N"),
     ]
 
+    remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+
+    expected_remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+    ]
+
 
 @dataclass
 class CQCPirCleanedData:
@@ -4740,3 +4750,52 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
+
+    expected_pir_data = [
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", None, "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_single_row_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_multiple_rows_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+        (
+            "1-1199876096",
+            "20230601",
+            "Residential",
+            "24-May-23",
+            None,
+            "something else",
+        ),
+    ]
+
+    pir_data_without_rows_to_remove = expected_pir_data
