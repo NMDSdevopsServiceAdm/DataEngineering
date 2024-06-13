@@ -78,8 +78,6 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.remove_rows_missing_people_directly_employed_schema,
         )
         returned_df = job.remove_rows_without_people_directly_employed(test_df)
-        expected_df.show()
-        returned_df.show()
 
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
