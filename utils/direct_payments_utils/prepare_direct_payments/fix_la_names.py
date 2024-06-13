@@ -14,8 +14,8 @@ def change_la_names_to_match_ons_cleaned(
     direct_payments_df: DataFrame,
 ) -> DataFrame:
     direct_payments_df = direct_payments_df.replace(
-        LaNames.LIST_OF_INCORRECT_LA_NAMES,
-        LaNames.LIST_OF_CORRECT_LA_NAMES,
+        LaNames.DICT_TO_CORRECT_LA_NAMES,
+        None,
         DPColNames.LA_AREA,
     )
 

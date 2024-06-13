@@ -571,9 +571,9 @@ class PAFilledPostsByIcbAreaSchema:
 
     expected_pa_filled_posts_after_applying_proportions_schema = StructType(
         [
-            *sample_proportions_and_pa_filled_posts_schema,
+            StructField(DP.PROPORTION_OF_ICB_POSTCODES_IN_LA_AREA, FloatType(), True),
             StructField(
-                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_ICB,
+                DP.ESTIMATED_TOTAL_PERSONAL_ASSISTANT_FILLED_POSTS_PER_HYBRID_AREA,
                 DoubleType(),
                 True,
             ),
