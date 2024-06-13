@@ -1,11 +1,10 @@
 import sys
 import warnings
-from typing import Tuple
 
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -83,6 +82,8 @@ def main(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
 
+    cqc_location_df = create_cleaned_registration_date_column(cqc_location_df)
+
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -115,6 +116,44 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
+    cqc_df = cqc_df.withColumn(
+        CQCLClean.imputed_registration_date, cqc_df[CQCL.registration_date]
+    )
+    cqc_df = remove_time_from_date_column(cqc_df, CQCLClean.imputed_registration_date)
+    cqc_df = impute_missing_registration_dates(cqc_df)
+    return cqc_df
+
+
+def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
+    df = df.withColumn(column_name, F.substring(column_name, 1, 10))
+    return df
+
+
+def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
+    df = df.withColumn(
+        CQCLClean.imputed_registration_date,
+        F.when(
+            df[CQCLClean.imputed_registration_date].isNull(),
+            F.min(CQCLClean.imputed_registration_date).over(
+                Window.partitionBy(CQCL.location_id)
+            ),
+        ).otherwise(df[CQCLClean.imputed_registration_date]),
+    )
+    df = df.withColumn(
+        CQCLClean.imputed_registration_date,
+        F.when(
+            df[CQCLClean.imputed_registration_date].isNull(),
+            F.regexp_replace(
+                F.min(Keys.import_date).over(Window.partitionBy(CQCL.location_id)),
+                "(\d{4})(\d{2})(\d{2})",
+                "$1-$2-$3",
+            ),
+        ).otherwise(df[CQCLClean.imputed_registration_date]),
+    )
+    return df
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:

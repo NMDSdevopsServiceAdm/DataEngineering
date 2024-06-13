@@ -1126,6 +1126,23 @@ class CQCLocationsSchema:
         ]
     )
 
+    clean_registration_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    expected_clean_registration_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_date, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCLClean.imputed_registration_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class UtilsSchema:
@@ -1326,6 +1343,13 @@ class CQCPIRSchema:
         [
             *add_care_home_column_schema,
             StructField(CQCPIRClean.care_home, StringType(), True),
+        ]
+    )
+
+    remove_rows_missing_people_directly_employed_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(CQCPIR.people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -2230,7 +2254,7 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.provider_name, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(
@@ -3032,6 +3056,17 @@ class ValidationUtils:
             StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
+    add_column_with_length_of_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+        ]
+    )
+    expected_add_column_with_length_of_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(Validation.location_id_length, IntegerType(), True),
+        ]
+    )
 
 
 @dataclass
@@ -3055,7 +3090,7 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.provider_name, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.registration_date, DateType(), True),
+            StructField(CQCLClean.imputed_registration_date, DateType(), True),
             StructField(CQCLClean.dormancy, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
@@ -3179,7 +3214,7 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.provider_name, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(
@@ -3395,6 +3430,17 @@ class RawDataAdjustments:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
             StructField(AWK.establishment_id, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )
+
+    pir_data_schema = StructType(
+        [
+            StructField(CQCPIR.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPIR.pir_type, StringType(), True),
+            StructField(CQCPIR.pir_submission_date, StringType(), True),
+            StructField(CQCPIR.domiciliary_care, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )

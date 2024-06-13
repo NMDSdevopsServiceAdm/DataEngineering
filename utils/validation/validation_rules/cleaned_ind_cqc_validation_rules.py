@@ -21,7 +21,7 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.provider_id,
             IndCqcColumns.cqc_sector,
             IndCqcColumns.registration_status,
-            IndCqcColumns.registration_date,
+            IndCqcColumns.imputed_registration_date,
             IndCqcColumns.primary_service_type,
             IndCqcColumns.number_of_beds,
             IndCqcColumns.contemporary_ons_import_date,

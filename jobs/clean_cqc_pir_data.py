@@ -5,6 +5,7 @@ import pyspark.sql.functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.raw_data_adjustments import remove_duplicate_record_in_raw_pir_data
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
@@ -21,6 +22,10 @@ pirPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     cqc_pir_df = utils.read_from_parquet(cqc_pir_source)
+
+    cqc_pir_df = remove_duplicate_record_in_raw_pir_data(cqc_pir_df)
+
+    cqc_pir_df = remove_rows_without_people_directly_employed(cqc_pir_df)
 
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
@@ -48,6 +53,11 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         mode="overwrite",
         partitionKeys=pirPartitionKeys,
     )
+
+
+def remove_rows_without_people_directly_employed(df: DataFrame) -> DataFrame:
+    df = df.where((df[PIRCols.people_directly_employed] > 0))
+    return df
 
 
 def remove_unused_pir_types(df: DataFrame) -> DataFrame:

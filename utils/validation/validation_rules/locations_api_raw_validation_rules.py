@@ -9,6 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationApiRawCategoricalValues as CatValues,
 )
+
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -21,7 +22,6 @@ class LocationsAPIRawValidationRules:
             CQCL.care_home,
             CQCL.provider_id,
             CQCL.registration_status,
-            CQCL.registration_date,
             CQCL.name,
         ],
         RuleName.index_columns: [

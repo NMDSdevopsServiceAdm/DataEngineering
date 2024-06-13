@@ -19,7 +19,10 @@ from utils.column_values.categorical_column_values import (
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
     LocationsAPICleanedValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    add_column_with_length_of_string,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -49,6 +52,10 @@ def main(
     rules[
         RuleName.size_of_dataset
     ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+
+    cleaned_cqc_locations_df = add_column_with_length_of_string(
+        cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
+    )
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
 

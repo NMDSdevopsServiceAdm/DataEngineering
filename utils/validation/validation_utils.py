@@ -8,7 +8,10 @@ from pydeequ.verification import (
     VerificationSuite,
     VerificationResult,
 )
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import (
+    DataFrame,
+    functions as F,
+)
 
 from utils import utils
 from utils.validation.validation_rule_names import RuleNames as RuleToCheck
@@ -137,3 +140,12 @@ def create_check_of_number_of_distinct_values(
         hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
     )
     return check
+
+
+def add_column_with_length_of_string(
+    df: DataFrame, column_names: list[str]
+) -> DataFrame:
+    for column_name in column_names:
+        new_column_name = column_name + "_length"
+        df = df.withColumn(new_column_name, F.length(column_name))
+    return df

@@ -7,8 +7,9 @@ from utils import utils
 from utils.validation.validation_rules.locations_api_raw_validation_rules import (
     LocationsAPIRawValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
-from utils.validation.validation_rule_names import RuleNames as RuleName
+from utils.validation.validation_utils import (
+    validate_dataset,
+)
 
 
 def main(

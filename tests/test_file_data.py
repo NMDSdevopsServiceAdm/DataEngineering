@@ -26,7 +26,6 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     Region,
     RUI,
-    CSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
     LocationType,
@@ -1085,6 +1084,16 @@ class CQCpirData:
         ("loc 4", "Community"),
     ]
 
+    remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+
+    expected_remove_rows_missing_people_directly_employed = [
+        ("loc_1", 1),
+    ]
+
 
 @dataclass
 class CQCPirCleanedData:
@@ -1666,6 +1675,60 @@ class CQCLocationsData:
             ["Care home service without nursing", "Fake service"],
         ),
     ]
+    # fmt: off
+    remove_time_from_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01 00:00:00"),
+        ("loc_1", None, "20231101", None),
+    ]
+    expected_remove_time_from_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
+        ("loc_1", None, "20231101", None),
+    ]
+    clean_registration_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201"),
+        ("loc_1", None, "20231101"),
+        ("loc_2", None, "20240101"),
+        ("loc_2", None, "20231201"),
+        ("loc_2", None, "20231101"),
+    ]
+    expected_clean_registration_date_column_rows = [
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
+        ("loc_1", None, "20231101", "2018-01-01"),
+        ("loc_2", None, "20240101", "2023-11-01"),
+        ("loc_2", None, "20231201", "2023-11-01"),
+        ("loc_2", None, "20231101", "2023-11-01"),
+    ]
+    impute_missing_registration_dates_rows=expected_remove_time_from_date_column_rows
+    expected_impute_missing_registration_dates_rows=[
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
+        ("loc_1", None, "20231101", "2018-01-01"),
+    ]
+    impute_missing_registration_dates_different_rows=[
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2017-01-01 00:00:00", "20231201", "2017-01-01"),
+        ("loc_1", None, "20231101", None),
+    ]
+    expected_impute_missing_registration_dates_different_rows=[
+        ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
+        ("loc_1", "2017-01-01 00:00:00", "20231201", "2017-01-01"),
+        ("loc_1", None, "20231101", "2017-01-01"),
+    ]
+    impute_missing_registration_dates_missing_rows=[
+        ("loc_2", None, "20240101", None),
+        ("loc_2", None, "20231201", None),
+        ("loc_2", None, "20231101", None),
+    ]
+    expected_impute_missing_registration_dates_missing_rows=[
+        ("loc_2", None, "20240101", "2023-11-01"),
+        ("loc_2", None, "20231201", "2023-11-01"),
+        ("loc_2", None, "20231101", "2023-11-01"),
+    ]
+    # fmt: on
 
 
 @dataclass
@@ -4357,6 +4420,13 @@ class ValidationUtils:
         ),
     ]
 
+    add_column_with_length_of_string_rows = [
+        ("loc_1",),
+    ]
+    expected_add_column_with_length_of_string_rows = [
+        ("loc_1", 5),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:
@@ -4692,3 +4762,52 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
+
+    expected_pir_data = [
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", "0", "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", "0", "other"),
+        ("loc_1", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20240101", "Non-residential", "24-May-23", None, "other"),
+        ("1-1199876096", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("1-1199876096", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20230601", "Non-residential", "24-May-23", None, "other"),
+        ("loc_1", "20230601", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-Jan-24", None, "other"),
+        ("loc_1", "20240101", "Residential", "24-May-23", None, "other"),
+        ("loc_1", "20240101", "Non-residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_single_row_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+    ]
+    pir_data_with_multiple_rows_to_remove = [
+        *expected_pir_data,
+        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
+        (
+            "1-1199876096",
+            "20230601",
+            "Residential",
+            "24-May-23",
+            None,
+            "something else",
+        ),
+    ]
+
+    pir_data_without_rows_to_remove = expected_pir_data

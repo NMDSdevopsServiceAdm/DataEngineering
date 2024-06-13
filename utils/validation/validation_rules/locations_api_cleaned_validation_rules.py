@@ -6,6 +6,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
+from utils.column_names.validation_table_columns import (
+    Validation,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -21,7 +24,7 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.provider_id,
             CQCLClean.cqc_sector,
             CQCLClean.registration_status,
-            CQCLClean.registration_date,
+            CQCLClean.imputed_registration_date,
             CQCLClean.primary_service_type,
             CQCLClean.name,
             CQCLClean.provider_name,
@@ -39,9 +42,13 @@ class LocationsAPICleanedValidationRules:
         ],
         RuleName.min_values: {
             CQCLClean.number_of_beds: 1,
+            Validation.location_id_length: 3,
+            Validation.provider_id_length: 3,
         },
         RuleName.max_values: {
             CQCLClean.number_of_beds: 500,
+            Validation.location_id_length: 14,
+            Validation.provider_id_length: 14,
         },
         RuleName.categorical_values_in_columns: {
             CQCLClean.care_home: CatValues.care_home_column_values.categorical_values,
