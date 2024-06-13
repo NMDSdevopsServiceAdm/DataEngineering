@@ -140,7 +140,8 @@ class TestModelExtrapolation(unittest.TestCase):
     ):  # TODO: Refactor
         output_df = (
             job.add_filled_posts_and_rolling_average_for_first_and_last_submission(
-                self.data_for_first_and_last_submissions_df
+                self.data_for_first_and_last_submissions_df,
+                IndCqc.rolling_average_model,
             )
         )
 

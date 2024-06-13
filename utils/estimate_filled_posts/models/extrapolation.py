@@ -44,8 +44,10 @@ def filter_to_known_values_only(df: DataFrame) -> DataFrame:
 def add_filled_posts_and_rolling_average_for_first_and_last_submission(
     df: DataFrame,
     model_column_name: str,
-    new_model_column_name: str,
 ) -> DataFrame:
+    first_model_column_name, last_model_column_name = create_new_column_names(
+        model_column_name
+    )
     df = add_first_and_last_submission_date_cols(df)
 
     df = add_filled_posts_and_modelled_value_for_specific_time_period(
@@ -53,7 +55,7 @@ def add_filled_posts_and_rolling_average_for_first_and_last_submission(
         IndCqc.first_submission_time,
         IndCqc.first_filled_posts,
         model_column_name,
-        new_model_column_name,
+        first_model_column_name,
     )
 
     df = add_filled_posts_and_modelled_value_for_specific_time_period(
@@ -61,10 +63,17 @@ def add_filled_posts_and_rolling_average_for_first_and_last_submission(
         IndCqc.last_submission_time,
         IndCqc.last_filled_posts,
         model_column_name,
-        new_model_column_name,
+        last_model_column_name,
     )
 
     return df
+
+
+def create_new_column_names(model_column_name: str) -> tuple:
+    model_name = model_column_name[:-6]
+    first_model_column_name = "first_" + model_name
+    last_model_column_name = "last_" + model_name
+    return first_model_column_name, last_model_column_name
 
 
 def add_first_and_last_submission_date_cols(df: DataFrame) -> DataFrame:
