@@ -78,21 +78,22 @@ def add_first_and_last_submission_date_cols(df: DataFrame) -> DataFrame:
     return left_join_on_locationid(df, first_and_last_submission_date_df)
 
 
-def add_filled_posts_and_rolling_average_for_specific_time_period(  # TODO: Refactor
+def add_filled_posts_and_modelled_value_for_specific_time_period(
     df: DataFrame,
     unix_time_period: str,
     new_filled_posts_col_name: str,
-    new_rolling_average_col_name: str,
+    model_column_name: str,
+    new_model_column_name: str,
 ) -> DataFrame:
     unix_time_df = df.where(F.col(unix_time_period) == F.col(IndCqc.unix_time))
     unix_time_df = unix_time_df.withColumnRenamed(
         IndCqc.ascwds_filled_posts_dedup_clean, new_filled_posts_col_name
     )
     unix_time_df = unix_time_df.withColumnRenamed(
-        IndCqc.rolling_average_model, new_rolling_average_col_name
+        model_column_name, new_model_column_name
     )
     unix_time_df = unix_time_df.select(
-        IndCqc.location_id, new_filled_posts_col_name, new_rolling_average_col_name
+        IndCqc.location_id, new_filled_posts_col_name, new_model_column_name
     )
 
     return left_join_on_locationid(df, unix_time_df)
