@@ -41,23 +41,27 @@ def filter_to_known_values_only(df: DataFrame) -> DataFrame:
     return df.where(F.col(IndCqc.max_filled_posts) > 0.0)
 
 
-def add_filled_posts_and_rolling_average_for_first_and_last_submission(  # TODO: Refactor
+def add_filled_posts_and_rolling_average_for_first_and_last_submission(
     df: DataFrame,
+    model_column_name: str,
+    new_model_column_name: str,
 ) -> DataFrame:
     df = add_first_and_last_submission_date_cols(df)
 
-    df = add_filled_posts_and_rolling_average_for_specific_time_period(
+    df = add_filled_posts_and_modelled_value_for_specific_time_period(
         df,
         IndCqc.first_submission_time,
         IndCqc.first_filled_posts,
-        IndCqc.first_rolling_average,
+        model_column_name,
+        new_model_column_name,
     )
 
-    df = add_filled_posts_and_rolling_average_for_specific_time_period(
+    df = add_filled_posts_and_modelled_value_for_specific_time_period(
         df,
         IndCqc.last_submission_time,
         IndCqc.last_filled_posts,
-        IndCqc.last_rolling_average,
+        model_column_name,
+        new_model_column_name,
     )
 
     return df
