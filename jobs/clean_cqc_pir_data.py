@@ -37,6 +37,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
         cUtils.pir_submission_date_uri_format,
     )
 
+    cqc_pir_df = remove_unused_pir_types(cqc_pir_df)
+
     cqc_pir_df = add_care_home_column(cqc_pir_df)
 
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
@@ -55,6 +57,14 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
 def remove_rows_without_people_directly_employed(df: DataFrame) -> DataFrame:
     df = df.where((df[PIRCols.people_directly_employed] > 0))
+    return df
+
+
+def remove_unused_pir_types(df: DataFrame) -> DataFrame:
+    df = df.where(
+        (df[PIRCols.pir_type] == PIRType.residential)
+        | (df[PIRCols.pir_type] == PIRType.community)
+    )
     return df
 
 

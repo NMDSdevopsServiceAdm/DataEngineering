@@ -1353,6 +1353,8 @@ class CQCPIRSchema:
         ]
     )
 
+    remove_unused_pir_types_schema = add_care_home_column_schema
+
 
 @dataclass
 class CQCPIRCleanSchema:

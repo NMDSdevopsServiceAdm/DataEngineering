@@ -81,6 +81,19 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
 
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
+    def test_remove_unused_pir_type_rows_removes_correct_rows(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.remove_unused_pir_types_rows, Schemas.remove_unused_pir_types_schema
+        )
+        returned_df = job.remove_unused_pir_types(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_unused_pir_types_rows,
+            Schemas.remove_unused_pir_types_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
     def test_add_care_home_column_adds_a_column(self):
         returned_df = job.add_care_home_column(self.test_add_care_home_column_df)
 
