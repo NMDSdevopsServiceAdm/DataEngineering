@@ -104,6 +104,13 @@ def main(
         registered_locations_df, cqc_provider_df
     )
 
+    registered_locations_df = impute_missing_data_from_provider_dataset(
+        registered_locations_df, CQCLClean.provider_name
+    )
+    registered_locations_df = impute_missing_data_from_provider_dataset(
+        registered_locations_df, CQCLClean.cqc_sector
+    )
+
     registered_locations_df = join_ons_postcode_data_into_cqc_df(
         registered_locations_df, ons_postcode_directory_df
     )
