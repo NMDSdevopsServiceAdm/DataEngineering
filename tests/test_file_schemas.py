@@ -1150,6 +1150,14 @@ class CQCLocationsSchema:
         ]
     )
 
+    impute_missing_data_from_provider_dataset_schema = StructType(
+        [
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class UtilsSchema:

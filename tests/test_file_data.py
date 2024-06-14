@@ -1761,10 +1761,35 @@ class CQCLocationsData:
         ("loc_1", "123456789", "20240201"),
         ("loc_1", None, "20240201"),
     ]
+
     expected_fill_missing_provider_id_column_rows = [
         ("loc_1", "123456789", "20240101"),
         ("loc_1", "123456789", "20240201"),
         ("loc_1", "123456789", "20240201"),
+    ]
+
+    impute_missing_data_from_provider_dataset_single_value_rows = [
+        ("prov_1", None, "20240101"),
+        ("prov_1", Sector.independent, "20240201"),
+        ("prov_1", Sector.independent, "20240301"),
+    ]
+
+    expected_impute_missing_data_from_provider_dataset_rows = [
+        ("prov_1", Sector.independent, "20240101"),
+        ("prov_1", Sector.independent, "20240201"),
+        ("prov_1", Sector.independent, "20240301"),
+    ]
+
+    impute_missing_data_from_provider_dataset_multiple_values_rows = [
+        ("prov_1", None, "20240101"),
+        ("prov_1", Sector.local_authority, "20240201"),
+        ("prov_1", Sector.independent, "20240301"),
+    ]
+
+    expected_impute_missing_data_from_provider_dataset_multiple_values_rows = [
+        ("prov_1", Sector.local_authority, "20240101"),
+        ("prov_1", Sector.local_authority, "20240201"),
+        ("prov_1", Sector.independent, "20240301"),
     ]
 
 
