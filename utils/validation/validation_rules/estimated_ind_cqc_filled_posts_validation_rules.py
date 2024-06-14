@@ -20,7 +20,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.cqc_location_import_date,
             IndCqcColumns.care_home,
             IndCqcColumns.primary_service_type,
-            IndCqcColumns.number_of_beds,
             IndCqcColumns.current_ons_import_date,
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,

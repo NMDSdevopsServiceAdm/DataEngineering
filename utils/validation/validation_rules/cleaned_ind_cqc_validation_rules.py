@@ -23,7 +23,6 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.registration_status,
             IndCqcColumns.imputed_registration_date,
             IndCqcColumns.primary_service_type,
-            IndCqcColumns.number_of_beds,
             IndCqcColumns.contemporary_ons_import_date,
             IndCqcColumns.contemporary_cssr,
             IndCqcColumns.contemporary_region,
