@@ -280,5 +280,34 @@ class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
         self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
+class CleanPeopleDirectlyEmployedColumn(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_clean_people_directly_employed(self):
+        test_df = self.spark.createDataFrame(
+            Data.clean_people_directly_employed_rows,
+            Schemas.clean_people_directly_employed_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_people_directly_employed_rows,
+            Schemas.expected_clean_people_directly_employed_schema,
+        )
+        returned_df = job.clean_people_directly_employed(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+    def test_replace_zero_people_with_one(self):
+        test_df = self.spark.createDataFrame(
+            Data.replace_zero_people_with_one_rows,
+            Schemas.replace_zero_people_with_one_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_replace_zero_people_with_one_rows,
+            Schemas.replace_zero_people_with_one_schema,
+        )
+        returned_df = job.replace_zero_people_with_one(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

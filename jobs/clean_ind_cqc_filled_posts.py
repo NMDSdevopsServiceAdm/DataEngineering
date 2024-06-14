@@ -43,6 +43,7 @@ def main(
     )
 
     locations_df = null_ascwds_filled_post_outliers(locations_df)
+    locations_df = clean_people_directly_employed(locations_df)
 
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
@@ -63,6 +64,14 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def clean_people_directly_employed(df: DataFrame) -> DataFrame:
+    return df
+
+
+def replace_zero_people_with_one(df: DataFrame) -> DataFrame:
+    return df
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:

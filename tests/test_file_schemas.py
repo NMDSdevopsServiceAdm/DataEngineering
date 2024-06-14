@@ -1555,6 +1555,21 @@ class CleanIndCQCData:
         ]
     )
 
+    clean_people_directly_employed_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
+    expected_clean_people_directly_employed_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed_clean, IntegerType(), True),
+        ]
+    )
+    replace_zero_people_with_one_schema = expected_clean_people_directly_employed_schema
+
 
 @dataclass
 class ReconciliationSchema:

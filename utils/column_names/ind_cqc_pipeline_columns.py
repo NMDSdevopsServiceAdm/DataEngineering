@@ -48,8 +48,11 @@ class IndCqcColumns:
     worker_records_bounded: str = AWPClean.worker_records_bounded
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     people_directly_employed: str = CQCPIRClean.people_directly_employed
-    people_directly_employed_dedup: str = (
-        CQCPIRClean.people_directly_employed + "_deduplicated"
+    people_directly_employed_clean: str = (
+        CQCPIRClean.people_directly_employed + "_clean"
+    )
+    people_directly_employed_clean_dedup: str = (
+        CQCPIRClean.people_directly_employed_clean + "_deduplicated"
     )
     contemporary_ons_import_date: str = ONSClean.contemporary_ons_import_date
     contemporary_cssr: str = ONSClean.contemporary_cssr

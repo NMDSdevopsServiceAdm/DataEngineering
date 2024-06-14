@@ -2201,6 +2201,28 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 2, 1), None),
     ]
 
+    clean_people_directly_employed_rows = [
+        ("loc_1", 2),
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+    expected_clean_people_directly_employed_rows = [
+        ("loc_1", 2, 2),
+        ("loc_1", 1, 1),
+        ("loc_1", 0, 1),
+        ("loc_1", None, None),
+    ]
+    replace_zero_people_with_one_rows = [
+        ("loc_1", 2, 2),
+        ("loc_1", 1, 1),
+        ("loc_1", 0, 0),
+        ("loc_1", None, None),
+    ]
+    expected_replace_zero_people_with_one_rows = (
+        expected_clean_people_directly_employed_rows
+    )
+
 
 @dataclass
 class ReconciliationData:
