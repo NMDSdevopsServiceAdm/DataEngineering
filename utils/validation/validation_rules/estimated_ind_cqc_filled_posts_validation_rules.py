@@ -51,7 +51,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.people_directly_employed: 10000,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
             IndCqcColumns.estimate_filled_posts: 3000.0,
-            IndCqcColumns.people_directly_employed_dedup: 10000,
+            IndCqcColumns.people_directly_employed_clean_dedup: 10000,
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
             IndCqcColumns.rolling_average_model: 3000.0,
