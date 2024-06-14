@@ -67,12 +67,15 @@ def main(
 
 
 def clean_people_directly_employed(df: DataFrame) -> DataFrame:
-
+    df = df.withColumn(
+        IndCQC.people_directly_employed_clean, df[IndCQC.people_directly_employed]
+    )
+    df = replace_zero_people_with_one(df)
     return df
 
 
 def replace_zero_people_with_one(df: DataFrame) -> DataFrame:
-    return df
+    return df.replace(0, 1, IndCQC.people_directly_employed_clean)
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
