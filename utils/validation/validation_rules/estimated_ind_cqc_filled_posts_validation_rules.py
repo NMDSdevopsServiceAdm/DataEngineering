@@ -37,7 +37,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.people_directly_employed: 1,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
             IndCqcColumns.estimate_filled_posts: 1.0,
-            IndCqcColumns.people_directly_employed_dedup: 1,
+            IndCqcColumns.people_directly_employed_clean_dedup: 1,
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
             IndCqcColumns.rolling_average_model: 0.0,

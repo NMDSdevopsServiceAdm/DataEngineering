@@ -52,8 +52,8 @@ def main(
     )
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
-        IndCQC.people_directly_employed,
-        IndCQC.people_directly_employed_dedup,
+        IndCQC.people_directly_employed_clean,
+        IndCQC.people_directly_employed_clean_dedup,
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
@@ -67,6 +67,7 @@ def main(
 
 
 def clean_people_directly_employed(df: DataFrame) -> DataFrame:
+
     return df
 
 

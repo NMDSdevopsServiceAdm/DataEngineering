@@ -3263,7 +3263,9 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(
+                IndCQC.people_directly_employed_clean_dedup, IntegerType(), True
+            ),
         ]
     )
     calculate_expected_size_schema = merged_ind_cqc_schema
@@ -3340,7 +3342,9 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(
+                IndCQC.people_directly_employed_clean_dedup, IntegerType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),

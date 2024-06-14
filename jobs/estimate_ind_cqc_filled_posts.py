@@ -30,7 +30,7 @@ cleaned_ind_cqc_columns = [
     IndCQC.number_of_beds,
     IndCQC.cqc_pir_import_date,
     IndCQC.people_directly_employed,
-    IndCQC.people_directly_employed_dedup,
+    IndCQC.people_directly_employed_clean_dedup,
     IndCQC.ascwds_workplace_import_date,
     IndCQC.ascwds_filled_posts,
     IndCQC.ascwds_filled_posts_source,
