@@ -248,6 +248,12 @@ def allocate_primary_service_type(df: DataFrame):
     return df
 
 
+def impute_missing_data_from_provider_dataset(
+    locations_df: DataFrame, column_name: str
+) -> DataFrame:
+    return locations_df
+
+
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
     locations_df = cUtils.add_aligned_date_column(
         locations_df,
