@@ -43,3 +43,16 @@ def remove_duplicate_record_in_raw_pir_data(raw_pir_df: DataFrame) -> DataFrame:
         | (raw_pir_df[CQCPIR.domiciliary_care].isNotNull())
     )
     return raw_pir_df
+
+
+def remove_dental_practice_from_locations_data(raw_pir_df: DataFrame) -> DataFrame:
+    """
+    This function removes a record which is mislabelled in the raw data
+    as a Social Care Org.
+
+    The location is listed once as a social care org in the locations
+    dataset but is lited as Primary Dental Care on every other row and
+    in the providers dataset. The location ID and import date are enough
+    to identify and remove this row.
+    """
+    return raw_pir_df
