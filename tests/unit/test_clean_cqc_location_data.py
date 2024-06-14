@@ -567,12 +567,12 @@ class ImputeMissingDataFromProviderDataset(CleanCQCLocationDatasetTests):
             Schemas.impute_missing_data_from_provider_dataset_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_impute_missing_data_from_provider_dataset_rows,
+            Data.expected_impute_missing_data_from_provider_dataset_multiple_values_rows,
             Schemas.impute_missing_data_from_provider_dataset_schema,
-        ).sort(Keys.import_date)
+        ).sort(CQCLCleaned.cqc_location_import_date)
         returned_df = job.impute_missing_data_from_provider_dataset(
             test_df, self.column_to_impute
-        ).sort(Keys.import_date)
+        ).sort(CQCLCleaned.cqc_location_import_date)
         expected_df.show()
         returned_df.show()
         self.assertEqual(expected_df.collect(), returned_df.collect())

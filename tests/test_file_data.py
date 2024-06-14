@@ -1769,27 +1769,75 @@ class CQCLocationsData:
     ]
 
     impute_missing_data_from_provider_dataset_single_value_rows = [
-        ("prov_1", None, "20240101"),
-        ("prov_1", Sector.independent, "20240201"),
-        ("prov_1", Sector.independent, "20240301"),
+        (
+            "prov_1",
+            None,
+            date(2024, 1, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 2, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 3, 1),
+        ),
     ]
 
     expected_impute_missing_data_from_provider_dataset_rows = [
-        ("prov_1", Sector.independent, "20240101"),
-        ("prov_1", Sector.independent, "20240201"),
-        ("prov_1", Sector.independent, "20240301"),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 1, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 2, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 3, 1),
+        ),
     ]
 
     impute_missing_data_from_provider_dataset_multiple_values_rows = [
-        ("prov_1", None, "20240101"),
-        ("prov_1", Sector.independent, "20240301"),
-        ("prov_1", Sector.local_authority, "20240201"),
+        (
+            "prov_1",
+            None,
+            date(2024, 1, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 3, 1),
+        ),
+        (
+            "prov_1",
+            Sector.local_authority,
+            date(2024, 2, 1),
+        ),
     ]
 
     expected_impute_missing_data_from_provider_dataset_multiple_values_rows = [
-        ("prov_1", Sector.local_authority, "20240101"),
-        ("prov_1", Sector.local_authority, "20240201"),
-        ("prov_1", Sector.independent, "20240301"),
+        (
+            "prov_1",
+            Sector.local_authority,
+            date(2024, 1, 1),
+        ),
+        (
+            "prov_1",
+            Sector.local_authority,
+            date(2024, 2, 1),
+        ),
+        (
+            "prov_1",
+            Sector.independent,
+            date(2024, 3, 1),
+        ),
     ]
 
 
