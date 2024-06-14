@@ -1782,8 +1782,8 @@ class CQCLocationsData:
 
     impute_missing_data_from_provider_dataset_multiple_values_rows = [
         ("prov_1", None, "20240101"),
-        ("prov_1", Sector.local_authority, "20240201"),
         ("prov_1", Sector.independent, "20240301"),
+        ("prov_1", Sector.local_authority, "20240201"),
     ]
 
     expected_impute_missing_data_from_provider_dataset_multiple_values_rows = [
