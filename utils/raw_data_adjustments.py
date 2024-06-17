@@ -78,13 +78,13 @@ class RecordsToRemoveInLocationsData:
     Dental Practice:
     The location is listed once as a social care org in the locations
     dataset but is lited as Primary Dental Care on every other row and
-    in the providers dataset. The location ID and import date are enough
+    in the providers dataset. The location ID is enough
     to identify and remove this row.
 
     Temporary Registration:
     The location is listed once as registered in the locations dataset,
     but conatins barely any data and appears to have deregistered very
-    quickly. The location ID and import date are enough
+    quickly. The location ID is enough
     to identify and remove this row.
     """
 
