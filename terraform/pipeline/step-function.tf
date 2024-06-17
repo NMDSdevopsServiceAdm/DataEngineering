@@ -1,4 +1,4 @@
-resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-machine" {
+resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_machine" {
   name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -41,7 +41,7 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
   ]
 }
 
-resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
+resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   name     = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -69,7 +69,7 @@ resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "direct-payments-state-machine" {
+resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -95,7 +95,7 @@ resource "aws_sfn_state_machine" "direct-payments-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "historic-direct-payments-state-machine" {
+resource "aws_sfn_state_machine" "historic_direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-HistoricDirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -140,7 +140,7 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "bronze-validation-state-machine" {
+resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
   name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -168,7 +168,7 @@ resource "aws_sfn_state_machine" "bronze-validation-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "silver-validation-state-machine" {
+resource "aws_sfn_state_machine" "silver_validation_state_machine" {
   name     = "${local.workspace_prefix}-Silver-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -196,7 +196,7 @@ resource "aws_sfn_state_machine" "silver-validation-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "gold-validation-state-machine" {
+resource "aws_sfn_state_machine" "gold_validation_state_machine" {
   name     = "${local.workspace_prefix}-Gold-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
