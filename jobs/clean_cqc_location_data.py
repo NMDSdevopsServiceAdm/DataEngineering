@@ -29,6 +29,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     current_geography_columns,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
+from utils.raw_data_adjustments import remove_dental_practice_from_locations_data
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -86,6 +87,7 @@ def main(
     cqc_location_df = clean_provider_id_column(cqc_location_df)
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
+    cqc_location_df = remove_dental_practice_from_locations_data(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
         date_column_identifier=CQCLClean.registration_date,  # This will format both registration date and deregistration date

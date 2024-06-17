@@ -4848,3 +4848,26 @@ class RawDataAdjustments:
     ]
 
     pir_data_without_rows_to_remove = expected_pir_data
+
+    locations_data_with_multiple_rows_to_remove = [
+        ("loc_1", "20240101", "other"),
+        ("1-12082335777", "20220207", "other"),
+        ("loc_1", "20220207", "other"),
+        ("1-12082335777", "20240101", "other"),
+        ("1-12082335777", "20220207", "something else"),
+    ]
+
+    locations_data_with_single_row_to_remove = [
+        ("loc_1", "20240101", "other"),
+        ("1-12082335777", "20220207", "other"),
+        ("loc_1", "20220207", "other"),
+        ("1-12082335777", "20240101", "other"),
+    ]
+
+    locations_data_without_rows_to_remove = [
+        ("loc_1", "20240101", "other"),
+        ("loc_1", "20220207", "other"),
+        ("1-12082335777", "20240101", "other"),
+    ]
+
+    expected_locations_data = locations_data_without_rows_to_remove

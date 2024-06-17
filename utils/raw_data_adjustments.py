@@ -3,6 +3,9 @@ from pyspark.sql import DataFrame
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPirColumns as CQCPIR,
 )
@@ -43,3 +46,22 @@ def remove_duplicate_record_in_raw_pir_data(raw_pir_df: DataFrame) -> DataFrame:
         | (raw_pir_df[CQCPIR.domiciliary_care].isNotNull())
     )
     return raw_pir_df
+
+
+def remove_dental_practice_from_locations_data(
+    raw_locations_df: DataFrame,
+) -> DataFrame:
+    """
+    This function removes a record which is mislabelled in the raw data
+    as a Social Care Org.
+
+    The location is listed once as a social care org in the locations
+    dataset but is lited as Primary Dental Care on every other row and
+    in the providers dataset. The location ID and import date are enough
+    to identify and remove this row.
+    """
+    raw_locations_df = raw_locations_df.where(
+        (raw_locations_df[CQCL.location_id] != "1-12082335777")
+        | (raw_locations_df[Keys.import_date] != "20220207")
+    )
+    return raw_locations_df
