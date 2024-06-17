@@ -103,7 +103,9 @@ class PostcodeDirectoryRawCategoricalValues:
 @dataclass
 class MergedIndCQCCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
-    sector_column_values = Sector(IndCQC.cqc_sector)
+    sector_column_values = Sector(
+        IndCQC.cqc_sector, value_to_remove=Sector.local_authority
+    )
     dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
         IndCQC.registration_status,
