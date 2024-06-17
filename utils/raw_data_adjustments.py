@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from pyspark.sql import DataFrame
 
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
@@ -48,20 +50,43 @@ def remove_duplicate_record_in_raw_pir_data(raw_pir_df: DataFrame) -> DataFrame:
     return raw_pir_df
 
 
-def remove_dental_practice_from_locations_data(
+def remove_records_from_locations_data(
     raw_locations_df: DataFrame,
 ) -> DataFrame:
     """
-    This function removes a record which is mislabelled in the raw data
-    as a Social Care Org.
+    This function removes records from the locations dataset.
+    """
+    raw_locations_df = raw_locations_df.where(
+        (
+            raw_locations_df[CQCL.location_id]
+            != RecordsToRemoveInLocationsData.dental_practice
+        )
+        & (
+            raw_locations_df[CQCL.location_id]
+            != RecordsToRemoveInLocationsData.temp_registration
+        )
+    )
+    return raw_locations_df
 
+
+@dataclass
+class RecordsToRemoveInLocationsData:
+    """
+    This class contains the locations ids that should be removed from
+    the locations data.
+
+    Dental Practice:
     The location is listed once as a social care org in the locations
     dataset but is lited as Primary Dental Care on every other row and
     in the providers dataset. The location ID and import date are enough
     to identify and remove this row.
+
+    Temporary Registration:
+    The location is listed once as registered in the locations dataset,
+    but conatins barely any data and appears to have deregistered very
+    quickly. The location ID and import date are enough
+    to identify and remove this row.
     """
-    raw_locations_df = raw_locations_df.where(
-        (raw_locations_df[CQCL.location_id] != "1-12082335777")
-        | (raw_locations_df[Keys.import_date] != "20220207")
-    )
-    return raw_locations_df
+
+    dental_practice: str = "1-12082335777"
+    temp_registration: str = "1-127367030"

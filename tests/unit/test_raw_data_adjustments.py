@@ -107,15 +107,16 @@ class RemoveDuplicatePIRTests(TestRawDataAdjustments):
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
 
-class RemoveDentalPracticeFromLocationsDataTests(TestRawDataAdjustments):
+class RemoveRecordsFromLocationsDataTests(TestRawDataAdjustments):
     def setUp(self) -> None:
         super().setUp()
         self.test_with_multiple_rows_to_remove_df = self.spark.createDataFrame(
             Data.locations_data_with_multiple_rows_to_remove,
             Schemas.locations_data_schema,
         )
-        self.test_with_single_row_to_remove_df = self.spark.createDataFrame(
-            Data.locations_data_with_single_row_to_remove, Schemas.locations_data_schema
+        self.test_with_single_rows_to_remove_df = self.spark.createDataFrame(
+            Data.locations_data_with_single_rows_to_remove,
+            Schemas.locations_data_schema,
         )
         self.test_without_rows_to_remove_df = self.spark.createDataFrame(
             Data.locations_data_without_rows_to_remove, Schemas.locations_data_schema
@@ -124,30 +125,30 @@ class RemoveDentalPracticeFromLocationsDataTests(TestRawDataAdjustments):
             Data.expected_locations_data, Schemas.locations_data_schema
         )
 
-    def test_remove_dental_practice_from_locations_data_removes_multiple_rows_when_they_match_the_criteria(
+    def test_remove_records_from_locations_data_removes_multiple_rows_when_they_match_the_criteria(
         self,
     ):
-        returned_df = job.remove_dental_practice_from_locations_data(
+        returned_df = job.remove_records_from_locations_data(
             self.test_with_multiple_rows_to_remove_df,
         )
 
         self.assertIsNotNone(returned_df)
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
-    def test_remove_dental_practice_from_locations_data_removes_single_row_when_it_matches_the_criteria(
+    def test_remove_records_from_locations_data_removes_single_rows_when_it_matches_the_criteria(
         self,
     ):
-        returned_df = job.remove_dental_practice_from_locations_data(
-            self.test_with_single_row_to_remove_df,
+        returned_df = job.remove_records_from_locations_data(
+            self.test_with_single_rows_to_remove_df,
         )
 
         self.assertIsNotNone(returned_df)
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
-    def test_remove_dental_practice_from_locations_data_does_not_remove_rows_when_they_do_not_match_the_criteria(
+    def test_remove_records_from_locations_data_does_not_remove_rows_when_they_do_not_match_the_criteria(
         self,
     ):
-        returned_df = job.remove_dental_practice_from_locations_data(
+        returned_df = job.remove_records_from_locations_data(
             self.test_without_rows_to_remove_df,
         )
 
