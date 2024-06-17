@@ -432,11 +432,13 @@ class ContemporaryCSSR(CurrentCSSR):
 class ASCWDSFilledPostsSource(ColumnValues):
     """The possible values of the ASCWDS filled posts source column in the independent CQC estimates pipeline"""
 
-    worker_records_and_total_staff: str = "worker records and total staff were the same"
-    only_total_staff: str = "only totalstaff was provided"
-    only_worker_records: str = "only wkrrecs was provided"
+    worker_records_and_total_staff: str = (
+        "wkrrecs_bounded and totalstaff_bounded were the same"
+    )
+    only_total_staff: str = "only totalstaff_bounded was provided"
+    only_worker_records: str = "only wkrrecs_bounded was provided"
     average_of_total_staff_and_worker_records: str = (
-        "average of total staff and worker records as both were similar"
+        "average of totalstaff_bounded and wkrrecs_bounded as both were similar"
     )
 
 
