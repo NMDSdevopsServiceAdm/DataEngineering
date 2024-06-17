@@ -106,6 +106,13 @@ def main(
         registered_locations_df, cqc_provider_df
     )
 
+    registered_locations_df = impute_missing_data_from_provider_dataset(
+        registered_locations_df, CQCLClean.provider_name
+    )
+    registered_locations_df = impute_missing_data_from_provider_dataset(
+        registered_locations_df, CQCLClean.cqc_sector
+    )
+
     registered_locations_df = join_ons_postcode_data_into_cqc_df(
         registered_locations_df, ons_postcode_directory_df
     )
@@ -248,6 +255,24 @@ def allocate_primary_service_type(df: DataFrame):
         .otherwise(PrimaryServiceType.non_residential),
     )
     return df
+
+
+def impute_missing_data_from_provider_dataset(
+    locations_df: DataFrame, column_name: str
+) -> DataFrame:
+    w = (
+        Window.partitionBy(CQCL.provider_id)
+        .orderBy(CQCLClean.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+    locations_df = locations_df.withColumn(
+        column_name,
+        F.when(
+            locations_df[column_name].isNull(),
+            F.first(column_name, ignorenulls=True).over(w),
+        ).otherwise(locations_df[column_name]),
+    )
+    return locations_df
 
 
 def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
