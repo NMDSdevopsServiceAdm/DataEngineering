@@ -160,7 +160,7 @@ class TestModelExtrapolation(unittest.TestCase):
         self.assertEqual(output_df[4][IndCqc.last_filled_posts], 6.0)
         self.assertEqual(output_df[4][IndCqc.last_rolling_average], 15.0)
 
-    def test_create_extrapolation_ratio_column(self):  # TODO: Refactor
+    def test_create_extrapolation_ratio_column(self):
         output_df = job.create_extrapolation_ratio_column(
             self.data_for_extrapolated_ratios_df,
             self.model_column_name,
