@@ -16,6 +16,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
+from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
     LocationsAPICleanedValidationRules as Rules,
 )
@@ -69,8 +70,12 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
         (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
         & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
         & (
-            (raw_location_df[CQCL.location_id] != "1-12082335777")
-            | (raw_location_df[Keys.import_date] != "20220207")
+            raw_location_df[CQCL.location_id]
+            != RecordsToRemoveInLocationsData.dental_practice
+        )
+        & (
+            raw_location_df[CQCL.location_id]
+            != RecordsToRemoveInLocationsData.temp_registration
         )
     ).count()
     return expected_size
