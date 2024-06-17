@@ -1568,7 +1568,7 @@ class CleanIndCQCData:
             StructField(IndCQC.people_directly_employed_clean, IntegerType(), True),
         ]
     )
-    replace_zero_people_with_none_schema = (
+    replace_zero_value_in_column_with_none_schema = (
         expected_clean_people_directly_employed_schema
     )
 

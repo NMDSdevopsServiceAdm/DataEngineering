@@ -31,7 +31,9 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
-    locations_df = replace_zero_beds_with_null(locations_df)
+    locations_df = replace_zero_value_in_column_with_none(
+        locations_df, IndCQC.number_of_beds
+    )
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 
     locations_df = calculate_ascwds_filled_posts(
@@ -70,16 +72,16 @@ def clean_people_directly_employed(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.people_directly_employed_clean, df[IndCQC.people_directly_employed]
     )
-    df = replace_zero_people_with_none(df)
+    df = replace_zero_value_in_column_with_none(
+        df, IndCQC.people_directly_employed_clean
+    )
     return df
 
 
-def replace_zero_people_with_none(df: DataFrame) -> DataFrame:
-    return df.replace(0, None, IndCQC.people_directly_employed_clean)
-
-
-def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
-    return df.replace(0, None, IndCQC.number_of_beds)
+def replace_zero_value_in_column_with_none(
+    df: DataFrame, column_name: str
+) -> DataFrame:
+    return df.replace(0, None, column_name)
 
 
 def populate_missing_care_home_number_of_beds(

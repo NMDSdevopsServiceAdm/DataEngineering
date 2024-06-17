@@ -71,26 +71,6 @@ class MainTests(CleanIndFilledPostsTests):
             partitionKeys=self.partition_keys,
         )
 
-    def test_replace_zero_beds_with_null(self):
-        columns = [
-            IndCQC.location_id,
-            IndCQC.number_of_beds,
-        ]
-        rows = [
-            ("1-000000001", None),
-            ("1-000000002", 0),
-            ("1-000000003", 1),
-        ]
-        df = self.spark.createDataFrame(rows, columns)
-
-        df = job.replace_zero_beds_with_null(df)
-        self.assertEqual(df.count(), 3)
-
-        df = df.collect()
-        self.assertEqual(df[0][IndCQC.number_of_beds], None)
-        self.assertEqual(df[1][IndCQC.number_of_beds], None)
-        self.assertEqual(df[2][IndCQC.number_of_beds], 1)
-
     def test_populate_missing_care_home_number_of_beds(self):
         schema = StructType(
             [
@@ -296,16 +276,23 @@ class CleanPeopleDirectlyEmployedColumn(CleanIndFilledPostsTests):
         returned_df = job.clean_people_directly_employed(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
-    def test_replace_zero_people_with_none(self):
+
+class ReplaceZeroValueInColumnWithNone(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_replace_zero_value_in_column_with_none(self):
         test_df = self.spark.createDataFrame(
-            Data.replace_zero_people_with_none_rows,
-            Schemas.replace_zero_people_with_none_schema,
+            Data.replace_zero_value_in_column_with_none_rows,
+            Schemas.replace_zero_value_in_column_with_none_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_replace_zero_people_with_none_rows,
-            Schemas.replace_zero_people_with_none_schema,
+            Data.expected_replace_zero_value_in_column_with_none_rows,
+            Schemas.replace_zero_value_in_column_with_none_schema,
         )
-        returned_df = job.replace_zero_people_with_none(test_df)
+        returned_df = job.replace_zero_value_in_column_with_none(
+            test_df, IndCQC.people_directly_employed_clean
+        )
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 
