@@ -15,7 +15,6 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     merge_ind_cqc_data_job_name                                   = module.merge_ind_cqc_data_job.job_name
     merge_coverage_data_job_name                                  = module.merge_coverage_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                           = module.clean_ind_cqc_filled_posts_job.job_name
-    validate_merged_ind_cqc_data_job_name                         = module.validate_merged_ind_cqc_data_job.job_name
     prepare_care_home_ind_cqc_features_job_name                   = module.prepare_care_home_ind_cqc_features_job.job_name
     prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job_name = module.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job.job_name
     estimate_ind_cqc_filled_posts_job_name                        = module.estimate_ind_cqc_filled_posts_job.job_name
@@ -25,7 +24,6 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     sfc_crawler_name                                              = module.sfc_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name                             = module.ind_cqc_filled_posts_crawler.crawler_name
     ons_crawler_name                                              = module.ons_crawler.crawler_name
-    data_validation_reports_crawler_name                          = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn                          = aws_lambda_function.error_notification_lambda.arn
   })
 
