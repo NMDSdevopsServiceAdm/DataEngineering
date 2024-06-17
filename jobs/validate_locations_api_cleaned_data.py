@@ -68,6 +68,10 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     expected_size = raw_location_df.where(
         (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
         & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
+        & (
+            (raw_location_df[CQCL.location_id] != "1-12082335777")
+            | (raw_location_df[Keys.import_date] != "20220207")
+        )
     ).count()
     return expected_size
 

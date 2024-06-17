@@ -4554,16 +4554,18 @@ class ValidateLocationsAPICleanedData:
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
     ]
-    # fmt: on
+    
 
     calculate_expected_size_rows = [
-        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered),
-        ("loc_2", "non social care org", RegistrationStatus.registered),
-        ("loc_3", None, RegistrationStatus.registered),
-        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered),
-        ("loc_5", "non social care org", RegistrationStatus.deregistered),
-        ("loc_6", None, RegistrationStatus.deregistered),
+        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, "20240101"),
+        ("loc_2", "non social care org", RegistrationStatus.registered, "20240101"),
+        ("loc_3", None, RegistrationStatus.registered, "20240101"),
+        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, "20240101"),
+        ("loc_5", "non social care org", RegistrationStatus.deregistered, "20240101"),
+        ("loc_6", None, RegistrationStatus.deregistered, "20240101"),
+        ("1-12082335777", LocationType.social_care_identifier, RegistrationStatus.registered, "20220207"), # miscoded dentist
     ]
+    # fmt: on
 
 
 @dataclass
