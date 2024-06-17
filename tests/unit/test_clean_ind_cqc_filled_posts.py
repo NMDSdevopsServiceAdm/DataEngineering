@@ -296,16 +296,16 @@ class CleanPeopleDirectlyEmployedColumn(CleanIndFilledPostsTests):
         returned_df = job.clean_people_directly_employed(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
-    def test_replace_zero_people_with_one(self):
+    def test_replace_zero_people_with_none(self):
         test_df = self.spark.createDataFrame(
-            Data.replace_zero_people_with_one_rows,
-            Schemas.replace_zero_people_with_one_schema,
+            Data.replace_zero_people_with_none_rows,
+            Schemas.replace_zero_people_with_none_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_replace_zero_people_with_one_rows,
-            Schemas.replace_zero_people_with_one_schema,
+            Data.expected_replace_zero_people_with_none_rows,
+            Schemas.replace_zero_people_with_none_schema,
         )
-        returned_df = job.replace_zero_people_with_one(test_df)
+        returned_df = job.replace_zero_people_with_none(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 

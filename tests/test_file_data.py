@@ -2210,16 +2210,16 @@ class CleanIndCQCData:
     expected_clean_people_directly_employed_rows = [
         ("loc_1", 2, 2),
         ("loc_1", 1, 1),
-        ("loc_1", 0, 1),
+        ("loc_1", 0, None),
         ("loc_1", None, None),
     ]
-    replace_zero_people_with_one_rows = [
+    replace_zero_people_with_none_rows = [
         ("loc_1", 2, 2),
         ("loc_1", 1, 1),
         ("loc_1", 0, 0),
         ("loc_1", None, None),
     ]
-    expected_replace_zero_people_with_one_rows = (
+    expected_replace_zero_people_with_none_rows = (
         expected_clean_people_directly_employed_rows
     )
 
