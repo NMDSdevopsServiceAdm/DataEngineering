@@ -24,6 +24,8 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     sfc_crawler_name                                              = module.sfc_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name                             = module.ind_cqc_filled_posts_crawler.crawler_name
     ons_crawler_name                                              = module.ons_crawler.crawler_name
+    run_silver_validation_state_machine_arn                       = aws_sfn_state_machine.silver_validation_state_machine.arn
+    run_gold_validation_state_machine_arn                         = aws_sfn_state_machine.gold_validation_state_machine.arn
     pipeline_failure_lambda_function_arn                          = aws_lambda_function.error_notification_lambda.arn
   })
 
