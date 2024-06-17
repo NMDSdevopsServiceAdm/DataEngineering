@@ -56,13 +56,13 @@ def get_all_objects(
     print(f"Total pages: {total_pages}")
     print(f"Beginning CQC bulk download of {object_type}...")
 
-    # for page_number in range(1, total_pages + 1):
-    print(f"Collecting {object_type} from API page {1}/{total_pages}")
-    page_locations = get_page_objects(
-        url, 1, object_type, object_identifier, cqc_api_primary_key
-    )
+    for page_number in range(1, total_pages + 1):
+        print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
+        page_locations = get_page_objects(
+            url, page_number, object_type, object_identifier, cqc_api_primary_key
+        )
 
-    yield page_locations
+        yield page_locations
 
 
 def get_page_objects(
