@@ -55,6 +55,34 @@ class MainTests(SplitPAFilledPostsIntoIcbAreas):
         )
 
 
+class CheckForDuplicatePostcodes(SplitPAFilledPostsIntoIcbAreas):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_check_for_duplicate_postcodes_raises_error_when_duplicates_found(
+        self,
+    ):
+        with self.assertRaises(ValueError) as context:
+            job.check_for_duplicate_postcodes(self.sample_ons_contemporary_df)
+
+        self.assertTrue(
+            "Postcode directory has 1 or more duplicates" in str(context.exception)
+        )
+
+    def test_check_for_duplicate_postcodes_does_not_raise_error_with_no_duplicates(
+        self,
+    ):
+        deduplicated_sample_ons_contemporary_rows = (
+            self.sample_ons_contemporary_df.distinct()
+        )
+
+        returned_int = job.check_for_duplicate_postcodes(
+            deduplicated_sample_ons_contemporary_rows
+        )
+
+        self.assertEqual(returned_int, 0)
+
+
 class CountPostcodesPerListOfColumns(SplitPAFilledPostsIntoIcbAreas):
     def setUp(self) -> None:
         super().setUp()
