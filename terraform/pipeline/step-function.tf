@@ -1,4 +1,4 @@
-resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-machine" {
+resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_machine" {
   name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -15,7 +15,6 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     merge_ind_cqc_data_job_name                                   = module.merge_ind_cqc_data_job.job_name
     merge_coverage_data_job_name                                  = module.merge_coverage_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                           = module.clean_ind_cqc_filled_posts_job.job_name
-    validate_merged_ind_cqc_data_job_name                         = module.validate_merged_ind_cqc_data_job.job_name
     prepare_care_home_ind_cqc_features_job_name                   = module.prepare_care_home_ind_cqc_features_job.job_name
     prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job_name = module.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features_job.job_name
     estimate_ind_cqc_filled_posts_job_name                        = module.estimate_ind_cqc_filled_posts_job.job_name
@@ -25,7 +24,8 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
     sfc_crawler_name                                              = module.sfc_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name                             = module.ind_cqc_filled_posts_crawler.crawler_name
     ons_crawler_name                                              = module.ons_crawler.crawler_name
-    data_validation_reports_crawler_name                          = module.data_validation_reports_crawler.crawler_name
+    run_silver_validation_state_machine_arn                       = aws_sfn_state_machine.silver_validation_state_machine.arn
+    run_gold_validation_state_machine_arn                         = aws_sfn_state_machine.gold_validation_state_machine.arn
     pipeline_failure_lambda_function_arn                          = aws_lambda_function.error_notification_lambda.arn
   })
 
@@ -41,18 +41,20 @@ resource "aws_sfn_state_machine" "ind-cqc-filled-post-estimates-pipeline-state-m
   ]
 }
 
-resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
+resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   name     = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/BulkDownloadCQCAPIPipeline-StepFunction.json", {
-    dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
-    bulk_cqc_locations_download_job_name = module.bulk_cqc_locations_download_job.job_name
-    bulk_cqc_providers_download_job_name = module.bulk_cqc_providers_download_job.job_name
-    flatten_cqc_ratings_job_name         = module.flatten_cqc_ratings_job.job_name
-    cqc_crawler_name                     = module.cqc_crawler.crawler_name
-    sfc_crawler_name                     = module.sfc_crawler.crawler_name
-    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
+    dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
+    bulk_cqc_locations_download_job_name       = module.bulk_cqc_locations_download_job.job_name
+    bulk_cqc_providers_download_job_name       = module.bulk_cqc_providers_download_job.job_name
+    flatten_cqc_ratings_job_name               = module.flatten_cqc_ratings_job.job_name
+    cqc_crawler_name                           = module.cqc_crawler.crawler_name
+    sfc_crawler_name                           = module.sfc_crawler.crawler_name
+    run_bronze_validation_state_machine_arn    = aws_sfn_state_machine.bronze_validation_state_machine.arn
+    trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
+    pipeline_failure_lambda_function_arn       = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
@@ -67,7 +69,7 @@ resource "aws_sfn_state_machine" "bulk-download-cqc-api-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "direct-payments-state-machine" {
+resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -93,7 +95,7 @@ resource "aws_sfn_state_machine" "direct-payments-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "historic-direct-payments-state-machine" {
+resource "aws_sfn_state_machine" "historic_direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-HistoricDirectPaymentRecipientsPipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -138,7 +140,7 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "bronze-validation-state-machine" {
+resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
   name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -166,7 +168,7 @@ resource "aws_sfn_state_machine" "bronze-validation-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "silver-validation-state-machine" {
+resource "aws_sfn_state_machine" "silver_validation_state_machine" {
   name     = "${local.workspace_prefix}-Silver-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -194,7 +196,7 @@ resource "aws_sfn_state_machine" "silver-validation-state-machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "gold-validation-state-machine" {
+resource "aws_sfn_state_machine" "gold_validation_state_machine" {
   name     = "${local.workspace_prefix}-Gold-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"

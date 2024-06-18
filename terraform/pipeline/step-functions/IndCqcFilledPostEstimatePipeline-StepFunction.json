@@ -175,56 +175,19 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
-              "Next": "Clean IND CQC and data validation on Merge IND CQC data Parallel"
+              "Next": "Run clean ind cqc data job"
             },
-            "Clean IND CQC and data validation on Merge IND CQC data Parallel": {
-              "Type": "Parallel",
-              "Next": "Feature engineering",
-              "Branches": [
-                {
-                  "StartAt": "Run clean ind cqc data job",
-                  "States": {
-                    "Run clean ind cqc data job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_ind_cqc_filled_posts_job_name}",
-                        "Arguments": {
-                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                          "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Run validate merged ind cqc data job",
-                  "States": {
-                    "Run validate merged ind cqc data job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_merged_ind_cqc_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
-                        }
-                      },
-                      "Next": "Run data validation crawler"
-                    },
-                    "Run data validation crawler": {
-                      "Type": "Task",
-                      "Parameters": {
-                        "Name": "${data_validation_reports_crawler_name}"
-                      },
-                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-                      "End": true
-                    }
-                  }
+            "Run clean ind cqc data job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_ind_cqc_filled_posts_job_name}",
+                "Arguments": {
+                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
                 }
-              ]
+              },
+              "Next": "Feature engineering"
             },
             "Feature engineering": {
               "Type": "Parallel",
@@ -292,18 +255,61 @@
                   "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
                 }
               },
-              "Next": "run ind crawler"
-            },
-            "run ind crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${ind_cqc_filled_posts_crawler_name}"
+              "Next": "Validation and crawler"
               },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "End": true
+              "Validation and crawler": {
+                "Type": "Parallel",
+                "Branches": [
+                  {
+                    "StartAt": "Start gold validation",
+                    "States": {
+                      "Start gold validation": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                        "Parameters": {
+                          "StateMachineArn": "${run_gold_validation_state_machine_arn}",
+                          "Input": {
+                            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                          }
+                        },
+                        "End": true
+                      }
+                    }
+                  },
+                  {
+                    "StartAt": "run ind crawler",
+                    "States": {
+                      "run ind crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${ind_cqc_filled_posts_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  }
+                ],
+                "End": true
+              }
             }
-          }
-        },
+          },
+          {
+            "StartAt": "Start sliver validation",
+            "States": {
+              "Start sliver validation": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Parameters": {
+                  "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
         {
           "StartAt": "Run merge coverage data job",
           "States": {
