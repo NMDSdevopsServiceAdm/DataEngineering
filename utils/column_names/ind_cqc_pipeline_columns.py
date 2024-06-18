@@ -112,9 +112,9 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_filled_posts: str = "last_filled_posts"
     extrapolation_ratio: str = "extrapolation_ratio"
-    extrapolation_model: str = "extrapolation_model"
     prediction: str = "prediction"
     care_home_model: str = "care_home_model"
+    extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     previous_filled_posts: str = "previous_filled_posts"
     next_filled_posts: str = "next_filled_posts"
     filled_posts_unix_time: str = "filled_posts_unix_time"
