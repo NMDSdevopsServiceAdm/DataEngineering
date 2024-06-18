@@ -44,6 +44,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
+from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -4554,7 +4555,7 @@ class ValidateLocationsAPICleanedData:
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
         ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
     ]
-    # fmt: on
+    
 
     calculate_expected_size_rows = [
         ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered),
@@ -4563,7 +4564,10 @@ class ValidateLocationsAPICleanedData:
         ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered),
         ("loc_5", "non social care org", RegistrationStatus.deregistered),
         ("loc_6", None, RegistrationStatus.deregistered),
+        (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered),
+        (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -4923,24 +4927,21 @@ class RawDataAdjustments:
     pir_data_without_rows_to_remove = expected_pir_data
 
     locations_data_with_multiple_rows_to_remove = [
-        ("loc_1", "20240101", "other"),
-        ("1-12082335777", "20220207", "other"),
-        ("loc_1", "20220207", "other"),
-        ("1-12082335777", "20240101", "other"),
-        ("1-12082335777", "20220207", "something else"),
+        ("loc_1", "other"),
+        (RecordsToRemoveInLocationsData.dental_practice, "other"),
+        (RecordsToRemoveInLocationsData.dental_practice, "something else"),
+        (RecordsToRemoveInLocationsData.temp_registration, "other"),
+        (RecordsToRemoveInLocationsData.temp_registration, "something else"),
     ]
 
-    locations_data_with_single_row_to_remove = [
-        ("loc_1", "20240101", "other"),
-        ("1-12082335777", "20220207", "other"),
-        ("loc_1", "20220207", "other"),
-        ("1-12082335777", "20240101", "other"),
+    locations_data_with_single_rows_to_remove = [
+        ("loc_1", "other"),
+        (RecordsToRemoveInLocationsData.dental_practice, "other"),
+        (RecordsToRemoveInLocationsData.temp_registration, "other"),
     ]
 
     locations_data_without_rows_to_remove = [
-        ("loc_1", "20240101", "other"),
-        ("loc_1", "20220207", "other"),
-        ("1-12082335777", "20240101", "other"),
+        ("loc_1", "other"),
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
