@@ -42,7 +42,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.rolling_average_model: 0.0,
             IndCqcColumns.extrapolation_model: 0.0,
             IndCqcColumns.interpolation_model: 0.0,
-            IndCqcColumns.care_home_model: 0.0,
             IndCqcColumns.non_res_model: 0.0,
         },
         RuleName.max_values: {
