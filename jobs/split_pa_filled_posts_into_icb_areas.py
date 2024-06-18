@@ -105,7 +105,7 @@ def count_postcodes_per_list_of_columns(
 
     postcode_directory_df = postcode_directory_df.withColumn(
         new_column_name,
-        F.approx_count_distinct(ONSClean.postcode).over(w),
+        F.count(ONSClean.postcode).over(w),
     )
 
     return postcode_directory_df

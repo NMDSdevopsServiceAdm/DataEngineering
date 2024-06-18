@@ -668,10 +668,10 @@ class PAFilledPostsByIcbArea:
         ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
         ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
         ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3), 
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
+        ("AB10AA", date(2023,1,1), "cssr2", "icb2",4), 
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3",4), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",4), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3",4), 
     ]
 
     expected_postcode_count_per_la_icb_rows = [
@@ -686,9 +686,9 @@ class PAFilledPostsByIcbArea:
         ("AB10AB", date(2023,1,1), "cssr1", "icb1", 3),
         ("AB10AC", date(2023,1,1), "cssr1", "icb1", 3),
         ("AB10AA", date(2023,1,1), "cssr2", "icb2", 1), 
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3", 2), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2),
+        ("AB10AB", date(2023,1,1), "cssr2", "icb3", 3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 3), 
+        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 3),
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
