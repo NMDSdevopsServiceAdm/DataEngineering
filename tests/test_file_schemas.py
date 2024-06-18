@@ -2025,6 +2025,14 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
+    expected_calculate_rolling_average_column_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
     add_flag_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

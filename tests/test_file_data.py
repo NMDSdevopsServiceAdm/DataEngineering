@@ -2912,14 +2912,24 @@ class ModelPrimaryServiceRollingAverage:
         ("service_2", 172800, 11),
     ]
     calculate_rolling_average_column_rows = [
-        ("Care home with nursing", 1672531200, 2, 30.0),
+        ("Care home with nursing", 1672531200, 1, 30.0),
         ("Care home with nursing", 1675209600, 1, 120.0),
-        ("Care home with nursing", 1677628800, 1, 131.0),
+        ("Care home with nursing", 1677628800, 0, 131.0),
         ("Care home with nursing", 1680303600, 1, 142.0),
-        ("non-residential", 1672531200, 2, 10.0),
+        ("non-residential", 1672531200, 1, 10.0),
         ("non-residential", 1675209600, 1, 20.0),
-        ("non-residential", 1677628800, 1, 30.0),
+        ("non-residential", 1677628800, 0, 30.0),
         ("non-residential", 1680303600, 1, 40.0),
+    ]
+    expected_calculate_rolling_average_column_rows = [
+        ("Care home with nursing", 1672531200, 30.0, 30.0),
+        ("Care home with nursing", 1675209600, 120.0, 75.0),
+        ("Care home with nursing", 1677628800, 131.0, 140.5),
+        ("Care home with nursing", 1680303600, 142.0, 196.5),
+        ("non-residential", 1672531200, 10.0, 10.0),
+        ("non-residential", 1675209600, 20.0, 15.0),
+        ("non-residential", 1677628800, 30.0, 30.0),
+        ("non-residential", 1680303600, 40.0, 45.0),
     ]
 
 
