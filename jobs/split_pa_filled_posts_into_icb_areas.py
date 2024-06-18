@@ -42,6 +42,8 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         ],
     )
 
+    check_for_duplicate_postcodes(postcode_directory_df)
+
     postcode_directory_df = count_postcodes_per_list_of_columns(
         postcode_directory_df,
         [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
