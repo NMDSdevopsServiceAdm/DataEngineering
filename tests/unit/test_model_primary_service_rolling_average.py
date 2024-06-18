@@ -18,6 +18,9 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.estimates_df = self.spark.createDataFrame(
             Data.input_rows, Schemas.input_schema
         )
+        self.known_filled_posts_df = self.spark.createDataFrame(
+            Data.known_filled_posts_rows, Schemas.known_filled_posts_schema
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -28,17 +31,31 @@ class RollingAverageModelTests(TestModelPrimaryServiceRollingAverage):
         self.returned_df = job.model_primary_service_rolling_average(
             self.estimates_df, 88
         )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_rolling_average_rows, Schemas.expected_rolling_average_schema
+        )
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
     def test_model_primary_service_rolling_averages_are_correct(self):
-        df = self.returned_df.orderBy("locationid").collect()
+        returned_df = (
+            self.returned_df.select(
+                IndCqc.location_id,
+                IndCqc.cqc_location_import_date,
+                IndCqc.unix_time,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.primary_service_type,
+                IndCqc.rolling_average_model,
+            )
+            .sort(IndCqc.location_id)
+            .collect()
+        )
+        expected_df = self.expected_df.collect()
+        self.returned_df.show()
+        self.expected_df.show()
 
-        self.assertEqual(df[0][IndCqc.rolling_average_model], 5.0)
-        self.assertEqual(df[2][IndCqc.rolling_average_model], 10.0)
-        self.assertEqual(df[4][IndCqc.rolling_average_model], 30.0)
-        self.assertEqual(df[15][IndCqc.rolling_average_model], 70.25)
+        self.assertEqual(returned_df, expected_df)
 
 
 class FilterToLocationsWithKnownFilledPostsTest(TestModelPrimaryServiceRollingAverage):
@@ -57,6 +74,9 @@ class FilterToLocationsWithKnownFilledPostsTest(TestModelPrimaryServiceRollingAv
 
 
 class CalculateFilledPostsAggregates(TestModelPrimaryServiceRollingAverage):
+    def setUp(self):
+        super().setUp()
+
     def test_calculate_filled_posts_aggregates_per_service_and_time_period(self):
         df = job.calculate_filled_posts_aggregates_per_service_and_time_period(
             self.known_filled_posts_df
@@ -70,6 +90,15 @@ class CalculateFilledPostsAggregates(TestModelPrimaryServiceRollingAverage):
         self.assertEqual(df[7][IndCqc.count_of_filled_posts], 1)
         self.assertEqual(df[7][IndCqc.sum_of_filled_posts], 142.0)
 
+
+class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
+    def setUp(self):
+        super().setUp()
+        self.data_for_rolling_avg = self.spark.createDataFrame(
+            Data.calculate_rolling_average_column_rows,
+            Schemas.calculate_rolling_average_column_schema,
+        )
+
     def test_create_rolling_average_column(self):
         df = job.create_rolling_average_column(self.data_for_rolling_avg, 88)
         self.assertEqual(df.count(), 8)
@@ -78,6 +107,14 @@ class CalculateFilledPostsAggregates(TestModelPrimaryServiceRollingAverage):
         self.assertEqual(df[2][IndCqc.rolling_average_model], 70.25)
         self.assertEqual(df[4][IndCqc.rolling_average_model], 5.0)
         self.assertEqual(df[6][IndCqc.rolling_average_model], 15.0)
+
+
+class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
+    def setUp(self):
+        super().setUp()
+        self.rolling_sum_df = self.spark.createDataFrame(
+            Data.rolling_sum_rows, Schemas.rolling_sum_schema
+        )
 
     def test_calculate_rolling_sum(self):
         df = job.calculate_rolling_sum(
@@ -89,6 +126,14 @@ class CalculateFilledPostsAggregates(TestModelPrimaryServiceRollingAverage):
         self.assertEqual(df[3]["rolling_total"], 54.0)
         self.assertEqual(df[4]["rolling_total"], 64.0)
         self.assertEqual(df[6]["rolling_total"], 21.0)
+
+
+class JoinRollingAverage(TestModelPrimaryServiceRollingAverage):
+    def setUp(self):
+        super().setUp()
+        self.rolling_avg_df = self.spark.createDataFrame(
+            Data.rolling_average_rows, Schemas.rolling_average_schema
+        )
 
     def test_join_rolling_average_into_df(self):
         main_df = self.known_filled_posts_df

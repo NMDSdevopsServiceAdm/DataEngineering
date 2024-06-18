@@ -2865,6 +2865,26 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing"),
         ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing"),
     ]
+    # fmt: off
+    expected_rolling_average_rows = [
+        ("1-000000001", "2023-01-01", 1672531200, 4.0, "non-residential", 5.0),
+        ("1-000000002", "2023-01-01", 1672531200, 6.0, "non-residential", 5.0),
+        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", 10.0),
+        ("1-000000004", "2023-03-01", 1677628800, 30.0, "non-residential", 15.0),
+        ("1-000000005", "2023-04-01", 1680303600, 40.0, "non-residential", 30.0),
+        ("1-000000006", "2023-01-01", 1672531200, None, "non-residential", 5.0),
+        ("1-000000007", "2023-02-01", 1675209600, None, "non-residential", 10.0),
+        ("1-000000008", "2023-03-01", 1677628800, None, "non-residential", 15.0),
+        ("1-000000011", "2023-01-01", 1672531200, 14.0, "Care home with nursing", 15.0),
+        ("1-000000012", "2023-01-01", 1672531200, 16.0, "Care home with nursing", 15.0),
+        ("1-000000013", "2023-02-01", 1675209600, 120.0, "Care home with nursing", 50.0),
+        ("1-000000014", "2023-03-01", 1677628800, 131.0, "Care home with nursing", 70.25),
+        ("1-000000015", "2023-04-01", 1680303600, 142.0, "Care home with nursing", 131.0),
+        ("1-000000016", "2023-01-01", 1672531200, None, "Care home with nursing", 15.0),
+        ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing", 50.0),
+        ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing", 70.25),
+    ]
+    # fmt: on
     known_filled_posts_rows = [
         ("1-000000001", 1672531200, 4.0, "non-residential"),
         ("1-000000002", 1672531200, 6.0, "non-residential"),

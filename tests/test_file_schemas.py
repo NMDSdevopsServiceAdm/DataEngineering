@@ -2004,6 +2004,12 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.primary_service_type, StringType(), False),
         ]
     )
+    expected_rolling_average_schema = StructType(
+        [
+            *input_schema,
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
     known_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
