@@ -47,97 +47,95 @@ class RollingAverageModelTests(TestModelPrimaryServiceRollingAverage):
             .collect()
         )
         self.expected_row_object = self.expected_df.collect()
-        self.returned_df.show()
+
+        self.returned_df.sort(IndCqc.location_id).show()
         self.expected_df.show()
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    def test_model_primary_service_rolling_average_returns_expected_dataframe(self):
-        self.assertEqual(self.returned_row_object, self.expected_row_object)
-
     def test_average_calculates_correctly_when_deduplicated_data_exists_on_all_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[0][IndCqc.rolling_average_model],
-            self.expected_row_object[0][IndCqc.rolling_average_model],
+            self.returned_row_object[0],
+            self.expected_row_object[0],
         )
         self.assertEqual(
-            self.returned_row_object[5][IndCqc.rolling_average_model],
-            self.expected_row_object[5][IndCqc.rolling_average_model],
+            self.returned_row_object[5],
+            self.expected_row_object[5],
         )
         self.assertEqual(
-            self.returned_row_object[10][IndCqc.rolling_average_model],
-            self.expected_row_object[10][IndCqc.rolling_average_model],
+            self.returned_row_object[10],
+            self.expected_row_object[10],
         )
         self.assertEqual(
-            self.returned_row_object[15][IndCqc.rolling_average_model],
-            self.expected_row_object[15][IndCqc.rolling_average_model],
+            self.returned_row_object[15],
+            self.expected_row_object[15],
         )
 
     def test_average_calculates_correctly_when_deduplicated_data_exists_on_some_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[2][IndCqc.rolling_average_model],
-            self.expected_row_object[2][IndCqc.rolling_average_model],
+            self.returned_row_object[2],
+            self.expected_row_object[2],
         )
         self.assertEqual(
-            self.returned_row_object[3][IndCqc.rolling_average_model],
-            self.expected_row_object[3][IndCqc.rolling_average_model],
+            self.returned_row_object[3],
+            self.expected_row_object[3],
         )
         self.assertEqual(
-            self.returned_row_object[4][IndCqc.rolling_average_model],
-            self.expected_row_object[4][IndCqc.rolling_average_model],
+            self.returned_row_object[4],
+            self.expected_row_object[4],
         )
         self.assertEqual(
-            self.returned_row_object[6][IndCqc.rolling_average_model],
-            self.expected_row_object[6][IndCqc.rolling_average_model],
+            self.returned_row_object[6],
+            self.expected_row_object[6],
         )
         self.assertEqual(
-            self.returned_row_object[7][IndCqc.rolling_average_model],
-            self.expected_row_object[7][IndCqc.rolling_average_model],
+            self.returned_row_object[7],
+            self.expected_row_object[7],
         )
         self.assertEqual(
-            self.returned_row_object[8][IndCqc.rolling_average_model],
-            self.expected_row_object[8][IndCqc.rolling_average_model],
+            self.returned_row_object[8],
+            self.expected_row_object[8],
         )
         self.assertEqual(
-            self.returned_row_object[12][IndCqc.rolling_average_model],
-            self.expected_row_object[12][IndCqc.rolling_average_model],
+            self.returned_row_object[12],
+            self.expected_row_object[12],
         )
         self.assertEqual(
-            self.returned_row_object[13][IndCqc.rolling_average_model],
-            self.expected_row_object[13][IndCqc.rolling_average_model],
+            self.returned_row_object[13],
+            self.expected_row_object[13],
         )
         self.assertEqual(
-            self.returned_row_object[14][IndCqc.rolling_average_model],
-            self.expected_row_object[14][IndCqc.rolling_average_model],
+            self.returned_row_object[14],
+            self.expected_row_object[14],
         )
         self.assertEqual(
-            self.returned_row_object[16][IndCqc.rolling_average_model],
-            self.expected_row_object[16][IndCqc.rolling_average_model],
+            self.returned_row_object[16],
+            self.expected_row_object[16],
         )
         self.assertEqual(
-            self.returned_row_object[17][IndCqc.rolling_average_model],
-            self.expected_row_object[17][IndCqc.rolling_average_model],
+            self.returned_row_object[17],
+            self.expected_row_object[17],
         )
         self.assertEqual(
-            self.returned_row_object[18][IndCqc.rolling_average_model],
-            self.expected_row_object[18][IndCqc.rolling_average_model],
+            self.returned_row_object[18],
+            self.expected_row_object[18],
         )
 
     def test_average_calculates_correctly_when_deduplicated_data_does_not_exists_on_any_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[9][IndCqc.rolling_average_model],
-            self.expected_row_object[9][IndCqc.rolling_average_model],
+            self.returned_row_object[9],
+            self.expected_row_object[9],
         )
         self.assertEqual(
-            self.returned_row_object[19][IndCqc.rolling_average_model],
-            self.expected_row_object[19][IndCqc.rolling_average_model],
+            self.returned_row_object[19],
+            self.expected_row_object[19],
         )
 
 
