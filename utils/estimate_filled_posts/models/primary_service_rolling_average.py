@@ -10,12 +10,12 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 def model_primary_service_rolling_average(
     df: DataFrame, number_of_days: int
 ) -> DataFrame:
-    df = add_column_to_flag_if_included_in_count(df)
+    df = add_flag_if_included_in_count(df)
     rolling_average_df = create_rolling_average_column(df, number_of_days)
     return rolling_average_df
 
 
-def add_column_to_flag_if_included_in_count(df: DataFrame):
+def add_flag_if_included_in_count(df: DataFrame):
     df = df.withColumn(
         IndCqc.include_in_count_of_filled_posts,
         F.when(df[IndCqc.ascwds_filled_posts_dedup_clean].isNotNull(), 1).otherwise(0),

@@ -2892,6 +2892,15 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000019", "2023-04-01", 1680303600, None, "Care home with nursing", 131.0),
         ("1-000000020", "2023-05-01", 1682895600, None, "Care home with nursing", 136.5),
     ]
+    add_flag_rows = [
+        ("1-000000001", 4.0),
+        ("1-000000002", None),
+    ]
+    expected_add_flag_rows = [
+        ("1-000000001", 4.0, 1),
+        ("1-000000002", None, 0),
+    ]
+
     # fmt: on
     rolling_sum_rows = [
         ("service_1", 86400, 10),

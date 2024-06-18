@@ -2025,6 +2025,18 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
+    add_flag_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_add_flag_schema = StructType(
+        [
+            *add_flag_schema,
+            StructField(IndCQC.include_in_count_of_filled_posts, IntegerType(), True),
+        ]
+    )
 
 
 @dataclass

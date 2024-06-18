@@ -1,7 +1,5 @@
 import unittest
 import warnings
-import pyspark.sql.functions as F
-
 
 import utils.estimate_filled_posts.models.primary_service_rolling_average as job
 from tests.test_file_data import ModelPrimaryServiceRollingAverage as Data
@@ -44,9 +42,6 @@ class RollingAverageModelTests(TestModelPrimaryServiceRollingAverage):
             .collect()
         )
         self.expected_row_object = self.expected_df.collect()
-
-        self.returned_df.sort(IndCqc.location_id).show()
-        self.expected_df.show()
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
@@ -179,3 +174,18 @@ class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
         self.assertEqual(df[3]["rolling_total"], 54.0)
         self.assertEqual(df[4]["rolling_total"], 64.0)
         self.assertEqual(df[6]["rolling_total"], 21.0)
+
+
+class AddFlagIfIncludedInCount(TestModelPrimaryServiceRollingAverage):
+    def setUp(self):
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.add_flag_rows, Schemas.add_flag_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_flag_rows, Schemas.expected_add_flag_schema
+        )
+        self.returned_df = job.add_flag_if_included_in_count(self.test_df)
+
+    def test_add_flag_if_included_in_count(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
