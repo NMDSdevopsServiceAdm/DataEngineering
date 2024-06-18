@@ -2014,7 +2014,15 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
-            StructField("col_to_sum", StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_rolling_sum_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_sum_of_filled_posts, DoubleType(), True),
         ]
     )
     calculate_rolling_average_column_schema = StructType(

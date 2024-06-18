@@ -164,20 +164,24 @@ class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
 class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
     def setUp(self):
         super().setUp()
-        self.rolling_sum_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.rolling_sum_rows, Schemas.rolling_sum_schema
         )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_rolling_sum_rows, Schemas.expected_rolling_sum_schema
+        )
+        self.returned_df = job.calculate_rolling_sum(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            88,
+            IndCqc.rolling_sum_of_filled_posts,
+        )
+
+    def test_calculate_rolling_sum_does_not_add_any_rows(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
 
     def test_calculate_rolling_sum(self):
-        df = job.calculate_rolling_sum(
-            self.rolling_sum_df, "col_to_sum", 3, "rolling_total"
-        )
-        self.assertEqual(df.count(), 7)
-        df = df.collect()
-        self.assertEqual(df[0]["rolling_total"], 10.0)
-        self.assertEqual(df[3]["rolling_total"], 54.0)
-        self.assertEqual(df[4]["rolling_total"], 64.0)
-        self.assertEqual(df[6]["rolling_total"], 21.0)
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 class AddFlagIfIncludedInCount(TestModelPrimaryServiceRollingAverage):
