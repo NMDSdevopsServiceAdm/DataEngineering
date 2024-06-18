@@ -2856,6 +2856,8 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000006", "2023-01-01", 1672531200, None, "non-residential"),
         ("1-000000007", "2023-02-01", 1675209600, None, "non-residential"),
         ("1-000000008", "2023-03-01", 1677628800, None, "non-residential"),
+        ("1-000000009", "2023-04-01", 1680303600, None, "non-residential"),
+        ("1-000000010", "2023-05-01", 1682895600, None, "non-residential"),
         ("1-000000011", "2023-01-01", 1672531200, 14.0, "Care home with nursing"),
         ("1-000000012", "2023-01-01", 1672531200, 16.0, "Care home with nursing"),
         ("1-000000013", "2023-02-01", 1675209600, 120.0, "Care home with nursing"),
@@ -2864,6 +2866,8 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000016", "2023-01-01", 1672531200, None, "Care home with nursing"),
         ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing"),
         ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing"),
+        ("1-000000019", "2023-04-01", 1680303600, None, "Care home with nursing"),
+        ("1-000000020", "2023-05-01", 1682895600, None, "Care home with nursing"),
     ]
     # fmt: off
     expected_rolling_average_rows = [
@@ -2875,6 +2879,8 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000006", "2023-01-01", 1672531200, None, "non-residential", 5.0),
         ("1-000000007", "2023-02-01", 1675209600, None, "non-residential", 10.0),
         ("1-000000008", "2023-03-01", 1677628800, None, "non-residential", 15.0),
+        ("1-000000009", "2023-04-01", 1680303600, None, "non-residential", 30.0),
+        ("1-000000010", "2023-05-01", 1682895600, None, "non-residential", 35.0),
         ("1-000000011", "2023-01-01", 1672531200, 14.0, "Care home with nursing", 15.0),
         ("1-000000012", "2023-01-01", 1672531200, 16.0, "Care home with nursing", 15.0),
         ("1-000000013", "2023-02-01", 1675209600, 120.0, "Care home with nursing", 50.0),
@@ -2883,6 +2889,8 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000016", "2023-01-01", 1672531200, None, "Care home with nursing", 15.0),
         ("1-000000017", "2023-02-01", 1675209600, None, "Care home with nursing", 50.0),
         ("1-000000018", "2023-03-01", 1677628800, None, "Care home with nursing", 70.25),
+        ("1-000000019", "2023-04-01", 1680303600, None, "Care home with nursing", 131.0),
+        ("1-000000020", "2023-05-01", 1682895600, None, "Care home with nursing", 136.5),
     ]
     # fmt: on
     known_filled_posts_rows = [
