@@ -154,7 +154,6 @@ class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
         self.returned_df.show()
 
     def test_create_rolling_average_column_does_not_add_any_rows(self):
-
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
     def test_create_rolling_average_column_returns_correct_values(self):
