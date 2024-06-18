@@ -2893,18 +2893,6 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000020", "2023-05-01", 1682895600, None, "Care home with nursing", 136.5),
     ]
     # fmt: on
-    known_filled_posts_rows = [
-        ("1-000000001", 1672531200, 4.0, "non-residential"),
-        ("1-000000002", 1672531200, 6.0, "non-residential"),
-        ("1-000000003", 1675209600, 20.0, "non-residential"),
-        ("1-000000004", 1677628800, 30.0, "non-residential"),
-        ("1-000000005", 1680303600, 40.0, "non-residential"),
-        ("1-000000011", 1672531200, 14.0, "Care home with nursing"),
-        ("1-000000012", 1672531200, 16.0, "Care home with nursing"),
-        ("1-000000013", 1675209600, 120.0, "Care home with nursing"),
-        ("1-000000014", 1677628800, 131.0, "Care home with nursing"),
-        ("1-000000015", 1680303600, 142.0, "Care home with nursing"),
-    ]
     rolling_sum_rows = [
         ("service_1", 86400, 10),
         ("service_1", 172800, 12),
@@ -2913,10 +2901,6 @@ class ModelPrimaryServiceRollingAverage:
         ("service_1", 432000, 20),
         ("service_2", 86400, 10),
         ("service_2", 172800, 11),
-    ]
-    rolling_average_rows = [
-        ("random_data", 1672531200, "non-residential", 44.24),
-        ("random_data", 1680303600, "Care home with nursing", 25.1),
     ]
     calculate_rolling_average_column_rows = [
         ("Care home with nursing", 1672531200, 2, 30.0),

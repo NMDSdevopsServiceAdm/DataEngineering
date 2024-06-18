@@ -18,9 +18,6 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
         self.estimates_df = self.spark.createDataFrame(
             Data.input_rows, Schemas.input_schema
         )
-        self.known_filled_posts_df = self.spark.createDataFrame(
-            Data.known_filled_posts_rows, Schemas.known_filled_posts_schema
-        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -54,122 +51,97 @@ class RollingAverageModelTests(TestModelPrimaryServiceRollingAverage):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
+    def test_only_one_additional_column_returned(self):
+        self.assertEqual(
+            len(self.estimates_df.columns) + 1, len(self.returned_df.columns)
+        )
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
     def test_average_calculates_correctly_when_deduplicated_data_exists_on_all_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[0],
-            self.expected_row_object[0],
+            self.returned_row_object[0][IndCqc.rolling_average_model],
+            self.expected_row_object[0][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[5],
-            self.expected_row_object[5],
+            self.returned_row_object[5][IndCqc.rolling_average_model],
+            self.expected_row_object[5][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[10],
-            self.expected_row_object[10],
+            self.returned_row_object[10][IndCqc.rolling_average_model],
+            self.expected_row_object[10][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[15],
-            self.expected_row_object[15],
+            self.returned_row_object[15][IndCqc.rolling_average_model],
+            self.expected_row_object[15][IndCqc.rolling_average_model],
         )
 
     def test_average_calculates_correctly_when_deduplicated_data_exists_on_some_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[2],
-            self.expected_row_object[2],
+            self.returned_row_object[2][IndCqc.rolling_average_model],
+            self.expected_row_object[2][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[3],
-            self.expected_row_object[3],
+            self.returned_row_object[3][IndCqc.rolling_average_model],
+            self.expected_row_object[3][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[4],
-            self.expected_row_object[4],
+            self.returned_row_object[4][IndCqc.rolling_average_model],
+            self.expected_row_object[4][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[6],
-            self.expected_row_object[6],
+            self.returned_row_object[6][IndCqc.rolling_average_model],
+            self.expected_row_object[6][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[7],
-            self.expected_row_object[7],
+            self.returned_row_object[7][IndCqc.rolling_average_model],
+            self.expected_row_object[7][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[8],
-            self.expected_row_object[8],
+            self.returned_row_object[8][IndCqc.rolling_average_model],
+            self.expected_row_object[8][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[12],
-            self.expected_row_object[12],
+            self.returned_row_object[12][IndCqc.rolling_average_model],
+            self.expected_row_object[12][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[13],
-            self.expected_row_object[13],
+            self.returned_row_object[13][IndCqc.rolling_average_model],
+            self.expected_row_object[13][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[14],
-            self.expected_row_object[14],
+            self.returned_row_object[14][IndCqc.rolling_average_model],
+            self.expected_row_object[14][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[16],
-            self.expected_row_object[16],
+            self.returned_row_object[16][IndCqc.rolling_average_model],
+            self.expected_row_object[16][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[17],
-            self.expected_row_object[17],
+            self.returned_row_object[17][IndCqc.rolling_average_model],
+            self.expected_row_object[17][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[18],
-            self.expected_row_object[18],
+            self.returned_row_object[18][IndCqc.rolling_average_model],
+            self.expected_row_object[18][IndCqc.rolling_average_model],
         )
 
     def test_average_calculates_correctly_when_deduplicated_data_does_not_exists_on_any_rows_for_an_import_date(
         self,
     ):
         self.assertEqual(
-            self.returned_row_object[9],
-            self.expected_row_object[9],
+            self.returned_row_object[9][IndCqc.rolling_average_model],
+            self.expected_row_object[9][IndCqc.rolling_average_model],
         )
         self.assertEqual(
-            self.returned_row_object[19],
-            self.expected_row_object[19],
+            self.returned_row_object[19][IndCqc.rolling_average_model],
+            self.expected_row_object[19][IndCqc.rolling_average_model],
         )
-
-
-class FilterToLocationsWithKnownFilledPostsTest(TestModelPrimaryServiceRollingAverage):
-    def setUp(self):
-        super().setUp()
-        self.estimates_df = self.spark.createDataFrame(
-            Data.input_rows, Schemas.input_schema
-        )
-
-    def test_filter_to_locations_with_known_filled_posts(self):
-        df = job.filter_to_locations_with_known_filled_posts(self.estimates_df)
-        self.assertEqual(df.count(), 10)
-        self.assertEqual(
-            df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNull()).count(), 0
-        )
-
-
-class CalculateFilledPostsAggregates(TestModelPrimaryServiceRollingAverage):
-    def setUp(self):
-        super().setUp()
-
-    def test_calculate_filled_posts_aggregates_per_service_and_time_period(self):
-        df = job.calculate_filled_posts_aggregates_per_service_and_time_period(
-            self.known_filled_posts_df
-        )
-        self.assertEqual(df.count(), 8)
-        df = df.sort(
-            F.col(IndCqc.primary_service_type).desc(), F.col(IndCqc.unix_time).asc()
-        ).collect()
-        self.assertEqual(df[0][IndCqc.count_of_filled_posts], 2)
-        self.assertEqual(df[0][IndCqc.sum_of_filled_posts], 10.0)
-        self.assertEqual(df[7][IndCqc.count_of_filled_posts], 1)
-        self.assertEqual(df[7][IndCqc.sum_of_filled_posts], 142.0)
 
 
 class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
@@ -207,22 +179,3 @@ class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
         self.assertEqual(df[3]["rolling_total"], 54.0)
         self.assertEqual(df[4]["rolling_total"], 64.0)
         self.assertEqual(df[6]["rolling_total"], 21.0)
-
-
-class JoinRollingAverage(TestModelPrimaryServiceRollingAverage):
-    def setUp(self):
-        super().setUp()
-        self.rolling_avg_df = self.spark.createDataFrame(
-            Data.rolling_average_rows, Schemas.rolling_average_schema
-        )
-
-    def test_join_rolling_average_into_df(self):
-        main_df = self.known_filled_posts_df
-        rolling_avg_df = self.rolling_avg_df
-
-        df = job.join_rolling_average_into_df(main_df, rolling_avg_df)
-        self.assertEqual(df.count(), 10)
-        self.assertEqual(len(df.columns), len(main_df.columns) + 1)
-        df = df.collect()
-        self.assertEqual(df[1][IndCqc.rolling_average_model], 44.24)
-        self.assertEqual(df[9][IndCqc.rolling_average_model], 25.1)
