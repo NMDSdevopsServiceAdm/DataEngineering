@@ -3268,7 +3268,7 @@ class ValidateCareHomeIndCqcFeaturesData:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
         ]
     )
     care_home_ind_cqc_features_schema = StructType(
