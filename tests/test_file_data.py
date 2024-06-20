@@ -2171,6 +2171,8 @@ class IndCQCDataUtils:
         ("1-000002", None, 30.0, 50.0),
         ("1-000003", 20.0, 70.0, 60.0),
         ("1-000004", None, None, 40.0),
+        ("1-000005", None, 0.5, 40.0),
+        ("1-000006", -1.0, 10.0, 30.0),
     ]
 
     expected_rows_with_estimate_filled_posts_and_source = [
@@ -2178,6 +2180,8 @@ class IndCQCDataUtils:
         ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
         ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
         ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
+        ("1-000005", None, 0.5, 40.0, 40.0, "model_name_3"),
+        ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
     ]
 
     source_missing_rows = [
