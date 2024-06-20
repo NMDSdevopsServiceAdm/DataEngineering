@@ -42,6 +42,7 @@ def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
                 (
                     F.col(IndCQC.estimate_filled_posts).isNull()
                     & (F.col(model_name).isNotNull())
+                    & (F.col(model_name) >= 1.0)
                 ),
                 F.col(model_name),
             ).otherwise(F.col(IndCQC.estimate_filled_posts)),
