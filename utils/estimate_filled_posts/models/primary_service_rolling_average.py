@@ -18,7 +18,9 @@ def model_primary_service_rolling_average(
 def add_flag_if_included_in_count(df: DataFrame):
     df = df.withColumn(
         IndCqc.include_in_count_of_filled_posts,
-        F.when(df[IndCqc.ascwds_filled_posts_dedup_clean].isNotNull(), 1).otherwise(0),
+        F.when(
+            F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull(), F.lit(1)
+        ).otherwise(F.lit(0)),
     )
     return df
 
