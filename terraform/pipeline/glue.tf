@@ -673,11 +673,13 @@ module "prepare_care_home_ind_cqc_features_job" {
 
 
 module "estimate_ind_cqc_filled_posts_job" {
-  source          = "../modules/glue-job"
-  script_name     = "estimate_ind_cqc_filled_posts.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_name       = "estimate_ind_cqc_filled_posts.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  worker_type       = "G.1X"
+  number_of_workers = 4
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
     "--cleaned_ind_cqc_source"        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"

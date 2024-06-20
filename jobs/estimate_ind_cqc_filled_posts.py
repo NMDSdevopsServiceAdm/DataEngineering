@@ -70,10 +70,6 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    cleaned_ind_cqc_df = model_primary_service_rolling_average(
-        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
-    )
-
     cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
     cleaned_ind_cqc_df = model_care_homes(
@@ -84,6 +80,10 @@ def main(
     )
 
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df, IndCQC.care_home_model)
+
+    cleaned_ind_cqc_df = model_primary_service_rolling_average(
+        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+    )
 
     cleaned_ind_cqc_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(

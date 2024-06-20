@@ -2004,35 +2004,53 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.primary_service_type, StringType(), False),
         ]
     )
-    known_filled_posts_schema = StructType(
+    expected_rolling_average_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), False),
+            *input_schema,
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
     rolling_sum_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
-            StructField("col_to_sum", StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
-    rolling_average_schema = StructType(
+    expected_rolling_sum_schema = StructType(
         [
-            StructField("other_col", StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_sum_of_filled_posts, DoubleType(), True),
         ]
     )
     calculate_rolling_average_column_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.count_of_filled_posts, IntegerType(), True),
-            StructField(IndCQC.sum_of_filled_posts, DoubleType(), True),
+            StructField(IndCQC.include_in_count_of_filled_posts, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_calculate_rolling_average_column_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+        ]
+    )
+    add_flag_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_add_flag_schema = StructType(
+        [
+            *add_flag_schema,
+            StructField(IndCQC.include_in_count_of_filled_posts, IntegerType(), True),
         ]
     )
 
