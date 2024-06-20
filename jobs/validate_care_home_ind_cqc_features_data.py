@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
+    CareHome,
 )
 from utils.validation.validation_rules.care_home_ind_cqc_features_validation_rules import (
     CareHomeIndCqcFeaturesValidationRules as Rules,
@@ -26,7 +26,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ind_cqc_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
-    IndCQC.primary_service_type,
+    IndCQC.care_home,
 ]
 
 
@@ -58,16 +58,8 @@ def main(
 def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
-    # TODO: change this to use the care home column instead of the primary service type column
     expected_size = cleaned_ind_cqc_df.where(
-        (
-            cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == PrimaryServiceType.care_home_only
-        )
-        | (
-            cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == PrimaryServiceType.care_home_with_nursing
-        )
+        (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.care_home)
     ).count()
     return expected_size
 

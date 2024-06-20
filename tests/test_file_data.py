@@ -4696,9 +4696,9 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing),
-        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.non_residential),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home),
+        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home),
         ("1-000000002", date(2024, 1, 9), None),
     ]
     # fmt: on
