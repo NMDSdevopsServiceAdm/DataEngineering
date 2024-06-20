@@ -151,7 +151,6 @@ class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
             Data.expected_calculate_rolling_average_column_rows,
             Schemas.expected_calculate_rolling_average_column_schema,
         )
-        self.returned_df.show()
 
     def test_create_rolling_average_column_does_not_add_any_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
