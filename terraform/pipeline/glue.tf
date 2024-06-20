@@ -356,7 +356,7 @@ module "reconciliation_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--cqc_location_api_source"                    = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
     "--ascwds_reconciliation_source"               = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
     "--reconciliation_single_and_subs_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs"
     "--reconciliation_parents_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=reconciliation/parents"
@@ -405,7 +405,7 @@ module "validate_locations_api_cleaned_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
     "--cleaned_cqc_locations_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=locations_api_cleaned_data_report/"
   }
@@ -420,7 +420,7 @@ module "validate_providers_api_cleaned_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
+    "--raw_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
     "--cleaned_cqc_providers_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--report_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
   }
@@ -611,7 +611,7 @@ module "validate_locations_api_raw_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/"
+    "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
   }
 }
@@ -625,7 +625,7 @@ module "validate_providers_api_raw_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/"
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=providers_api_raw_data_report/"
   }
 }

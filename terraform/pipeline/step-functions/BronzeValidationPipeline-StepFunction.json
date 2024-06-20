@@ -49,7 +49,7 @@
                 "Parameters": {
                   "JobName": "${validate_locations_api_raw_data_job_name}",
                   "Arguments": {
-                    "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/",
+                    "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.0.0/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
                   }
                 },
@@ -66,7 +66,7 @@
                 "Parameters": {
                   "JobName": "${validate_providers_api_raw_data_job_name}",
                   "Arguments": {
-                    "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/",
+                    "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_raw_data_report/"
                   }
                 },
