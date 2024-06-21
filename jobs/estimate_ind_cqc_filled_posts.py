@@ -58,6 +58,9 @@ def main(
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 2000")
+
     cleaned_ind_cqc_df = utils.read_from_parquet(
         cleaned_ind_cqc_source, cleaned_ind_cqc_columns
     )
