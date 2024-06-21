@@ -3,6 +3,8 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
+from pyspark.sql.dataframe import DataFrame
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -10,7 +12,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.validation.validation_rules.ascwds_workplace_cleaned_validation_rules import (
     ASCWDSWorkplaceCleanedValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    raise_exception_if_any_checks_failed,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -25,6 +30,9 @@ def main(
     rules = Rules.rules_to_check
 
     check_result_df = validate_dataset(cleaned_ascwds_workplace_df, rules)
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 

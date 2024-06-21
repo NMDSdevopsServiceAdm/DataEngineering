@@ -51,9 +51,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -61,10 +61,10 @@ def main(
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
 
+    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
-
-    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 def calculate_expected_size_of_cleaned_cqc_locations_dataset(

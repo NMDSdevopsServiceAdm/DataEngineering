@@ -12,7 +12,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.validation.validation_rules.cleaned_ind_cqc_validation_rules import (
     CleanedIndCqcValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    raise_exception_if_any_checks_failed,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -31,11 +34,14 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    )
 
     check_result_df = validate_dataset(cleaned_ind_cqc_df, rules)
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 

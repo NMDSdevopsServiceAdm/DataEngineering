@@ -18,7 +18,10 @@ from utils.column_values.categorical_column_values import (
 from utils.validation.validation_rules.care_home_ind_cqc_features_validation_rules import (
     CareHomeIndCqcFeaturesValidationRules as Rules,
 )
-from utils.validation.validation_utils import validate_dataset
+from utils.validation.validation_utils import (
+    validate_dataset,
+    raise_exception_if_any_checks_failed,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -44,15 +47,18 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_care_home_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_care_home_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(care_home_ind_cqc_features_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
 
 def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
