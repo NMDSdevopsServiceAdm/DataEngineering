@@ -44,10 +44,10 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_df, rules
     )
 
+    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
-
-    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 def calculate_expected_size_of_estimated_ind_cqc_filled_posts_by_job_role_dataset(

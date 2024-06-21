@@ -31,10 +31,10 @@ def main(
 
     check_result_df = validate_dataset(cleaned_ascwds_workplace_df, rules)
 
+    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
-
-    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 if __name__ == "__main__":

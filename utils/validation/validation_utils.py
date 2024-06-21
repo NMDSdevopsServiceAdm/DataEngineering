@@ -24,8 +24,6 @@ def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:
     verification_run = add_checks_to_run(verification_run, rules)
     check_result = verification_run.run()
     check_result_df = VerificationResult.checkResultsAsDataFrame(spark, check_result)
-    if isinstance(check_result_df, DataFrame):
-        raise_exception_if_any_checks_failed(check_result_df)
     return check_result_df
 
 

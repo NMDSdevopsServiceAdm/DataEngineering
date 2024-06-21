@@ -40,10 +40,10 @@ def main(
 
     check_result_df = validate_dataset(cleaned_ind_cqc_df, rules)
 
+    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
-
-    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
 
 def calculate_expected_size_of_cleaned_ind_cqc_dataset(
