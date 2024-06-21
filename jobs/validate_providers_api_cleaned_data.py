@@ -44,9 +44,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_cleaned_cqc_providers_dataset(raw_provider_df)
-    )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_cleaned_cqc_providers_dataset(raw_provider_df)
     cleaned_cqc_providers_df = add_column_with_length_of_string(
         cleaned_cqc_providers_df, [CQCP.provider_id]
     )

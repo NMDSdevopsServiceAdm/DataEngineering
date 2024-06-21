@@ -43,10 +43,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_cleaned_postcode_directory_dataset(
-            raw_postcode_directory_df
-        )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_cleaned_postcode_directory_dataset(
+        raw_postcode_directory_df
     )
 
     check_result_df = validate_dataset(cleaned_postcode_directory_df, rules)
