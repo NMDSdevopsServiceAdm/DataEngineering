@@ -46,7 +46,7 @@ cleaned_ind_cqc_columns = [
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 88  # Note: using 88 as a proxy for 3 months
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 366  # Note: using 366 as a proxy for 12 months
 
 
 def main(
@@ -57,6 +57,9 @@ def main(
     ml_model_metrics_destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
+
+    spark = utils.get_spark()
+    spark.sql("set spark.sql.broadcastTimeout = 2000")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(
         cleaned_ind_cqc_source, cleaned_ind_cqc_columns
