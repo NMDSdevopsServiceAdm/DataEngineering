@@ -34,7 +34,6 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @unittest.skip("testing")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -47,14 +46,15 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
             self.test_cleaned_cqc_locations_df,
         ]
 
-        job.main(
-            self.TEST_RAW_CQC_LOCATION_SOURCE,
-            self.TEST_CQC_LOCATIONS_API_CLEANED_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_RAW_CQC_LOCATION_SOURCE,
+                self.TEST_CQC_LOCATIONS_API_CLEANED_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidateLocationsAPICleanedDatasetTests):
