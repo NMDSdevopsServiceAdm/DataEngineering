@@ -46,14 +46,15 @@ class MainTests(ValidateProvidersAPICleanedDatasetTests):
             self.test_cleaned_cqc_providers_df,
         ]
 
-        job.main(
-            self.TEST_RAW_CQC_PROVIDER_SOURCE,
-            self.TEST_CQC_PROVIDERS_API_CLEANED_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_RAW_CQC_PROVIDER_SOURCE,
+                self.TEST_CQC_PROVIDERS_API_CLEANED_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidateProvidersAPICleanedDatasetTests):

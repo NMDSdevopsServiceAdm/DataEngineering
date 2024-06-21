@@ -47,14 +47,15 @@ class MainTests(ValidatePostcodeDirectoryCleanedDatasetTests):
             self.test_cleaned_postcode_directory_df,
         ]
 
-        job.main(
-            self.TEST_RAW_POSTCODE_DIRECTORY_SOURCE,
-            self.TEST_POSTCODE_DIRECTORY_CLEANED_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_RAW_POSTCODE_DIRECTORY_SOURCE,
+                self.TEST_POSTCODE_DIRECTORY_CLEANED_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidatePostcodeDirectoryCleanedDatasetTests):

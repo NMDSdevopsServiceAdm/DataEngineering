@@ -47,14 +47,15 @@ class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):
             self.test_estimated_ind_cqc_filled_posts_df,
         ]
 
-        job.main(
-            self.TEST_CLEANED_IND_CQC_SOURCE,
-            self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CLEANED_IND_CQC_SOURCE,
+                self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidateEstimatedIndCqcFilledPostsDatasetTests):

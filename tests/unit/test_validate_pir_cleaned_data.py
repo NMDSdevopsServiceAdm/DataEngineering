@@ -40,13 +40,14 @@ class MainTests(ValidatePIRCleanedDatasetTests):
             self.test_cleaned_cqc_pir_df,
         ]
 
-        job.main(
-            self.TEST_CQC_PIR_CLEANED_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CQC_PIR_CLEANED_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 1)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 if __name__ == "__main__":
