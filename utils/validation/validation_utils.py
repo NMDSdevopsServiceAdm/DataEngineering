@@ -91,7 +91,7 @@ def create_check_of_size_of_dataset(expected_size: int) -> Check:
 
 def create_check_of_min_values(column_name: str, min_value: int) -> Check:
     spark = utils.get_spark()
-    check = Check(spark, CheckLevel.Warning, f"Min value in column")
+    check = Check(spark, CheckLevel.Error, f"Min value in column")
     check = check.hasMin(
         column_name,
         lambda x: x >= min_value,
