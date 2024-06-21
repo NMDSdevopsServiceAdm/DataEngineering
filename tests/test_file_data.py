@@ -4583,6 +4583,8 @@ class ValidationUtils:
         ("loc_1", 5),
     ]
 
+    check_rows = fewer_distinct_values_result_rows
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:

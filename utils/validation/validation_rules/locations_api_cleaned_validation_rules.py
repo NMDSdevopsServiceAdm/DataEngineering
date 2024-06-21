@@ -41,7 +41,7 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.cqc_location_import_date,
         ],
         RuleName.min_values: {
-            CQCLClean.number_of_beds: 0,
+            CQCLClean.number_of_beds: 100,  # Change this back before merging PR
             Validation.location_id_length: 3,
             Validation.provider_id_length: 3,
         },

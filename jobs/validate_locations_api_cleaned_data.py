@@ -23,6 +23,7 @@ from utils.validation.validation_rules.locations_api_cleaned_validation_rules im
 from utils.validation.validation_utils import (
     validate_dataset,
     add_column_with_length_of_string,
+    raise_exception_if_any_checks_failed,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
@@ -50,15 +51,18 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
     )
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
