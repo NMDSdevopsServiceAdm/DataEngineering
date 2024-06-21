@@ -197,7 +197,6 @@ class CheckOfMinValues(ValidateUtilsTests):
         self.min_values_rule = Data.min_values_rule
         self.min_values_multiple_columns_rule = Data.min_values_multiple_columns_rule
 
-    @unittest.skip("Testing behaviour in pipeline")
     def test_create_check_of_min_values_returns_success_when_values_are_above_minimum(
         self,
     ):
@@ -210,7 +209,6 @@ class CheckOfMinValues(ValidateUtilsTests):
         returned_df = job.validate_dataset(test_df, self.min_values_rule)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    @unittest.skip("Testing behaviour in pipeline")
     def test_create_check_of_min_values_returns_success_when_lowest_value_equals_minimum(
         self,
     ):
@@ -223,7 +221,6 @@ class CheckOfMinValues(ValidateUtilsTests):
         returned_df = job.validate_dataset(test_df, self.min_values_rule)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    @unittest.skip("Testing behaviour in pipeline")
     def test_create_check_of_min_values_returns_failure_when_lowest_value_is_below_minimum(
         self,
     ):
@@ -236,7 +233,6 @@ class CheckOfMinValues(ValidateUtilsTests):
         returned_df = job.validate_dataset(test_df, self.min_values_rule)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    @unittest.skip("Testing behaviour in pipeline")
     def test_create_check_of_min_values_returns_correct_results_when_multiple_columns_supplied(
         self,
     ):
