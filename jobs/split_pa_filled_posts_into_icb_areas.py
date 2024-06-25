@@ -42,6 +42,8 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
         ],
     )
 
+    check_for_duplicate_postcodes(postcode_directory_df)
+
     postcode_directory_df = count_postcodes_per_list_of_columns(
         postcode_directory_df,
         [ONSClean.contemporary_ons_import_date, ONSClean.contemporary_cssr],
@@ -94,6 +96,19 @@ def main(postcode_directory_source, pa_filled_posts_source, destination):
     )
 
 
+def check_for_duplicate_postcodes(
+    postcode_directory_df: DataFrame,
+) -> int:
+    duplicate_postcode_count = (
+        postcode_directory_df.count() - postcode_directory_df.distinct().count()
+    )
+
+    if duplicate_postcode_count > 0:
+        raise ValueError(f"Postcode directory has 1 or more duplicates")
+
+    return duplicate_postcode_count
+
+
 def count_postcodes_per_list_of_columns(
     postcode_directory_df: DataFrame,
     list_of_columns_to_group_by: list,
@@ -105,7 +120,7 @@ def count_postcodes_per_list_of_columns(
 
     postcode_directory_df = postcode_directory_df.withColumn(
         new_column_name,
-        F.approx_count_distinct(ONSClean.postcode).over(w),
+        F.count(ONSClean.postcode).over(w),
     )
 
     return postcode_directory_df

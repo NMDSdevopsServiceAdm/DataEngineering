@@ -451,7 +451,7 @@ class ONSData:
 
 @dataclass
 class PAFilledPostsByIcbAreaSchema:
-    sample_ons_contemporary_schema = StructType(
+    sample_ons_contemporary_with_duplicates_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
@@ -459,6 +459,8 @@ class PAFilledPostsByIcbAreaSchema:
             StructField(ONSClean.contemporary_icb, StringType(), True),
         ]
     )
+
+    sample_ons_contemporary_schema = sample_ons_contemporary_with_duplicates_schema
 
     expected_postcode_count_per_la_schema = StructType(
         [

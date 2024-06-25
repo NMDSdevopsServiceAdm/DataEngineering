@@ -641,6 +641,13 @@ class ONSData:
 @dataclass
 class PAFilledPostsByIcbArea:
     # fmt: off
+    sample_ons_contemporary_with_duplicates_rows = [
+        ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
+        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
+    ]
+
     sample_ons_contemporary_rows = [
         ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
         ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
@@ -654,7 +661,6 @@ class PAFilledPostsByIcbArea:
         ("AB10AC", date(2023,1,1), "cssr1", "icb1"),
         ("AB10AA", date(2023,1,1), "cssr2", "icb2"), 
         ("AB10AB", date(2023,1,1), "cssr2", "icb3"), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3"), 
     ]
 
@@ -672,7 +678,6 @@ class PAFilledPostsByIcbArea:
         ("AB10AA", date(2023,1,1), "cssr2", "icb2",3), 
         ("AB10AB", date(2023,1,1), "cssr2", "icb3",3), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3), 
     ]
 
     expected_postcode_count_per_la_icb_rows = [
@@ -689,7 +694,6 @@ class PAFilledPostsByIcbArea:
         ("AB10AA", date(2023,1,1), "cssr2", "icb2", 1), 
         ("AB10AB", date(2023,1,1), "cssr2", "icb3", 2), 
         ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2), 
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2),
     ]
 
     sample_rows_with_la_and_hybrid_area_postcode_counts = [
