@@ -14,6 +14,7 @@ from pyspark.sql import (
 )
 
 from utils import utils
+from utils.column_names.validation_table_columns import Validation
 from utils.validation.validation_rule_names import RuleNames as RuleToCheck
 
 
@@ -149,3 +150,13 @@ def add_column_with_length_of_string(
         new_column_name = column_name + "_length"
         df = df.withColumn(new_column_name, F.length(column_name))
     return df
+
+
+def raise_exception_if_any_checks_failed(df: DataFrame):
+    df = df.where(df[Validation.constraint_status] == "Failure")
+
+    failures_count = df.count()
+    if failures_count == 0:
+        return
+
+    raise ValueError("Data quaility failures detected.")

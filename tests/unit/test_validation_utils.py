@@ -435,5 +435,17 @@ class AddColumnWithLengthOfString(ValidateUtilsTests):
         self.assertEqual(self.expected_df.collect(), self.returned_df.collect())
 
 
+class RaiseExceptionOnFailures(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_raise_exception_if_any_checks_failed_raises_exception(self):
+        test_df = self.spark.createDataFrame(Data.check_rows, Schemas.validation_schema)
+        with self.assertRaises(ValueError) as context:
+            job.raise_exception_if_any_checks_failed(test_df)
+
+        self.assertTrue("Data quaility failures detected." in str(context.exception))
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

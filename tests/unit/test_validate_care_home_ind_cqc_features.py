@@ -47,14 +47,15 @@ class MainTests(ValidateCareHomeIndCQCFeaturesDatasetTests):
             self.test_care_home_ind_cqc_features_df,
         ]
 
-        job.main(
-            self.TEST_CLEANED_IND_CQC_SOURCE,
-            self.TEST_CARE_HOME_IND_CQC_FEATURES_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CLEANED_IND_CQC_SOURCE,
+                self.TEST_CARE_HOME_IND_CQC_FEATURES_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(ValidateCareHomeIndCQCFeaturesDatasetTests):

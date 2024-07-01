@@ -38,13 +38,14 @@ class MainTests(ValidatePIRRawDatasetTests):
     ):
         read_from_parquet_patch.return_value = self.test_raw_cqc_pir_df
 
-        job.main(
-            self.TEST_CQC_PIR_RAW_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CQC_PIR_RAW_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 1)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 if __name__ == "__main__":

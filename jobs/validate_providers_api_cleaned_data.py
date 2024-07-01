@@ -18,6 +18,7 @@ from utils.validation.validation_rules.providers_api_cleaned_validation_rules im
 from utils.validation.validation_utils import (
     validate_dataset,
     add_column_with_length_of_string,
+    raise_exception_if_any_checks_failed,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
@@ -53,6 +54,9 @@ def main(
     check_result_df = validate_dataset(cleaned_cqc_providers_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
+
+    if isinstance(check_result_df, DataFrame):
+        raise_exception_if_any_checks_failed(check_result_df)
 
 
 def calculate_expected_size_of_cleaned_cqc_providers_dataset(
