@@ -2151,6 +2151,18 @@ class ModelFeatures:
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
+    add_time_open_schema = StructType(
+        [
+            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_add_time_open_schema = StructType(
+        [
+            *add_time_open_schema,
+            StructField(IndCQC.time_open, IntegerType(), True),
+        ]
+    )
 
 
 @dataclass
