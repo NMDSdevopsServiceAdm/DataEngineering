@@ -55,3 +55,13 @@ def add_date_diff_into_df(
         new_col_name, F.datediff(F.lit(max_d), F.col(import_date_col))
     )
     return loc_df
+
+
+def add_time_open_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
+    loc_df = df.withColumn(
+        new_col_name,
+        F.datediff(
+            F.col(IndCQC.registration_date), F.col(IndCQC.cqc_location_import_date)
+        ),
+    )
+    return loc_df
