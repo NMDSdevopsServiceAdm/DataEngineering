@@ -1893,6 +1893,7 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(

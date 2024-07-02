@@ -2649,16 +2649,16 @@ class FilterAscwdsFilledPostsData:
 class NonResAscwdsWithDormancyFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), "South East", "Y", ["Domiciliary care service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 1, 1), "South East", "N", ["Domiciliary care service"], "non-residential", 67.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
-        ("1-00003", date(2022, 1, 2), "South West", "Y", ["Urgent care services", "Supported living service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
-        ("1-00004", date(2022, 1, 2), "North East", "Y", ["Hospice services at home"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
-        ("1-00005", date(2022, 3, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", None, "N", "Urban city and town", '2022', '03', '01', '20220301'),
-        ("1-00006", date(2022, 3, 8), "South West", None, ["Specialist college service"], "non-residential", None, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
-        ("1-00007", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", None, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
-        ("1-00008", date(2022, 3, 8), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", 25.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
-        ("1-00009", date(2022, 3, 9), "North West", None, ["Care home service without nursing"], "Care home without nursing", None, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
-        ("1-00010", date(2022, 4, 2), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], "non-residential", None, "N", "Urban city and town", '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), "South East", "Y", ["Domiciliary care service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), "South East", "N", ["Domiciliary care service"], "non-residential", 67.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), "South West", "Y", ["Urgent care services", "Supported living service"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), "North East", "Y", ["Hospice services at home"], "non-residential", None, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], "non-residential", None, "N", "Urban city and town", '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), "South West", None, ["Specialist college service"], "non-residential", None, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", None, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), "North East", "Y", ["Care home service with nursing"], "Care home with nursing", 25.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), "North West", None, ["Care home service without nursing"], "Care home without nursing", None, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], "non-residential", None, "N", "Urban city and town", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
