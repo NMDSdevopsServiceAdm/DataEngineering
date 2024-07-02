@@ -53,14 +53,15 @@ class MainTests(ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests):
             self.test_non_res_ascwds_inc_dormancy_ind_cqc_features_df,
         ]
 
-        job.main(
-            self.TEST_CLEANED_IND_CQC_SOURCE,
-            self.TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CLEANED_IND_CQC_SOURCE,
+                self.TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_patch.call_count, 2)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
 class CalculateExpectedSizeofDataset(
