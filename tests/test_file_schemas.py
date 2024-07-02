@@ -2153,7 +2153,7 @@ class ModelFeatures:
     )
     add_time_open_schema = StructType(
         [
-            StructField(IndCQC.registration_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )

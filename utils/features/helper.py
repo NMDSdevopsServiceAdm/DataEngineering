@@ -61,7 +61,8 @@ def add_time_open_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
     loc_df = df.withColumn(
         new_col_name,
         F.datediff(
-            F.col(IndCQC.registration_date), F.col(IndCQC.cqc_location_import_date)
+            F.col(IndCQC.cqc_location_import_date),
+            F.col(IndCQC.imputed_registration_date),
         ),
     )
     return loc_df

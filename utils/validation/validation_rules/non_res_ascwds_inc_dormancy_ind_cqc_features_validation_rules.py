@@ -20,6 +20,7 @@ class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.dormancy,
             IndCqcColumns.features,
             IndCqcColumns.current_region,
+            IndCqcColumns.imputed_registration_date,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,

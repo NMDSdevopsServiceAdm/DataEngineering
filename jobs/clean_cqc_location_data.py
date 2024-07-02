@@ -84,6 +84,10 @@ def main(
     )
 
     cqc_location_df = create_cleaned_registration_date_column(cqc_location_df)
+    cqc_location_df = cUtils.column_to_date(
+        cqc_location_df, CQCLClean.imputed_registration_date
+    )
+
     cqc_location_df = clean_provider_id_column(cqc_location_df)
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
