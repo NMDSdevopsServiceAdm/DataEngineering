@@ -3169,7 +3169,7 @@ class ModelFeatures:
         (date(2013, 1, 10), date(2023, 1, 10)),
     ]
     expected_add_time_open_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10), -3652),  # Should this be negative?
+        (date(2013, 1, 10), date(2023, 1, 10), 3652),
     ]
 
 
