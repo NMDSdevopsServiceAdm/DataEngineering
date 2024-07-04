@@ -112,6 +112,7 @@ def main(
         IndCQC.dormancy,
         IndCQC.care_home,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.imputed_registration_date,
         IndCQC.features,
         Keys.year,
         Keys.month,

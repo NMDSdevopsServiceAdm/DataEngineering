@@ -154,9 +154,7 @@ class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     services_column_values = Services(IndCQC.gac_service_types)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
-    dormancy_column_values = Dormancy(
-        IndCQC.dormancy, value_to_remove=Dormancy.not_dormant
-    )
+    dormancy_column_values = Dormancy(IndCQC.dormancy)
     care_home_column_values = CareHome(
         IndCQC.care_home, value_to_remove=CareHome.not_care_home
     )
