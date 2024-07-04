@@ -29,6 +29,34 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 )
 
 
+estimate_filled_posts_columns: list = [
+    LOCATION_ID,
+    SNAPSHOT_DATE,
+    JOB_COUNT,
+    PRIMARY_SERVICE_TYPE,
+    ROLLING_AVERAGE_MODEL,
+    CARE_HOME_MODEL,
+    EXTRAPOLATION_MODEL,
+    INTERPOLATION_MODEL,
+    NON_RESIDENTIAL_MODEL,
+    ESTIMATE_JOB_COUNT,
+    PEOPLE_DIRECTLY_EMPLOYED,
+]
+capacity_tracker_care_home_columns: list = [
+    Columns.CQC_ID,
+    Columns.NURSES_EMPLOYED,
+    Columns.CARE_WORKERS_EMPLOYED,
+    Columns.NON_CARE_WORKERS_EMPLOYED,
+    Columns.AGENCY_NURSES_EMPLOYED,
+    Columns.AGENCY_CARE_WORKERS_EMPLOYED,
+    Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED,
+]
+capacity_tracker_non_residential_columns: list = [
+    Columns.CQC_ID,
+    Columns.CQC_CARE_WORKERS_EMPLOYED,
+]
+
+
 def main(
     estimate_job_counts_source,
     capacity_tracker_care_home_source,
@@ -43,37 +71,17 @@ def main(
     now = datetime.now()
     run_timestamp = now.strftime("%Y-%m-%d, %H:%M:%S")
 
-    job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
-        LOCATION_ID,
-        SNAPSHOT_DATE,
-        JOB_COUNT,
-        PRIMARY_SERVICE_TYPE,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
-        ESTIMATE_JOB_COUNT,
-        PEOPLE_DIRECTLY_EMPLOYED,
+    job_estimates_df: DataFrame = utils.read_from_parquet(
+        estimate_job_counts_source, estimate_filled_posts_columns
     )
 
-    capacity_tracker_care_homes_df: DataFrame = spark.read.parquet(
-        capacity_tracker_care_home_source
-    ).select(
-        Columns.CQC_ID,
-        Columns.NURSES_EMPLOYED,
-        Columns.CARE_WORKERS_EMPLOYED,
-        Columns.NON_CARE_WORKERS_EMPLOYED,
-        Columns.AGENCY_NURSES_EMPLOYED,
-        Columns.AGENCY_CARE_WORKERS_EMPLOYED,
-        Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED,
+    capacity_tracker_care_homes_df: DataFrame = utils.read_from_parquet(
+        capacity_tracker_care_home_source, capacity_tracker_care_home_columns
     )
 
-    capacity_tracker_non_residential_df: DataFrame = spark.read.parquet(
-        capacity_tracker_non_residential_source
-    ).select(
-        Columns.CQC_ID,
-        Columns.CQC_CARE_WORKERS_EMPLOYED,
+    capacity_tracker_non_residential_df: DataFrame = utils.read_from_parquet(
+        capacity_tracker_non_residential_source,
+        capacity_tracker_non_residential_columns,
     )
 
     capacity_tracker_care_homes_df = prepare_capacity_tracker_care_home_data(

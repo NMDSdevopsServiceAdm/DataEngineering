@@ -1,6 +1,6 @@
 import unittest
 import warnings
-from unittest.mock import patch
+from unittest.mock import patch, Mock, ANY, call
 from datetime import date
 
 
@@ -12,6 +12,9 @@ from tests.test_file_data import (
     CreateJobEstimatesDiagnosticsData as Data,
 )
 import jobs.create_job_estimates_diagnostics as job
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 from utils.estimate_filled_posts.column_names import (
     LOCATION_ID,
     PEOPLE_DIRECTLY_EMPLOYED,
@@ -30,59 +33,70 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
-    ESTIMATED_JOB_COUNTS = "tests/test_data/tmp/estimated_job_counts/"
-    CAPACITY_TRACKER_CARE_HOME_DATA = (
-        "tests/test_data/tmp/capacity_tracker_care_home_data/"
-    )
-    CAPACITY_TRACKER_NON_RESIDENTIAL_DATA = (
-        "tests/test_data/tmp/capacity_tracker_non_residential_data/"
-    )
-    PIR_DATA = "tests/test_data/tmp/pir_data/"
-    DIAGNOSTICS_DESTINATION = "tests/test_data/tmp/diagnostics/"
-    RESIDUALS_DESTINATION = "tests/test_data/tmp/residuals/"
+    ESTIMATED_JOB_COUNTS_SOURCE = "some/directory"
+    CAPACITY_TRACKER_CARE_HOME_SOURCE = "some/directory"
+    CAPACITY_TRACKER_NON_RESIDENTIAL_SOURCE = "some/directory"
+    DIAGNOSTICS_DESTINATION = "some/directory"
+    RESIDUALS_DESTINATION = "some/directory"
+    DESCRIPTION_OF_CHANGE = "some text"
+    partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
         self.spark = utils.get_spark()
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-    def tearDown(self):
-        remove_file_path(self.ESTIMATED_JOB_COUNTS)
-        remove_file_path(self.CAPACITY_TRACKER_CARE_HOME_DATA)
-        remove_file_path(self.CAPACITY_TRACKER_NON_RESIDENTIAL_DATA)
-        remove_file_path(self.PIR_DATA)
-        remove_file_path(self.DIAGNOSTICS_DESTINATION)
-        remove_file_path(self.RESIDUALS_DESTINATION)
 
 
 class MainTests(CreateJobEstimatesDiagnosticsTests):
     def setUp(self) -> None:
         super().setUp()
-
-    @patch("jobs.create_job_estimates_diagnostics.main")
-    def test_create_job_estimates_diagnostics_completes(self, mock_main):
-        estimate_jobs_df = self.spark.createDataFrame(
+        self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_jobs_rows,
             schema=Schemas.estimate_jobs,
         )
-        capacity_tracker_care_home_df = self.spark.createDataFrame(
+        self.capacity_tracker_care_home_df = self.spark.createDataFrame(
             Data.capacity_tracker_care_home_rows,
             schema=Schemas.capacity_tracker_care_home,
         )
-        capacity_tracker_non_residential_df = self.spark.createDataFrame(
+        self.capacity_tracker_non_residential_df = self.spark.createDataFrame(
             Data.capacity_tracker_non_residential_rows,
             schema=Schemas.capacity_tracker_non_residential,
         )
 
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_from_parquet")
+    def test_main_runs(
+        self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
+    ):
+        read_from_parquet_patch.side_effect = [
+            self.estimate_jobs_df,
+            self.capacity_tracker_care_home_df,
+            self.capacity_tracker_non_residential_df,
+        ]
+
         job.main(
-            estimate_jobs_df,
-            capacity_tracker_care_home_df,
-            capacity_tracker_non_residential_df,
+            self.ESTIMATED_JOB_COUNTS_SOURCE,
+            self.CAPACITY_TRACKER_CARE_HOME_SOURCE,
+            self.CAPACITY_TRACKER_NON_RESIDENTIAL_SOURCE,
             self.DIAGNOSTICS_DESTINATION,
             self.RESIDUALS_DESTINATION,
+            self.DESCRIPTION_OF_CHANGE,
         )
 
-        mock_main.assert_called_once()
+        self.assertEqual(read_from_parquet_patch.call_count, 3)
+        write_to_parquet_calls = [
+            call(
+                ANY,
+                self.RESIDUALS_DESTINATION,
+                mode="append",
+                partitionKeys=["run_year", "run_month", "run_day"],
+            ),
+            call(
+                ANY,
+                self.DIAGNOSTICS_DESTINATION,
+                mode="append",
+                partitionKeys=["run_year", "run_month", "run_day"],
+            ),
+        ]
+        write_to_parquet_patch.assert_has_calls(write_to_parquet_calls)
 
 
 class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
