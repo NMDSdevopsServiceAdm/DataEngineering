@@ -54,6 +54,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         remove_file_path(self.DIAGNOSTICS_DESTINATION)
         remove_file_path(self.RESIDUALS_DESTINATION)
 
+
+class MainTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     @patch("jobs.create_job_estimates_diagnostics.main")
     def test_create_job_estimates_diagnostics_completes(self, mock_main):
         estimate_jobs_df = self.spark.createDataFrame(
@@ -78,6 +83,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
 
         mock_main.assert_called_once()
+
+
+class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
         self,
@@ -126,6 +136,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_rows = 1
         self.assertEqual(output_df.count(), expected_rows)
 
+
+class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_prepare_capacity_tracker_care_home_data_calculates_total_of_employed_columns(
         self,
     ):
@@ -166,6 +181,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         self.assertEqual(
             output_df_list[1][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
         )
+
+
+class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_residuals_adds_a_column(self):
         calculate_residuals_df = self.spark.createDataFrame(
@@ -272,6 +292,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         ]
         self.assertEqual(output, expected_output)
 
+
+class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_create_column_names_list_adds_the_correct_number_of_columns(self):
         residuals_list = [
             [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
@@ -291,6 +316,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         self.assertEqual(output_size, expected_size)
 
+
+class CalculateAverageResidualTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_calculate_average_residual_creates_column_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(
             Data.residuals_rows, schema=Schemas.residuals
@@ -305,6 +335,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         expected_output = 2.0
 
         self.assertEqual(output_rows[0][output_column_name], expected_output)
+
+
+class CreateEmptyDataFrameTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
         output_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
@@ -321,6 +356,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
         )
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
+
+
+class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_run_average_residuals_creates_df_of_average_residuals(self):
         residuals_df = self.spark.createDataFrame(
@@ -342,6 +382,11 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
         self.assertEqual(output_df_rows[0][output_column_names[1]], expected_output[1])
+
+
+class AddTimestampColumnTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_add_timestamp_column_adds_a_column_with_the_specified_timestamp_as_a_string(
         self,
