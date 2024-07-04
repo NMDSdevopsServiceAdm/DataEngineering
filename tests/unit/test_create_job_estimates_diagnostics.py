@@ -43,11 +43,6 @@ class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-
-
-class MainTests(CreateJobEstimatesDiagnosticsTests):
-    def setUp(self) -> None:
-        super().setUp()
         self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_jobs_rows,
             schema=Schemas.estimate_jobs,
@@ -60,6 +55,25 @@ class MainTests(CreateJobEstimatesDiagnosticsTests):
             Data.capacity_tracker_non_residential_rows,
             schema=Schemas.capacity_tracker_non_residential,
         )
+
+
+class MainTests(CreateJobEstimatesDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.write_to_parquet_calls = [
+            call(
+                ANY,
+                self.RESIDUALS_DESTINATION,
+                mode="append",
+                partitionKeys=["run_year", "run_month", "run_day"],
+            ),
+            call(
+                ANY,
+                self.DIAGNOSTICS_DESTINATION,
+                mode="append",
+                partitionKeys=["run_year", "run_month", "run_day"],
+            ),
+        ]
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -96,7 +110,7 @@ class MainTests(CreateJobEstimatesDiagnosticsTests):
                 partitionKeys=["run_year", "run_month", "run_day"],
             ),
         ]
-        write_to_parquet_patch.assert_has_calls(write_to_parquet_calls)
+        write_to_parquet_patch.assert_has_calls(self.write_to_parquet_calls)
 
 
 class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
@@ -106,17 +120,12 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
     def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
         self,
     ):
-        capacity_tracker_df = self.spark.createDataFrame(
-            Data.capacity_tracker_care_home_rows,
-            schema=Schemas.capacity_tracker_care_home,
-        )
-
         output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
-            capacity_tracker_df, SNAPSHOT_DATE
+            self.capacity_tracker_care_home_df, SNAPSHOT_DATE
         )
 
-        expected_df_size = len(capacity_tracker_df.columns) + 1
-        expected_rows = capacity_tracker_df.count()
+        expected_df_size = len(self.capacity_tracker_care_home_df.columns) + 1
+        expected_rows = self.capacity_tracker_care_home_df.count()
         expected_value = date.fromisoformat(
             Values.capacity_tracker_snapshot_date_formatted
         )
@@ -130,22 +139,10 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
         self.assertEqual(output_df_list[0][SNAPSHOT_DATE], expected_value)
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
-        estimate_jobs_df = self.spark.createDataFrame(
-            Data.estimate_jobs_rows, schema=Schemas.estimate_jobs
-        )
-        capacity_tracker_care_home_df = self.spark.createDataFrame(
-            Data.capacity_tracker_care_home_rows,
-            schema=Schemas.capacity_tracker_care_home,
-        )
-        capacity_tracker_non_residential_df = self.spark.createDataFrame(
-            Data.capacity_tracker_non_residential_rows,
-            schema=Schemas.capacity_tracker_non_residential,
-        )
-
         output_df = job.merge_dataframes(
-            estimate_jobs_df,
-            capacity_tracker_care_home_df,
-            capacity_tracker_non_residential_df,
+            self.estimate_jobs_df,
+            self.capacity_tracker_care_home_df,
+            self.capacity_tracker_non_residential_df,
         )
         expected_rows = 1
         self.assertEqual(output_df.count(), expected_rows)
