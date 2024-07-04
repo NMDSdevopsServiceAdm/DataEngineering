@@ -96,20 +96,6 @@ class MainTests(CreateJobEstimatesDiagnosticsTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-        write_to_parquet_calls = [
-            call(
-                ANY,
-                self.RESIDUALS_DESTINATION,
-                mode="append",
-                partitionKeys=["run_year", "run_month", "run_day"],
-            ),
-            call(
-                ANY,
-                self.DIAGNOSTICS_DESTINATION,
-                mode="append",
-                partitionKeys=["run_year", "run_month", "run_day"],
-            ),
-        ]
         write_to_parquet_patch.assert_has_calls(self.write_to_parquet_calls)
 
 
