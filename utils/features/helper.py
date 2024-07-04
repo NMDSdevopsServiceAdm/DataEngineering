@@ -58,6 +58,18 @@ def add_date_diff_into_df(
 
 
 def add_time_open_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
+    """
+    Adds a new column called time_open.
+
+    This function adds a new integer column to the given data frame which is the length of time between the imputed registration date and the cqc location import date.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
+        new_col_name (str) : A name for the new column.
+
+    Returns:
+        DataFrame: A dataframe with the new column of integers added.
+    """
     loc_df = df.withColumn(
         new_col_name,
         F.datediff(
