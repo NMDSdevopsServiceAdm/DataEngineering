@@ -1493,7 +1493,9 @@ class MergeCoverageData:
     )
 
     sample_in_ascwds_schema = StructType(
-        [StructField(AWPClean.establishment_id, StringType(), True)]
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
     )
 
     expected_in_ascwds_schema = StructType(

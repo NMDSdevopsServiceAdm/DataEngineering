@@ -2168,12 +2168,12 @@ class MergeCoverageData:
     # fmt: on
 
     sample_in_ascwds_rows = [
-        (None),
-        ("1"),
+        (None,),
+        ("1",),
     ]
 
     expected_in_ascwds_rows = [
-        (None, 0),
+        (None, 0,),
         ("1", 1,),
     ]
 

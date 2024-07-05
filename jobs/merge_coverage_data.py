@@ -134,6 +134,8 @@ def add_flag_for_in_ascwds(
         F.when(F.isnull(AWPClean.establishment_id), 0).otherwise(1),
     )
 
+    return merged_coverage_df
+
 
 if __name__ == "__main__":
     print("Spark job 'merge_coverage_data' starting...")
