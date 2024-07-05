@@ -3165,10 +3165,10 @@ class ModelFeatures:
         ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
-    add_time_open_rows = [
+    add_time_registered_rows = [
         (date(2013, 1, 10), date(2023, 1, 10)),
     ]
-    expected_add_time_open_rows = [
+    expected_add_time_registered_rows = [
         (date(2013, 1, 10), date(2023, 1, 10), 3652),
     ]
 
