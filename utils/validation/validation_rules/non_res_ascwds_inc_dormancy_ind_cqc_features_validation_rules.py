@@ -21,6 +21,8 @@ class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.features,
             IndCqcColumns.current_region,
             IndCqcColumns.imputed_registration_date,
+            IndCqcColumns.date_diff,
+            IndCqcColumns.time_registered,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -28,6 +30,8 @@ class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
+            IndCqcColumns.time_registered: 0.0,
+            IndCqcColumns.date_diff: 0.0,
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,

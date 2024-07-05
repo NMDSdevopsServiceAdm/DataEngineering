@@ -57,9 +57,9 @@ def add_date_diff_into_df(
     return loc_df
 
 
-def add_time_open_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
+def add_time_registered_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
     """
-    Adds a new column called time_open.
+    Adds a new column called time_registered.
 
     This function adds a new integer column to the given data frame which is the length of time between the imputed registration date and the cqc location import date.
 

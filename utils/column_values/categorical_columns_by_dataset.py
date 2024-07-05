@@ -43,7 +43,7 @@ from utils.column_values.categorical_column_values import (
 class LocationApiRawCategoricalValues:
     dormancy_column_values = Dormancy(CQCL.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(CQCL.registration_status)
-    care_home_column_values = CareHome(CQCL.care_home)
+    care_home_column_care_home_values = CareHome(CQCL.care_home)
 
 
 @dataclass
@@ -56,7 +56,7 @@ class ASCWDSWorkerCleanedCategoricalValues:
 
 @dataclass
 class LocationsApiCleanedCategoricalValues:
-    care_home_column_values = CareHome(CQCLClean.care_home)
+    care_home_column_care_home_values = CareHome(CQCLClean.care_home)
     sector_column_values = Sector(CQCLClean.cqc_sector)
     dormancy_column_values = Dormancy(CQCLClean.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
@@ -80,7 +80,7 @@ class ProvidersApiCleanedCategoricalValues:
 
 @dataclass
 class PIRCleanedCategoricalValues:
-    care_home_column_values = CareHome(PIRClean.care_home)
+    care_home_column_care_home_values = CareHome(PIRClean.care_home)
 
 
 @dataclass
@@ -102,7 +102,7 @@ class PostcodeDirectoryRawCategoricalValues:
 
 @dataclass
 class MergedIndCQCCategoricalValues:
-    care_home_column_values = CareHome(IndCQC.care_home)
+    care_home_column_care_home_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
@@ -125,7 +125,7 @@ class MergedIndCQCCategoricalValues:
 
 @dataclass
 class CleanedIndCQCCategoricalValues:
-    care_home_column_values = CareHome(IndCQC.care_home)
+    care_home_column_care_home_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
     )
@@ -155,7 +155,7 @@ class FeatureEngineeringCategoricalValues:
     services_column_values = Services(IndCQC.gac_service_types)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
-    care_home_column_values = CareHome(
+    care_home_column_care_home_values = CareHome(
         IndCQC.care_home, value_to_remove=CareHome.not_care_home
     )
     care_home_column_non_care_home_values = CareHome(
@@ -165,7 +165,7 @@ class FeatureEngineeringCategoricalValues:
 
 @dataclass
 class EstimatedIndCQCFilledPostsCategoricalValues:
-    care_home_column_values = CareHome(IndCQC.care_home)
+    care_home_column_care_home_values = CareHome(IndCQC.care_home)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
     current_region_column_values = Region(IndCQC.current_region)
     current_cssr_column_values = CurrentCSSR(

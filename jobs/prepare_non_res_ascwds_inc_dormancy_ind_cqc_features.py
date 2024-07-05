@@ -22,7 +22,7 @@ from utils.features.helper import (
     add_service_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_date_diff_into_df,
-    add_time_open_into_df,
+    add_time_registered_into_df,
 )
 
 
@@ -85,15 +85,15 @@ def main(
         import_date_col=IndCQC.cqc_location_import_date,
     )
 
-    features_df = add_time_open_into_df(
+    features_df = add_time_registered_into_df(
         df=features_df,
-        new_col_name=IndCQC.time_open,
+        new_col_name=IndCQC.time_registered,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
-            IndCQC.time_open,
+            IndCQC.time_registered,
             IndCQC.date_diff,
         ]
         + dormancy
@@ -113,6 +113,8 @@ def main(
         IndCQC.care_home,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.imputed_registration_date,
+        IndCQC.date_diff,
+        IndCQC.time_registered,
         IndCQC.features,
         Keys.year,
         Keys.month,
