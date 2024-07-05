@@ -56,7 +56,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.care_home_model: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
-            IndCqcColumns.care_home: CatValuescare_home_column_care_home_valuescategorical_values,
+            IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.categorical_values,
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
@@ -64,7 +64,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            IndCqcColumns.care_home: CatValuescare_home_column_care_home_valuescount_of_categorical_values,
+            IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.count_of_categorical_values,
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,

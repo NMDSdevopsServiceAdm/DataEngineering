@@ -10,7 +10,7 @@ from utils.features.helper import (
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_service_count_to_data,
     vectorise_dataframe,
-    add_time_registered_into_df,
+    add_time_open_into_df,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -50,16 +50,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
         )
 
-    def test_add_time_registered_into_df(self):
+    def test_add_time_open_into_df(self):
         test_df = self.spark.createDataFrame(
-            Data.add_time_registered_rows, Schemas.add_time_registered_schema
+            Data.add_time_open_rows, Schemas.add_time_open_schema
         )
-        returned_df = add_time_registered_into_df(
-            df=test_df, new_col_name=IndCQC.time_registered
-        )
+        returned_df = add_time_open_into_df(df=test_df, new_col_name=IndCQC.time_open)
         expected_df = self.spark.createDataFrame(
-            Data.expected_add_time_registered_rows,
-            Schemas.expected_add_time_registered_schema,
+            Data.expected_add_time_open_rows, Schemas.expected_add_time_open_schema
         )
 
         self.assertEqual(expected_df.collect(), returned_df.collect())
