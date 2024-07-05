@@ -13,9 +13,6 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.diagnostics_utils.diagnostics_meta_data import (
-    TestColumns,
-)
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
