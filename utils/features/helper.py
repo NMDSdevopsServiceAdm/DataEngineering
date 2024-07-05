@@ -57,7 +57,7 @@ def add_date_diff_into_df(
     return loc_df
 
 
-def add_time_registered_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
+def add_time_registered_into_df(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered.
 
@@ -65,13 +65,12 @@ def add_time_registered_into_df(df: DataFrame, new_col_name: str) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
-        new_col_name (str) : A name for the new column.
 
     Returns:
         DataFrame: A dataframe with the new column of integers added.
     """
     loc_df = df.withColumn(
-        new_col_name,
+        IndCQC.time_registered,
         F.datediff(
             F.col(IndCQC.cqc_location_import_date),
             F.col(IndCQC.imputed_registration_date),

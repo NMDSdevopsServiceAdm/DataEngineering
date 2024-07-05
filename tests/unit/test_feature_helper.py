@@ -54,9 +54,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         test_df = self.spark.createDataFrame(
             Data.add_time_registered_rows, Schemas.add_time_registered_schema
         )
-        returned_df = add_time_registered_into_df(
-            df=test_df, new_col_name=IndCQC.time_registered
-        )
+        returned_df = add_time_registered_into_df(df=test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_add_time_registered_rows,
             Schemas.expected_add_time_registered_schema,
