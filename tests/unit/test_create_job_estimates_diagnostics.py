@@ -25,6 +25,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     ResidualsRequired,
 )
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_values.categorical_column_values import CareHome
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
@@ -184,7 +185,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         output_df = job.calculate_residuals(
             self.calculate_residuals_df,
             model=IndCQC.estimate_filled_posts,
-            service=Values.non_res,
+            service=CareHome.not_care_home,
             data_source_column=IndCQC.people_directly_employed,
         )
 
@@ -197,7 +198,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         output_df = job.calculate_residuals(
             self.calculate_residuals_df,
             model=IndCQC.estimate_filled_posts,
-            service=Values.non_res,
+            service=CareHome.not_care_home,
             data_source_column=IndCQC.people_directly_employed,
         )
 
@@ -219,7 +220,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         self,
     ):
         model = IndCQC.estimate_filled_posts
-        service = Values.non_res
+        service = CareHome.not_care_home
         data_source_column = IndCQC.people_directly_employed
 
         output = job.create_residuals_column_name(model, service, data_source_column)
@@ -253,8 +254,8 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         ]
 
         services = [
-            Values.care_home,
-            Values.non_res,
+            CareHome.care_home,
+            CareHome.not_care_home,
         ]
 
         data_source_columns = [
@@ -268,42 +269,42 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         expected_output = [
             [
                 IndCQC.estimate_filled_posts,
-                Values.care_home,
+                CareHome.care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.estimate_filled_posts,
-                Values.care_home,
+                CareHome.care_home,
                 CT.care_home_employed,
             ],
             [
                 IndCQC.estimate_filled_posts,
-                Values.non_res,
+                CareHome.not_care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.estimate_filled_posts,
-                Values.non_res,
+                CareHome.not_care_home,
                 CT.non_residential_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.care_home,
+                CareHome.care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.care_home,
+                CareHome.care_home,
                 CT.care_home_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.non_res,
+                CareHome.not_care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.non_res,
+                CareHome.not_care_home,
                 CT.non_residential_employed,
             ],
         ]
@@ -318,38 +319,42 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
         residuals_list = [
             [
                 IndCQC.estimate_filled_posts,
-                Values.care_home,
+                CareHome.care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.estimate_filled_posts,
-                Values.care_home,
+                CareHome.care_home,
                 CT.care_home_employed,
             ],
             [
                 IndCQC.estimate_filled_posts,
-                Values.non_res,
-                IndCQC.ascwds_filled_posts_dedup_clean,
-            ],
-            [IndCQC.estimate_filled_posts, Values.non_res, CT.care_home_employed],
-            [
-                IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.care_home,
+                CareHome.not_care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
-                IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.care_home,
+                IndCQC.estimate_filled_posts,
+                CareHome.not_care_home,
                 CT.care_home_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.non_res,
+                CareHome.care_home,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                Values.non_res,
+                CareHome.care_home,
+                CT.care_home_employed,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                CareHome.not_care_home,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                CareHome.not_care_home,
                 CT.care_home_employed,
             ],
         ]

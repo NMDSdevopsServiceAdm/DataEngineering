@@ -5,6 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_values.categorical_column_values import CareHome
 
 
 @dataclass
@@ -12,9 +13,6 @@ class Variables:
     asc_wds: str = "ascwds"
     capacity_tracker: str = "capacity_tracker"
     pir: str = "pir"
-
-    care_home: str = "care_home"
-    non_res: str = "non_res"
 
     capacity_tracker_snapshot_date: str = "20230401"
     capacity_tracker_snapshot_date_formatted: str = "2023-04-01"
@@ -52,8 +50,8 @@ class ResidualsRequired:
     ]
 
     services = [
-        Variables.care_home,
-        Variables.non_res,
+        CareHome.care_home,
+        CareHome.not_care_home,
     ]
 
     data_source_columns = [

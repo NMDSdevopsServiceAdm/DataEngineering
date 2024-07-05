@@ -19,7 +19,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
-
+from utils.column_values.categorical_column_values import CareHome
 
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
@@ -250,7 +250,12 @@ def create_residuals_column_name(
     elif data_source_column == IndCQC.ascwds_filled_posts_dedup_clean:
         data_source = Values.asc_wds
 
-    new_column_name = f"{Prefixes.residuals}{model}_{service}_{data_source}"
+    if service == CareHome.care_home:
+        service_name = "care_home"
+    else:
+        service_name = "non_res"
+
+    new_column_name = f"{Prefixes.residuals}{model}_{service_name}_{data_source}"
     return new_column_name
 
 
@@ -280,10 +285,10 @@ def create_residuals_list(
 
     for combination in residuals_list[:]:
         if (
-            (combination[1] == Values.care_home)
+            (combination[1] == CareHome.care_home)
             & (combination[2] == CT.non_residential_employed)
         ) | (
-            (combination[1] == Values.non_res)
+            (combination[1] == CareHome.not_care_home)
             & (combination[2] == CT.care_home_employed)
         ):
             residuals_list.remove(combination)
