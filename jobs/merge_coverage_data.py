@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -15,6 +15,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_names.merge_coverage_data_columns import (
+    MergeCoverageDataColumns as MergeColumns,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -83,6 +86,8 @@ def main(
         AWPClean.ascwds_workplace_import_date,
     )
 
+    merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
+
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
@@ -119,6 +124,15 @@ def join_ascwds_data_into_cqc_location_df(
     )
 
     return merged_coverage_df
+
+
+def add_flag_for_in_ascwds(
+    merged_coverage_df: DataFrame,
+) -> DataFrame:
+    merged_coverage_df = merged_coverage_df.withColumn(
+        MergeColumns.in_ascwds,
+        F.when(F.isnull(AWPClean.establishment_id), 0).otherwise(1),
+    )
 
 
 if __name__ == "__main__":
