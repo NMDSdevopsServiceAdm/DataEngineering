@@ -87,7 +87,6 @@ def main(
 
     features_df = add_time_registered_into_df(
         df=features_df,
-        new_col_name=IndCQC.time_registered,
     )
 
     list_for_vectorisation: List[str] = sorted(
