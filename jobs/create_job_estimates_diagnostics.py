@@ -1,24 +1,21 @@
 from datetime import datetime, date
 import sys
 
-import pyspark.sql.functions as F
+from pyspark.sql import SparkSession, DataFrame, functions as F
 from pyspark.sql.types import StringType
-from pyspark.sql import SparkSession
-from pyspark.sql import DataFrame
 
 from utils import utils
-
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_values.categorical_column_values import CareHome, DataSource
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
     CareWorkerToJobsRatio as Ratio,
     ResidualsRequired,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
-from utils.column_values.categorical_column_values import CareHome, DataSource
 
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,

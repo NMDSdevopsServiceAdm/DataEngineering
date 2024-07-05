@@ -3,32 +3,23 @@ from datetime import date
 
 from pyspark.ml.linalg import Vectors
 
-
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
     NewCqcLocationApiColumns as CQCLNew,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
 from utils.column_values.categorical_column_values import (
-    Dormancy,
     RegistrationStatus,
     PrimaryServiceType,
-    Services,
     CareHome,
     Sector,
-    MainJobRoleLabels,
-    MainJobRoleID,
-    Region,
-    RUI,
-    ASCWDSFilledPostsSource,
-    EstimateFilledPostsSource,
     LocationType,
     CQCRatingsValues,
     ParentsOrSinglesAndSubs,
     IsParent,
-    Subject,
     SingleSubDescription,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
@@ -42,7 +33,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+
 
 
 @dataclass

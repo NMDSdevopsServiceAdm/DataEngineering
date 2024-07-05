@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from pyspark.ml.linalg import VectorUDT
 
+from pyspark.ml.linalg import VectorUDT
 from pyspark.sql.types import (
     StructType,
     StructField,
@@ -13,24 +13,16 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.direct_payments_utils.direct_payments_column_names import (
-    DirectPaymentColumnNames as DP,
+from schemas.cqc_location_schema import LOCATION_SCHEMA
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-    NewCqcLocationApiColumns as CQCLNew,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
-from utils.column_names.raw_data_files.cqc_pir_columns import (
-    CqcPirColumns as CQCPIR,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
@@ -38,40 +30,41 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.column_names.reconciliation_columns import (
-    ReconciliationColumns as ReconColumn,
 )
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
-from utils.column_names.validation_table_columns import Validation
-
-
-from schemas.cqc_location_schema import LOCATION_SCHEMA
-
-
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.cqc_pir_columns import (
+    CqcPirColumns as CQCPIR,
+)
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
+from utils.column_names.reconciliation_columns import (
+    ReconciliationColumns as ReconColumn,
+)
+from utils.column_names.validation_table_columns import Validation
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
+)
 
 
 @dataclass
@@ -2394,7 +2387,7 @@ class FlattenCQCRatings:
                                         CQCL.report_link_id, StringType(), True
                                     ),
                                     StructField(
-                                        CQCLNew.use_of_resources,
+                                        CQCL.use_of_resources,
                                         StructType(
                                             [
                                                 StructField(
@@ -2403,20 +2396,20 @@ class FlattenCQCRatings:
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.summary, StringType(), True
+                                                    CQCL.summary, StringType(), True
                                                 ),
                                                 StructField(
-                                                    CQCLNew.use_of_resources_rating,
+                                                    CQCL.use_of_resources_rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_summary,
+                                                    CQCL.combined_quality_summary,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_rating,
+                                                    CQCL.combined_quality_rating,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -2473,7 +2466,7 @@ class FlattenCQCRatings:
                             True,
                         ),
                         StructField(
-                            CQCLNew.service_ratings,
+                            CQCL.service_ratings,
                             ArrayType(
                                 StructType(
                                     [
@@ -2528,7 +2521,7 @@ class FlattenCQCRatings:
                             StructField(CQCL.report_link_id, StringType(), True),
                             StructField(CQCL.organisation_id, StringType(), True),
                             StructField(
-                                CQCLNew.service_ratings,
+                                CQCL.service_ratings,
                                 ArrayType(
                                     StructType(
                                         [
@@ -2569,26 +2562,26 @@ class FlattenCQCRatings:
                                     [
                                         StructField(CQCL.rating, StringType(), True),
                                         StructField(
-                                            CQCLNew.use_of_resources,
+                                            CQCL.use_of_resources,
                                             StructType(
                                                 [
                                                     StructField(
-                                                        CQCLNew.combined_quality_rating,
+                                                        CQCL.combined_quality_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.combined_quality_summary,
+                                                        CQCL.combined_quality_summary,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_rating,
+                                                        CQCL.use_of_resources_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_summary,
+                                                        CQCL.use_of_resources_summary,
                                                         StringType(),
                                                         True,
                                                     ),

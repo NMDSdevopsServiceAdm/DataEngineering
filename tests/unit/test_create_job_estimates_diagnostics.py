@@ -1,28 +1,23 @@
 import unittest
 from unittest.mock import patch, Mock, ANY, call
-from datetime import date
 
-
+import jobs.create_job_estimates_diagnostics as job
 from tests.test_file_schemas import (
     CreateJobEstimatesDiagnosticsSchemas as Schemas,
 )
 from tests.test_file_data import (
     CreateJobEstimatesDiagnosticsData as Data,
 )
-import jobs.create_job_estimates_diagnostics as job
+from utils import utils
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_values.categorical_column_values import CareHome
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-
-from utils import utils
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    Variables as Values,
-    Prefixes,
     ResidualsRequired,
 )
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
-from utils.column_values.categorical_column_values import CareHome
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
