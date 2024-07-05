@@ -19,7 +19,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
-from utils.column_values.categorical_column_values import CareHome
+from utils.column_values.categorical_column_values import CareHome, DataSource
 
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
@@ -244,11 +244,11 @@ def create_residuals_column_name(
     if (data_source_column == CT.care_home_employed) | (
         data_source_column == CT.non_residential_employed
     ):
-        data_source = Values.capacity_tracker
+        data_source = DataSource.capacity_tracker
     elif data_source_column == IndCQC.people_directly_employed:
-        data_source = Values.pir
+        data_source = DataSource.pir
     elif data_source_column == IndCQC.ascwds_filled_posts_dedup_clean:
-        data_source = Values.asc_wds
+        data_source = DataSource.asc_wds
 
     if service == CareHome.care_home:
         service_name = "care_home"

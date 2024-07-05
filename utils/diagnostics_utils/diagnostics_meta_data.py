@@ -10,10 +10,6 @@ from utils.column_values.categorical_column_values import CareHome
 
 @dataclass
 class Variables:
-    asc_wds: str = "ascwds"
-    capacity_tracker: str = "capacity_tracker"
-    pir: str = "pir"
-
     capacity_tracker_snapshot_date: str = "20230401"
     capacity_tracker_snapshot_date_formatted: str = "2023-04-01"
 
