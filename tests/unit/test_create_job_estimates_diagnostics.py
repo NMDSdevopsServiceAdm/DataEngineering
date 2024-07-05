@@ -209,7 +209,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             15.0,
             None,
         ]
-        new_column_name = TestColumns.residuals_test_column_names[0]
+        new_column_name = IndCQC.residuals_estimate_filled_posts_non_res_pir
 
         self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
         self.assertEqual(output_df_list[1][new_column_name], expected_values[1])
@@ -224,7 +224,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         data_source_column = IndCQC.people_directly_employed
 
         output = job.create_residuals_column_name(model, service, data_source_column)
-        expected_output = TestColumns.residuals_test_column_names[0]
+        expected_output = IndCQC.residuals_estimate_filled_posts_non_res_pir
 
         self.assertEqual(output, expected_output)
 
@@ -375,10 +375,14 @@ class CalculateAverageResidualTests(CreateJobEstimatesDiagnosticsTests):
         residuals_df = self.spark.createDataFrame(
             Data.residuals_rows, schema=Schemas.residuals
         )
-        output_column_name = Prefixes.avg + TestColumns.residuals_test_column_names[0]
+        output_column_name = (
+            Prefixes.avg + IndCQC.residuals_estimate_filled_posts_non_res_pir
+        )
 
         output = job.calculate_average_residual(
-            residuals_df, TestColumns.residuals_test_column_names[0], output_column_name
+            residuals_df,
+            IndCQC.residuals_estimate_filled_posts_non_res_pir,
+            output_column_name,
         )
         output_rows = output.collect()
 
@@ -424,8 +428,8 @@ class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
 
         expected_output = [2.0, 0.0]
         output_column_names = [
-            Prefixes.avg + TestColumns.residuals_test_column_names[0],
-            Prefixes.avg + TestColumns.residuals_test_column_names[1],
+            Prefixes.avg + IndCQC.residuals_estimate_filled_posts_non_res_pir,
+            Prefixes.avg + IndCQC.residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
         ]
 
         self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])

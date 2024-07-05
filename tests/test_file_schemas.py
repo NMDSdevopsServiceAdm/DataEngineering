@@ -175,12 +175,12 @@ class CreateJobEstimatesDiagnosticsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                TestColumns.residuals_test_column_names[0],
+                IndCQC.residuals_estimate_filled_posts_non_res_pir,
                 FloatType(),
                 True,
             ),
             StructField(
-                TestColumns.residuals_test_column_names[1],
+                IndCQC.residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
                 FloatType(),
                 True,
             ),

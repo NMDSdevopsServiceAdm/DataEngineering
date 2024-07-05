@@ -26,14 +26,6 @@ class CareWorkerToJobsRatio:
 
 
 @dataclass
-class TestColumns:
-    residuals_test_column_names = [
-        "residuals_estimate_filled_posts_non_res_pir",
-        "residuals_ascwds_filled_posts_clean_dedup_non_res_pir",
-    ]
-
-
-@dataclass
 class ResidualsRequired:
     models = [
         IndCQC.estimate_filled_posts,

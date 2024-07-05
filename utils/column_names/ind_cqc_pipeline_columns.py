@@ -122,6 +122,12 @@ class IndCqcColumns:
     interpolation_model: str = "interpolation_model"
     rolling_average: str = "rolling_average"
     non_res_model: str = "non_res_with_pir_model"
+    residuals_estimate_filled_posts_non_res_pir: str = (
+        "residuals_estimate_filled_posts_non_res_pir"
+    )
+    residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
+        "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
+    )
 
 
 # DONT IMPORT FROM BELOW THIS LINE
