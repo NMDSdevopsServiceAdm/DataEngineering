@@ -13,7 +13,6 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
