@@ -149,6 +149,12 @@ class CreateJobEstimatesDiagnosticsSchemas:
             ),
         ]
     )
+    expected_prepare_capacity_tracker_care_home_schema = StructType(
+        [
+            *diagnostics,
+            StructField(CT.care_home_employed, FloatType(), True),
+        ]
+    )
     diagnostics_prepared = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

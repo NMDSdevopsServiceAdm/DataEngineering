@@ -111,13 +111,13 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_test_merge_dataframes_does_not_add_additional_rows(self):
+    def test_merge_dataframes_does_not_add_additional_rows(self):
         returned_df = job.merge_dataframes(
             self.estimate_jobs_df,
             self.capacity_tracker_care_home_df,
             self.capacity_tracker_non_residential_df,
         )
-        expected_rows = 1
+        expected_rows = self.estimate_jobs_df.count()
         self.assertEqual(returned_df.count(), expected_rows)
 
 
@@ -133,13 +133,11 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
         )
 
         returned_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
-
-        expected_totals = [41.0, None]
-
-        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
-
-        self.assertEqual(returned_df_list[0][CT.care_home_employed], expected_totals[0])
-        self.assertEqual(returned_df_list[1][CT.care_home_employed], expected_totals[1])
+        expected_df = self.spark.createDataFrame(
+            Data.expected_prepare_capacity_tracker_care_home_rows,
+            Schemas.expected_prepare_capacity_tracker_care_home_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
         self,

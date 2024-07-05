@@ -63,6 +63,10 @@ class CreateJobEstimatesDiagnosticsData:
         ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
         ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 30.0,),
     ]
+    expected_prepare_capacity_tracker_care_home_rows = [
+        ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None, 41.0),
+        ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 30.0, None),
+    ]
     prepare_capacity_tracker_non_residential_rows = [
         ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
         ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 75.0,),
