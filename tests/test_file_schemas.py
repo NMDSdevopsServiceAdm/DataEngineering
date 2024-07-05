@@ -1893,6 +1893,7 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(
@@ -2149,6 +2150,18 @@ class ModelFeatures:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+    add_time_registered_schema = StructType(
+        [
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_add_time_registered_schema = StructType(
+        [
+            *add_time_registered_schema,
+            StructField(IndCQC.time_registered, IntegerType(), True),
         ]
     )
 

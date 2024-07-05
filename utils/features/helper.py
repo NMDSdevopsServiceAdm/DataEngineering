@@ -55,3 +55,25 @@ def add_date_diff_into_df(
         new_col_name, F.datediff(F.lit(max_d), F.col(import_date_col))
     )
     return loc_df
+
+
+def add_time_registered_into_df(df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called time_registered.
+
+    This function adds a new integer column to the given data frame which is the length of time between the imputed registration date and the cqc location import date.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
+
+    Returns:
+        DataFrame: A dataframe with the new column of integers added.
+    """
+    loc_df = df.withColumn(
+        IndCQC.time_registered,
+        F.datediff(
+            F.col(IndCQC.cqc_location_import_date),
+            F.col(IndCQC.imputed_registration_date),
+        ),
+    )
+    return loc_df

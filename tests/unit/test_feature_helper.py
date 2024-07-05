@@ -10,6 +10,7 @@ from utils.features.helper import (
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_service_count_to_data,
     vectorise_dataframe,
+    add_time_registered_into_df,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -48,6 +49,18 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(
             actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
         )
+
+    def test_add_time_registered_into_df(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_time_registered_rows, Schemas.add_time_registered_schema
+        )
+        returned_df = add_time_registered_into_df(df=test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_time_registered_rows,
+            Schemas.expected_add_time_registered_schema,
+        )
+
+        self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         self,
