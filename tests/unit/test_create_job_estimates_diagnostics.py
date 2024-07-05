@@ -183,14 +183,13 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
 class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
     def setUp(self) -> None:
         super().setUp()
-
-    def test_calculate_residuals_adds_a_column(self):
-        calculate_residuals_df = self.spark.createDataFrame(
+        self.calculate_residuals_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
         )
 
+    def test_calculate_residuals_adds_a_column(self):
         output_df = job.calculate_residuals(
-            calculate_residuals_df,
+            self.calculate_residuals_df,
             model=ESTIMATE_JOB_COUNT,
             service=Values.non_res,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
@@ -198,16 +197,12 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
 
         output_df_size = len(output_df.columns)
 
-        expected_df_size = len(calculate_residuals_df.columns) + 1
+        expected_df_size = len(self.calculate_residuals_df.columns) + 1
         self.assertEqual(output_df_size, expected_df_size)
 
     def test_calculate_residuals_adds_residual_value(self):
-        calculate_residuals_df = self.spark.createDataFrame(
-            Data.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
-        )
-
         output_df = job.calculate_residuals(
-            calculate_residuals_df,
+            self.calculate_residuals_df,
             model=ESTIMATE_JOB_COUNT,
             service=Values.non_res,
             data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
