@@ -7,19 +7,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 
 from utils import utils
-from utils.estimate_filled_posts.column_names import (
-    LOCATION_ID,
-    PEOPLE_DIRECTLY_EMPLOYED,
-    SNAPSHOT_DATE,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
-)
+
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
@@ -27,20 +15,24 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
     Columns,
     ResidualsRequired,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
 
 
 estimate_filled_posts_columns: list = [
-    LOCATION_ID,
-    SNAPSHOT_DATE,
-    JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    CARE_HOME_MODEL,
-    EXTRAPOLATION_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
-    ESTIMATE_JOB_COUNT,
-    PEOPLE_DIRECTLY_EMPLOYED,
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.primary_service_type,
+    IndCQC.rolling_average_model,
+    IndCQC.care_home_model,
+    IndCQC.extrapolation_care_home_model,
+    IndCQC.interpolation_model,
+    IndCQC.non_res_model,
+    IndCQC.estimate_filled_posts,
+    IndCQC.people_directly_employed,
 ]
 capacity_tracker_care_home_columns: list = [
     Columns.CQC_ID,
@@ -98,17 +90,17 @@ def main(
     )
 
     diagnostics_prepared_df = diagnostics_df.select(
-        LOCATION_ID,
-        SNAPSHOT_DATE,
-        JOB_COUNT,
-        PRIMARY_SERVICE_TYPE,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
-        ESTIMATE_JOB_COUNT,
-        PEOPLE_DIRECTLY_EMPLOYED,
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.primary_service_type,
+        IndCQC.rolling_average_model,
+        IndCQC.care_home_model,
+        IndCQC.extrapolation_care_home_model,
+        IndCQC.interpolation_model,
+        IndCQC.non_res_model,
+        IndCQC.estimate_filled_posts,
+        IndCQC.people_directly_employed,
         Columns.CARE_HOME_EMPLOYED,
         Columns.NON_RESIDENTIAL_EMPLOYED,
     )
@@ -189,11 +181,11 @@ def merge_dataframes(
         capacity_tracker_care_homes_df_with_snapshot_date,
         [
             (
-                job_estimates_df[LOCATION_ID]
+                job_estimates_df[IndCQC.location_id]
                 == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CQC_ID]
             ),
             (
-                job_estimates_df[SNAPSHOT_DATE]
+                job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_care_homes_df_with_snapshot_date[
                     Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE
                 ]
@@ -204,10 +196,10 @@ def merge_dataframes(
     diagnostics_df = diagnostics_df.join(
         capacity_tracker_non_residential_df_with_snapshot_date,
         [
-            diagnostics_df[LOCATION_ID]
+            diagnostics_df[IndCQC.location_id]
             == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
             (
-                job_estimates_df[SNAPSHOT_DATE]
+                job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_non_residential_df_with_snapshot_date[
                     Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE
                 ]
@@ -253,9 +245,9 @@ def create_residuals_column_name(
         data_source_column == Columns.NON_RESIDENTIAL_EMPLOYED
     ):
         data_source = Values.capacity_tracker
-    elif data_source_column == PEOPLE_DIRECTLY_EMPLOYED:
+    elif data_source_column == IndCQC.people_directly_employed:
         data_source = Values.pir
-    elif data_source_column == JOB_COUNT:
+    elif data_source_column == IndCQC.ascwds_filled_posts_dedup_clean:
         data_source = Values.asc_wds
 
     new_column_name = f"{Prefixes.residuals}{model}_{service}_{data_source}"

@@ -253,7 +253,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
     def test_create_residuals_list_includes_all_permutations(self):
         models = [
             IndCQC.estimate_filled_posts,
-            IndCQC.ascwds_filled_posts,
+            IndCQC.ascwds_filled_posts_dedup_clean,
         ]
 
         services = [
@@ -262,7 +262,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         ]
 
         data_source_columns = [
-            IndCQC.ascwds_filled_posts,
+            IndCQC.ascwds_filled_posts_dedup_clean,
             Columns.CARE_HOME_EMPLOYED,
             Columns.NON_RESIDENTIAL_EMPLOYED,
         ]
@@ -273,24 +273,40 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
-                IndCQC.ascwds_filled_posts,
+                IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
                 Columns.CARE_HOME_EMPLOYED,
             ],
-            [IndCQC.estimate_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.non_res,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
             [
                 IndCQC.estimate_filled_posts,
                 Values.non_res,
                 Columns.NON_RESIDENTIAL_EMPLOYED,
             ],
-            [IndCQC.ascwds_filled_posts, Values.care_home, IndCQC.ascwds_filled_posts],
-            [IndCQC.ascwds_filled_posts, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [IndCQC.ascwds_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
             [
-                IndCQC.ascwds_filled_posts,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.care_home,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.care_home,
+                Columns.CARE_HOME_EMPLOYED,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.non_res,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.non_res,
                 Columns.NON_RESIDENTIAL_EMPLOYED,
             ],
@@ -307,19 +323,39 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
-                IndCQC.ascwds_filled_posts,
+                IndCQC.ascwds_filled_posts_dedup_clean,
             ],
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
                 Columns.CARE_HOME_EMPLOYED,
             ],
-            [IndCQC.estimate_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.non_res,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
             [IndCQC.estimate_filled_posts, Values.non_res, Columns.CARE_HOME_EMPLOYED],
-            [IndCQC.ascwds_filled_posts, Values.care_home, IndCQC.ascwds_filled_posts],
-            [IndCQC.ascwds_filled_posts, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [IndCQC.ascwds_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
-            [IndCQC.ascwds_filled_posts, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.care_home,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.care_home,
+                Columns.CARE_HOME_EMPLOYED,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.non_res,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+            ],
+            [
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                Values.non_res,
+                Columns.CARE_HOME_EMPLOYED,
+            ],
         ]
 
         output = job.create_column_names_list(residuals_list)

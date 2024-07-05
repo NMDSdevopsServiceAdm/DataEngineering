@@ -1,15 +1,8 @@
 from dataclasses import dataclass
 
-from utils.estimate_filled_posts.column_names import (
-    PEOPLE_DIRECTLY_EMPLOYED,
-    JOB_COUNT_UNFILTERED,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
 
 
@@ -68,21 +61,21 @@ class Columns:
 @dataclass
 class TestColumns:
     residuals_test_column_names = [
-        "residuals_estimate_job_count_non_res_pir",
-        "residuals_job_count_non_res_pir",
+        "residuals_estimate_filled_posts_non_res_pir",
+        "residuals_ascwds_filled_posts_clean_dedup_non_res_pir",
     ]
 
 
 @dataclass
 class ResidualsRequired:
     models = [
-        ESTIMATE_JOB_COUNT,
-        JOB_COUNT,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
+        IndCQC.estimate_filled_posts,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.rolling_average_model,
+        IndCQC.care_home_model,
+        IndCQC.extrapolation_care_home_model,
+        IndCQC.interpolation_model,
+        IndCQC.non_res_model,
     ]
 
     services = [
@@ -91,8 +84,8 @@ class ResidualsRequired:
     ]
 
     data_source_columns = [
-        JOB_COUNT,
+        IndCQC.ascwds_filled_posts_dedup_clean,
         Columns.CARE_HOME_EMPLOYED,
         Columns.NON_RESIDENTIAL_EMPLOYED,
-        PEOPLE_DIRECTLY_EMPLOYED,
+        IndCQC.people_directly_employed,
     ]

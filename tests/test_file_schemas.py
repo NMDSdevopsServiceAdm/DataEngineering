@@ -13,20 +13,6 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.estimate_filled_posts.column_names import (
-    LOCATION_ID,
-    SNAPSHOT_DATE,
-    PEOPLE_DIRECTLY_EMPLOYED,
-    JOB_COUNT_UNFILTERED,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
-)
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Columns,
     TestColumns,
@@ -95,22 +81,22 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(SNAPSHOT_DATE, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(
-                JOB_COUNT_UNFILTERED,
+                IndCQC.ascwds_filled_posts,
                 FloatType(),
                 True,
             ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_model, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
         ]
     )
     capacity_tracker_care_home = StructType(
@@ -141,8 +127,8 @@ class CreateJobEstimatesDiagnosticsSchemas:
 
     diagnostics = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
                 Columns.NURSES_EMPLOYED,
                 FloatType(),
@@ -162,21 +148,21 @@ class CreateJobEstimatesDiagnosticsSchemas:
     )
     diagnostics_prepared = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                JOB_COUNT_UNFILTERED,
+                IndCQC.ascwds_filled_posts,
                 FloatType(),
                 True,
             ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_model, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(
                 Columns.CARE_HOME_EMPLOYED,
                 FloatType(),
@@ -187,7 +173,7 @@ class CreateJobEstimatesDiagnosticsSchemas:
     )
     residuals = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(
                 TestColumns.residuals_test_column_names[0],
                 FloatType(),
