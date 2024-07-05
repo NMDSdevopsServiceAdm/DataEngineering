@@ -96,28 +96,20 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
+    def test_add_import_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
         self,
     ):
-        returned_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
-            self.capacity_tracker_care_home_df, IndCQC.cqc_location_import_date
+        returned_df = job.add_import_date_to_capacity_tracker_dataframe(
+            self.capacity_tracker_care_home_df,
+            CT.capacity_tracker_care_homes_import_date,
         )
 
-        expected_df_size = len(self.capacity_tracker_care_home_df.columns) + 1
-        expected_rows = self.capacity_tracker_care_home_df.count()
-        expected_value = date.fromisoformat(
-            Values.capacity_tracker_snapshot_date_formatted
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_date_to_capacity_tracker_rows,
+            Schemas.expected_add_date_to_capacity_tracker_schema,
         )
 
-        returned_df_list = returned_df.collect()
-        returned_df_size = len(returned_df_list[0])
-        returned_df_rows = len(returned_df_list)
-
-        self.assertEqual(returned_df_size, expected_df_size)
-        self.assertEqual(returned_df_rows, expected_rows)
-        self.assertEqual(
-            returned_df_list[0][IndCQC.cqc_location_import_date], expected_value
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         returned_df = job.merge_dataframes(

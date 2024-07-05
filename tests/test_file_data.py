@@ -53,6 +53,9 @@ class CreateJobEstimatesDiagnosticsData:
     capacity_tracker_care_home_rows = [
         ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
     ]
+    expected_add_date_to_capacity_tracker_rows = [
+        ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, date(2023, 4, 1)),
+    ]
     capacity_tracker_non_residential_rows = [
         ("location_2", 67.0),
     ]

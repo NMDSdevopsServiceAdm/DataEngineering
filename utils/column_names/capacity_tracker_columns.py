@@ -17,9 +17,9 @@ class CapacityTrackerColumns:
     value: str = "value"
     id: str = "id"
     run_timestamp: str = "run_timestamp"
-    capacity_tracker_care_homes_snapshot_date: str = (
-        "capacity_tracker_care_homes_snapshot_date"
+    capacity_tracker_care_homes_import_date: str = (
+        "capacity_tracker_care_homes_import_date"
     )
-    capacity_tracker_non_residential_snapshot_date: str = (
-        "capacity_tracker_non_residential_snapshot_date"
+    capacity_tracker_non_residential_import_date: str = (
+        "capacity_tracker_non_residential_import_date"
     )

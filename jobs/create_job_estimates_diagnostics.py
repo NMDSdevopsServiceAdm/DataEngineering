@@ -150,7 +150,7 @@ def main(
     )
 
 
-def add_snapshot_date_to_capacity_tracker_dataframe(
+def add_import_date_to_capacity_tracker_dataframe(
     df: DataFrame, column_name: str
 ) -> DataFrame:
     df = df.withColumn(column_name, F.lit(Values.capacity_tracker_snapshot_date))
@@ -164,15 +164,15 @@ def merge_dataframes(
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
     capacity_tracker_care_homes_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(
+        add_import_date_to_capacity_tracker_dataframe(
             capacity_tracker_care_homes_df,
-            CT.capacity_tracker_care_homes_snapshot_date,
+            CT.capacity_tracker_care_homes_import_date,
         )
     )
     capacity_tracker_non_residential_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(
+        add_import_date_to_capacity_tracker_dataframe(
             capacity_tracker_non_residential_df,
-            CT.capacity_tracker_non_residential_snapshot_date,
+            CT.capacity_tracker_non_residential_import_date,
         )
     )
 
@@ -186,7 +186,7 @@ def merge_dataframes(
             (
                 job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_care_homes_df_with_snapshot_date[
-                    CT.capacity_tracker_care_homes_snapshot_date
+                    CT.capacity_tracker_care_homes_import_date
                 ]
             ),
         ],
@@ -200,7 +200,7 @@ def merge_dataframes(
             (
                 job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_non_residential_df_with_snapshot_date[
-                    CT.capacity_tracker_non_residential_snapshot_date
+                    CT.capacity_tracker_non_residential_import_date
                 ]
             ),
         ],

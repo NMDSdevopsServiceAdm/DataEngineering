@@ -79,7 +79,7 @@ class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(CT.capacity_tracker_care_homes_import_date, DateType(), False),
             StructField(
                 IndCQC.ascwds_filled_posts,
                 FloatType(),
@@ -119,6 +119,12 @@ class CreateJobEstimatesDiagnosticsSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_add_date_to_capacity_tracker_schema = StructType(
+        [
+            *capacity_tracker_care_home,
+            StructField(CT.capacity_tracker_care_homes_import_date, DateType(), True),
         ]
     )
 
