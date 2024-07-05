@@ -186,6 +186,12 @@ class CreateJobEstimatesDiagnosticsSchemas:
             StructField(CT.non_residential_employed, FloatType(), True),
         ]
     )
+    expected_calculate_residuals = StructType(
+        [
+            *diagnostics_prepared,
+            StructField(IndCQC.residuals_estimate_filled_posts_non_res_pir, FloatType(), True),
+        ]
+    ) 
     residuals = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

@@ -163,19 +163,6 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             Data.calculate_residuals_rows, schema=Schemas.diagnostics_prepared
         )
 
-    def test_calculate_residuals_adds_a_column(self):
-        returned_df = job.calculate_residuals(
-            self.calculate_residuals_df,
-            model=IndCQC.estimate_filled_posts,
-            service=CareHome.not_care_home,
-            data_source_column=IndCQC.people_directly_employed,
-        )
-
-        returned_df_size = len(returned_df.columns)
-
-        expected_df_size = len(self.calculate_residuals_df.columns) + 1
-        self.assertEqual(returned_df_size, expected_df_size)
-
     def test_calculate_residuals_adds_residual_value(self):
         returned_df = job.calculate_residuals(
             self.calculate_residuals_df,
@@ -183,20 +170,11 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             service=CareHome.not_care_home,
             data_source_column=IndCQC.people_directly_employed,
         )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residuals_rows, Schemas.expected_calculate_residuals
+        )
 
-        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
-        expected_values = [
-            0.0,
-            -5.0,
-            15.0,
-            None,
-        ]
-        new_column_name = IndCQC.residuals_estimate_filled_posts_non_res_pir
-
-        self.assertEqual(returned_df_list[0][new_column_name], expected_values[0])
-        self.assertEqual(returned_df_list[1][new_column_name], expected_values[1])
-        self.assertEqual(returned_df_list[2][new_column_name], expected_values[2])
-        self.assertEqual(returned_df_list[3][new_column_name], expected_values[3])
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_residuals_column_name(
         self,

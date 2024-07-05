@@ -263,7 +263,7 @@ def calculate_residuals(
     model: str,
     service: str,
     data_source_column: str,
-) -> (DataFrame, str):
+) -> DataFrame:
     new_column_name = create_residuals_column_name(model, service, data_source_column)
     df_with_residuals_column = df.withColumn(
         new_column_name, df[model] - df[data_source_column]

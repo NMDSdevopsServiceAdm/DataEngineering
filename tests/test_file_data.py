@@ -81,6 +81,12 @@ class CreateJobEstimatesDiagnosticsData:
         ("location_4", None, None, PrimaryServiceType.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,),
         ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
     ]
+    expected_calculate_residuals_rows = [
+        ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0, 0.0),
+        ("location_3", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None, -5.0),
+        ("location_4", None, None, PrimaryServiceType.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None, 15.0),
+        ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None, None),
+    ]
     run_residuals_rows = [
         ("location_1", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
         ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
