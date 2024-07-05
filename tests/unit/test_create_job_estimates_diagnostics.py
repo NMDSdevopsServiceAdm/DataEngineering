@@ -99,7 +99,7 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
     def test_add_snapshot_date_to_capacity_tracker_dataframe_adds_snapshot_date_column(
         self,
     ):
-        output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
+        returned_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
             self.capacity_tracker_care_home_df, IndCQC.cqc_location_import_date
         )
 
@@ -109,24 +109,24 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
             Values.capacity_tracker_snapshot_date_formatted
         )
 
-        output_df_list = output_df.collect()
-        output_df_size = len(output_df_list[0])
-        output_df_rows = len(output_df_list)
+        returned_df_list = returned_df.collect()
+        returned_df_size = len(returned_df_list[0])
+        returned_df_rows = len(returned_df_list)
 
-        self.assertEqual(output_df_size, expected_df_size)
-        self.assertEqual(output_df_rows, expected_rows)
+        self.assertEqual(returned_df_size, expected_df_size)
+        self.assertEqual(returned_df_rows, expected_rows)
         self.assertEqual(
-            output_df_list[0][IndCQC.cqc_location_import_date], expected_value
+            returned_df_list[0][IndCQC.cqc_location_import_date], expected_value
         )
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
-        output_df = job.merge_dataframes(
+        returned_df = job.merge_dataframes(
             self.estimate_jobs_df,
             self.capacity_tracker_care_home_df,
             self.capacity_tracker_non_residential_df,
         )
         expected_rows = 1
-        self.assertEqual(output_df.count(), expected_rows)
+        self.assertEqual(returned_df.count(), expected_rows)
 
 
 class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
@@ -140,14 +140,14 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
             Data.prepare_capacity_tracker_care_home_rows, schema=Schemas.diagnostics
         )
 
-        output_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
+        returned_df = job.prepare_capacity_tracker_care_home_data(diagnostics_df)
 
         expected_totals = [41.0, None]
 
-        output_df_list = output_df.sort(IndCQC.location_id).collect()
+        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
 
-        self.assertEqual(output_df_list[0][CT.care_home_employed], expected_totals[0])
-        self.assertEqual(output_df_list[1][CT.care_home_employed], expected_totals[1])
+        self.assertEqual(returned_df_list[0][CT.care_home_employed], expected_totals[0])
+        self.assertEqual(returned_df_list[1][CT.care_home_employed], expected_totals[1])
 
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
         self,
@@ -157,17 +157,17 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
             schema=Schemas.diagnostics,
         )
 
-        output_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
+        returned_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
 
         expected_totals = [None, 97.5]
 
-        output_df_list = output_df.sort(IndCQC.location_id).collect()
+        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(
-            output_df_list[0][CT.non_residential_employed], expected_totals[0]
+            returned_df_list[0][CT.non_residential_employed], expected_totals[0]
         )
         self.assertEqual(
-            output_df_list[1][CT.non_residential_employed], expected_totals[1]
+            returned_df_list[1][CT.non_residential_employed], expected_totals[1]
         )
 
 
@@ -179,27 +179,27 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         )
 
     def test_calculate_residuals_adds_a_column(self):
-        output_df = job.calculate_residuals(
+        returned_df = job.calculate_residuals(
             self.calculate_residuals_df,
             model=IndCQC.estimate_filled_posts,
             service=CareHome.not_care_home,
             data_source_column=IndCQC.people_directly_employed,
         )
 
-        output_df_size = len(output_df.columns)
+        returned_df_size = len(returned_df.columns)
 
         expected_df_size = len(self.calculate_residuals_df.columns) + 1
-        self.assertEqual(output_df_size, expected_df_size)
+        self.assertEqual(returned_df_size, expected_df_size)
 
     def test_calculate_residuals_adds_residual_value(self):
-        output_df = job.calculate_residuals(
+        returned_df = job.calculate_residuals(
             self.calculate_residuals_df,
             model=IndCQC.estimate_filled_posts,
             service=CareHome.not_care_home,
             data_source_column=IndCQC.people_directly_employed,
         )
 
-        output_df_list = output_df.sort(IndCQC.location_id).collect()
+        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
         expected_values = [
             0.0,
             -5.0,
@@ -208,10 +208,10 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         ]
         new_column_name = IndCQC.residuals_estimate_filled_posts_non_res_pir
 
-        self.assertEqual(output_df_list[0][new_column_name], expected_values[0])
-        self.assertEqual(output_df_list[1][new_column_name], expected_values[1])
-        self.assertEqual(output_df_list[2][new_column_name], expected_values[2])
-        self.assertEqual(output_df_list[3][new_column_name], expected_values[3])
+        self.assertEqual(returned_df_list[0][new_column_name], expected_values[0])
+        self.assertEqual(returned_df_list[1][new_column_name], expected_values[1])
+        self.assertEqual(returned_df_list[2][new_column_name], expected_values[2])
+        self.assertEqual(returned_df_list[3][new_column_name], expected_values[3])
 
     def test_create_residuals_column_name(
         self,
@@ -238,11 +238,11 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             ResidualsRequired.data_source_columns,
         )
 
-        output_df = job.run_residuals(run_residuals_df, residuals_list=residuals_list)
-        output_df_size = len(output_df.columns)
+        returned_df = job.run_residuals(run_residuals_df, residuals_list=residuals_list)
+        returned_df_size = len(returned_df.columns)
 
         expected_df_size = len(run_residuals_df.columns)
-        self.assertGreater(output_df_size, expected_df_size)
+        self.assertGreater(returned_df_size, expected_df_size)
 
     def test_create_residuals_list_includes_all_permutations(self):
         models = [
@@ -393,18 +393,18 @@ class CreateEmptyDataFrameTests(CreateJobEstimatesDiagnosticsTests):
         super().setUp()
 
     def test_create_empty_dataframe_creates_a_dataframe_with_one_string_colum(self):
-        output_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
-        output_df_rows = output_df.collect()
-        output_df_row_count = output_df.count()
-        output_df_column_count = len(output_df_rows)
+        returned_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
+        returned_df_rows = returned_df.collect()
+        returned_df_row_count = returned_df.count()
+        returned_df_column_count = len(returned_df_rows)
 
         expected_value = Data.description_of_change
         expected_row_count = 1
         expected_column_count = 1
 
-        self.assertEqual(output_df_rows[0][CT.description_of_changes], expected_value)
-        self.assertEqual(output_df_row_count, expected_row_count)
-        self.assertEqual(output_df_column_count, expected_column_count)
+        self.assertEqual(returned_df_rows[0][CT.description_of_changes], expected_value)
+        self.assertEqual(returned_df_row_count, expected_row_count)
+        self.assertEqual(returned_df_column_count, expected_column_count)
 
 
 class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
@@ -418,10 +418,10 @@ class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
 
         blank_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
 
-        output_df = job.run_average_residuals(
+        returned_df = job.run_average_residuals(
             residuals_df, blank_df, IndCQC.residuals_estimate_filled_posts_non_res_pir
         )
-        output_df_rows = output_df.collect()
+        returned_df_rows = returned_df.collect()
 
         expected_output = [2.0, 0.0]
         output_column_names = [
@@ -429,8 +429,12 @@ class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
             Prefixes.avg + IndCQC.residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
         ]
 
-        self.assertEqual(output_df_rows[0][output_column_names[0]], expected_output[0])
-        self.assertEqual(output_df_rows[0][output_column_names[1]], expected_output[1])
+        self.assertEqual(
+            returned_df_rows[0][output_column_names[0]], expected_output[0]
+        )
+        self.assertEqual(
+            returned_df_rows[0][output_column_names[1]], expected_output[1]
+        )
 
 
 class AddTimestampColumnTests(CreateJobEstimatesDiagnosticsTests):
@@ -444,11 +448,11 @@ class AddTimestampColumnTests(CreateJobEstimatesDiagnosticsTests):
             Data.add_timestamps_rows, schema=Schemas.residuals
         )
 
-        output_df = job.add_timestamp_column(add_timestamps_df, Data.run_timestamp)
-        output_df_rows = output_df.collect()
+        returned_df = job.add_timestamp_column(add_timestamps_df, Data.run_timestamp)
+        returned_df_rows = returned_df.collect()
 
-        self.assertEqual(output_df_rows[0][CT.run_timestamp], Data.run_timestamp)
-        self.assertEqual(output_df_rows[0][CT.run_timestamp], Data.run_timestamp)
+        self.assertEqual(returned_df_rows[0][CT.run_timestamp], Data.run_timestamp)
+        self.assertEqual(returned_df_rows[0][CT.run_timestamp], Data.run_timestamp)
 
 
 if __name__ == "__main__":
