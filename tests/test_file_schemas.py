@@ -90,6 +90,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
+from utils.column_names.merge_coverage_data_columns import MergeCoverageDataColumns
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -1487,6 +1489,17 @@ class MergeCoverageData:
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    sample_in_ascwds_schema = StructType(
+        [StructField(AWPClean.establishment_id, StringType(), True)]
+    )
+
+    expected_in_ascwds_schema = StructType(
+        [
+            *sample_in_ascwds_schema,
+            StructField(MergeCoverageDataColumns.in_ascwds, IntegerType(), True),
         ]
     )
 
