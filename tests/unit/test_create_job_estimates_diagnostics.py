@@ -148,17 +148,12 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
         )
 
         returned_df = job.prepare_capacity_tracker_non_residential_data(diagnostics_df)
-
-        expected_totals = [None, 97.5]
-
-        returned_df_list = returned_df.sort(IndCQC.location_id).collect()
-
-        self.assertEqual(
-            returned_df_list[0][CT.non_residential_employed], expected_totals[0]
+        expected_df = self.spark.createDataFrame(
+            Data.expected_prepare_capacity_tracker_non_residential_rows,
+            Schemas.expected_prepare_capacity_tracker_non_residential_schema,
         )
-        self.assertEqual(
-            returned_df_list[1][CT.non_residential_employed], expected_totals[1]
-        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
