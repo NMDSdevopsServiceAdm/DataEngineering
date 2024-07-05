@@ -2168,8 +2168,8 @@ class MergeCoverageData:
     # fmt: on
 
     sample_in_ascwds_rows = [
-        (None),
-        ("1"),
+        (None,),
+        ("1",),
     ]
 
     # fmt: off
