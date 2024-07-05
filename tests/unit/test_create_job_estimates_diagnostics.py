@@ -14,14 +14,9 @@ from tests.test_file_data import (
 import jobs.create_job_estimates_diagnostics as job
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
-from utils.estimate_filled_posts.column_names import (
-    LOCATION_ID,
-    PEOPLE_DIRECTLY_EMPLOYED,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    SNAPSHOT_DATE,
-)
+
 from utils import utils
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
@@ -33,7 +28,7 @@ from utils.diagnostics_utils.diagnostics_meta_data import (
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
-    ESTIMATED_JOB_COUNTS_SOURCE = "some/directory"
+    ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     CAPACITY_TRACKER_CARE_HOME_SOURCE = "some/directory"
     CAPACITY_TRACKER_NON_RESIDENTIAL_SOURCE = "some/directory"
     DIAGNOSTICS_DESTINATION = "some/directory"
@@ -87,7 +82,7 @@ class MainTests(CreateJobEstimatesDiagnosticsTests):
         ]
 
         job.main(
-            self.ESTIMATED_JOB_COUNTS_SOURCE,
+            self.ESTIMATED_FILLED_POSTS_SOURCE,
             self.CAPACITY_TRACKER_CARE_HOME_SOURCE,
             self.CAPACITY_TRACKER_NON_RESIDENTIAL_SOURCE,
             self.DIAGNOSTICS_DESTINATION,
@@ -107,7 +102,7 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
         self,
     ):
         output_df = job.add_snapshot_date_to_capacity_tracker_dataframe(
-            self.capacity_tracker_care_home_df, SNAPSHOT_DATE
+            self.capacity_tracker_care_home_df, IndCQC.cqc_location_import_date
         )
 
         expected_df_size = len(self.capacity_tracker_care_home_df.columns) + 1
@@ -122,7 +117,9 @@ class MergeDataFramesTests(CreateJobEstimatesDiagnosticsTests):
 
         self.assertEqual(output_df_size, expected_df_size)
         self.assertEqual(output_df_rows, expected_rows)
-        self.assertEqual(output_df_list[0][SNAPSHOT_DATE], expected_value)
+        self.assertEqual(
+            output_df_list[0][IndCQC.cqc_location_import_date], expected_value
+        )
 
     def test_test_merge_dataframes_does_not_add_additional_rows(self):
         output_df = job.merge_dataframes(
@@ -149,7 +146,7 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
 
         expected_totals = [41.0, None]
 
-        output_df_list = output_df.sort(LOCATION_ID).collect()
+        output_df_list = output_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(
             output_df_list[0][Columns.CARE_HOME_EMPLOYED], expected_totals[0]
@@ -170,7 +167,7 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
 
         expected_totals = [None, 97.5]
 
-        output_df_list = output_df.sort(LOCATION_ID).collect()
+        output_df_list = output_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(
             output_df_list[0][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[0]
@@ -190,9 +187,9 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
     def test_calculate_residuals_adds_a_column(self):
         output_df = job.calculate_residuals(
             self.calculate_residuals_df,
-            model=ESTIMATE_JOB_COUNT,
+            model=IndCQC.estimate_filled_posts,
             service=Values.non_res,
-            data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
+            data_source_column=IndCQC.people_directly_employed,
         )
 
         output_df_size = len(output_df.columns)
@@ -203,12 +200,12 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
     def test_calculate_residuals_adds_residual_value(self):
         output_df = job.calculate_residuals(
             self.calculate_residuals_df,
-            model=ESTIMATE_JOB_COUNT,
+            model=IndCQC.estimate_filled_posts,
             service=Values.non_res,
-            data_source_column=PEOPLE_DIRECTLY_EMPLOYED,
+            data_source_column=IndCQC.people_directly_employed,
         )
 
-        output_df_list = output_df.sort(LOCATION_ID).collect()
+        output_df_list = output_df.sort(IndCQC.location_id).collect()
         expected_values = [
             0.0,
             -5.0,
@@ -225,9 +222,9 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
     def test_create_residuals_column_name(
         self,
     ):
-        model = ESTIMATE_JOB_COUNT
+        model = IndCQC.estimate_filled_posts
         service = Values.non_res
-        data_source_column = PEOPLE_DIRECTLY_EMPLOYED
+        data_source_column = IndCQC.people_directly_employed
 
         output = job.create_residuals_column_name(model, service, data_source_column)
         expected_output = TestColumns.residuals_test_column_names[0]
@@ -255,8 +252,8 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
 
     def test_create_residuals_list_includes_all_permutations(self):
         models = [
-            ESTIMATE_JOB_COUNT,
-            JOB_COUNT,
+            IndCQC.estimate_filled_posts,
+            IndCQC.ascwds_filled_posts,
         ]
 
         services = [
@@ -265,7 +262,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         ]
 
         data_source_columns = [
-            JOB_COUNT,
+            IndCQC.ascwds_filled_posts,
             Columns.CARE_HOME_EMPLOYED,
             Columns.NON_RESIDENTIAL_EMPLOYED,
         ]
@@ -273,14 +270,30 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
         output = job.create_residuals_list(models, services, data_source_columns)
 
         expected_output = [
-            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
-            [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT],
-            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
-            [JOB_COUNT, Values.care_home, JOB_COUNT],
-            [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.non_res, JOB_COUNT],
-            [JOB_COUNT, Values.non_res, Columns.NON_RESIDENTIAL_EMPLOYED],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.care_home,
+                IndCQC.ascwds_filled_posts,
+            ],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.care_home,
+                Columns.CARE_HOME_EMPLOYED,
+            ],
+            [IndCQC.estimate_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.non_res,
+                Columns.NON_RESIDENTIAL_EMPLOYED,
+            ],
+            [IndCQC.ascwds_filled_posts, Values.care_home, IndCQC.ascwds_filled_posts],
+            [IndCQC.ascwds_filled_posts, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [IndCQC.ascwds_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [
+                IndCQC.ascwds_filled_posts,
+                Values.non_res,
+                Columns.NON_RESIDENTIAL_EMPLOYED,
+            ],
         ]
         self.assertEqual(output, expected_output)
 
@@ -291,14 +304,22 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
 
     def test_create_column_names_list_adds_the_correct_number_of_columns(self):
         residuals_list = [
-            [ESTIMATE_JOB_COUNT, Values.care_home, JOB_COUNT],
-            [ESTIMATE_JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [ESTIMATE_JOB_COUNT, Values.non_res, JOB_COUNT],
-            [ESTIMATE_JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.care_home, JOB_COUNT],
-            [JOB_COUNT, Values.care_home, Columns.CARE_HOME_EMPLOYED],
-            [JOB_COUNT, Values.non_res, JOB_COUNT],
-            [JOB_COUNT, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.care_home,
+                IndCQC.ascwds_filled_posts,
+            ],
+            [
+                IndCQC.estimate_filled_posts,
+                Values.care_home,
+                Columns.CARE_HOME_EMPLOYED,
+            ],
+            [IndCQC.estimate_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [IndCQC.estimate_filled_posts, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [IndCQC.ascwds_filled_posts, Values.care_home, IndCQC.ascwds_filled_posts],
+            [IndCQC.ascwds_filled_posts, Values.care_home, Columns.CARE_HOME_EMPLOYED],
+            [IndCQC.ascwds_filled_posts, Values.non_res, IndCQC.ascwds_filled_posts],
+            [IndCQC.ascwds_filled_posts, Values.non_res, Columns.CARE_HOME_EMPLOYED],
         ]
 
         output = job.create_column_names_list(residuals_list)
