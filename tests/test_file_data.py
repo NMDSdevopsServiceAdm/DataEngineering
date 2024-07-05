@@ -35,7 +35,6 @@ from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
-
 @dataclass
 class CreateJobEstimatesDiagnosticsData:
     # fmt: off
