@@ -1,10 +1,8 @@
 import unittest
-import warnings
 from unittest.mock import patch, Mock, ANY, call
 from datetime import date
 
 
-from tests.test_helpers import remove_file_path
 from tests.test_file_schemas import (
     CreateJobEstimatesDiagnosticsSchemas as Schemas,
 )
@@ -21,7 +19,6 @@ from utils import utils
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
-    TestColumns,
     ResidualsRequired,
 )
 from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT

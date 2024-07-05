@@ -4,10 +4,6 @@ from datetime import date
 from pyspark.ml.linalg import Vectors
 
 
-from utils.diagnostics_utils.diagnostics_meta_data import (
-    Variables as Values,
-)
-
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
     NewCqcLocationApiColumns as CQCLNew,
