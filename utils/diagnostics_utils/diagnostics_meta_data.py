@@ -4,6 +4,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
 
 
 @dataclass
@@ -35,30 +36,6 @@ class CareWorkerToJobsRatio:
 
 
 @dataclass
-class Columns:
-    CQC_ID: str = "CQC_ID"
-    NURSES_EMPLOYED: str = "Nurses_Employed"
-    CARE_WORKERS_EMPLOYED: str = "Care_Workers_Employed"
-    NON_CARE_WORKERS_EMPLOYED: str = "Non_Care_Workers_Employed"
-    AGENCY_NURSES_EMPLOYED: str = "Agency_Nurses_Employed"
-    AGENCY_CARE_WORKERS_EMPLOYED: str = "Agency_Care_Workers_Employed"
-    AGENCY_NON_CARE_WORKERS_EMPLOYED: str = "Agency_Non_Care_Workers_Employed"
-    CQC_CARE_WORKERS_EMPLOYED: str = "CQC_Care_Workers_Employed"
-    CARE_HOME_EMPLOYED: str = "care_home_employed"
-    NON_RESIDENTIAL_EMPLOYED: str = "non_residential_employed"
-    DESCRIPTION_OF_CHANGES: str = "description_of_changes"
-    VALUE: str = "value"
-    ID: str = "id"
-    RUN_TIMESTAMP: str = "run_timestamp"
-    CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE: str = (
-        "capacity_tracker_care_homes_snapshot_date"
-    )
-    CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE: str = (
-        "capacity_tracker_non_residential_snapshot_date"
-    )
-
-
-@dataclass
 class TestColumns:
     residuals_test_column_names = [
         "residuals_estimate_filled_posts_non_res_pir",
@@ -85,7 +62,7 @@ class ResidualsRequired:
 
     data_source_columns = [
         IndCQC.ascwds_filled_posts_dedup_clean,
-        Columns.CARE_HOME_EMPLOYED,
-        Columns.NON_RESIDENTIAL_EMPLOYED,
+        CT.care_home_employed,
+        CT.non_residential_employed,
         IndCQC.people_directly_employed,
     ]

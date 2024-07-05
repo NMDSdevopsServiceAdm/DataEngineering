@@ -21,10 +21,10 @@ from utils import utils
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
-    Columns,
     TestColumns,
     ResidualsRequired,
 )
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
 
 
 class CreateJobEstimatesDiagnosticsTests(unittest.TestCase):
@@ -148,12 +148,8 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
 
         output_df_list = output_df.sort(IndCQC.location_id).collect()
 
-        self.assertEqual(
-            output_df_list[0][Columns.CARE_HOME_EMPLOYED], expected_totals[0]
-        )
-        self.assertEqual(
-            output_df_list[1][Columns.CARE_HOME_EMPLOYED], expected_totals[1]
-        )
+        self.assertEqual(output_df_list[0][CT.care_home_employed], expected_totals[0])
+        self.assertEqual(output_df_list[1][CT.care_home_employed], expected_totals[1])
 
     def test_prepare_capacity_tracker_non_residential_data_estimates_total_of_employed_staff(
         self,
@@ -170,10 +166,10 @@ class PrepareCapacityTrackerTests(CreateJobEstimatesDiagnosticsTests):
         output_df_list = output_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(
-            output_df_list[0][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[0]
+            output_df_list[0][CT.non_residential_employed], expected_totals[0]
         )
         self.assertEqual(
-            output_df_list[1][Columns.NON_RESIDENTIAL_EMPLOYED], expected_totals[1]
+            output_df_list[1][CT.non_residential_employed], expected_totals[1]
         )
 
 
@@ -263,8 +259,8 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
 
         data_source_columns = [
             IndCQC.ascwds_filled_posts_dedup_clean,
-            Columns.CARE_HOME_EMPLOYED,
-            Columns.NON_RESIDENTIAL_EMPLOYED,
+            CT.care_home_employed,
+            CT.non_residential_employed,
         ]
 
         output = job.create_residuals_list(models, services, data_source_columns)
@@ -278,7 +274,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
             ],
             [
                 IndCQC.estimate_filled_posts,
@@ -288,7 +284,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.estimate_filled_posts,
                 Values.non_res,
-                Columns.NON_RESIDENTIAL_EMPLOYED,
+                CT.non_residential_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
@@ -298,7 +294,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.care_home,
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
@@ -308,7 +304,7 @@ class CalculateResidualsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.non_res,
-                Columns.NON_RESIDENTIAL_EMPLOYED,
+                CT.non_residential_employed,
             ],
         ]
         self.assertEqual(output, expected_output)
@@ -328,14 +324,14 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.estimate_filled_posts,
                 Values.care_home,
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
             ],
             [
                 IndCQC.estimate_filled_posts,
                 Values.non_res,
                 IndCQC.ascwds_filled_posts_dedup_clean,
             ],
-            [IndCQC.estimate_filled_posts, Values.non_res, Columns.CARE_HOME_EMPLOYED],
+            [IndCQC.estimate_filled_posts, Values.non_res, CT.care_home_employed],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.care_home,
@@ -344,7 +340,7 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.care_home,
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
             ],
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
@@ -354,7 +350,7 @@ class ColumnNameListsTests(CreateJobEstimatesDiagnosticsTests):
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 Values.non_res,
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
             ],
         ]
 
@@ -400,9 +396,7 @@ class CreateEmptyDataFrameTests(CreateJobEstimatesDiagnosticsTests):
         expected_row_count = 1
         expected_column_count = 1
 
-        self.assertEqual(
-            output_df_rows[0][Columns.DESCRIPTION_OF_CHANGES], expected_value
-        )
+        self.assertEqual(output_df_rows[0][CT.description_of_changes], expected_value)
         self.assertEqual(output_df_row_count, expected_row_count)
         self.assertEqual(output_df_column_count, expected_column_count)
 
@@ -447,8 +441,8 @@ class AddTimestampColumnTests(CreateJobEstimatesDiagnosticsTests):
         output_df = job.add_timestamp_column(add_timestamps_df, Data.run_timestamp)
         output_df_rows = output_df.collect()
 
-        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], Data.run_timestamp)
-        self.assertEqual(output_df_rows[0][Columns.RUN_TIMESTAMP], Data.run_timestamp)
+        self.assertEqual(output_df_rows[0][CT.run_timestamp], Data.run_timestamp)
+        self.assertEqual(output_df_rows[0][CT.run_timestamp], Data.run_timestamp)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@ from pyspark.sql.types import (
 )
 
 from utils.diagnostics_utils.diagnostics_meta_data import (
-    Columns,
     TestColumns,
 )
 from utils.direct_payments_utils.direct_payments_column_names import (
@@ -75,6 +74,7 @@ from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
 
 
 @dataclass
@@ -101,24 +101,24 @@ class CreateJobEstimatesDiagnosticsSchemas:
     )
     capacity_tracker_care_home = StructType(
         [
-            StructField(Columns.CQC_ID, StringType(), False),
+            StructField(CT.cqc_id, StringType(), False),
             StructField(
-                Columns.NURSES_EMPLOYED,
+                CT.nurses_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(CT.care_workers_employed, FloatType(), True),
+            StructField(CT.non_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_nurses_employed, FloatType(), True),
+            StructField(CT.agency_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
         ]
     )
     capacity_tracker_non_residential = StructType(
         [
-            StructField(Columns.CQC_ID, StringType(), False),
+            StructField(CT.cqc_id, StringType(), False),
             StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
+                CT.cqc_care_workers_employed,
                 FloatType(),
                 True,
             ),
@@ -130,17 +130,17 @@ class CreateJobEstimatesDiagnosticsSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
-                Columns.NURSES_EMPLOYED,
+                CT.nurses_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(CT.care_workers_employed, FloatType(), True),
+            StructField(CT.non_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_nurses_employed, FloatType(), True),
+            StructField(CT.agency_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
             StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
+                CT.cqc_care_workers_employed,
                 FloatType(),
                 True,
             ),
@@ -164,11 +164,11 @@ class CreateJobEstimatesDiagnosticsSchemas:
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+            StructField(CT.non_residential_employed, FloatType(), True),
         ]
     )
     residuals = StructType(
