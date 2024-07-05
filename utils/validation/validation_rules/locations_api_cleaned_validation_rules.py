@@ -51,7 +51,7 @@ class LocationsAPICleanedValidationRules:
             Validation.provider_id_length: 14,
         },
         RuleName.categorical_values_in_columns: {
-            CQCLClean.care_home: CatValues.care_home_column_values.categorical_values,
+            CQCLClean.care_home: CatValuescare_home_column_care_home_valuescategorical_values,
             CQCLClean.cqc_sector: CatValues.sector_column_values.categorical_values,
             CQCLClean.registration_status: CatValues.registration_status_column_values.categorical_values,
             CQCLClean.dormancy: CatValues.dormancy_column_values.categorical_values,
@@ -63,7 +63,7 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            CQCLClean.care_home: CatValues.care_home_column_values.count_of_categorical_values,
+            CQCLClean.care_home: CatValuescare_home_column_care_home_valuescount_of_categorical_values,
             CQCLClean.cqc_sector: CatValues.sector_column_values.count_of_categorical_values,
             CQCLClean.registration_status: CatValues.registration_status_column_values.count_of_categorical_values,
             CQCLClean.dormancy: CatValues.dormancy_column_values.count_of_categorical_values,

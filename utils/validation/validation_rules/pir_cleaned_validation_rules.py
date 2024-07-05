@@ -30,9 +30,9 @@ class PIRCleanedValidationRules:
             CQCPIRClean.people_directly_employed: 1,
         },
         RuleName.categorical_values_in_columns: {
-            CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
+            CQCPIRClean.care_home: CatValuescare_home_column_care_home_valuescategorical_values,
         },
         RuleName.distinct_values: {
-            CQCPIRClean.care_home: CatValues.care_home_column_values.count_of_categorical_values,
+            CQCPIRClean.care_home: CatValuescare_home_column_care_home_valuescount_of_categorical_values,
         },
     }

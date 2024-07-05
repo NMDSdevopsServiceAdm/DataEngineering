@@ -91,7 +91,7 @@ class IndCqcColumns:
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     service_count: str = "service_count"
     date_diff: str = "date_diff"
-    time_open: str = "time_open"
+    time_registered: str = "time_registered"
     features: str = "features"
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_source: str = "estimate_filled_posts_source"

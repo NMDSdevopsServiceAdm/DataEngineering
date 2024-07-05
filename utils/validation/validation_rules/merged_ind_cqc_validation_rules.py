@@ -48,7 +48,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.worker_records_bounded: 3000,
         },
         RuleName.categorical_values_in_columns: {
-            IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
+            IndCqcColumns.care_home: CatValuescare_home_column_care_home_valuescategorical_values,
             IndCqcColumns.cqc_sector: CatValues.sector_column_values.categorical_values,
             IndCqcColumns.registration_status: CatValues.registration_status_column_values.categorical_values,
             IndCqcColumns.dormancy: CatValues.dormancy_column_values.categorical_values,
@@ -60,7 +60,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_rural_urban_indicator_2011: CatValues.current_rui_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
+            IndCqcColumns.care_home: CatValuescare_home_column_care_home_valuescount_of_categorical_values,
             IndCqcColumns.cqc_sector: CatValues.sector_column_values.count_of_categorical_values,
             IndCqcColumns.registration_status: CatValues.registration_status_column_values.count_of_categorical_values,
             IndCqcColumns.dormancy: CatValues.dormancy_column_values.count_of_categorical_values,
