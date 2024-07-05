@@ -305,7 +305,7 @@ def create_column_names_list(residuals_list: list) -> list:
     return column_names_list
 
 
-def run_residuals(df: DataFrame, residuals_list: list) -> (DataFrame, list):
+def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
     for combination in residuals_list:
         df = calculate_residuals(df, combination[0], combination[1], combination[2])
     return df

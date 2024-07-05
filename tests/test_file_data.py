@@ -42,6 +42,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_names import RuleNames as RuleName
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
 
 
 @dataclass
@@ -87,6 +88,63 @@ class CreateJobEstimatesDiagnosticsData:
         ("location_4", None, None, PrimaryServiceType.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None, 15.0),
         ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None, None),
     ]
+    models = [
+        IndCQC.estimate_filled_posts,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+    ]
+
+    services = [
+        CareHome.care_home,
+        CareHome.not_care_home,
+    ]
+
+    data_source_columns = [
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        CT.care_home_employed,
+        CT.non_residential_employed,
+    ]
+    residuals_list = [
+        [
+            IndCQC.estimate_filled_posts,
+            CareHome.care_home,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+        ],
+        [
+            IndCQC.estimate_filled_posts,
+            CareHome.care_home,
+            CT.care_home_employed,
+        ],
+        [
+            IndCQC.estimate_filled_posts,
+            CareHome.not_care_home,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+        ],
+        [
+            IndCQC.estimate_filled_posts,
+            CareHome.not_care_home,
+            CT.non_residential_employed,
+        ],
+        [
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            CareHome.care_home,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+        ],
+        [
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            CareHome.care_home,
+            CT.care_home_employed,
+        ],
+        [
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            CareHome.not_care_home,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+        ],
+        [
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            CareHome.not_care_home,
+            CT.non_residential_employed,
+        ],
+    ]
     run_residuals_rows = [
         ("location_1", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
         ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
@@ -109,13 +167,22 @@ class CreateJobEstimatesDiagnosticsData:
         ("location_7", None, None,),
         ("location_8", None, None,),
     ]
+    expected_calculate_average_residual_rows = [
+        (2.0,),
+    ]
+    expected_create_empty_dataframe_rows = [
+        ("test",),
+    ]
     add_timestamps_rows = [
         ("location_1", 0.0, 0.0,),
         ("location_2", -1.0, 0.0,),
     ]
+    expected_add_timestamps_rows = [
+        ("location_1", 0.0, 0.0, "12/24/2018, 04:59:31"),
+        ("location_2", -1.0, 0.0, "12/24/2018, 04:59:31"),
+    ]
     # fmt: on
-    description_of_change: str = "test"
-    run_timestamp: str = "12/24/2018, 04:59:31"
+    expected_run_average_residuals_rows = [("test", 2.0, 0.0)]
 
 
 @dataclass

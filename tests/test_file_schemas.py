@@ -79,7 +79,7 @@ class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(CT.capacity_tracker_care_homes_import_date, DateType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(
                 IndCQC.ascwds_filled_posts,
                 FloatType(),
@@ -189,9 +189,11 @@ class CreateJobEstimatesDiagnosticsSchemas:
     expected_calculate_residuals = StructType(
         [
             *diagnostics_prepared,
-            StructField(IndCQC.residuals_estimate_filled_posts_non_res_pir, FloatType(), True),
+            StructField(
+                IndCQC.residuals_estimate_filled_posts_non_res_pir, FloatType(), True
+            ),
         ]
-    ) 
+    )
     residuals = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -205,6 +207,41 @@ class CreateJobEstimatesDiagnosticsSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_average_residual_schema = StructType(
+        [
+            StructField(
+                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_create_empty_dataframe_schema = StructType(
+        [
+            StructField(CT.description_of_changes, StringType(), True),
+        ]
+    )
+    expected_run_average_residuals_schema = StructType(
+        [
+            StructField(CT.description_of_changes, StringType(), True),
+            StructField(
+                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_add_timestamp_schema = StructType(
+        [
+            *residuals,
+            StructField(CT.run_timestamp, StringType(), True),
         ]
     )
 
