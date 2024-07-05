@@ -419,7 +419,7 @@ class RunAverageResidualsTests(CreateJobEstimatesDiagnosticsTests):
         blank_df = job.create_empty_dataframe(Data.description_of_change, self.spark)
 
         output_df = job.run_average_residuals(
-            residuals_df, blank_df, TestColumns.residuals_test_column_names
+            residuals_df, blank_df, IndCQC.residuals_estimate_filled_posts_non_res_pir
         )
         output_df_rows = output_df.collect()
 
