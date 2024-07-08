@@ -201,15 +201,16 @@ resource "aws_sfn_state_machine" "gold_validation_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/GoldValidationPipeline-StepFunction.json", {
-    dataset_bucket_uri                                                  = module.datasets_bucket.bucket_uri
-    validate_merged_ind_cqc_data_job_name                               = module.validate_merged_ind_cqc_data_job.job_name
-    validate_cleaned_ind_cqc_data_job_name                              = module.validate_cleaned_ind_cqc_data_job.job_name
-    validate_care_home_ind_cqc_features_data_job_name                   = module.validate_care_home_ind_cqc_features_data_job.job_name
-    validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job_name = module.validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job.job_name
-    validate_estimated_ind_cqc_filled_posts_data_job_name               = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
-    validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name   = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
-    data_validation_reports_crawler_name                                = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn                                = aws_lambda_function.error_notification_lambda.arn
+    dataset_bucket_uri                                                      = module.datasets_bucket.bucket_uri
+    validate_merged_ind_cqc_data_job_name                                   = module.validate_merged_ind_cqc_data_job.job_name
+    validate_cleaned_ind_cqc_data_job_name                                  = module.validate_cleaned_ind_cqc_data_job.job_name
+    validate_care_home_ind_cqc_features_data_job_name                       = module.validate_care_home_ind_cqc_features_data_job.job_name
+    validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job_name     = module.validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job.job_name
+    validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job_name = module.validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job.job_name
+    validate_estimated_ind_cqc_filled_posts_data_job_name                   = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
+    validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name       = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
+    data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn                                    = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
