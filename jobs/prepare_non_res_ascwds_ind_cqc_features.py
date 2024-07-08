@@ -29,6 +29,7 @@ from utils.features.helper import (
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
     non_res_ascwds_inc_dormancy_ind_cqc_features_destination: str,
+    non_res_ascwds_without_dormancy_ind_cqc_features_destination: str,
 ) -> DataFrame:
     print("Creating non res ascwds inc dormancy features dataset...")
 
@@ -89,7 +90,7 @@ def main(
         df=features_df,
     )
 
-    list_for_vectorisation: List[str] = sorted(
+    list_for_vectorisation_with_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.time_registered,
@@ -101,10 +102,10 @@ def main(
         + rui_indicators
     )
 
-    vectorised_dataframe = vectorise_dataframe(
-        df=features_df, list_for_vectorisation=list_for_vectorisation
+    vectorised_dataframe_with_dormancy = vectorise_dataframe(
+        df=features_df, list_for_vectorisation=list_for_vectorisation_with_dormancy
     )
-    vectorised_features_df = vectorised_dataframe.select(
+    vectorised_features_with_dormancy_df = vectorised_dataframe_with_dormancy.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
@@ -121,16 +122,67 @@ def main(
         Keys.import_date,
     )
 
-    print("number_of_features:")
-    print(len(list_for_vectorisation))
-    print(f"length of feature df: {vectorised_dataframe.count()}")
+    print("number of features with dormancy:")
+    print(len(list_for_vectorisation_with_dormancy))
+    print(
+        f"length of feature with dormancy df: {vectorised_dataframe_with_dormancy.count()}"
+    )
 
     print(
         f"Exporting as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
     )
     utils.write_to_parquet(
-        vectorised_features_df,
+        vectorised_features_with_dormancy_df,
         non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
+        mode="overwrite",
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
+    )
+
+    list_for_vectorisation_without_dormancy: List[str] = sorted(
+        [
+            IndCQC.service_count,
+            IndCQC.time_registered,
+            IndCQC.date_diff,
+        ]
+        + service_keys
+        + regions
+        + rui_indicators
+    )
+
+    vectorised_dataframe_without_dormancy = vectorise_dataframe(
+        df=features_df, list_for_vectorisation=list_for_vectorisation_without_dormancy
+    )
+    vectorised_features_without_dormancy_df = (
+        vectorised_dataframe_without_dormancy.select(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.current_region,
+            IndCQC.dormancy,
+            IndCQC.care_home,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            IndCQC.imputed_registration_date,
+            IndCQC.date_diff,
+            IndCQC.time_registered,
+            IndCQC.features,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
+        )
+    )
+
+    print("number of features without dormancy:")
+    print(len(list_for_vectorisation_without_dormancy))
+    print(
+        f"length of feature without dormancy df: {vectorised_dataframe_without_dormancy.count()}"
+    )
+
+    print(
+        f"Exporting as parquet to {non_res_ascwds_without_dormancy_ind_cqc_features_destination}"
+    )
+    utils.write_to_parquet(
+        vectorised_features_without_dormancy_df,
+        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
@@ -145,14 +197,13 @@ def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
 
 
 if __name__ == "__main__":
-    print(
-        "Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' starting..."
-    )
+    print("Spark job 'prepare_non_res_ascwds_ind_cqc_features' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         ind_cqc_filled_posts_cleaned_source,
         non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
+        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
@@ -162,11 +213,16 @@ if __name__ == "__main__":
             "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination",
             "A destination directory for outputting non-res ASCWDS inc dormancy model features dataset",
         ),
+        (
+            "--non_res_ascwds_without_dormancy_ind_cqc_features_destination",
+            "A destination directory for outputting non-res ASCWDS without dormancy model features dataset",
+        ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
         non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
+        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_non_res_ascwds_inc_dormancy_ind_cqc_features' complete")
+    print("Spark job 'prepare_non_res_ascwds_ind_cqc_features' complete")

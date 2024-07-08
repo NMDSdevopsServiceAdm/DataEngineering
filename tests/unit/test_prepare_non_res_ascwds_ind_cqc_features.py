@@ -2,7 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-import jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features as job
+import jobs.prepare_non_res_ascwds_ind_cqc_features as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
