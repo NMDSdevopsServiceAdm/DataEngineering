@@ -485,3 +485,10 @@ class Subject(ColumnValues):
 class SingleSubDescription(ColumnValues):
     single_sub_deregistered_description: str = "Potential (new): Deregistered ID"
     single_sub_reg_type_description: str = "Potential (new): Regtype"
+
+
+@dataclass
+class DataSource(ColumnValues):
+    asc_wds: str = "ascwds"
+    capacity_tracker: str = "capacity_tracker"
+    pir: str = "pir"
