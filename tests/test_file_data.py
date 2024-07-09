@@ -2747,9 +2747,12 @@ class NonResAscwdsWithDormancyFeaturesData(object):
         ("1-00003", "N"),
     ]
 
-    expected_filtered_to_dormancy_rows = [
+    expected_with_dormancy_rows = [
         ("1-00001", "Y"),
         ("1-00003", "N"),
+    ]
+    expected_without_dormancy_rows = [
+        ("1-00002", None),
     ]
 
 

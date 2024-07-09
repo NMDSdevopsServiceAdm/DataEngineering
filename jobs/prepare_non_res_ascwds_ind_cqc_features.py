@@ -36,12 +36,9 @@ def main(
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
     non_res_locations_df = filter_df_to_non_res_only(locations_df)
-    non_res_locations_with_dormancy_df = filter_df_to_non_null_dormancy(
-        non_res_locations_df
-    )
 
     features_df = add_service_count_to_data(
-        df=non_res_locations_with_dormancy_df,
+        df=non_res_locations_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
@@ -90,6 +87,10 @@ def main(
         df=features_df,
     )
 
+    features_with_dormancy_df, features_without_dormancy_df = split_df_on_dormancy(
+        features_df
+    )
+
     list_for_vectorisation_with_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
@@ -103,7 +104,8 @@ def main(
     )
 
     vectorised_dataframe_with_dormancy = vectorise_dataframe(
-        df=features_df, list_for_vectorisation=list_for_vectorisation_with_dormancy
+        df=features_with_dormancy_df,
+        list_for_vectorisation=list_for_vectorisation_with_dormancy,
     )
     vectorised_features_with_dormancy_df = vectorised_dataframe_with_dormancy.select(
         IndCQC.location_id,
@@ -150,7 +152,8 @@ def main(
     )
 
     vectorised_dataframe_without_dormancy = vectorise_dataframe(
-        df=features_df, list_for_vectorisation=list_for_vectorisation_without_dormancy
+        df=features_without_dormancy_df,
+        list_for_vectorisation=list_for_vectorisation_without_dormancy,
     )
     vectorised_features_without_dormancy_df = (
         vectorised_dataframe_without_dormancy.select(
@@ -192,8 +195,10 @@ def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "N")
 
 
-def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(IndCQC.dormancy).isNotNull())
+def split_df_on_dormancy(df: DataFrame) -> tuple:
+    with_dormancy_df = df.filter(F.col(IndCQC.dormancy).isNotNull())
+    without_dormancy_df = df.filter(F.col(IndCQC.dormancy).isNull())
+    return with_dormancy_df, without_dormancy_df
 
 
 if __name__ == "__main__":

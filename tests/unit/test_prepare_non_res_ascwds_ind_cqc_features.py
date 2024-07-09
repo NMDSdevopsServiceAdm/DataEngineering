@@ -1,6 +1,6 @@
 import unittest
 import warnings
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, Mock, patch, call
 
 import jobs.prepare_non_res_ascwds_ind_cqc_features as job
 from utils import utils
@@ -15,7 +15,8 @@ from tests.test_file_schemas import NonResAscwdsWithDormancyFeaturesSchema as Sc
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/source"
-    OUTPUT_DESTINATION = "some/destination"
+    WITH_DORMANCY_DESTINATION = "some/destination"
+    WITHOUT_DORMANCY_DESTINATION = "other/destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -24,21 +25,13 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.vectorise_dataframe")
+    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.add_date_diff_into_df")
     @patch(
-        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.vectorise_dataframe"
+        "jobs.prepare_non_res_ascwds_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
     )
-    @patch(
-        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_date_diff_into_df"
-    )
-    @patch(
-        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
-    )
-    @patch(
-        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.column_expansion_with_dict"
-    )
-    @patch(
-        "jobs.prepare_non_res_ascwds_inc_dormancy_ind_cqc_features.add_service_count_to_data"
-    )
+    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.column_expansion_with_dict")
+    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.add_service_count_to_data")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
@@ -54,7 +47,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
-            self.OUTPUT_DESTINATION,
+            self.WITH_DORMANCY_DESTINATION,
+            self.WITHOUT_DORMANCY_DESTINATION,
         )
 
         self.assertEqual(add_service_count_to_data_mock.call_count, 1)
@@ -64,14 +58,24 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             3,
         )
         self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
-        self.assertEqual(vectorise_dataframe_mock.call_count, 1)
+        self.assertEqual(vectorise_dataframe_mock.call_count, 2)
 
-        write_to_parquet_mock.assert_called_once_with(
-            ANY,
-            self.OUTPUT_DESTINATION,
-            mode=ANY,
-            partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
-        )
+        write_to_parquet_calls = [
+            call(
+                ANY,
+                self.WITH_DORMANCY_DESTINATION,
+                mode="overwrite",
+                partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
+            ),
+            call(
+                ANY,
+                self.WITHOUT_DORMANCY_DESTINATION,
+                mode="overwrite",
+                partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
+            ),
+        ]
+
+        write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
 
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -80,12 +84,18 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        job.main(self.CLEANED_IND_CQC_TEST_DATA, self.OUTPUT_DESTINATION)
+        job.main(
+            self.CLEANED_IND_CQC_TEST_DATA,
+            self.WITH_DORMANCY_DESTINATION,
+            self.WITHOUT_DORMANCY_DESTINATION,
+        )
 
-        result = write_to_parquet_mock.call_args[0][0]
+        result_with_dormancy = write_to_parquet_mock.call_args_list[0][0][0]
+        result_without_dormancy = write_to_parquet_mock.call_args_list[1][0][0]
 
         self.assertEqual(self.test_df.count(), 10)
-        self.assertEqual(result.count(), 6)
+        self.assertEqual(result_with_dormancy.count(), 6)
+        self.assertEqual(result_without_dormancy.count(), 1)
 
     def test_filter_df_for_non_res_care_home_data(self):
         ind_cqc_df = self.spark.createDataFrame(
@@ -100,18 +110,29 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_filter_df_non_null_dormancy_data(self):
+    def test_split_df_on_dormancy_returns_two_dataframes_with_correct_values(self):
         ind_cqc_df = self.spark.createDataFrame(
             Data.filter_to_dormancy_rows, Schemas.filter_to_dormancy_schema
         )
-        returned_df = job.filter_df_to_non_null_dormancy(ind_cqc_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filtered_to_dormancy_rows,
+        returned_with_dormancy_df, returned_without_dormancy_df = (
+            job.split_df_on_dormancy(ind_cqc_df)
+        )
+        expected_with_dormancy_df = self.spark.createDataFrame(
+            Data.expected_with_dormancy_rows,
             Schemas.filter_to_dormancy_schema,
         )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
+        expected_without_dormancy_df = self.spark.createDataFrame(
+            Data.expected_without_dormancy_rows,
+            Schemas.filter_to_dormancy_schema,
+        )
+
+        self.assertEqual(
+            returned_with_dormancy_df.collect(), expected_with_dormancy_df.collect()
+        )
+        self.assertEqual(
+            returned_without_dormancy_df.collect(),
+            expected_without_dormancy_df.collect(),
+        )
 
 
 if __name__ == "__main__":
