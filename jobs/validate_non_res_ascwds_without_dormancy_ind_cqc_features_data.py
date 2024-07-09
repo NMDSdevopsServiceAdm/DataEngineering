@@ -72,7 +72,6 @@ def calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_
             cleaned_ind_cqc_df[IndCQC.primary_service_type]
             == PrimaryServiceType.non_residential
         )
-        & (cleaned_ind_cqc_df[IndCQC.dormancy].isNull())
     ).count()
     return expected_size
 

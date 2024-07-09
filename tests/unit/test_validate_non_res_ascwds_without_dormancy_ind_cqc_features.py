@@ -76,7 +76,7 @@ class CalculateExpectedSizeofDataset(
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 1
+        expected_row_count = 3
         returned_row_count = job.calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
             test_df
         )
