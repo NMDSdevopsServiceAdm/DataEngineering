@@ -56,6 +56,9 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.organisation_id,
     AWPClean.total_staff,
     AWPClean.worker_records,
+    AWPClean.master_update_date,
+    AWPClean.master_update_date_org,
+    AWPClean.establishment_created_date,
 ]
 
 
