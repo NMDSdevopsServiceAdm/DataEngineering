@@ -492,3 +492,9 @@ class DataSource(ColumnValues):
     asc_wds: str = "ascwds"
     capacity_tracker: str = "capacity_tracker"
     pir: str = "pir"
+
+
+@dataclass
+class InAscwds(ColumnValues):
+    is_in_ascwds: int = 1
+    not_in_ascwds: int = 0

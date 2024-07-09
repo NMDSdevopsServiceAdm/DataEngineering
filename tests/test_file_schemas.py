@@ -65,6 +65,8 @@ from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
+from utils.column_names.coverage_columns import CoverageColumns
+
 
 @dataclass
 class CreateJobEstimatesDiagnosticsSchemas:
@@ -1523,6 +1525,19 @@ class MergeCoverageData:
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    sample_in_ascwds_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
+    )
+
+    expected_in_ascwds_schema = StructType(
+        [
+            *sample_in_ascwds_schema,
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
         ]
     )
 

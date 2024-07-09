@@ -17,6 +17,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.coverage_columns import CoverageColumns
 
 
 class MergeCoverageDatasetTests(unittest.TestCase):
@@ -88,6 +89,37 @@ class MergeCoverageDatasetTests(unittest.TestCase):
         ).collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class AddFlagForInAscwdsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
+
+        self.sample_in_ascwds_df = self.spark.createDataFrame(
+            Data.sample_in_ascwds_rows, schema=Schemas.sample_in_ascwds_schema
+        )
+
+        self.returned_in_ascwds_df = job.add_flag_for_in_ascwds(
+            self.sample_in_ascwds_df
+        )
+
+        self.expected_in_ascwds_df = self.spark.createDataFrame(
+            Data.expected_in_ascwds_rows, Schemas.expected_in_ascwds_schema
+        )
+
+    def test_add_flag_for_in_ascwds_adds_1_column_with_given_name(self):
+        self.assertTrue(CoverageColumns.in_ascwds in self.returned_in_ascwds_df.columns)
+
+        self.assertEqual(
+            len(self.returned_in_ascwds_df.columns),
+            len(self.expected_in_ascwds_df.columns),
+        )
+
+    def test_add_flag_for_in_ascwds_has_expected_values(self):
+        returned_rows = self.returned_in_ascwds_df.collect()
+        expected_rows = self.expected_in_ascwds_df.collect()
+
+        self.assertEqual(returned_rows, expected_rows)
 
 
 if __name__ == "__main__":
