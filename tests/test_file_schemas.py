@@ -3357,7 +3357,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+class ValidateNonResASCWDSIndCqcFeaturesData:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -3366,7 +3366,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
             StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
-    non_res_ascwds_inc_dormancy_ind_cqc_features_schema = StructType(
+    non_res_ascwds_ind_cqc_features_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),

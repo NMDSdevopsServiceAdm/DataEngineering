@@ -8,7 +8,7 @@ from tests.test_file_data import (
     ValidateNonResASCWDSIncDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSIncDormancyIndCqcFeaturesData as Schemas,
+    ValidateNonResASCWDSIndCqcFeaturesData as Schemas,
 )
 
 from utils import utils
@@ -28,7 +28,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests(unittest.TestCas
         self.test_non_res_ascwds_inc_dormancy_ind_cqc_features_df = (
             self.spark.createDataFrame(
                 Data.non_res_ascwds_inc_dormancy_ind_cqc_features_rows,
-                Schemas.non_res_ascwds_inc_dormancy_ind_cqc_features_schema,
+                Schemas.non_res_ascwds_ind_cqc_features_schema,
             )
         )
 
