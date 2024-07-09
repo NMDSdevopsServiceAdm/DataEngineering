@@ -2172,12 +2172,10 @@ class MergeCoverageData:
         ("1",),
     ]
 
-    # fmt: off
     expected_in_ascwds_rows = [
         (None, 0),
         ("1", 1),
     ]
-    # fmt: on
 
 
 @dataclass

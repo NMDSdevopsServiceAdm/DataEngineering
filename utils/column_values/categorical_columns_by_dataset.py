@@ -20,7 +20,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.coverage_columns import CoverageColumns
 
 from utils.column_values.categorical_column_values import (
     Dormancy,
@@ -37,7 +36,6 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
-    InAscwds,
 )
 
 
