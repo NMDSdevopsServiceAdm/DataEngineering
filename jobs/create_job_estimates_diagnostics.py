@@ -1,32 +1,48 @@
 from datetime import datetime, date
 import sys
 
-import pyspark.sql.functions as F
+from pyspark.sql import SparkSession, DataFrame, functions as F
 from pyspark.sql.types import StringType
-from pyspark.sql import SparkSession
-from pyspark.sql import DataFrame
 
 from utils import utils
-from utils.estimate_filled_posts.column_names import (
-    LOCATION_ID,
-    PEOPLE_DIRECTLY_EMPLOYED,
-    SNAPSHOT_DATE,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_values.categorical_column_values import CareHome, DataSource
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
 )
 from utils.diagnostics_utils.diagnostics_meta_data import (
     Variables as Values,
     Prefixes,
     CareWorkerToJobsRatio as Ratio,
-    Columns,
     ResidualsRequired,
 )
+
+estimate_filled_posts_columns: list = [
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.primary_service_type,
+    IndCQC.rolling_average_model,
+    IndCQC.care_home_model,
+    IndCQC.extrapolation_care_home_model,
+    IndCQC.interpolation_model,
+    IndCQC.non_res_model,
+    IndCQC.estimate_filled_posts,
+    IndCQC.people_directly_employed,
+]
+capacity_tracker_care_home_columns: list = [
+    CT.cqc_id,
+    CT.nurses_employed,
+    CT.care_workers_employed,
+    CT.non_care_workers_employed,
+    CT.agency_nurses_employed,
+    CT.agency_care_workers_employed,
+    CT.agency_non_care_workers_employed,
+]
+capacity_tracker_non_residential_columns: list = [
+    CT.cqc_id,
+    CT.cqc_care_workers_employed,
+]
 
 
 def main(
@@ -43,37 +59,17 @@ def main(
     now = datetime.now()
     run_timestamp = now.strftime("%Y-%m-%d, %H:%M:%S")
 
-    job_estimates_df: DataFrame = spark.read.parquet(estimate_job_counts_source).select(
-        LOCATION_ID,
-        SNAPSHOT_DATE,
-        JOB_COUNT,
-        PRIMARY_SERVICE_TYPE,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
-        ESTIMATE_JOB_COUNT,
-        PEOPLE_DIRECTLY_EMPLOYED,
+    job_estimates_df: DataFrame = utils.read_from_parquet(
+        estimate_job_counts_source, estimate_filled_posts_columns
     )
 
-    capacity_tracker_care_homes_df: DataFrame = spark.read.parquet(
-        capacity_tracker_care_home_source
-    ).select(
-        Columns.CQC_ID,
-        Columns.NURSES_EMPLOYED,
-        Columns.CARE_WORKERS_EMPLOYED,
-        Columns.NON_CARE_WORKERS_EMPLOYED,
-        Columns.AGENCY_NURSES_EMPLOYED,
-        Columns.AGENCY_CARE_WORKERS_EMPLOYED,
-        Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED,
+    capacity_tracker_care_homes_df: DataFrame = utils.read_from_parquet(
+        capacity_tracker_care_home_source, capacity_tracker_care_home_columns
     )
 
-    capacity_tracker_non_residential_df: DataFrame = spark.read.parquet(
-        capacity_tracker_non_residential_source
-    ).select(
-        Columns.CQC_ID,
-        Columns.CQC_CARE_WORKERS_EMPLOYED,
+    capacity_tracker_non_residential_df: DataFrame = utils.read_from_parquet(
+        capacity_tracker_non_residential_source,
+        capacity_tracker_non_residential_columns,
     )
 
     capacity_tracker_care_homes_df = prepare_capacity_tracker_care_home_data(
@@ -90,19 +86,19 @@ def main(
     )
 
     diagnostics_prepared_df = diagnostics_df.select(
-        LOCATION_ID,
-        SNAPSHOT_DATE,
-        JOB_COUNT,
-        PRIMARY_SERVICE_TYPE,
-        ROLLING_AVERAGE_MODEL,
-        CARE_HOME_MODEL,
-        EXTRAPOLATION_MODEL,
-        INTERPOLATION_MODEL,
-        NON_RESIDENTIAL_MODEL,
-        ESTIMATE_JOB_COUNT,
-        PEOPLE_DIRECTLY_EMPLOYED,
-        Columns.CARE_HOME_EMPLOYED,
-        Columns.NON_RESIDENTIAL_EMPLOYED,
+        IndCQC.location_id,
+        IndCQC.cqc_location_import_date,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.primary_service_type,
+        IndCQC.rolling_average_model,
+        IndCQC.care_home_model,
+        IndCQC.extrapolation_care_home_model,
+        IndCQC.interpolation_model,
+        IndCQC.non_res_model,
+        IndCQC.estimate_filled_posts,
+        IndCQC.people_directly_employed,
+        CT.care_home_employed,
+        CT.non_residential_employed,
     )
 
     residuals_list: list = create_residuals_list(
@@ -151,7 +147,7 @@ def main(
     )
 
 
-def add_snapshot_date_to_capacity_tracker_dataframe(
+def add_import_date_to_capacity_tracker_dataframe(
     df: DataFrame, column_name: str
 ) -> DataFrame:
     df = df.withColumn(column_name, F.lit(Values.capacity_tracker_snapshot_date))
@@ -165,15 +161,15 @@ def merge_dataframes(
     capacity_tracker_non_residential_df: DataFrame,
 ) -> DataFrame:
     capacity_tracker_care_homes_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(
+        add_import_date_to_capacity_tracker_dataframe(
             capacity_tracker_care_homes_df,
-            Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE,
+            CT.capacity_tracker_care_homes_import_date,
         )
     )
     capacity_tracker_non_residential_df_with_snapshot_date = (
-        add_snapshot_date_to_capacity_tracker_dataframe(
+        add_import_date_to_capacity_tracker_dataframe(
             capacity_tracker_non_residential_df,
-            Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE,
+            CT.capacity_tracker_non_residential_import_date,
         )
     )
 
@@ -181,13 +177,13 @@ def merge_dataframes(
         capacity_tracker_care_homes_df_with_snapshot_date,
         [
             (
-                job_estimates_df[LOCATION_ID]
-                == capacity_tracker_care_homes_df_with_snapshot_date[Columns.CQC_ID]
+                job_estimates_df[IndCQC.location_id]
+                == capacity_tracker_care_homes_df_with_snapshot_date[CT.cqc_id]
             ),
             (
-                job_estimates_df[SNAPSHOT_DATE]
+                job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_care_homes_df_with_snapshot_date[
-                    Columns.CAPACITY_TRACKER_CARE_HOMES_SNAPSHOT_DATE
+                    CT.capacity_tracker_care_homes_import_date
                 ]
             ),
         ],
@@ -196,12 +192,12 @@ def merge_dataframes(
     diagnostics_df = diagnostics_df.join(
         capacity_tracker_non_residential_df_with_snapshot_date,
         [
-            diagnostics_df[LOCATION_ID]
-            == capacity_tracker_non_residential_df_with_snapshot_date[Columns.CQC_ID],
+            diagnostics_df[IndCQC.location_id]
+            == capacity_tracker_non_residential_df_with_snapshot_date[CT.cqc_id],
             (
-                job_estimates_df[SNAPSHOT_DATE]
+                job_estimates_df[IndCQC.cqc_location_import_date]
                 == capacity_tracker_non_residential_df_with_snapshot_date[
-                    Columns.CAPACITY_TRACKER_NON_RESIDENTIAL_SNAPSHOT_DATE
+                    CT.capacity_tracker_non_residential_import_date
                 ]
             ),
         ],
@@ -212,14 +208,14 @@ def merge_dataframes(
 
 def prepare_capacity_tracker_care_home_data(diagnostics_df: DataFrame) -> DataFrame:
     diagnostics_df = diagnostics_df.withColumn(
-        Columns.CARE_HOME_EMPLOYED,
+        CT.care_home_employed,
         (
-            diagnostics_df[Columns.NURSES_EMPLOYED]
-            + diagnostics_df[Columns.CARE_WORKERS_EMPLOYED]
-            + diagnostics_df[Columns.NON_CARE_WORKERS_EMPLOYED]
-            + diagnostics_df[Columns.AGENCY_NURSES_EMPLOYED]
-            + diagnostics_df[Columns.AGENCY_CARE_WORKERS_EMPLOYED]
-            + diagnostics_df[Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED]
+            diagnostics_df[CT.nurses_employed]
+            + diagnostics_df[CT.care_workers_employed]
+            + diagnostics_df[CT.non_care_workers_employed]
+            + diagnostics_df[CT.agency_nurses_employed]
+            + diagnostics_df[CT.agency_care_workers_employed]
+            + diagnostics_df[CT.agency_non_care_workers_employed]
         ),
     )
     return diagnostics_df
@@ -229,9 +225,9 @@ def prepare_capacity_tracker_non_residential_data(
     diagnostics_df: DataFrame,
 ) -> DataFrame:
     diagnostics_df = diagnostics_df.withColumn(
-        Columns.NON_RESIDENTIAL_EMPLOYED,
+        CT.non_residential_employed,
         (
-            diagnostics_df[Columns.CQC_CARE_WORKERS_EMPLOYED]
+            diagnostics_df[CT.cqc_care_workers_employed]
             * Ratio.care_worker_to_all_jobs_ratio
         ),
     )
@@ -241,16 +237,21 @@ def prepare_capacity_tracker_non_residential_data(
 def create_residuals_column_name(
     model: str, service: str, data_source_column: str
 ) -> str:
-    if (data_source_column == Columns.CARE_HOME_EMPLOYED) | (
-        data_source_column == Columns.NON_RESIDENTIAL_EMPLOYED
+    if (data_source_column == CT.care_home_employed) | (
+        data_source_column == CT.non_residential_employed
     ):
-        data_source = Values.capacity_tracker
-    elif data_source_column == PEOPLE_DIRECTLY_EMPLOYED:
-        data_source = Values.pir
-    elif data_source_column == JOB_COUNT:
-        data_source = Values.asc_wds
+        data_source = DataSource.capacity_tracker
+    elif data_source_column == IndCQC.people_directly_employed:
+        data_source = DataSource.pir
+    elif data_source_column == IndCQC.ascwds_filled_posts_dedup_clean:
+        data_source = DataSource.asc_wds
 
-    new_column_name = f"{Prefixes.residuals}{model}_{service}_{data_source}"
+    if service == CareHome.care_home:
+        service_name = "care_home"
+    else:
+        service_name = "non_res"
+
+    new_column_name = f"{Prefixes.residuals}{model}_{service_name}_{data_source}"
     return new_column_name
 
 
@@ -259,7 +260,7 @@ def calculate_residuals(
     model: str,
     service: str,
     data_source_column: str,
-) -> (DataFrame, str):
+) -> DataFrame:
     new_column_name = create_residuals_column_name(model, service, data_source_column)
     df_with_residuals_column = df.withColumn(
         new_column_name, df[model] - df[data_source_column]
@@ -280,11 +281,11 @@ def create_residuals_list(
 
     for combination in residuals_list[:]:
         if (
-            (combination[1] == Values.care_home)
-            & (combination[2] == Columns.NON_RESIDENTIAL_EMPLOYED)
+            (combination[1] == CareHome.care_home)
+            & (combination[2] == CT.non_residential_employed)
         ) | (
-            (combination[1] == Values.non_res)
-            & (combination[2] == Columns.CARE_HOME_EMPLOYED)
+            (combination[1] == CareHome.not_care_home)
+            & (combination[2] == CT.care_home_employed)
         ):
             residuals_list.remove(combination)
 
@@ -301,7 +302,7 @@ def create_column_names_list(residuals_list: list) -> list:
     return column_names_list
 
 
-def run_residuals(df: DataFrame, residuals_list: list) -> (DataFrame, list):
+def run_residuals(df: DataFrame, residuals_list: list) -> DataFrame:
     for combination in residuals_list:
         df = calculate_residuals(df, combination[0], combination[1], combination[2])
     return df
@@ -324,26 +325,26 @@ def run_average_residuals(
         average_df = calculate_average_residual(
             df, column, average_residual_column_name
         )
-        average_df = average_df.withColumn(Columns.ID, F.lit("A"))
-        average_residuals_df = average_residuals_df.withColumn(Columns.ID, F.lit("A"))
-        average_residuals_df = average_residuals_df.join(
-            average_df, on=[Columns.ID]
-        ).drop(Columns.ID)
+        average_df = average_df.withColumn(CT.id, F.lit("A"))
+        average_residuals_df = average_residuals_df.withColumn(CT.id, F.lit("A"))
+        average_residuals_df = average_residuals_df.join(average_df, on=[CT.id]).drop(
+            CT.id
+        )
     return average_residuals_df
 
 
 def create_empty_dataframe(
     description_of_change: str, spark: SparkSession
 ) -> DataFrame:
-    column = Columns.DESCRIPTION_OF_CHANGES
+    column = CT.description_of_changes
     rows = [(description_of_change)]
     df: DataFrame = spark.createDataFrame(rows, StringType())
-    df = df.withColumnRenamed(Columns.VALUE, column)
+    df = df.withColumnRenamed(CT.value, column)
     return df
 
 
 def add_timestamp_column(df: DataFrame, run_timestamp: str) -> DataFrame:
-    df = df.withColumn(Columns.RUN_TIMESTAMP, F.lit(run_timestamp))
+    df = df.withColumn(CT.run_timestamp, F.lit(run_timestamp))
     return df
 
 

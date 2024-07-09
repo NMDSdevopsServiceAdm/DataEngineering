@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from pyspark.ml.linalg import VectorUDT
 
+from pyspark.ml.linalg import VectorUDT
 from pyspark.sql.types import (
     StructType,
     StructField,
@@ -13,42 +13,15 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.estimate_filled_posts.column_names import (
-    LOCATION_ID,
-    SNAPSHOT_DATE,
-    PEOPLE_DIRECTLY_EMPLOYED,
-    JOB_COUNT_UNFILTERED,
-    JOB_COUNT,
-    ESTIMATE_JOB_COUNT,
-    PRIMARY_SERVICE_TYPE,
-    ROLLING_AVERAGE_MODEL,
-    EXTRAPOLATION_MODEL,
-    CARE_HOME_MODEL,
-    INTERPOLATION_MODEL,
-    NON_RESIDENTIAL_MODEL,
+from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.diagnostics_utils.diagnostics_meta_data import (
-    Columns,
-    TestColumns,
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.direct_payments_utils.direct_payments_column_names import (
-    DirectPaymentColumnNames as DP,
-)
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-    NewCqcLocationApiColumns as CQCLNew,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
-from utils.column_names.raw_data_files.cqc_pir_columns import (
-    CqcPirColumns as CQCPIR,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
@@ -56,38 +29,40 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.column_names.reconciliation_columns import (
-    ReconciliationColumns as ReconColumn,
 )
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
-from utils.column_names.validation_table_columns import Validation
-
-
-from schemas.cqc_location_schema import LOCATION_SCHEMA
-
-
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.cqc_pir_columns import (
+    CqcPirColumns as CQCPIR,
+)
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
+from utils.column_names.reconciliation_columns import (
+    ReconciliationColumns as ReconColumn,
+)
+from utils.column_names.validation_table_columns import Validation
+from utils.direct_payments_utils.direct_payments_column_names import (
+    DirectPaymentColumnNames as DP,
 )
 
 from utils.column_names.coverage_columns import CoverageColumns
@@ -97,109 +72,170 @@ from utils.column_names.coverage_columns import CoverageColumns
 class CreateJobEstimatesDiagnosticsSchemas:
     estimate_jobs = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(SNAPSHOT_DATE, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(
-                JOB_COUNT_UNFILTERED,
+                IndCQC.ascwds_filled_posts,
                 FloatType(),
                 True,
             ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_model, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
         ]
     )
     capacity_tracker_care_home = StructType(
         [
-            StructField(Columns.CQC_ID, StringType(), False),
+            StructField(CT.cqc_id, StringType(), False),
             StructField(
-                Columns.NURSES_EMPLOYED,
+                CT.nurses_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(CT.care_workers_employed, FloatType(), True),
+            StructField(CT.non_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_nurses_employed, FloatType(), True),
+            StructField(CT.agency_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
         ]
     )
     capacity_tracker_non_residential = StructType(
         [
-            StructField(Columns.CQC_ID, StringType(), False),
+            StructField(CT.cqc_id, StringType(), False),
             StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
+                CT.cqc_care_workers_employed,
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_add_date_to_capacity_tracker_schema = StructType(
+        [
+            *capacity_tracker_care_home,
+            StructField(CT.capacity_tracker_care_homes_import_date, DateType(), True),
         ]
     )
 
     diagnostics = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
-                Columns.NURSES_EMPLOYED,
+                CT.nurses_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NURSES_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_CARE_WORKERS_EMPLOYED, FloatType(), True),
-            StructField(Columns.AGENCY_NON_CARE_WORKERS_EMPLOYED, FloatType(), True),
+            StructField(CT.care_workers_employed, FloatType(), True),
+            StructField(CT.non_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_nurses_employed, FloatType(), True),
+            StructField(CT.agency_care_workers_employed, FloatType(), True),
+            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
             StructField(
-                Columns.CQC_CARE_WORKERS_EMPLOYED,
+                CT.cqc_care_workers_employed,
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_prepare_capacity_tracker_care_home_schema = StructType(
+        [
+            *diagnostics,
+            StructField(CT.care_home_employed, FloatType(), True),
+        ]
+    )
+    expected_prepare_capacity_tracker_non_residential_schema = StructType(
+        [
+            *diagnostics,
+            StructField(CT.non_residential_employed, FloatType(), True),
         ]
     )
     diagnostics_prepared = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                JOB_COUNT_UNFILTERED,
+                IndCQC.ascwds_filled_posts,
                 FloatType(),
                 True,
             ),
-            StructField(JOB_COUNT, FloatType(), True),
-            StructField(PRIMARY_SERVICE_TYPE, StringType(), True),
-            StructField(ROLLING_AVERAGE_MODEL, FloatType(), True),
-            StructField(CARE_HOME_MODEL, FloatType(), True),
-            StructField(EXTRAPOLATION_MODEL, FloatType(), True),
-            StructField(INTERPOLATION_MODEL, FloatType(), True),
-            StructField(NON_RESIDENTIAL_MODEL, FloatType(), True),
-            StructField(ESTIMATE_JOB_COUNT, FloatType(), True),
-            StructField(PEOPLE_DIRECTLY_EMPLOYED, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_model, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
             StructField(
-                Columns.CARE_HOME_EMPLOYED,
+                CT.care_home_employed,
                 FloatType(),
                 True,
             ),
-            StructField(Columns.NON_RESIDENTIAL_EMPLOYED, FloatType(), True),
+            StructField(CT.non_residential_employed, FloatType(), True),
+        ]
+    )
+    expected_calculate_residuals = StructType(
+        [
+            *diagnostics_prepared,
+            StructField(
+                IndCQC.residuals_estimate_filled_posts_non_res_pir, FloatType(), True
+            ),
         ]
     )
     residuals = StructType(
         [
-            StructField(LOCATION_ID, StringType(), False),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                TestColumns.residuals_test_column_names[0],
+                IndCQC.residuals_estimate_filled_posts_non_res_pir,
                 FloatType(),
                 True,
             ),
             StructField(
-                TestColumns.residuals_test_column_names[1],
+                IndCQC.residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_average_residual_schema = StructType(
+        [
+            StructField(
+                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_create_empty_dataframe_schema = StructType(
+        [
+            StructField(CT.description_of_changes, StringType(), True),
+        ]
+    )
+    expected_run_average_residuals_schema = StructType(
+        [
+            StructField(CT.description_of_changes, StringType(), True),
+            StructField(
+                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_add_timestamp_schema = StructType(
+        [
+            *residuals,
+            StructField(CT.run_timestamp, StringType(), True),
         ]
     )
 
@@ -2378,7 +2414,7 @@ class FlattenCQCRatings:
                                         CQCL.report_link_id, StringType(), True
                                     ),
                                     StructField(
-                                        CQCLNew.use_of_resources,
+                                        CQCL.use_of_resources,
                                         StructType(
                                             [
                                                 StructField(
@@ -2387,20 +2423,20 @@ class FlattenCQCRatings:
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.summary, StringType(), True
+                                                    CQCL.summary, StringType(), True
                                                 ),
                                                 StructField(
-                                                    CQCLNew.use_of_resources_rating,
+                                                    CQCL.use_of_resources_rating,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_summary,
+                                                    CQCL.combined_quality_summary,
                                                     StringType(),
                                                     True,
                                                 ),
                                                 StructField(
-                                                    CQCLNew.combined_quality_rating,
+                                                    CQCL.combined_quality_rating,
                                                     StringType(),
                                                     True,
                                                 ),
@@ -2457,7 +2493,7 @@ class FlattenCQCRatings:
                             True,
                         ),
                         StructField(
-                            CQCLNew.service_ratings,
+                            CQCL.service_ratings,
                             ArrayType(
                                 StructType(
                                     [
@@ -2512,7 +2548,7 @@ class FlattenCQCRatings:
                             StructField(CQCL.report_link_id, StringType(), True),
                             StructField(CQCL.organisation_id, StringType(), True),
                             StructField(
-                                CQCLNew.service_ratings,
+                                CQCL.service_ratings,
                                 ArrayType(
                                     StructType(
                                         [
@@ -2553,26 +2589,26 @@ class FlattenCQCRatings:
                                     [
                                         StructField(CQCL.rating, StringType(), True),
                                         StructField(
-                                            CQCLNew.use_of_resources,
+                                            CQCL.use_of_resources,
                                             StructType(
                                                 [
                                                     StructField(
-                                                        CQCLNew.combined_quality_rating,
+                                                        CQCL.combined_quality_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.combined_quality_summary,
+                                                        CQCL.combined_quality_summary,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_rating,
+                                                        CQCL.use_of_resources_rating,
                                                         StringType(),
                                                         True,
                                                     ),
                                                     StructField(
-                                                        CQCLNew.use_of_resources_summary,
+                                                        CQCL.use_of_resources_summary,
                                                         StringType(),
                                                         True,
                                                     ),
@@ -3336,7 +3372,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+class ValidateNonResASCWDSIndCqcFeaturesData:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -3345,7 +3381,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
             StructField(IndCQC.dormancy, StringType(), True),
         ]
     )
-    non_res_ascwds_inc_dormancy_ind_cqc_features_schema = StructType(
+    non_res_ascwds_ind_cqc_features_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
