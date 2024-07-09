@@ -79,6 +79,24 @@
             }
           },
           {
+            "StartAt": "Run non res ascwds without dormancy ind cqc features data job",
+            "States": {
+                "Run non res ascwds without dormancy ind cqc features data job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
+                    "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=non_res_ascwds_without_dormancy_ind_cqc_features_data_report/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
             "StartAt": "Run validate estimated ind cqc filled posts data job",
             "States": {
                 "Run validate estimated ind cqc filled posts data job": {
