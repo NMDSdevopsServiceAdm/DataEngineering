@@ -67,6 +67,17 @@ def main(
 def calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
+    """
+    Calculates the expected size of the non res ascwds without dormancy ind cqc features dataset.
+
+    The function calculates the expected size of the non res ascwds without dormancy ind cqc features dataset from the previous dataset in the pipeline.
+
+    Args:
+        cleaned_ind_cqc_df (DataFrame): A dataframe containing the cleaned ind cqc dataset.
+
+    Returns:
+        int: The number of rows expected in the non res ascwds without dormancy ind cqc features dataset.
+    """
     expected_size = cleaned_ind_cqc_df.where(
         (
             cleaned_ind_cqc_df[IndCQC.primary_service_type]

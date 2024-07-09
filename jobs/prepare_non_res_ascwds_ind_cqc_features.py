@@ -190,10 +190,32 @@ def main(
 
 
 def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
+    """
+    Removes rows where primary service type is not non-residential.
+
+    The function filters the dataframe to rows where primary service type is non-residential.
+
+    Args:
+        df (DataFrame): A dataframe containing features data.
+
+    Returns:
+        DataFrame: A dataframe containing non-residential features data.
+    """
     return df.filter(F.col(IndCQC.care_home) == "N")
 
 
 def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
+    """
+    Removes rows where dormancy is null.
+
+    The function filters the dataframe to rows where dormancy has a non-null value.
+
+    Args:
+        df (DataFrame): A dataframe containing non-residential features data.
+
+    Returns:
+        DataFrame: A dataframe containing non-residential features data where dormancy has a non-null value.
+    """
     return df.filter(F.col(IndCQC.dormancy).isNotNull())
 
 
