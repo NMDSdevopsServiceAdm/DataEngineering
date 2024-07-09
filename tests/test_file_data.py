@@ -2753,7 +2753,6 @@ class NonResAscwdsWithDormancyFeaturesData(object):
     ]
 
 
-
 @dataclass
 class CareHomeFeaturesData:
     clean_merged_data_rows = [
