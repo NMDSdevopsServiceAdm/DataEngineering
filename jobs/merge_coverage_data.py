@@ -18,6 +18,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 
+from utils.column_values.categorical_columns_by_dataset import CoverageCategoricalValues
+
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
@@ -140,7 +142,10 @@ def add_flag_for_in_ascwds(
     """
     merged_coverage_df = merged_coverage_df.withColumn(
         CoverageColumns.in_ascwds,
-        F.when(F.isnull(AWPClean.establishment_id), 0).otherwise(1),
+        F.when(
+            F.isnull(AWPClean.establishment_id),
+            CoverageCategoricalValues.in_ascwds.not_in_ascwds,
+        ).otherwise(CoverageCategoricalValues.in_ascwds.is_in_ascwds),
     )
 
     return merged_coverage_df
