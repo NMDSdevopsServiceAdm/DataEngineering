@@ -87,9 +87,7 @@ def main(
         df=features_df,
     )
 
-    features_with_dormancy_df, features_without_dormancy_df = split_df_on_dormancy(
-        features_df
-    )
+    features_with_dormancy_df = filter_df_to_non_null_dormancy(features_df)
 
     list_for_vectorisation_with_dormancy: List[str] = sorted(
         [
@@ -152,7 +150,7 @@ def main(
     )
 
     vectorised_dataframe_without_dormancy = vectorise_dataframe(
-        df=features_without_dormancy_df,
+        df=features_df,
         list_for_vectorisation=list_for_vectorisation_without_dormancy,
     )
     vectorised_features_without_dormancy_df = (
@@ -195,10 +193,8 @@ def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "N")
 
 
-def split_df_on_dormancy(df: DataFrame) -> tuple:
-    with_dormancy_df = df.filter(F.col(IndCQC.dormancy).isNotNull())
-    without_dormancy_df = df.filter(F.col(IndCQC.dormancy).isNull())
-    return with_dormancy_df, without_dormancy_df
+def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
+    return df.filter(F.col(IndCQC.dormancy).isNotNull())
 
 
 if __name__ == "__main__":

@@ -95,7 +95,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(self.test_df.count(), 10)
         self.assertEqual(result_with_dormancy.count(), 6)
-        self.assertEqual(result_without_dormancy.count(), 1)
+        self.assertEqual(result_without_dormancy.count(), 7)
 
     def test_filter_df_for_non_res_care_home_data(self):
         ind_cqc_df = self.spark.createDataFrame(
@@ -110,30 +110,18 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_split_df_on_dormancy_returns_two_dataframes_with_correct_values(self):
+    def test_filter_df_non_null_dormancy_data(self):
         ind_cqc_df = self.spark.createDataFrame(
             Data.filter_to_dormancy_rows, Schemas.filter_to_dormancy_schema
         )
-        (
-            returned_with_dormancy_df,
-            returned_without_dormancy_df,
-        ) = job.split_df_on_dormancy(ind_cqc_df)
-        expected_with_dormancy_df = self.spark.createDataFrame(
-            Data.expected_with_dormancy_rows,
+        returned_df = job.filter_df_to_non_null_dormancy(ind_cqc_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_to_dormancy_rows,
             Schemas.filter_to_dormancy_schema,
         )
-        expected_without_dormancy_df = self.spark.createDataFrame(
-            Data.expected_without_dormancy_rows,
-            Schemas.filter_to_dormancy_schema,
-        )
-
-        self.assertEqual(
-            returned_with_dormancy_df.collect(), expected_with_dormancy_df.collect()
-        )
-        self.assertEqual(
-            returned_without_dormancy_df.collect(),
-            expected_without_dormancy_df.collect(),
-        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":
