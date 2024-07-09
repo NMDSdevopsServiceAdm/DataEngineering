@@ -17,7 +17,6 @@ class NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.location_id,
             IndCqcColumns.cqc_location_import_date,
             IndCqcColumns.care_home,
-            IndCqcColumns.dormancy,
             IndCqcColumns.features,
             IndCqcColumns.current_region,
             IndCqcColumns.imputed_registration_date,
@@ -38,12 +37,12 @@ class NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules:
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_non_care_home_values.categorical_values,
-            IndCqcColumns.dormancy: CatValues.dormancy_column_values.categorical_values,
+            IndCqcColumns.dormancy: CatValues.dormancy_column_without_dormancy_values.categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
         },
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CatValues.care_home_column_non_care_home_values.count_of_categorical_values,
-            IndCqcColumns.dormancy: CatValues.dormancy_column_values.count_of_categorical_values,
+            IndCqcColumns.dormancy: CatValues.dormancy_column_without_dormancy_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
         },
     }
