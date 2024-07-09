@@ -18,7 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 
-from utils.column_values.categorical_columns_by_dataset import CoverageCategoricalValues
+from utils.column_values.categorical_column_values import InAscwds
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -102,6 +102,20 @@ def join_ascwds_data_into_cqc_location_df(
     cqc_location_import_date_column: str,
     ascwds_workplace_import_date_column: str,
 ) -> DataFrame:
+    """
+    Joins ASC-WDS reconciliation data to CQC locations.
+
+    Takes specific columns from the cleaned CQC locations dataframe and joins specific columns from the ASC-WDS reconciliation dataframe.
+
+    Args:
+        cqc_location_df (DataFrame): A dataframe of cleaned CQC locations.
+        ascwds_workplace_df (DataFrame): A dataframe of ASC-WDS workplaces which includes workplaces last updated or logged into within 2 years of snapshot.
+        cqc_location_import_date_column (String): A string refering to the import date column in the clean CQC locations dataframe.
+        ascwds_workplace_import_date_column (String): A string refering to the import date column in the ASC-WDS reconciliation dataframe.
+
+    Returns:
+        DataFrame: The clean CQC locations dataframe with all columns from the ASC-WDS reconciliation dataframe added to it.
+    """
     merged_coverage_ascwds_df_with_ascwds_workplace_import_date = (
         cUtils.add_aligned_date_column(
             cqc_location_df,
@@ -138,14 +152,14 @@ def add_flag_for_in_ascwds(
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
 
     Returns:
-        DataFrame
+        DataFrame: A dataframe with an additional column that flags if CQC location is in ASC-WDS.
     """
     merged_coverage_df = merged_coverage_df.withColumn(
         CoverageColumns.in_ascwds,
         F.when(
             F.isnull(AWPClean.establishment_id),
-            CoverageCategoricalValues.in_ascwds.not_in_ascwds,
-        ).otherwise(CoverageCategoricalValues.in_ascwds.is_in_ascwds),
+            InAscwds.not_in_ascwds,
+        ).otherwise(InAscwds.is_in_ascwds),
     )
 
     return merged_coverage_df
