@@ -2,5 +2,5 @@ from dataclasses import dataclass
 
 
 @dataclass
-class MergeCoverageDataColumns:
+class CoverageColumns:
     in_ascwds: str = "in_ascwds"

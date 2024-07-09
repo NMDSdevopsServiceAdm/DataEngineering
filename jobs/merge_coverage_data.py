@@ -16,9 +16,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.column_names.merge_coverage_data_columns import (
-    MergeCoverageDataColumns as MergeColumns,
-)
+from utils.column_names.coverage_columns import CoverageColumns
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -129,8 +127,19 @@ def join_ascwds_data_into_cqc_location_df(
 def add_flag_for_in_ascwds(
     merged_coverage_df: DataFrame,
 ) -> DataFrame:
+    """
+    Add a column to the merged coverage dataframe which flags if CQC location is in ASC-WDS.
+
+    When row has an ASC-WDS establishmentid then value is 1, otherwise value is 0.
+
+    Args:
+        merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+
+    Returns:
+        DataFrame
+    """
     merged_coverage_df = merged_coverage_df.withColumn(
-        MergeColumns.in_ascwds,
+        CoverageColumns.in_ascwds,
         F.when(F.isnull(AWPClean.establishment_id), 0).otherwise(1),
     )
 

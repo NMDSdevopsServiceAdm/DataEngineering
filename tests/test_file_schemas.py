@@ -90,7 +90,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
-from utils.column_names.merge_coverage_data_columns import MergeCoverageDataColumns
+from utils.column_names.coverage_columns import CoverageColumns
 
 
 @dataclass
@@ -1501,7 +1501,7 @@ class MergeCoverageData:
     expected_in_ascwds_schema = StructType(
         [
             *sample_in_ascwds_schema,
-            StructField(MergeCoverageDataColumns.in_ascwds, IntegerType(), True),
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
         ]
     )
 

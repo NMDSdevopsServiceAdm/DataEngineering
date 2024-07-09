@@ -17,9 +17,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.merge_coverage_data_columns import (
-    MergeCoverageDataColumns,
-)
+from utils.column_names.coverage_columns import CoverageColumns
 
 
 class MergeCoverageDatasetTests(unittest.TestCase):
@@ -110,13 +108,11 @@ class AddFlagForInAscwdsTests(unittest.TestCase):
         )
 
     def test_add_flag_for_in_ascwds_adds_1_column_with_given_name(self):
-        self.assertTrue(
-            MergeCoverageDataColumns.in_ascwds in self.returned_in_ascwds_df.columns
-        )
+        self.assertTrue(CoverageColumns.in_ascwds in self.returned_in_ascwds_df.columns)
 
         self.assertEqual(
             len(self.returned_in_ascwds_df.columns),
-            len(self.sample_in_ascwds_df.columns) + 1,
+            len(self.expected_in_ascwds_df.columns),
         )
 
     def test_add_flag_for_in_ascwds_has_expected_values(self):
