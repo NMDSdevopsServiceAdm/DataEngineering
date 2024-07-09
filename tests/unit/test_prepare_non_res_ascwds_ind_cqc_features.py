@@ -114,9 +114,10 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         ind_cqc_df = self.spark.createDataFrame(
             Data.filter_to_dormancy_rows, Schemas.filter_to_dormancy_schema
         )
-        returned_with_dormancy_df, returned_without_dormancy_df = (
-            job.split_df_on_dormancy(ind_cqc_df)
-        )
+        (
+            returned_with_dormancy_df,
+            returned_without_dormancy_df,
+        ) = job.split_df_on_dormancy(ind_cqc_df)
         expected_with_dormancy_df = self.spark.createDataFrame(
             Data.expected_with_dormancy_rows,
             Schemas.filter_to_dormancy_schema,
