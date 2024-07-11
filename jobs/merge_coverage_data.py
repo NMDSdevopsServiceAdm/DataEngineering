@@ -17,6 +17,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
 from utils.column_values.categorical_column_values import InAscwds
 
@@ -60,11 +61,18 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.master_update_date_org,
     AWPClean.establishment_created_date,
 ]
+cqc_ratings_columns_to_import = [
+    AWPClean.location_id,
+    CQCRatingsColumns.date,
+    CQCRatingsColumns.overall_rating,
+    CQCRatingsColumns.latest_rating_flag,
+]
 
 
 def main(
     cleaned_cqc_location_source: str,
     workplace_for_reconciliation_source: str,
+    cqc_ratings_source: str,
     merged_coverage_destination: str,
 ):
     spark = utils.get_spark()
@@ -80,6 +88,11 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(
         workplace_for_reconciliation_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
+    )
+
+    cqc_ratings_df = utils.read_from_parquet(
+        cqc_ratings_source,
+        selected_columns=cqc_ratings_columns_to_import,
     )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
@@ -180,6 +193,7 @@ if __name__ == "__main__":
     (
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
+        cqc_ratings_source,
         merged_coverage_destination,
     ) = utils.collect_arguments(
         (
@@ -190,6 +204,7 @@ if __name__ == "__main__":
             "--workplace_for_reconciliation_source",
             "Source s3 directory for parquet ASCWDS workplace for reconciliation dataset",
         ),
+        ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
             "--merged_coverage_destination",
             "Destination s3 directory for parquet",
@@ -198,6 +213,7 @@ if __name__ == "__main__":
     main(
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
+        cqc_ratings_source,
         merged_coverage_destination,
     )
 
