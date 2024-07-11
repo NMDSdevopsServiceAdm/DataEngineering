@@ -105,6 +105,10 @@ def main(
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
 
+    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+        merged_coverage_df, cqc_ratings_df
+    )
+
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
@@ -215,10 +219,10 @@ def join_latest_cqc_rating_into_coverage_df(
     cqc_ratings_df: DataFrame,
 ) -> DataFrame:
     """
-     Then join latest rating to coverage dataframe.
+     Join latest rating to coverage dataframe using locationid as key.
 
     Requirements that are not arguments: CQC locationid.
-    All columns from the CQC ratings dataframe are then joined to the coverage dataframe using locationid.
+    All columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid.
 
     Args:
         cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
@@ -227,6 +231,18 @@ def join_latest_cqc_rating_into_coverage_df(
     Returns:
         DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
     """
+
+    latest_cqc_ratings_df = keep_only_latest_cqc_ratings(cqc_ratings_df)
+
+    merged_coverage_with_latest_rating_df = merged_coverage_df.join(
+        latest_cqc_ratings_df,
+        CQCLClean.location_id,
+        how="left",
+    )
+
+    return merged_coverage_with_latest_rating_df.drop(
+        CQCRatingsColumns.latest_rating_flag
+    )
 
 
 if __name__ == "__main__":

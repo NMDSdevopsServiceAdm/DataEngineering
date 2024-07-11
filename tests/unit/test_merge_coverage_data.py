@@ -146,11 +146,6 @@ class KeepOnlyLatestCqcRatingTests(unittest.TestCase):
             self.sample_cqc_ratings_df
         )
 
-        self.expected_cqc_ratings_latest_rating_only_df = self.spark.createDataFrame(
-            Data.expected_cqc_ratings_latest_rating_only_rows,
-            Schemas.expected_cqc_ratings_latest_rating_only_schema,
-        )
-
     def test_keep_only_latest_cqc_ratings_only_contains_latest_ratings(self):
         latest_rating_column_df = self.returned_in_ascwds_df.select(
             CQCRatingsColumns.latest_rating_flag
@@ -162,6 +157,45 @@ class KeepOnlyLatestCqcRatingTests(unittest.TestCase):
         self.assertEqual(
             distinct_latest_rating_rows[0][0], CQCRatingsValues.latest_rating
         )
+
+
+class JoinLatestCqcRatingsIntoCoverageTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
+
+        self.sample_cqc_locations_df = self.spark.createDataFrame(
+            Data.sample_cqc_locations_rows,
+            Schemas.sample_cqc_locations_schema,
+        )
+
+        self.sample_cqc_ratings_df = self.spark.createDataFrame(
+            Data.sample_cqc_ratings_for_merge_rows,
+            Schemas.sample_cqc_ratings_for_merge_schema,
+        )
+
+        self.returned_df = job.join_latest_cqc_rating_into_coverage_df(
+            self.sample_cqc_locations_df, self.sample_cqc_ratings_df
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_cqc_locations_and_latest_cqc_rating_rows,
+            Schemas.expected_cqc_locations_and_latest_cqc_rating_schema,
+        )
+
+    def test_join_latest_cqc_rating_into_coverage_df_adds_expected_columns(self):
+        self.assertEqual(len(self.returned_df.columns), len(self.expected_df.columns))
+
+    def test_join_latest_cqc_rating_into_coverage_df_does_not_add_any_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_join_latest_cqc_rating_into_coverage_df_has_no_duplicate_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(list(set(self.returned_df.columns))),
+        )
+
+    def test_join_latest_cqc_rating_into_coverage_df_has_expected_values(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 if __name__ == "__main__":

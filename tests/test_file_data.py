@@ -2247,6 +2247,11 @@ class MergeCoverageData:
         ("1", 1),
     ]
 
+    sample_cqc_locations_rows = [
+        ("1-000000001",),
+        ("1-000000002",)
+    ]
+
     sample_cqc_ratings_for_merge_rows = [
         ("1-000000001", "2024-01-01", "Good", 0),
         ("1-000000001", "2024-01-02", "Good", 1),
@@ -2254,9 +2259,9 @@ class MergeCoverageData:
         ("1-000000002", "2024-01-01", None, 1),
     ]
 
-    expected_cqc_ratings_latest_rating_only_rows = [
-        ("1-000000001", "2024-01-02", "Good", 1),
-        ("1-000000002", "2024-01-01", None, 1),
+    expected_cqc_locations_and_latest_cqc_rating_rows = [
+        ("1-000000001", "2024-01-02", "Good",),
+        ("1-000000002", "2024-01-01", None,),
     ]
 
 
