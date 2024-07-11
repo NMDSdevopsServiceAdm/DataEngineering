@@ -1,4 +1,5 @@
 import unittest
+from pyspark.sql import functions as F
 
 from unittest.mock import ANY, Mock, patch
 
@@ -18,6 +19,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+
+from utils.column_values.categorical_column_values import CQCRatingsValues
 
 
 class MergeCoverageDatasetTests(unittest.TestCase):
@@ -127,6 +131,37 @@ class AddFlagForInAscwdsTests(unittest.TestCase):
         expected_rows = self.expected_in_ascwds_df.collect()
 
         self.assertEqual(returned_rows, expected_rows)
+
+
+class KeepOnlyLatestCqcRatingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
+
+        self.sample_cqc_ratings_df = self.spark.createDataFrame(
+            Data.sample_cqc_ratings_for_merge_rows,
+            Schemas.sample_cqc_ratings_for_merge_schema,
+        )
+
+        self.returned_in_ascwds_df = job.keep_only_latest_cqc_ratings(
+            self.sample_cqc_ratings_df
+        )
+
+        self.expected_cqc_ratings_latest_rating_only_df = self.spark.createDataFrame(
+            Data.expected_cqc_ratings_latest_rating_only_rows,
+            Schemas.expected_cqc_ratings_latest_rating_only_schema,
+        )
+
+    def test_keep_only_latest_cqc_ratings_only_contains_latest_ratings(self):
+        latest_rating_column_df = self.returned_in_ascwds_df.select(
+            CQCRatingsColumns.latest_rating_flag
+        )
+
+        distinct_latest_rating_rows = latest_rating_column_df.distinct().collect()
+
+        self.assertEqual(len(distinct_latest_rating_rows), 1)
+        self.assertEqual(
+            distinct_latest_rating_rows[0][0], CQCRatingsValues.latest_rating
+        )
 
 
 if __name__ == "__main__":

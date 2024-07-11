@@ -187,7 +187,7 @@ def add_flag_for_in_ascwds(
     return merged_coverage_df
 
 
-def keep_only_latest_cqc_rating(
+def keep_only_latest_cqc_ratings(
     cqc_ratings_df: DataFrame,
 ) -> DataFrame:
     """
@@ -205,7 +205,8 @@ def keep_only_latest_cqc_rating(
     """
 
     return cqc_ratings_df.where(
-        CQCRatingsColumns.latest_rating_flag == CQCRatingsValues.latest_rating
+        cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
+        == CQCRatingsValues.latest_rating
     )
 
 

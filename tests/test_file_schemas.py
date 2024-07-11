@@ -1542,7 +1542,7 @@ class MergeCoverageData:
         ]
     )
 
-    sample_cqc_ratings_schema = StructType(
+    sample_cqc_ratings_for_merge_schema = StructType(
         [
             StructField(AWPClean.location_id, StringType(), True),
             StructField(CQCRatingsColumns.date, StringType(), True),
@@ -1550,6 +1550,8 @@ class MergeCoverageData:
             StructField(CQCRatingsColumns.latest_rating_flag, IntegerType(), True),
         ]
     )
+
+    expected_cqc_ratings_latest_rating_only_schema = sample_cqc_ratings_for_merge_schema
 
 
 @dataclass
