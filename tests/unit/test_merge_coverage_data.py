@@ -21,7 +21,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
-from utils.column_values.categorical_column_values import CQCRatingsValues
+from utils.column_values.categorical_column_values import CQCLatestRating
 
 
 class MergeCoverageDatasetTests(unittest.TestCase):
@@ -133,20 +133,15 @@ class AddFlagForInAscwdsTests(unittest.TestCase):
         self.assertEqual(returned_rows, expected_rows)
 
 
-class KeepOnlyLatestCqcRatingTests(unittest.TestCase):
+class KeepOnlyLatestCqcRatingTests(MergeCoverageDatasetTests):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+        super().setUp()
 
-        self.sample_cqc_ratings_df = self.spark.createDataFrame(
-            Data.sample_cqc_ratings_for_merge_rows,
-            Schemas.sample_cqc_ratings_for_merge_schema,
+        self.returned_in_ascwds_df = job.filter_for_latest_cqc_ratings_only(
+            self.test_cqc_ratings_df
         )
 
-        self.returned_in_ascwds_df = job.keep_only_latest_cqc_ratings(
-            self.sample_cqc_ratings_df
-        )
-
-    def test_keep_only_latest_cqc_ratings_only_contains_latest_ratings(self):
+    def test_filter_for_latest_cqc_ratings_only_contains_latest_ratings(self):
         latest_rating_column_df = self.returned_in_ascwds_df.select(
             CQCRatingsColumns.latest_rating_flag
         )
@@ -155,26 +150,24 @@ class KeepOnlyLatestCqcRatingTests(unittest.TestCase):
 
         self.assertEqual(len(distinct_latest_rating_rows), 1)
         self.assertEqual(
-            distinct_latest_rating_rows[0][0], CQCRatingsValues.latest_rating
+            distinct_latest_rating_rows[0][0], CQCLatestRating.is_latest_rating
         )
 
+    def test_filter_for_latest_cqc_ratings_only_has_expected_row_count(self):
+        self.assertEqual(self.returned_in_ascwds_df.count(), 2)
 
-class JoinLatestCqcRatingsIntoCoverageTests(unittest.TestCase):
+
+class JoinLatestCqcRatingsIntoCoverageTests(MergeCoverageDatasetTests):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+        super().setUp()
 
         self.sample_cqc_locations_df = self.spark.createDataFrame(
             Data.sample_cqc_locations_rows,
             Schemas.sample_cqc_locations_schema,
         )
 
-        self.sample_cqc_ratings_df = self.spark.createDataFrame(
-            Data.sample_cqc_ratings_for_merge_rows,
-            Schemas.sample_cqc_ratings_for_merge_schema,
-        )
-
         self.returned_df = job.join_latest_cqc_rating_into_coverage_df(
-            self.sample_cqc_locations_df, self.sample_cqc_ratings_df
+            self.sample_cqc_locations_df, self.test_cqc_ratings_df
         )
 
         self.expected_df = self.spark.createDataFrame(
