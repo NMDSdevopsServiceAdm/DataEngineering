@@ -43,7 +43,7 @@ class MergeCoverageDatasetTests(unittest.TestCase):
         )
         self.test_cqc_ratings_df = self.spark.createDataFrame(
             Data.sample_cqc_ratings_for_merge_rows,
-            Schemas.sample_cqc_ratings_schema,
+            Schemas.sample_cqc_ratings_for_merge_schema,
         )
 
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
