@@ -66,6 +66,7 @@ from utils.direct_payments_utils.direct_payments_column_names import (
 )
 
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
 
 @dataclass
@@ -1538,6 +1539,15 @@ class MergeCoverageData:
         [
             *sample_in_ascwds_schema,
             StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+        ]
+    )
+
+    sample_cqc_ratings_schema = StructType(
+        [
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(CQCRatingsColumns.date, StringType(), True),
+            StructField(CQCRatingsColumns.overall_rating, StringType(), True),
+            StructField(CQCRatingsColumns.latest_rating_flag, IntegerType(), True),
         ]
     )
 

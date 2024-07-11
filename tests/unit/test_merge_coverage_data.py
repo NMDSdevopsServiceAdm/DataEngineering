@@ -23,6 +23,7 @@ from utils.column_names.coverage_columns import CoverageColumns
 class MergeCoverageDatasetTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
+    TEST_CQC_RATINGS_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -35,6 +36,10 @@ class MergeCoverageDatasetTests(unittest.TestCase):
         self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
             Data.clean_ascwds_workplace_for_merge_rows,
             Schemas.clean_ascwds_workplace_for_merge_schema,
+        )
+        self.test_cqc_ratings_df = self.spark.createDataFrame(
+            Data.sample_cqc_ratings_for_merge_rows,
+            Schemas.sample_cqc_ratings_schema,
         )
 
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
@@ -49,15 +54,17 @@ class MergeCoverageDatasetTests(unittest.TestCase):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_clean_ascwds_workplace_df,
+            self.test_cqc_ratings_df,
         ]
 
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
+            self.TEST_CQC_RATINGS_SOURCE,
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
+        self.assertEqual(read_from_parquet_patch.call_count, 3)
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
 
