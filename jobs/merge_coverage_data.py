@@ -20,6 +20,7 @@ from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
 from utils.column_values.categorical_column_values import InAscwds
+from utils.column_values.categorical_column_values import CQCRatingsValues
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -184,6 +185,47 @@ def add_flag_for_in_ascwds(
     )
 
     return merged_coverage_df
+
+
+def keep_only_latest_cqc_rating(
+    cqc_ratings_df: DataFrame,
+) -> DataFrame:
+    """
+    Filter the CQC ratings dataframe to latest rating per location only.
+
+    Requirements that are not arguments: latest_rating_flag.
+    The CQC ratings dataset shows 1 for the latest rating in the latest_rating_flag column.
+    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0.
+
+    Args:
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
+
+    Returns:
+        DataFrame: The cqc ratings dataframe with only the latest rating per location.
+    """
+
+    return cqc_ratings_df.where(
+        CQCRatingsColumns.latest_rating_flag == CQCRatingsValues.latest_rating
+    )
+
+
+def join_latest_cqc_rating_into_coverage_df(
+    merged_coverage_df: DataFrame,
+    cqc_ratings_df: DataFrame,
+) -> DataFrame:
+    """
+     Then join latest rating to coverage dataframe.
+
+    Requirements that are not arguments: CQC locationid.
+    All columns from the CQC ratings dataframe are then joined to the coverage dataframe using locationid.
+
+    Args:
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
+        merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+
+    Returns:
+        DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
+    """
 
 
 if __name__ == "__main__":
