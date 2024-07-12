@@ -177,6 +177,17 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
 def remove_registration_dates_that_are_later_than_import_date(
     df: DataFrame,
 ) -> DataFrame:
+    """
+    Nullifies registration dates from the imupted_registration_date column which are after the import date.
+
+    This function changes registration dates from the imupted_registration_date column to None when they are greater than the import date.
+
+    Args:
+        df (DataFrame): A dataframe of CQC locations data with the column imputed_registration_date containing cleaned registration dates.
+
+    Returns:
+        DataFrame: A dataframe of CQC locations data with the column imputed_registration_date containing registration dates that are less than or equal to than the import date.
+    """
     min_import_date = "min_import_date"
     df = df.withColumn(
         min_import_date,
