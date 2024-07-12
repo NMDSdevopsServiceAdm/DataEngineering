@@ -160,6 +160,17 @@ def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
 
 
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
+    """
+    Adds a new column which is a cleaned and imputed copy of registrationdate.
+
+    This function handles the steps for creating, cleaning and filling the blanks in the column imputed_registration_date.
+
+    Args:
+        df (DataFrame): A dataframe of CQC locations data with the column location_id, import_date, and registrationdate.
+
+    Returns:
+        DataFrame: A dataframe of CQC locations data with the additional column imputed_registration_date.
+    """
     cqc_df = cqc_df.withColumn(
         CQCLClean.imputed_registration_date, cqc_df[CQCL.registration_date]
     )
@@ -220,6 +231,20 @@ def remove_registration_dates_that_are_later_than_import_date(
 
 
 def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
+    """
+    Fills missing dates in the imputed_registration_date_column.
+
+    This function fills missing dates in the imputed_registration_date_column. Where there is a value in
+    imputed_registation_date for that location at a later point in time, the minimum registration date for
+    that location is used. Where there is no value for that location at any point in time, the minimum
+    import date is used.
+
+    Args:
+        df (DataFrame): A dataframe with the columns imputed_registration_date, location_id, and import_date.
+
+    Returns:
+        DataFrame: A dataframe with the imputed_registration_date filled.
+    """
     df = df.withColumn(
         CQCLClean.imputed_registration_date,
         F.when(
