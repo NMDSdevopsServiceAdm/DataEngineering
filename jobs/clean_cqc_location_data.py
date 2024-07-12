@@ -170,6 +170,18 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
 
 
 def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
+    """
+    Converts a timestamp-as-string to a date-as-string.
+
+    This function takes a column of string type containing mixed date and timestamp data and removes the time portion of the timestamp data.
+
+    Args:
+        df (DataFrame): A dataframe with the named column.
+        column_name (str): A string with the name of the column to remove time data from.
+
+    Returns:
+        DataFrame: A dataframe with the named column without time data.
+    """
     df = df.withColumn(column_name, F.substring(column_name, 1, 10))
     return df
 
