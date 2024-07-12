@@ -464,6 +464,12 @@ class CQCRatingsValues(ColumnValues):
 
 
 @dataclass
+class CQCLatestRating(ColumnValues):
+    is_latest_rating: int = 1
+    not_latest_rating: int = 0
+
+
+@dataclass
 class ParentsOrSinglesAndSubs(ColumnValues):
     singles_and_subs: str = "singles_and_subs"
     parents: str = "parents"

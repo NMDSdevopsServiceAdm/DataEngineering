@@ -17,8 +17,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
 from utils.column_values.categorical_column_values import InAscwds
+from utils.column_values.categorical_column_values import CQCLatestRating
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -60,11 +62,18 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.master_update_date_org,
     AWPClean.establishment_created_date,
 ]
+cqc_ratings_columns_to_import = [
+    AWPClean.location_id,
+    CQCRatingsColumns.date,
+    CQCRatingsColumns.overall_rating,
+    CQCRatingsColumns.latest_rating_flag,
+]
 
 
 def main(
     cleaned_cqc_location_source: str,
     workplace_for_reconciliation_source: str,
+    cqc_ratings_source: str,
     merged_coverage_destination: str,
 ):
     spark = utils.get_spark()
@@ -82,6 +91,11 @@ def main(
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
     )
 
+    cqc_ratings_df = utils.read_from_parquet(
+        cqc_ratings_source,
+        selected_columns=cqc_ratings_columns_to_import,
+    )
+
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
         ascwds_workplace_df,
@@ -90,6 +104,10 @@ def main(
     )
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
+
+    merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
+        merged_coverage_df, cqc_ratings_df
+    )
 
     utils.write_to_parquet(
         merged_coverage_df,
@@ -173,6 +191,60 @@ def add_flag_for_in_ascwds(
     return merged_coverage_df
 
 
+def filter_for_latest_cqc_ratings(
+    cqc_ratings_df: DataFrame,
+) -> DataFrame:
+    """
+    Filter the CQC ratings dataframe to latest rating per location only.
+
+    Requirements that are not arguments: latest_rating_flag.
+    The CQC ratings dataset shows 1 for the latest rating in the latest_rating_flag column.
+    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0.
+
+    Args:
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
+
+    Returns:
+        DataFrame: The cqc ratings dataframe with only the latest rating per location.
+    """
+
+    return cqc_ratings_df.where(
+        cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
+        == CQCLatestRating.is_latest_rating
+    )
+
+
+def join_latest_cqc_rating_into_coverage_df(
+    merged_coverage_df: DataFrame,
+    cqc_ratings_df: DataFrame,
+) -> DataFrame:
+    """
+    Join latest rating to coverage dataframe using locationid as key.
+
+    Requirements that are not arguments: CQC locationid.
+    All columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid.
+
+    Args:
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
+        merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+
+    Returns:
+        DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
+    """
+
+    latest_cqc_ratings_df = filter_for_latest_cqc_ratings(cqc_ratings_df)
+
+    merged_coverage_with_latest_rating_df = merged_coverage_df.join(
+        latest_cqc_ratings_df,
+        CQCLClean.location_id,
+        how="left",
+    )
+
+    return merged_coverage_with_latest_rating_df.drop(
+        CQCRatingsColumns.latest_rating_flag
+    )
+
+
 if __name__ == "__main__":
     print("Spark job 'merge_coverage_data' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -180,6 +252,7 @@ if __name__ == "__main__":
     (
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
+        cqc_ratings_source,
         merged_coverage_destination,
     ) = utils.collect_arguments(
         (
@@ -190,6 +263,7 @@ if __name__ == "__main__":
             "--workplace_for_reconciliation_source",
             "Source s3 directory for parquet ASCWDS workplace for reconciliation dataset",
         ),
+        ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
             "--merged_coverage_destination",
             "Destination s3 directory for parquet",
@@ -198,6 +272,7 @@ if __name__ == "__main__":
     main(
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
+        cqc_ratings_source,
         merged_coverage_destination,
     )
 

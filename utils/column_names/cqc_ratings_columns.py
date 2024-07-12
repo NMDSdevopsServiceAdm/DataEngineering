@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class CQCRatingsColumns:
-    date: str = "Date"
+    date: str = "rating_date"
     overall_rating: str = "Overall_rating"
     safe_rating: str = "Safe_rating"
     well_led_rating: str = "Well-led_rating"
