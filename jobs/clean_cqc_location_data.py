@@ -180,11 +180,11 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
 def remove_registration_dates_that_are_later_than_import_date(
     df: DataFrame,
 ) -> DataFrame:
-    date_for_comparison = "date_for_comparison"
+    min_import_date = "min_import_date"
     df = df.withColumn(
-        date_for_comparison,
+        min_import_date,
         F.regexp_replace(
-            df[Keys.import_date],
+            F.min(Keys.import_date).over(Window.partitionBy(CQCL.location_id)),
             "(\d{4})(\d{2})(\d{2})",
             "$1-$2-$3",
         ),
@@ -192,10 +192,10 @@ def remove_registration_dates_that_are_later_than_import_date(
     df = df.withColumn(
         CQCLClean.imputed_registration_date,
         F.when(
-            df[CQCLClean.imputed_registration_date] <= df[date_for_comparison],
+            df[CQCLClean.imputed_registration_date] <= df[min_import_date],
             df[CQCLClean.imputed_registration_date],
         ),
-    ).drop(date_for_comparison)
+    ).drop(min_import_date)
     return df
 
 
