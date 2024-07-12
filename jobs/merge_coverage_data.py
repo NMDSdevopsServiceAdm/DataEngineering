@@ -191,7 +191,7 @@ def add_flag_for_in_ascwds(
     return merged_coverage_df
 
 
-def filter_for_latest_cqc_ratings_only(
+def filter_for_latest_cqc_ratings(
     cqc_ratings_df: DataFrame,
 ) -> DataFrame:
     """
@@ -232,7 +232,7 @@ def join_latest_cqc_rating_into_coverage_df(
         DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
     """
 
-    latest_cqc_ratings_df = filter_for_latest_cqc_ratings_only(cqc_ratings_df)
+    latest_cqc_ratings_df = filter_for_latest_cqc_ratings(cqc_ratings_df)
 
     merged_coverage_with_latest_rating_df = merged_coverage_df.join(
         latest_cqc_ratings_df,

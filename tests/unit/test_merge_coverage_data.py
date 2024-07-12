@@ -147,11 +147,11 @@ class FilterForLatestCqcRatings(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.returned_in_ascwds_df = job.filter_for_latest_cqc_ratings_only(
+        self.returned_in_ascwds_df = job.filter_for_latest_cqc_ratings(
             self.test_cqc_ratings_df
         )
 
-    def test_filter_for_latest_cqc_ratings_only_contains_latest_ratings(self):
+    def test_filter_for_latest_cqc_ratings_contains_latest_ratings(self):
         latest_rating_column_df = self.returned_in_ascwds_df.select(
             CQCRatingsColumns.latest_rating_flag
         )
@@ -163,7 +163,7 @@ class FilterForLatestCqcRatings(SetupForTests):
             distinct_latest_rating_rows[0][0], CQCLatestRating.is_latest_rating
         )
 
-    def test_filter_for_latest_cqc_ratings_only_has_expected_row_count(self):
+    def test_filter_for_latest_cqc_ratings_has_expected_row_count(self):
         self.assertEqual(self.returned_in_ascwds_df.count(), 2)
 
 
