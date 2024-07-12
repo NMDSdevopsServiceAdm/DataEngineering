@@ -24,7 +24,7 @@ from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 from utils.column_values.categorical_column_values import CQCLatestRating
 
 
-class MergeCoverageDatasetTests(unittest.TestCase):
+class SetupForTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
@@ -45,6 +45,11 @@ class MergeCoverageDatasetTests(unittest.TestCase):
             Data.sample_cqc_ratings_for_merge_rows,
             Schemas.sample_cqc_ratings_for_merge_schema,
         )
+
+
+class MainTests(SetupForTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
     @patch("utils.utils.write_to_parquet")
@@ -79,6 +84,11 @@ class MergeCoverageDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+
+class JoinAscwdsIntoCqcLocationsTests(SetupForTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_join_ascwds_data_into_cqc_location_df(self):
         returned_df = job.join_ascwds_data_into_cqc_location_df(
             self.test_clean_cqc_location_df,
@@ -102,9 +112,9 @@ class MergeCoverageDatasetTests(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class AddFlagForInAscwdsTests(unittest.TestCase):
+class AddFlagForInAscwdsTests(SetupForTests):
     def setUp(self) -> None:
-        self.spark = utils.get_spark()
+        super().setUp()
 
         self.sample_in_ascwds_df = self.spark.createDataFrame(
             Data.sample_in_ascwds_rows, schema=Schemas.sample_in_ascwds_schema
@@ -133,7 +143,7 @@ class AddFlagForInAscwdsTests(unittest.TestCase):
         self.assertEqual(returned_rows, expected_rows)
 
 
-class KeepOnlyLatestCqcRatingTests(MergeCoverageDatasetTests):
+class FilterForLatestCqcRatings(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -157,7 +167,7 @@ class KeepOnlyLatestCqcRatingTests(MergeCoverageDatasetTests):
         self.assertEqual(self.returned_in_ascwds_df.count(), 2)
 
 
-class JoinLatestCqcRatingsIntoCoverageTests(MergeCoverageDatasetTests):
+class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
