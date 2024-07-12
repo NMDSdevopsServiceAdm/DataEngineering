@@ -73,9 +73,6 @@ def main(
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
 ):
-    # spark = utils.get_spark()
-    # spark.sql("set spark.sql.broadcastTimeout = 2000")
-
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
