@@ -1761,6 +1761,16 @@ class CQCLocationsData:
         ("loc_1", "2018-01-01 00:00:00", "20231201", "2018-01-01"),
         ("loc_1", None, "20231101", None),
     ]
+    remove_late_registration_dates_rows = [
+        ("loc_1", "20240101", "2024-01-01"),
+        ("loc_2", "20240101", "2024-01-02"),
+        ("loc_3", "20240101", "2023-12-31"),
+    ]
+    expected_remove_late_registration_dates_rows = [
+        ("loc_1", "20240101", "2024-01-01"),
+        ("loc_2", "20240101", None),
+        ("loc_3", "20240101", "2023-12-31"),
+    ]
     clean_registration_date_column_rows = [
         ("loc_1", "2018-01-01", "20240101"),
         ("loc_1", "2018-01-01 00:00:00", "20231201"),

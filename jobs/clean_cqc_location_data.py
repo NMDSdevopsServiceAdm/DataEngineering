@@ -167,12 +167,35 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
         CQCLClean.imputed_registration_date, cqc_df[CQCL.registration_date]
     )
     cqc_df = remove_time_from_date_column(cqc_df, CQCLClean.imputed_registration_date)
+    cqc_df = remove_registration_dates_that_are_later_than_import_date(cqc_df)
     cqc_df = impute_missing_registration_dates(cqc_df)
     return cqc_df
 
 
 def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
     df = df.withColumn(column_name, F.substring(column_name, 1, 10))
+    return df
+
+
+def remove_registration_dates_that_are_later_than_import_date(
+    df: DataFrame,
+) -> DataFrame:
+    date_for_comparison = "date_for_comparison"
+    df = df.withColumn(
+        date_for_comparison,
+        F.regexp_replace(
+            df[Keys.import_date],
+            "(\d{4})(\d{2})(\d{2})",
+            "$1-$2-$3",
+        ),
+    )
+    df = df.withColumn(
+        CQCLClean.imputed_registration_date,
+        F.when(
+            df[CQCLClean.imputed_registration_date] <= df[date_for_comparison],
+            df[CQCLClean.imputed_registration_date],
+        ),
+    ).drop(date_for_comparison)
     return df
 
 

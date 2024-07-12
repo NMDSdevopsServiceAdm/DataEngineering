@@ -129,6 +129,20 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         )
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
+    def test_remove_registration_dates_that_are_later_than_import_date(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_late_registration_dates_rows,
+            Schemas.remove_late_registration_dates_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_late_registration_dates_rows,
+            Schemas.remove_late_registration_dates_schema,
+        )
+        returned_df = job.remove_registration_dates_that_are_later_than_import_date(
+            test_df
+        )
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
     def test_impute_missing_registration_dates_where_dates_are_the_same(self):
         test_df = self.spark.createDataFrame(
             Data.impute_missing_registration_dates_rows,
