@@ -166,7 +166,7 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     This function handles the steps for creating, cleaning and filling the blanks in the column imputed_registration_date.
 
     Args:
-        df (DataFrame): A dataframe of CQC locations data with the column location_id, import_date, and registrationdate.
+        cqc_df (DataFrame): A dataframe of CQC locations data with the column location_id, import_date, and registrationdate.
 
     Returns:
         DataFrame: A dataframe of CQC locations data with the additional column imputed_registration_date.
