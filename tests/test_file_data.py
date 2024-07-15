@@ -4790,14 +4790,20 @@ class ValidateLocationsAPICleanedData:
     
 
     calculate_expected_size_rows = [
-        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered),
-        ("loc_2", "non social care org", RegistrationStatus.registered),
-        ("loc_3", None, RegistrationStatus.registered),
-        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered),
-        ("loc_5", "non social care org", RegistrationStatus.deregistered),
-        ("loc_6", None, RegistrationStatus.deregistered),
-        (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered),
-        (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered),
+        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
+        ("loc_2", "non social care org", RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
+        ("loc_3", None, RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
+        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, [Services.care_home_service_with_nursing]),
+        ("loc_5", "non social care org", RegistrationStatus.deregistered, [Services.care_home_service_with_nursing]),
+        ("loc_6", None, RegistrationStatus.deregistered,  [Services.care_home_service_with_nursing]),
+        ("loc_7", LocationType.social_care_identifier, RegistrationStatus.registered, [Services.specialist_college_service]),
+        ("loc_8", "non social care org", RegistrationStatus.registered, [Services.specialist_college_service]),
+        ("loc_9", None, RegistrationStatus.registered, [Services.specialist_college_service]),
+        ("loc_10", LocationType.social_care_identifier, RegistrationStatus.deregistered, [Services.specialist_college_service]),
+        ("loc_11", "non social care org", RegistrationStatus.deregistered, [Services.specialist_college_service]),
+        ("loc_12", None, RegistrationStatus.deregistered,  [Services.specialist_college_service]),
+        (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered, None),
+        (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered, None),
     ]
     # fmt: on
 

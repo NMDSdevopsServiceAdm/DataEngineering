@@ -3241,6 +3241,12 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
 

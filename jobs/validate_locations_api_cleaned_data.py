@@ -3,11 +3,12 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -15,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
+    Services,
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
@@ -51,9 +53,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -80,6 +82,14 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
         & (
             raw_location_df[CQCL.location_id]
             != RecordsToRemoveInLocationsData.temp_registration
+        )
+        & (
+            (
+                raw_location_df[CQCLClean.services_offered][0]
+                != Services.specialist_college_service
+            )
+            | (F.size(raw_location_df[CQCLClean.services_offered]) == 0)
+            | (raw_location_df[CQCLClean.services_offered].isNull())
         )
     ).count()
     return expected_size
