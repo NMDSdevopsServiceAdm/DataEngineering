@@ -302,7 +302,9 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
     def test_remove_specialist_colleges_has_fewer_rows_when_specialist_colleges_are_present(
         self,
     ):
-        self.assertLess(self.returned_df.count(), self.expected_df.count())
+        self.assertLess(
+            self.returned_df.count(), self.test_with_specialist_colleges_df.count()
+        )
 
     def test_remove_specialist_colleges_drops_rows_where_specialist_college_is_the_first_service_listed(
         self,

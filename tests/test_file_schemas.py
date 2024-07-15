@@ -1202,7 +1202,12 @@ class CQCLocationsSchema:
     remove_specialist_colleges_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCLClean.services_offered, StringType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
 

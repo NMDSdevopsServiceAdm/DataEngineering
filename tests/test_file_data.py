@@ -1990,7 +1990,9 @@ class CQCLocationsData:
             None,
         ),
     ]
-    expected_with_specialist_colleges_not_listed_first_rows = test_with_specialist_colleges_not_listed_first_rows
+    expected_with_specialist_colleges_not_listed_first_rows = (
+        test_with_specialist_colleges_not_listed_first_rows
+    )
 
 
 @dataclass
