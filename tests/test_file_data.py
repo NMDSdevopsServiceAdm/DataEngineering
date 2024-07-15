@@ -4775,33 +4775,33 @@ class ValidationUtils:
 class ValidateLocationsAPICleanedData:
     # fmt: off
     raw_cqc_locations_rows = [
-        ("1-000000001", "20240101", LocationType.social_care_identifier, RegistrationStatus.registered),
-        ("1-000000002", "20240101", LocationType.social_care_identifier, RegistrationStatus.deregistered),
-        ("1-000000001", "20240201", LocationType.social_care_identifier, RegistrationStatus.registered),
-        ("1-000000002", "20240201", "not social care org", RegistrationStatus.deregistered),
+        ("1-000000001", "20240101", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("1-000000002", "20240101", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("1-000000001", "20240201", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("1-000000002", "20240201", "not social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
     ]
 
     cleaned_cqc_locations_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI"),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
     ]
     
 
     calculate_expected_size_rows = [
-        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
-        ("loc_2", "non social care org", RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
-        ("loc_3", None, RegistrationStatus.registered, [Services.care_home_service_with_nursing]),
-        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, [Services.care_home_service_with_nursing]),
-        ("loc_5", "non social care org", RegistrationStatus.deregistered, [Services.care_home_service_with_nursing]),
-        ("loc_6", None, RegistrationStatus.deregistered,  [Services.care_home_service_with_nursing]),
-        ("loc_7", LocationType.social_care_identifier, RegistrationStatus.registered, [Services.specialist_college_service]),
-        ("loc_8", "non social care org", RegistrationStatus.registered, [Services.specialist_college_service]),
-        ("loc_9", None, RegistrationStatus.registered, [Services.specialist_college_service]),
-        ("loc_10", LocationType.social_care_identifier, RegistrationStatus.deregistered, [Services.specialist_college_service]),
-        ("loc_11", "non social care org", RegistrationStatus.deregistered, [Services.specialist_college_service]),
-        ("loc_12", None, RegistrationStatus.deregistered,  [Services.specialist_college_service]),
+        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_2", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_3", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_5", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_6", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
+        ("loc_7", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
+        ("loc_8", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
+        ("loc_9", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
+        ("loc_10", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
+        ("loc_11", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
+        ("loc_12", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
         (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered, None),
         (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered, None),
     ]

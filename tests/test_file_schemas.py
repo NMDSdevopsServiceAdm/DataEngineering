@@ -3210,6 +3210,17 @@ class ValidateLocationsAPICleanedData:
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
     cleaned_cqc_locations_schema = StructType(
@@ -3234,6 +3245,12 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.current_cssr, StringType(), True),
             StructField(CQCLClean.current_region, StringType(), True),
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
     calculate_expected_size_schema = StructType(
@@ -3242,9 +3259,14 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
-                CQCLClean.services_offered,
+                CQCL.gac_service_types,
                 ArrayType(
-                    StringType(),
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
                 ),
             ),
         ]
