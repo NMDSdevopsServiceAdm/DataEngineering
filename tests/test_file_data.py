@@ -1931,17 +1931,41 @@ class CQCLocationsData:
             "loc 3",
             [Services.care_home_service_with_nursing],
         ),
+        (
+            "loc 4",
+            [],
+        ),
+        (
+            "loc 5",
+            None,
+        ),
     ]
     expected_with_specialist_colleges_rows = [
         (
             "loc 3",
             [Services.care_home_service_with_nursing],
         ),
+        (
+            "loc 4",
+            [],
+        ),
+        (
+            "loc 5",
+            None,
+        ),
     ]
     test_without_specialist_colleges_rows = [
         (
             "loc 1",
             [Services.care_home_service_with_nursing],
+        ),
+        (
+            "loc 2",
+            [],
+        ),
+        (
+            "loc 3",
+            None,
         ),
     ]
     expected_without_specialist_colleges_rows = test_without_specialist_colleges_rows
@@ -1957,20 +1981,16 @@ class CQCLocationsData:
             "loc 2",
             [Services.care_home_service_with_nursing],
         ),
-    ]
-    expected_with_specialist_colleges_not_listed_first_rows = [
         (
-            "loc 1",
-            [
-                Services.acute_services_with_overnight_beds,
-                Services.specialist_college_service,
-            ],
+            "loc 3",
+            [],
         ),
         (
-            "loc 2",
-            [Services.care_home_service_with_nursing],
+            "loc 4",
+            None,
         ),
     ]
+    expected_with_specialist_colleges_not_listed_first_rows = test_with_specialist_colleges_not_listed_first_rows
 
 
 @dataclass
