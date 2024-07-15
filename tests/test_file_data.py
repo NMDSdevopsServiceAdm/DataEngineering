@@ -5134,34 +5134,106 @@ class RawDataAdjustments:
     expected_locations_data = locations_data_without_rows_to_remove
 
     replace_incorrect_postcodes_one_location_rows = [
-        ("1-19593903579", "C04 5EN",),
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "AB1 2CD",),
-        ("1-19593903579", None,),
+        (
+            "1-19593903579",
+            "C04 5EN",
+        ),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "AB1 2CD",
+        ),
+        (
+            "1-19593903579",
+            None,
+        ),
     ]
     replace_incorrect_postcodes_multiple_locations_rows = [
-        ("1-19593903579", "C04 5EN",),
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "AB1 2CD",),
-        ("1-19593903579", None,),
-        ("other_location", "C04 5EN",),
-        ("other_location", "CO4 5EN",),
-        ("other_location", "AB1 2CD",),
-        ("other_location", None,),
+        (
+            "1-19593903579",
+            "C04 5EN",
+        ),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "AB1 2CD",
+        ),
+        (
+            "1-19593903579",
+            None,
+        ),
+        (
+            "other_location",
+            "C04 5EN",
+        ),
+        (
+            "other_location",
+            "CO4 5EN",
+        ),
+        (
+            "other_location",
+            "AB1 2CD",
+        ),
+        (
+            "other_location",
+            None,
+        ),
     ]
     expected_replace_incorrect_postcodes_one_location_rows = [
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "AB1 2CD",),
-        ("1-19593903579", None,),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "AB1 2CD",
+        ),
+        (
+            "1-19593903579",
+            None,
+        ),
     ]
     expected_replace_incorrect_postcodes_multiple_locations_rows = [
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "CO4 5EN",),
-        ("1-19593903579", "AB1 2CD",),
-        ("1-19593903579", None,),
-        ("other_location", "C04 5EN",),
-        ("other_location", "CO4 5EN",),
-        ("other_location", "AB1 2CD",),
-        ("other_location", None,),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "CO4 5EN",
+        ),
+        (
+            "1-19593903579",
+            "AB1 2CD",
+        ),
+        (
+            "1-19593903579",
+            None,
+        ),
+        (
+            "other_location",
+            "C04 5EN",
+        ),
+        (
+            "other_location",
+            "CO4 5EN",
+        ),
+        (
+            "other_location",
+            "AB1 2CD",
+        ),
+        (
+            "other_location",
+            None,
+        ),
     ]
