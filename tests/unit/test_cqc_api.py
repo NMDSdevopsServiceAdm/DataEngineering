@@ -185,7 +185,6 @@ class CallApiTests(CqcApiTests):
 
 
 class GetAllObjectsTests(CqcApiTests):
-    @unittest.skip("temp")
     @patch("utils.cqc_api.get_page_objects")
     @patch("utils.cqc_api.call_api")
     def test_get_all_objects_returns_correct_generator(
