@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -75,7 +75,14 @@ def replace_incorrect_postcode_in_locations_data(
     """
     This function replaces an inncorrect postcode where a 'O' has been recorded as a '0'.
     """
-
+    raw_locations_df = raw_locations_df.withColumn(
+        CQCL.postal_code,
+        F.when(
+            (raw_locations_df[CQCL.postal_code] == "C04 5EN")
+            & (raw_locations_df[CQCL.location_id] == "1-19593903579"),
+            F.lit("CO4 5EN"),
+        ).otherwise(raw_locations_df[CQCL.postal_code]),
+    )
     return raw_locations_df
 
 
