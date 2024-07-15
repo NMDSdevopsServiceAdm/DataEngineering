@@ -21,6 +21,7 @@ from utils.column_values.categorical_column_values import (
     ParentsOrSinglesAndSubs,
     IsParent,
     SingleSubDescription,
+    Services,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -1912,6 +1913,62 @@ class CQCLocationsData:
             "prov_1",
             Sector.independent,
             date(2024, 3, 1),
+        ),
+    ]
+    test_with_specialist_colleges_rows = [
+        (
+            "loc 1",
+            [Services.specialist_college_service],
+        ),
+        (
+            "loc 2",
+            [
+                Services.specialist_college_service,
+                Services.acute_services_with_overnight_beds,
+            ],
+        ),
+        (
+            "loc 3",
+            [Services.care_home_service_with_nursing],
+        ),
+    ]
+    expected_with_specialist_colleges_rows = [
+        (
+            "loc 3",
+            [Services.care_home_service_with_nursing],
+        ),
+    ]
+    test_without_specialist_colleges_rows = [
+        (
+            "loc 1",
+            [Services.care_home_service_with_nursing],
+        ),
+    ]
+    expected_without_specialist_colleges_rows = test_without_specialist_colleges_rows
+    test_with_specialist_colleges_not_listed_first_rows = [
+        (
+            "loc 1",
+            [
+                Services.acute_services_with_overnight_beds,
+                Services.specialist_college_service,
+            ],
+        ),
+        (
+            "loc 2",
+            [Services.care_home_service_with_nursing],
+        ),
+    ]
+    expected_with_specialist_colleges_not_listed_first_rows = [
+        (
+            "loc 1",
+            [
+                Services.acute_services_with_overnight_beds,
+                Services.specialist_college_service,
+            ],
+        ),
+        (
+            "loc 2",
+            [Services.care_home_service_with_nursing],
         ),
     ]
 

@@ -104,6 +104,7 @@ def main(
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
+    registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
@@ -258,6 +259,10 @@ def allocate_primary_service_type(df: DataFrame):
         )
         .otherwise(PrimaryServiceType.non_residential),
     )
+    return df
+
+
+def remove_specialist_colleges(df: DataFrame):
     return df
 
 

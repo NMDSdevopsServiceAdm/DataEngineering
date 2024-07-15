@@ -283,6 +283,61 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
         self.assertEqual(primary_service_values[4], PrimaryServiceType.care_home_only)
 
 
+class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_with_specialist_colleges_df = self.spark.createDataFrame(
+            Data.test_with_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.returned_df = job.remove_specialist_colleges(
+            self.test_with_specialist_colleges_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_with_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+
+    def test_remove_specialist_colleges_has_fewer_rows_when_specialist_colleges_are_present(
+        self,
+    ):
+        self.assertLess(self.returned_df.count(), self.expected_df.count())
+
+    def test_remove_specialist_colleges_drops_rows_where_specialist_college_is_the_first_service_listed(
+        self,
+    ):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_remove_specialist_colleges_drops_rows_where_specialist_college_is_listed_but_not_the_first_service_listed(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_with_specialist_colleges_not_listed_first_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_with_specialist_colleges_not_listed_first_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_remove_specialist_colleges_has_the_same_number_of_rows_when_specialist_colleges_are_not_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_without_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_without_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.count(), expected_df.count())
+
+
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
