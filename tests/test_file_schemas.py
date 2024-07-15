@@ -3572,3 +3572,10 @@ class RawDataAdjustments:
             StructField("other_column", StringType(), True),
         ]
     )
+
+    replace_incorrect_postcodes_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+        ]
+    )

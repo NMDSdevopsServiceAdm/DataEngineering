@@ -154,3 +154,68 @@ class RemoveRecordsFromLocationsDataTests(TestRawDataAdjustments):
 
         self.assertIsNotNone(returned_df)
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
+
+
+class ReplaceIncorrectPostcodeinLocationdDataTests(TestRawDataAdjustments):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_one_location_df = self.spark.createDataFrame(
+            Data.replace_incorrect_postcodes_one_location_rows,
+            Schemas.replace_incorrect_postcodes_schema,
+        )
+        self.test_multiple_locations_df = self.spark.createDataFrame(
+            Data.replace_incorrect_postcodes_multiple_locations_rows,
+            Schemas.replace_incorrect_postcodes_schema,
+        )
+        self.returned_one_location_df = (
+            job.replace_incorrect_postcode_in_locations_data(self.test_one_location_df)
+        )
+        self.returned_multiple_locations_df = (
+            job.replace_incorrect_postcode_in_locations_data(
+                self.test_multiple_locations_df
+            )
+        )
+        self.expected_one_location_df = self.spark.createDataFrame(
+            Data.expected_replace_incorrect_postcodes_one_location_rows,
+            Schemas.replace_incorrect_postcodes_schema,
+        )
+        self.expected_multiple_locations_df = self.spark.createDataFrame(
+            Data.expected_replace_incorrect_postcodes_multiple_locations_rows,
+            Schemas.replace_incorrect_postcodes_schema,
+        )
+
+    def test_replace_incorrect_postcode_in_locations_data_changes_incorrect_postcode_for_relevant_location_id(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_one_location_df.collect(),
+            self.expected_one_location_df.collect(),
+        )
+
+    def test_replace_incorrect_postcode_in_locations_data_does_not_change_only_incorrect_postcodes_for_other_location_ids(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_multiple_locations_df.collect(),
+            self.expected_multiple_locations_df.collect(),
+        )
+
+    def test_replace_incorrect_postcode_in_locations_data_does_not_change_row_count(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_one_location_df.count(), self.expected_one_location_df.count()
+        )
+        self.assertEqual(
+            self.returned_multiple_locations_df.count(),
+            self.expected_multiple_locations_df.count(),
+        )
+
+    def test_replace_incorrect_postcode_in_locations_data_does_not_change_columns(self):
+        self.assertEqual(
+            self.returned_one_location_df.columns, self.expected_one_location_df.columns
+        )
+        self.assertEqual(
+            self.returned_multiple_locations_df.columns,
+            self.expected_multiple_locations_df.columns,
+        )

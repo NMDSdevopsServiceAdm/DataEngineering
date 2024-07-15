@@ -69,6 +69,16 @@ def remove_records_from_locations_data(
     return raw_locations_df
 
 
+def replace_incorrect_postcode_in_locations_data(
+    raw_locations_df: DataFrame,
+) -> DataFrame:
+    """
+    This function replaces an inncorrect postcode where a 'O' has been recorded as a '0'.
+    """
+
+    return raw_locations_df
+
+
 @dataclass
 class RecordsToRemoveInLocationsData:
     """
