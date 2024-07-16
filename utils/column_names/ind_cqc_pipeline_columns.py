@@ -79,6 +79,8 @@ class IndCqcColumns:
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
+    estimate_source: str = "estimate_source"
+    estimate_value: str = "estimate_value"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
