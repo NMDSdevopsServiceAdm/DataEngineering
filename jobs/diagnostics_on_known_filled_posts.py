@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 from utils.column_values.categorical_column_values import (
@@ -52,7 +52,31 @@ def main(
 
     # calculate aggregate residuals (avg abs, avg %, max, % within abs of actual, % within % of actual)
 
-    # calculate date_diff for interpolation and extrapolation
+    # save tables to s3
+
+
+def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
+    return df
+
+
+def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
+    return df
+
+
+def create_window_for_model_and_service_splits(df: DataFrame) -> Window:
+    return window
+
+
+def calculate_distribution_metrics(df: DataFrame) -> DataFrame:
+    return df
+
+
+def calculate_residuals(df: DataFrame) -> DataFrame:
+    return df
+
+
+def calculate_aggreagte_residuals(df: DataFrame) -> DataFrame:
+    return df
 
 
 if __name__ == "__main__":

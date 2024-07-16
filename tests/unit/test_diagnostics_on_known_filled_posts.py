@@ -47,7 +47,32 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
         self.assertEqual(read_from_parquet_patch.call_count, 1)
 
 
-class FilterToKnownDataPointsTests(DiagnosticsOnKnownFilledPostsTests):
+class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+
+class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
