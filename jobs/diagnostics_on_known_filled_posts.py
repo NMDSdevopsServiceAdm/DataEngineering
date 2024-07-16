@@ -60,6 +60,21 @@ def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
 
 
 def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
+    """
+    Reshapes the dataframe so that all estimated values are in one column.
+
+    This function reshapes the dataframe to make it easier to calculate the aggregations
+    using a window function. Model values that were previously in separate columns for
+    each model are joined into a single column with a corresponding column describing which
+    model they are from. This means that the unique index of the dataframe with now be the
+    combination of location id, cqc location import date and estimate source.
+
+    Args:
+        df (DataFrame): A dataframe of estimates with each model's values in a different column.
+
+    Returns:
+        DataFrame: A dataframe of estimates with each model's values in a single column and a column of corresponding model names.
+    """
     return df
 
 
