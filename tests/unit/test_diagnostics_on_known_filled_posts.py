@@ -69,6 +69,23 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @unittest.skip("to do")
+    def test_restructure_dataframe_to_column_wise_has_correct_columns(self):
+        pass
+
+    @unittest.skip("to do")
+    def test_restructure_dataframe_to_column_wise_has_correct_row_count(self):
+        pass
+
+    @unittest.skip("to do")
+    def test_restructure_dataframe_to_column_wise_has_correct_values(self):
+        pass
+
+    @unittest.skip("to do")
+    def test_restructure_dataframe_to_column_wise_has_no_duplicate_indices(self):
+        # indices are a combination of location id, cqc import date, and estimate source
+        pass
+
 
 class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
