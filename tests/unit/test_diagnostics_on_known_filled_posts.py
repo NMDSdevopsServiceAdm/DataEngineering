@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch, Mock, ANY, call
 
-import jobs.create_job_estimates_diagnostics as job
+import jobs.diagnostics_on_known_filled_posts as job
 from tests.test_file_schemas import (
-    CreateJobEstimatesDiagnosticsSchemas as Schemas,
+    DiagnosticsOnKnownFilledPostsSchemas as Schemas,
 )
 from tests.test_file_data import (
-    CreateJobEstimatesDiagnosticsData as Data,
+    DiagnosticsOnKnownFilledPostsData as Data,
 )
 from utils import utils
 from utils.column_values.categorical_column_values import CareHome
@@ -14,26 +14,23 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.diagnostics_utils.diagnostics_meta_data import (
-    ResidualsRequired,
-)
 
 
-class DiagnosticsOnKnownValuesTests(unittest.TestCase):
+class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
-    DIAGNOSTICS_DESTINATION = "some/directory"
-    RESIDUALS_DESTINATION = "some/directory"
+    DIAGNOSTICS_DESTINATION = "some/other/directory"
+    SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
         self.spark = utils.get_spark()
         self.estimate_jobs_df = self.spark.createDataFrame(
             Data.estimate_jobs_rows,
-            schema=Schemas.estimate_jobs,
+            Schemas.estimate_jobs,
         )
 
 
-class MainTests(DiagnosticsOnKnownValuesTests):
+class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -44,10 +41,15 @@ class MainTests(DiagnosticsOnKnownValuesTests):
         job.main(
             self.ESTIMATED_FILLED_POSTS_SOURCE,
             self.DIAGNOSTICS_DESTINATION,
-            self.RESIDUALS_DESTINATION,
+            self.SUMMARY_DIAGNOSTICS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+
+
+class FilterToKnownDataPointsTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
 
 
 if __name__ == "__main__":

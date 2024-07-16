@@ -30,7 +30,7 @@ estimate_filled_posts_columns: list = [
 def main(
     estimate_filled_posts_source,
     diagnostics_destination,
-    residuals_destination,
+    summary_diagnostics_destination,
 ):
     print("Creating diagnostics for known filled posts")
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     (
         estimate_filled_posts_source,
         diagnostics_destination,
-        residuals_destination,
+        summary_diagnostics_destination,
     ) = utils.collect_arguments(
         (
             "--estimate_filled_posts_source",
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             "A destination directory for outputting summary diagnostics tables.",
         ),
         (
-            "--residuals_destination",
+            "--summary_diagnostics_destination",
             "A destination directory for outputting detailed residuals tables with which to make histograms.",
         ),
     )
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     main(
         estimate_filled_posts_source,
         diagnostics_destination,
-        residuals_destination,
+        summary_diagnostics_destination,
     )
 
     print("Spark job 'diagnostics_on_known_values' complete")
