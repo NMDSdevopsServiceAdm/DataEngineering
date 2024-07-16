@@ -64,7 +64,7 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
 
 
 def create_window_for_model_and_service_splits(df: DataFrame) -> Window:
-    return window
+    return df
 
 
 def calculate_distribution_metrics(df: DataFrame) -> DataFrame:

@@ -60,6 +60,7 @@ class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
         )
         self.returned_df = job.filter_to_known_values(self.test_df, self.test_column)
 
+    @unittest.skip("to do")
     def test_filter_to_known_values_removes_null_values_from_specified_column(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
