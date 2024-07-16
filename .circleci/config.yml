@@ -174,11 +174,10 @@ jobs:
       - attach_workspace:
           at: .
 
-      # THIS IS ONLY FOR TESTING
-      #- aws-s3/sync:
-          #aws-region: AWS_REGION
-          #from: "s3://sfc-default-datasets/"
-          #to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-default-datasets/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       
       - aws-s3/sync:
           aws-region: AWS_REGION
