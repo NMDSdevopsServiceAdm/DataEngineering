@@ -1,12 +1,17 @@
 import sys
 
 from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql.types import (
+    DateType,
+    FloatType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 from utils import utils
-from utils.column_values.categorical_column_values import (
-    CareHome,
-    DataSource,
-    PrimaryServiceType,
+from utils.column_values.categorical_columns_by_dataset import (
+    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -75,7 +80,38 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe of estimates with each model's values in a single column and a column of corresponding model names.
     """
-    return df
+    spark = utils.get_spark()
+    reshaped_df_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_source, FloatType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    reshaped_df = spark.createDataFrame([], reshaped_df_schema)
+    list_of_models = (
+        CatValues.estimate_filled_posts_source_column_values.categorical_values
+    )
+    list_of_models.append(IndCQC.estimate_filled_posts)
+    for model in list_of_models:
+        model_df = df.select(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+            IndCQC.ascwds_filled_posts_clean,
+            model,
+        )
+        model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
+        model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
+        reshaped_df = reshaped_df.unionByName(model_df)
+    return reshaped_df
 
 
 def create_window_for_model_and_service_splits(df: DataFrame) -> Window:
