@@ -5146,3 +5146,23 @@ class RawDataAdjustments:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
+
+
+@dataclass
+class DiagnosticsOnKnownFilledPostsData:
+    estimate_filled_posts_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            10.0,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+        ),
+    ]
+    filter_to_known_values_rows = []
+    expected_filter_to_known_values_rows = []
