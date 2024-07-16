@@ -13,6 +13,7 @@ class InvalidPostcodes:
         "BA 2UA": "BA3 2UA",
         "BL11 5PE": "BB11 5PE",
         "BN6 4EA": "BN16 4EA",
+        "C04 5EN": "CO4 5EN",
         "C07 8LA": "CO7 8LA",
         "CA1 2XT": "CA1 2TX",
         "CA11 OFA": "CA11 0FA",
