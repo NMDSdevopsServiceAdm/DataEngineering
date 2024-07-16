@@ -5166,3 +5166,24 @@ class DiagnosticsOnKnownFilledPostsData:
     ]
     filter_to_known_values_rows = []
     expected_filter_to_known_values_rows = []
+    restructure_dataframe_rows = [
+        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 10.0, 10.0, 8.0),
+    ]
+    expected_restructure_dataframe_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            10.0,
+        ),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            IndCQC.rolling_average_model,
+            8.0,
+        ),
+    ]
