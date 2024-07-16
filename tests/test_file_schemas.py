@@ -3572,3 +3572,8 @@ class RawDataAdjustments:
             StructField("other_column", StringType(), True),
         ]
     )
+
+@dataclass
+class DiagnosticsOnKnownFilledPostsSchemas:
+    estimate_filled_posts_schema = []
+    filter_to_known_values_schema = []

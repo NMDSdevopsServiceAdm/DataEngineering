@@ -80,7 +80,7 @@ def calculate_aggreagte_residuals(df: DataFrame) -> DataFrame:
 
 
 if __name__ == "__main__":
-    print("Spark job 'diagnostics_on_known_values' starting...")
+    print("Spark job 'diagnostics_on_known_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -94,11 +94,11 @@ if __name__ == "__main__":
         ),
         (
             "--diagnostics_destination",
-            "A destination directory for outputting summary diagnostics tables.",
+            "A destination directory for outputting full diagnostics tables.",
         ),
         (
             "--summary_diagnostics_destination",
-            "A destination directory for outputting detailed residuals tables with which to make histograms.",
+            "A destination directory for outputting summary diagnostics tables.",
         ),
     )
 
@@ -108,4 +108,4 @@ if __name__ == "__main__":
         summary_diagnostics_destination,
     )
 
-    print("Spark job 'diagnostics_on_known_values' complete")
+    print("Spark job 'diagnostics_on_known_filled_posts' complete")

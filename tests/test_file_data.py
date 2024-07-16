@@ -5132,3 +5132,10 @@ class RawDataAdjustments:
     ]
 
     expected_locations_data = locations_data_without_rows_to_remove
+
+
+@dataclass
+class DiagnosticsOnKnownFilledPostsData:
+    estimate_filled_posts_rows = []
+    filter_to_known_values_rows = []
+    expected_filter_to_known_values_rows = []

@@ -25,8 +25,8 @@ class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.estimate_jobs_df = self.spark.createDataFrame(
-            Data.estimate_jobs_rows,
-            Schemas.estimate_jobs,
+            Data.estimate_filled_posts_rows,
+            Schemas.estimate_filled_posts_schema,
         )
 
 
@@ -50,6 +50,18 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
 class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_column = IndCQC.ascwds_filled_posts_clean
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_to_known_values_rows, Schemas.filter_to_known_values_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_to_known_values_rows,
+            Schemas.filter_to_known_values_schema,
+        )
+        self.returned_df = job.filter_to_known_values(self.test_df, self.test_column)
+
+    def test_filter_to_known_values_removes_null_values_from_specified_column(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
