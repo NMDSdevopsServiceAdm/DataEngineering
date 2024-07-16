@@ -3573,6 +3573,7 @@ class RawDataAdjustments:
         ]
     )
 
+
 @dataclass
 class DiagnosticsOnKnownFilledPostsSchemas:
     estimate_filled_posts_schema = StructType(
