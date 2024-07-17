@@ -39,6 +39,9 @@ def main(
     )
 
     # filter to where ascwds clean is not null
+    filled_posts_df = filter_to_known_values(
+        filled_posts_df, IndCQC.ascwds_filled_posts_clean
+    )
 
     # reshape df so that cols are: location id, cqc_location_import date, service, ascwds_filled-posts_clean, estimate_source, estimate_value
 
@@ -56,7 +59,7 @@ def main(
 
 
 def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
-    return df
+    return df.filter(df[column].isNotNull())
 
 
 def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:

@@ -3601,4 +3601,14 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
-    filter_to_known_values_schema = []
+
+    filter_to_known_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
