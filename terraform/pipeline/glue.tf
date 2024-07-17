@@ -722,6 +722,20 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   }
 }
 
+module "diagnostics_on_known_filled_posts_job" {
+  source          = "../modules/glue-job"
+  script_name     = "diagnostics_on_known_filled_posts.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimate_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/"
+    "--summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
