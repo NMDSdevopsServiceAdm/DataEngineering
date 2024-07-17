@@ -5166,10 +5166,19 @@ class DiagnosticsOnKnownFilledPostsData:
     ]
 
     filter_to_known_values_rows = [
-        ("loc 1", 1.0,),
-        ("loc 2", None,),
+        (
+            "loc 1",
+            1.0,
+        ),
+        (
+            "loc 2",
+            None,
+        ),
     ]
 
     expected_filter_to_known_values_rows = [
-        ("loc 1", 1.0,),
+        (
+            "loc 1",
+            1.0,
+        ),
     ]
