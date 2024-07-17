@@ -66,6 +66,9 @@ class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
     def test_filter_to_known_values_does_not_remove_any_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
+    def test_filter_to_known_values_has_expected_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
 
 class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
