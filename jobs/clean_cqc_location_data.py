@@ -279,7 +279,7 @@ def remove_specialist_colleges(df: DataFrame):
     """
     df = df.where(
         (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
-        | (F.size(df[CQCLClean.services_offered]) == 0)
+        | (F.size(df[CQCLClean.services_offered]) != 1)
         | (df[CQCLClean.services_offered].isNull())
     )
     return df
