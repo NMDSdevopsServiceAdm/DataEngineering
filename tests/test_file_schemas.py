@@ -1061,6 +1061,24 @@ class CQCLocationsSchema:
             ),
         ]
     )
+    expected_primary_service_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+        ]
+    )
 
     small_location_schema = StructType(
         [

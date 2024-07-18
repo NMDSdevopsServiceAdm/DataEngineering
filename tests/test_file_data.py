@@ -1407,8 +1407,217 @@ class CQCLocationsData:
                 },
             ],
         ),
+        (
+            "location6",
+            "provider6",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+        ),
+        (
+            "location7",
+            "provider7",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+            ],
+        ),
+        (
+            "location8",
+            "provider8",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+        ),
+        (
+            "location9",
+            "provider9",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            "location10",
+            "provider10",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+            ],
+        ),
     ]
-
+    expected_primary_service_type_rows = [
+        (
+            "location1",
+            "provider1",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
+            PrimaryServiceType.non_residential,
+        ),
+        (
+            "location2",
+            "provider2",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                }
+            ],
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+        (
+            "location3",
+            "provider3",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                }
+            ],
+            PrimaryServiceType.care_home_only,
+        ),
+        (
+            "location4",
+            "provider4",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+        (
+            "location5",
+            "provider5",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Fake",
+                    "description": "Fake service",
+                },
+            ],
+            PrimaryServiceType.care_home_only,
+        ),
+        (
+            "location6",
+            "provider6",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+        (
+            "location7",
+            "provider7",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+            ],
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+        (
+            "location8",
+            "provider8",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            PrimaryServiceType.care_home_only,
+        ),
+        (
+            "location9",
+            "provider9",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            PrimaryServiceType.care_home_only,
+        ),
+        (
+            "location10",
+            "provider10",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+            ],
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+    ]
     small_location_rows = [
         (
             "loc-1",

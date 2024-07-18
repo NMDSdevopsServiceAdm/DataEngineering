@@ -262,6 +262,10 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
             Data.primary_service_type_rows,
             schema=Schemas.primary_service_type_schema,
         )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_type_rows,
+            schema=Schemas.expected_primary_service_type_schema,
+        )
 
         output_df = job.allocate_primary_service_type(test_primary_service_df)
 
@@ -271,7 +275,7 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
             F.collect_list(PRIMARY_SERVICE_TYPE_COLUMN_NAME)
         ).first()[0]
 
-        self.assertEqual(len(primary_service_values), 5)
+        self.assertEqual(len(primary_service_values), 10)
         self.assertEqual(primary_service_values[0], PrimaryServiceType.non_residential)
         self.assertEqual(
             primary_service_values[1], PrimaryServiceType.care_home_with_nursing
@@ -281,6 +285,7 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
             primary_service_values[3], PrimaryServiceType.care_home_with_nursing
         )
         self.assertEqual(primary_service_values[4], PrimaryServiceType.care_home_only)
+        self.assertEqual(output_df.collect(), expected_df.collect())
 
 
 class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
