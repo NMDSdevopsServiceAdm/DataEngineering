@@ -222,7 +222,7 @@ class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_services_offered_df = self.spark.createDataFrame(
-            Data.primary_service_type_rows,
+            Data.list_of_services_rows,
             schema=Schemas.primary_service_type_schema,
         )
         self.returned_df = job.add_list_of_services_offered(

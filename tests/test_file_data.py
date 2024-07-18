@@ -1348,6 +1348,67 @@ class CQCLocationsData:
         ),
     ]
 
+    list_of_services_rows = [
+        (
+            "location1",
+            "provider1",
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
+        ),
+        (
+            "location2",
+            "provider2",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                }
+            ],
+        ),
+        (
+            "location3",
+            "provider3",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                }
+            ],
+        ),
+        (
+            "location4",
+            "provider4",
+            [
+                {
+                    "name": "With nursing",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            "location5",
+            "provider5",
+            [
+                {
+                    "name": "Without nursing",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Fake",
+                    "description": "Fake service",
+                },
+            ],
+        ),
+    ]
+
     primary_service_type_rows = [
         (
             "location1",
