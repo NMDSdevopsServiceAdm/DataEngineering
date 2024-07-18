@@ -53,9 +53,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -88,7 +88,7 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
                 raw_location_df[CQCL.gac_service_types][0][CQCL.description]
                 != Services.specialist_college_service
             )
-            | (F.size(raw_location_df[CQCL.gac_service_types]) == 0)
+            | (F.size(raw_location_df[CQCL.gac_service_types]) != 0)
             | (raw_location_df[CQCL.gac_service_types].isNull())
         )
     ).count()
