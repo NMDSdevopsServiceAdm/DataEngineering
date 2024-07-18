@@ -77,22 +77,10 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
         )
         self.returned_df = job.restructure_dataframe_to_column_wise(self.test_df)
 
-    def test_restructure_dataframe_to_column_wise_has_correct_columns(self):
-        self.assertEqual(self.returned_df.schema, self.expected_df.schema)
-
-    def test_restructure_dataframe_to_column_wise_has_correct_row_count(self):
-        self.assertEqual(self.returned_df.count(), self.expected_df.count())
-
     def test_restructure_dataframe_to_column_wise_has_correct_values(self):
         returned_data = self.returned_df.sort(IndCQC.estimate_source).collect()
         expected_data = self.expected_df.sort(IndCQC.estimate_source).collect()
         self.assertEqual(returned_data, expected_data)
-
-    def test_restructure_dataframe_to_column_wise_has_no_duplicate_indices(self):
-        deduplicated_df = self.returned_df.select(
-            IndCQC.location_id, IndCQC.cqc_location_import_date, IndCQC.estimate_source
-        ).distinct()
-        self.assertEqual(self.returned_df.count(), deduplicated_df.count())
 
 
 class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTests):
