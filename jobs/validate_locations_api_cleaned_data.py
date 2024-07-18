@@ -88,7 +88,7 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
                 raw_location_df[CQCL.gac_service_types][0][CQCL.description]
                 != Services.specialist_college_service
             )
-            | (F.size(raw_location_df[CQCL.gac_service_types]) != 0)
+            | (F.size(raw_location_df[CQCL.gac_service_types]) != 1)
             | (raw_location_df[CQCL.gac_service_types].isNull())
         )
     ).count()
