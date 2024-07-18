@@ -2235,10 +2235,15 @@ class CQCLocationsData:
             [Services.care_home_service_with_nursing],
         ),
     ]
-    expected_multiple_services_specialist_colleges_rows = test_multiple_services_specialist_colleges_rows
+    expected_multiple_services_specialist_colleges_rows = (
+        test_multiple_services_specialist_colleges_rows
+    )
     expected_without_specialist_colleges_rows = test_without_specialist_colleges_rows
-    expected_empty_array_specialist_colleges_rows = test_empty_array_specialist_colleges_rows
+    expected_empty_array_specialist_colleges_rows = (
+        test_empty_array_specialist_colleges_rows
+    )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
+
 
 @dataclass
 class UtilsData:
