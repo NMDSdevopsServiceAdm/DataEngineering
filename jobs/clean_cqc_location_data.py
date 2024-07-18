@@ -265,17 +265,17 @@ def allocate_primary_service_type(df: DataFrame):
 
 def remove_specialist_colleges(df: DataFrame):
     """
-    Removes rows where 'Specialist college service' is the first service listed
+    Removes rows where 'Specialist college service' is the only service listed
     in 'services_offered'.
 
-    We do not include locations which are primarily specialist colleges in our
+    We do not include locations which are only specialist colleges in our
     estimates. This function identifies and removes the ones listed in the locations dataset.
 
     Args:
         df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        (DataFrame): A cleaned locations dataframe with locations which are primarily specialist colleges removed.
+        (DataFrame): A cleaned locations dataframe with locations which are only specialist colleges removed.
     """
     df = df.where(
         (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
