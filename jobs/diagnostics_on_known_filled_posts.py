@@ -82,7 +82,6 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
     """
     reshaped_df = create_empty_reshaped_dataframe()
     list_of_models = create_list_of_models()
-    print(list_of_models)
     for model in list_of_models:
         model_df = df.select(
             IndCQC.location_id,
@@ -110,9 +109,7 @@ def create_list_of_models():
     list_of_models = (
         CatValues.estimate_filled_posts_source_column_values.categorical_values
     )
-    print(list_of_models)
     list_of_models = list_of_models + [IndCQC.estimate_filled_posts]
-    print(list_of_models)
     return list_of_models
 
 
