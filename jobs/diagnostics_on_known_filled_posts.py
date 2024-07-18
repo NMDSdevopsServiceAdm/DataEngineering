@@ -80,6 +80,48 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe of estimates with each model's values in a single column and a column of corresponding model names.
     """
+    reshaped_df = create_empty_reshaped_dataframe()
+    list_of_models = create_list_of_models()
+    for model in list_of_models:
+        model_df = df.select(
+            IndCQC.location_id,
+            IndCQC.cqc_location_import_date,
+            IndCQC.primary_service_type,
+            IndCQC.ascwds_filled_posts_clean,
+            model,
+        )
+        model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
+        model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
+        reshaped_df = reshaped_df.unionByName(model_df)
+    return reshaped_df
+
+
+def create_list_of_models():
+    """
+    Creates a list of models to include in the reshaping of the dataframe.
+
+    This function creates a list of the column names of models which will be used to reshape
+    the dataframe.
+
+    Returns:
+        List(str): A list of strings of column names corresponding to the models to include.
+    """
+    list_of_models = (
+        CatValues.estimate_filled_posts_source_column_values.categorical_values
+    )
+    list_of_models.append(IndCQC.estimate_filled_posts)
+    return list_of_models
+
+
+def create_empty_reshaped_dataframe():
+    """
+    Creates an empty dataframe to define it's structure.
+
+    This function creates a new, empty dataframe which uses a predefined schema with columns for the estimate's source and value.
+
+    Returns:
+        DataFrame: An empty dataframe with the predefined schema.
+    """
     spark = utils.get_spark()
     reshaped_df_schema = StructType(
         [
@@ -96,21 +138,6 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
         ]
     )
     reshaped_df = spark.createDataFrame([], reshaped_df_schema)
-    list_of_models = (
-        CatValues.estimate_filled_posts_source_column_values.categorical_values
-    )
-    list_of_models.append(IndCQC.estimate_filled_posts)
-    for model in list_of_models:
-        model_df = df.select(
-            IndCQC.location_id,
-            IndCQC.cqc_location_import_date,
-            IndCQC.primary_service_type,
-            IndCQC.ascwds_filled_posts_clean,
-            model,
-        )
-        model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
-        model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
-        reshaped_df = reshaped_df.unionByName(model_df)
     return reshaped_df
 
 
