@@ -46,7 +46,7 @@ def main(
     # filter to where ascwds clean is not null
 
     # reshape df so that cols are: location id, cqc_location_import date, service, ascwds_filled-posts_clean, estimate_source, estimate_value
-
+    filled_posts_df = restructure_dataframe_to_column_wise(filled_posts_df)
     # drop rows where estimate value is missing
 
     # create windows for model/ service splits
