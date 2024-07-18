@@ -306,12 +306,12 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             self.returned_df.count(), self.test_with_specialist_colleges_df.count()
         )
 
-    def test_remove_specialist_colleges_drops_rows_where_specialist_college_is_the_first_service_listed(
+    def test_remove_specialist_colleges_does_not_drop_rows_where_specialist_college_is_the_first_service_listed(
         self,
     ):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
-    def test_remove_specialist_colleges_drops_rows_where_specialist_college_is_listed_but_not_the_first_service_listed(
+    def test_remove_specialist_colleges_has_the_same_number_of_rows_where_specialist_college_is_listed_but_not_the_first_service_listed(
         self,
     ):
         test_df = self.spark.createDataFrame(

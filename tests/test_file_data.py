@@ -1942,6 +1942,13 @@ class CQCLocationsData:
     ]
     expected_with_specialist_colleges_rows = [
         (
+            "loc 2",
+            [
+                Services.specialist_college_service,
+                Services.acute_services_with_overnight_beds,
+            ],
+        ),
+        (
             "loc 3",
             [Services.care_home_service_with_nursing],
         ),
