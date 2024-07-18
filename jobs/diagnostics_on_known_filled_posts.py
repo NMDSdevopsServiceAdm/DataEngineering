@@ -110,7 +110,9 @@ def create_list_of_models():
     list_of_models = (
         CatValues.estimate_filled_posts_source_column_values.categorical_values
     )
+    print(list_of_models)
     list_of_models.append(IndCQC.estimate_filled_posts)
+    print(list_of_models)
     return list_of_models
 
 
