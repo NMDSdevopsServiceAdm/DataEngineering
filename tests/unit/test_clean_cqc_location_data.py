@@ -306,7 +306,10 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
     def test_remove_specialist_colleges_does_not_drop_rows_where_specialist_college_is_the_first_service_listed(
         self,
     ):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            self.returned_df.sort(CQCL.location_id).collect(),
+            self.expected_df.sort(CQCL.location_id).collect(),
+        )
 
     def test_remove_specialist_colleges_has_the_same_number_of_rows_where_specialist_college_is_listed_but_not_the_first_service_listed(
         self,
@@ -320,7 +323,10 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.expected_with_specialist_colleges_not_listed_first_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        self.assertEqual(
+            returned_df.sort(CQCL.location_id).collect(),
+            expected_df.sort(CQCL.location_id).collect(),
+        )
 
     def test_remove_specialist_colleges_has_the_same_number_of_rows_when_specialist_colleges_are_not_present(
         self,
