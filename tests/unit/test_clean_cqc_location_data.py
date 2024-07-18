@@ -276,15 +276,7 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
         ).first()[0]
 
         self.assertEqual(len(primary_service_values), 10)
-        self.assertEqual(primary_service_values[0], PrimaryServiceType.non_residential)
-        self.assertEqual(
-            primary_service_values[1], PrimaryServiceType.care_home_with_nursing
-        )
-        self.assertEqual(primary_service_values[2], PrimaryServiceType.care_home_only)
-        self.assertEqual(
-            primary_service_values[3], PrimaryServiceType.care_home_with_nursing
-        )
-        self.assertEqual(primary_service_values[4], PrimaryServiceType.care_home_only)
+
         self.assertEqual(output_df.collect(), expected_df.collect())
 
 
