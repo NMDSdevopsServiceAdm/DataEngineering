@@ -2,8 +2,12 @@ import unittest
 import warnings
 from datetime import date
 
-from tests.test_file_data import FilterAscwdsFilledPostsData as Data
-from tests.test_file_schemas import FilterAscwdsFilledPostsSchema as Schemas
+from tests.test_file_data import (
+    RemoveCareHomeFilledPostsPerBedRatioOutliersData as Data,
+)
+from tests.test_file_schemas import (
+    RemoveCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
+)
 
 from pyspark.sql.types import (
     StructField,
@@ -24,7 +28,7 @@ from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
 
 
 class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.care_home_filled_posts_per_bed_input_data = self.spark.createDataFrame(
             Data.care_home_filled_posts_per_bed_rows,
@@ -38,15 +42,32 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
+
+class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
         self.assertEqual(
             self.care_home_filled_posts_per_bed_input_data.count(),
             self.filtered_output_df.count(),
         )
 
+
+class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_relevant_data_selected(self):
         df = job.select_relevant_data(self.care_home_filled_posts_per_bed_input_data)
         self.assertEqual(df.count(), 40)
+
+
+class SelectDataNotInSubsetTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_select_data_not_in_subset_df(self):
         schema = StructType(
@@ -71,6 +92,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             data_not_in_subset_df.count(), (df.count() - subset_df.count())
         )
 
+
+class CalculateFilledPostsPerBedRatioTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_calculate_filled_posts_per_bed_ratio(self):
         schema = StructType(
             [
@@ -89,6 +117,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][job.TempColNames.filled_posts_per_bed_ratio], 0.05)
         self.assertEqual(df[1][job.TempColNames.filled_posts_per_bed_ratio], 2.0)
+
+
+class CreateBandedBedCountColumnTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_create_banded_bed_count_column(self):
         schema = StructType(
@@ -109,6 +144,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertEqual(df[0][job.TempColNames.number_of_beds_banded], 2.0)
         self.assertEqual(df[1][job.TempColNames.number_of_beds_banded], 5.0)
         self.assertEqual(df[2][job.TempColNames.number_of_beds_banded], 7.0)
+
+
+class CalculateAverageFilledPostsPerBandedBedCount(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_average_filled_posts_per_banded_bed_count(self):
         schema = StructType(
@@ -135,6 +177,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(
             df[1][job.TempColNames.avg_filled_posts_per_bed_ratio], 1.12346, places=3
         )
+
+
+class CalculateStandardisedResidualsTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_standardised_residuals(self):
         expected_filled_posts_schema = StructType(
@@ -179,6 +228,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             df[2][job.TempColNames.standardised_residual], -6.75, places=2
         )
 
+
+class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_filled_posts_schema = StructType(
             [
@@ -219,6 +275,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             df[1][job.TempColNames.expected_filled_posts], 75.7575, places=3
         )
 
+
+class CalculateFilledPostResidualsTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_calculate_filled_post_residuals(self):
         schema = StructType(
             [
@@ -239,6 +302,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(df[0][job.TempColNames.residual], 1.23456, places=3)
         self.assertAlmostEquals(df[1][job.TempColNames.residual], 0.0, places=3)
         self.assertAlmostEquals(df[2][job.TempColNames.residual], -1.23456, places=3)
+
+
+class CalculateFilledPostStandardisedResidualsTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_filled_post_standardised_residual(self):
         schema = StructType(
@@ -262,6 +332,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(
             df[1][job.TempColNames.standardised_residual], 3.55, places=2
         )
+
+
+class CalculateStandardisedResidualCutoffTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_standardised_residual_cutoffs(self):
         schema = StructType(
@@ -289,6 +366,11 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertAlmostEquals(
             df[0][job.TempColNames.upper_percentile], 6.93, places=2
         )
+
+
+class CalculatePercentileTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_calculate_percentile(self):
         schema = StructType(
@@ -322,6 +404,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
             df[0][job.TempColNames.upper_percentile], 6.93, places=2
         )
 
+
+class CreateFilledPostsCleanColInFilteredDfTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_create_filled_posts_clean_col_in_filtered_df(self):
         schema = StructType(
             [
@@ -345,6 +434,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         df = df.sort(IndCQC.location_id).collect()
         self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
         self.assertEqual(df[0][IndCQC.location_id], "1")
+
+
+class JoinFilteredColIntoCareHomeDfTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_join_filtered_col_into_care_home_df(self):
         filtered_schema = StructType(
@@ -381,6 +477,13 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertEqual(df[1][IndCQC.ascwds_filled_posts_clean], 2.0)
         self.assertIsNone(df[2][IndCQC.ascwds_filled_posts_clean])
 
+
+class AddFilledPostsCleanWithoutFilteringDuplicatesDataInColumnTests(
+    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_add_filled_posts_clean_without_filtering_duplicates_data_in_column(self):
         schema = StructType(
             [
@@ -406,6 +509,11 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         self.assertEqual(
             df[1][IndCQC.ascwds_filled_posts], df[1][IndCQC.ascwds_filled_posts_clean]
         )
+
+
+class CombineDataframeTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_combine_dataframes_keeps_all_rows_of_data(self):
         schema = StructType(
