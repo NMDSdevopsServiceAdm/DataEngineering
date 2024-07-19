@@ -156,6 +156,21 @@ def create_window_for_model_and_service_splits() -> Window:
 
 
 def calculate_distribution_metrics(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds columns with distribution metrics.
+
+    This function adds four columns to the dataset containing the mean, standard
+    deviation, kurtosis, and skewness. These are aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and estimate_value.
+        window (Window): A window for aggregating the metrics.
+
+    Returns:
+        DataFrame: A dataframe with four additional columns containing distribution
+        metrics aggregated over the given window.
+    """
     df = calculate_mean_over_window(df, window)
     df = calculate_standard_deviation_over_window(df, window)
     df = calculate_kurtosis_over_window(df, window)
@@ -164,20 +179,72 @@ def calculate_distribution_metrics(df: DataFrame, window: Window) -> DataFrame:
 
 
 def calculate_mean_over_window(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the mean.
+
+    This function adds a columns to the dataset containing the mean, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and estimate_value.
+        window (Window): A window for aggregating the metrics.
+
+    Returns:
+        DataFrame: A dataframe with an additional columns containing the mean aggregated over the given window.
+    """
     return df
 
 
 def calculate_standard_deviation_over_window(
     df: DataFrame, window: Window
 ) -> DataFrame:
+    """
+    Adds column with the standard deviation.
+
+    This function adds a columns to the dataset containing the standard deviation, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and estimate_value.
+        window (Window): A window for aggregating the metrics.
+
+    Returns:
+        DataFrame: A dataframe with an additional columns containing the standard deviation aggregated over the given window.
+    """
     return df
 
 
 def calculate_kurtosis_over_window(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the kurtosis.
+
+    This function adds a columns to the dataset containing the kurtosis, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and estimate_value.
+        window (Window): A window for aggregating the metrics.
+
+    Returns:
+        DataFrame: A dataframe with an additional columns containing the kurtosis aggregated over the given window.
+    """
     return df
 
 
 def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the skewness.
+
+    This function adds a columns to the dataset containing the skewness, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and estimate_value.
+        window (Window): A window for aggregating the metrics.
+
+    Returns:
+        DataFrame: A dataframe with an additional columns containing the skewness aggregated over the given window.
+    """
     return df
 
 
