@@ -146,7 +146,8 @@ def create_window_for_model_and_service_splits() -> Window:
     Creates a window partitioned by model and service type.
 
     Returns:
-        Window: A window partitioned by model and service type.
+        Window: A window partitioned by model and service type, with rows
+        between set to include all rows in each partition.
     """
     window = Window.partitionBy(
         [IndCQC.estimate_source, IndCQC.primary_service_type]
