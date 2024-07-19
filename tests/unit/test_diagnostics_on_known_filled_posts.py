@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, Mock, ANY, call
 
+from pyspark.sql import WindowSpec
+
 import jobs.diagnostics_on_known_filled_posts as job
 from tests.test_file_schemas import (
     DiagnosticsOnKnownFilledPostsSchemas as Schemas,
@@ -86,6 +88,10 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
 class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+
+    def test_create_window_for_model_and_service_splits_returns_a_window(self):
+        returned_win = job.create_window_for_model_and_service_splits()
+        self.assertEqual(type(returned_win), WindowSpec)
 
 
 class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
