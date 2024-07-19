@@ -3086,6 +3086,22 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     ]
     # fmt: on
 
+    standardised_residual_percentile_cutoff_rows = [
+        ("1", "Y", 0.54),
+        ("2", "Y", -3.2545),
+        ("3", "Y", -4.25423),
+        ("4", "Y", 2.41654),
+        ("5", "Y", 25.0),
+    ]
+
+    expected_standardised_residual_percentile_cutoff_with_percentiles_rows = [
+        ("1", "Y", 0.54, -3.45, 6.93),
+        ("2", "Y", -3.2545, -3.45, 6.93),
+        ("3", "Y", -4.25423, -3.45, 6.93),
+        ("4", "Y", 2.41654, -3.45, 6.93),
+        ("5", "Y", 25.0, -3.45, 6.93),
+    ]
+
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesData(object):

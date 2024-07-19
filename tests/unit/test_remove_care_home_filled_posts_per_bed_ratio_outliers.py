@@ -334,36 +334,119 @@ class CalculateFilledPostStandardisedResidualsTests(
         )
 
 
-class CalculateStandardisedResidualCutoffTests(
+class CalculateLowerAndUpperStandardisedResidualCutoffTests(
     FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_lower_and_upper_standardised_residual_percentile_cutoffs(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home, StringType(), True),
-                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
-            ]
+        self.standardised_residual_percentile_cutoff_df = self.spark.createDataFrame(
+            Data.standardised_residual_percentile_cutoff_rows,
+            Schemas.standardised_residual_percentile_cutoff_schema,
         )
-        # fmt: off
-        rows = [("1", "Y", 0.54), ("2", "Y", -3.2545), ("3", "Y", -4.25423), ("4", "Y", 2.41654), ("5", "Y", 25.0), ]
-        # fmt: on
-        df = self.spark.createDataFrame(rows, schema)
+        self.returned_df = (
+            job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+                self.standardised_residual_percentile_cutoff_df,
+                0.4,
+            )
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_standardised_residual_percentile_cutoff_with_percentiles_rows,
+            Schemas.expected_standardised_residual_percentile_cutoff_with_percentiles_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
 
-        df = job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
-            df,
-            0.4,
+    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_schema(
+        self,
+    ):
+        self.assertEqual(self.returned_df.schema, self.expected_df.schema)
+
+    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_number_of_rows(
+        self,
+    ):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_lower_percentile_values(
+        self,
+    ):
+        self.assertAlmostEquals(
+            self.returned_data[0][job.TempColNames.lower_percentile],
+            self.expected_data[0][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[1][job.TempColNames.lower_percentile],
+            self.expected_data[1][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[2][job.TempColNames.lower_percentile],
+            self.expected_data[2][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[3][job.TempColNames.lower_percentile],
+            self.expected_data[3][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[4][job.TempColNames.lower_percentile],
+            self.expected_data[4][job.TempColNames.lower_percentile],
+            places=2,
         )
 
-        df = df.sort(IndCQC.location_id).collect()
+    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_upper_percentile_values(
+        self,
+    ):
         self.assertAlmostEquals(
-            df[0][job.TempColNames.lower_percentile], -3.45, places=2
+            self.returned_data[0][job.TempColNames.upper_percentile],
+            self.expected_data[0][job.TempColNames.upper_percentile],
+            places=2,
         )
         self.assertAlmostEquals(
-            df[0][job.TempColNames.upper_percentile], 6.93, places=2
+            self.returned_data[1][job.TempColNames.upper_percentile],
+            self.expected_data[1][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[2][job.TempColNames.upper_percentile],
+            self.expected_data[2][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[3][job.TempColNames.upper_percentile],
+            self.expected_data[3][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[4][job.TempColNames.upper_percentile],
+            self.expected_data[4][job.TempColNames.upper_percentile],
+            places=2,
+        )
+
+    def test_raise_error_if_percentage_of_data_to_filter_out_equal_to_one(self):
+        with self.assertRaises(ValueError) as context:
+            job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+                self.standardised_residual_percentile_cutoff_df,
+                1.0,
+            )
+
+        self.assertTrue(
+            "Percentage of data to filter out must be less than 1 (equivalent to 100%)"
+            in str(context.exception)
+        )
+
+    def test_raise_error_if_percentage_of_data_to_filter_out_greater_than_one(self):
+        with self.assertRaises(ValueError) as context:
+            job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+                self.standardised_residual_percentile_cutoff_df,
+                25.0,
+            )
+
+        self.assertTrue(
+            "Percentage of data to filter out must be less than 1 (equivalent to 100%)"
+            in str(context.exception)
         )
 
 
