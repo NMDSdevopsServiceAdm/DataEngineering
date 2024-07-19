@@ -141,11 +141,21 @@ def create_empty_reshaped_dataframe():
     return reshaped_df
 
 
-def create_window_for_model_and_service_splits(df: DataFrame) -> Window:
-    return df
+def create_window_for_model_and_service_splits() -> Window:
+    """
+    Creates a window partitioned by model and service type.
+
+    Returns:
+        Window: A window partitioned by model and service type, with rows
+        between set to include all rows in each partition.
+    """
+    window = Window.partitionBy(
+        [IndCQC.estimate_source, IndCQC.primary_service_type]
+    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    return window
 
 
-def calculate_distribution_metrics(df: DataFrame) -> DataFrame:
+def calculate_distribution_metrics(df: DataFrame, window: Window) -> DataFrame:
     return df
 
 
@@ -153,7 +163,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_aggreagte_residuals(df: DataFrame) -> DataFrame:
+def calculate_aggreagte_residuals(df: DataFrame, window: Window) -> DataFrame:
     return df
 
 
