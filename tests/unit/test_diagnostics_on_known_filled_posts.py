@@ -97,15 +97,14 @@ class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTes
 class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+        self.window = job.create_window_for_model_and_service_splits()
 
     def test_calculate_mean_over_window_returns_extpected_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_distribution_metrics_rows,
             Schemas.calculate_distribution_metrics_schema,
         )
-        returned_df = job.calculate_mean_over_window(
-            test_df,
-        )
+        returned_df = job.calculate_mean_over_window(test_df, self.window)
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_distribution_mean_rows,
             Schemas.expected_calculate_mean_schema,
@@ -117,9 +116,7 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.calculate_distribution_metrics_rows,
             Schemas.calculate_distribution_metrics_schema,
         )
-        returned_df = job.calculate_standard_deviation_over_window(
-            test_df,
-        )
+        returned_df = job.calculate_standard_deviation_over_window(test_df, self.window)
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_distribution_standard_deviation_rows,
             Schemas.expected_calculate_standard_deviation_schema,
@@ -131,9 +128,7 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.calculate_distribution_metrics_rows,
             Schemas.calculate_distribution_metrics_schema,
         )
-        returned_df = job.calculate_kurtosis_over_window(
-            test_df,
-        )
+        returned_df = job.calculate_kurtosis_over_window(test_df, self.window)
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_distribution_kurtosis_rows,
             Schemas.expected_calculate_kurtosis_schema,
@@ -145,9 +140,7 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.calculate_distribution_metrics_rows,
             Schemas.calculate_distribution_metrics_schema,
         )
-        returned_df = job.calculate_skewness_over_window(
-            test_df,
-        )
+        returned_df = job.calculate_skewness_over_window(test_df, self.window)
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_distribution_skewness_rows,
             Schemas.expected_calculate_skewness_schema,
@@ -159,9 +152,7 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.calculate_distribution_metrics_rows,
             Schemas.calculate_distribution_metrics_schema,
         )
-        returned_df = job.calculate_distribution_metrics(
-            test_df,
-        )
+        returned_df = job.calculate_distribution_metrics(test_df, self.window)
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_distribution_metrics_rows,
             Schemas.expected_calculate_distribution_metrics_schema,
