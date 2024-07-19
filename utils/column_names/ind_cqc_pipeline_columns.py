@@ -75,6 +75,10 @@ class IndCqcColumns:
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
     date_diff: str = "date_diff"
+    distribution_mean: str = "distribution_mean"
+    distribution_standard_deviation: str = "distribution_standard_deviation"
+    distribution_kurtosis: str = "distribution_kurtosis"
+    distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"

@@ -97,6 +97,168 @@ class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTes
 class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+        self.window = job.create_window_for_model_and_service_splits()
+
+    def test_calculate_mean_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_mean_over_window(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_mean_rows,
+            Schemas.expected_calculate_mean_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_standard_deviation_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_standard_deviation_over_window(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_standard_deviation_rows,
+            Schemas.expected_calculate_standard_deviation_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertAlmostEqual(
+            returned_data[0][IndCQC.distribution_standard_deviation],
+            expected_data[0][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[1][IndCQC.distribution_standard_deviation],
+            expected_data[1][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[2][IndCQC.distribution_standard_deviation],
+            expected_data[2][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[3][IndCQC.distribution_standard_deviation],
+            expected_data[3][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[4][IndCQC.distribution_standard_deviation],
+            expected_data[4][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[5][IndCQC.distribution_standard_deviation],
+            expected_data[5][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+
+    def test_calculate_kurtosis_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_kurtosis_over_window(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_kurtosis_rows,
+            Schemas.expected_calculate_kurtosis_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_skewness_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_skewness_over_window(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_skewness_rows,
+            Schemas.expected_calculate_skewness_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_distribution_metrics_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_distribution_metrics(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_metrics_rows,
+            Schemas.expected_calculate_distribution_metrics_schema,
+        )
+        returned_data = (
+            returned_df.select(
+                IndCQC.location_id, IndCQC.distribution_standard_deviation
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.select(
+                IndCQC.location_id, IndCQC.distribution_standard_deviation
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        returned_non_sd_data = (
+            returned_df.select(
+                IndCQC.location_id,
+                IndCQC.distribution_mean,
+                IndCQC.distribution_kurtosis,
+                IndCQC.distribution_skewness,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        expected_non_sd_data = (
+            expected_df.select(
+                IndCQC.location_id,
+                IndCQC.distribution_mean,
+                IndCQC.distribution_kurtosis,
+                IndCQC.distribution_skewness,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        self.assertEqual(returned_non_sd_data, expected_non_sd_data)
+        self.assertAlmostEqual(
+            returned_data[0][IndCQC.distribution_standard_deviation],
+            expected_data[0][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[1][IndCQC.distribution_standard_deviation],
+            expected_data[1][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[2][IndCQC.distribution_standard_deviation],
+            expected_data[2][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[3][IndCQC.distribution_standard_deviation],
+            expected_data[3][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[4][IndCQC.distribution_standard_deviation],
+            expected_data[4][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[5][IndCQC.distribution_standard_deviation],
+            expected_data[5][IndCQC.distribution_standard_deviation],
+            places=6,
+        )
 
 
 class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
