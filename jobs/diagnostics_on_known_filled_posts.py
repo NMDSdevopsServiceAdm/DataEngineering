@@ -145,7 +145,29 @@ def create_window_for_model_and_service_splits(df: DataFrame) -> Window:
     return df
 
 
-def calculate_distribution_metrics(df: DataFrame) -> DataFrame:
+def calculate_distribution_metrics(df: DataFrame, window: Window) -> DataFrame:
+    df = calculate_mean_over_window(df, window)
+    df = calculate_standard_deviation_over_window(df, window)
+    df = calculate_kurtosis_over_window(df, window)
+    df = calculate_skewness_over_window(df, window)
+    return df
+
+
+def calculate_mean_over_window(df: DataFrame, window: Window) -> DataFrame:
+    return df
+
+
+def calculate_standard_deviation_over_window(
+    df: DataFrame, window: Window
+) -> DataFrame:
+    return df
+
+
+def calculate_kurtosis_over_window(df: DataFrame, window: Window) -> DataFrame:
+    return df
+
+
+def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
     return df
 
 

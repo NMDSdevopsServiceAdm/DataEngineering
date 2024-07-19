@@ -92,6 +92,76 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_calculate_mean_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_mean_over_window(
+            test_df,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_mean_rows,
+            Schemas.expected_calculate_mean_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_standard_deviation_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_standard_deviation_over_window(
+            test_df,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_standard_deviation_rows,
+            Schemas.expected_calculate_standard_deviation_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_kurtosis_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_kurtosis_over_window(
+            test_df,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_kurtosis_rows,
+            Schemas.expected_calculate_kurtosis_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_skewness_over_window_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_skewness_over_window(
+            test_df,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_skewness_rows,
+            Schemas.expected_calculate_skewness_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_distribution_metrics_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_distribution_metrics_rows,
+            Schemas.calculate_distribution_metrics_schema,
+        )
+        returned_df = job.calculate_distribution_metrics(
+            test_df,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_distribution_metrics_rows,
+            Schemas.expected_calculate_distribution_metrics_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
 
 class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:

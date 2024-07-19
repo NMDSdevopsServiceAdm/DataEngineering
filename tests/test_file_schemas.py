@@ -3675,3 +3675,54 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.estimate_value, FloatType(), True),
         ]
     )
+    calculate_distribution_metrics_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    expected_calculate_mean_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+        ]
+    )
+    expected_calculate_standard_deviation_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+        ]
+    )
+    expected_calculate_kurtosis_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+        ]
+    )
+    expected_calculate_skewness_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+        ]
+    )
+
+    expected_calculate_distribution_metrics_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+        ]
+    )

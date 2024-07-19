@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     IsParent,
     SingleSubDescription,
     Services,
+    EstimateFilledPostsSource,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -5564,4 +5565,52 @@ class DiagnosticsOnKnownFilledPostsData:
             IndCQC.estimate_filled_posts,
             10.0,
         ),
+    ]
+    calculate_distribution_metrics_rows = [
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0),
+    ]
+    expected_calculate_distribution_mean_rows =[
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 5.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 5.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 20.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 20.0),
+    ]
+    expected_calculate_distribution_standard_deviation_rows =[
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+    ]
+    expected_calculate_distribution_kurtosis_rows =[
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+    ]
+    expected_calculate_distribution_skewness_rows =[
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 0.0),
+    ]
+    expected_calculate_distribution_metrics_rows =[
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.0, 0.0, 0.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.0, 0.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 5.0, 0.0, 0.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 5.0, 5.0, 0.0, 0.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 20.0, 0.0, 0.0, 0.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 20.0, 20.0, 0.0, 0.0, 0.0),
     ]
