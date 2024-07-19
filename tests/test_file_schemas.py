@@ -1986,6 +1986,10 @@ class FilterAscwdsFilledPostsSchema:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
     )
+
+
+@dataclass
+class CareHomeFilledPostsPerBedFilterSchema:
     care_home_filled_posts_per_bed_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
