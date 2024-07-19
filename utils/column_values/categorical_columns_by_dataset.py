@@ -180,3 +180,10 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
     )
+
+
+@dataclass
+class DiagnosticOnKnownFilledPostsCategoricalValues:
+    estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
+        IndCQC.estimate_filled_posts_source
+    )

@@ -3664,3 +3664,18 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         ]
     )
     filter_to_known_values_schema = []
+    restructure_dataframe_schema = estimate_filled_posts_schema
+    expected_restructure_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )

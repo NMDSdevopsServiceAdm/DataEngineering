@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, Mock, ANY, call
 
+from pyspark.sql import WindowSpec
+
 import jobs.diagnostics_on_known_filled_posts as job
 from tests.test_file_schemas import (
     DiagnosticsOnKnownFilledPostsSchemas as Schemas,
@@ -68,11 +70,28 @@ class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
 class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.restructure_dataframe_rows, Schemas.restructure_dataframe_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_restructure_dataframe_rows,
+            Schemas.expected_restructure_dataframe_schema,
+        )
+        self.returned_df = job.restructure_dataframe_to_column_wise(self.test_df)
+
+    def test_restructure_dataframe_to_column_wise_has_correct_values(self):
+        returned_data = self.returned_df.sort(IndCQC.estimate_source).collect()
+        expected_data = self.expected_df.sort(IndCQC.estimate_source).collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 class CreateWindowForModelAndServiceSplitsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+
+    def test_create_window_for_model_and_service_splits_returns_a_window(self):
+        returned_win = job.create_window_for_model_and_service_splits()
+        self.assertEqual(type(returned_win), WindowSpec)
 
 
 class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
