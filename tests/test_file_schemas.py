@@ -1989,7 +1989,7 @@ class FilterAscwdsFilledPostsSchema:
 
 
 @dataclass
-class CareHomeFilledPostsPerBedFilterSchema:
+class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
     care_home_filled_posts_per_bed_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

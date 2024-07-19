@@ -3036,7 +3036,7 @@ class FilterAscwdsFilledPostsData:
 
 
 @dataclass
-class CareHomeFilledPostsPerBedFilterData:
+class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: off
     care_home_filled_posts_per_bed_rows = [
         ("01", date(2023, 1, 1), "Y", 25, 1.0),

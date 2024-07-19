@@ -2,8 +2,12 @@ import unittest
 import warnings
 from datetime import date
 
-from tests.test_file_data import CareHomeFilledPostsPerBedFilterData as Data
-from tests.test_file_schemas import CareHomeFilledPostsPerBedFilterSchema as Schemas
+from tests.test_file_data import (
+    RemoveCareHomeFilledPostsPerBedRatioOutliersData as Data,
+)
+from tests.test_file_schemas import (
+    RemoveCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
+)
 
 from pyspark.sql.types import (
     StructField,
