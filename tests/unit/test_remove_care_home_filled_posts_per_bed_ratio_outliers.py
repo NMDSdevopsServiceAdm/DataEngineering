@@ -336,62 +336,24 @@ class CalculateStandardisedResidualCutoffTests(
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_standardised_residual_cutoffs(self):
+    def test_calculate_lower_and_upper_standardised_residual_percentile_cutoffs(self):
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.care_home, StringType(), True),
                 StructField(job.TempColNames.standardised_residual, DoubleType(), True),
             ]
         )
         # fmt: off
-        rows = [("1", 0.54), ("2", -3.2545), ("3", -4.25423), ("4", 2.41654), ("5", 25.0), ]
+        rows = [("1", "Y", 0.54), ("2", "Y", -3.2545), ("3", "Y", -4.25423), ("4", "Y", 2.41654), ("5", "Y", 25.0), ]
         # fmt: on
         df = self.spark.createDataFrame(rows, schema)
 
-        df = job.calculate_standardised_residual_cutoffs(
+        df = job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
             df,
             0.4,
-            job.TempColNames.lower_percentile,
-            job.TempColNames.upper_percentile,
         )
 
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(
-            df[0][job.TempColNames.lower_percentile], -3.45, places=2
-        )
-        self.assertAlmostEquals(
-            df[0][job.TempColNames.upper_percentile], 6.93, places=2
-        )
-
-
-class CalculatePercentileTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_percentile(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
-            ]
-        )
-        # fmt: off
-        rows = [("1", 0.54), ("2", -3.2545), ("3", -4.25423), ("4", 2.41654), ("5", 25.0), ]
-        # fmt: on
-        df = self.spark.createDataFrame(rows, schema)
-
-        df = job.calculate_percentile(
-            df,
-            job.TempColNames.standardised_residual,
-            0.2,
-            job.TempColNames.lower_percentile,
-        )
-        df = job.calculate_percentile(
-            df,
-            job.TempColNames.standardised_residual,
-            0.8,
-            job.TempColNames.upper_percentile,
-        )
         df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(
             df[0][job.TempColNames.lower_percentile], -3.45, places=2

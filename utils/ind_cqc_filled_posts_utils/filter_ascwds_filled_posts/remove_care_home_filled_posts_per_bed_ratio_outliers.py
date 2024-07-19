@@ -47,11 +47,11 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df, expected_filled_posts_per_banded_bed_count_df
     )
 
-    data_to_filter_df = calculate_standardised_residual_cutoffs(
-        data_to_filter_df,
-        numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
-        TempColNames.lower_percentile,
-        TempColNames.upper_percentile,
+    data_to_filter_df = (
+        calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+            data_to_filter_df,
+            numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
+        )
     )
 
     care_homes_within_standardised_residual_cutoff_df = (
@@ -190,38 +190,35 @@ def calculate_filled_post_standardised_residual(
     return df
 
 
-def calculate_standardised_residual_cutoffs(
+def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     df: DataFrame,
     percentage_of_data_to_filter_out: float,
-    lower_percentile_name: str,
-    upper_percentile_name: str,
 ) -> DataFrame:
+    """
+    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame. The value entered for the
+    percentage_of_data_to_filter_out will be split into half so that half is applied to the lower extremes and half to the
+    upper extremes. Two columns will be added as a result, one containing the
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as outliers).
+
+    Returns:
+        DataFrame: DataFrame with additional columns for lower and upper percentile cutoffs for standardised residuals.
+    """
     lower_percentile = percentage_of_data_to_filter_out / 2
-    upper_percentile = 1 - (percentage_of_data_to_filter_out / 2)
+    upper_percentile = 1 - lower_percentile
 
-    df = calculate_percentile(
-        df, TempColNames.standardised_residual, lower_percentile, lower_percentile_name
-    )
-    df = calculate_percentile(
-        df, TempColNames.standardised_residual, upper_percentile, upper_percentile_name
-    )
-
-    return df
-
-
-def calculate_percentile(
-    df: DataFrame, col_name: str, percentile_value: float, alias: str
-) -> DataFrame:
-    df = df.withColumn("temp_col_for_joining", F.lit(0))
-    percentile_df = df.groupBy("temp_col_for_joining").agg(
-        F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[
-            0
-        ].alias(alias)
+    percentile_df = df.groupBy(IndCQC.care_home).agg(
+        F.expr(
+            f"percentile({TempColNames.standardised_residual}, array({lower_percentile}))"
+        )[0].alias(TempColNames.lower_percentile),
+        F.expr(
+            f"percentile({TempColNames.standardised_residual}, array({upper_percentile}))"
+        )[0].alias(TempColNames.upper_percentile),
     )
 
-    df = df.join(percentile_df, "temp_col_for_joining", "left").drop(
-        "temp_col_for_joining"
-    )
+    df = df.join(percentile_df, IndCQC.care_home, "left")
 
     return df
 
