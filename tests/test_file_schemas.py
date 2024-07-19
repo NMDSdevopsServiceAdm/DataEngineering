@@ -3677,6 +3677,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
     )
     calculate_distribution_metrics_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
@@ -3684,6 +3685,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
     )
     expected_calculate_mean_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
@@ -3692,6 +3694,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
     )
     expected_calculate_standard_deviation_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
@@ -3700,6 +3703,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
     )
     expected_calculate_kurtosis_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
@@ -3708,6 +3712,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
     )
     expected_calculate_skewness_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
@@ -3717,6 +3722,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
 
     expected_calculate_distribution_metrics_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),

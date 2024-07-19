@@ -192,6 +192,9 @@ def calculate_mean_over_window(df: DataFrame, window: Window) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional columns containing the mean aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.distribution_mean, F.mean(df[IndCQC.estimate_value]).over(window)
+    )
     return df
 
 
@@ -211,6 +214,10 @@ def calculate_standard_deviation_over_window(
     Returns:
         DataFrame: A dataframe with an additional columns containing the standard deviation aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.distribution_standard_deviation,
+        F.stddev(df[IndCQC.estimate_value]).over(window),
+    )
     return df
 
 
@@ -228,6 +235,9 @@ def calculate_kurtosis_over_window(df: DataFrame, window: Window) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional columns containing the kurtosis aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.distribution_kurtosis, F.kurtosis(df[IndCQC.estimate_value]).over(window)
+    )
     return df
 
 
@@ -245,6 +255,9 @@ def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional columns containing the skewness aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.distribution_skewness, F.skewness(df[IndCQC.estimate_value]).over(window)
+    )
     return df
 
 
