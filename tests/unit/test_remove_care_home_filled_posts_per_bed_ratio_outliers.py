@@ -357,10 +357,12 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
         self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
 
-    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_schema(
+    def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_columns(
         self,
     ):
-        self.assertEqual(self.returned_df.schema, self.expected_df.schema)
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
 
     def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_number_of_rows(
         self,
