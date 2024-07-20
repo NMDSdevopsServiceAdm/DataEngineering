@@ -30,14 +30,9 @@ from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
 class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.care_home_filled_posts_per_bed_input_data = self.spark.createDataFrame(
-            Data.care_home_filled_posts_per_bed_rows,
-            Schemas.care_home_filled_posts_per_bed_schema,
-        )
-        self.filtered_output_df = (
-            job.remove_care_home_filled_posts_per_bed_ratio_outliers(
-                self.care_home_filled_posts_per_bed_input_data
-            )
+        self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
+            Data.unfiltered_ind_cqc_rows,
+            Schemas.ind_cqc_schema,
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -47,11 +42,38 @@ class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
-        self.assertEqual(
-            self.care_home_filled_posts_per_bed_input_data.count(),
-            self.filtered_output_df.count(),
+        self.returned_filtered_df = (
+            job.remove_care_home_filled_posts_per_bed_ratio_outliers(
+                self.unfiltered_ind_cqc_df
+            )
         )
+
+    def test_returned_filtered_df_has_same_number_of_rows_as_initial_unfiltered_df(
+        self,
+    ):
+        self.assertEqual(
+            self.unfiltered_ind_cqc_df.count(),
+            self.returned_filtered_df.count(),
+        )
+
+    def test_returned_filtered_df_has_same_schema_as_initial_unfiltered_df(
+        self,
+    ):
+        self.assertEqual(
+            self.unfiltered_ind_cqc_df.schema,
+            self.returned_filtered_df.schema,
+        )
+
+    def test_returned_df_matches_expected_df(self):
+        expected_filtered_df = self.spark.createDataFrame(
+            Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
+            Schemas.ind_cqc_schema,
+        )
+
+        returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(expected_data, returned_data)
 
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
