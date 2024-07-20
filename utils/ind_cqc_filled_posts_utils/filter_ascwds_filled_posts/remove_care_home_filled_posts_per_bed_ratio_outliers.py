@@ -54,22 +54,12 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
         )
     )
 
-    care_homes_within_standardised_residual_cutoff_df = (
-        create_filled_posts_clean_col_in_filtered_df(data_to_filter_df)
-    )
-
-    care_homes_with_filtered_col_df = join_filtered_col_into_care_home_df(
-        care_homes_df, care_homes_within_standardised_residual_cutoff_df
-    )
-
-    data_not_relevant_to_filter_df = (
-        add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
-            data_not_relevant_to_filter_df
-        )
+    filtered_care_home_df = null_values_outside_of_standardised_residual_cutoffs(
+        data_to_filter_df
     )
 
     output_df = combine_dataframes(
-        care_homes_with_filtered_col_df, data_not_relevant_to_filter_df
+        filtered_care_home_df, data_not_relevant_to_filter_df
     )
 
     return output_df
@@ -231,50 +221,24 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     return df
 
 
-def create_filled_posts_clean_col_in_filtered_df(
-    df: DataFrame,
-) -> DataFrame:
-    within_boundary_df = df.filter(
-        (
-            F.col(TempColNames.standardised_residual)
-            > F.col(TempColNames.lower_percentile)
-        )
-        & (
-            F.col(TempColNames.standardised_residual)
-            < F.col(TempColNames.upper_percentile)
-        )
-    )
-
-    within_boundary_df = within_boundary_df.withColumn(
-        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
-    )
-
-    output_df = within_boundary_df.select(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        IndCQC.ascwds_filled_posts_clean,
-    )
-
-    return output_df
-
-
-def join_filtered_col_into_care_home_df(
-    df: DataFrame, df_with_filtered_column: DataFrame
-) -> DataFrame:
-    df = df.join(
-        df_with_filtered_column,
-        [IndCQC.location_id, IndCQC.cqc_location_import_date],
-        "left",
-    )
-    return df
-
-
-def add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
+def null_values_outside_of_standardised_residual_cutoffs(
     df: DataFrame,
 ) -> DataFrame:
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
+        IndCQC.ascwds_filled_posts_clean,
+        F.when(
+            (
+                F.col(TempColNames.standardised_residual)
+                > F.col(TempColNames.lower_percentile)
+            )
+            & (
+                F.col(TempColNames.standardised_residual)
+                < F.col(TempColNames.upper_percentile)
+            ),
+            F.col(IndCQC.ascwds_filled_posts_clean),
+        ).otherwise(F.lit(None)),
     )
+
     return df
 
 
