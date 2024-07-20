@@ -83,7 +83,8 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
         super().setUp()
 
     def test_relevant_data_selected(self):
-        df = job.select_relevant_data(self.care_home_filled_posts_per_bed_input_data)
+        # TODO - replace test data with own test data and improve tests
+        df = job.select_relevant_data(self.unfiltered_ind_cqc_df)
         self.assertEqual(df.count(), 40)
 
 
