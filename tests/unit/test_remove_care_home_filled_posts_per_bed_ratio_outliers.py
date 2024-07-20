@@ -529,45 +529,34 @@ class CombineDataframeTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests)
     def setUp(self) -> None:
         super().setUp()
 
+        self.care_home_df = self.spark.createDataFrame(
+            Data.combine_dataframes_care_home_rows,
+            Schemas.combine_dataframes_care_home_schema,
+        )
+        self.non_care_home_df = self.spark.createDataFrame(
+            Data.combine_dataframes_non_care_home_rows,
+            Schemas.combine_dataframes_non_care_home_schema,
+        )
+        self.returned_combined_df = job.combine_dataframes(
+            self.care_home_df, self.non_care_home_df
+        )
+
     def test_combine_dataframes_keeps_all_rows_of_data(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField("other_col", StringType(), True),
-            ]
+        self.assertEqual(
+            self.returned_combined_df.count(),
+            (self.care_home_df.count() + self.non_care_home_df.count()),
         )
-        rows_1 = [
-            ("1-000000001", "data"),
-        ]
-        rows_2 = [
-            ("1-000000002", "data"),
-            ("1-000000003", "data"),
-        ]
-        df_1 = self.spark.createDataFrame(rows_1, schema)
-        df_2 = self.spark.createDataFrame(rows_2, schema)
 
-        df = job.combine_dataframes(df_1, df_2)
-        self.assertEqual(df.count(), (df_1.count() + df_2.count()))
+    def test_combine_dataframes_has_same_schema_as_original_non_care_home_df(self):
+        self.assertEqual(self.returned_combined_df.schema, self.non_care_home_df.schema)
 
-    def test_combine_dataframes_have_matching_column_names(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField("other_col", StringType(), True),
-            ]
+    def test_returned_combined_dataframe_matches_expected_df(self):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_combined_dataframes_rows,
+            Schemas.expected_combined_dataframes_schema,
         )
-        rows_1 = [
-            ("1-000000001", "data"),
-        ]
-        rows_2 = [
-            ("1-000000002", "data"),
-            ("1-000000003", "data"),
-        ]
 
-        df_1 = self.spark.createDataFrame(rows_1, schema)
-        df_2 = self.spark.createDataFrame(rows_2, schema)
+        returned_data = self.returned_combined_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
 
-        df = job.combine_dataframes(df_1, df_2)
-
-        self.assertEqual(df_1.columns, df_2.columns)
-        self.assertEqual(df.columns, df_1.columns)
+        self.assertEqual(returned_data, expected_data)

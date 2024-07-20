@@ -256,6 +256,19 @@ def null_values_outside_of_standardised_residual_cutoffs(
 def combine_dataframes(
     filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
 ) -> DataFrame:
+    """
+    This job filteres care home data only so care home and non-care home data was separated at the start of the job.
+    This function combines the two datasets back together. Only the columns which existed at the start of the job
+    are required in the returned dataframe.
+
+    Args:
+        filtered_care_home_df (DataFrame): A DataFrame containing filtered care home data.
+        original_non_care_home_df (DataFrame): A DataFrame containing the imported non-care home data.
+
+    Returns:
+        DataFrame: A new DataFrame that combines the selected columns from filtered_care_home_df
+        with the original_non_care_home_df.
+    """
     care_home_df = filtered_care_home_df.select(original_non_care_home_df.columns)
 
     all_locations_df = original_non_care_home_df.unionByName(care_home_df)

@@ -2025,14 +2025,25 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
     )
 
     null_values_below_standardised_residual_cutoff_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
-                StructField(CHFPPBR.standardised_residual, DoubleType(), True),
-                StructField(CHFPPBR.lower_percentile, DoubleType(), True),
-                StructField(CHFPPBR.upper_percentile, DoubleType(), True),
-            ]
-        )
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(CHFPPBR.standardised_residual, DoubleType(), True),
+            StructField(CHFPPBR.lower_percentile, DoubleType(), True),
+            StructField(CHFPPBR.upper_percentile, DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_care_home_schema = StructType(
+        [
+            *ind_cqc_schema,
+            StructField("additional column", DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_non_care_home_schema = ind_cqc_schema
+
+    expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
 
 
 @dataclass

@@ -3167,6 +3167,21 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ("5", None, 1.25, -1.23, 1.23),
     ]
 
+    combine_dataframes_care_home_rows = [
+        ("01", date(2023, 1, 1), "Y", 25, 1.0, None, 10.0),
+        ("02", date(2023, 1, 1), "Y", 25, 2.0, 2.0, 20.0),
+    ]
+
+    combine_dataframes_non_care_home_rows = [
+        ("03", date(2023, 1, 1), "Y", 25, 3.0, 3.0),
+    ]
+
+    expected_combined_dataframes_rows = [
+        ("01", date(2023, 1, 1), "Y", 25, 1.0, None),
+        ("02", date(2023, 1, 1), "Y", 25, 2.0, 2.0),
+        ("03", date(2023, 1, 1), "Y", 25, 3.0, 3.0),
+    ]
+
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesData(object):
