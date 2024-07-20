@@ -242,7 +242,11 @@ def null_values_outside_of_standardised_residual_cutoffs(
     return df
 
 
-def combine_dataframes(first_df: DataFrame, second_df: DataFrame) -> DataFrame:
-    output_df = first_df.unionByName(second_df)
+def combine_dataframes(
+    filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
+) -> DataFrame:
+    care_home_df = filtered_care_home_df.select(original_non_care_home_df.columns)
 
-    return output_df
+    all_locations_df = original_non_care_home_df.unionByName(care_home_df)
+
+    return all_locations_df
