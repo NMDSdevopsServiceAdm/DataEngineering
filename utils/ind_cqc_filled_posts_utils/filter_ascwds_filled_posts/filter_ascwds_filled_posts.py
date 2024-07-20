@@ -1,13 +1,30 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts.remove_care_home_filled_posts_per_bed_ratio_outliers import (
     remove_care_home_filled_posts_per_bed_ratio_outliers,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 
 
-def null_ascwds_filled_post_outliers(input_df: DataFrame) -> DataFrame:
-    print("Removing ascwds_filled_posts outliers...")
+def null_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
+    """
+    This function first duplicates 'ascwds_filled_posts' as 'ascwds_filled_posts_clean' and then runs
+    various functions designed to clean ASCWDS filled post values, replacing outliers with null values.
 
-    filtered_df = remove_care_home_filled_posts_per_bed_ratio_outliers(input_df)
+    Args:
+        df (DataFrame): A dataframe containing 'ascwds_filled_posts'.
+
+    Returns:
+        (DataFrame): A dataframe containing 'ascwds_filled_posts_clean' with outliers converted to nulls.
+    """
+    print("Replacing ascwds_filled_posts outliers with nulls...")
+
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
+    )
+
+    filtered_df = remove_care_home_filled_posts_per_bed_ratio_outliers(df)
 
     return filtered_df
