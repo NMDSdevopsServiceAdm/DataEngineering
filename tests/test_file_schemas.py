@@ -2024,6 +2024,16 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         )
     )
 
+    null_values_below_standardised_residual_cutoff_schema = StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+                StructField(CHFPPBR.standardised_residual, DoubleType(), True),
+                StructField(CHFPPBR.lower_percentile, DoubleType(), True),
+                StructField(CHFPPBR.upper_percentile, DoubleType(), True),
+            ]
+        )
+
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesSchema(object):

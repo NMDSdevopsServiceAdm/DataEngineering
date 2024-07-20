@@ -3151,6 +3151,22 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ("5", "Y", 25.0, -3.45, 6.93),
     ]
 
+    null_values_below_standardised_residual_cutoff_rows = [
+        ("1", 1.0, -2.50, -1.23, 1.23),
+        ("2", 2.0, -1.23, -1.23, 1.23),
+        ("3", 3.0, 0.00, -1.23, 1.23),
+        ("4", 2.0, 1.23, -1.23, 1.23),
+        ("5", 1.0, 1.25, -1.23, 1.23),
+    ]
+
+    expected_null_values_below_standardised_residual_cutoff_rows = [
+        ("1", None, -2.50, -1.23, 1.23),
+        ("2", 2.0, -1.23, -1.23, 1.23),
+        ("3", 3.0, 0.00, -1.23, 1.23),
+        ("4", 2.0, 1.23, -1.23, 1.23),
+        ("5", None, 1.25, -1.23, 1.23),
+    ]
+
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesData(object):

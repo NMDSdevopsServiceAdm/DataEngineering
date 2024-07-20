@@ -474,35 +474,55 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         )
 
 
-class CreateFilledPostsCleanColInFilteredDfTests(
+class NullValuesOutsideOfStandardisedResidualCutoffsTests(
     FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_create_filled_posts_clean_col_in_filtered_df(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
-                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
-                StructField(job.TempColNames.lower_percentile, DoubleType(), True),
-                StructField(job.TempColNames.upper_percentile, DoubleType(), True),
-            ]
+        df = self.spark.createDataFrame(
+            Data.null_values_below_standardised_residual_cutoff_rows,
+            Schemas.null_values_below_standardised_residual_cutoff_schema,
         )
-        rows = [
-            ("1", date(2023, 1, 1), 1.0, 0.26545, -1.2345, 1.2345),
-            ("2", date(2023, 1, 1), 2.0, -3.2545, -1.2345, 1.2345),
-            ("3", date(2023, 1, 1), 3.0, 12.25423, -1.2345, 1.2345),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.create_filled_posts_clean_col_in_filtered_df(df)
+        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
 
-        self.assertEqual(df.count(), 1)
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
-        self.assertEqual(df[0][IndCQC.location_id], "1")
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_values_below_standardised_residual_cutoff_rows,
+            Schemas.null_values_below_standardised_residual_cutoff_schema,
+        )
+
+        self.returned_data = returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+    def test_value_nulled_when_below_lower_cutoff(self):
+        self.assertEqual(
+            self.returned_data[0][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[0][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_not_nulled_when_equal_to_lower_cutoff(self):
+        self.assertEqual(
+            self.returned_data[1][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[1][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_not_nulled_when_in_between_cutoffs(self):
+        self.assertEqual(
+            self.returned_data[2][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[2][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_not_nulled_when_equal_to_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[3][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[3][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_nulled_when_above_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[4][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[4][IndCQC.ascwds_filled_posts_clean],
+        )
 
 
 class CombineDataframeTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
