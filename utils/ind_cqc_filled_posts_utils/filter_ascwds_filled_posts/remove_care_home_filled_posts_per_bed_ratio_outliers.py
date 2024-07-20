@@ -224,19 +224,30 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
 def null_values_outside_of_standardised_residual_cutoffs(
     df: DataFrame,
 ) -> DataFrame:
+    """
+    If the standardised_residual value is below the lower percentile cutoff, or above the upper percentile
+    cutoff then ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within
+    the cutoffs), the original value for ascwds_filled_posts_clean remains.
+
+    Args:
+        df (DataFrame): The input dataframe containing standardised residuals and percentiles.
+
+    Returns:
+        DataFrame: A dataFrame with null values removed based on the specified cutoffs.
+    """
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_clean,
         F.when(
             (
                 F.col(TempColNames.standardised_residual)
-                >= F.col(TempColNames.lower_percentile)
+                < F.col(TempColNames.lower_percentile)
             )
-            & (
+            | (
                 F.col(TempColNames.standardised_residual)
-                <= F.col(TempColNames.upper_percentile)
+                > F.col(TempColNames.upper_percentile)
             ),
-            F.col(IndCQC.ascwds_filled_posts_clean),
-        ).otherwise(F.lit(None)),
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_clean)),
     )
 
     return df
