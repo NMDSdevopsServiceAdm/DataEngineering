@@ -125,7 +125,7 @@ class CalculateFilledPostsPerBedRatioTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
@@ -224,7 +224,7 @@ class CalculateStandardisedResidualsTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
             ]
         )
@@ -308,7 +308,7 @@ class CalculateFilledPostResidualsTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(job.TempColNames.expected_filled_posts, DoubleType(), True),
             ]
         )
@@ -485,7 +485,7 @@ class CreateFilledPostsCleanColInFilteredDfTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(job.TempColNames.standardised_residual, DoubleType(), True),
                 StructField(job.TempColNames.lower_percentile, DoubleType(), True),
                 StructField(job.TempColNames.upper_percentile, DoubleType(), True),
@@ -527,7 +527,7 @@ class JoinFilteredColIntoCareHomeDfTests(
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
             ]
         )
         ch_rows = [
@@ -557,7 +557,7 @@ class AddFilledPostsCleanWithoutFilteringDuplicatesDataInColumnTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, StringType(), True),
             ]
         )
         rows = [
