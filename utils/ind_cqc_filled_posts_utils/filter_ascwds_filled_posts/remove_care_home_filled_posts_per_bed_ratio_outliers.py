@@ -81,8 +81,8 @@ def select_relevant_data(input_df: DataFrame) -> DataFrame:
         F.col(IndCQC.number_of_beds).isNotNull() & (F.col(IndCQC.number_of_beds) > 0)
     )
     output_df = output_df.where(
-        F.col(IndCQC.ascwds_filled_posts).isNotNull()
-        & (F.col(IndCQC.ascwds_filled_posts) > 0.0)
+        F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
+        & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
     )
 
     return output_df
@@ -101,7 +101,7 @@ def calculate_filled_posts_per_bed_ratio(
 ) -> DataFrame:
     input_df = input_df.withColumn(
         TempColNames.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts) / F.col(IndCQC.number_of_beds),
+        F.col(IndCQC.ascwds_filled_posts_clean) / F.col(IndCQC.number_of_beds),
     )
 
     return input_df
@@ -172,7 +172,8 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempColNames.residual,
-        F.col(IndCQC.ascwds_filled_posts) - F.col(TempColNames.expected_filled_posts),
+        F.col(IndCQC.ascwds_filled_posts_clean)
+        - F.col(TempColNames.expected_filled_posts),
     )
 
     return df
