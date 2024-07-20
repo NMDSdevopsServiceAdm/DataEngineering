@@ -229,11 +229,11 @@ def null_values_outside_of_standardised_residual_cutoffs(
         F.when(
             (
                 F.col(TempColNames.standardised_residual)
-                > F.col(TempColNames.lower_percentile)
+                >= F.col(TempColNames.lower_percentile)
             )
             & (
                 F.col(TempColNames.standardised_residual)
-                < F.col(TempColNames.upper_percentile)
+                <= F.col(TempColNames.upper_percentile)
             ),
             F.col(IndCQC.ascwds_filled_posts_clean),
         ).otherwise(F.lit(None)),
