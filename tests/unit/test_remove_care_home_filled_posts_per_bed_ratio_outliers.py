@@ -482,14 +482,14 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
         super().setUp()
 
         df = self.spark.createDataFrame(
-            Data.null_values_below_standardised_residual_cutoff_rows,
-            Schemas.null_values_below_standardised_residual_cutoff_schema,
+            Data.null_values_outside_of_standardised_residual_cutoff_rows,
+            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
         returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_null_values_below_standardised_residual_cutoff_rows,
-            Schemas.null_values_below_standardised_residual_cutoff_schema,
+            Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
+            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
 
         self.returned_data = returned_df.sort(IndCQC.location_id).collect()
@@ -501,7 +501,7 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
             self.expected_data[0][IndCQC.ascwds_filled_posts_clean],
         )
 
-    def test_value_not_nulled_when_equal_to_lower_cutoff(self):
+    def test_value_nulled_when_equal_to_lower_cutoff(self):
         self.assertEqual(
             self.returned_data[1][IndCQC.ascwds_filled_posts_clean],
             self.expected_data[1][IndCQC.ascwds_filled_posts_clean],

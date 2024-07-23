@@ -2031,7 +2031,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         )
     )
 
-    null_values_below_standardised_residual_cutoff_schema = StructType(
+    null_values_outside_of_standardised_residual_cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
