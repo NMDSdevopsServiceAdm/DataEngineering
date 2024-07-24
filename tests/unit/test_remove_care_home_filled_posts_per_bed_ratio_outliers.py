@@ -15,7 +15,6 @@ from pyspark.sql.types import (
     StringType,
     DoubleType,
     IntegerType,
-    DateType,
 )
 
 from utils import utils
