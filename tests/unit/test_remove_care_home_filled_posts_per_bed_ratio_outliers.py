@@ -420,6 +420,21 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
             self.expected_data[4][job.TempColNames.lower_percentile],
             places=2,
         )
+        self.assertAlmostEquals(
+            self.returned_data[5][job.TempColNames.lower_percentile],
+            self.expected_data[5][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[6][job.TempColNames.lower_percentile],
+            self.expected_data[6][job.TempColNames.lower_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[7][job.TempColNames.lower_percentile],
+            self.expected_data[7][job.TempColNames.lower_percentile],
+            places=2,
+        )
 
     def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_upper_percentile_values(
         self,
@@ -447,6 +462,21 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         self.assertAlmostEquals(
             self.returned_data[4][job.TempColNames.upper_percentile],
             self.expected_data[4][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[5][job.TempColNames.upper_percentile],
+            self.expected_data[5][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[6][job.TempColNames.upper_percentile],
+            self.expected_data[6][job.TempColNames.upper_percentile],
+            places=2,
+        )
+        self.assertAlmostEquals(
+            self.returned_data[7][job.TempColNames.upper_percentile],
+            self.expected_data[7][job.TempColNames.upper_percentile],
             places=2,
         )
 

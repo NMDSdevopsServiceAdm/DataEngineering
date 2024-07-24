@@ -207,16 +207,17 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     lower_percentile = percentage_of_data_to_filter_out / 2
     upper_percentile = 1 - lower_percentile
 
-    percentile_df = df.groupBy(IndCQC.care_home).agg(
-        F.percentile_approx(TempColNames.standardised_residual, lower_percentile).alias(
-            TempColNames.lower_percentile
-        ),
-        F.percentile_approx(TempColNames.standardised_residual, upper_percentile).alias(
-            TempColNames.upper_percentile
-        ),
+    percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
+        F.percentile_approx(
+            TempColNames.standardised_residual, lower_percentile, F.lit(1000000)
+        ).alias(TempColNames.lower_percentile),
+        F.percentile_approx(
+            TempColNames.standardised_residual, upper_percentile, F.lit(1000000)
+        ).alias(TempColNames.upper_percentile),
     )
+    percentile_df.show()
 
-    df = df.join(percentile_df, IndCQC.care_home, "left")
+    df = df.join(percentile_df, IndCQC.primary_service_type, "left")
 
     return df
 
@@ -225,9 +226,10 @@ def null_values_outside_of_standardised_residual_cutoffs(
     df: DataFrame,
 ) -> DataFrame:
     """
-    If the standardised_residual value is below the lower percentile cutoff, or above the upper percentile
-    cutoff then ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within
-    the cutoffs), the original value for ascwds_filled_posts_clean remains.
+    If the standardised_residual value is outside of the lower and upper percentile cutoffs then
+    ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within
+    the cutoffs), the original value for ascwds_filled_posts_clean remains. The function used to
+    calculate percentiles (percentile_approx)
 
     Args:
         df (DataFrame): The input dataframe containing standardised residuals and percentiles.
