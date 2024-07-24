@@ -1998,6 +1998,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
@@ -2006,7 +2007,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
     standardised_residual_percentile_cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(CHFPPBR.standardised_residual, DoubleType(), True),
         ]
     )
@@ -2015,7 +2016,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home, StringType(), True),
+                StructField(IndCQC.primary_service_type, StringType(), True),
                 StructField(CHFPPBR.standardised_residual, DoubleType(), True),
                 StructField(CHFPPBR.lower_percentile, DoubleType(), True),
                 StructField(CHFPPBR.upper_percentile, DoubleType(), True),

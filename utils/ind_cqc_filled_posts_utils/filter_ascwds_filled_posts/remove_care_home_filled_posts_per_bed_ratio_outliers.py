@@ -216,16 +216,17 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     lower_percentile = percentage_of_data_to_filter_out / 2
     upper_percentile = 1 - lower_percentile
 
-    percentile_df = df.groupBy(IndCQC.care_home).agg(
-        F.percentile_approx(TempColNames.standardised_residual, lower_percentile).alias(
-            TempColNames.lower_percentile
-        ),
-        F.percentile_approx(TempColNames.standardised_residual, upper_percentile).alias(
-            TempColNames.upper_percentile
-        ),
+    percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
+        F.percentile_approx(
+            TempColNames.standardised_residual, lower_percentile, F.lit(1000000)
+        ).alias(TempColNames.lower_percentile),
+        F.percentile_approx(
+            TempColNames.standardised_residual, upper_percentile, F.lit(1000000)
+        ).alias(TempColNames.upper_percentile),
     )
 
-    df = df.join(percentile_df, IndCQC.care_home, "left")
+    df = df.join(percentile_df, IndCQC.primary_service_type, "left")
+    df.show(truncate=False)
 
     return df
 
