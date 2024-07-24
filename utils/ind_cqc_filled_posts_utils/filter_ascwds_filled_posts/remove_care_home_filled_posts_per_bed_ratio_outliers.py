@@ -224,9 +224,9 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
             TempColNames.standardised_residual, upper_percentile, F.lit(1000000)
         ).alias(TempColNames.upper_percentile),
     )
+    percentile_df.show(truncate=False)
 
     df = df.join(percentile_df, IndCQC.primary_service_type, "left")
-    df.show(truncate=False)
 
     return df
 
