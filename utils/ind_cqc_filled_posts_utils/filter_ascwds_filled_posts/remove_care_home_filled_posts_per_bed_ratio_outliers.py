@@ -28,6 +28,23 @@ class NumericalValues:
 def remove_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
+    """
+    This function is designed to filter out filled post figures for care homes which are deemed outliers
+    based on the ratio between filled posts and number of beds. The number of beds are banded into
+    categorical groups and the average 'filled post per bed' ratio is calculated which becomes the ratio
+    to determine the 'expected filled posts' for each banded number of bed group. The residuals (the
+    difference between actual and expected) are calculated, followed by the standardised residuals
+    (residuals divided by the squart root of the filled post figure). The values at the top and bottom
+    end of the standarised residuals are deemed to be outliers (based on percentiles) and the filled post
+    figures in ascwds_filled_posts_clean are converted to null values. Non-care home data is not included
+    in this particular filter so this part of the dataframe will be unchanged.
+
+    Args:
+        df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
+
+    Returns:
+        DataFrame: A dataFrame with outlier values converted to null values.
+    """
     numerical_value = NumericalValues()
 
     care_homes_df = select_relevant_data(input_df)
