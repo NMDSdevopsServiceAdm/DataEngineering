@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame, functions as F
 
-from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts.remove_care_home_filled_posts_per_bed_ratio_outliers import (
-    remove_care_home_filled_posts_per_bed_ratio_outliers,
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers import (
+    null_care_home_filled_posts_per_bed_ratio_outliers,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -25,6 +25,6 @@ def null_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
         IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
     )
 
-    filtered_df = remove_care_home_filled_posts_per_bed_ratio_outliers(df)
+    filtered_df = null_care_home_filled_posts_per_bed_ratio_outliers(df)
 
     return filtered_df

@@ -1,6 +1,5 @@
 import unittest
 import warnings
-from datetime import date
 
 from tests.test_file_data import (
     RemoveCareHomeFilledPostsPerBedRatioOutliersData as Data,
@@ -21,8 +20,8 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
-    remove_care_home_filled_posts_per_bed_ratio_outliers as job,
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
+    null_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
 
 
@@ -42,7 +41,7 @@ class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
         super().setUp()
 
         self.returned_filtered_df = (
-            job.remove_care_home_filled_posts_per_bed_ratio_outliers(
+            job.null_care_home_filled_posts_per_bed_ratio_outliers(
                 self.unfiltered_ind_cqc_df
             )
         )

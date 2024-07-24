@@ -25,12 +25,12 @@ class NumericalValues:
     PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
 
 
-def remove_care_home_filled_posts_per_bed_ratio_outliers(
+def null_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
     """
-    This function is designed to filter out filled post figures for care homes which are deemed outliers
-    based on the ratio between filled posts and number of beds. The number of beds are banded into
+    This function is designed to convert filled post figures for care homes which are deemed outliers to
+    null based on the ratio between filled posts and number of beds. The number of beds are banded into
     categorical groups and the average 'filled post per bed' ratio is calculated which becomes the ratio
     to determine the 'expected filled posts' for each banded number of bed group. The residuals (the
     difference between actual and expected) are calculated, followed by the standardised residuals

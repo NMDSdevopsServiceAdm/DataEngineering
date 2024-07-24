@@ -64,7 +64,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts.remove_care_home_filled_posts_per_bed_ratio_outliers import (
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers import (
     TempColNames as CHFPPBR,
 )
 
@@ -1979,7 +1979,7 @@ class ReconciliationSchema:
 
 
 @dataclass
-class FilterAscwdsFilledPostsSchema:
+class NullAscwdsFilledPostOuliersSchema:
     unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
