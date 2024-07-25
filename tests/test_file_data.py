@@ -4527,29 +4527,29 @@ class FlattenCQCRatings:
     add_numerical_ratings_rows = [
         (
             "loc 1",
-            "Good",
-            "Outstanding",
-            "Requires improvement",
-            "Inadequate",
-            "Good",
+            CQCRatingsValues.good,
+            CQCRatingsValues.outstanding,
+            CQCRatingsValues.requires_improvement,
+            CQCRatingsValues.inadequate,
+            CQCRatingsValues.good,
             None,
         ),
     ]
     expected_add_numerical_ratings_rows = [
         (
             "loc 1",
-            "Good",
-            "Outstanding",
-            "Requires improvement",
-            "Inadequate",
-            "Good",
+            CQCRatingsValues.good,
+            CQCRatingsValues.outstanding,
+            CQCRatingsValues.requires_improvement,
+            CQCRatingsValues.inadequate,
+            CQCRatingsValues.good,
             None,
-            10,
             4,
             2,
             1,
             3,
             0,
+            10,
         ),
     ]
 

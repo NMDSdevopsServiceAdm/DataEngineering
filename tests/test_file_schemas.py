@@ -3169,12 +3169,12 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.total_rating_value, IntegerType(), True),
             StructField(CQCRatings.safe_rating_value, IntegerType(), True),
             StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
             StructField(CQCRatings.caring_rating_value, IntegerType(), True),
             StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
             StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
