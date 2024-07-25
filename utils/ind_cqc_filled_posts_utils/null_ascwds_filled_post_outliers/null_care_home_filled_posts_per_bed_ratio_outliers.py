@@ -225,12 +225,12 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     upper_percentile = 1 - lower_percentile
 
     percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
-        F.percentile_approx(
-            TempColNames.standardised_residual, lower_percentile, F.lit(1000000)
-        ).alias(TempColNames.lower_percentile),
-        F.percentile_approx(
-            TempColNames.standardised_residual, upper_percentile, F.lit(1000000)
-        ).alias(TempColNames.upper_percentile),
+        F.expr(
+            f"percentile({TempColNames.standardised_residual}, array({lower_percentile}))"
+        )[0].alias(TempColNames.lower_percentile),
+        F.expr(
+            f"percentile({TempColNames.standardised_residual}, array({upper_percentile}))"
+        )[0].alias(TempColNames.upper_percentile),
     )
 
     df = df.join(percentile_df, IndCQC.primary_service_type, "left")
@@ -258,7 +258,7 @@ def null_values_outside_of_standardised_residual_cutoffs(
         F.when(
             (
                 F.col(TempColNames.standardised_residual)
-                <= F.col(TempColNames.lower_percentile)
+                < F.col(TempColNames.lower_percentile)
             )
             | (
                 F.col(TempColNames.standardised_residual)
