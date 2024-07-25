@@ -195,6 +195,8 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     percentage_of_data_to_filter_out: float,
 ) -> DataFrame:
     """
+    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame and adds them as new columns.
+
     Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame. The value entered for the
     percentage_of_data_to_filter_out will be split into half so that half is applied to the lower extremes and half to the
     upper extremes. Two columns will be added as a result, one containing the lower percentile of standardised_residual and
