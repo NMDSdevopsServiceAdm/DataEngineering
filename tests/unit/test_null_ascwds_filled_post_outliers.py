@@ -38,16 +38,13 @@ class NullAscwdsFilledPostOuliersTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch(
-        "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers.null_care_home_filled_posts_per_bed_ratio_outliers"
+        "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers"
     )
     def test_functions_are_called(
         self, null_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock
     ):
         job.null_ascwds_filled_post_outliers(self.unfiltered_ind_cqc_df)
-        self.assertEqual(
-            null_care_home_filled_posts_per_bed_ratio_outliers_mock.call_count,
-            1,
-        )
+        null_care_home_filled_posts_per_bed_ratio_outliers_mock.assert_called_once()
 
     @patch(
         "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers.null_care_home_filled_posts_per_bed_ratio_outliers"
