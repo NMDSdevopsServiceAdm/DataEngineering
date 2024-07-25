@@ -22,6 +22,7 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.column_names.null_outlier_columns import NullOutlierColumns
 from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
     remove_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
@@ -115,8 +116,8 @@ class CalculateFilledPostsPerBedRatioTests(
         df = job.calculate_filled_posts_per_bed_ratio(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][job.TempColNames.filled_posts_per_bed_ratio], 0.05)
-        self.assertEqual(df[1][job.TempColNames.filled_posts_per_bed_ratio], 2.0)
+        self.assertEqual(df[0][NullOutlierColumns.filled_posts_per_bed_ratio], 0.05)
+        self.assertEqual(df[1][NullOutlierColumns.filled_posts_per_bed_ratio], 2.0)
 
 
 class CreateBandedBedCountColumnTests(
@@ -141,9 +142,9 @@ class CreateBandedBedCountColumnTests(
         df = job.create_banded_bed_count_column(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][job.TempColNames.number_of_beds_banded], 2.0)
-        self.assertEqual(df[1][job.TempColNames.number_of_beds_banded], 5.0)
-        self.assertEqual(df[2][job.TempColNames.number_of_beds_banded], 7.0)
+        self.assertEqual(df[0][NullOutlierColumns.number_of_beds_banded], 2.0)
+        self.assertEqual(df[1][NullOutlierColumns.number_of_beds_banded], 5.0)
+        self.assertEqual(df[2][NullOutlierColumns.number_of_beds_banded], 7.0)
 
 
 class CalculateAverageFilledPostsPerBandedBedCount(
@@ -156,9 +157,11 @@ class CalculateAverageFilledPostsPerBandedBedCount(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
                 StructField(
-                    job.TempColNames.filled_posts_per_bed_ratio, DoubleType(), True
+                    NullOutlierColumns.number_of_beds_banded, DoubleType(), True
+                ),
+                StructField(
+                    NullOutlierColumns.filled_posts_per_bed_ratio, DoubleType(), True
                 ),
             ]
         )
@@ -170,12 +173,12 @@ class CalculateAverageFilledPostsPerBandedBedCount(
         df = self.spark.createDataFrame(rows, schema)
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
-        df = df.sort(job.TempColNames.number_of_beds_banded).collect()
+        df = df.sort(NullOutlierColumns.number_of_beds_banded).collect()
         self.assertAlmostEquals(
-            df[0][job.TempColNames.avg_filled_posts_per_bed_ratio], 1.2468, places=3
+            df[0][NullOutlierColumns.avg_filled_posts_per_bed_ratio], 1.2468, places=3
         )
         self.assertAlmostEquals(
-            df[1][job.TempColNames.avg_filled_posts_per_bed_ratio], 1.12346, places=3
+            df[1][NullOutlierColumns.avg_filled_posts_per_bed_ratio], 1.12346, places=3
         )
 
 
@@ -188,9 +191,13 @@ class CalculateStandardisedResidualsTests(
     def test_calculate_standardised_residuals(self):
         expected_filled_posts_schema = StructType(
             [
-                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
                 StructField(
-                    job.TempColNames.avg_filled_posts_per_bed_ratio, DoubleType(), True
+                    NullOutlierColumns.number_of_beds_banded, DoubleType(), True
+                ),
+                StructField(
+                    NullOutlierColumns.avg_filled_posts_per_bed_ratio,
+                    DoubleType(),
+                    True,
                 ),
             ]
         )
@@ -203,7 +210,9 @@ class CalculateStandardisedResidualsTests(
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.number_of_beds_banded, DoubleType(), True
+                ),
             ]
         )
         rows = [
@@ -219,13 +228,13 @@ class CalculateStandardisedResidualsTests(
         self.assertEqual(df.count(), 3)
         df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(
-            df[0][job.TempColNames.standardised_residual], 0.53452, places=2
+            df[0][NullOutlierColumns.standardised_residual], 0.53452, places=2
         )
         self.assertAlmostEquals(
-            df[1][job.TempColNames.standardised_residual], 2.0, places=2
+            df[1][NullOutlierColumns.standardised_residual], 2.0, places=2
         )
         self.assertAlmostEquals(
-            df[2][job.TempColNames.standardised_residual], -6.75, places=2
+            df[2][NullOutlierColumns.standardised_residual], -6.75, places=2
         )
 
 
@@ -238,9 +247,13 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
     def test_calculate_expected_filled_posts_based_on_number_of_beds(self):
         expected_filled_posts_schema = StructType(
             [
-                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
                 StructField(
-                    job.TempColNames.avg_filled_posts_per_bed_ratio, DoubleType(), True
+                    NullOutlierColumns.number_of_beds_banded, DoubleType(), True
+                ),
+                StructField(
+                    NullOutlierColumns.avg_filled_posts_per_bed_ratio,
+                    DoubleType(),
+                    True,
                 ),
             ]
         )
@@ -252,7 +265,9 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(job.TempColNames.number_of_beds_banded, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.number_of_beds_banded, DoubleType(), True
+                ),
             ]
         )
         rows = [
@@ -269,10 +284,10 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
 
         df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(
-            df[0][job.TempColNames.expected_filled_posts], 7.77777, places=3
+            df[0][NullOutlierColumns.expected_filled_posts], 7.77777, places=3
         )
         self.assertAlmostEquals(
-            df[1][job.TempColNames.expected_filled_posts], 75.7575, places=3
+            df[1][NullOutlierColumns.expected_filled_posts], 75.7575, places=3
         )
 
 
@@ -287,7 +302,9 @@ class CalculateFilledPostResidualsTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField(job.TempColNames.expected_filled_posts, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.expected_filled_posts, DoubleType(), True
+                ),
             ]
         )
         rows = [
@@ -299,9 +316,9 @@ class CalculateFilledPostResidualsTests(
         df = job.calculate_filled_post_residuals(df)
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][job.TempColNames.residual], 1.23456, places=3)
-        self.assertAlmostEquals(df[1][job.TempColNames.residual], 0.0, places=3)
-        self.assertAlmostEquals(df[2][job.TempColNames.residual], -1.23456, places=3)
+        self.assertAlmostEquals(df[0][NullOutlierColumns.residual], 1.23456, places=3)
+        self.assertAlmostEquals(df[1][NullOutlierColumns.residual], 0.0, places=3)
+        self.assertAlmostEquals(df[2][NullOutlierColumns.residual], -1.23456, places=3)
 
 
 class CalculateFilledPostStandardisedResidualsTests(
@@ -314,8 +331,10 @@ class CalculateFilledPostStandardisedResidualsTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(job.TempColNames.residual, DoubleType(), True),
-                StructField(job.TempColNames.expected_filled_posts, DoubleType(), True),
+                StructField(NullOutlierColumns.residual, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.expected_filled_posts, DoubleType(), True
+                ),
             ]
         )
         rows = [
@@ -327,10 +346,10 @@ class CalculateFilledPostStandardisedResidualsTests(
 
         df = df.sort(IndCQC.location_id).collect()
         self.assertAlmostEquals(
-            df[0][job.TempColNames.standardised_residual], 5.55556, places=2
+            df[0][NullOutlierColumns.standardised_residual], 5.55556, places=2
         )
         self.assertAlmostEquals(
-            df[1][job.TempColNames.standardised_residual], 3.55, places=2
+            df[1][NullOutlierColumns.standardised_residual], 3.55, places=2
         )
 
 
@@ -373,43 +392,43 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         self,
     ):
         self.assertAlmostEquals(
-            self.returned_data[0][job.TempColNames.lower_percentile],
-            self.expected_data[0][job.TempColNames.lower_percentile],
+            self.returned_data[0][NullOutlierColumns.lower_percentile],
+            self.expected_data[0][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[1][job.TempColNames.lower_percentile],
-            self.expected_data[1][job.TempColNames.lower_percentile],
+            self.returned_data[1][NullOutlierColumns.lower_percentile],
+            self.expected_data[1][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[2][job.TempColNames.lower_percentile],
-            self.expected_data[2][job.TempColNames.lower_percentile],
+            self.returned_data[2][NullOutlierColumns.lower_percentile],
+            self.expected_data[2][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[3][job.TempColNames.lower_percentile],
-            self.expected_data[3][job.TempColNames.lower_percentile],
+            self.returned_data[3][NullOutlierColumns.lower_percentile],
+            self.expected_data[3][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[4][job.TempColNames.lower_percentile],
-            self.expected_data[4][job.TempColNames.lower_percentile],
+            self.returned_data[4][NullOutlierColumns.lower_percentile],
+            self.expected_data[4][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[5][job.TempColNames.lower_percentile],
-            self.expected_data[5][job.TempColNames.lower_percentile],
+            self.returned_data[5][NullOutlierColumns.lower_percentile],
+            self.expected_data[5][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[6][job.TempColNames.lower_percentile],
-            self.expected_data[6][job.TempColNames.lower_percentile],
+            self.returned_data[6][NullOutlierColumns.lower_percentile],
+            self.expected_data[6][NullOutlierColumns.lower_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[7][job.TempColNames.lower_percentile],
-            self.expected_data[7][job.TempColNames.lower_percentile],
+            self.returned_data[7][NullOutlierColumns.lower_percentile],
+            self.expected_data[7][NullOutlierColumns.lower_percentile],
             places=2,
         )
 
@@ -417,43 +436,43 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         self,
     ):
         self.assertAlmostEquals(
-            self.returned_data[0][job.TempColNames.upper_percentile],
-            self.expected_data[0][job.TempColNames.upper_percentile],
+            self.returned_data[0][NullOutlierColumns.upper_percentile],
+            self.expected_data[0][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[1][job.TempColNames.upper_percentile],
-            self.expected_data[1][job.TempColNames.upper_percentile],
+            self.returned_data[1][NullOutlierColumns.upper_percentile],
+            self.expected_data[1][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[2][job.TempColNames.upper_percentile],
-            self.expected_data[2][job.TempColNames.upper_percentile],
+            self.returned_data[2][NullOutlierColumns.upper_percentile],
+            self.expected_data[2][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[3][job.TempColNames.upper_percentile],
-            self.expected_data[3][job.TempColNames.upper_percentile],
+            self.returned_data[3][NullOutlierColumns.upper_percentile],
+            self.expected_data[3][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[4][job.TempColNames.upper_percentile],
-            self.expected_data[4][job.TempColNames.upper_percentile],
+            self.returned_data[4][NullOutlierColumns.upper_percentile],
+            self.expected_data[4][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[5][job.TempColNames.upper_percentile],
-            self.expected_data[5][job.TempColNames.upper_percentile],
+            self.returned_data[5][NullOutlierColumns.upper_percentile],
+            self.expected_data[5][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[6][job.TempColNames.upper_percentile],
-            self.expected_data[6][job.TempColNames.upper_percentile],
+            self.returned_data[6][NullOutlierColumns.upper_percentile],
+            self.expected_data[6][NullOutlierColumns.upper_percentile],
             places=2,
         )
         self.assertAlmostEquals(
-            self.returned_data[7][job.TempColNames.upper_percentile],
-            self.expected_data[7][job.TempColNames.upper_percentile],
+            self.returned_data[7][NullOutlierColumns.upper_percentile],
+            self.expected_data[7][NullOutlierColumns.upper_percentile],
             places=2,
         )
 
@@ -494,9 +513,11 @@ class CreateFilledPostsCleanColInFilteredDfTests(
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.cqc_location_import_date, DateType(), True),
                 StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField(job.TempColNames.standardised_residual, DoubleType(), True),
-                StructField(job.TempColNames.lower_percentile, DoubleType(), True),
-                StructField(job.TempColNames.upper_percentile, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.standardised_residual, DoubleType(), True
+                ),
+                StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+                StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
             ]
         )
         rows = [

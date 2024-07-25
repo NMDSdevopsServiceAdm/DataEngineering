@@ -64,9 +64,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts.remove_care_home_filled_posts_per_bed_ratio_outliers import (
-    TempColNames as CHFPPBR,
-)
+from utils.column_names.null_outlier_columns import NullOutlierColumns
 
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
@@ -2009,18 +2007,21 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(CHFPPBR.standardised_residual, DoubleType(), True),
+            StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
         ]
     )
+
+
+
 
     expected_standardised_residual_percentile_cutoff_with_percentiles_schema = (
         StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.primary_service_type, StringType(), True),
-                StructField(CHFPPBR.standardised_residual, DoubleType(), True),
-                StructField(CHFPPBR.lower_percentile, DoubleType(), True),
-                StructField(CHFPPBR.upper_percentile, DoubleType(), True),
+                StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+                StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+                StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
             ]
         )
     )
