@@ -2011,15 +2011,14 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
-
-
-
     expected_standardised_residual_percentile_cutoff_with_percentiles_schema = (
         StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.primary_service_type, StringType(), True),
-                StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+                StructField(
+                    NullOutlierColumns.standardised_residual, DoubleType(), True
+                ),
                 StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
                 StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
             ]
