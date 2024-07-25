@@ -473,7 +473,7 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         with self.assertRaises(ValueError) as context:
             job.calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
                 self.standardised_residual_percentile_cutoff_df,
-                25.0,
+                1.1,
             )
 
         self.assertTrue(
