@@ -291,6 +291,10 @@ def calculate_absolute_residual(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the absolute residual.
     """
+    df = df.withColumn(
+        IndCQC.absolute_residual,
+        F.abs(F.col(IndCQC.ascwds_filled_posts_clean) - F.col(IndCQC.estimate_value)),
+    )
     return df
 
 
@@ -306,6 +310,11 @@ def calculate_percentage_residual(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage residual.
     """
+    df = df.withColumn(
+        IndCQC.percentage_residual,
+        (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean))
+        / F.col(IndCQC.estimate_value),
+    )
     return df
 
 
