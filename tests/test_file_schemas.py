@@ -3149,6 +3149,35 @@ class FlattenCQCRatings:
         ]
     )
 
+    add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+        ]
+    )
+    expected_add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidationUtils:

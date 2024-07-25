@@ -4524,6 +4524,35 @@ class FlattenCQCRatings:
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
     ]
 
+    add_numerical_ratings_rows = [
+        (
+            "loc 1",
+            "Good",
+            "Outstanding",
+            "Requires improvement",
+            "Inadequate",
+            "Good",
+            None,
+        ),
+    ]
+    expected_add_numerical_ratings_rows = [
+        (
+            "loc 1",
+            "Good",
+            "Outstanding",
+            "Requires improvement",
+            "Inadequate",
+            "Good",
+            None,
+            10,
+            4,
+            2,
+            1,
+            3,
+            0,
+        ),
+    ]
+
 
 @dataclass
 class ValidationUtils:

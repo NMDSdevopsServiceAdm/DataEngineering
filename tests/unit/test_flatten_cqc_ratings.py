@@ -467,5 +467,21 @@ class CreateBenchmarkRatingsDataset(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class AddNumericalRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_numerical_ratings_returns_expected_results(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_numerical_ratings_rows, Schema.add_numerical_ratings_schema
+        )
+        returned_df = job.add_numerical_ratings(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_numerical_ratings_rows,
+            Schema.expected_add_numerical_ratings_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
