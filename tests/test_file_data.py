@@ -3198,7 +3198,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
 
     expected_null_values_outside_of_standardised_residual_cutoff_rows = [
         ("1", None, -2.50, -1.23, 1.23),
-        ("2", None, -1.23, -1.23, 1.23),
+        ("2", 2.0, -1.23, -1.23, 1.23),
         ("3", 3.0, 0.00, -1.23, 1.23),
         ("4", 2.0, 1.23, -1.23, 1.23),
         ("5", None, 1.25, -1.23, 1.23),
