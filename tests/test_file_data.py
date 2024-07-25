@@ -5619,3 +5619,16 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 55.0, 7.0710678118654755, -2.0, 0.0),
     ]
     # fmt: on
+
+    calculate_residuals_rows = [
+        ("loc 1", 10.0, 5.0),
+    ]
+    expected_calculate_absolute_residual_rows = [
+        ("loc 1", 10.0, 5.0, 5.0),
+    ]
+    expected_calculate_percentage_residual_rows = [
+        ("loc 1", 10.0, 5.0, -1.0),
+    ]
+    expected_calculate_residuals_rows = [
+        ("loc 1", 10.0, 5.0, 5.0, -1.0),
+    ]

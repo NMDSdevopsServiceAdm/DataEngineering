@@ -262,6 +262,16 @@ def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
 
 
 def calculate_residuals(df: DataFrame) -> DataFrame:
+    df = calculate_absolute_residual(df)
+    df = calculate_percentage_residual(df)
+    return df
+
+
+def calculate_absolute_residual(df: DataFrame) -> DataFrame:
+    return df
+
+
+def calculate_percentage_residual(df: DataFrame) -> DataFrame:
     return df
 
 
