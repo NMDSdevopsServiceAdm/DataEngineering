@@ -224,14 +224,6 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
             f"percentile({TempColNames.standardised_residual}, array({upper_percentile}))"
         )[0].alias(TempColNames.upper_percentile),
     )
-    #     F.percentile_approx(
-    #         TempColNames.standardised_residual, lower_percentile, F.lit(1000000)
-    #     ).alias(TempColNames.lower_percentile),
-    #     F.percentile_approx(
-    #         TempColNames.standardised_residual, upper_percentile, F.lit(1000000)
-    #     ).alias(TempColNames.upper_percentile),
-    # )
-    percentile_df.show(truncate=False)
 
     df = df.join(percentile_df, IndCQC.primary_service_type, "left")
 
@@ -248,7 +240,7 @@ def create_filled_posts_clean_col_in_filtered_df(
         )
         & (
             F.col(TempColNames.standardised_residual)
-            <= F.col(TempColNames.upper_percentile)
+            < F.col(TempColNames.upper_percentile)
         )
     )
 
