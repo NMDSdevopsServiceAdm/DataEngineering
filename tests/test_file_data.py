@@ -3098,14 +3098,14 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     ]
 
     expected_standardised_residual_percentile_cutoff_with_percentiles_rows = [
-        ("1", PrimaryServiceType.care_home_with_nursing, 0.54321, -4.2542, 2.41654),
-        ("2", PrimaryServiceType.care_home_with_nursing, -3.2545, -4.2542, 2.41654),
-        ("3", PrimaryServiceType.care_home_with_nursing, -4.2542, -4.2542, 2.41654),
-        ("4", PrimaryServiceType.care_home_with_nursing, 2.41654, -4.2542, 2.41654),
-        ("5", PrimaryServiceType.care_home_with_nursing, 25.0, -4.2542, 2.41654),
-        ("6", PrimaryServiceType.care_home_only, 1.0, 1.0, 3.0),
-        ("7", PrimaryServiceType.care_home_only, 2.0, 1.0, 3.0),
-        ("8", PrimaryServiceType.care_home_only, 3.0, 1.0, 3.0),
+        ("1", PrimaryServiceType.care_home_with_nursing, 0.54321, -3.454, 6.933),
+        ("2", PrimaryServiceType.care_home_with_nursing, -3.2545, -3.454, 6.933),
+        ("3", PrimaryServiceType.care_home_with_nursing, -4.2542, -3.454, 6.933),
+        ("4", PrimaryServiceType.care_home_with_nursing, 2.41654, -3.454, 6.933),
+        ("5", PrimaryServiceType.care_home_with_nursing, 25.0, -3.454, 6.933),
+        ("6", PrimaryServiceType.care_home_only, 1.0, 1.4, 2.6),
+        ("7", PrimaryServiceType.care_home_only, 2.0, 1.4, 2.6),
+        ("8", PrimaryServiceType.care_home_only, 3.0, 1.4, 2.6),
     ]
 
 
