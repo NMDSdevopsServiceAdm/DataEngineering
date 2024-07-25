@@ -10,6 +10,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 def null_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
     """
+    Creates a clean version of 'ascwds_filled_posts' column and removes values identified as outliers.
+
     This function first duplicates 'ascwds_filled_posts' as 'ascwds_filled_posts_clean' and then runs
     various functions designed to clean ASCWDS filled post values, replacing outliers with null values.
 

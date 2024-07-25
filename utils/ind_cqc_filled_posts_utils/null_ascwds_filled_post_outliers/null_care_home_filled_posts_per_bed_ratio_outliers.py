@@ -29,6 +29,8 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
     """
+    Converts filled post values to nulls if they are outliers based on their filled posts per bed ratio.
+
     This function is designed to convert filled post figures for care homes which are deemed outliers to
     null based on the ratio between filled posts and number of beds. The number of beds are banded into
     categorical groups and the average 'filled post per bed' ratio is calculated which becomes the ratio
@@ -203,6 +205,8 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     percentage_of_data_to_filter_out: float,
 ) -> DataFrame:
     """
+    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame and adds them as new columns.
+
     Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame. The value entered for the
     percentage_of_data_to_filter_out will be split into half so that half is applied to the lower extremes and half to the
     upper extremes. Two columns will be added as a result, one containing the lower percentile of standardised_residual and
@@ -242,10 +246,11 @@ def null_values_outside_of_standardised_residual_cutoffs(
     df: DataFrame,
 ) -> DataFrame:
     """
+    Converts filled post values to null if the standardised residuals are outside the percentile cutoffs.
+
     If the standardised_residual value is outside of the lower and upper percentile cutoffs then
-    ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within
-    the cutoffs), the original value for ascwds_filled_posts_clean remains. The function used to
-    calculate percentiles (percentile_approx)
+    ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within the
+    cutoffs), the original value for ascwds_filled_posts_clean remains.
 
     Args:
         df (DataFrame): The input dataframe containing standardised residuals and percentiles.
@@ -275,6 +280,8 @@ def combine_dataframes(
     filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
 ) -> DataFrame:
     """
+    Appends the filtered care home data back with the unfiltered non-care home data.
+
     This job filteres care home data only so care home and non-care home data was separated at the start of the job.
     This function combines the two datasets back together. Only the columns which existed at the start of the job
     are required in the returned dataframe.
