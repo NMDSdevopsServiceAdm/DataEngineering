@@ -318,6 +318,12 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.effective_rating,
         CQCRatings.rating_sequence,
         CQCRatings.latest_rating_flag,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+        CQCRatings.total_rating_value,
     ).distinct()
     return standard_ratings_df
 
