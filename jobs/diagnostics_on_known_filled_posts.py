@@ -30,6 +30,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.interpolation_model,
     IndCQC.estimate_filled_posts,
 ]
+absolute_value_cutoff: float = 10.0
+percentage_value_cutoff: float = 0.35
 
 
 def main(
@@ -341,6 +343,10 @@ def calculate_average_absolute_residual(df: DataFrame, window: Window) -> DataFr
     Returns:
         DataFrame: A dataframe with an additional column containing the average absolute residual aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.average_absolute_residual,
+        F.mean(df[IndCQC.absolute_residual]).over(window),
+    )
     return df
 
 
@@ -358,6 +364,10 @@ def calculate_average_percentage_residual(df: DataFrame, window: Window) -> Data
     Returns:
         DataFrame: A dataframe with an additional column containing the average percentage residual aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.average_percentage_residual,
+        F.mean(df[IndCQC.percentage_residual]).over(window),
+    )
     return df
 
 
@@ -375,6 +385,10 @@ def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the maximum absolute residual aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.max_absolute_residual,
+        F.max(df[IndCQC.absolute_residual]).over(window),
+    )
     return df
 
 
@@ -394,6 +408,13 @@ def calculate_percentage_of_residuals_within_absolute_value_of_actual(
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage of residuals which are within an absolute value of the actual value aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.percentage_of_residuals_within_absolute_value,
+        F.count(
+            F.when(df[IndCQC.absolute_residual] <= absolute_value_cutoff, True)
+        ).over(window)
+        / F.count(df[IndCQC.absolute_residual]).over(window),
+    )
     return df
 
 
@@ -413,6 +434,14 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage of residuals which are within a percentage value of the actual value aggregated over the given window.
     """
+    df = df.withColumn(
+        IndCQC.percentage_of_residuals_within_percentage_value,
+        F.count(
+            F.when(df[IndCQC.percentage_residual] <= percentage_value_cutoff, True)
+        ).over(window)
+        / F.count(df[IndCQC.percentage_residual]).over(window),
+    )
+    return df
     return df
 
 
