@@ -556,7 +556,7 @@ class CreateSummaryDataframeTests(DiagnosticsOnKnownFilledPostsTests):
         self.returned_df = job.create_summary_diagnostics_table(self.test_df)
 
     def test_create_summary_diagnostics_table_returns_correct_data(self):
-        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 if __name__ == "__main__":
