@@ -550,8 +550,8 @@ class CreateSummaryDataframeTests(DiagnosticsOnKnownFilledPostsTests):
             Data.create_summary_dataframe_rows, Schemas.create_summary_dataframe_schema
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.create_summary_dataframe_rows,
-            Schemas.create_summary_dataframe_schema,
+            Data.expected_create_summary_dataframe_rows,
+            Schemas.expected_create_summary_dataframe_schema,
         )
         self.returned_df = job.create_summary_diagnostics_table(self.test_df)
 
