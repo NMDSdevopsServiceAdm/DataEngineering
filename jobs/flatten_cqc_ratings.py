@@ -79,6 +79,7 @@ def main(
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
     ratings_df = add_latest_rating_flag_column(ratings_df)
+    ratings_df = add_numerical_ratings(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
@@ -264,6 +265,47 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
+def add_numerical_ratings(df: DataFrame) -> DataFrame:
+    """
+    Adds numerical ratings columns for each of the key ratings and a total column.
+
+    Args:
+        df (Dataframe): A dataframe with flattened CQC key ratings columns.
+
+    Returns:
+        Dataframe: The given data frame with additional columns containing the key ratings as numerical values and a total of all the values.
+    """
+    rating_columns_dict = {
+        CQCRatings.safe_rating: CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating: CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating: CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating: CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating: CQCRatings.effective_rating_value,
+    }
+    for rating_column, new_column_name in rating_columns_dict.items():
+        df = df.withColumn(
+            new_column_name,
+            F.when(F.col(rating_column) == CQCRatingsValues.outstanding, F.lit(4))
+            .when(F.col(rating_column) == CQCRatingsValues.good, F.lit(3))
+            .when(
+                F.col(rating_column) == CQCRatingsValues.requires_improvement, F.lit(2)
+            )
+            .when(F.col(rating_column) == CQCRatingsValues.inadequate, F.lit(1))
+            .otherwise(F.lit(0)),
+        )
+    df = df.withColumn(
+        CQCRatings.total_rating_value,
+        (
+            F.col(CQCRatings.safe_rating_value)
+            + F.col(CQCRatings.well_led_rating_value)
+            + F.col(CQCRatings.caring_rating_value)
+            + F.col(CQCRatings.responsive_rating_value)
+            + F.col(CQCRatings.effective_rating_value)
+        ),
+    )
+    return df
+
+
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     standard_ratings_df = ratings_df.select(
         CQCL.location_id,
@@ -276,6 +318,12 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.effective_rating,
         CQCRatings.rating_sequence,
         CQCRatings.latest_rating_flag,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+        CQCRatings.total_rating_value,
     ).distinct()
     return standard_ratings_df
 

@@ -461,6 +461,8 @@ class CQCRatingsValues(ColumnValues):
     historic: str = "Historic"
     outstanding: str = "Outstanding"
     good: str = "Good"
+    requires_improvement: str = "Requires improvement"
+    inadequate: str = "Inadequate"
 
 
 @dataclass
