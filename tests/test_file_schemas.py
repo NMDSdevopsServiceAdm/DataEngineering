@@ -1989,13 +1989,6 @@ class NullAscwdsFilledPostOutliersSchema:
         ]
     )
 
-    expected_filtered_ind_cqc_schema = StructType(
-        [
-            *unfiltered_ind_cqc_schema,
-            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
-        ]
-    )
-
 
 @dataclass
 class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:

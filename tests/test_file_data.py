@@ -3035,36 +3035,6 @@ class NullAscwdsFilledPostOutliersData:
         ("03", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 8.0),
     ]
 
-    expected_filtered_ind_cqc_rows = [
-        (
-            "01",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            30.0,
-            30.0,
-        ),
-        (
-            "02",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            35.0,
-            35.0,
-        ),
-        (
-            "03",
-            date(2023, 1, 1),
-            "N",
-            PrimaryServiceType.non_residential,
-            None,
-            8.0,
-            8.0,
-        ),
-    ]
-
 
 @dataclass
 class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
