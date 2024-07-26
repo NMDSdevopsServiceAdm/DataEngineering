@@ -15,10 +15,10 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
-    PartitionKeys,
+    PartitionKeys as Keys,
 )
 
-
+partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
@@ -62,7 +62,7 @@ def main(
         filled_posts_df,
         diagnostics_destination,
         mode="overwrite",
-        partitionKeys=PartitionKeys,
+        partitionKeys=partition_keys,
     )
     utils.write_to_parquet(
         summary_df,
