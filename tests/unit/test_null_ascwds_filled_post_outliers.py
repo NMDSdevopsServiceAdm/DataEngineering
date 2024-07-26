@@ -16,14 +16,6 @@ class NullAscwdsFilledPostOutliersTests(unittest.TestCase):
             Data.unfiltered_ind_cqc_rows,
             Schemas.unfiltered_ind_cqc_schema,
         )
-        self.returned_filtered_df = job.null_ascwds_filled_post_outliers(
-            self.unfiltered_ind_cqc_df
-        )
-
-        self.expected_filtered_ind_cqc_df = self.spark.createDataFrame(
-            Data.expected_filtered_ind_cqc_rows,
-            Schemas.expected_filtered_ind_cqc_schema,
-        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
