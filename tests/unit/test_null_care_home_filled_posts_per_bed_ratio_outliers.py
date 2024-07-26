@@ -1,6 +1,5 @@
 import unittest
 import warnings
-from datetime import date
 
 from tests.test_file_data import (
     RemoveCareHomeFilledPostsPerBedRatioOutliersData as Data,
@@ -15,7 +14,6 @@ from pyspark.sql.types import (
     StringType,
     DoubleType,
     IntegerType,
-    DateType,
 )
 
 from utils import utils
@@ -23,50 +21,75 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.null_outlier_columns import NullOutlierColumns
-from utils.ind_cqc_filled_posts_utils.filter_ascwds_filled_posts import (
-    remove_care_home_filled_posts_per_bed_ratio_outliers as job,
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
+    null_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
 
 
-class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
+class NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.care_home_filled_posts_per_bed_input_data = self.spark.createDataFrame(
-            Data.care_home_filled_posts_per_bed_rows,
-            Schemas.care_home_filled_posts_per_bed_schema,
-        )
-        self.filtered_output_df = (
-            job.remove_care_home_filled_posts_per_bed_ratio_outliers(
-                self.care_home_filled_posts_per_bed_input_data
-            )
+        self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
+            Data.unfiltered_ind_cqc_rows,
+            Schemas.ind_cqc_schema,
         )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_overall_output_df_has_same_number_of_rows_as_input_df(self):
-        self.assertEqual(
-            self.care_home_filled_posts_per_bed_input_data.count(),
-            self.filtered_output_df.count(),
+        self.returned_filtered_df = (
+            job.null_care_home_filled_posts_per_bed_ratio_outliers(
+                self.unfiltered_ind_cqc_df
+            )
         )
+
+    def test_returned_filtered_df_has_same_number_of_rows_as_initial_unfiltered_df(
+        self,
+    ):
+        self.assertEqual(
+            self.unfiltered_ind_cqc_df.count(),
+            self.returned_filtered_df.count(),
+        )
+
+    def test_returned_filtered_df_has_same_schema_as_initial_unfiltered_df(
+        self,
+    ):
+        self.assertEqual(
+            self.unfiltered_ind_cqc_df.schema,
+            self.returned_filtered_df.schema,
+        )
+
+    def test_returned_df_matches_expected_df(self):
+        expected_filtered_df = self.spark.createDataFrame(
+            Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
+            Schemas.ind_cqc_schema,
+        )
+
+        returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(expected_data, returned_data)
 
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
     def test_relevant_data_selected(self):
-        df = job.select_relevant_data(self.care_home_filled_posts_per_bed_input_data)
+        # TODO - replace test data with own test data and improve tests
+        df = job.select_relevant_data(self.unfiltered_ind_cqc_df)
         self.assertEqual(df.count(), 40)
 
 
-class SelectDataNotInSubsetTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class SelectDataNotInSubsetTests(
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
     def setUp(self) -> None:
         super().setUp()
 
@@ -95,7 +118,7 @@ class SelectDataNotInSubsetTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioT
 
 
 class CalculateFilledPostsPerBedRatioTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -104,7 +127,7 @@ class CalculateFilledPostsPerBedRatioTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
@@ -121,7 +144,7 @@ class CalculateFilledPostsPerBedRatioTests(
 
 
 class CreateBandedBedCountColumnTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -148,7 +171,7 @@ class CreateBandedBedCountColumnTests(
 
 
 class CalculateAverageFilledPostsPerBandedBedCount(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -183,7 +206,7 @@ class CalculateAverageFilledPostsPerBandedBedCount(
 
 
 class CalculateStandardisedResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -209,7 +232,7 @@ class CalculateStandardisedResidualsTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(
                     NullOutlierColumns.number_of_beds_banded, DoubleType(), True
                 ),
@@ -239,7 +262,7 @@ class CalculateStandardisedResidualsTests(
 
 
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -292,7 +315,7 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
 
 
 class CalculateFilledPostResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -301,7 +324,7 @@ class CalculateFilledPostResidualsTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
                 StructField(
                     NullOutlierColumns.expected_filled_posts, DoubleType(), True
                 ),
@@ -322,7 +345,7 @@ class CalculateFilledPostResidualsTests(
 
 
 class CalculateFilledPostStandardisedResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -354,7 +377,7 @@ class CalculateFilledPostStandardisedResidualsTests(
 
 
 class CalculateLowerAndUpperStandardisedResidualCutoffTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -501,157 +524,89 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         )
 
 
-class CreateFilledPostsCleanColInFilteredDfTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+class NullValuesOutsideOfStandardisedResidualCutoffsTests(
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_create_filled_posts_clean_col_in_filtered_df(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-                StructField(
-                    NullOutlierColumns.standardised_residual, DoubleType(), True
-                ),
-                StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
-                StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
-            ]
+        df = self.spark.createDataFrame(
+            Data.null_values_outside_of_standardised_residual_cutoff_rows,
+            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
-        rows = [
-            ("1", date(2023, 1, 1), 1.0, 0.26545, -1.2345, 1.2345),
-            ("2", date(2023, 1, 1), 2.0, -3.2545, -1.2345, 1.2345),
-            ("3", date(2023, 1, 1), 3.0, 12.25423, -1.2345, 1.2345),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.create_filled_posts_clean_col_in_filtered_df(df)
+        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
 
-        self.assertEqual(df.count(), 1)
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][IndCQC.ascwds_filled_posts_clean], 1.0)
-        self.assertEqual(df[0][IndCQC.location_id], "1")
-
-
-class JoinFilteredColIntoCareHomeDfTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_join_filtered_col_into_care_home_df(self):
-        filtered_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
-            ]
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
+            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
-        filtered_rows = [
-            ("2", date(2023, 1, 1), 2.0),
-        ]
-        ch_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            ]
-        )
-        ch_rows = [
-            ("2", date(2022, 1, 1), 1, 2.0),
-            ("2", date(2023, 1, 1), 1, 2.0),
-            ("3", date(2023, 1, 1), 25, 30.0),
-        ]
-        filtered_df = self.spark.createDataFrame(filtered_rows, filtered_schema)
-        ch_df = self.spark.createDataFrame(ch_rows, ch_schema)
 
-        df = job.join_filtered_col_into_care_home_df(ch_df, filtered_df)
+        self.returned_data = returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = expected_df.sort(IndCQC.location_id).collect()
 
-        self.assertEqual(df.count(), 3)
-        df = df.sort(IndCQC.location_id, IndCQC.cqc_location_import_date).collect()
-        self.assertIsNone(df[0][IndCQC.ascwds_filled_posts_clean])
-        self.assertEqual(df[1][IndCQC.ascwds_filled_posts_clean], 2.0)
-        self.assertIsNone(df[2][IndCQC.ascwds_filled_posts_clean])
-
-
-class AddFilledPostsCleanWithoutFilteringDuplicatesDataInColumnTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_add_filled_posts_clean_without_filtering_duplicates_data_in_column(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts, StringType(), True),
-            ]
-        )
-        rows = [
-            ("1-000000002", 123),
-            ("1-000000003", None),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-
-        df = (
-            job.add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
-                df
-            )
-        )
-        df = df.sort(IndCQC.location_id).collect()
+    def test_value_nulled_when_below_lower_cutoff(self):
         self.assertEqual(
-            df[0][IndCQC.ascwds_filled_posts], df[0][IndCQC.ascwds_filled_posts_clean]
+            self.returned_data[0][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[0][IndCQC.ascwds_filled_posts_clean],
         )
+
+    def test_value_not_nulled_when_equal_to_lower_cutoff(self):
         self.assertEqual(
-            df[1][IndCQC.ascwds_filled_posts], df[1][IndCQC.ascwds_filled_posts_clean]
+            self.returned_data[1][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[1][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_not_nulled_when_in_between_cutoffs(self):
+        self.assertEqual(
+            self.returned_data[2][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[2][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_not_nulled_when_equal_to_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[3][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[3][IndCQC.ascwds_filled_posts_clean],
+        )
+
+    def test_value_nulled_when_above_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[4][IndCQC.ascwds_filled_posts_clean],
+            self.expected_data[4][IndCQC.ascwds_filled_posts_clean],
         )
 
 
-class CombineDataframeTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
+
+        self.care_home_df = self.spark.createDataFrame(
+            Data.combine_dataframes_care_home_rows,
+            Schemas.combine_dataframes_care_home_schema,
+        )
+        self.non_care_home_df = self.spark.createDataFrame(
+            Data.combine_dataframes_non_care_home_rows,
+            Schemas.combine_dataframes_non_care_home_schema,
+        )
+        self.returned_combined_df = job.combine_dataframes(
+            self.care_home_df, self.non_care_home_df
+        )
 
     def test_combine_dataframes_keeps_all_rows_of_data(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField("other_col", StringType(), True),
-            ]
+        self.assertEqual(
+            self.returned_combined_df.count(),
+            (self.care_home_df.count() + self.non_care_home_df.count()),
         )
-        rows_1 = [
-            ("1-000000001", "data"),
-        ]
-        rows_2 = [
-            ("1-000000002", "data"),
-            ("1-000000003", "data"),
-        ]
-        df_1 = self.spark.createDataFrame(rows_1, schema)
-        df_2 = self.spark.createDataFrame(rows_2, schema)
 
-        df = job.combine_dataframes(df_1, df_2)
-        self.assertEqual(df.count(), (df_1.count() + df_2.count()))
+    def test_combine_dataframes_has_same_schema_as_original_non_care_home_df(self):
+        self.assertEqual(self.returned_combined_df.schema, self.non_care_home_df.schema)
 
-    def test_combine_dataframes_have_matching_column_names(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField("other_col", StringType(), True),
-            ]
+    def test_returned_combined_dataframe_matches_expected_df(self):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_combined_dataframes_rows,
+            Schemas.expected_combined_dataframes_schema,
         )
-        rows_1 = [
-            ("1-000000001", "data"),
-        ]
-        rows_2 = [
-            ("1-000000002", "data"),
-            ("1-000000003", "data"),
-        ]
 
-        df_1 = self.spark.createDataFrame(rows_1, schema)
-        df_2 = self.spark.createDataFrame(rows_2, schema)
+        returned_data = self.returned_combined_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
 
-        df = job.combine_dataframes(df_1, df_2)
-
-        self.assertEqual(df_1.columns, df_2.columns)
-        self.assertEqual(df.columns, df_1.columns)
+        self.assertEqual(returned_data, expected_data)

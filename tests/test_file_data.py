@@ -3028,7 +3028,7 @@ class ReconciliationData:
 
 
 @dataclass
-class FilterAscwdsFilledPostsData:
+class NullAscwdsFilledPostOutliersData:
     unfiltered_ind_cqc_rows = [
         ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0),
@@ -3039,51 +3039,100 @@ class FilterAscwdsFilledPostsData:
 @dataclass
 class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: off
-    care_home_filled_posts_per_bed_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0),
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0),
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0),
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0),
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0),
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0),
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0),
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0),
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0),
-        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0),
-        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0),
-        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0),
-        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0),
-        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0),
-        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0),
-        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0),
-        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0),
-        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 21.0),
-        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 22.0),
-        ("23", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 23.0),
-        ("24", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 24.0),
-        ("25", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 25.0),
-        ("26", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 26.0),
-        ("27", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 27.0),
-        ("28", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 28.0),
-        ("29", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 29.0),
-        ("30", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0),
-        ("31", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 31.0),
-        ("32", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 32.0),
-        ("33", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 33.0),
-        ("34", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 34.0),
-        ("35", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0),
-        ("36", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 36.0),
-        ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0),
-        ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0),
-        ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0),
-        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0),
-        ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None),
-        ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0),
-        ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0),
-        ("44", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 44.0),
+    unfiltered_ind_cqc_rows = [
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 21.0, 21.0),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 22.0, 22.0),
+        ("23", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 23.0, 23.0),
+        ("24", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 24.0, 24.0),
+        ("25", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 25.0, 25.0),
+        ("26", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 26.0, 26.0),
+        ("27", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 27.0, 27.0),
+        ("28", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 28.0, 28.0),
+        ("29", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 29.0, 29.0),
+        ("30", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0, 30.0),
+        ("31", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 31.0, 31.0),
+        ("32", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 32.0, 32.0),
+        ("33", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 33.0, 33.0),
+        ("34", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 34.0, 34.0),
+        ("35", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0, 35.0),
+        ("36", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 36.0, 36.0),
+        ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0, 37.0),
+        ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0, 38.0),
+        ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0, 39.0),
+        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, 40.0),
+        ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None),
+        ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0),
+        ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0),
+        ("44", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 44.0, 44.0),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_care_home_jobs_per_bed_ratio_filtered_rows = [
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 21.0, 21.0),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 22.0, 22.0),
+        ("23", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 23.0, 23.0),
+        ("24", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 24.0, 24.0),
+        ("25", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 25.0, 25.0),
+        ("26", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 26.0, 26.0),
+        ("27", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 27.0, 27.0),
+        ("28", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 28.0, 28.0),
+        ("29", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 29.0, 29.0),
+        ("30", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0, 30.0),
+        ("31", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 31.0, 31.0),
+        ("32", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 32.0, 32.0),
+        ("33", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 33.0, 33.0),
+        ("34", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 34.0, 34.0),
+        ("35", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0, 35.0),
+        ("36", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 36.0, 36.0),
+        ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0, 37.0),
+        ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0, 38.0),
+        ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0, 39.0),
+        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, None),
+        ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None),
+        ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0),
+        ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0),
+        ("44", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 44.0, 44.0),
     ]
     # fmt: on
 
@@ -3107,6 +3156,55 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ("6", PrimaryServiceType.care_home_only, 1.0, 1.4, 2.6),
         ("7", PrimaryServiceType.care_home_only, 2.0, 1.4, 2.6),
         ("8", PrimaryServiceType.care_home_only, 3.0, 1.4, 2.6),
+    ]
+
+    null_values_outside_of_standardised_residual_cutoff_rows = [
+        ("1", 1.0, -2.50, -1.23, 1.23),
+        ("2", 2.0, -1.23, -1.23, 1.23),
+        ("3", 3.0, 0.00, -1.23, 1.23),
+        ("4", 2.0, 1.23, -1.23, 1.23),
+        ("5", 1.0, 1.25, -1.23, 1.23),
+    ]
+
+    expected_null_values_outside_of_standardised_residual_cutoff_rows = [
+        ("1", None, -2.50, -1.23, 1.23),
+        ("2", 2.0, -1.23, -1.23, 1.23),
+        ("3", 3.0, 0.00, -1.23, 1.23),
+        ("4", 2.0, 1.23, -1.23, 1.23),
+        ("5", None, 1.25, -1.23, 1.23),
+    ]
+
+    combine_dataframes_care_home_rows = [
+        (
+            "01",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            1.0,
+            None,
+            10.0,
+        ),
+        (
+            "02",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            2.0,
+            2.0,
+            20.0,
+        ),
+    ]
+
+    combine_dataframes_non_care_home_rows = [
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+    ]
+
+    expected_combined_dataframes_rows = [
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
     ]
 
 

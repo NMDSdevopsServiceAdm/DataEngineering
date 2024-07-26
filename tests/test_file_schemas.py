@@ -1977,7 +1977,7 @@ class ReconciliationSchema:
 
 
 @dataclass
-class FilterAscwdsFilledPostsSchema:
+class NullAscwdsFilledPostOutliersSchema:
     unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1992,7 +1992,7 @@ class FilterAscwdsFilledPostsSchema:
 
 @dataclass
 class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
-    care_home_filled_posts_per_bed_schema = StructType(
+    ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -2000,6 +2000,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
         ]
     )
 
@@ -2024,6 +2025,27 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             ]
         )
     )
+
+    null_values_outside_of_standardised_residual_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+            StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+            StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_care_home_schema = StructType(
+        [
+            *ind_cqc_schema,
+            StructField("additional column", DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_non_care_home_schema = ind_cqc_schema
+
+    expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
 
 
 @dataclass

@@ -14,9 +14,28 @@ class NumericalValues:
     PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
 
 
-def remove_care_home_filled_posts_per_bed_ratio_outliers(
+def null_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
+    """
+    Converts filled post values to nulls if they are outliers based on their filled posts per bed ratio.
+
+    This function is designed to convert filled post figures for care homes which are deemed outliers to
+    null based on the ratio between filled posts and number of beds. The number of beds are banded into
+    categorical groups and the average 'filled post per bed' ratio is calculated which becomes the ratio
+    to determine the 'expected filled posts' for each banded number of bed group. The residuals (the
+    difference between actual and expected) are calculated, followed by the standardised residuals
+    (residuals divided by the squart root of the filled post figure). The values at the top and bottom
+    end of the standarised residuals are deemed to be outliers (based on percentiles) and the filled post
+    figures in ascwds_filled_posts_clean are converted to null values. Non-care home data is not included
+    in this particular filter so this part of the dataframe will be unchanged.
+
+    Args:
+        df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
+
+    Returns:
+        DataFrame: A dataFrame with outlier values converted to null values.
+    """
     numerical_value = NumericalValues()
 
     care_homes_df = select_relevant_data(input_df)
@@ -43,22 +62,12 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
         )
     )
 
-    care_homes_within_standardised_residual_cutoff_df = (
-        create_filled_posts_clean_col_in_filtered_df(data_to_filter_df)
-    )
-
-    care_homes_with_filtered_col_df = join_filtered_col_into_care_home_df(
-        care_homes_df, care_homes_within_standardised_residual_cutoff_df
-    )
-
-    data_not_relevant_to_filter_df = (
-        add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
-            data_not_relevant_to_filter_df
-        )
+    filtered_care_home_df = null_values_outside_of_standardised_residual_cutoffs(
+        data_to_filter_df
     )
 
     output_df = combine_dataframes(
-        care_homes_with_filtered_col_df, data_not_relevant_to_filter_df
+        filtered_care_home_df, data_not_relevant_to_filter_df
     )
 
     return output_df
@@ -70,8 +79,8 @@ def select_relevant_data(input_df: DataFrame) -> DataFrame:
         F.col(IndCQC.number_of_beds).isNotNull() & (F.col(IndCQC.number_of_beds) > 0)
     )
     output_df = output_df.where(
-        F.col(IndCQC.ascwds_filled_posts).isNotNull()
-        & (F.col(IndCQC.ascwds_filled_posts) > 0.0)
+        F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
+        & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
     )
 
     return output_df
@@ -90,7 +99,7 @@ def calculate_filled_posts_per_bed_ratio(
 ) -> DataFrame:
     input_df = input_df.withColumn(
         NullOutlierColumns.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts) / F.col(IndCQC.number_of_beds),
+        F.col(IndCQC.ascwds_filled_posts_clean) / F.col(IndCQC.number_of_beds),
     )
 
     return input_df
@@ -161,7 +170,7 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         NullOutlierColumns.residual,
-        F.col(IndCQC.ascwds_filled_posts)
+        F.col(IndCQC.ascwds_filled_posts_clean)
         - F.col(NullOutlierColumns.expected_filled_posts),
     )
 
@@ -222,54 +231,60 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     return df
 
 
-def create_filled_posts_clean_col_in_filtered_df(
+def null_values_outside_of_standardised_residual_cutoffs(
     df: DataFrame,
 ) -> DataFrame:
-    within_boundary_df = df.filter(
-        (
-            F.col(NullOutlierColumns.standardised_residual)
-            > F.col(NullOutlierColumns.lower_percentile)
-        )
-        & (
-            F.col(NullOutlierColumns.standardised_residual)
-            < F.col(NullOutlierColumns.upper_percentile)
-        )
-    )
+    """
+    Converts filled post values to null if the standardised residuals are outside the percentile cutoffs.
 
-    within_boundary_df = within_boundary_df.withColumn(
-        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
-    )
+    If the standardised_residual value is outside of the lower and upper percentile cutoffs then
+    ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within the
+    cutoffs), the original value for ascwds_filled_posts_clean remains.
 
-    output_df = within_boundary_df.select(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        IndCQC.ascwds_filled_posts_clean,
-    )
+    Args:
+        df (DataFrame): The input dataframe containing standardised residuals and percentiles.
 
-    return output_df
-
-
-def join_filtered_col_into_care_home_df(
-    df: DataFrame, df_with_filtered_column: DataFrame
-) -> DataFrame:
-    df = df.join(
-        df_with_filtered_column,
-        [IndCQC.location_id, IndCQC.cqc_location_import_date],
-        "left",
-    )
-    return df
-
-
-def add_filled_posts_clean_without_filtering_to_data_outside_of_this_filter(
-    df: DataFrame,
-) -> DataFrame:
+    Returns:
+        DataFrame: A dataFrame with null values removed based on the specified cutoffs.
+    """
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
+        IndCQC.ascwds_filled_posts_clean,
+        F.when(
+            (
+                F.col(NullOutlierColumns.standardised_residual)
+                < F.col(NullOutlierColumns.lower_percentile)
+            )
+            | (
+                F.col(NullOutlierColumns.standardised_residual)
+                > F.col(NullOutlierColumns.upper_percentile)
+            ),
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_clean)),
     )
+
     return df
 
 
-def combine_dataframes(first_df: DataFrame, second_df: DataFrame) -> DataFrame:
-    output_df = first_df.unionByName(second_df)
+def combine_dataframes(
+    filtered_care_home_df: DataFrame, original_non_care_home_df: DataFrame
+) -> DataFrame:
+    """
+    Appends the filtered care home data back with the unfiltered non-care home data.
 
-    return output_df
+    This job filters care home data only so care home and non-care home data was separated at the start of the job.
+    This function combines the two datasets back together. Only the columns which existed at the start of the job
+    are required in the returned dataframe.
+
+    Args:
+        filtered_care_home_df (DataFrame): A DataFrame containing filtered care home data.
+        original_non_care_home_df (DataFrame): A DataFrame containing the imported non-care home data.
+
+    Returns:
+        DataFrame: A new DataFrame that combines the selected columns from filtered_care_home_df
+        with the original_non_care_home_df.
+    """
+    care_home_df = filtered_care_home_df.select(original_non_care_home_df.columns)
+
+    all_locations_df = original_non_care_home_df.unionByName(care_home_df)
+
+    return all_locations_df
