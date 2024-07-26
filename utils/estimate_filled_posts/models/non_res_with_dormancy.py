@@ -31,7 +31,7 @@ def model_non_res_with_dormancy(
         metrics_destination: str: The file path to the destination for saving metrics.
 
     Returns:
-        DataFrame:
+        DataFrame: A dataframe with non residential with dormancy model estimates added.
     """
     gbt_trained_model = GBTRegressionModel.load(model_source)
 
