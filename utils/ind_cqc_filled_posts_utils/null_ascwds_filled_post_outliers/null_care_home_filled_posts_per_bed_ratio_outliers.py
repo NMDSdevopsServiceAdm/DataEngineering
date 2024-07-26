@@ -271,7 +271,7 @@ def combine_dataframes(
     """
     Appends the filtered care home data back with the unfiltered non-care home data.
 
-    This job filteres care home data only so care home and non-care home data was separated at the start of the job.
+    This job filters care home data only so care home and non-care home data was separated at the start of the job.
     This function combines the two datasets back together. Only the columns which existed at the start of the job
     are required in the returned dataframe.
 
