@@ -5622,13 +5622,17 @@ class DiagnosticsOnKnownFilledPostsData:
 
     calculate_residuals_rows = [
         ("loc 1", 10.0, 5.0),
+        ("loc 2", 5.0, 10.0),
     ]
     expected_calculate_absolute_residual_rows = [
         ("loc 1", 10.0, 5.0, 5.0),
+        ("loc 2", 5.0, 10.0, 5.0),
     ]
     expected_calculate_percentage_residual_rows = [
         ("loc 1", 10.0, 5.0, -1.0),
+        ("loc 2", 5.0, 10.0, 0.5),
     ]
     expected_calculate_residuals_rows = [
         ("loc 1", 10.0, 5.0, 5.0, -1.0),
+        ("loc 2", 5.0, 10.0, 5.0, 0.5),
     ]
