@@ -16,6 +16,9 @@ from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
 )
+from utils.estimate_filled_posts.models.non_res_without_dormancy import (
+    model_non_res_without_dormancy,
+)
 
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -59,6 +62,8 @@ def main(
     care_home_model_source: str,
     non_res_with_dormancy_features_source: str,
     non_res_with_dormancy_model_source: str,
+    non_res_without_dormancy_features_source: str,
+    non_res_without_dormancy_model_source: str,
     estimated_ind_cqc_destination: str,
     ml_model_metrics_destination: str,
 ) -> DataFrame:
@@ -73,6 +78,9 @@ def main(
     care_home_features_df = utils.read_from_parquet(care_home_features_source)
     non_res_with_dormancy_features_df = utils.read_from_parquet(
         non_res_with_dormancy_features_source
+    )
+    non_res_without_dormancy_features_df = utils.read_from_parquet(
+        non_res_without_dormancy_features_source
     )
 
     cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
@@ -97,6 +105,12 @@ def main(
         non_res_with_dormancy_model_source,
         ml_model_metrics_destination,
     )
+    cleaned_ind_cqc_df = model_non_res_without_dormancy(
+        cleaned_ind_cqc_df,
+        non_res_without_dormancy_features_df,
+        non_res_without_dormancy_model_source,
+        ml_model_metrics_destination,
+    )
 
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df, IndCQC.care_home_model)
 
@@ -113,6 +127,7 @@ def main(
                 "extrapolation_" + IndCQC.care_home_model,
                 IndCQC.care_home_model,
                 IndCQC.non_res_with_dormancy_model,
+                IndCQC.non_res_without_dormancy_model,
                 IndCQC.rolling_average_model,
             ],
         )
@@ -140,6 +155,8 @@ if __name__ == "__main__":
         care_home_model_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
+        non_res_without_dormancy_features_source,
+        non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     ) = utils.collect_arguments(
@@ -164,6 +181,14 @@ if __name__ == "__main__":
             "Source s3 directory for the non res with dormancy ML model",
         ),
         (
+            "--non_res_without_dormancy_features_source",
+            "Source s3 directory for non res without dormancy features dataset",
+        ),
+        (
+            "--non_res_without_dormancy_model_source",
+            "Source s3 directory for the non res without dormancy ML model",
+        ),
+        (
             "--estimated_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
@@ -179,6 +204,8 @@ if __name__ == "__main__":
         care_home_model_source,
         non_res_with_dormancy_features_source,
         non_res_with_dormancy_model_source,
+        non_res_without_dormancy_features_source,
+        non_res_without_dormancy_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     )
