@@ -26,7 +26,7 @@ from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
 )
 
 
-class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
+class NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
@@ -37,7 +37,7 @@ class FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -76,7 +76,7 @@ class MainTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
 
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -87,7 +87,9 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
         self.assertEqual(df.count(), 40)
 
 
-class SelectDataNotInSubsetTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class SelectDataNotInSubsetTests(
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
     def setUp(self) -> None:
         super().setUp()
 
@@ -116,7 +118,7 @@ class SelectDataNotInSubsetTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioT
 
 
 class CalculateFilledPostsPerBedRatioTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -142,7 +144,7 @@ class CalculateFilledPostsPerBedRatioTests(
 
 
 class CreateBandedBedCountColumnTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -169,7 +171,7 @@ class CreateBandedBedCountColumnTests(
 
 
 class CalculateAverageFilledPostsPerBandedBedCount(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -204,7 +206,7 @@ class CalculateAverageFilledPostsPerBandedBedCount(
 
 
 class CalculateStandardisedResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -260,7 +262,7 @@ class CalculateStandardisedResidualsTests(
 
 
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -313,7 +315,7 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
 
 
 class CalculateFilledPostResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -343,7 +345,7 @@ class CalculateFilledPostResidualsTests(
 
 
 class CalculateFilledPostStandardisedResidualsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -375,7 +377,7 @@ class CalculateFilledPostStandardisedResidualsTests(
 
 
 class CalculateLowerAndUpperStandardisedResidualCutoffTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -452,21 +454,6 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
             self.expected_data[7][NullOutlierColumns.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
-            self.returned_data[5][job.TempColNames.lower_percentile],
-            self.expected_data[5][job.TempColNames.lower_percentile],
-            places=2,
-        )
-        self.assertAlmostEquals(
-            self.returned_data[6][job.TempColNames.lower_percentile],
-            self.expected_data[6][job.TempColNames.lower_percentile],
-            places=2,
-        )
-        self.assertAlmostEquals(
-            self.returned_data[7][job.TempColNames.lower_percentile],
-            self.expected_data[7][job.TempColNames.lower_percentile],
-            places=2,
-        )
 
     def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_upper_percentile_values(
         self,
@@ -511,21 +498,6 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
             self.expected_data[7][NullOutlierColumns.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
-            self.returned_data[5][job.TempColNames.upper_percentile],
-            self.expected_data[5][job.TempColNames.upper_percentile],
-            places=2,
-        )
-        self.assertAlmostEquals(
-            self.returned_data[6][job.TempColNames.upper_percentile],
-            self.expected_data[6][job.TempColNames.upper_percentile],
-            places=2,
-        )
-        self.assertAlmostEquals(
-            self.returned_data[7][job.TempColNames.upper_percentile],
-            self.expected_data[7][job.TempColNames.upper_percentile],
-            places=2,
-        )
 
     def test_raise_error_if_percentage_of_data_to_filter_out_equal_to_one(self):
         with self.assertRaises(ValueError) as context:
@@ -553,7 +525,7 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
 
 
 class NullValuesOutsideOfStandardisedResidualCutoffsTests(
-    FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -603,7 +575,7 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
         )
 
 
-class CombineDataframeTests(FilterAscwdsFilledPostsCareHomeJobsPerBedRatioTests):
+class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
 
