@@ -3901,3 +3901,71 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.percentage_residual, FloatType(), True),
         ]
     )
+
+    calculate_aggregate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_aggregate_residuals_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_calculate_average_absolute_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_average_percentage_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_max_absolute_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
+        StructType(
+            [
+                *calculate_aggregate_residuals_schema,
+                StructField(
+                    IndCQC.percentage_of_residuals_within_absolute_value,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+    )
+    expected_calculate_percentage_of_residuals_within_percentage_value_schema = (
+        StructType(
+            [
+                *calculate_aggregate_residuals_schema,
+                StructField(
+                    IndCQC.percentage_of_residuals_within_percentage_value,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+    )

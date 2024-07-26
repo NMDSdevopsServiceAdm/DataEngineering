@@ -30,6 +30,8 @@ class IndCqcColumns:
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
+    average_absolute_residual: str = "average_absolute_residual"
+    average_percentage_residual: str = "average_percentage_residual"
     avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
     )
@@ -101,6 +103,7 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    max_absolute_residual: str = "max_absolute_residual"
     max_filled_posts: str = "max_filled_posts"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
@@ -112,6 +115,12 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
     organisation_id: str = AWPClean.organisation_id
+    percentage_of_residuals_within_absolute_value: str = (
+        "percentage_of_residuals_within_absolute_value"
+    )
+    percentage_of_residuals_within_percentage_value: str = (
+        "percentage_of_residuals_within_percentage_value"
+    )
     percentage_residual: str = "percentage_residual"
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (

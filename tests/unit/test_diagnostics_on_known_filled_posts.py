@@ -305,6 +305,103 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
 class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
+        self.window = job.create_window_for_model_and_service_splits()
+
+    def test_calculate_average_absolute_residual_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_average_absolute_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_average_absolute_residual_rows,
+            Schemas.expected_calculate_average_absolute_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_average_percentage_residual_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_average_percentage_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_average_percentage_residual_rows,
+            Schemas.expected_calculate_average_percentage_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_max_absolute_residual_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_max_absolute_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_max_absolute_residual_rows,
+            Schemas.expected_calculate_max_absolute_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_percentage_of_residuals_within_absolute_value_of_actual_returns_extpected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = (
+            job.calculate_percentage_of_residuals_within_absolute_value_of_actual(
+                test_df, self.window
+            )
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_percentage_of_residuals_within_absolute_value_rows,
+            Schemas.expected_calculate_percentage_of_residuals_within_absolute_value_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_percentage_of_residuals_within_percentage_value_of_actual_returns_extpected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = (
+            job.calculate_percentage_of_residuals_within_percentage_value_of_actual(
+                test_df, self.window
+            )
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_percentage_of_residuals_within_percentage_value_rows,
+            Schemas.expected_calculate_percentage_of_residuals_within_percentage_value_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_aggregate_residuals_returns_extpected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_aggregate_residuals(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_aggregate_residuals_rows,
+            Schemas.expected_calculate_aggregate_residuals_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
 
 
 if __name__ == "__main__":
