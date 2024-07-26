@@ -480,8 +480,6 @@ class AddNumericalRatings(FlattenCQCRatingsTests):
             Data.expected_add_numerical_ratings_rows,
             Schema.expected_add_numerical_ratings_schema,
         )
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
