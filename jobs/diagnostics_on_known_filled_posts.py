@@ -442,7 +442,6 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
         / F.count(df[IndCQC.percentage_residual]).over(window),
     )
     return df
-    return df
 
 
 if __name__ == "__main__":
