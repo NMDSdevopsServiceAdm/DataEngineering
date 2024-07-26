@@ -17,6 +17,22 @@ def model_non_res_with_dormancy(
     model_source: str,
     metrics_destination: str,
 ) -> DataFrame:
+    """
+    Runs the non residential with dormancy model.
+
+    This function loads and runs the non residential with dormancy
+    predictions model on non residential with dormancy features data.
+    It then saves the model metrics and adds the predictions into the main dataset.
+
+    Args:
+        locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
+        features_df (DataFrame): A dataframe containing model features for the non res with dormancy model. This should only contain rows where dormancy is not null and the primary service type is non-residential.
+        model_source (str): The file path to the non residential with dormancy model.
+        metrics_destination: str: The file path to the destination fro saving metrics.
+
+    Returns:
+        DataFrame:
+    """
     gbt_trained_model = GBTRegressionModel.load(model_source)
 
     non_res_with_dormancy_predictions = gbt_trained_model.transform(features_df)
