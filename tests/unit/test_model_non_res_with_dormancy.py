@@ -61,15 +61,17 @@ class TestModelNonResWithDormancy(unittest.TestCase):
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(df.count(), 5)
+        self.assertEqual(df.count(), 3)
 
         expected_location_with_prediction = df.where(
             (df[IndCqc.location_id] == "1-000000001")
             & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
         ).collect()[0]
+        print(expected_location_with_prediction)
         expected_location_without_prediction = df.where(
             df[IndCqc.location_id] == "1-000000002"
         ).collect()[0]
+        print(expected_location_without_prediction)
 
         self.assertIsNotNone(
             expected_location_with_prediction.non_res_with_dormancy_model

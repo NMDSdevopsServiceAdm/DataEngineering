@@ -18,10 +18,6 @@ def model_non_res_with_dormancy(
     metrics_destination: str,
 ) -> DataFrame:
     gbt_trained_model = GBTRegressionModel.load(model_source)
-    features_df = features_df.where(
-        (features_df[IndCqc.dormancy].isNotNull())
-        & (features_df[IndCqc.care_home] == CareHome.care_home)
-    )
 
     non_res_with_dormancy_predictions = gbt_trained_model.transform(features_df)
 
