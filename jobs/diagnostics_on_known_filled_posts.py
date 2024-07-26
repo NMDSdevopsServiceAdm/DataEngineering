@@ -441,6 +441,15 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
 
 
 def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
+    """
+    Creates deduplicated dataframe of aggregated diagnostics.
+
+    Args:
+        df (DataFrame): A dataframe with aggregated diagnostics.
+
+    Returns:
+        DataFrame: A dataframe with summary diagnostics by primary_service_type and estimate_source.
+    """
     summary_df = df.select(
         IndCQC.primary_service_type,
         IndCQC.estimate_source,
