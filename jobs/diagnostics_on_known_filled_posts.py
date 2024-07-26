@@ -318,7 +318,101 @@ def calculate_percentage_residual(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_aggreagte_residuals(df: DataFrame, window: Window) -> DataFrame:
+def calculate_aggregate_residuals(df: DataFrame, window: Window) -> DataFrame:
+    df = calculate_average_absolute_residual(df, window)
+    df = calculate_average_percentage_residual(df, window)
+    df = calculate_max_absolute_residual(df, window)
+    df = calculate_percentage_of_residuals_within_absolute_value_of_actual(df, window)
+    df = calculate_percentage_of_residuals_within_percentage_value_of_actual(df, window)
+    return df
+
+
+def calculate_average_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the average absolute residual.
+
+    This function adds a columns to the dataset containing the average absolute residual, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and absolute_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the average absolute residual aggregated over the given window.
+    """
+    return df
+
+
+def calculate_average_percentage_residual(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the average percentage residual.
+
+    This function adds a columns to the dataset containing the average percentage residual, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and percentage_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the average percentage residual aggregated over the given window.
+    """
+    return df
+
+
+def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the maximum absolute residual.
+
+    This function adds a columns to the dataset containing the maximum absolute residual, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and absolute_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the maximum absolute residual aggregated over the given window.
+    """
+    return df
+
+
+def calculate_percentage_of_residuals_within_absolute_value_of_actual(
+    df: DataFrame, window: Window
+) -> DataFrame:
+    """
+    Adds column with the percentage of residuals which are within an absolute value of the actual value.
+
+    This function adds a columns to the dataset containing the percentage of residuals which are within an absolute value of the actual value, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_clean
+        and absolute_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within an absolute value of the actual value aggregated over the given window.
+    """
+    return df
+
+
+def calculate_percentage_of_residuals_within_percentage_value_of_actual(
+    df: DataFrame, window: Window
+) -> DataFrame:
+    """
+    Adds column with the percentage of residuals which are within a percentage value of the actual value.
+
+    This function adds a columns to the dataset containing the percentage of residuals which are within a percentage value of the actual value, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_clean
+        and percentage_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within a percentage value of the actual value aggregated over the given window.
+    """
     return df
 
 
