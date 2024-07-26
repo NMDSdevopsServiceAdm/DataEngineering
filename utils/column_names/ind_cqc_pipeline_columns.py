@@ -109,6 +109,7 @@ class IndCqcColumns:
     next_filled_posts: str = "next_filled_posts"
     next_filled_posts_unix_time: str = "next_filled_posts_unix_time"
     non_res_model: str = "non_res_with_pir_model"
+    non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
     organisation_id: str = AWPClean.organisation_id
     percentage_residual: str = "percentage_residual"
