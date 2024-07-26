@@ -44,24 +44,17 @@ def main(
     filled_posts_df: DataFrame = utils.read_from_parquet(
         estimate_filled_posts_source, estimate_filled_posts_columns
     )
-
-    # filter to where ascwds clean is not null
     filled_posts_df = filter_to_known_values(
         filled_posts_df, IndCQC.ascwds_filled_posts_clean
     )
-
-    # reshape df so that cols are: location id, cqc_location_import date, service, ascwds_filled-posts_clean, estimate_source, estimate_value
     filled_posts_df = restructure_dataframe_to_column_wise(filled_posts_df)
-    # drop rows where estimate value is missing
+    filled_posts_df = filter_to_known_values(filled_posts_df, IndCQC.estimate_value)
 
-    # create windows for model/ service splits
+    window = create_window_for_model_and_service_splits()
 
-    # calculate metrics for distribution (mean, sd, kurtosis, skewness)
-
-    # calculate residuals (abs, %)
-
-    # calculate aggregate residuals (avg abs, avg %, max, % within abs of actual, % within % of actual)
-
+    filled_posts_df = calculate_distribution_metrics(filled_posts_df, window)
+    filled_posts_df = calculate_residuals(filled_posts_df)
+    filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
     # save tables to s3
 
 
@@ -445,6 +438,11 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
         / F.count(df[IndCQC.percentage_residual]).over(window),
     )
     return df
+
+
+def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
+    summary_df = df
+    return summary_df
 
 
 if __name__ == "__main__":

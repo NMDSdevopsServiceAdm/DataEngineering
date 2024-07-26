@@ -4012,3 +4012,47 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ]
         )
     )
+
+    create_summary_dataframe_schema = StructType(
+        [
+            *expected_restructure_dataframe_schema,
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_create_summary_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
+    )

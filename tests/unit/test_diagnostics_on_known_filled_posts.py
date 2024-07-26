@@ -543,5 +543,21 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         self.assertEqual(returned_df.count(), expected_df.count())
 
 
+class CreateSummaryDataframeTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.create_summary_dataframe_rows, Schemas.create_summary_dataframe_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.create_summary_dataframe_rows,
+            Schemas.create_summary_dataframe_schema,
+        )
+        self.returned_df = job.create_summary_diagnostics_table(self.test_df)
+
+    def test_create_summary_diagnostics_table_returns_correct_data(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
