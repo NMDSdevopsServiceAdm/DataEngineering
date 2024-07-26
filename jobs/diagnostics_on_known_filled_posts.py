@@ -441,7 +441,19 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
 
 
 def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
-    summary_df = df
+    summary_df = df.select(
+        IndCQC.primary_service_type,
+        IndCQC.estimate_source,
+        IndCQC.distribution_mean,
+        IndCQC.distribution_standard_deviation,
+        IndCQC.distribution_kurtosis,
+        IndCQC.distribution_skewness,
+        IndCQC.average_absolute_residual,
+        IndCQC.average_percentage_residual,
+        IndCQC.max_absolute_residual,
+        IndCQC.percentage_of_residuals_within_absolute_value,
+        IndCQC.percentage_of_residuals_within_percentage_value,
+    ).distinct()
     return summary_df
 
 
