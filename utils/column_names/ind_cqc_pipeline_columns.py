@@ -24,6 +24,7 @@ class PartitionKeys:
 
 @dataclass
 class IndCqcColumns:
+    absolute_residual: str = "absolute_residual"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
@@ -110,6 +111,7 @@ class IndCqcColumns:
     non_res_model: str = "non_res_with_pir_model"
     number_of_beds: str = CQCLClean.number_of_beds
     organisation_id: str = AWPClean.organisation_id
+    percentage_residual: str = "percentage_residual"
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"

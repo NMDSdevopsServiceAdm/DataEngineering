@@ -4562,6 +4562,12 @@ class FlattenCQCRatings:
             1,
             1,
             1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
         ),
         (
             "loc_1",
@@ -4577,6 +4583,12 @@ class FlattenCQCRatings:
             1,
             1,
             1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
         ),
         (
             "loc_1",
@@ -4592,6 +4604,12 @@ class FlattenCQCRatings:
             1,
             1,
             1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
         ),
         (
             "loc_1",
@@ -4607,6 +4625,12 @@ class FlattenCQCRatings:
             1,
             1,
             1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
         ),
         (
             "loc_1",
@@ -4622,10 +4646,33 @@ class FlattenCQCRatings:
             1,
             0,
             1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
         ),
     ]
     expected_create_standard_rating_dataset_rows = [
-        ("loc_1", "2024-01-01", "Good", "Good", "Good", "Good", "Good", "Good", 1, 1),
+        (
+            "loc_1",
+            "2024-01-01",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            1,
+            1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
+        ),
     ]
     select_ratings_for_benchmarks_rows = [
         ("loc_1", RegistrationStatus.registered, CQCRatingsValues.current),
@@ -4672,6 +4719,35 @@ class FlattenCQCRatings:
     expected_create_benchmark_ratings_dataset_rows = [
         ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
+    ]
+
+    add_numerical_ratings_rows = [
+        (
+            "loc 1",
+            CQCRatingsValues.good,
+            CQCRatingsValues.outstanding,
+            CQCRatingsValues.requires_improvement,
+            CQCRatingsValues.inadequate,
+            CQCRatingsValues.good,
+            None,
+        ),
+    ]
+    expected_add_numerical_ratings_rows = [
+        (
+            "loc 1",
+            CQCRatingsValues.good,
+            CQCRatingsValues.outstanding,
+            CQCRatingsValues.requires_improvement,
+            CQCRatingsValues.inadequate,
+            CQCRatingsValues.good,
+            None,
+            4,
+            2,
+            1,
+            3,
+            0,
+            10,
+        ),
     ]
 
 
@@ -5769,3 +5845,20 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 55.0, 7.0710678118654755, -2.0, 0.0),
     ]
     # fmt: on
+
+    calculate_residuals_rows = [
+        ("loc 1", 10.0, 5.0),
+        ("loc 2", 5.0, 10.0),
+    ]
+    expected_calculate_absolute_residual_rows = [
+        ("loc 1", 10.0, 5.0, 5.0),
+        ("loc 2", 5.0, 10.0, 5.0),
+    ]
+    expected_calculate_percentage_residual_rows = [
+        ("loc 1", 10.0, 5.0, -1.0),
+        ("loc 2", 5.0, 10.0, 0.5),
+    ]
+    expected_calculate_residuals_rows = [
+        ("loc 1", 10.0, 5.0, 5.0, -1.0),
+        ("loc 2", 5.0, 10.0, 5.0, 0.5),
+    ]

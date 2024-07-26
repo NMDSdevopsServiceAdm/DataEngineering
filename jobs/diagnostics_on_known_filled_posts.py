@@ -262,6 +262,59 @@ def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
 
 
 def calculate_residuals(df: DataFrame) -> DataFrame:
+    """
+    Adds columns with residuals.
+
+    This function adds two columns to the dataset containing the absolute residual
+    and the percentage residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with two additional columns containing residuals.
+    """
+    df = calculate_absolute_residual(df)
+    df = calculate_percentage_residual(df)
+    return df
+
+
+def calculate_absolute_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the absolute residual.
+
+    This function adds a columns to the dataset containing the absolute residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the absolute residual.
+    """
+    df = df.withColumn(
+        IndCQC.absolute_residual,
+        F.abs(F.col(IndCQC.ascwds_filled_posts_clean) - F.col(IndCQC.estimate_value)),
+    )
+    return df
+
+
+def calculate_percentage_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the percentage residual.
+
+    This function adds a columns to the dataset containing the percentage residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the percentage residual.
+    """
+    df = df.withColumn(
+        IndCQC.percentage_residual,
+        (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean))
+        / F.col(IndCQC.estimate_value),
+    )
     return df
 
 

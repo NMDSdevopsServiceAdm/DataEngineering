@@ -3123,6 +3123,12 @@ class FlattenCQCRatings:
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
             StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3138,6 +3144,12 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3200,6 +3212,35 @@ class FlattenCQCRatings:
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
+        ]
+    )
+
+    add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+        ]
+    )
+    expected_add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3788,5 +3829,54 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
             StructField(IndCQC.distribution_kurtosis, FloatType(), True),
             StructField(IndCQC.distribution_skewness, FloatType(), True),
+        ]
+    )
+
+    calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    expected_calculate_absolute_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_percentage_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
         ]
     )
