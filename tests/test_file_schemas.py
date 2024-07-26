@@ -3802,3 +3802,52 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.distribution_skewness, FloatType(), True),
         ]
     )
+
+    calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    expected_calculate_absolute_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_percentage_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )

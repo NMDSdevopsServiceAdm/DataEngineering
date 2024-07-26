@@ -265,6 +265,42 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_calculate_absolute_residual_adds_column_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residuals_rows,
+            Schemas.calculate_residuals_schema,
+        )
+        returned_df = job.calculate_absolute_residual(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_absolute_residual_rows,
+            Schemas.expected_calculate_absolute_residual_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_percentage_residual_adds_column_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residuals_rows,
+            Schemas.calculate_residuals_schema,
+        )
+        returned_df = job.calculate_percentage_residual(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_percentage_residual_rows,
+            Schemas.expected_calculate_percentage_residual_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_residuals_adds_two_columns_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residuals_rows,
+            Schemas.calculate_residuals_schema,
+        )
+        returned_df = job.calculate_residuals(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residuals_rows,
+            Schemas.expected_calculate_residuals_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
 
 class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
