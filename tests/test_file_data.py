@@ -5665,6 +5665,7 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             10.0,
             10.0,
+            None,
             10.0,
         ),
     ]
@@ -5681,6 +5682,7 @@ class DiagnosticsOnKnownFilledPostsData:
             12.0,
             9.0,
             8.0,
+            None,
             10.0,
         ),
     ]
@@ -5724,6 +5726,14 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.interpolation_model,
             8.0,
+        ),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            IndCQC.non_res_with_dormancy_model,
+            None,
         ),
         (
             "loc 1",

@@ -3753,6 +3753,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
