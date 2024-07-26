@@ -3028,7 +3028,7 @@ class ReconciliationData:
 
 
 @dataclass
-class NullAscwdsFilledPostOuliersData:
+class NullAscwdsFilledPostOutliersData:
     unfiltered_ind_cqc_rows = [
         ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0),
@@ -3167,6 +3167,14 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: on
 
     standardised_residual_percentile_cutoff_rows = [
+        ("1", PrimaryServiceType.care_home_with_nursing, 0.54321),
+        ("2", PrimaryServiceType.care_home_with_nursing, -3.2545),
+        ("3", PrimaryServiceType.care_home_with_nursing, -4.2542),
+        ("4", PrimaryServiceType.care_home_with_nursing, 2.41654),
+        ("5", PrimaryServiceType.care_home_with_nursing, 25.0),
+        ("6", PrimaryServiceType.care_home_only, 1.0),
+        ("7", PrimaryServiceType.care_home_only, 2.0),
+        ("8", PrimaryServiceType.care_home_only, 3.0),
         ("1", PrimaryServiceType.care_home_with_nursing, 0.54321),
         ("2", PrimaryServiceType.care_home_with_nursing, -3.2545),
         ("3", PrimaryServiceType.care_home_with_nursing, -4.2542),

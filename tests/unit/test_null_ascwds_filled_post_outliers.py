@@ -2,14 +2,14 @@ import unittest
 from unittest.mock import Mock, patch
 import warnings
 
-from tests.test_file_data import NullAscwdsFilledPostOuliersData as Data
-from tests.test_file_schemas import NullAscwdsFilledPostOuliersSchema as Schemas
+from tests.test_file_data import NullAscwdsFilledPostOutliersData as Data
+from tests.test_file_schemas import NullAscwdsFilledPostOutliersSchema as Schemas
 
 from utils import utils
 import utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_ascwds_filled_post_outliers as job
 
 
-class NullAscwdsFilledPostOuliersTests(unittest.TestCase):
+class NullAscwdsFilledPostOutliersTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
