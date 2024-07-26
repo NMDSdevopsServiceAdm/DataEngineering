@@ -453,6 +453,7 @@ class EstimateFilledPostsSource(ColumnValues):
     ascwds_filled_posts_clean_deduplicated: str = (
         "ascwds_filled_posts_clean_deduplicated"
     )
+    non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
 
 
 @dataclass

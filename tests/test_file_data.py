@@ -3710,6 +3710,73 @@ class ModelCareHomes:
 
 
 @dataclass
+class ModelNonResWithDormancy:
+    non_res_with_dormancy_cleaned_ind_cqc_rows = [
+        (
+            "1-000000001",
+            PrimaryServiceType.non_residential,
+            None,
+            None,
+            "Y",
+            "South West",
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000002",
+            PrimaryServiceType.non_residential,
+            None,
+            None,
+            "N",
+            "Merseyside",
+            date(2022, 3, 29),
+        ),
+        (
+            "1-000000003",
+            PrimaryServiceType.non_residential,
+            None,
+            None,
+            None,
+            "Merseyside",
+            date(2022, 3, 29),
+        ),
+    ]
+    non_res_with_dormancy_features_rows = [
+        (
+            "1-000000001",
+            PrimaryServiceType.non_residential,
+            10.0,
+            "Y",
+            "South West",
+            date(2022, 3, 29),
+            Vectors.sparse(
+                53,
+                {
+                    0: 204.0,
+                    1: 1.0,
+                    11: 1.0,
+                    21: 1.0,
+                    25: 1.0,
+                    46: 1.0,
+                    51: 2.0,
+                    52: 1096.0,
+                },
+            ),
+            34,
+        ),
+        (
+            "1-000000003",
+            PrimaryServiceType.non_residential,
+            20.0,
+            "N",
+            "Merseyside",
+            date(2022, 3, 29),
+            None,
+            0,
+        ),
+    ]
+
+
+@dataclass
 class InsertPredictionsIntoLocations:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
 
@@ -5598,6 +5665,7 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             10.0,
             10.0,
+            None,
             10.0,
         ),
     ]
@@ -5614,6 +5682,7 @@ class DiagnosticsOnKnownFilledPostsData:
             12.0,
             9.0,
             8.0,
+            None,
             10.0,
         ),
     ]
@@ -5657,6 +5726,14 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.interpolation_model,
             8.0,
+        ),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            IndCQC.non_res_with_dormancy_model,
+            None,
         ),
         (
             "loc 1",
