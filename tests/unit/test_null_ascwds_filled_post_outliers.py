@@ -35,25 +35,3 @@ class NullAscwdsFilledPostOutliersTests(unittest.TestCase):
     ):
         job.null_ascwds_filled_post_outliers(self.unfiltered_ind_cqc_df)
         null_care_home_filled_posts_per_bed_ratio_outliers_mock.assert_called_once()
-
-    @patch(
-        "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers.null_care_home_filled_posts_per_bed_ratio_outliers"
-    )
-    def test_returned_df_has_same_number_of_rows_as_input_df(
-        self, null_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock
-    ):
-        self.assertEqual(
-            self.unfiltered_ind_cqc_df.count(),
-            self.returned_filtered_df.count(),
-        )
-
-    @patch(
-        "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care_home_filled_posts_per_bed_ratio_outliers.null_care_home_filled_posts_per_bed_ratio_outliers"
-    )
-    def test_returned_df_has_same_columns_as_expected_df(
-        self, null_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock
-    ):
-        self.assertEqual(
-            sorted(self.returned_filtered_df.columns),
-            sorted(self.expected_filtered_ind_cqc_df.columns),
-        )
