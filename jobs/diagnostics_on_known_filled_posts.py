@@ -15,6 +15,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+    PartitionKeys,
 )
 
 
@@ -55,10 +56,33 @@ def main(
     filled_posts_df = calculate_distribution_metrics(filled_posts_df, window)
     filled_posts_df = calculate_residuals(filled_posts_df)
     filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
-    # save tables to s3
+    summary_df = create_summary_diagnostics_table(filled_posts_df)
+
+    utils.write_to_parquet(
+        filled_posts_df,
+        diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=PartitionKeys,
+    )
+    utils.write_to_parquet(
+        summary_df,
+        summary_diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=[IndCQC.primary_service_type],
+    )
 
 
 def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
+    """
+    Removes rows which have a null value in a given column.
+
+    Args:
+        df (DataFrame): A dataframe containing the given column.
+        column (str): A column in the dataframe to filter on.
+
+    Returns:
+        DataFrame: A dataframe with rows with an null value in the given column removed.
+    """
     return df.filter(df[column].isNotNull())
 
 
