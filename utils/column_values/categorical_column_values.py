@@ -453,6 +453,8 @@ class EstimateFilledPostsSource(ColumnValues):
     ascwds_filled_posts_clean_deduplicated: str = (
         "ascwds_filled_posts_clean_deduplicated"
     )
+    non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
+    non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
 
 
 @dataclass
@@ -461,6 +463,8 @@ class CQCRatingsValues(ColumnValues):
     historic: str = "Historic"
     outstanding: str = "Outstanding"
     good: str = "Good"
+    requires_improvement: str = "Requires improvement"
+    inadequate: str = "Inadequate"
 
 
 @dataclass

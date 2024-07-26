@@ -24,11 +24,14 @@ class PartitionKeys:
 
 @dataclass
 class IndCqcColumns:
+    absolute_residual: str = "absolute_residual"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
+    average_absolute_residual: str = "average_absolute_residual"
+    average_percentage_residual: str = "average_percentage_residual"
     avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
     )
@@ -75,10 +78,16 @@ class IndCqcColumns:
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
     date_diff: str = "date_diff"
+    distribution_mean: str = "distribution_mean"
+    distribution_standard_deviation: str = "distribution_standard_deviation"
+    distribution_kurtosis: str = "distribution_kurtosis"
+    distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
+    estimate_source: str = "estimate_source"
+    estimate_value: str = "estimate_value"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
@@ -94,6 +103,7 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    max_absolute_residual: str = "max_absolute_residual"
     max_filled_posts: str = "max_filled_posts"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
@@ -102,8 +112,17 @@ class IndCqcColumns:
     next_filled_posts: str = "next_filled_posts"
     next_filled_posts_unix_time: str = "next_filled_posts_unix_time"
     non_res_model: str = "non_res_with_pir_model"
+    non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
+    non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
     organisation_id: str = AWPClean.organisation_id
+    percentage_of_residuals_within_absolute_value: str = (
+        "percentage_of_residuals_within_absolute_value"
+    )
+    percentage_of_residuals_within_percentage_value: str = (
+        "percentage_of_residuals_within_percentage_value"
+    )
+    percentage_residual: str = "percentage_residual"
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"

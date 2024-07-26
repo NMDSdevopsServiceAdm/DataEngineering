@@ -236,25 +236,24 @@ class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_services_offered_df = self.spark.createDataFrame(
-            Data.primary_service_type_rows,
+            Data.list_of_services_rows,
             schema=Schemas.primary_service_type_schema,
         )
+        self.returned_df = job.add_list_of_services_offered(
+            self.test_services_offered_df
+        )
 
-    def test_allocate_primary_service_type_add_column(self):
-        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
+    def test_add_list_of_services_offered_adds_column(self):
+        self.assertTrue(CQCLCleaned.services_offered in self.returned_df.columns)
 
-        self.assertTrue(CQCLCleaned.services_offered in returned_df.columns)
-
-    def test_allocate_primary_service_type_returns_correct_data(self):
-        returned_df = job.add_list_of_services_offered(self.test_services_offered_df)
-
+    def test_add_list_of_services_offered_returns_correct_data(self):
         expected_df = self.spark.createDataFrame(
             Data.expected_services_offered_rows,
             Schemas.expected_services_offered_schema,
         )
 
         returned_data = (
-            returned_df.select(sorted(returned_df.columns))
+            self.returned_df.select(sorted(self.returned_df.columns))
             .sort(CQCLCleaned.location_id)
             .collect()
         )
@@ -277,6 +276,10 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
             Data.primary_service_type_rows,
             schema=Schemas.primary_service_type_schema,
         )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_type_rows,
+            schema=Schemas.expected_primary_service_type_schema,
+        )
 
         output_df = job.allocate_primary_service_type(test_primary_service_df)
 
@@ -286,16 +289,84 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
             F.collect_list(PRIMARY_SERVICE_TYPE_COLUMN_NAME)
         ).first()[0]
 
-        self.assertEqual(len(primary_service_values), 5)
-        self.assertEqual(primary_service_values[0], PrimaryServiceType.non_residential)
-        self.assertEqual(
-            primary_service_values[1], PrimaryServiceType.care_home_with_nursing
+        self.assertEqual(len(primary_service_values), 10)
+
+        self.assertEqual(output_df.collect(), expected_df.collect())
+
+
+class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_only_service(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_only_service_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
         )
-        self.assertEqual(primary_service_values[2], PrimaryServiceType.care_home_only)
-        self.assertEqual(
-            primary_service_values[3], PrimaryServiceType.care_home_with_nursing
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_only_service_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
         )
-        self.assertEqual(primary_service_values[4], PrimaryServiceType.care_home_only)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_remove_specialist_colleges_does_not_remove_rows_where_specialist_college_is_one_of_multiple_services(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_multiple_services_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.test_multiple_services_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_remove_specialist_colleges_does_not_remove_rows_where_specialist_college_is_not_listed_in_services(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_without_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_without_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_remove_specialist_colleges_does_not_remove_rows_where_gac_service_type_struct_is_empty(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_empty_array_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_empty_array_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_remove_specialist_colleges_does_not_remove_rows_where_gac_service_type_column_is_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_null_row_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        returned_df = job.remove_specialist_colleges(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_row_specialist_colleges_rows,
+            Schemas.remove_specialist_colleges_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):

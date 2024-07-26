@@ -255,8 +255,6 @@ class JoinCQCLocationDataIntoASCWDSWorkplaceDataframe(ReconciliationTests):
         self.returned_df = job.join_cqc_location_data_into_ascwds_workplace_df(
             self.test_ascwds_df, self.test_cqc_df
         )
-        self.expected_df.show()
-        self.returned_df.show()
 
     def test_join_cqc_locations_data_into_ascwds_workplace_df_returns_correct_values(
         self,
@@ -374,8 +372,6 @@ class CreateMissingColumnsRequiredForOutputTests(ReconciliationTests):
         self.returned_df = job.create_missing_columns_required_for_output(
             self.test_create_missing_columns_df,
         )
-        self.returned_df.show()
-        self.returned_df.printSchema()
 
     def test_create_missing_columns_returns_expected_columns(self):
         self.assertEqual(

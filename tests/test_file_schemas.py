@@ -64,6 +64,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_names.null_outlier_columns import NullOutlierColumns
 
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
@@ -1061,6 +1062,24 @@ class CQCLocationsSchema:
             ),
         ]
     )
+    expected_primary_service_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+        ]
+    )
 
     small_location_schema = StructType(
         [
@@ -1203,6 +1222,18 @@ class CQCLocationsSchema:
             StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    remove_specialist_colleges_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
 
@@ -1946,25 +1977,75 @@ class ReconciliationSchema:
 
 
 @dataclass
-class FilterAscwdsFilledPostsSchema:
-    input_schema = StructType(
+class NullAscwdsFilledPostOutliersSchema:
+    unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
     )
-    care_home_filled_posts_per_bed_schema = StructType(
+
+
+@dataclass
+class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
+    ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
         ]
     )
+
+    standardised_residual_percentile_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+        ]
+    )
+
+    expected_standardised_residual_percentile_cutoff_with_percentiles_schema = (
+        StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.primary_service_type, StringType(), True),
+                StructField(
+                    NullOutlierColumns.standardised_residual, DoubleType(), True
+                ),
+                StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+                StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
+            ]
+        )
+    )
+
+    null_values_outside_of_standardised_residual_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+            StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+            StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_care_home_schema = StructType(
+        [
+            *ind_cqc_schema,
+            StructField("additional column", DoubleType(), True),
+        ]
+    )
+
+    combine_dataframes_non_care_home_schema = ind_cqc_schema
+
+    expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
 
 
 @dataclass
@@ -2268,6 +2349,60 @@ class ModelCareHomes:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelNonResWithDormancy:
+    non_res_with_dormancy_cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    non_res_with_dormancy_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelNonResWithoutDormancy:
+    non_res_without_dormancy_cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    non_res_without_dormancy_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
@@ -3035,6 +3170,12 @@ class FlattenCQCRatings:
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
             StructField(CQCRatings.reversed_rating_sequence, IntegerType(), True),
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3050,6 +3191,12 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
             StructField(CQCRatings.rating_sequence, IntegerType(), True),
             StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3112,6 +3259,35 @@ class FlattenCQCRatings:
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
+        ]
+    )
+
+    add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+        ]
+    )
+    expected_add_numerical_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating, StringType(), True),
+            StructField(CQCRatings.well_led_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.safe_rating_value, IntegerType(), True),
+            StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
+            StructField(CQCRatings.caring_rating_value, IntegerType(), True),
+            StructField(CQCRatings.responsive_rating_value, IntegerType(), True),
+            StructField(CQCRatings.effective_rating_value, IntegerType(), True),
+            StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
 
@@ -3205,6 +3381,17 @@ class ValidateLocationsAPICleanedData:
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
     cleaned_cqc_locations_schema = StructType(
@@ -3229,6 +3416,12 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.current_cssr, StringType(), True),
             StructField(CQCLClean.current_region, StringType(), True),
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
         ]
     )
     calculate_expected_size_schema = StructType(
@@ -3236,6 +3429,17 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
 
@@ -3598,6 +3802,8 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
@@ -3616,4 +3822,193 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 True,
             ),
         ]
+    )
+    restructure_dataframe_schema = estimate_filled_posts_schema
+    expected_restructure_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    calculate_distribution_metrics_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    expected_calculate_mean_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+        ]
+    )
+    expected_calculate_standard_deviation_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+        ]
+    )
+    expected_calculate_kurtosis_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+        ]
+    )
+    expected_calculate_skewness_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+        ]
+    )
+
+    expected_calculate_distribution_metrics_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+        ]
+    )
+
+    calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+        ]
+    )
+    expected_calculate_absolute_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_percentage_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+
+    calculate_aggregate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_aggregate_residuals_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_calculate_average_absolute_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_average_percentage_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_max_absolute_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
+        StructType(
+            [
+                *calculate_aggregate_residuals_schema,
+                StructField(
+                    IndCQC.percentage_of_residuals_within_absolute_value,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+    )
+    expected_calculate_percentage_of_residuals_within_percentage_value_schema = (
+        StructType(
+            [
+                *calculate_aggregate_residuals_schema,
+                StructField(
+                    IndCQC.percentage_of_residuals_within_percentage_value,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
     )

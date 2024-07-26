@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
+    Services,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -104,6 +105,7 @@ def main(
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
+    registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
@@ -328,6 +330,28 @@ def allocate_primary_service_type(df: DataFrame):
             PrimaryServiceType.care_home_only,
         )
         .otherwise(PrimaryServiceType.non_residential),
+    )
+    return df
+
+
+def remove_specialist_colleges(df: DataFrame):
+    """
+    Removes rows where 'Specialist college service' is the only service listed
+    in 'services_offered'.
+
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    Args:
+        df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
+
+    Returns:
+        (DataFrame): A cleaned locations dataframe with locations which are only specialist colleges removed.
+    """
+    df = df.where(
+        (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
+        | (F.size(df[CQCLClean.services_offered]) != 1)
+        | (df[CQCLClean.services_offered].isNull())
     )
     return df
 
