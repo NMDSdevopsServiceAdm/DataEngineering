@@ -22,6 +22,10 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     NON_RES_WITH_DORMANCY_MODEL = (
         "tests/test_models/non_residential_with_dormancy_prediction/1.0.0/"
     )
+    NON_RES_WITHOUT_DORMANCY_FEATURES = "non res without dormancy features"
+    NON_RES_WITHOUT_DORMANCY_MODEL = (
+        "tests/test_models/non_residential_without_dormancy_prediction/1.0.0/"
+    )
     ESTIMATES_DESTINATION = "estimates destination"
     METRICS_DESTINATION = "metrics destination"
     partition_keys = [
@@ -40,6 +44,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
     @patch("utils.utils.read_from_parquet")
@@ -48,12 +53,14 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         read_from_parquet_patch: Mock,
         model_care_homes_patch: Mock,
         model_non_res_with_dormancy_patch: Mock,
+        model_non_res_without_dormancy_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
             self.CARE_HOMES_FEATURES,
             self.NON_RES_WITH_DORMANCY_FEATURES,
+            self.NON_RES_WITHOUT_DORMANCY_FEATURES,
         ]
 
         job.main(
@@ -62,13 +69,16 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.CARE_HOME_MODEL,
             self.NON_RES_WITH_DORMANCY_FEATURES,
             self.NON_RES_WITH_DORMANCY_MODEL,
+            self.NON_RES_WITHOUT_DORMANCY_FEATURES,
+            self.NON_RES_WITHOUT_DORMANCY_MODEL,
             self.ESTIMATES_DESTINATION,
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
+        self.assertEqual(read_from_parquet_patch.call_count, 4)
         self.assertEqual(model_care_homes_patch.call_count, 1)
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
+        self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,

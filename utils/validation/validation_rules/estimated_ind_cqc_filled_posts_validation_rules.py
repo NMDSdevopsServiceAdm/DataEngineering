@@ -55,6 +55,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.interpolation_model: 3000.0,
             IndCqcColumns.care_home_model: 3000.0,
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
+            IndCqcColumns.non_res_without_dormancy_model: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,

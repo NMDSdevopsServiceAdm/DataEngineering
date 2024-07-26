@@ -2384,6 +2384,33 @@ class ModelNonResWithDormancy:
 
 
 @dataclass
+class ModelNonResWithoutDormancy:
+    non_res_without_dormancy_cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    non_res_without_dormancy_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
+            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
 class InsertPredictionsIntoLocations:
     cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
     care_home_features_schema = ModelCareHomes.care_homes_features_schema
@@ -3776,6 +3803,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(IndCQC.interpolation_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
