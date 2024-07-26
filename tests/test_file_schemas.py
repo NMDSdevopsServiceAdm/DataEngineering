@@ -64,6 +64,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_names.null_outlier_columns import NullOutlierColumns
 
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
@@ -1977,11 +1978,12 @@ class ReconciliationSchema:
 
 @dataclass
 class FilterAscwdsFilledPostsSchema:
-    input_schema = StructType(
+    unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
@@ -1995,9 +1997,32 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
         ]
+    )
+
+    standardised_residual_percentile_cutoff_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
+        ]
+    )
+
+    expected_standardised_residual_percentile_cutoff_with_percentiles_schema = (
+        StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.primary_service_type, StringType(), True),
+                StructField(
+                    NullOutlierColumns.standardised_residual, DoubleType(), True
+                ),
+                StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
+                StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
+            ]
+        )
     )
 
 

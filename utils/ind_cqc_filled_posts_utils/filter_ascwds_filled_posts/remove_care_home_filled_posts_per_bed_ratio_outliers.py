@@ -5,18 +5,7 @@ from dataclasses import dataclass
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-
-
-@dataclass
-class TempColNames:
-    filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
-    avg_filled_posts_per_bed_ratio: str = "avg_filled_posts_per_bed_ratio"
-    number_of_beds_banded: str = "number_of_beds_banded"
-    residual: str = "residual"
-    standardised_residual: str = "standardised_residual"
-    expected_filled_posts: str = "expected_filled_posts"
-    lower_percentile: str = "lower_percentile"
-    upper_percentile: str = "upper_percentile"
+from utils.column_names.null_outlier_columns import NullOutlierColumns
 
 
 @dataclass
@@ -47,11 +36,11 @@ def remove_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df, expected_filled_posts_per_banded_bed_count_df
     )
 
-    data_to_filter_df = calculate_standardised_residual_cutoffs(
-        data_to_filter_df,
-        numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
-        TempColNames.lower_percentile,
-        TempColNames.upper_percentile,
+    data_to_filter_df = (
+        calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
+            data_to_filter_df,
+            numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
+        )
     )
 
     care_homes_within_standardised_residual_cutoff_df = (
@@ -100,7 +89,7 @@ def calculate_filled_posts_per_bed_ratio(
     input_df: DataFrame,
 ) -> DataFrame:
     input_df = input_df.withColumn(
-        TempColNames.filled_posts_per_bed_ratio,
+        NullOutlierColumns.filled_posts_per_bed_ratio,
         F.col(IndCQC.ascwds_filled_posts) / F.col(IndCQC.number_of_beds),
     )
 
@@ -115,7 +104,7 @@ def create_banded_bed_count_column(
     set_banded_boundaries = Bucketizer(
         splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
         inputCol=IndCQC.number_of_beds,
-        outputCol=TempColNames.number_of_beds_banded,
+        outputCol=NullOutlierColumns.number_of_beds_banded,
     )
 
     number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
@@ -128,9 +117,9 @@ def create_banded_bed_count_column(
 def calculate_average_filled_posts_per_banded_bed_count(
     input_df: DataFrame,
 ) -> DataFrame:
-    output_df = input_df.groupBy(F.col(TempColNames.number_of_beds_banded)).agg(
-        F.avg(TempColNames.filled_posts_per_bed_ratio).alias(
-            TempColNames.avg_filled_posts_per_bed_ratio
+    output_df = input_df.groupBy(F.col(NullOutlierColumns.number_of_beds_banded)).agg(
+        F.avg(NullOutlierColumns.filled_posts_per_bed_ratio).alias(
+            NullOutlierColumns.avg_filled_posts_per_bed_ratio
         )
     )
 
@@ -156,14 +145,14 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 ) -> DataFrame:
     df = df.join(
         expected_filled_posts_per_banded_bed_count_df,
-        TempColNames.number_of_beds_banded,
+        NullOutlierColumns.number_of_beds_banded,
         "left",
     )
 
     df = df.withColumn(
-        TempColNames.expected_filled_posts,
+        NullOutlierColumns.expected_filled_posts,
         F.col(IndCQC.number_of_beds)
-        * F.col(TempColNames.avg_filled_posts_per_bed_ratio),
+        * F.col(NullOutlierColumns.avg_filled_posts_per_bed_ratio),
     )
 
     return df
@@ -171,8 +160,9 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 
 def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        TempColNames.residual,
-        F.col(IndCQC.ascwds_filled_posts) - F.col(TempColNames.expected_filled_posts),
+        NullOutlierColumns.residual,
+        F.col(IndCQC.ascwds_filled_posts)
+        - F.col(NullOutlierColumns.expected_filled_posts),
     )
 
     return df
@@ -182,46 +172,52 @@ def calculate_filled_post_standardised_residual(
     df: DataFrame,
 ) -> DataFrame:
     df = df.withColumn(
-        TempColNames.standardised_residual,
-        F.col(TempColNames.residual)
-        / F.sqrt(F.col(TempColNames.expected_filled_posts)),
+        NullOutlierColumns.standardised_residual,
+        F.col(NullOutlierColumns.residual)
+        / F.sqrt(F.col(NullOutlierColumns.expected_filled_posts)),
     )
 
     return df
 
 
-def calculate_standardised_residual_cutoffs(
+def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     df: DataFrame,
     percentage_of_data_to_filter_out: float,
-    lower_percentile_name: str,
-    upper_percentile_name: str,
 ) -> DataFrame:
+    """
+    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame and adds them as new columns.
+
+    Calculates the lower and upper percentile cutoffs for standardised residuals in a DataFrame. The value entered for the
+    percentage_of_data_to_filter_out will be split into half so that half is applied to the lower extremes and half to the
+    upper extremes. Two columns will be added as a result, one containing the lower percentile of standardised_residual and
+    one containing the upper percentile of standardised_residual.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as
+        outliers). Must be less than 1 (equivalent to 100%).
+
+    Returns:
+        DataFrame: DataFrame with additional columns for both the lower and upper percentile values for standardised residuals.
+    """
+    if percentage_of_data_to_filter_out >= 1:
+        raise ValueError(
+            "Percentage of data to filter out must be less than 1 (equivalent to 100%)"
+        )
+
     lower_percentile = percentage_of_data_to_filter_out / 2
-    upper_percentile = 1 - (percentage_of_data_to_filter_out / 2)
+    upper_percentile = 1 - lower_percentile
 
-    df = calculate_percentile(
-        df, TempColNames.standardised_residual, lower_percentile, lower_percentile_name
-    )
-    df = calculate_percentile(
-        df, TempColNames.standardised_residual, upper_percentile, upper_percentile_name
-    )
-
-    return df
-
-
-def calculate_percentile(
-    df: DataFrame, col_name: str, percentile_value: float, alias: str
-) -> DataFrame:
-    df = df.withColumn("temp_col_for_joining", F.lit(0))
-    percentile_df = df.groupBy("temp_col_for_joining").agg(
-        F.expr("percentile(" + col_name + ", array(" + str(percentile_value) + "))")[
-            0
-        ].alias(alias)
+    percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
+        F.expr(
+            f"percentile({NullOutlierColumns.standardised_residual}, array({lower_percentile}))"
+        )[0].alias(NullOutlierColumns.lower_percentile),
+        F.expr(
+            f"percentile({NullOutlierColumns.standardised_residual}, array({upper_percentile}))"
+        )[0].alias(NullOutlierColumns.upper_percentile),
     )
 
-    df = df.join(percentile_df, "temp_col_for_joining", "left").drop(
-        "temp_col_for_joining"
-    )
+    df = df.join(percentile_df, IndCQC.primary_service_type, "left")
 
     return df
 
@@ -231,12 +227,12 @@ def create_filled_posts_clean_col_in_filtered_df(
 ) -> DataFrame:
     within_boundary_df = df.filter(
         (
-            F.col(TempColNames.standardised_residual)
-            > F.col(TempColNames.lower_percentile)
+            F.col(NullOutlierColumns.standardised_residual)
+            > F.col(NullOutlierColumns.lower_percentile)
         )
         & (
-            F.col(TempColNames.standardised_residual)
-            < F.col(TempColNames.upper_percentile)
+            F.col(NullOutlierColumns.standardised_residual)
+            < F.col(NullOutlierColumns.upper_percentile)
         )
     )
 
