@@ -3610,5 +3610,10 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 FloatType(),
                 True,
             ),
+            StructField(
+                "other_column",
+                FloatType(),
+                True,
+            ),
         ]
     )

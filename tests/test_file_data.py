@@ -5169,9 +5169,16 @@ class DiagnosticsOnKnownFilledPostsData:
         (
             "loc 1",
             1.0,
+            1.0,
         ),
         (
             "loc 2",
+            None,
+            1.0,
+        ),
+        (
+            "loc 3",
+            2.0,
             None,
         ),
     ]
@@ -5180,5 +5187,11 @@ class DiagnosticsOnKnownFilledPostsData:
         (
             "loc 1",
             1.0,
+            1.0,
+        ),
+        (
+            "loc 3",
+            2.0,
+            None,
         ),
     ]
