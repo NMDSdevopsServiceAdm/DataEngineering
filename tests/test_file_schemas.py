@@ -2333,6 +2333,7 @@ class ModelCareHomes:
         ]
     )
 
+
 @dataclass
 class ModelNonResWithDormancy:
     non_res_with_dormancy_cleaned_ind_cqc_schema = StructType(
