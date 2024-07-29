@@ -3805,6 +3805,10 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -3836,6 +3840,10 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     calculate_distribution_metrics_schema = StructType(

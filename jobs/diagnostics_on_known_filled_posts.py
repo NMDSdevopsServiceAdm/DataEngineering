@@ -30,6 +30,10 @@ estimate_filled_posts_columns: list = [
     IndCQC.extrapolation_care_home_model,
     IndCQC.interpolation_model,
     IndCQC.estimate_filled_posts,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.35
@@ -111,6 +115,10 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
             IndCQC.primary_service_type,
             IndCQC.ascwds_filled_posts_clean,
             model,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
         )
         model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
         model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
@@ -156,7 +164,15 @@ def create_empty_reshaped_dataframe():
                 True,
             ),
             StructField(IndCQC.estimate_source, FloatType(), True),
-            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(
+                IndCQC.estimate_value,
+                FloatType(),
+                True,
+            ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     reshaped_df = spark.createDataFrame([], reshaped_df_schema)

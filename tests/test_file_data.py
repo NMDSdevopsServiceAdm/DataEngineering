@@ -5831,6 +5831,10 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
     ]
 
@@ -5878,6 +5882,10 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
     ]
     expected_restructure_dataframe_rows = [
@@ -5888,6 +5896,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.ascwds_filled_posts_dedup_clean,
             10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5896,6 +5908,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.rolling_average_model,
             11.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5904,6 +5920,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.care_home_model,
             12.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5912,6 +5932,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.extrapolation_care_home_model,
             9.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5920,6 +5944,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.interpolation_model,
             8.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5928,6 +5956,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.non_res_with_dormancy_model,
             None,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5936,6 +5968,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.non_res_without_dormancy_model,
             None,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
         (
             "loc 1",
@@ -5944,6 +5980,10 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             IndCQC.estimate_filled_posts,
             10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
     ]
     # fmt: off
@@ -6073,12 +6113,12 @@ class DiagnosticsOnKnownFilledPostsData:
     
 
     create_summary_dataframe_rows = [
-        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0),
-        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0),
-        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
-        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
-        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
-        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
+        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0),
+        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0),
+        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
+        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
+        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
+        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
     ]
     expected_create_summary_dataframe_rows = [
         (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 1.0, 2.0, 3.0, 4.0, 7.0, 8.0, 9.0, 10.0, 11.0),
