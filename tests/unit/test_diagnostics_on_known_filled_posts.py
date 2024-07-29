@@ -36,8 +36,11 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_runs(self, read_from_parquet_patch: Mock):
+    def test_main_runs(
+        self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
+    ):
         read_from_parquet_patch.return_value = self.estimate_jobs_df
 
         job.main(
@@ -47,6 +50,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
 
 
 class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
@@ -62,9 +66,14 @@ class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
         )
         self.returned_df = job.filter_to_known_values(self.test_df, self.test_column)
 
-    @unittest.skip("to do")
     def test_filter_to_known_values_removes_null_values_from_specified_column(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_filter_to_known_values_does_not_remove_any_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_filter_to_known_values_has_expected_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
 
 class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
@@ -536,6 +545,22 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             Schemas.expected_calculate_aggregate_residuals_schema,
         )
         self.assertEqual(returned_df.count(), expected_df.count())
+
+
+class CreateSummaryDataframeTests(DiagnosticsOnKnownFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.create_summary_dataframe_rows, Schemas.create_summary_dataframe_schema
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_summary_dataframe_rows,
+            Schemas.expected_create_summary_dataframe_schema,
+        )
+        self.returned_df = job.create_summary_diagnostics_table(self.test_df)
+
+    def test_create_summary_diagnostics_table_returns_correct_data(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
 if __name__ == "__main__":

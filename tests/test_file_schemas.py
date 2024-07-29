@@ -3805,9 +3805,28 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
-    filter_to_known_values_schema = []
+
+    filter_to_known_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                "other_column",
+                FloatType(),
+                True,
+            ),
+        ]
+    )
     restructure_dataframe_schema = estimate_filled_posts_schema
     expected_restructure_dataframe_schema = StructType(
         [
@@ -3821,6 +3840,10 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ),
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     calculate_distribution_metrics_schema = StructType(
@@ -3996,4 +4019,48 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 ),
             ]
         )
+    )
+
+    create_summary_dataframe_schema = StructType(
+        [
+            *expected_restructure_dataframe_schema,
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_create_summary_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+        ]
     )

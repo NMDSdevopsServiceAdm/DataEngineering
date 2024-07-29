@@ -15,9 +15,10 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+    PartitionKeys as Keys,
 )
 
-
+partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
@@ -28,7 +29,13 @@ estimate_filled_posts_columns: list = [
     IndCQC.care_home_model,
     IndCQC.extrapolation_care_home_model,
     IndCQC.interpolation_model,
+    IndCQC.non_res_with_dormancy_model,
+    IndCQC.non_res_without_dormancy_model,
     IndCQC.estimate_filled_posts,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.35
@@ -44,26 +51,45 @@ def main(
     filled_posts_df: DataFrame = utils.read_from_parquet(
         estimate_filled_posts_source, estimate_filled_posts_columns
     )
-
-    # filter to where ascwds clean is not null
-
-    # reshape df so that cols are: location id, cqc_location_import date, service, ascwds_filled-posts_clean, estimate_source, estimate_value
+    filled_posts_df = filter_to_known_values(
+        filled_posts_df, IndCQC.ascwds_filled_posts_clean
+    )
     filled_posts_df = restructure_dataframe_to_column_wise(filled_posts_df)
-    # drop rows where estimate value is missing
+    filled_posts_df = filter_to_known_values(filled_posts_df, IndCQC.estimate_value)
 
-    # create windows for model/ service splits
+    window = create_window_for_model_and_service_splits()
 
-    # calculate metrics for distribution (mean, sd, kurtosis, skewness)
+    filled_posts_df = calculate_distribution_metrics(filled_posts_df, window)
+    filled_posts_df = calculate_residuals(filled_posts_df)
+    filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
+    summary_df = create_summary_diagnostics_table(filled_posts_df)
 
-    # calculate residuals (abs, %)
-
-    # calculate aggregate residuals (avg abs, avg %, max, % within abs of actual, % within % of actual)
-
-    # save tables to s3
+    utils.write_to_parquet(
+        filled_posts_df,
+        diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=partition_keys,
+    )
+    utils.write_to_parquet(
+        summary_df,
+        summary_diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=[IndCQC.primary_service_type],
+    )
 
 
 def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
-    return df
+    """
+    Removes rows which have a null value in a given column.
+
+    Args:
+        df (DataFrame): A dataframe containing the given column.
+        column (str): A column in the dataframe to filter on.
+
+    Returns:
+        DataFrame: A dataframe with rows with an null value in the given column removed.
+    """
+    return df.filter(df[column].isNotNull())
 
 
 def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
@@ -91,6 +117,10 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
             IndCQC.primary_service_type,
             IndCQC.ascwds_filled_posts_clean,
             model,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
         )
         model_df = model_df.withColumn(IndCQC.estimate_source, F.lit(model))
         model_df = model_df.withColumnRenamed(model, IndCQC.estimate_value)
@@ -136,7 +166,15 @@ def create_empty_reshaped_dataframe():
                 True,
             ),
             StructField(IndCQC.estimate_source, FloatType(), True),
-            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(
+                IndCQC.estimate_value,
+                FloatType(),
+                True,
+            ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     reshaped_df = spark.createDataFrame([], reshaped_df_schema)
@@ -442,6 +480,32 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
         / F.count(df[IndCQC.percentage_residual]).over(window),
     )
     return df
+
+
+def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
+    """
+    Creates deduplicated dataframe of aggregated diagnostics.
+
+    Args:
+        df (DataFrame): A dataframe with aggregated diagnostics.
+
+    Returns:
+        DataFrame: A dataframe with summary diagnostics by primary_service_type and estimate_source.
+    """
+    summary_df = df.select(
+        IndCQC.primary_service_type,
+        IndCQC.estimate_source,
+        IndCQC.distribution_mean,
+        IndCQC.distribution_standard_deviation,
+        IndCQC.distribution_kurtosis,
+        IndCQC.distribution_skewness,
+        IndCQC.average_absolute_residual,
+        IndCQC.average_percentage_residual,
+        IndCQC.max_absolute_residual,
+        IndCQC.percentage_of_residuals_within_absolute_value,
+        IndCQC.percentage_of_residuals_within_percentage_value,
+    ).distinct()
+    return summary_df
 
 
 if __name__ == "__main__":
