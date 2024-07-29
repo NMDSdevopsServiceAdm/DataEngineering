@@ -16,7 +16,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    CQCRatingsValues,
+    CQCCurretnOrHistoricValues,
 )
 
 
@@ -216,10 +216,10 @@ class AddCurrentOrHistoricColumn(FlattenCQCRatingsTests):
             Schema.expected_add_current_or_historic_schema,
         )
         self.returned_current_df = job.add_current_or_historic_column(
-            self.test_ratings_df, CQCRatingsValues.current
+            self.test_ratings_df, CQCCurretnOrHistoricValues.current
         )
         self.returned_historic_df = job.add_current_or_historic_column(
-            self.test_ratings_df, CQCRatingsValues.historic
+            self.test_ratings_df, CQCCurretnOrHistoricValues.historic
         )
 
     def test_add_current_or_historic_column_returns_correct_values_when_passed_current(

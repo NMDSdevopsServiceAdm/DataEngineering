@@ -459,12 +459,16 @@ class EstimateFilledPostsSource(ColumnValues):
 
 @dataclass
 class CQCRatingsValues(ColumnValues):
-    current: str = "Current"
-    historic: str = "Historic"
     outstanding: str = "Outstanding"
     good: str = "Good"
     requires_improvement: str = "Requires improvement"
     inadequate: str = "Inadequate"
+
+
+@dataclass
+class CQCCurretnOrHistoricValues(ColumnValues):
+    current: str = "Current"
+    historic: str = "Historic"
 
 
 @dataclass

@@ -21,6 +21,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
     CQCRatingsValues,
+    CQCCurretnOrHistoricValues,
 )
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
@@ -115,14 +116,18 @@ def filter_to_first_import_of_most_recent_month(df: DataFrame) -> DataFrame:
 def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_current_ratings(cqc_location_df)
     ratings_df = recode_unknown_codes_to_null(ratings_df)
-    ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.current)
+    ratings_df = add_current_or_historic_column(
+        ratings_df, CQCCurretnOrHistoricValues.current
+    )
     return ratings_df
 
 
 def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_historic_ratings(cqc_location_df)
     ratings_df = recode_unknown_codes_to_null(ratings_df)
-    ratings_df = add_current_or_historic_column(ratings_df, CQCRatingsValues.historic)
+    ratings_df = add_current_or_historic_column(
+        ratings_df, CQCCurretnOrHistoricValues.historic
+    )
     return ratings_df
 
 
@@ -331,7 +336,10 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
     benchmark_ratings_df = ratings_df.where(
         (ratings_df[CQCL.registration_status] == RegistrationStatus.registered)
-        & (ratings_df[CQCRatings.current_or_historic] == CQCRatingsValues.current)
+        & (
+            ratings_df[CQCRatings.current_or_historic]
+            == CQCCurretnOrHistoricValues.current
+        )
     )
     return benchmark_ratings_df
 
