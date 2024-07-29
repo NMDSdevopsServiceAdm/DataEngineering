@@ -36,8 +36,11 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
-    def test_main_runs(self, read_from_parquet_patch: Mock):
+    def test_main_runs(
+        self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
+    ):
         read_from_parquet_patch.return_value = self.estimate_jobs_df
 
         job.main(
@@ -47,6 +50,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
 
 
 class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
