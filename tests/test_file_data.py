@@ -6165,7 +6165,7 @@ class ASCWDSFilteringUtilsData:
         (
             "loc 2",
             None,
-            AscwdsFilteringRule.care_home_filled_posts_per_bed_ratio_outlier,
+            AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
         ),
         ("loc 3", None, AscwdsFilteringRule.missing_data),
     ]

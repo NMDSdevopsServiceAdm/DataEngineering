@@ -1,4 +1,9 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 
 
 def add_filtering_rule_column(df: DataFrame) -> DataFrame:
@@ -13,6 +18,13 @@ def add_filtering_rule_column(df: DataFrame) -> DataFrame:
     Returns:
         (DataFrame) : A dataframe with an additional column that states whether data is present or missing before filters are applied.
     """
+    df = df.withColumn(
+        IndCQC.ascwds_filtering_rule,
+        F.when(
+            F.col(IndCQC.ascwds_filled_posts_clean).isNotNull(),
+            F.lit(AscwdsFilteringRule.populated),
+        ).otherwise(F.lit(AscwdsFilteringRule.missing_data)),
+    )
     return df
 
 
