@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.null_outlier_columns import NullOutlierColumns
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
-    null_care_home_filled_posts_per_bed_ratio_outliers as job,
+    ascwds_filtering_utils as job,
 )
 
 
@@ -24,11 +24,31 @@ class ASCWDSFilteringUtilsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class AddFilteringRuleTests(ASCWDSFilteringUtilsTests):
+class AddFilteringRuleColumnTests(ASCWDSFilteringUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_filtering_rule(
+    def test_add_filtering_rule_column(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.add_filtering_column_rows, Schemas.add_filtering_column_schema
+        )
+        returned_df = job.add_filtering_rule_column(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_filtering_column_rows,
+            Schemas.expected_add_filtering_column_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+
+class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_update_filtering_rule(
         self,
     ):
         pass

@@ -29,6 +29,7 @@ class IndCqcColumns:
     ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
+    ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"

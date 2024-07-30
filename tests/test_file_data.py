@@ -24,6 +24,7 @@ from utils.column_values.categorical_column_values import (
     SingleSubDescription,
     Services,
     EstimateFilledPostsSource,
+    AscwdsFilteringRule,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -6142,3 +6143,15 @@ class DiagnosticsOnKnownFilledPostsData:
     ]
 
     # fmt: on
+
+
+@dataclass
+class ASCWDSFilteringUtilsData:
+    add_filtering_column_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_add_filtering_column_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", None, AscwdsFilteringRule.missing_data),
+    ]
