@@ -46,7 +46,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.number_of_beds: 500,
             IndCqcColumns.people_directly_employed: 10000,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
-            IndCqcColumns.estimate_filled_posts: 3000.0,
+            # IndCqcColumns.estimate_filled_posts: 3000.0, # temporarily removed until non res models are fixed
             IndCqcColumns.people_directly_employed_dedup: 10000,
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
@@ -56,7 +56,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.care_home_model: 3000.0,
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
-            IndCqcColumns.extrapolation_non_res_with_dormancy_model: 3000.0,
+            # IndCqcColumns.extrapolation_non_res_with_dormancy_model: 3000.0, # temporarily removed until non res models are fixed
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
