@@ -16,7 +16,7 @@ def add_filtering_rule_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def update_filtering_rule(df: DataFrame) -> DataFrame:
+def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
     """
     Update filtering rule for rows where data was present but is now missing.
 
@@ -24,6 +24,7 @@ def update_filtering_rule(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe containing ascwds_filled_posts_clean and ascwds_filtering_rule after a new rules has been applied.
+        rule_name (str): The name of the rule that has just been applied.
 
     Returns:
         (DataFrame) : A dataframe with the ascwds_filtering_rule column updated.

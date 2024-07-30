@@ -4068,42 +4068,31 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         ]
     )
 
+
 @dataclass
 class ASCWDSFilteringUtilsSchemas:
-    add_filtering_column_schema = (
-        StructType(
-            [
-                StructField(
-                    IndCQC.location_id,
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    IndCQC.ascwds_filled_posts_clean,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
+    add_filtering_column_schema = StructType(
+        [
+            StructField(
+                IndCQC.location_id,
+                StringType(),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+        ]
     )
-    expected_add_filtering_column_schema = (
-        StructType(
-            [
-                StructField(
-                    IndCQC.location_id,
-                    StringType(),
-                    True,
-                ),
-                StructField(
-                    IndCQC.ascwds_filled_posts_clean,
-                    FloatType(),
-                    True,
-                ),
-                StructField(
-                    IndCQC.ascwds_filtering_rule,
-                    StringType(),
-                    True,
-                ),
-            ]
-        )
+    expected_add_filtering_column_schema = StructType(
+        [
+            *add_filtering_column_schema,
+            StructField(
+                IndCQC.ascwds_filtering_rule,
+                StringType(),
+                True,
+            ),
+        ]
     )
+    update_filtering_rule_schema = expected_add_filtering_column_schema
