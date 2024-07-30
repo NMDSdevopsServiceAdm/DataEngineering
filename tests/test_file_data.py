@@ -3185,6 +3185,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             1.0,
             None,
+            "filtering rule",
             10.0,
         ),
         (
@@ -3195,18 +3196,55 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             2.0,
             2.0,
+            "filtering rule",
             20.0,
         ),
     ]
 
     combine_dataframes_non_care_home_rows = [
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        (
+            "03",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            3.0,
+            3.0,
+            "filtering rule",
+        ),
     ]
 
     expected_combined_dataframes_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        (
+            "01",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            1.0,
+            None,
+            "filtering rule",
+        ),
+        (
+            "02",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            2.0,
+            2.0,
+            "filtering rule",
+        ),
+        (
+            "03",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            3.0,
+            3.0,
+            "filtering rule",
+        ),
     ]
 
 
