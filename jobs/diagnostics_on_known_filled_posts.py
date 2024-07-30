@@ -371,6 +371,11 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the standardised residual.
     """
+    df = df.withColumn(
+        IndCQC.standardised_residual,
+        F.col(IndCQC.absolute_residual)
+        / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
+    )
     return df
 
 
