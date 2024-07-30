@@ -29,7 +29,7 @@ def null_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_clean, F.col(IndCQC.ascwds_filled_posts)
     )
-    locations_df = add_filtering_rule_column(locations_df)
+    df = add_filtering_rule_column(df)
     filtered_df = null_care_home_filled_posts_per_bed_ratio_outliers(df)
 
     return filtered_df

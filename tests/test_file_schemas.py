@@ -2001,6 +2001,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
 

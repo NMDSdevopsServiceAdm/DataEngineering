@@ -7,6 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.null_outlier_columns import NullOutlierColumns
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
@@ -74,7 +75,10 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
         filtered_care_home_df, data_not_relevant_to_filter_df
     )
 
-    output_df = update_filtering_rule(output_df)
+    output_df = update_filtering_rule(
+        output_df,
+        AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+    )
 
     return output_df
 
