@@ -455,6 +455,9 @@ class EstimateFilledPostsSource(ColumnValues):
     )
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    non_res_with_dormancy_extrapolation_model: str = (
+        "extrapolation_non_res_with_dormancy_model"
+    )
 
 
 @dataclass

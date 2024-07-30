@@ -31,6 +31,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.interpolation_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
+    IndCQC.extrapolation_non_res_with_dormancy_model,
     IndCQC.estimate_filled_posts,
     Keys.year,
     Keys.month,

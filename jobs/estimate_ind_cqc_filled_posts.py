@@ -113,6 +113,9 @@ def main(
     )
 
     cleaned_ind_cqc_df = model_extrapolation(cleaned_ind_cqc_df, IndCQC.care_home_model)
+    cleaned_ind_cqc_df = model_extrapolation(
+        cleaned_ind_cqc_df, IndCQC.non_res_with_dormancy_model
+    )
 
     cleaned_ind_cqc_df = model_primary_service_rolling_average(
         cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
@@ -124,7 +127,8 @@ def main(
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 IndCQC.interpolation_model,
-                "extrapolation_" + IndCQC.care_home_model,
+                IndCQC.extrapolation_care_home_model,
+                IndCQC.extrapolation_non_res_with_dormancy_model,
                 IndCQC.care_home_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,

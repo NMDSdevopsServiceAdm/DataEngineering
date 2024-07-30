@@ -89,6 +89,9 @@ class IndCqcColumns:
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
+    extrapolation_non_res_with_dormancy_model: str = (
+        "extrapolation_non_res_with_dormancy_model"
+    )
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
     filled_posts_unix_time: str = "filled_posts_unix_time"
