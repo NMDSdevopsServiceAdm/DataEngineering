@@ -38,7 +38,7 @@ estimate_filled_posts_columns: list = [
     Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
-percentage_value_cutoff: float = 0.35
+percentage_value_cutoff: float = 0.25
 
 
 def main(

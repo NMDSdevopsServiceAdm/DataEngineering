@@ -6106,8 +6106,8 @@ class DiagnosticsOnKnownFilledPostsData:
     expected_calculate_percentage_of_residuals_within_percentage_value_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 1.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 0.5),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 0.5),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 0.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 0.0),
         ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 0.0),
         ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 0.0),
     ]
