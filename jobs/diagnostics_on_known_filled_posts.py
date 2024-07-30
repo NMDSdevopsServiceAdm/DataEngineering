@@ -316,6 +316,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     df = calculate_absolute_residual(df)
     df = calculate_percentage_residual(df)
+    df = calculate_standardised_residual(df)
     return df
 
 
@@ -355,6 +356,21 @@ def calculate_percentage_residual(df: DataFrame) -> DataFrame:
         (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean))
         / F.col(IndCQC.estimate_value),
     )
+    return df
+
+
+def calculate_standardised_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the standardised residual.
+
+    This function adds a columns to the dataset containing the standardised residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the standardised residual.
+    """
     return df
 
 

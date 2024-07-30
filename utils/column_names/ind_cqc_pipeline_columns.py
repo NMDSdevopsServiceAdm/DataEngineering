@@ -150,6 +150,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
+    standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"

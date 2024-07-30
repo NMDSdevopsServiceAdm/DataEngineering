@@ -298,7 +298,30 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_calculate_residuals_adds_two_columns_with_correct_values(self):
+    def test_calculate_standardised_residual_adds_column_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.expected_calculate_absolute_residual_rows,
+            Schemas.expected_calculate_absolute_residual_schema,
+        )
+        returned_df = job.calculate_standardised_residual(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_standardised_residual_rows,
+            Schemas.expected_calculate_standardised_residual_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+        self.assertAlmostEqual(
+            returned_data[0][IndCQC.standardised_residual],
+            expected_data[0][IndCQC.standardised_residual],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[1][IndCQC.standardised_residual],
+            expected_data[1][IndCQC.standardised_residual],
+            places=6,
+        )
+
+    def test_calculate_residuals_adds_three_columns_with_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
@@ -308,7 +331,29 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.expected_calculate_residuals_rows,
             Schemas.expected_calculate_residuals_schema,
         )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        returned_sr = returned_df.sort(IndCQC.location_id).collect()
+        expected_sr = expected_df.sort(IndCQC.location_id).collect()
+        self.assertAlmostEqual(
+            returned_sr[0][IndCQC.standardised_residual],
+            expected_sr[0][IndCQC.standardised_residual],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_sr[1][IndCQC.standardised_residual],
+            expected_sr[1][IndCQC.standardised_residual],
+            places=6,
+        )
+        returned_data = (
+            returned_df.drop(IndCQC.standardised_residual)
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.drop(IndCQC.standardised_residual)
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        self.assertEqual(returned_data, expected_data)
 
 
 class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):

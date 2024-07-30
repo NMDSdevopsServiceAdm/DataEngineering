@@ -6050,9 +6050,13 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 1", 10.0, 5.0, -1.0),
         ("loc 2", 5.0, 10.0, 0.5),
     ]
+    expected_calculate_standardised_residual_rows = [
+        ("loc 1", 10.0, 5.0, 5.0, 3.0),
+        ("loc 2", 5.0, 10.0, 5.0, 2.0),
+    ]
     expected_calculate_residuals_rows = [
-        ("loc 1", 10.0, 5.0, 5.0, -1.0),
-        ("loc 2", 5.0, 10.0, 5.0, 0.5),
+        ("loc 1", 10.0, 5.0, 5.0, -1.0, 3.0),
+        ("loc 2", 5.0, 10.0, 5.0, 0.5, 2.0),
     ]
     # fmt: off
     calculate_aggregate_residuals_rows = [
