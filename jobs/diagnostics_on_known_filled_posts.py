@@ -552,6 +552,7 @@ def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
         IndCQC.max_absolute_residual,
         IndCQC.percentage_of_residuals_within_absolute_value,
         IndCQC.percentage_of_residuals_within_percentage_value,
+        IndCQC.percentage_of_standardised_residuals_within_limit,
     ).distinct()
     return summary_df
 
