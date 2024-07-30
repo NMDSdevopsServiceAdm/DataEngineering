@@ -41,4 +41,12 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
     Returns:
         (DataFrame) : A dataframe with the ascwds_filtering_rule column updated.
     """
+    df = df.withColumn(
+        IndCQC.ascwds_filtering_rule,
+        F.when(
+            (F.col(IndCQC.ascwds_filled_posts_clean).isNull())
+            & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
+            F.lit(rule_name),
+        ).otherwise(F.col(IndCQC.ascwds_filtering_rule)),
+    )
     return df
