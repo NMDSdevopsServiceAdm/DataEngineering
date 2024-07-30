@@ -18,6 +18,7 @@ from utils.column_values.categorical_column_values import (
     Sector,
     LocationType,
     CQCRatingsValues,
+    CQCCurrentOrHistoricValues,
     ParentsOrSinglesAndSubs,
     IsParent,
     SingleSubDescription,
@@ -4436,10 +4437,10 @@ class FlattenCQCRatings:
         ("loc_1",),
     ]
     expected_add_current_rows = [
-        ("loc_1", CQCRatingsValues.current),
+        ("loc_1", CQCCurrentOrHistoricValues.current),
     ]
     expected_add_historic_rows = [
-        ("loc_1", CQCRatingsValues.historic),
+        ("loc_1", CQCCurrentOrHistoricValues.historic),
     ]
 
     remove_blank_rows_rows = [
@@ -4777,13 +4778,13 @@ class FlattenCQCRatings:
         ),
     ]
     select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCRatingsValues.current),
-        ("loc_2", RegistrationStatus.registered, CQCRatingsValues.historic),
-        ("loc_3", RegistrationStatus.deregistered, CQCRatingsValues.current),
-        ("loc_4", RegistrationStatus.deregistered, CQCRatingsValues.historic),
+        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
+        ("loc_2", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic),
+        ("loc_3", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current),
+        ("loc_4", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic),
     ]
     expected_select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCRatingsValues.current),
+        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
     ]
 
     add_good_or_outstanding_flag_rows = [
