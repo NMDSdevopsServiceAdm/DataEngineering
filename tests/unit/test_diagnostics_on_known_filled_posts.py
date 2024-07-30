@@ -574,10 +574,8 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             Data.calculate_aggregate_residuals_rows,
             Schemas.calculate_aggregate_residuals_schema,
         )
-        returned_df = (
-            job.calculate_percentage_of_residuals_within_absolute_value_of_actual(
-                test_df, self.window
-            )
+        returned_df = job.calculate_percentage_of_standardised_residuals_within_limit(
+            test_df, self.window
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_percentage_of_standardised_residuals_within_limit_rows,
@@ -593,7 +591,8 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         )
         expected_data = (
             expected_df.select(
-                IndCQC.location_id, IndCQC.percentage_of_residuals_within_absolute_value
+                IndCQC.location_id,
+                IndCQC.percentage_of_standardised_residuals_within_limit,
             )
             .sort(IndCQC.location_id)
             .collect()

@@ -39,6 +39,7 @@ estimate_filled_posts_columns: list = [
 ]
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
+standardised_value_cutoff: float = 1.0
 
 
 def main(
@@ -519,7 +520,13 @@ def calculate_percentage_of_standardised_residuals_within_limit(
     Returns:
         DataFrame: A dataframe with an additional column containing the standardised percentage of residuals which are within a predefinied limit, aggregated over the given window.
     """
-
+    df = df.withColumn(
+        IndCQC.percentage_of_standardised_residuals_within_limit,
+        F.count(
+            F.when(df[IndCQC.standardised_residual] <= standardised_value_cutoff, True)
+        ).over(window)
+        / F.count(df[IndCQC.standardised_residual]).over(window),
+    )
     return df
 
 
