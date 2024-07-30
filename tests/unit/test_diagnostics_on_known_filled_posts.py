@@ -567,6 +567,69 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             places=6,
         )
 
+    def test_calculate_percentage_of_standardised_residuals_within_limit_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = (
+            job.calculate_percentage_of_residuals_within_absolute_value_of_actual(
+                test_df, self.window
+            )
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_percentage_of_standardised_residuals_within_limit_rows,
+            Schemas.expected_calculate_percentage_of_standardised_residuals_within_limit_schema,
+        )
+        returned_data = (
+            returned_df.select(
+                IndCQC.location_id,
+                IndCQC.percentage_of_standardised_residuals_within_limit,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        expected_data = (
+            expected_df.select(
+                IndCQC.location_id, IndCQC.percentage_of_residuals_within_absolute_value
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+
+        self.assertAlmostEqual(
+            returned_data[0][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[0][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[1][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[1][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[2][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[2][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[3][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[3][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[4][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[4][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+        self.assertAlmostEqual(
+            returned_data[5][IndCQC.percentage_of_standardised_residuals_within_limit],
+            expected_data[5][IndCQC.percentage_of_standardised_residuals_within_limit],
+            places=6,
+        )
+
     def test_calculate_aggregate_residuals_returns_expected_columns(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_aggregate_residuals_rows,

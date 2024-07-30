@@ -3974,6 +3974,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
             StructField(IndCQC.percentage_residual, FloatType(), True),
+            StructField(IndCQC.standardised_residual, FloatType(), True),
         ]
     )
     expected_calculate_aggregate_residuals_schema = StructType(
@@ -4028,6 +4029,18 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 *calculate_aggregate_residuals_schema,
                 StructField(
                     IndCQC.percentage_of_residuals_within_percentage_value,
+                    FloatType(),
+                    True,
+                ),
+            ]
+        )
+    )
+    expected_calculate_percentage_of_standardised_residuals_within_limit_schema = (
+        StructType(
+            [
+                *calculate_aggregate_residuals_schema,
+                StructField(
+                    IndCQC.percentage_of_standardised_residuals_within_limit,
                     FloatType(),
                     True,
                 ),

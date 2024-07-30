@@ -122,6 +122,9 @@ class IndCqcColumns:
     percentage_of_residuals_within_percentage_value: str = (
         "percentage_of_residuals_within_percentage_value"
     )
+    percentage_of_standardised_residuals_within_limit: str = (
+        "percentage_of_standardised_residuals_within_limit"
+    )
     percentage_residual: str = "percentage_residual"
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
