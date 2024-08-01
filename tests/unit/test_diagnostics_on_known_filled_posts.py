@@ -282,7 +282,7 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         returned_sr = returned_df.sort(IndCQC.location_id).collect()
         expected_sr = expected_df.sort(IndCQC.location_id).collect()
 
-        for i in range(len(returned_data)):
+        for i in range(len(returned_sr)):
             self.assertAlmostEqual(
                 returned_sr[i][IndCQC.standardised_residual],
                 expected_sr[i][IndCQC.standardised_residual],
