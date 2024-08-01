@@ -15,7 +15,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 class CreateChartsForDiagnosticsTests(unittest.TestCase):
-
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(Data.test_rows, Schemas.test_schema)
@@ -28,7 +27,6 @@ class MainTests(CreateChartsForDiagnosticsTests):
 
     @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
     def test_create_charts_for_diagnostics_creates_pdf(self, pdf_pages_mock: Mock):
-
         job.create_charts_for_diagnostics(
             self.test_df,
             self.destination,
