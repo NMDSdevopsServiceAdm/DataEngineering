@@ -166,23 +166,23 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-  copy-default-data:
-    docker:
-      - image: cimg/base:current
-    resource_class: small
-    steps:
-      - attach_workspace:
-          at: .
+  #copy-default-data:
+    #docker:
+    #  - image: cimg/base:current
+    #resource_class: small
+    #steps:
+    #  - attach_workspace:
+     #     at: .
 
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-default-datasets/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
+     # - aws-s3/sync:
+     #     aws-region: AWS_REGION
+     #     from: "s3://sfc-default-datasets/"
+     #     to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-pipeline-resources/models/"
-          to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
+      #- aws-s3/sync:
+     #     aws-region: AWS_REGION
+     #     from: "s3://sfc-main-pipeline-resources/models/"
+      #    to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
     working_directory: /tmp/project
