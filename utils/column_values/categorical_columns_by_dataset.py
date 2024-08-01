@@ -36,6 +36,7 @@ from utils.column_values.categorical_column_values import (
     ContemporaryCSSR,
     ASCWDSFilledPostsSource,
     EstimateFilledPostsSource,
+    AscwdsFilteringRule,
 )
 
 
@@ -146,6 +147,9 @@ class CleanedIndCQCCategoricalValues:
     )
     ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
         IndCQC.ascwds_filled_posts_source, contains_null_values=True
+    )
+    ascwds_filtering_rule_column_values = AscwdsFilteringRule(
+        IndCQC.ascwds_filtering_rule
     )
 
 
