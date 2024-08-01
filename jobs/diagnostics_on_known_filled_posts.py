@@ -39,7 +39,8 @@ estimate_filled_posts_columns: list = [
     Keys.import_date,
 ]
 absolute_value_cutoff: float = 10.0
-percentage_value_cutoff: float = 0.35
+percentage_value_cutoff: float = 0.25
+standardised_value_cutoff: float = 1.0
 
 
 def main(
@@ -317,6 +318,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     df = calculate_absolute_residual(df)
     df = calculate_percentage_residual(df)
+    df = calculate_standardised_residual(df)
     return df
 
 
@@ -359,12 +361,33 @@ def calculate_percentage_residual(df: DataFrame) -> DataFrame:
     return df
 
 
+def calculate_standardised_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the standardised residual.
+
+    This function adds a columns to the dataset containing the standardised residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the standardised residual.
+    """
+    df = df.withColumn(
+        IndCQC.standardised_residual,
+        F.col(IndCQC.absolute_residual)
+        / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
+    )
+    return df
+
+
 def calculate_aggregate_residuals(df: DataFrame, window: Window) -> DataFrame:
     df = calculate_average_absolute_residual(df, window)
     df = calculate_average_percentage_residual(df, window)
     df = calculate_max_absolute_residual(df, window)
     df = calculate_percentage_of_residuals_within_absolute_value_of_actual(df, window)
     df = calculate_percentage_of_residuals_within_percentage_value_of_actual(df, window)
+    df = calculate_percentage_of_standardised_residuals_within_limit(df, window)
     return df
 
 
@@ -483,6 +506,31 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
     return df
 
 
+def calculate_percentage_of_standardised_residuals_within_limit(
+    df: DataFrame, window: Window
+) -> DataFrame:
+    """
+    Adds column with the percentage of standardised residuals which are within a predefined limit.
+
+    This function adds a columns to the dataset containing the percentage of standardised residuals which are within a predefined limit, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and standardised_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the standardised percentage of residuals which are within a predefinied limit, aggregated over the given window.
+    """
+    df = df.withColumn(
+        IndCQC.percentage_of_standardised_residuals_within_limit,
+        F.count(
+            F.when(df[IndCQC.standardised_residual] <= standardised_value_cutoff, True)
+        ).over(window)
+        / F.count(df[IndCQC.standardised_residual]).over(window),
+    )
+    return df
+
+
 def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
     """
     Creates deduplicated dataframe of aggregated diagnostics.
@@ -505,6 +553,7 @@ def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
         IndCQC.max_absolute_residual,
         IndCQC.percentage_of_residuals_within_absolute_value,
         IndCQC.percentage_of_residuals_within_percentage_value,
+        IndCQC.percentage_of_standardised_residuals_within_limit,
     ).distinct()
     return summary_df
 

@@ -125,6 +125,9 @@ class IndCqcColumns:
     percentage_of_residuals_within_percentage_value: str = (
         "percentage_of_residuals_within_percentage_value"
     )
+    percentage_of_standardised_residuals_within_limit: str = (
+        "percentage_of_standardised_residuals_within_limit"
+    )
     percentage_residual: str = "percentage_residual"
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
@@ -153,6 +156,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
+    standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
