@@ -4110,6 +4110,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         ]
     )
 
+
 @dataclass
 class CreateChartsForDiagnosticsSchemas:
     test_schema = StructType(
@@ -4118,5 +4119,6 @@ class CreateChartsForDiagnosticsSchemas:
             StructField(IndCQC.estimate_source, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
         ]
     )

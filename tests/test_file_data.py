@@ -6158,14 +6158,14 @@ class DiagnosticsOnKnownFilledPostsData:
 @dataclass
 class CreateChartsForDiagnosticsData:
     test_rows = [
-        ("loc 1", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 10.0),
-        ("loc 2", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 11.0),
-        ("loc 3", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 12.0),
-        ("loc 4", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 13.0),
-        ("loc 5", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 10.0),
-        ("loc 6", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 8.0),
-        ("loc 7", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 9.0),
-        ("loc 8", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 9.0),
-        ("loc 9", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 10.0),
-        ("loc 10", EstimateFilledPostsSource.interpolation_model, PrimaryServiceType.care_home_only, 10.0),
+        ("loc 1", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 10.0, 1.0),
+        ("loc 2", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 11.0, 2.0),
+        ("loc 3", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 12.0, 1.0),
+        ("loc 4", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 13.0, 5.0),
+        ("loc 5", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_with_nursing, 10.0, 3.0),
+        ("loc 6", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 8.0, 1.0),
+        ("loc 7", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 9.0, 2.0),
+        ("loc 8", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 9.0, 3.0),
+        ("loc 9", EstimateFilledPostsSource.care_home_model, PrimaryServiceType.care_home_only, 10.0, 4.0),
+        ("loc 10", EstimateFilledPostsSource.interpolation_model, PrimaryServiceType.care_home_only, 10.0, 5.0),
     ]

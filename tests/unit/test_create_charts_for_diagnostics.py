@@ -18,21 +18,20 @@ class CreateChartsForDiagnosticsTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.test_df = self.spark.createDataFrame(Data.test_rows, Schemas.test_schema)
 
 
 class MainTests(CreateChartsForDiagnosticsTests):
     def setUp(self) -> None:
         super().setUp()
-        self.destination = "some directory"
+        self.destination = "file.pdf"
 
-    @unittest.skip("To Do")
-    @patch("utils.utils.write_to_parquet")
-    def test_create_charts_for_diagnostics_runs(self, write_to_parquet_patch: Mock):
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
+    def test_create_charts_for_diagnostics_creates_pdf(self, pdf_pages_mock: Mock):
 
         job.create_charts_for_diagnostics(
             self.test_df,
             self.destination,
         )
 
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+        pdf_pages_mock.assert_called_once()
