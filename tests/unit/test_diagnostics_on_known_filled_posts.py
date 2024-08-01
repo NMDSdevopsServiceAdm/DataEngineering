@@ -134,36 +134,12 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.distribution_standard_deviation],
-            expected_data[0][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.distribution_standard_deviation],
-            expected_data[1][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.distribution_standard_deviation],
-            expected_data[2][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.distribution_standard_deviation],
-            expected_data[3][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.distribution_standard_deviation],
-            expected_data[4][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.distribution_standard_deviation],
-            expected_data[5][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.distribution_standard_deviation],
+                expected_data[i][IndCQC.distribution_standard_deviation],
+                places=6,
+            )
 
     def test_calculate_kurtosis_over_window_returns_extpected_values(self):
         test_df = self.spark.createDataFrame(
@@ -238,36 +214,12 @@ class CalculateDistributionMetricsTests(DiagnosticsOnKnownFilledPostsTests):
             .collect()
         )
         self.assertEqual(returned_non_sd_data, expected_non_sd_data)
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.distribution_standard_deviation],
-            expected_data[0][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.distribution_standard_deviation],
-            expected_data[1][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.distribution_standard_deviation],
-            expected_data[2][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.distribution_standard_deviation],
-            expected_data[3][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.distribution_standard_deviation],
-            expected_data[4][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.distribution_standard_deviation],
-            expected_data[5][IndCQC.distribution_standard_deviation],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.distribution_standard_deviation],
+                expected_data[i][IndCQC.distribution_standard_deviation],
+                places=6,
+            )
 
 
 class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
@@ -310,16 +262,12 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.standardised_residual],
-            expected_data[0][IndCQC.standardised_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.standardised_residual],
-            expected_data[1][IndCQC.standardised_residual],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.standardised_residual],
+                expected_data[i][IndCQC.standardised_residual],
+                places=6,
+            )
 
     def test_calculate_residuals_adds_three_columns_with_correct_values(self):
         test_df = self.spark.createDataFrame(
@@ -333,16 +281,14 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
         )
         returned_sr = returned_df.sort(IndCQC.location_id).collect()
         expected_sr = expected_df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEqual(
-            returned_sr[0][IndCQC.standardised_residual],
-            expected_sr[0][IndCQC.standardised_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_sr[1][IndCQC.standardised_residual],
-            expected_sr[1][IndCQC.standardised_residual],
-            places=6,
-        )
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_sr[i][IndCQC.standardised_residual],
+                expected_sr[i][IndCQC.standardised_residual],
+                places=6,
+            )
+
         returned_data = (
             returned_df.drop(IndCQC.standardised_residual)
             .sort(IndCQC.location_id)
@@ -396,36 +342,12 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             .collect()
         )
 
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.average_percentage_residual],
-            expected_data[0][IndCQC.average_percentage_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.average_percentage_residual],
-            expected_data[1][IndCQC.average_percentage_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.average_percentage_residual],
-            expected_data[2][IndCQC.average_percentage_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.average_percentage_residual],
-            expected_data[3][IndCQC.average_percentage_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.average_percentage_residual],
-            expected_data[4][IndCQC.average_percentage_residual],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.average_percentage_residual],
-            expected_data[5][IndCQC.average_percentage_residual],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.average_percentage_residual],
+                expected_data[i][IndCQC.average_percentage_residual],
+                places=6,
+            )
 
     def test_calculate_max_absolute_residual_returns_expected_values(self):
         test_df = self.spark.createDataFrame(
@@ -471,37 +393,12 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             .sort(IndCQC.location_id)
             .collect()
         )
-
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[0][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[1][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[2][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[3][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[4][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.percentage_of_residuals_within_absolute_value],
-            expected_data[5][IndCQC.percentage_of_residuals_within_absolute_value],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.percentage_of_residuals_within_absolute_value],
+                expected_data[i][IndCQC.percentage_of_residuals_within_absolute_value],
+                places=6,
+            )
 
     def test_calculate_percentage_of_residuals_within_percentage_value_of_actual_returns_expected_values(
         self,
@@ -536,36 +433,16 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             .collect()
         )
 
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[0][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[1][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[2][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[3][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[4][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.percentage_of_residuals_within_percentage_value],
-            expected_data[5][IndCQC.percentage_of_residuals_within_percentage_value],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][
+                    IndCQC.percentage_of_residuals_within_percentage_value
+                ],
+                expected_data[i][
+                    IndCQC.percentage_of_residuals_within_percentage_value
+                ],
+                places=6,
+            )
 
     def test_calculate_percentage_of_standardised_residuals_within_limit_returns_expected_values(
         self,
@@ -597,37 +474,16 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             .sort(IndCQC.location_id)
             .collect()
         )
-
-        self.assertAlmostEqual(
-            returned_data[0][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[0][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[1][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[1][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[2][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[2][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[3][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[3][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[4][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[4][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
-        self.assertAlmostEqual(
-            returned_data[5][IndCQC.percentage_of_standardised_residuals_within_limit],
-            expected_data[5][IndCQC.percentage_of_standardised_residuals_within_limit],
-            places=6,
-        )
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][
+                    IndCQC.percentage_of_standardised_residuals_within_limit
+                ],
+                expected_data[i][
+                    IndCQC.percentage_of_standardised_residuals_within_limit
+                ],
+                places=6,
+            )
 
     def test_calculate_aggregate_residuals_returns_expected_columns(self):
         test_df = self.spark.createDataFrame(
