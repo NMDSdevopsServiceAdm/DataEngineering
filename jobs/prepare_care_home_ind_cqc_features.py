@@ -64,18 +64,20 @@ def main(
             lookup_dict=ons_region_dict,
         )
     )
-
+    features_df = add_import_month_index_into_df(df=features_df)
+    """
     features_df = add_date_diff_into_df(
         df=features_df,
         new_col_name=IndCQC.date_diff,
         import_date_col=IndCQC.cqc_location_import_date,
     )
+    """
 
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.date_diff,
+            "import_month_index",
         ]
         + service_keys
         + regions
@@ -116,6 +118,23 @@ def main(
 
 def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
     return df.filter(F.col(IndCQC.care_home) == "Y")
+
+
+def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
+    min_d = df.agg(F.min("cqc_location_import_date")).first()[0]
+
+    # we get files on the first of each month but the data refers to the previous month
+    # if there's an issue they arrive a few days late, so adjusting by 5 accounts for that
+    loc_df = df.withColumn(
+        "adjusted_import_date", F.date_add(F.col("cqc_location_import_date"), -5)
+    )
+
+    loc_df = loc_df.withColumn(
+        "import_month_index",
+        F.months_between(F.col("adjusted_import_date"), F.lit(min_d)).cast("int"),
+    )
+    loc_df = loc_df.drop("adjusted_import_date")
+    return loc_df
 
 
 if __name__ == "__main__":
