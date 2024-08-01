@@ -22,6 +22,7 @@ class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     DIAGNOSTICS_DESTINATION = "some/other/directory"
     SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
+    CHARTS_DESTINATION = "yet/another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
@@ -47,6 +48,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
             self.ESTIMATED_FILLED_POSTS_SOURCE,
             self.DIAGNOSTICS_DESTINATION,
             self.SUMMARY_DIAGNOSTICS_DESTINATION,
+            self.CHARTS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
