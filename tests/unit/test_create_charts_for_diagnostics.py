@@ -33,3 +33,10 @@ class MainTests(CreateChartsForDiagnosticsTests):
         )
 
         pdf_pages_mock.assert_called_once()
+
+    @unittest.skip("For testing locally")
+    def test_create_charts_for_diagnostics(self):
+        job.create_charts_for_diagnostics(
+            self.test_df,
+            self.destination,
+        )
