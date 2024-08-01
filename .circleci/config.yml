@@ -253,9 +253,9 @@ workflows:
       - deploy-dependencies:
           requires:
             - terraform-apply
-      - copy-default-data:
-          requires:
-            - terraform-apply
+     # - copy-default-data:
+     #     requires:
+      #      - terraform-apply
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
