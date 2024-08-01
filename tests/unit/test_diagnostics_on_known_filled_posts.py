@@ -269,7 +269,7 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
                 places=6,
             )
 
-    def test_calculate_residuals_adds_three_columns_with_correct_values(self):
+    def test_calculate_residuals_adds_columns_with_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
