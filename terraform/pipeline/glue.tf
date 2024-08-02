@@ -737,7 +737,7 @@ module "diagnostics_on_known_filled_posts_job" {
     "--estimate_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/"
     "--summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/"
-    "--charts_destination"              = "${module.datasets_bucket.bucket_uri}/domain=charts/dataset=estimated_ind_cqc_filled_posts_diagnostics_charts/"
+    "--charts_destination"              = "${module.datasets_bucket.bucket_name}"
   }
 }
 
