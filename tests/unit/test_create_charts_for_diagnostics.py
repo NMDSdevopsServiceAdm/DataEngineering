@@ -63,3 +63,18 @@ class CreateFigureTests(CreateChartsForDiagnosticsTests):
         set_title_mock.assert_called_once()
         set_xlabel_mock.assert_called_once()
         set_ylabel_mock.assert_called_once()
+
+
+class FilterToCareHomeModelTests(CreateChartsForDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_filter_to_care_home_model(self):
+        returned_df = job.filter_to_care_home_model(self.test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filter_to_care_home_model_rows, Schemas.test_schema
+        )
+
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
