@@ -4150,5 +4150,7 @@ class CreateChartsForDiagnosticsSchemas:
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_value, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.standardised_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
         ]
     )
