@@ -588,7 +588,7 @@ if __name__ == "__main__":
         ),
         (
             "--charts_destination",
-            "A destination directory for outputting pdf charts of the diagnostics data.",
+            "A destination bucket name for saving pdf charts of the diagnostics data.",
         ),
     )
 
