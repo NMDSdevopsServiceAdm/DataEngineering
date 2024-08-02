@@ -31,8 +31,9 @@ def create_charts_for_diagnostics(df: DataFrame, destination: str) -> None:
 
     with io.BytesIO() as output:
         with PdfPages(output) as pp:
-            fig = create_figure(care_home_df, IndCqc.estimate_value)
-            pp.savefig(fig)
+            for chart in list_of_charts:
+                fig = create_figure(care_home_df, chart)
+                pp.savefig(fig)
         data = output.getvalue()
 
     print(f"charts bucket destination: {destination}")
@@ -52,6 +53,4 @@ def create_figure(df: DataFrame, chart: str) -> Figure:
     )
     ax.set_ylabel("n")
     ax.set_xlabel(f"{EstimateFilledPostsSource.care_home_model} value")
-    # print([patch.get_height() for patch in ax.patches])
-
     return fig

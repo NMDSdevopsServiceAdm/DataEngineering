@@ -37,7 +37,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("Testing in glue")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.boto3.resource")
     @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -46,6 +46,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
         pdf_pages_mock: Mock,
+        boto_resource_mock: Mock,
     ):
         read_from_parquet_patch.return_value = self.estimate_jobs_df
 
@@ -58,6 +59,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
         pdf_pages_mock.assert_called_once()
+        boto_resource_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 2)
 
 

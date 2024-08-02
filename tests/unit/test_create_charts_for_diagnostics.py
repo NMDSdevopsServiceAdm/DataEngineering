@@ -25,19 +25,41 @@ class MainTests(CreateChartsForDiagnosticsTests):
         super().setUp()
         self.destination = "file.pdf"
 
-    @unittest.skip("Testing in glue")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.boto3.resource")
     @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
-    def test_create_charts_for_diagnostics_creates_pdf(self, pdf_pages_mock: Mock):
+    def test_create_charts_for_diagnostics_creates_pdf(
+        self, pdf_pages_mock: Mock, boto_resource_mock: Mock
+    ):
         job.create_charts_for_diagnostics(
             self.test_df,
             self.destination,
         )
 
         pdf_pages_mock.assert_called_once()
+        boto_resource_mock.assert_called_once()
 
-    @unittest.skip("For testing locally")
-    def test_create_charts_for_diagnostics(self):
-        job.create_charts_for_diagnostics(
+
+class CreateFigureTests(CreateChartsForDiagnosticsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.axes.Axes.set_ylabel")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.axes.Axes.set_xlabel")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.axes.Axes.set_title")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.axes.Axes.hist")
+    def test_create_figure(
+        self,
+        hist_mock: Mock,
+        set_title_mock: Mock,
+        set_xlabel_mock: Mock,
+        set_ylabel_mock: Mock,
+    ):
+        job.create_figure(
             self.test_df,
-            self.destination,
+            IndCQC.estimate_value,
         )
+
+        hist_mock.assert_called_once()
+        set_title_mock.assert_called_once()
+        set_xlabel_mock.assert_called_once()
+        set_ylabel_mock.assert_called_once()
