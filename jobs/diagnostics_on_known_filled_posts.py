@@ -404,6 +404,7 @@ def calculate_aggregate_residuals(df: DataFrame, window: Window) -> DataFrame:
     df = calculate_average_absolute_residual(df, window)
     df = calculate_average_percentage_residual(df, window)
     df = calculate_max_residual(df, window)
+    df = calculate_min_residual(df, window)
     df = calculate_percentage_of_residuals_within_absolute_value_of_actual(df, window)
     df = calculate_percentage_of_residuals_within_percentage_value_of_actual(df, window)
     df = calculate_percentage_of_standardised_residuals_within_limit(df, window)
@@ -487,7 +488,10 @@ def calculate_min_residual(df: DataFrame, window: Window) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the minimum residual aggregated over the given window.
     """
-
+    df = df.withColumn(
+        IndCQC.min_residual,
+        F.min(df[IndCQC.residual]).over(window),
+    )
     return df
 
 

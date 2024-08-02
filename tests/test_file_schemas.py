@@ -4001,6 +4001,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.average_absolute_residual, FloatType(), True),
             StructField(IndCQC.average_percentage_residual, FloatType(), True),
             StructField(IndCQC.max_residual, FloatType(), True),
+            StructField(IndCQC.min_residual, FloatType(), True),
             StructField(
                 IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
             ),
