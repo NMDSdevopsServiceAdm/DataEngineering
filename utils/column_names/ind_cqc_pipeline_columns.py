@@ -107,7 +107,7 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
-    max_absolute_residual: str = "max_absolute_residual"
+    max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"

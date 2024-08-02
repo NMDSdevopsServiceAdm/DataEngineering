@@ -361,15 +361,15 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
                 places=6,
             )
 
-    def test_calculate_max_absolute_residual_returns_expected_values(self):
+    def test_calculate_max_residual_returns_expected_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_aggregate_residuals_rows,
             Schemas.calculate_aggregate_residuals_schema,
         )
-        returned_df = job.calculate_max_absolute_residual(test_df, self.window)
+        returned_df = job.calculate_max_residual(test_df, self.window)
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_max_absolute_residual_rows,
-            Schemas.expected_calculate_max_absolute_residual_schema,
+            Data.expected_calculate_max_residual_rows,
+            Schemas.expected_calculate_max_residual_schema,
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()

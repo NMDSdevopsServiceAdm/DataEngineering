@@ -403,7 +403,7 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
 def calculate_aggregate_residuals(df: DataFrame, window: Window) -> DataFrame:
     df = calculate_average_absolute_residual(df, window)
     df = calculate_average_percentage_residual(df, window)
-    df = calculate_max_absolute_residual(df, window)
+    df = calculate_max_residual(df, window)
     df = calculate_percentage_of_residuals_within_absolute_value_of_actual(df, window)
     df = calculate_percentage_of_residuals_within_percentage_value_of_actual(df, window)
     df = calculate_percentage_of_standardised_residuals_within_limit(df, window)
@@ -452,11 +452,11 @@ def calculate_average_percentage_residual(df: DataFrame, window: Window) -> Data
     return df
 
 
-def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
+def calculate_max_residual(df: DataFrame, window: Window) -> DataFrame:
     """
-    Adds column with the maximum absolute residual.
+    Adds column with the maximum residual.
 
-    This function adds a columns to the dataset containing the maximum absolute residual, aggregated over the given window.
+    This function adds a columns to the dataset containing the maximum residual, aggregated over the given window.
 
     Args:
         df (DataFrame): A dataframe with primary_service_type, estimate_source
@@ -464,11 +464,11 @@ def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
         window (Window): A window for aggregating the residuals.
 
     Returns:
-        DataFrame: A dataframe with an additional column containing the maximum absolute residual aggregated over the given window.
+        DataFrame: A dataframe with an additional column containing the maximum residual aggregated over the given window.
     """
     df = df.withColumn(
-        IndCQC.max_absolute_residual,
-        F.max(df[IndCQC.absolute_residual]).over(window),
+        IndCQC.max_residual,
+        F.max(df[IndCQC.residual]).over(window),
     )
     return df
 
