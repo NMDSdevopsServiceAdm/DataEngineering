@@ -1,8 +1,12 @@
-from pyspark.sql import DataFrame
+import boto3
+import io
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
+from matplotlib import axes
+from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.figure import Figure
+from pyspark.sql import DataFrame
+
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import (
@@ -24,10 +28,18 @@ def create_charts_for_diagnostics(df: DataFrame, destination: str) -> None:
         )
         & (df[IndCqc.estimate_source] == EstimateFilledPostsSource.care_home_model)
     )
-    with PdfPages(destination) as pdf:
-        for chart in list_of_charts:
-            fig = create_figure(care_home_df, chart)
-            pdf.savefig(fig)
+
+    with io.BytesIO() as output:
+        with PdfPages(output) as pp:
+            fig = create_figure(care_home_df, IndCqc.estimate_value)
+            pp.savefig(fig)
+        data = output.getvalue()
+
+    my_bucket = "sfc-care-home-estimates-histogram-datasets"
+    s3 = boto3.resource("s3")
+    dir = "domain=charts/"
+    file = dir + "care_home_diagnostics.pdf"
+    s3.Bucket(my_bucket).put_object(Key=file, Body=data)
     return
 
 
@@ -40,4 +52,6 @@ def create_figure(df: DataFrame, chart: str) -> Figure:
     )
     ax.set_ylabel("n")
     ax.set_xlabel(f"{EstimateFilledPostsSource.care_home_model} value")
+    # print([patch.get_height() for patch in ax.patches])
+
     return fig
