@@ -335,7 +335,10 @@ def calculate_residual(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column containing the residual.
     """
-
+    df = df.withColumn(
+        IndCQC.residual,
+        F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean),
+    )
     return df
 
 
