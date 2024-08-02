@@ -3,6 +3,7 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IndCqcFilledPostEstimatePipeline-StepFunction.json", {
+    dataset_bucket_name                                = module.datasets_bucket.bucket_name
     dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
     pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
     clean_ascwds_workplace_job_name                    = module.clean_ascwds_workplace_job.job_name
