@@ -17,6 +17,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.diagnostics_utils.create_charts_for_diagnostics import (
+    create_charts_for_care_home_model_diagnostics,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -47,6 +50,7 @@ def main(
     estimate_filled_posts_source,
     diagnostics_destination,
     summary_diagnostics_destination,
+    charts_destination,
 ):
     print("Creating diagnostics for known filled posts")
 
@@ -65,6 +69,8 @@ def main(
     filled_posts_df = calculate_residuals(filled_posts_df)
     filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
     summary_df = create_summary_diagnostics_table(filled_posts_df)
+
+    create_charts_for_care_home_model_diagnostics(filled_posts_df, charts_destination)
 
     utils.write_to_parquet(
         filled_posts_df,
@@ -566,6 +572,7 @@ if __name__ == "__main__":
         estimate_filled_posts_source,
         diagnostics_destination,
         summary_diagnostics_destination,
+        charts_destination,
     ) = utils.collect_arguments(
         (
             "--estimate_filled_posts_source",
@@ -579,12 +586,17 @@ if __name__ == "__main__":
             "--summary_diagnostics_destination",
             "A destination directory for outputting summary diagnostics tables.",
         ),
+        (
+            "--charts_destination",
+            "A destination bucket name for saving pdf charts of the diagnostics data.",
+        ),
     )
 
     main(
         estimate_filled_posts_source,
         diagnostics_destination,
         summary_diagnostics_destination,
+        charts_destination,
     )
 
     print("Spark job 'diagnostics_on_known_filled_posts' complete")

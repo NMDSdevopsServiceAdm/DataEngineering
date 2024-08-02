@@ -6219,3 +6219,66 @@ class ASCWDSFilteringUtilsData:
         ),
         ("loc 3", None, AscwdsFilteringRule.missing_data),
     ]
+
+
+@dataclass
+class CreateChartsForDiagnosticsData:
+    test_rows = [
+        (
+            "loc 1",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 2",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_only,
+            8.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 3",
+            EstimateFilledPostsSource.interpolation_model,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            5.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 4",
+            EstimateFilledPostsSource.interpolation_model,
+            PrimaryServiceType.non_residential,
+            10.0,
+            5.0,
+            1.0,
+            0.7,
+        ),
+    ]
+
+    expected_filter_to_care_home_model_rows = [
+        (
+            "loc 1",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 2",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_only,
+            8.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+    ]
