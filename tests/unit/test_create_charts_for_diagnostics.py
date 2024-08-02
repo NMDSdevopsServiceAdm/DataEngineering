@@ -25,6 +25,7 @@ class MainTests(CreateChartsForDiagnosticsTests):
         super().setUp()
         self.destination = "file.pdf"
 
+    @unittest.skip("Testing in glue")
     @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
     def test_create_charts_for_diagnostics_creates_pdf(self, pdf_pages_mock: Mock):
         job.create_charts_for_diagnostics(

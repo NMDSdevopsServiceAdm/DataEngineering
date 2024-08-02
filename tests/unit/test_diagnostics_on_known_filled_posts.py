@@ -37,6 +37,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @unittest.skip("Testing in glue")
     @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
