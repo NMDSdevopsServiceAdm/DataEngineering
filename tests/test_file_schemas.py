@@ -4034,6 +4034,12 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.max_residual, FloatType(), True),
         ]
     )
+    expected_calculate_min_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.min_residual, FloatType(), True),
+        ]
+    )
     expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
         StructType(
             [

@@ -375,6 +375,20 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
+    def test_calculate_min_residual_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_min_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_min_residual_rows,
+            Schemas.expected_calculate_min_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
     def test_calculate_percentage_of_residuals_within_absolute_value_of_actual_returns_expected_values(
         self,
     ):

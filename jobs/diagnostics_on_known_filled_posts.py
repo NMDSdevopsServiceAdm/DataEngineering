@@ -473,6 +473,24 @@ def calculate_max_residual(df: DataFrame, window: Window) -> DataFrame:
     return df
 
 
+def calculate_min_residual(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the minimum residual.
+
+    This function adds a columns to the dataset containing the minimum residual, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and absolute_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the minimum residual aggregated over the given window.
+    """
+
+    return df
+
+
 def calculate_percentage_of_residuals_within_absolute_value_of_actual(
     df: DataFrame, window: Window
 ) -> DataFrame:

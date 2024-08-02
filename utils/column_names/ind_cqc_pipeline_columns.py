@@ -109,6 +109,7 @@ class IndCqcColumns:
     location_id: str = CQCLClean.location_id
     max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
