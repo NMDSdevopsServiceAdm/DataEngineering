@@ -35,11 +35,11 @@ def create_charts_for_diagnostics(df: DataFrame, destination: str) -> None:
             pp.savefig(fig)
         data = output.getvalue()
 
-    my_bucket = "sfc-care-home-estimates-histogram-datasets"
+    print(f"charts bucket destination: {destination}")
     s3 = boto3.resource("s3")
     dir = "domain=charts/"
     file = dir + "care_home_diagnostics.pdf"
-    s3.Bucket(my_bucket).put_object(Key=file, Body=data)
+    s3.Bucket(destination).put_object(Key=file, Body=data)
     return
 
 
