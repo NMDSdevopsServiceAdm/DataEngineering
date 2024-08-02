@@ -264,8 +264,8 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
 
     def test_calculate_standardised_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
-            Data.expected_calculate_absolute_residual_rows,
-            Schemas.expected_calculate_absolute_residual_schema,
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
         )
         returned_df = job.calculate_standardised_residual(test_df)
         expected_df = self.spark.createDataFrame(

@@ -395,8 +395,7 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         IndCQC.standardised_residual,
-        F.col(IndCQC.absolute_residual)
-        / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
+        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
     )
     return df
 
