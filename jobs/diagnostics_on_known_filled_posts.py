@@ -316,9 +316,26 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with two additional columns containing residuals.
     """
+    df = calculate_residual(df)
     df = calculate_absolute_residual(df)
     df = calculate_percentage_residual(df)
     df = calculate_standardised_residual(df)
+    return df
+
+
+def calculate_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the residual.
+
+    This function adds a columns to the dataset containing the residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the residual.
+    """
+
     return df
 
 

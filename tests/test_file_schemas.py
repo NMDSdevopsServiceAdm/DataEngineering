@@ -3919,6 +3919,18 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.estimate_value, FloatType(), True),
         ]
     )
+    expected_calculate_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
     expected_calculate_absolute_residual_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
