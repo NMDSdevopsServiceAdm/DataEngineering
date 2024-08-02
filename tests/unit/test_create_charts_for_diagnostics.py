@@ -30,7 +30,7 @@ class MainTests(CreateChartsForDiagnosticsTests):
     def test_create_charts_for_diagnostics_creates_pdf(
         self, pdf_pages_mock: Mock, boto_resource_mock: Mock
     ):
-        job.create_charts_for_diagnostics(
+        job.create_charts_for_care_home_model_diagnostics(
             self.test_df,
             self.destination,
         )

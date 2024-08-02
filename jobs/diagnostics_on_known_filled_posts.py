@@ -18,7 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.diagnostics_utils.create_charts_for_diagnostics import (
-    create_charts_for_diagnostics,
+    create_charts_for_care_home_model_diagnostics,
 )
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -70,7 +70,7 @@ def main(
     filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
     summary_df = create_summary_diagnostics_table(filled_posts_df)
 
-    create_charts_for_diagnostics(filled_posts_df, charts_destination)
+    create_charts_for_care_home_model_diagnostics(filled_posts_df, charts_destination)
 
     utils.write_to_parquet(
         filled_posts_df,

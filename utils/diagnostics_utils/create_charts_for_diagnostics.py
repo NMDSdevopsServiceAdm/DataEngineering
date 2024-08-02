@@ -14,10 +14,17 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
 )
 
-list_of_charts: list = [IndCqc.estimate_value, IndCqc.absolute_residual]
+list_of_charts: list = [
+    IndCqc.estimate_value,
+    IndCqc.absolute_residual,
+    IndCqc.standardised_residual,
+    IndCqc.percentage_residual,
+]
 
 
-def create_charts_for_diagnostics(df: DataFrame, destination: str) -> None:
+def create_charts_for_care_home_model_diagnostics(
+    df: DataFrame, destination: str
+) -> None:
     care_home_df = df.where(
         (
             (df[IndCqc.primary_service_type] == PrimaryServiceType.care_home_only)
