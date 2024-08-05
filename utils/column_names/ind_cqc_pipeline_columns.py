@@ -107,8 +107,9 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
-    max_absolute_residual: str = "max_absolute_residual"
+    max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
@@ -144,6 +145,7 @@ class IndCqcColumns:
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     regulated_activities: str = CQCLClean.regulated_activities
+    residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
     )

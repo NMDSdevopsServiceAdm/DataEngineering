@@ -3919,6 +3919,18 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.estimate_value, FloatType(), True),
         ]
     )
+    expected_calculate_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_filled_posts_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
     expected_calculate_absolute_residual_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -3928,6 +3940,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 True,
             ),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
         ]
     )
@@ -3952,7 +3965,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 True,
             ),
             StructField(IndCQC.estimate_value, FloatType(), True),
-            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.standardised_residual, FloatType(), True),
         ]
     )
@@ -3965,6 +3978,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 True,
             ),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
             StructField(IndCQC.percentage_residual, FloatType(), True),
             StructField(IndCQC.standardised_residual, FloatType(), True),
@@ -3976,6 +3990,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
             StructField(IndCQC.percentage_residual, FloatType(), True),
             StructField(IndCQC.standardised_residual, FloatType(), True),
@@ -3986,7 +4001,8 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             *calculate_aggregate_residuals_schema,
             StructField(IndCQC.average_absolute_residual, FloatType(), True),
             StructField(IndCQC.average_percentage_residual, FloatType(), True),
-            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(IndCQC.max_residual, FloatType(), True),
+            StructField(IndCQC.min_residual, FloatType(), True),
             StructField(
                 IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
             ),
@@ -4014,10 +4030,16 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.average_percentage_residual, FloatType(), True),
         ]
     )
-    expected_calculate_max_absolute_residual_schema = StructType(
+    expected_calculate_max_residual_schema = StructType(
         [
             *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(IndCQC.max_residual, FloatType(), True),
+        ]
+    )
+    expected_calculate_min_residual_schema = StructType(
+        [
+            *calculate_aggregate_residuals_schema,
+            StructField(IndCQC.min_residual, FloatType(), True),
         ]
     )
     expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
@@ -4064,11 +4086,13 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
             StructField(IndCQC.distribution_kurtosis, FloatType(), True),
             StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
             StructField(IndCQC.percentage_residual, FloatType(), True),
             StructField(IndCQC.average_absolute_residual, FloatType(), True),
             StructField(IndCQC.average_percentage_residual, FloatType(), True),
-            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(IndCQC.max_residual, FloatType(), True),
+            StructField(IndCQC.min_residual, FloatType(), True),
             StructField(
                 IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
             ),
@@ -4094,7 +4118,8 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.distribution_skewness, FloatType(), True),
             StructField(IndCQC.average_absolute_residual, FloatType(), True),
             StructField(IndCQC.average_percentage_residual, FloatType(), True),
-            StructField(IndCQC.max_absolute_residual, FloatType(), True),
+            StructField(IndCQC.max_residual, FloatType(), True),
+            StructField(IndCQC.min_residual, FloatType(), True),
             StructField(
                 IndCQC.percentage_of_residuals_within_absolute_value, FloatType(), True
             ),
