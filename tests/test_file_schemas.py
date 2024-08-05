@@ -3940,6 +3940,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 True,
             ),
             StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
             StructField(IndCQC.absolute_residual, FloatType(), True),
         ]
     )
