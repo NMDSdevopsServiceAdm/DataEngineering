@@ -1813,7 +1813,7 @@ class NullAscwdsFilledPostOutliersSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
         ]
     )
 
@@ -3746,7 +3746,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
