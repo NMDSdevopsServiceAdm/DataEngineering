@@ -33,8 +33,8 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
-    avg_residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir"
+    avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
+        "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
     )
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
