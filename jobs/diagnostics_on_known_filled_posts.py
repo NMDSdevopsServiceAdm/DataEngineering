@@ -356,7 +356,7 @@ def calculate_absolute_residual(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         IndCQC.absolute_residual,
-        F.abs(F.col(IndCQC.ascwds_filled_posts_clean) - F.col(IndCQC.estimate_value)),
+        F.abs(F.col(IndCQC.residual)),
     )
     return df
 
