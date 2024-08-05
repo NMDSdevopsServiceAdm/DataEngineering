@@ -75,6 +75,19 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
         self.assertEqual(expected_data, returned_data)
 
 
+class NumericalValuesTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_decimal_places_to_round_to_value(self):
+        self.assertEqual(job.NumericalValues.DECIMAL_PLACES_TO_ROUND_TO, 5)
+
+    def test_percentage_of_data_to_remove_as_outliers_value(self):
+        self.assertEqual(
+            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.1
+        )
+
+
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
