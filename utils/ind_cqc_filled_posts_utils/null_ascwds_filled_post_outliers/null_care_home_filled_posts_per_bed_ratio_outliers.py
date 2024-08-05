@@ -43,7 +43,7 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
     """
     numerical_value = NumericalValues()
 
-    care_homes_df = select_relevant_data(input_df)
+    care_homes_df = filter_df_to_care_homes_with_known_beds_and_filled_posts(input_df)
     data_not_relevant_to_filter_df = select_data_not_in_subset_df(
         input_df, care_homes_df
     )
@@ -83,17 +83,34 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
     return output_df
 
 
-def select_relevant_data(input_df: DataFrame) -> DataFrame:
-    output_df = input_df.where((F.col(IndCQC.care_home) == "Y"))
-    output_df = output_df.where(
-        F.col(IndCQC.number_of_beds).isNotNull() & (F.col(IndCQC.number_of_beds) > 0)
-    )
-    output_df = output_df.where(
-        F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
-        & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
+def filter_df_to_care_homes_with_known_beds_and_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Filter dataframe to care homes with known beds and filled posts.
+
+    This function filters to the dataset to only include locations who should be included in the
+    overall filter which are care homes with one or more beds and one or more filled posts.
+
+    Args:
+        df (DataFrame): A dataframe of cleaned CQC locations.
+
+    Returns:
+        (DataFrame): A dataframe filtered to care homes with known beds and known filled posts.
+    """
+    df = df.where(
+        (F.col(IndCQC.care_home) == "Y")
+        & (
+            F.col(IndCQC.number_of_beds).isNotNull()
+            & (F.col(IndCQC.number_of_beds) > 0)
+        )
+        & (
+            F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
+            & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
+        )
     )
 
-    return output_df
+    return df
 
 
 def select_data_not_in_subset_df(
