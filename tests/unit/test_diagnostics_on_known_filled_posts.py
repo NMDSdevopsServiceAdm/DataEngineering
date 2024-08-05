@@ -236,10 +236,22 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_absolute_residual_adds_column_with_correct_values(self):
+    def test_calculate_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
+        )
+        returned_df = job.calculate_residual(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_absolute_residual_adds_column_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
         )
         returned_df = job.calculate_absolute_residual(test_df)
         expected_df = self.spark.createDataFrame(
@@ -262,8 +274,8 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
 
     def test_calculate_standardised_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
-            Data.expected_calculate_absolute_residual_rows,
-            Schemas.expected_calculate_absolute_residual_schema,
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
         )
         returned_df = job.calculate_standardised_residual(test_df)
         expected_df = self.spark.createDataFrame(
@@ -359,15 +371,29 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
                 places=6,
             )
 
-    def test_calculate_max_absolute_residual_returns_expected_values(self):
+    def test_calculate_max_residual_returns_expected_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_aggregate_residuals_rows,
             Schemas.calculate_aggregate_residuals_schema,
         )
-        returned_df = job.calculate_max_absolute_residual(test_df, self.window)
+        returned_df = job.calculate_max_residual(test_df, self.window)
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_max_absolute_residual_rows,
-            Schemas.expected_calculate_max_absolute_residual_schema,
+            Data.expected_calculate_max_residual_rows,
+            Schemas.expected_calculate_max_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_min_residual_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_min_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_min_residual_rows,
+            Schemas.expected_calculate_min_residual_schema,
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
