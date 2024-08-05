@@ -97,7 +97,7 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     def test_relevant_data_selected(self):
         # TODO - replace test data with own test data and improve tests
         df = job.select_relevant_data(self.unfiltered_ind_cqc_df)
-        self.assertEqual(df.count(), 40)
+        self.assertEqual(df.count(), 20)
 
 
 class SelectDataNotInSubsetTests(
