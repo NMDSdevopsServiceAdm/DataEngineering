@@ -27,7 +27,7 @@ class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
-    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_deduplicated_clean"
+    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
