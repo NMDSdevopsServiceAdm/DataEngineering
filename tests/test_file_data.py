@@ -5682,7 +5682,6 @@ class DiagnosticsOnKnownFilledPostsData:
             "loc 1",
             date(2024, 1, 1),
             10.0,
-            10.0,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -5734,7 +5733,6 @@ class DiagnosticsOnKnownFilledPostsData:
             "loc 1",
             date(2024, 1, 1),
             10.0,
-            10.0,
             PrimaryServiceType.care_home_only,
             11.0,
             12.0,
@@ -5751,18 +5749,6 @@ class DiagnosticsOnKnownFilledPostsData:
         ),
     ]
     expected_restructure_dataframe_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            PrimaryServiceType.care_home_only,
-            10.0,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
         (
             "loc 1",
             date(2024, 1, 1),
