@@ -335,7 +335,7 @@ def calculate_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean_deduplicated and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_deduplicated_clean and estimate_value.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the residual.
