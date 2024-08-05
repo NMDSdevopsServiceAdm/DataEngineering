@@ -3401,7 +3401,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
         ]
     )
