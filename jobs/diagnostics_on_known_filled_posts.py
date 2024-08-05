@@ -336,14 +336,14 @@ def calculate_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_clean_deduplicated and estimate_value.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the residual.
     """
     df = df.withColumn(
         IndCQC.residual,
-        F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean),
+        F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_dedup_clean),
     )
     return df
 
@@ -401,7 +401,7 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         IndCQC.standardised_residual,
-        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
+        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
     return df
 
