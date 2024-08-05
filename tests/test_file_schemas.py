@@ -71,178 +71,6 @@ from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
 
 @dataclass
-class CreateJobEstimatesDiagnosticsSchemas:
-    estimate_jobs = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(
-                IndCQC.ascwds_filled_posts,
-                FloatType(),
-                True,
-            ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
-            StructField(IndCQC.care_home_model, FloatType(), True),
-            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
-            StructField(IndCQC.interpolation_model, FloatType(), True),
-            StructField(IndCQC.non_res_model, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
-        ]
-    )
-    capacity_tracker_care_home = StructType(
-        [
-            StructField(CT.cqc_id, StringType(), False),
-            StructField(
-                CT.nurses_employed,
-                FloatType(),
-                True,
-            ),
-            StructField(CT.care_workers_employed, FloatType(), True),
-            StructField(CT.non_care_workers_employed, FloatType(), True),
-            StructField(CT.agency_nurses_employed, FloatType(), True),
-            StructField(CT.agency_care_workers_employed, FloatType(), True),
-            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
-        ]
-    )
-    capacity_tracker_non_residential = StructType(
-        [
-            StructField(CT.cqc_id, StringType(), False),
-            StructField(
-                CT.cqc_care_workers_employed,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_add_date_to_capacity_tracker_schema = StructType(
-        [
-            *capacity_tracker_care_home,
-            StructField(CT.capacity_tracker_care_homes_import_date, DateType(), True),
-        ]
-    )
-
-    diagnostics = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(
-                CT.nurses_employed,
-                FloatType(),
-                True,
-            ),
-            StructField(CT.care_workers_employed, FloatType(), True),
-            StructField(CT.non_care_workers_employed, FloatType(), True),
-            StructField(CT.agency_nurses_employed, FloatType(), True),
-            StructField(CT.agency_care_workers_employed, FloatType(), True),
-            StructField(CT.agency_non_care_workers_employed, FloatType(), True),
-            StructField(
-                CT.cqc_care_workers_employed,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_prepare_capacity_tracker_care_home_schema = StructType(
-        [
-            *diagnostics,
-            StructField(CT.care_home_employed, FloatType(), True),
-        ]
-    )
-    expected_prepare_capacity_tracker_non_residential_schema = StructType(
-        [
-            *diagnostics,
-            StructField(CT.non_residential_employed, FloatType(), True),
-        ]
-    )
-    diagnostics_prepared = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(
-                IndCQC.ascwds_filled_posts,
-                FloatType(),
-                True,
-            ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
-            StructField(IndCQC.care_home_model, FloatType(), True),
-            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
-            StructField(IndCQC.interpolation_model, FloatType(), True),
-            StructField(IndCQC.non_res_model, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(
-                CT.care_home_employed,
-                FloatType(),
-                True,
-            ),
-            StructField(CT.non_residential_employed, FloatType(), True),
-        ]
-    )
-    expected_calculate_residuals = StructType(
-        [
-            *diagnostics_prepared,
-            StructField(
-                IndCQC.residuals_estimate_filled_posts_non_res_pir, FloatType(), True
-            ),
-        ]
-    )
-    residuals = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(
-                IndCQC.residuals_estimate_filled_posts_non_res_pir,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_average_residual_schema = StructType(
-        [
-            StructField(
-                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_create_empty_dataframe_schema = StructType(
-        [
-            StructField(CT.description_of_changes, StringType(), True),
-        ]
-    )
-    expected_run_average_residuals_schema = StructType(
-        [
-            StructField(CT.description_of_changes, StringType(), True),
-            StructField(
-                IndCQC.avg_residuals_estimate_filled_posts_non_res_pir,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_add_timestamp_schema = StructType(
-        [
-            *residuals,
-            StructField(CT.run_timestamp, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class CalculatePaRatioSchemas:
     total_staff_schema = StructType(
         [
@@ -1985,7 +1813,7 @@ class NullAscwdsFilledPostOutliersSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
         ]
     )
 
@@ -2000,7 +1828,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
@@ -2030,7 +1858,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
     null_values_outside_of_standardised_residual_cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(NullOutlierColumns.standardised_residual, DoubleType(), True),
             StructField(NullOutlierColumns.lower_percentile, DoubleType(), True),
             StructField(NullOutlierColumns.upper_percentile, DoubleType(), True),
@@ -3572,7 +3400,6 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
         ]
@@ -3792,11 +3619,6 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(
-                IndCQC.ascwds_filled_posts_clean,
-                FloatType(),
-                True,
-            ),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), True),
@@ -3820,7 +3642,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3838,7 +3660,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3912,7 +3734,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3923,7 +3745,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3935,7 +3757,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3948,7 +3770,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3960,7 +3782,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -3973,7 +3795,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -4147,7 +3969,7 @@ class ASCWDSFilteringUtilsSchemas:
                 True,
             ),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),

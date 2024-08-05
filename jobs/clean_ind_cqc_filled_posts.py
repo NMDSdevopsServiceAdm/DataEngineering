@@ -42,13 +42,14 @@ def main(
         IndCQC.ascwds_filled_posts_source,
     )
 
-    locations_df = null_ascwds_filled_post_outliers(locations_df)
-
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
-        IndCQC.ascwds_filled_posts_clean,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_filled_posts,
+        IndCQC.ascwds_filled_posts_dedup,
     )
+
+    locations_df = null_ascwds_filled_post_outliers(locations_df)
+
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
         IndCQC.people_directly_employed,
