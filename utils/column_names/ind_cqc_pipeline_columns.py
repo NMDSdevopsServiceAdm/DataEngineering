@@ -33,8 +33,8 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
-    avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
+    avg_residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir: str = (
+        "avg_residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir"
     )
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
@@ -144,8 +144,8 @@ class IndCqcColumns:
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     regulated_activities: str = CQCLClean.regulated_activities
-    residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
-        "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
+    residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir: str = (
+        "residuals_ascwds_filled_posts_dedup_clean_dedup_non_res_pir"
     )
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"

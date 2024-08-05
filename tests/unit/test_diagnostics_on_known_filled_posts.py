@@ -66,7 +66,7 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
 class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_column = IndCQC.ascwds_filled_posts_clean
+        self.test_column = IndCQC.ascwds_filled_posts_dedup_clean
         self.test_df = self.spark.createDataFrame(
             Data.filter_to_known_values_rows, Schemas.filter_to_known_values_schema
         )
