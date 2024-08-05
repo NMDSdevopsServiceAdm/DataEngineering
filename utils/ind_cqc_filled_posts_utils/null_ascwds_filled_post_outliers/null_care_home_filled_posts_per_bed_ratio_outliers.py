@@ -105,8 +105,8 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
             & (F.col(IndCQC.number_of_beds) > 0)
         )
         & (
-            F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
-            & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull()
+            & (F.col(IndCQC.ascwds_filled_posts_dedup_clean) > 0.0)
         )
     )
 
