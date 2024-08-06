@@ -9,7 +9,6 @@ from pyspark.sql.types import (
     StructField,
     StructType,
     DateType,
-    DoubleType,
 )
 
 import jobs.clean_ind_cqc_filled_posts as job
