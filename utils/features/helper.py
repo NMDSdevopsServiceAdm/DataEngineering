@@ -92,7 +92,7 @@ def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with an additional column conatining the number of whole months since the earliest cqc_location_import_date.
     """
-    min_d = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
+    first_date = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
     import_date_adjustment: int = -5
     df = df.withColumn(
         IndCQC.import_month_index,
@@ -101,7 +101,7 @@ def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
                 F.date_add(
                     F.col(IndCQC.cqc_location_import_date), import_date_adjustment
                 ),
-                F.lit(min_d),
+                F.lit(first_date),
             )
         ).cast(IntegerType()),
     )
