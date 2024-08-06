@@ -3015,6 +3015,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             1.0,
             None,
             "filtering rule",
+            0.04,
             10.0,
         ),
         (
@@ -3026,6 +3027,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             2.0,
             2.0,
             "filtering rule",
+            0.08,
             20.0,
         ),
     ]
@@ -3040,6 +3042,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             3.0,
             3.0,
             "filtering rule",
+            0.12,
         ),
     ]
 
@@ -3053,6 +3056,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             1.0,
             None,
             "filtering rule",
+            0.04,
         ),
         (
             "02",
@@ -3063,6 +3067,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             2.0,
             2.0,
             "filtering rule",
+            0.08,
         ),
         (
             "03",
@@ -3073,6 +3078,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             3.0,
             3.0,
             "filtering rule",
+            0.12,
         ),
     ]
 
