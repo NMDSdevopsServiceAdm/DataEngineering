@@ -161,7 +161,7 @@ def calculate_filled_posts_per_bed_ratio(
 ) -> DataFrame:
     input_df = input_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
+        F.col(IndCQC.ascwds_filled_posts_dedup) / F.col(IndCQC.number_of_beds),
     )
 
     return input_df

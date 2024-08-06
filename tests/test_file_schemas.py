@@ -1507,7 +1507,7 @@ class CleanIndCQCData:
     filled_posts_per_bed_ratio_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
         ]
     )
