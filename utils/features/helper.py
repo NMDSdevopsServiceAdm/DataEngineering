@@ -81,20 +81,28 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
 
 
 def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
-    min_d = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
-    adjusted_import_date: str = "adjusted_import_date"
-    # files arrive on the first of each month but the data refers to the previous month, adjusting by 5 accounts for late arrivals
-    import_date_adjustment: int = -5
-    loc_df = df.withColumn(
-        adjusted_import_date,
-        F.date_add(F.col(IndCQC.cqc_location_import_date), import_date_adjustment),
-    )
+    """
+    Adds a column containing the number of whole months since the earliest cqc_location_import_date.
 
-    loc_df = loc_df.withColumn(
+    This function adds a column containing the number of whole months since the earliest cqc_location_import_date. The files usually arrive on the first of each month, but the data refers to the previous month. Adjusting by -5 accounts for delays in acquiring the data.
+
+    Args:
+        df (DataFrame): A dataframe containing cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with an additional column conatining the number of whole months since the earliest cqc_location_import_date.
+    """
+    min_d = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
+    import_date_adjustment: int = -5
+    df = df.withColumn(
         IndCQC.import_month_index,
-        (F.months_between(F.col(adjusted_import_date), F.lit(min_d))).cast(
-            IntegerType()
-        ),
+        (
+            F.months_between(
+                F.date_add(
+                    F.col(IndCQC.cqc_location_import_date), import_date_adjustment
+                ),
+                F.lit(min_d),
+            )
+        ).cast(IntegerType()),
     )
-    loc_df = loc_df.drop(adjusted_import_date)
-    return loc_df
+    return df
