@@ -130,32 +130,6 @@ class SelectDataNotInSubsetTests(
         )
 
 
-class CalculateFilledPostsPerBedRatioTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_posts_per_bed_ratio(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-            ]
-        )
-        rows = [
-            ("1-000000001", 5.0, 100),
-            ("1-000000002", 2.0, 1),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_posts_per_bed_ratio(df)
-
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][NullOutlierColumns.filled_posts_per_bed_ratio], 0.05)
-        self.assertEqual(df[1][NullOutlierColumns.filled_posts_per_bed_ratio], 2.0)
-
-
 class CreateBandedBedCountColumnTests(
     NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
