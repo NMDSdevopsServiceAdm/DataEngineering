@@ -29,7 +29,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    @unittest.skip("To do")
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_care_home_ind_cqc_features.vectorise_dataframe")
     @patch("jobs.prepare_care_home_ind_cqc_features.add_date_diff_into_df")
@@ -62,7 +61,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
             2,
         )
-        # self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
+        self.assertEqual(add_date_diff_into_df_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
