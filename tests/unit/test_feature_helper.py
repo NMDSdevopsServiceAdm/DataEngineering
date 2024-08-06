@@ -141,6 +141,4 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             Data.expected_add_import_month_index_rows,
             Schemas.expected_add_import_month_index_schema,
         )
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
