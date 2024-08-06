@@ -6038,19 +6038,20 @@ class ASCWDSFilteringUtilsData:
         ("loc 1", 10.0, AscwdsFilteringRule.populated),
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
-    update_filtering_rule_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.populated),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+    update_cleaned_rows_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated, 0.4),
+        ("loc 2", None, AscwdsFilteringRule.populated, 0.5),
+        ("loc 3", None, AscwdsFilteringRule.missing_data, None),
     ]
-    expected_update_filtering_rule_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+    expected_update_cleaned_rows_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated, 0.4),
         (
             "loc 2",
             None,
             AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+            None,
         ),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+        ("loc 3", None, AscwdsFilteringRule.missing_data, None),
     ]
 
 

@@ -28,18 +28,18 @@ def add_filtering_rule_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
+def update_cleaned_rows(df: DataFrame, rule_name: str) -> DataFrame:
     """
-    Update filtering rule for rows where data was present but is now missing.
+    Update rows where data was present but is now missing.
 
-    This function adds updates the filtering rule where it was listed as "populated" but the current filtering rule has just nullified the data in ascwds_filled_posts_dedup_clean. The new values will be the name of the filter applied.
+    This function updates the filtering rule where it was listed as "populated" but the current filtering rule has just nullified the data in ascwds_filled_posts_dedup_clean. The new values will be the name of the filter applied. It also removes the filled_posts_per_bed_ratio for these rows.
 
     Args:
-        df (DataFrame): A dataframe containing ascwds_filled_posts_dedup_clean and ascwds_filtering_rule after a new rules has been applied.
+        df (DataFrame): A dataframe containing ascwds_filled_posts_dedup_clean, filled_posts_per_bed_ratio and ascwds_filtering_rule after a new rules has been applied.
         rule_name (str): The name of the rule that has just been applied.
 
     Returns:
-        (DataFrame) : A dataframe with the ascwds_filtering_rule column updated.
+        (DataFrame) : A dataframe with the cleaned rows updated.
     """
     df = df.withColumn(
         IndCQC.ascwds_filtering_rule,
@@ -48,5 +48,12 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
             & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
             F.lit(rule_name),
         ).otherwise(F.col(IndCQC.ascwds_filtering_rule)),
+    )
+    df = df.withColumn(
+        IndCQC.filled_posts_per_bed_ratio,
+        F.when(
+            (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull()),
+            F.col(IndCQC.filled_posts_per_bed_ratio),
+        ),
     )
     return df

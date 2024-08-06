@@ -11,7 +11,6 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.null_outlier_columns import NullOutlierColumns
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
     ascwds_filtering_utils as job,
@@ -49,20 +48,22 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_update_filtering_rule(
+    def test_update_cleaned_rows(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.update_filtering_rule_rows, Schemas.update_filtering_rule_schema
+            Data.update_cleaned_rows_rows, Schemas.update_cleaned_rows_schema
         )
-        returned_df = job.update_filtering_rule(
+        returned_df = job.update_cleaned_rows(
             test_df,
             AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_update_filtering_rule_rows,
-            Schemas.update_filtering_rule_schema,
+            Data.expected_update_cleaned_rows_rows,
+            Schemas.update_cleaned_rows_schema,
         )
+        returned_df.show()
+        expected_df.show()
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )

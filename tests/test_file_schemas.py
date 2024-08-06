@@ -4000,7 +4000,30 @@ class ASCWDSFilteringUtilsSchemas:
             ),
         ]
     )
-    update_filtering_rule_schema = expected_add_filtering_column_schema
+    update_cleaned_rows_schema = StructType(
+        [
+            StructField(
+                IndCQC.location_id,
+                StringType(),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_filtering_rule,
+                StringType(),
+                True,
+            ),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
 
 
 @dataclass
