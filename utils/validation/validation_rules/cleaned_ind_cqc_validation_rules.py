@@ -41,12 +41,14 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.people_directly_employed: 1,
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,
+            IndCqcColumns.filled_posts_per_bed_ratio: 0,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
             IndCqcColumns.people_directly_employed: 10000,
             IndCqcColumns.total_staff_bounded: 3000,
             IndCqcColumns.worker_records_bounded: 3000,
+            IndCqcColumns.filled_posts_per_bed_ratio: 10,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
