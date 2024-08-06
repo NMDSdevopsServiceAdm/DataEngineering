@@ -24,6 +24,7 @@ from utils.column_values.categorical_column_values import (
     SingleSubDescription,
     Services,
     EstimateFilledPostsSource,
+    AscwdsFilteringRule,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -36,146 +37,6 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_names import RuleNames as RuleName
-
-
-@dataclass
-class CreateJobEstimatesDiagnosticsData:
-    # fmt: off
-    estimate_jobs_rows = [
-        ("location_1", date(2023, 4, 1), 40.0, 40.0, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, 45.1, None, None, 40.0, 45,),
-    ]
-    capacity_tracker_care_home_rows = [
-        ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0),
-    ]
-    expected_add_date_to_capacity_tracker_rows = [
-        ("location_1", 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, date(2023, 4, 1)),
-    ]
-    capacity_tracker_non_residential_rows = [
-        ("location_2", 67.0),
-    ]
-    prepare_capacity_tracker_care_home_rows = [
-        ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
-        ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 30.0,),
-    ]
-    expected_prepare_capacity_tracker_care_home_rows = [
-        ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None, 41.0),
-        ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 30.0, None),
-    ]
-    prepare_capacity_tracker_non_residential_rows = [
-        ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None,),
-        ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 75.0,),
-    ]
-    expected_prepare_capacity_tracker_non_residential_rows = [
-        ("location_1", PrimaryServiceType.care_home_with_nursing, 8.0, 12.0, 15.0, 1.0, 3.0, 2.0, None, None),
-        ("location_2", PrimaryServiceType.non_residential, None, None, None, None, None, None, 75.0, 97.5),
-    ]
-    calculate_residuals_rows = [
-        ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0,),
-        ("location_3", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
-        ("location_4", None, None, PrimaryServiceType.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None,),
-        ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
-    ]
-    expected_calculate_residuals_rows = [
-        ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 40, None, 40.0, 0.0),
-        ("location_3", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None, -5.0),
-        ("location_4", None, None, PrimaryServiceType.non_residential, 60.9, 23.4, None, None, None, 60.0, 45, None, None, 15.0),
-        ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None, None),
-    ]
-    models = [
-        IndCQC.estimate_filled_posts,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-    ]
-
-    services = [
-        CareHome.care_home,
-        CareHome.not_care_home,
-    ]
-
-    data_source_columns = [
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        CT.care_home_employed,
-        CT.non_residential_employed,
-    ]
-    residuals_list = [
-        [
-            IndCQC.estimate_filled_posts,
-            CareHome.care_home,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-        ],
-        [
-            IndCQC.estimate_filled_posts,
-            CareHome.care_home,
-            CT.care_home_employed,
-        ],
-        [
-            IndCQC.estimate_filled_posts,
-            CareHome.not_care_home,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-        ],
-        [
-            IndCQC.estimate_filled_posts,
-            CareHome.not_care_home,
-            CT.non_residential_employed,
-        ],
-        [
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            CareHome.care_home,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-        ],
-        [
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            CareHome.care_home,
-            CT.care_home_employed,
-        ],
-        [
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            CareHome.not_care_home,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-        ],
-        [
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            CareHome.not_care_home,
-            CT.non_residential_employed,
-        ],
-    ]
-    run_residuals_rows = [
-        ("location_1", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
-        ("location_2", 40.0, 40.0, PrimaryServiceType.non_residential, 60.9, 23.4, 45.1, None, None, 40.0, None, None, 40.0,),
-        ("location_3", 40.0, 40.0, PrimaryServiceType.care_home_only, 60.9, 23.4, 45.1, None, None, 40.0, 45, 41.0, None,),
-        ("location_4", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, None, None,),
-        ("location_5", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, 50.0, None,),
-        ("location_6", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, 45, 50.0, None,),
-        ("location_7", None, None, PrimaryServiceType.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, None,),
-        ("location_8", None, None, PrimaryServiceType.non_residential, 60.9, None, None, None, 40.0, 60.9, None, None, 40.0,),
-        ("location_9", None, None, PrimaryServiceType.non_residential, 60.9, None, None, None, 40.0, 60.9, 45, None, 40.0,),
-        ("location_10", None, None, PrimaryServiceType.care_home_with_nursing, 60.9, 23.4, None, None, None, 60.9, None, None, None,),
-    ]
-    residuals_rows = [
-        ("location_1", 0.0, 0.0,),
-        ("location_2", -1.0, 0.0,),
-        ("location_3", 3.0, 0.0,),
-        ("location_4", None, 0.0,),
-        ("location_5", 10.5, 0.0,),
-        ("location_6", -2.5, 0.0,),
-        ("location_7", None, None,),
-        ("location_8", None, None,),
-    ]
-    expected_calculate_average_residual_rows = [
-        (2.0,),
-    ]
-    expected_create_empty_dataframe_rows = [
-        ("test",),
-    ]
-    add_timestamps_rows = [
-        ("location_1", 0.0, 0.0,),
-        ("location_2", -1.0, 0.0,),
-    ]
-    expected_add_timestamps_rows = [
-        ("location_1", 0.0, 0.0, "12/24/2018, 04:59:31"),
-        ("location_2", -1.0, 0.0, "12/24/2018, 04:59:31"),
-    ]
-    # fmt: on
-    expected_run_average_residuals_rows = [("test", 2.0, 0.0)]
 
 
 @dataclass
@@ -3041,99 +2902,59 @@ class NullAscwdsFilledPostOutliersData:
 class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: off
     unfiltered_ind_cqc_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0),
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0),
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0),
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0),
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0),
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0),
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0),
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0),
-        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0),
-        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0),
-        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0),
-        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0),
-        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0),
-        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0),
-        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0),
-        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0),
-        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 21.0, 21.0),
-        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 22.0, 22.0),
-        ("23", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 23.0, 23.0),
-        ("24", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 24.0, 24.0),
-        ("25", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 25.0, 25.0),
-        ("26", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 26.0, 26.0),
-        ("27", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 27.0, 27.0),
-        ("28", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 28.0, 28.0),
-        ("29", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 29.0, 29.0),
-        ("30", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0, 30.0),
-        ("31", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 31.0, 31.0),
-        ("32", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 32.0, 32.0),
-        ("33", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 33.0, 33.0),
-        ("34", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 34.0, 34.0),
-        ("35", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0, 35.0),
-        ("36", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 36.0, 36.0),
-        ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0, 37.0),
-        ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0, 38.0),
-        ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0, 39.0),
-        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, 40.0),
-        ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None),
-        ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0),
-        ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0),
-        ("44", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 44.0, 44.0),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0, AscwdsFilteringRule.populated),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0, AscwdsFilteringRule.populated),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated),
+        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated),
+        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated),
     ]
     # fmt: on
 
     # fmt: off
     expected_care_home_jobs_per_bed_ratio_filtered_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0),
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0),
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0),
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0),
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0),
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0),
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0),
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0),
-        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0),
-        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0),
-        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0),
-        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0),
-        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0),
-        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0),
-        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0),
-        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0),
-        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 21.0, 21.0),
-        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 22.0, 22.0),
-        ("23", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 23.0, 23.0),
-        ("24", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 24.0, 24.0),
-        ("25", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 25.0, 25.0),
-        ("26", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 26.0, 26.0),
-        ("27", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 27.0, 27.0),
-        ("28", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 28.0, 28.0),
-        ("29", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 29.0, 29.0),
-        ("30", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0, 30.0),
-        ("31", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 31.0, 31.0),
-        ("32", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 32.0, 32.0),
-        ("33", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 33.0, 33.0),
-        ("34", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 34.0, 34.0),
-        ("35", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0, 35.0),
-        ("36", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 36.0, 36.0),
-        ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0, 37.0),
-        ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0, 38.0),
-        ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0, 39.0),
-        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, None),
-        ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None),
-        ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0),
-        ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0),
-        ("44", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 44.0, 44.0),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated),
+        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated),
+        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated),
     ]
     # fmt: on
 
@@ -3184,6 +3005,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             1.0,
             None,
+            "filtering rule",
             10.0,
         ),
         (
@@ -3194,18 +3016,55 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             2.0,
             2.0,
+            "filtering rule",
             20.0,
         ),
     ]
 
     combine_dataframes_non_care_home_rows = [
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        (
+            "03",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            3.0,
+            3.0,
+            "filtering rule",
+        ),
     ]
 
     expected_combined_dataframes_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0),
+        (
+            "01",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            1.0,
+            None,
+            "filtering rule",
+        ),
+        (
+            "02",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            2.0,
+            2.0,
+            "filtering rule",
+        ),
+        (
+            "03",
+            date(2023, 1, 1),
+            "Y",
+            PrimaryServiceType.care_home_only,
+            25,
+            3.0,
+            3.0,
+            "filtering rule",
+        ),
     ]
 
 
@@ -5494,10 +5353,10 @@ class ValidateCleanedIndCqcData:
     ]
 
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
     ]
     # fmt: on
 
@@ -5823,7 +5682,6 @@ class DiagnosticsOnKnownFilledPostsData:
             "loc 1",
             date(2024, 1, 1),
             10.0,
-            10.0,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -5875,7 +5733,6 @@ class DiagnosticsOnKnownFilledPostsData:
             "loc 1",
             date(2024, 1, 1),
             10.0,
-            10.0,
             PrimaryServiceType.care_home_only,
             11.0,
             12.0,
@@ -5892,18 +5749,6 @@ class DiagnosticsOnKnownFilledPostsData:
         ),
     ]
     expected_restructure_dataframe_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            PrimaryServiceType.care_home_only,
-            10.0,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
         (
             "loc 1",
             date(2024, 1, 1),
@@ -6056,101 +5901,202 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 1", 10.0, 5.0),
         ("loc 2", 5.0, 10.0),
     ]
-    expected_calculate_absolute_residual_rows = [
-        ("loc 1", 10.0, 5.0, 5.0),
+    expected_calculate_residual_rows = [
+        ("loc 1", 10.0, 5.0, -5.0),
         ("loc 2", 5.0, 10.0, 5.0),
+    ]
+    expected_calculate_absolute_residual_rows = [
+        ("loc 1", 10.0, 5.0, -5.0, 5.0),
+        ("loc 2", 5.0, 10.0, 5.0, 5.0),
     ]
     expected_calculate_percentage_residual_rows = [
         ("loc 1", 10.0, 5.0, -1.0),
         ("loc 2", 5.0, 10.0, 0.5),
     ]
     expected_calculate_standardised_residual_rows = [
-        ("loc 1", 10.0, 5.0, 5.0, 1.58113883),
+        ("loc 1", 10.0, 5.0, -5.0, -1.58113883),
         ("loc 2", 5.0, 10.0, 5.0, 2.23606798),
     ]
     expected_calculate_residuals_rows = [
-        ("loc 1", 10.0, 5.0, 5.0, -1.0, 1.58113883),
-        ("loc 2", 5.0, 10.0, 5.0, 0.5, 2.23606798),
+        ("loc 1", 10.0, 5.0, -5.0, 5.0, -1.0, -1.58113883),
+        ("loc 2", 5.0, 10.0, 5.0, 5.0, 0.5, 2.23606798),
     ]
     # fmt: off
     calculate_aggregate_residuals_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4),
     ]
     expected_calculate_aggregate_residuals_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 15.0, 0.15, 20.0, 0.5, 1.0, 1.0),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 15.0, 0.15, 20.0, 0.5, 1.0, 1.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 35.0, 0.35, 40.0, 0.0, 0.5, 0.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  35.0, 0.35, 40.0, 0.0, 0.5, 0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 55.0, 0.55, 60.0, 0.0, 0.0, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 55.0, 0.55, 60.0, 0.0, 0.0, 0.0),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 15.0, 0.15, 10.0, -20.0, 0.5, 1.0, 1.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 15.0, 0.15, 10.0, -20.0, 0.5, 1.0, 1.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 35.0, 0.35, 30.0, -40.0, 0.0, 0.5, 0.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  35.0, 0.35, 30.0, -40.0, 0.0, 0.5, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
     ]
     expected_calculate_average_absolute_residual_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 15.0),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 15.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 35.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  35.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 55.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 55.0),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 15.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 15.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 35.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  35.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 55.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 55.0),
     ]
     expected_calculate_average_percentage_residual_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 0.15),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 0.15),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 0.35),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  0.35),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 0.55),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 0.55),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 0.15),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 0.15),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.35),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.35),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.55),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.55),
     ]
-    expected_calculate_max_absolute_residual_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 20.0),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 20.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 40.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  40.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 60.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 60.0),
+    expected_calculate_max_residual_rows = [
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 10.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 10.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 30.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  30.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 50.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 50.0),
+    ]
+    expected_calculate_min_residual_rows = [
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, -20.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, -20.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, -40.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  -40.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, -60.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, -60.0),
     ]
     expected_calculate_percentage_of_residuals_within_absolute_value_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 0.5),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 0.5),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 0.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 0.0),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 0.5),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 0.5),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     expected_calculate_percentage_of_residuals_within_percentage_value_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 1.0),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 1.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 0.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 0.0),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 1.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 1.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     expected_calculate_percentage_of_standardised_residuals_within_limit_rows = [
-        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.1, 0.9, 1.0),
-        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.2, 1.0, 1.0),
-        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.3, 1.1, 0.0),
-        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.6, 1.4, 0.0),
+        ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 1.0),
+        ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 1.0),
+        ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
+        ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     
 
     create_summary_dataframe_rows = [
-        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
-        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
-        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
-        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
-        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
-        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        ("loc 1", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
+        ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
+        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     expected_create_summary_dataframe_rows = [
-        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 1.0, 2.0, 3.0, 4.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0),
-        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 2.0, 3.0, 4.0, 5.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0),
-        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 3.0, 4.0, 5.0, 6.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 1.0, 2.0, 3.0, 4.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 2.0, 3.0, 4.0, 5.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
 
     # fmt: on
+
+
+@dataclass
+class ASCWDSFilteringUtilsData:
+    add_filtering_column_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_add_filtering_column_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", None, AscwdsFilteringRule.missing_data),
+    ]
+    update_filtering_rule_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        ("loc 2", None, AscwdsFilteringRule.populated),
+        ("loc 3", None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_update_filtering_rule_rows = [
+        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        (
+            "loc 2",
+            None,
+            AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+        ),
+        ("loc 3", None, AscwdsFilteringRule.missing_data),
+    ]
+
+
+@dataclass
+class CreateChartsForDiagnosticsData:
+    test_rows = [
+        (
+            "loc 1",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 2",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_only,
+            8.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 3",
+            EstimateFilledPostsSource.interpolation_model,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            5.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 4",
+            EstimateFilledPostsSource.interpolation_model,
+            PrimaryServiceType.non_residential,
+            10.0,
+            5.0,
+            1.0,
+            0.7,
+        ),
+    ]
+
+    expected_filter_to_care_home_model_rows = [
+        (
+            "loc 1",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+        (
+            "loc 2",
+            EstimateFilledPostsSource.care_home_model,
+            PrimaryServiceType.care_home_only,
+            8.0,
+            1.0,
+            1.0,
+            0.7,
+        ),
+    ]

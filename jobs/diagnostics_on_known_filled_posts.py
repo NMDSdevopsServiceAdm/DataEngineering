@@ -17,12 +17,14 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.diagnostics_utils.create_charts_for_diagnostics import (
+    create_charts_for_care_home_model_diagnostics,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
-    IndCQC.ascwds_filled_posts_clean,
     IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.primary_service_type,
     IndCQC.rolling_average_model,
@@ -47,6 +49,7 @@ def main(
     estimate_filled_posts_source,
     diagnostics_destination,
     summary_diagnostics_destination,
+    charts_destination,
 ):
     print("Creating diagnostics for known filled posts")
 
@@ -54,7 +57,7 @@ def main(
         estimate_filled_posts_source, estimate_filled_posts_columns
     )
     filled_posts_df = filter_to_known_values(
-        filled_posts_df, IndCQC.ascwds_filled_posts_clean
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
     filled_posts_df = restructure_dataframe_to_column_wise(filled_posts_df)
     filled_posts_df = filter_to_known_values(filled_posts_df, IndCQC.estimate_value)
@@ -65,6 +68,8 @@ def main(
     filled_posts_df = calculate_residuals(filled_posts_df)
     filled_posts_df = calculate_aggregate_residuals(filled_posts_df, window)
     summary_df = create_summary_diagnostics_table(filled_posts_df)
+
+    create_charts_for_care_home_model_diagnostics(filled_posts_df, charts_destination)
 
     utils.write_to_parquet(
         filled_posts_df,
@@ -117,7 +122,7 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
             IndCQC.location_id,
             IndCQC.cqc_location_import_date,
             IndCQC.primary_service_type,
-            IndCQC.ascwds_filled_posts_clean,
+            IndCQC.ascwds_filled_posts_dedup_clean,
             model,
             Keys.year,
             Keys.month,
@@ -163,7 +168,7 @@ def create_empty_reshaped_dataframe():
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
-                IndCQC.ascwds_filled_posts_clean,
+                IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
             ),
@@ -311,14 +316,34 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     and the percentage residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
 
     Returns:
         DataFrame: A dataframe with two additional columns containing residuals.
     """
+    df = calculate_residual(df)
     df = calculate_absolute_residual(df)
     df = calculate_percentage_residual(df)
     df = calculate_standardised_residual(df)
+    return df
+
+
+def calculate_residual(df: DataFrame) -> DataFrame:
+    """
+    Adds column with the residual.
+
+    This function adds a columns to the dataset containing the residual.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds_filled_posts_deduplicated_clean and estimate_value.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the residual.
+    """
+    df = df.withColumn(
+        IndCQC.residual,
+        F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_dedup_clean),
+    )
     return df
 
 
@@ -329,14 +354,14 @@ def calculate_absolute_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the absolute residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the absolute residual.
     """
     df = df.withColumn(
         IndCQC.absolute_residual,
-        F.abs(F.col(IndCQC.ascwds_filled_posts_clean) - F.col(IndCQC.estimate_value)),
+        F.abs(F.col(IndCQC.residual)),
     )
     return df
 
@@ -348,14 +373,14 @@ def calculate_percentage_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the percentage residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage residual.
     """
     df = df.withColumn(
         IndCQC.percentage_residual,
-        (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_clean))
+        (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_dedup_clean))
         / F.col(IndCQC.estimate_value),
     )
     return df
@@ -368,15 +393,14 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the standardised residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_clean and estimate_value.
+        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the standardised residual.
     """
     df = df.withColumn(
         IndCQC.standardised_residual,
-        F.col(IndCQC.absolute_residual)
-        / F.sqrt(F.col(IndCQC.ascwds_filled_posts_clean)),
+        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
     return df
 
@@ -384,7 +408,8 @@ def calculate_standardised_residual(df: DataFrame) -> DataFrame:
 def calculate_aggregate_residuals(df: DataFrame, window: Window) -> DataFrame:
     df = calculate_average_absolute_residual(df, window)
     df = calculate_average_percentage_residual(df, window)
-    df = calculate_max_absolute_residual(df, window)
+    df = calculate_max_residual(df, window)
+    df = calculate_min_residual(df, window)
     df = calculate_percentage_of_residuals_within_absolute_value_of_actual(df, window)
     df = calculate_percentage_of_residuals_within_percentage_value_of_actual(df, window)
     df = calculate_percentage_of_standardised_residuals_within_limit(df, window)
@@ -433,11 +458,11 @@ def calculate_average_percentage_residual(df: DataFrame, window: Window) -> Data
     return df
 
 
-def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
+def calculate_max_residual(df: DataFrame, window: Window) -> DataFrame:
     """
-    Adds column with the maximum absolute residual.
+    Adds column with the maximum residual.
 
-    This function adds a columns to the dataset containing the maximum absolute residual, aggregated over the given window.
+    This function adds a columns to the dataset containing the maximum residual, aggregated over the given window.
 
     Args:
         df (DataFrame): A dataframe with primary_service_type, estimate_source
@@ -445,11 +470,32 @@ def calculate_max_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
         window (Window): A window for aggregating the residuals.
 
     Returns:
-        DataFrame: A dataframe with an additional column containing the maximum absolute residual aggregated over the given window.
+        DataFrame: A dataframe with an additional column containing the maximum residual aggregated over the given window.
     """
     df = df.withColumn(
-        IndCQC.max_absolute_residual,
-        F.max(df[IndCQC.absolute_residual]).over(window),
+        IndCQC.max_residual,
+        F.max(df[IndCQC.residual]).over(window),
+    )
+    return df
+
+
+def calculate_min_residual(df: DataFrame, window: Window) -> DataFrame:
+    """
+    Adds column with the minimum residual.
+
+    This function adds a columns to the dataset containing the minimum residual, aggregated over the given window.
+
+    Args:
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
+        and absolute_residual.
+        window (Window): A window for aggregating the residuals.
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the minimum residual aggregated over the given window.
+    """
+    df = df.withColumn(
+        IndCQC.min_residual,
+        F.min(df[IndCQC.residual]).over(window),
     )
     return df
 
@@ -463,7 +509,7 @@ def calculate_percentage_of_residuals_within_absolute_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within an absolute value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_clean
+        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_dedup_clean
         and absolute_residual.
         window (Window): A window for aggregating the residuals.
 
@@ -489,7 +535,7 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within a percentage value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_clean
+        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_dedup_clean
         and percentage_residual.
         window (Window): A window for aggregating the residuals.
 
@@ -550,7 +596,8 @@ def create_summary_diagnostics_table(df: DataFrame) -> DataFrame:
         IndCQC.distribution_skewness,
         IndCQC.average_absolute_residual,
         IndCQC.average_percentage_residual,
-        IndCQC.max_absolute_residual,
+        IndCQC.max_residual,
+        IndCQC.min_residual,
         IndCQC.percentage_of_residuals_within_absolute_value,
         IndCQC.percentage_of_residuals_within_percentage_value,
         IndCQC.percentage_of_standardised_residuals_within_limit,
@@ -566,6 +613,7 @@ if __name__ == "__main__":
         estimate_filled_posts_source,
         diagnostics_destination,
         summary_diagnostics_destination,
+        charts_destination,
     ) = utils.collect_arguments(
         (
             "--estimate_filled_posts_source",
@@ -579,12 +627,17 @@ if __name__ == "__main__":
             "--summary_diagnostics_destination",
             "A destination directory for outputting summary diagnostics tables.",
         ),
+        (
+            "--charts_destination",
+            "A destination bucket name for saving pdf charts of the diagnostics data.",
+        ),
     )
 
     main(
         estimate_filled_posts_source,
         diagnostics_destination,
         summary_diagnostics_destination,
+        charts_destination,
     )
 
     print("Spark job 'diagnostics_on_known_filled_posts' complete")

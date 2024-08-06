@@ -22,6 +22,7 @@ class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     DIAGNOSTICS_DESTINATION = "some/other/directory"
     SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
+    CHARTS_DESTINATION = "yet/another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
@@ -36,10 +37,16 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.boto3.resource")
+    @patch("utils.diagnostics_utils.create_charts_for_diagnostics.PdfPages")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
-        self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock
+        self,
+        read_from_parquet_patch: Mock,
+        write_to_parquet_patch: Mock,
+        pdf_pages_mock: Mock,
+        boto_resource_mock: Mock,
     ):
         read_from_parquet_patch.return_value = self.estimate_jobs_df
 
@@ -47,16 +54,19 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
             self.ESTIMATED_FILLED_POSTS_SOURCE,
             self.DIAGNOSTICS_DESTINATION,
             self.SUMMARY_DIAGNOSTICS_DESTINATION,
+            self.CHARTS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        pdf_pages_mock.assert_called_once()
+        boto_resource_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 2)
 
 
 class FilterToKnownValuesTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_column = IndCQC.ascwds_filled_posts_clean
+        self.test_column = IndCQC.ascwds_filled_posts_dedup_clean
         self.test_df = self.spark.createDataFrame(
             Data.filter_to_known_values_rows, Schemas.filter_to_known_values_schema
         )
@@ -226,10 +236,22 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_absolute_residual_adds_column_with_correct_values(self):
+    def test_calculate_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
+        )
+        returned_df = job.calculate_residual(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_calculate_absolute_residual_adds_column_with_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
         )
         returned_df = job.calculate_absolute_residual(test_df)
         expected_df = self.spark.createDataFrame(
@@ -252,8 +274,8 @@ class CalculateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
 
     def test_calculate_standardised_residual_adds_column_with_correct_values(self):
         test_df = self.spark.createDataFrame(
-            Data.expected_calculate_absolute_residual_rows,
-            Schemas.expected_calculate_absolute_residual_schema,
+            Data.expected_calculate_residual_rows,
+            Schemas.expected_calculate_residual_schema,
         )
         returned_df = job.calculate_standardised_residual(test_df)
         expected_df = self.spark.createDataFrame(
@@ -349,15 +371,29 @@ class CalculateAggregateResidualsTests(DiagnosticsOnKnownFilledPostsTests):
                 places=6,
             )
 
-    def test_calculate_max_absolute_residual_returns_expected_values(self):
+    def test_calculate_max_residual_returns_expected_values(self):
         test_df = self.spark.createDataFrame(
             Data.calculate_aggregate_residuals_rows,
             Schemas.calculate_aggregate_residuals_schema,
         )
-        returned_df = job.calculate_max_absolute_residual(test_df, self.window)
+        returned_df = job.calculate_max_residual(test_df, self.window)
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_max_absolute_residual_rows,
-            Schemas.expected_calculate_max_absolute_residual_schema,
+            Data.expected_calculate_max_residual_rows,
+            Schemas.expected_calculate_max_residual_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_calculate_min_residual_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        returned_df = job.calculate_min_residual(test_df, self.window)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_min_residual_rows,
+            Schemas.expected_calculate_min_residual_schema,
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()

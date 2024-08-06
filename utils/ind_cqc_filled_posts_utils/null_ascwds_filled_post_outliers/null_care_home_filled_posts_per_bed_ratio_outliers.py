@@ -1,17 +1,22 @@
+from dataclasses import dataclass
+
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.feature import Bucketizer
-from dataclasses import dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.null_outlier_columns import NullOutlierColumns
+from utils.column_values.categorical_column_values import AscwdsFilteringRule
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+    update_filtering_rule,
+)
 
 
 @dataclass
 class NumericalValues:
     DECIMAL_PLACES_TO_ROUND_TO: int = 5
-    PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
+    PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.1
 
 
 def null_care_home_filled_posts_per_bed_ratio_outliers(
@@ -27,7 +32,7 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
     difference between actual and expected) are calculated, followed by the standardised residuals
     (residuals divided by the squart root of the filled post figure). The values at the top and bottom
     end of the standarised residuals are deemed to be outliers (based on percentiles) and the filled post
-    figures in ascwds_filled_posts_clean are converted to null values. Non-care home data is not included
+    figures in ascwds_filled_posts_dedup_clean are converted to null values. Non-care home data is not included
     in this particular filter so this part of the dataframe will be unchanged.
 
     Args:
@@ -70,6 +75,11 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
         filtered_care_home_df, data_not_relevant_to_filter_df
     )
 
+    output_df = update_filtering_rule(
+        output_df,
+        AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+    )
+
     return output_df
 
 
@@ -79,8 +89,8 @@ def select_relevant_data(input_df: DataFrame) -> DataFrame:
         F.col(IndCQC.number_of_beds).isNotNull() & (F.col(IndCQC.number_of_beds) > 0)
     )
     output_df = output_df.where(
-        F.col(IndCQC.ascwds_filled_posts_clean).isNotNull()
-        & (F.col(IndCQC.ascwds_filled_posts_clean) > 0.0)
+        F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull()
+        & (F.col(IndCQC.ascwds_filled_posts_dedup_clean) > 0.0)
     )
 
     return output_df
@@ -99,7 +109,7 @@ def calculate_filled_posts_per_bed_ratio(
 ) -> DataFrame:
     input_df = input_df.withColumn(
         NullOutlierColumns.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_clean) / F.col(IndCQC.number_of_beds),
+        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
     )
 
     return input_df
@@ -170,7 +180,7 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         NullOutlierColumns.residual,
-        F.col(IndCQC.ascwds_filled_posts_clean)
+        F.col(IndCQC.ascwds_filled_posts_dedup_clean)
         - F.col(NullOutlierColumns.expected_filled_posts),
     )
 
@@ -238,8 +248,8 @@ def null_values_outside_of_standardised_residual_cutoffs(
     Converts filled post values to null if the standardised residuals are outside the percentile cutoffs.
 
     If the standardised_residual value is outside of the lower and upper percentile cutoffs then
-    ascwds_filled_posts_clean is replaced with a null value. Otherwise (if the value is within the
-    cutoffs), the original value for ascwds_filled_posts_clean remains.
+    ascwds_filled_posts_dedup_clean is replaced with a null value. Otherwise (if the value is within the
+    cutoffs), the original value for ascwds_filled_posts_dedup_clean remains.
 
     Args:
         df (DataFrame): The input dataframe containing standardised residuals and percentiles.
@@ -248,7 +258,7 @@ def null_values_outside_of_standardised_residual_cutoffs(
         DataFrame: A dataFrame with null values removed based on the specified cutoffs.
     """
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_clean,
+        IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
             (
                 F.col(NullOutlierColumns.standardised_residual)
@@ -259,7 +269,7 @@ def null_values_outside_of_standardised_residual_cutoffs(
                 > F.col(NullOutlierColumns.upper_percentile)
             ),
             F.lit(None),
-        ).otherwise(F.col(IndCQC.ascwds_filled_posts_clean)),
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
 
     return df

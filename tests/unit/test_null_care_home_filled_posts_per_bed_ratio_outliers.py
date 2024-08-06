@@ -75,6 +75,19 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
         self.assertEqual(expected_data, returned_data)
 
 
+class NumericalValuesTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_decimal_places_to_round_to_value(self):
+        self.assertEqual(job.NumericalValues.DECIMAL_PLACES_TO_ROUND_TO, 5)
+
+    def test_percentage_of_data_to_remove_as_outliers_value(self):
+        self.assertEqual(
+            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.1
+        )
+
+
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
@@ -84,7 +97,7 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     def test_relevant_data_selected(self):
         # TODO - replace test data with own test data and improve tests
         df = job.select_relevant_data(self.unfiltered_ind_cqc_df)
-        self.assertEqual(df.count(), 40)
+        self.assertEqual(df.count(), 20)
 
 
 class SelectDataNotInSubsetTests(
@@ -127,7 +140,7 @@ class CalculateFilledPostsPerBedRatioTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
             ]
         )
@@ -232,7 +245,7 @@ class CalculateStandardisedResidualsTests(
             [
                 StructField(IndCQC.location_id, StringType(), True),
                 StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
                 StructField(
                     NullOutlierColumns.number_of_beds_banded, DoubleType(), True
                 ),
@@ -324,7 +337,7 @@ class CalculateFilledPostResidualsTests(
         schema = StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_clean, DoubleType(), True),
+                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
                 StructField(
                     NullOutlierColumns.expected_filled_posts, DoubleType(), True
                 ),
@@ -546,32 +559,32 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
 
     def test_value_nulled_when_below_lower_cutoff(self):
         self.assertEqual(
-            self.returned_data[0][IndCQC.ascwds_filled_posts_clean],
-            self.expected_data[0][IndCQC.ascwds_filled_posts_clean],
+            self.returned_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.expected_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
         )
 
     def test_value_not_nulled_when_equal_to_lower_cutoff(self):
         self.assertEqual(
-            self.returned_data[1][IndCQC.ascwds_filled_posts_clean],
-            self.expected_data[1][IndCQC.ascwds_filled_posts_clean],
+            self.returned_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.expected_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
         )
 
     def test_value_not_nulled_when_in_between_cutoffs(self):
         self.assertEqual(
-            self.returned_data[2][IndCQC.ascwds_filled_posts_clean],
-            self.expected_data[2][IndCQC.ascwds_filled_posts_clean],
+            self.returned_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.expected_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
         )
 
     def test_value_not_nulled_when_equal_to_upper_cutoff(self):
         self.assertEqual(
-            self.returned_data[3][IndCQC.ascwds_filled_posts_clean],
-            self.expected_data[3][IndCQC.ascwds_filled_posts_clean],
+            self.returned_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.expected_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
         )
 
     def test_value_nulled_when_above_upper_cutoff(self):
         self.assertEqual(
-            self.returned_data[4][IndCQC.ascwds_filled_posts_clean],
-            self.expected_data[4][IndCQC.ascwds_filled_posts_clean],
+            self.returned_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.expected_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
         )
 
 

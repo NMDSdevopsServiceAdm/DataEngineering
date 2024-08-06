@@ -26,14 +26,15 @@ class PartitionKeys:
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     ascwds_filled_posts: str = "ascwds_filled_posts"
-    ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
-    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
+    ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
+    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
+    ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
-    avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
+    avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
+        "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
     )
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
@@ -106,8 +107,9 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
-    max_absolute_residual: str = "max_absolute_residual"
+    max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
@@ -143,6 +145,7 @@ class IndCqcColumns:
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     regulated_activities: str = CQCLClean.regulated_activities
+    residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
     )
