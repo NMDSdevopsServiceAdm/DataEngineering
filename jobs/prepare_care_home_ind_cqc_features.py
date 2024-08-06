@@ -1,8 +1,8 @@
 import sys
 from typing import List
 
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
+
 
 from utils import utils
 
@@ -20,7 +20,7 @@ from utils.features.helper import (
     column_expansion_with_dict,
     add_service_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_date_diff_into_df,
+    add_import_month_index_into_df,
 )
 
 
@@ -64,18 +64,13 @@ def main(
             lookup_dict=ons_region_dict,
         )
     )
-
-    features_df = add_date_diff_into_df(
-        df=features_df,
-        new_col_name=IndCQC.date_diff,
-        import_date_col=IndCQC.cqc_location_import_date,
-    )
+    features_df = add_import_month_index_into_df(df=features_df)
 
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.date_diff,
+            IndCQC.import_month_index,
         ]
         + service_keys
         + regions
