@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -76,4 +77,26 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
             F.col(IndCQC.imputed_registration_date),
         ),
     )
+    return loc_df
+
+
+def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
+    min_d = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
+    print(min_d)
+    adjusted_import_date: str = "adjusted_import_date"
+    import_date_adjustment: int = (
+        -5
+    )  # files arrive on the first of each month but the data refers to the previous month, adjusting by 5 accounts for late arrivals
+    loc_df = df.withColumn(
+        adjusted_import_date,
+        F.date_add(F.col(IndCQC.cqc_location_import_date), import_date_adjustment),
+    )
+
+    loc_df = loc_df.withColumn(
+        IndCQC.import_month_index,
+        (F.months_between(F.col(adjusted_import_date), F.lit(min_d))).cast(
+            IntegerType()
+        ),
+    )
+    loc_df = loc_df.drop(adjusted_import_date)
     return loc_df

@@ -100,6 +100,7 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
+    import_month_index: str = "import_month_index"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     include_in_count_of_filled_posts: str = "include_in_count_of_filled_posts"
     interpolation_model: str = "interpolation_model"
