@@ -3,7 +3,7 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 
 
-import jobs.estimate_ind_cqc_filled_posts as job
+import jobs.estimate_ml_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
 from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
 from utils import utils
