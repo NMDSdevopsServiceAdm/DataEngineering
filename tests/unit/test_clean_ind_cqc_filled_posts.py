@@ -3,7 +3,14 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType, DateType
+from pyspark.sql.types import (
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+    DateType,
+    DoubleType,
+)
 
 import jobs.clean_ind_cqc_filled_posts as job
 
@@ -278,6 +285,26 @@ class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
 
     def test_returned_df_has_same_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
+
+
+class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_filled_posts_per_bed_ratio(self):
+        test_df = self.spark.createDataFrame(
+            Data.filled_posts_per_bed_ratio_rows,
+            Schemas.filled_posts_per_bed_ratio_schema,
+        )
+        returned_df = job.calculate_filled_posts_per_bed_ratio(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filled_posts_per_bed_ratio_rows,
+            Schemas.expected_filled_posts_per_bed_ratio_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
 
 
 if __name__ == "__main__":

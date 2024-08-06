@@ -2585,6 +2585,15 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 2, 1), None),
     ]
 
+    filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100),
+        ("1-000000002", 2.0, 1),
+    ]
+    expected_filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, 0.05),
+        ("1-000000002", 2.0, 1, 2.0),
+    ]
+
 
 @dataclass
 class ReconciliationData:
