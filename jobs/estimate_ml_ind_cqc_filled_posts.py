@@ -64,7 +64,7 @@ def main(
     non_res_with_dormancy_model_source: str,
     non_res_without_dormancy_features_source: str,
     non_res_without_dormancy_model_source: str,
-    estimated_ind_cqc_destination: str,
+    estimated_ml_ind_cqc_destination: str,
     ml_model_metrics_destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
@@ -137,11 +137,11 @@ def main(
         )
     )
 
-    print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
+    print(f"Exporting as parquet to {estimated_ml_ind_cqc_destination}")
 
     utils.write_to_parquet(
         cleaned_ind_cqc_df,
-        estimated_ind_cqc_destination,
+        estimated_ml_ind_cqc_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
-        estimated_ind_cqc_destination,
+        estimated_ml_ind_cqc_destination,
         ml_model_metrics_destination,
     ) = utils.collect_arguments(
         (
@@ -193,7 +193,7 @@ if __name__ == "__main__":
             "Source s3 directory for the non res without dormancy ML model",
         ),
         (
-            "--estimated_ind_cqc_destination",
+            "--estimated_ml_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
         (
@@ -210,6 +210,6 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
-        estimated_ind_cqc_destination,
+        estimated_ml_ind_cqc_destination,
         ml_model_metrics_destination,
     )

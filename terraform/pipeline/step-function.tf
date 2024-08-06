@@ -16,9 +16,10 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     merge_ind_cqc_data_job_name                        = module.merge_ind_cqc_data_job.job_name
     merge_coverage_data_job_name                       = module.merge_coverage_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                = module.clean_ind_cqc_filled_posts_job.job_name
+    estimate_non_ml_ind_cqc_filled_posts_job_name      = module.estimate_non_ml_ind_cqc_filled_posts_job.job_name
     prepare_care_home_ind_cqc_features_job_name        = module.prepare_care_home_ind_cqc_features_job.job_name
     prepare_non_res_ascwds_ind_cqc_features_job_name   = module.prepare_non_res_ascwds_ind_cqc_features_job.job_name
-    estimate_ind_cqc_filled_posts_job_name             = module.estimate_ind_cqc_filled_posts_job.job_name
+    estimate_ml_ind_cqc_filled_posts_job_name          = module.estimate_ml_ind_cqc_filled_posts_job.job_name
     estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
     diagnostics_on_known_filled_posts_job_name         = module.diagnostics_on_known_filled_posts_job.job_name
     ascwds_crawler_name                                = module.ascwds_crawler.crawler_name
