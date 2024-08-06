@@ -159,6 +159,16 @@ def create_column_with_repeated_values_removed(
 def calculate_filled_posts_per_bed_ratio(
     input_df: DataFrame,
 ) -> DataFrame:
+    """
+    Add a column with the filled post per bed ratio.
+
+    This function adds a colum with the filled posts per bed ratio, using ascwds_filled_posts_deduplicated.
+
+    Args:
+        input_df (DataFrame): A dataframe containing the columns ascwds_filled_posts_deduplicated and numberofbeds.
+
+    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio.
+    """
     input_df = input_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
         F.col(IndCQC.ascwds_filled_posts_dedup) / F.col(IndCQC.number_of_beds),
