@@ -98,7 +98,7 @@ class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
             self.test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             88,
-            IndCqc.rolling_sum_of_filled_posts,
+            IndCqc.rolling_sum,
         )
 
     def test_calculate_rolling_sum_does_not_add_any_rows(self):

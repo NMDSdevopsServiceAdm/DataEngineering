@@ -2187,14 +2187,14 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.rolling_sum_of_filled_posts, DoubleType(), True),
+            StructField(IndCQC.rolling_sum, DoubleType(), True),
         ]
     )
     calculate_rolling_average_column_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.include_in_count_of_filled_posts, IntegerType(), True),
+            StructField(IndCQC.include_in_rolling_average_count, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
@@ -2215,7 +2215,7 @@ class ModelPrimaryServiceRollingAverage:
     expected_add_flag_schema = StructType(
         [
             *add_flag_schema,
-            StructField(IndCQC.include_in_count_of_filled_posts, IntegerType(), True),
+            StructField(IndCQC.include_in_rolling_average_count, IntegerType(), True),
         ]
     )
 

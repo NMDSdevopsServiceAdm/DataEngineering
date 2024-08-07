@@ -19,7 +19,7 @@ def model_primary_service_rolling_average(
 
 def add_flag_if_included_in_count(df: DataFrame, column_to_average: str):
     df = df.withColumn(
-        IndCqc.include_in_count_of_filled_posts,
+        IndCqc.include_in_rolling_average_count,
         F.when(F.col(column_to_average).isNotNull(), F.lit(1)).otherwise(F.lit(0)),
     )
     return df
@@ -32,24 +32,23 @@ def create_rolling_average_column(
         df,
         column_to_average,
         number_of_days,
-        IndCqc.rolling_sum_of_filled_posts,
+        IndCqc.rolling_sum,
     )
     df = calculate_rolling_sum(
         df,
-        IndCqc.include_in_count_of_filled_posts,
+        IndCqc.include_in_rolling_average_count,
         number_of_days,
-        IndCqc.rolling_count_of_filled_posts,
+        IndCqc.rolling_count,
     )
 
     df = df.withColumn(
         IndCqc.rolling_average_model,
-        F.col(IndCqc.rolling_sum_of_filled_posts)
-        / F.col(IndCqc.rolling_count_of_filled_posts),
+        F.col(IndCqc.rolling_sum) / F.col(IndCqc.rolling_count),
     )
     df = df.drop(
-        IndCqc.include_in_count_of_filled_posts,
-        IndCqc.rolling_count_of_filled_posts,
-        IndCqc.rolling_sum_of_filled_posts,
+        IndCqc.include_in_rolling_average_count,
+        IndCqc.rolling_count,
+        IndCqc.rolling_sum,
     )
     return df
 
