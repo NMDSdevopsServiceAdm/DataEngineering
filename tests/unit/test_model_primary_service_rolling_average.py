@@ -24,7 +24,10 @@ class RollingAverageModelTests(TestModelPrimaryServiceRollingAverage):
     def setUp(self):
         super().setUp()
         self.returned_df = job.model_primary_service_rolling_average(
-            self.estimates_df, IndCqc.ascwds_filled_posts_dedup_clean, 88
+            self.estimates_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            88,
+            IndCqc.rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_rolling_average_rows, Schemas.expected_rolling_average_schema

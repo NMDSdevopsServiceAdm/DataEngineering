@@ -8,11 +8,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 def model_primary_service_rolling_average(
-    df: DataFrame, column_to_average: str, number_of_days: int
+    df: DataFrame, column_to_average: str, number_of_days: int, model_column_name: str
 ) -> DataFrame:
     df = add_flag_if_included_in_count(df, column_to_average)
     rolling_average_df = create_rolling_average_column(
-        df, column_to_average, number_of_days
+        df, column_to_average, number_of_days, model_column_name
     )
     return rolling_average_df
 
@@ -26,7 +26,7 @@ def add_flag_if_included_in_count(df: DataFrame, column_to_average: str):
 
 
 def create_rolling_average_column(
-    df: DataFrame, column_to_average: str, number_of_days: int
+    df: DataFrame, column_to_average: str, number_of_days: int, model_column_name: str
 ) -> DataFrame:
     df = calculate_rolling_sum(
         df,
@@ -42,7 +42,7 @@ def create_rolling_average_column(
     )
 
     df = df.withColumn(
-        IndCqc.rolling_average_model,
+        model_column_name,
         F.col(IndCqc.rolling_sum) / F.col(IndCqc.rolling_count),
     )
     df = df.drop(

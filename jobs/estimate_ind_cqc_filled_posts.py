@@ -121,6 +121,7 @@ def main(
         cleaned_ind_cqc_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        IndCQC.rolling_average_model,
     )
 
     cleaned_ind_cqc_df = (
