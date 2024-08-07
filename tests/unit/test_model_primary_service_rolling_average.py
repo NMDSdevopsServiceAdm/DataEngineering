@@ -75,7 +75,12 @@ class CreateRollingAverageColumn(TestModelPrimaryServiceRollingAverage):
             Data.calculate_rolling_average_column_rows,
             Schemas.calculate_rolling_average_column_schema,
         )
-        self.returned_df = job.create_rolling_average_column(self.test_df, 88)
+        self.returned_df = job.create_rolling_average_column(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            88,
+            IndCqc.rolling_average_model,
+        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_rolling_average_column_rows,
             Schemas.expected_calculate_rolling_average_column_schema,
@@ -120,7 +125,9 @@ class AddFlagIfIncludedInCount(TestModelPrimaryServiceRollingAverage):
         self.expected_df = self.spark.createDataFrame(
             Data.expected_add_flag_rows, Schemas.expected_add_flag_schema
         )
-        self.returned_df = job.add_flag_if_included_in_count(self.test_df)
+        self.returned_df = job.add_flag_if_included_in_count(
+            self.test_df, IndCqc.ascwds_filled_posts_dedup_clean
+        )
 
     def test_add_flag_if_included_in_count(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
