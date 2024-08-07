@@ -3279,7 +3279,7 @@ class EstimateIndCQCFilledPostsData:
 @dataclass
 class ModelPrimaryServiceRollingAverage:
     # fmt: off
-    input_rows = [
+    primary_service_rolling_average_rows = [
         ("1-000000001", "2023-01-01", 1672531200, 4.0, PrimaryServiceType.non_residential),
         ("1-000000002", "2023-01-01", 1672531200, 6.0, PrimaryServiceType.non_residential),
         ("1-000000003", "2023-02-01", 1675209600, 20.0, PrimaryServiceType.non_residential),
@@ -3303,7 +3303,7 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000021", "2023-05-01", 1682895600, None, PrimaryServiceType.care_home_with_nursing),
         ("1-000000022", "2024-05-01", 1714518000, None, PrimaryServiceType.care_home_with_nursing),
     ]
-    expected_rolling_average_rows = [
+    expected_primary_service_rolling_average_rows = [
         ("1-000000001", "2023-01-01", 1672531200, 4.0, PrimaryServiceType.non_residential, 5.0),
         ("1-000000002", "2023-01-01", 1672531200, 6.0, PrimaryServiceType.non_residential, 5.0),
         ("1-000000003", "2023-02-01", 1675209600, 20.0, PrimaryServiceType.non_residential, 8.75),
@@ -3328,33 +3328,57 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000022", "2024-05-01", 1714518000, None, PrimaryServiceType.care_home_with_nursing, None),
     ]
     # fmt: on
-    add_flag_rows = [
-        ("1-000000001", 4.0),
-        ("1-000000002", None),
-    ]
-    expected_add_flag_rows = [
-        ("1-000000001", 4.0, 1),
-        ("1-000000002", None, 0),
-    ]
     rolling_sum_rows = [
-        (PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0),
-        (PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0),
-        (PrimaryServiceType.care_home_with_nursing, 1677628800, None),
-        (PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0),
-        (PrimaryServiceType.non_residential, 1672531200, 10.0),
-        (PrimaryServiceType.non_residential, 1675209600, 20.0),
-        (PrimaryServiceType.non_residential, 1677628800, None),
-        (PrimaryServiceType.non_residential, 1680303600, 40.0),
+        ("1-001", PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0),
+        ("1-002", PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0),
+        ("1-003", PrimaryServiceType.care_home_with_nursing, 1677628800, None),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0),
+        ("1-005", PrimaryServiceType.non_residential, 1672531200, 10.0),
+        ("1-006", PrimaryServiceType.non_residential, 1675209600, 20.0),
+        ("1-007", PrimaryServiceType.non_residential, 1677628800, None),
+        ("1-008", PrimaryServiceType.non_residential, 1680303600, 40.0),
     ]
     expected_rolling_sum_rows = [
-        (PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0, 30.0),
-        (PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0, 150.0),
-        (PrimaryServiceType.care_home_with_nursing, 1677628800, None, 150.0),
-        (PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0, 262.0),
-        (PrimaryServiceType.non_residential, 1672531200, 10.0, 10.0),
-        (PrimaryServiceType.non_residential, 1675209600, 20.0, 30.0),
-        (PrimaryServiceType.non_residential, 1677628800, None, 30.0),
-        (PrimaryServiceType.non_residential, 1680303600, 40.0, 60.0),
+        ("1-001", PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0, 30.0),
+        ("1-002", PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0, 150.0),
+        ("1-003", PrimaryServiceType.care_home_with_nursing, 1677628800, None, 150.0),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0, 262.0),
+        ("1-005", PrimaryServiceType.non_residential, 1672531200, 10.0, 10.0),
+        ("1-006", PrimaryServiceType.non_residential, 1675209600, 20.0, 30.0),
+        ("1-007", PrimaryServiceType.non_residential, 1677628800, None, 30.0),
+        ("1-008", PrimaryServiceType.non_residential, 1680303600, 40.0, 60.0),
+    ]
+
+    rolling_count_rows = [
+        ("1-001", PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0),
+        ("1-002", PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0),
+        ("1-003", PrimaryServiceType.care_home_with_nursing, 1677628800, None),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0),
+        ("1-005", PrimaryServiceType.non_residential, 1672531200, 10.0),
+        ("1-006", PrimaryServiceType.non_residential, 1675209600, None),
+        ("1-007", PrimaryServiceType.non_residential, 1677628800, 20.0),
+        ("1-008", PrimaryServiceType.non_residential, 1680303600, 40.0),
+    ]
+    expected_rolling_count_rows = [
+        ("1-001", PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0, 1.0),
+        ("1-002", PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0, 2.0),
+        ("1-003", PrimaryServiceType.care_home_with_nursing, 1677628800, None, 2.0),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0, 2.0),
+        ("1-005", PrimaryServiceType.non_residential, 1672531200, 10.0, 1.0),
+        ("1-006", PrimaryServiceType.non_residential, 1675209600, None, 1.0),
+        ("1-007", PrimaryServiceType.non_residential, 1677628800, 20.0, 2.0),
+        ("1-008", PrimaryServiceType.non_residential, 1680303600, 40.0, 2.0),
+    ]
+
+    rolling_average_rows = [
+        ("1-001", 1.0, 1.0),
+        ("1-002", 2.5, 5.0),
+        ("1-003", None, None),
+    ]
+    expected_rolling_average_rows = [
+        ("1-001", 1.0, 1.0, 1.0),
+        ("1-002", 2.5, 5.0, 0.5),
+        ("1-003", None, None, None),
     ]
 
 

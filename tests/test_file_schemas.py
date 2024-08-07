@@ -1988,7 +1988,7 @@ class EstimateIndCQCFilledPostsSchemas:
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
-    input_schema = StructType(
+    primary_service_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, StringType(), False),
@@ -1997,14 +1997,15 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.primary_service_type, StringType(), False),
         ]
     )
-    expected_rolling_average_schema = StructType(
+    expected_primary_service_rolling_average_schema = StructType(
         [
-            *input_schema,
+            *primary_service_rolling_average_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
     rolling_sum_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
@@ -2012,22 +2013,35 @@ class ModelPrimaryServiceRollingAverage:
     )
     expected_rolling_sum_schema = StructType(
         [
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            *rolling_sum_schema,
             StructField(IndCQC.rolling_sum, DoubleType(), True),
         ]
     )
-    add_flag_schema = StructType(
+    rolling_count_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
-    expected_add_flag_schema = StructType(
+    expected_rolling_count_schema = StructType(
         [
-            *add_flag_schema,
-            StructField(IndCQC.include_in_rolling_average_count, IntegerType(), True),
+            *rolling_count_schema,
+            StructField(IndCQC.rolling_count, DoubleType(), True),
+        ]
+    )
+    rolling_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.rolling_sum, DoubleType(), True),
+            StructField(IndCQC.rolling_count, DoubleType(), True),
+        ]
+    )
+    expected_rolling_average_schema = StructType(
+        [
+            *rolling_average_schema,
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
 

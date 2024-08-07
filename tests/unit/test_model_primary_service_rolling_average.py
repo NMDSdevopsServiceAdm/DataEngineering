@@ -10,11 +10,12 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils import utils
 
 
-class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
+class TestModelPrimaryServiceRollingAverageTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.estimates_df = self.spark.createDataFrame(
-            Data.input_rows, Schemas.input_schema
+            Data.primary_service_rolling_average_rows,
+            Schemas.primary_service_rolling_average_schema,
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -26,7 +27,8 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
             IndCqc.rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_rolling_average_rows, Schemas.expected_rolling_average_schema
+            Data.expected_primary_service_rolling_average_rows,
+            Schemas.expected_primary_service_rolling_average_schema,
         )
         self.returned_row_object = (
             self.returned_df.select(
@@ -64,41 +66,111 @@ class TestModelPrimaryServiceRollingAverage(unittest.TestCase):
             )
 
 
-class CalculateRollingSum(TestModelPrimaryServiceRollingAverage):
+class CalculateRollingSumTests(TestModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
+        self.rolling_sum_df = self.spark.createDataFrame(
             Data.rolling_sum_rows, Schemas.rolling_sum_schema
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_rolling_sum_rows, Schemas.expected_rolling_sum_schema
-        )
-        self.returned_df = job.calculate_rolling_sum(
-            self.test_df,
+        self.returned_rolling_sum_df = job.calculate_rolling_sum(
+            self.rolling_sum_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             88,
-            IndCqc.rolling_sum,
+        )
+        self.expected_rolling_sum_df = self.spark.createDataFrame(
+            Data.expected_rolling_sum_rows, Schemas.expected_rolling_sum_schema
         )
 
     def test_calculate_rolling_sum_does_not_add_any_rows(self):
-        self.assertEqual(self.returned_df.count(), self.test_df.count())
+        self.assertEqual(
+            self.returned_rolling_sum_df.count(), self.rolling_sum_df.count()
+        )
+
+    def test_only_one_additional_column_returned(self):
+        self.assertEqual(
+            len(self.rolling_sum_df.columns) + 1,
+            len(self.returned_rolling_sum_df.columns),
+        )
+        self.assertEqual(
+            sorted(self.returned_rolling_sum_df.columns),
+            sorted(self.expected_rolling_sum_df.columns),
+        )
 
     def test_calculate_rolling_sum(self):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+        self.assertEqual(
+            self.returned_rolling_sum_df.collect(),
+            self.expected_rolling_sum_df.collect(),
+        )
 
 
-class AddFlagIfIncludedInCount(TestModelPrimaryServiceRollingAverage):
+class CalculateRollingCountTests(TestModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            Data.add_flag_rows, Schemas.add_flag_schema
+        self.rolling_count_df = self.spark.createDataFrame(
+            Data.rolling_count_rows, Schemas.rolling_count_schema
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_add_flag_rows, Schemas.expected_add_flag_schema
+        self.returned_rolling_count_df = job.calculate_rolling_count(
+            self.rolling_count_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            88,
         )
-        self.returned_df = job.add_flag_if_included_in_count(
-            self.test_df, IndCqc.ascwds_filled_posts_dedup_clean
+        self.expected_rolling_count_df = self.spark.createDataFrame(
+            Data.expected_rolling_count_rows, Schemas.expected_rolling_count_schema
         )
 
-    def test_add_flag_if_included_in_count(self):
-        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+    def test_calculate_rolling_count_does_not_add_any_rows(self):
+        self.assertEqual(
+            self.returned_rolling_count_df.count(), self.rolling_count_df.count()
+        )
+
+    def test_only_one_additional_column_returned(self):
+        self.assertEqual(
+            len(self.rolling_count_df.columns) + 1,
+            len(self.returned_rolling_count_df.columns),
+        )
+        self.assertEqual(
+            sorted(self.returned_rolling_count_df.columns),
+            sorted(self.expected_rolling_count_df.columns),
+        )
+
+    def test_calculate_rolling_count(self):
+        self.assertEqual(
+            self.returned_rolling_count_df.collect(),
+            self.expected_rolling_count_df.collect(),
+        )
+
+
+class CalculateRollingAverageTests(TestModelPrimaryServiceRollingAverageTests):
+    def setUp(self):
+        super().setUp()
+        self.rolling_average_df = self.spark.createDataFrame(
+            Data.rolling_average_rows, Schemas.rolling_average_schema
+        )
+        self.returned_rolling_average_df = job.calculate_rolling_average(
+            self.rolling_average_df,
+            IndCqc.rolling_average_model,
+        )
+        self.expected_rolling_average_df = self.spark.createDataFrame(
+            Data.expected_rolling_average_rows, Schemas.expected_rolling_average_schema
+        )
+
+    def test_calculate_rolling_average_does_not_add_any_rows(self):
+        self.assertEqual(
+            self.returned_rolling_average_df.count(), self.rolling_average_df.count()
+        )
+
+    def test_only_one_additional_column_returned(self):
+        self.assertEqual(
+            len(self.rolling_average_df.columns) + 1,
+            len(self.returned_rolling_average_df.columns),
+        )
+        self.assertEqual(
+            sorted(self.returned_rolling_average_df.columns),
+            sorted(self.expected_rolling_average_df.columns),
+        )
+
+    def test_calculate_rolling_average(self):
+        self.assertEqual(
+            self.returned_rolling_average_df.collect(),
+            self.expected_rolling_average_df.collect(),
+        )

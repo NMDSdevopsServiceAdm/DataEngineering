@@ -28,61 +28,72 @@ def model_primary_service_rolling_average(
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
     """
-    df = add_flag_if_included_in_count(df, column_to_average)
-
     df = calculate_rolling_sum(
         df,
         column_to_average,
         number_of_days,
-        IndCqc.rolling_sum,
     )
-    df = calculate_rolling_sum(
+    df = calculate_rolling_count(
         df,
-        IndCqc.include_in_rolling_average_count,
+        column_to_average,
         number_of_days,
-        IndCqc.rolling_count,
     )
+    df = calculate_rolling_average(df, model_column_name)
 
-    df = df.withColumn(
-        model_column_name,
-        F.col(IndCqc.rolling_sum) / F.col(IndCqc.rolling_count),
-    )
     df = df.drop(
-        IndCqc.include_in_rolling_average_count,
         IndCqc.rolling_count,
         IndCqc.rolling_sum,
     )
-    return df
 
-
-def add_flag_if_included_in_count(df: DataFrame, column_to_average: str):
-    df = df.withColumn(
-        IndCqc.include_in_rolling_average_count,
-        F.when(F.col(column_to_average).isNotNull(), F.lit(1)).otherwise(F.lit(0)),
-    )
     return df
 
 
 def calculate_rolling_sum(
-    df: DataFrame, col_to_sum: str, number_of_days: int, new_col_name: str
+    df: DataFrame, col_to_sum: str, number_of_days: int
 ) -> DataFrame:
     """
     Calculates the rolling sum of a specified column over a given window of days.
 
-    Calculates the rolling sum of a specified column over a given window of days.
+    Adds a new column called rolling_sum which is the sum of non-null values in a specified
+    column over a given window of days.
 
     Args:
         df (DataFrame): The input DataFrame.
-        col_to_sum (str): The name of the column to sum.
+        col_to_sum (str): The name of the column to sum non-null values.
         number_of_days (int): The number of days to include in the rolling sum time period.
-        new_col_name (str): The name of the new column to store the rolling sum.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing the rolling sum.
+        DataFrame: The input DataFrame with the new column containing the rolling_sum.
     """
     df = df.withColumn(
-        new_col_name,
+        IndCqc.rolling_sum,
         F.sum(col_to_sum).over(
+            define_window_specifications(IndCqc.unix_time, number_of_days)
+        ),
+    )
+    return df
+
+
+def calculate_rolling_count(
+    df: DataFrame, col_to_count: str, number_of_days: int
+) -> DataFrame:
+    """
+    Calculates the rolling count of a specified column over a given window of days.
+
+    Adds a new column called rolling_count which is the count of non-null values in a specified
+    column over a given window of days.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        col_to_count (str): The name of the column to count non-null values.
+        number_of_days (int): The number of days to include in the rolling count time period.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing the rolling_count.
+    """
+    df = df.withColumn(
+        IndCqc.rolling_count,
+        F.count(col_to_count).over(
             define_window_specifications(IndCqc.unix_time, number_of_days)
         ),
     )
@@ -107,3 +118,25 @@ def define_window_specifications(unix_date_col: str, number_of_days: int) -> Win
         .orderBy(F.col(unix_date_col).cast("long"))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
+
+
+def calculate_rolling_average(df: DataFrame, model_column_name: str) -> DataFrame:
+    """
+    Calculates the rolling average by dividing rolling sum by rolling count.
+
+    Adds a new column with the name provided in model_column_name which is calculated by dividing
+    the rolling sum by the rolling count.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        col_to_count (str): The name of the column to count.
+        number_of_days (int): The number of days to include in the rolling count time period.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing the rolling_count.
+    """
+    df = df.withColumn(
+        model_column_name,
+        F.col(IndCqc.rolling_sum) / F.col(IndCqc.rolling_count),
+    )
+    return df
