@@ -40,7 +40,7 @@ cleaned_ind_cqc_columns = [
     IndCQC.ascwds_workplace_import_date,
     IndCQC.ascwds_filled_posts,
     IndCQC.ascwds_filled_posts_source,
-    IndCQC.ascwds_filled_posts_clean,
+    IndCQC.ascwds_filled_posts_dedup,
     IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,

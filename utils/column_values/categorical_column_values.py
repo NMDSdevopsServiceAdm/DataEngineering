@@ -1,5 +1,7 @@
 from dataclasses import dataclass, asdict
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
 
 @dataclass
 class ColumnValues:
@@ -446,17 +448,15 @@ class ASCWDSFilledPostsSource(ColumnValues):
 class EstimateFilledPostsSource(ColumnValues):
     """The possible values of the estimate filled posts source column in the independent CQC estimates pipeline"""
 
-    rolling_average_model: str = "rolling_average_model"
-    care_home_model: str = "care_home_model"
-    interpolation_model: str = "interpolation_model"
-    care_home_extrapolation_model: str = "extrapolation_care_home_model"
-    ascwds_filled_posts_clean_deduplicated: str = (
-        "ascwds_filled_posts_clean_deduplicated"
-    )
-    non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
-    non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
-    non_res_with_dormancy_extrapolation_model: str = (
-        "extrapolation_non_res_with_dormancy_model"
+    rolling_average_model: str = IndCQC.rolling_average_model
+    care_home_model: str = IndCQC.care_home_model
+    interpolation_model: str = IndCQC.interpolation_model
+    extrapolation_care_home_model: str = IndCQC.extrapolation_care_home_model
+    ascwds_filled_posts_dedup_clean: str = IndCQC.ascwds_filled_posts_dedup_clean
+    non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model
+    non_res_without_dormancy_model: str = IndCQC.non_res_without_dormancy_model
+    extrapolation_non_res_with_dormancy_model: str = (
+        IndCQC.extrapolation_non_res_with_dormancy_model
     )
 
 

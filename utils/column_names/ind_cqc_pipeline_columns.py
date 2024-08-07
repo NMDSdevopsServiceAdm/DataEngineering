@@ -26,15 +26,15 @@ class PartitionKeys:
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     ascwds_filled_posts: str = "ascwds_filled_posts"
-    ascwds_filled_posts_clean: str = ascwds_filled_posts + "_clean"
-    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts + "_clean_deduplicated"
+    ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
+    ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
-    avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
-        "avg_residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
+    avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
+        "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
     )
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
@@ -100,6 +100,7 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
+    import_month_index: str = "import_month_index"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     include_in_rolling_average_count: str = "include_in_rolling_average_count"
     interpolation_model: str = "interpolation_model"
