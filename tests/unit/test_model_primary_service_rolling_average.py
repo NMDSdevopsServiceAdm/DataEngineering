@@ -33,7 +33,7 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
         self.returned_row_object = (
             self.returned_df.select(
                 IndCqc.location_id,
-                IndCqc.cqc_location_import_date,
+                IndCqc.care_home,
                 IndCqc.unix_time,
                 IndCqc.ascwds_filled_posts_dedup_clean,
                 IndCqc.primary_service_type,
