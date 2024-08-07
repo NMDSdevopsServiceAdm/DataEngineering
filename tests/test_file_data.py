@@ -3316,7 +3316,7 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000010", "2023-05-01", 1682895600, None, PrimaryServiceType.non_residential, 35.0),
         ("1-000000011", "2024-05-01", 1714518000, None, PrimaryServiceType.non_residential, None),
         ("1-000000012", "2023-01-01", 1672531200, 14.0, PrimaryServiceType.care_home_with_nursing, 15.0),
-        ("1-000000012", "2023-01-01", 1672531200, 16.0, PrimaryServiceType.care_home_with_nursing, 15.0),
+        ("1-000000013", "2023-01-01", 1672531200, 16.0, PrimaryServiceType.care_home_with_nursing, 15.0),
         ("1-000000014", "2023-02-01", 1675209600, 120.0, PrimaryServiceType.care_home_with_nursing, 41.25),
         ("1-000000015", "2023-03-01", 1677628800, 131.0, PrimaryServiceType.care_home_with_nursing, 59.2),
         ("1-000000016", "2023-04-01", 1680303600, 142.0, PrimaryServiceType.care_home_with_nursing, 131.0),
