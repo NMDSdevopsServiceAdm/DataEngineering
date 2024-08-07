@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils import utils
 
 
-class TestModelPrimaryServiceRollingAverageTests(unittest.TestCase):
+class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
         self.estimates_df = self.spark.createDataFrame(
@@ -66,7 +66,7 @@ class TestModelPrimaryServiceRollingAverageTests(unittest.TestCase):
             )
 
 
-class CalculateRollingSumTests(TestModelPrimaryServiceRollingAverageTests):
+class CalculateRollingSumTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
         self.rolling_sum_df = self.spark.createDataFrame(
@@ -103,7 +103,7 @@ class CalculateRollingSumTests(TestModelPrimaryServiceRollingAverageTests):
         )
 
 
-class CalculateRollingCountTests(TestModelPrimaryServiceRollingAverageTests):
+class CalculateRollingCountTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
         self.rolling_count_df = self.spark.createDataFrame(
@@ -140,7 +140,7 @@ class CalculateRollingCountTests(TestModelPrimaryServiceRollingAverageTests):
         )
 
 
-class CalculateRollingAverageTests(TestModelPrimaryServiceRollingAverageTests):
+class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
         self.rolling_average_df = self.spark.createDataFrame(
