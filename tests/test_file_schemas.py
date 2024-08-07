@@ -1991,7 +1991,7 @@ class ModelPrimaryServiceRollingAverage:
     primary_service_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
