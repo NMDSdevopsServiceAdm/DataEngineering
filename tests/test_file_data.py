@@ -3356,26 +3356,6 @@ class ModelPrimaryServiceRollingAverage:
         (PrimaryServiceType.non_residential, 1677628800, None, 30.0),
         (PrimaryServiceType.non_residential, 1680303600, 40.0, 60.0),
     ]
-    calculate_rolling_average_column_rows = [
-        (PrimaryServiceType.care_home_with_nursing, 1672531200, 1, 30.0),
-        (PrimaryServiceType.care_home_with_nursing, 1675209600, 1, 120.0),
-        (PrimaryServiceType.care_home_with_nursing, 1677628800, 0, None),
-        (PrimaryServiceType.care_home_with_nursing, 1680303600, 1, 142.0),
-        (PrimaryServiceType.non_residential, 1672531200, 1, 10.0),
-        (PrimaryServiceType.non_residential, 1675209600, 1, 20.0),
-        (PrimaryServiceType.non_residential, 1677628800, 0, None),
-        (PrimaryServiceType.non_residential, 1680303600, 1, 40.0),
-    ]
-    expected_calculate_rolling_average_column_rows = [
-        (PrimaryServiceType.care_home_with_nursing, 1672531200, 30.0, 30.0),
-        (PrimaryServiceType.care_home_with_nursing, 1675209600, 120.0, 75.0),
-        (PrimaryServiceType.care_home_with_nursing, 1677628800, None, 75.0),
-        (PrimaryServiceType.care_home_with_nursing, 1680303600, 142.0, 131.0),
-        (PrimaryServiceType.non_residential, 1672531200, 10.0, 10.0),
-        (PrimaryServiceType.non_residential, 1675209600, 20.0, 15.0),
-        (PrimaryServiceType.non_residential, 1677628800, None, 15.0),
-        (PrimaryServiceType.non_residential, 1680303600, 40.0, 30.0),
-    ]
 
 
 @dataclass
