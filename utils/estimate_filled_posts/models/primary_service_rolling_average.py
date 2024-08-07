@@ -8,27 +8,29 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 def model_primary_service_rolling_average(
-    df: DataFrame, number_of_days: int
+    df: DataFrame, column_to_average: str, number_of_days: int
 ) -> DataFrame:
-    df = add_flag_if_included_in_count(df)
-    rolling_average_df = create_rolling_average_column(df, number_of_days)
+    df = add_flag_if_included_in_count(df, column_to_average)
+    rolling_average_df = create_rolling_average_column(
+        df, column_to_average, number_of_days
+    )
     return rolling_average_df
 
 
-def add_flag_if_included_in_count(df: DataFrame):
+def add_flag_if_included_in_count(df: DataFrame, column_to_average: str):
     df = df.withColumn(
         IndCqc.include_in_count_of_filled_posts,
-        F.when(
-            F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull(), F.lit(1)
-        ).otherwise(F.lit(0)),
+        F.when(F.col(column_to_average).isNotNull(), F.lit(1)).otherwise(F.lit(0)),
     )
     return df
 
 
-def create_rolling_average_column(df: DataFrame, number_of_days: int) -> DataFrame:
+def create_rolling_average_column(
+    df: DataFrame, column_to_average: str, number_of_days: int
+) -> DataFrame:
     df = calculate_rolling_sum(
         df,
-        IndCqc.ascwds_filled_posts_dedup_clean,
+        column_to_average,
         number_of_days,
         IndCqc.rolling_sum_of_filled_posts,
     )

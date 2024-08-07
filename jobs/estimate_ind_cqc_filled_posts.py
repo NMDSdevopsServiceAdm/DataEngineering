@@ -118,7 +118,9 @@ def main(
     )
 
     cleaned_ind_cqc_df = model_primary_service_rolling_average(
-        cleaned_ind_cqc_df, NUMBER_OF_DAYS_IN_ROLLING_AVERAGE
+        cleaned_ind_cqc_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
     )
 
     cleaned_ind_cqc_df = (
