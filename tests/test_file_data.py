@@ -2962,7 +2962,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, None),
         ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data, None),
         ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated, None),
-        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated, 0.92),
+        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated, None),
         ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated, None),
     ]
     # fmt: on
