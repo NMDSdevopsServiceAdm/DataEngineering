@@ -3,7 +3,10 @@ from pyspark.sql import DataFrame, functions as F
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_values.categorical_column_values import AscwdsFilteringRule
+from utils.column_values.categorical_column_values import (
+    AscwdsFilteringRule,
+    PrimaryServiceType,
+)
 
 
 def add_filtering_rule_column(df: DataFrame) -> DataFrame:
@@ -52,7 +55,13 @@ def update_cleaned_rows(df: DataFrame, rule_name: str) -> DataFrame:
     df = df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
         F.when(
-            (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull()),
+            (
+                (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
+                & (
+                    F.col(IndCQC.primary_service_type)
+                    != PrimaryServiceType.non_residential
+                )
+            ),
             F.col(IndCQC.filled_posts_per_bed_ratio),
         ),
     )

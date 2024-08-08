@@ -4022,6 +4022,11 @@ class ASCWDSFilteringUtilsSchemas:
                 FloatType(),
                 True,
             ),
+            StructField(
+                IndCQC.primary_service_type,
+                StringType(),
+                True,
+            ),
         ]
     )
 
