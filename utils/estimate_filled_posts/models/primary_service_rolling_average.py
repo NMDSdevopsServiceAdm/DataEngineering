@@ -100,12 +100,11 @@ def calculate_rolling_count(
     return df
 
 
-def define_window_specifications(unix_date_col: str, number_of_days: int) -> Window:
+def define_window_specifications(number_of_days: int) -> Window:
     """
     Define the Window specification partitioned by primary service column.
 
     Args:
-        unix_date_col (str): The name of the column containing unix timestamps.
         number_of_days (int): The number of days to use for the rolling average calculations.
 
     Returns:
@@ -113,7 +112,7 @@ def define_window_specifications(unix_date_col: str, number_of_days: int) -> Win
     """
     return (
         Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(unix_date_col).cast("long"))
+        .orderBy(F.col(IndCqc.unix_time).cast("long"))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
 
