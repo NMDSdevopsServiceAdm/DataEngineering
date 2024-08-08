@@ -48,9 +48,15 @@ def main(
         IndCQC.ascwds_filled_posts_dedup,
     )
 
-    locations_df = calculate_filled_posts_per_bed_ratio(locations_df)
+    locations_df = calculate_filled_posts_per_bed_ratio(
+        locations_df, IndCQC.ascwds_filled_posts_dedup
+    )
 
     locations_df = null_ascwds_filled_post_outliers(locations_df)
+
+    locations_df = calculate_filled_posts_per_bed_ratio(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
 
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
@@ -157,7 +163,7 @@ def create_column_with_repeated_values_removed(
 
 
 def calculate_filled_posts_per_bed_ratio(
-    input_df: DataFrame,
+    input_df: DataFrame, filled_posts_column: str
 ) -> DataFrame:
     """
     Add a column with the filled post per bed ratio.
@@ -166,12 +172,13 @@ def calculate_filled_posts_per_bed_ratio(
 
     Args:
         input_df (DataFrame): A dataframe containing the columns ascwds_filled_posts_deduplicated and numberofbeds.
+        filled_posts_column (str): The name of the column to use for calculating the ratio.
 
     Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio.
     """
     input_df = input_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup) / F.col(IndCQC.number_of_beds),
+        F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
     )
 
     return input_df

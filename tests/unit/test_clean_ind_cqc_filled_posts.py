@@ -295,7 +295,9 @@ class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
             Data.filled_posts_per_bed_ratio_rows,
             Schemas.filled_posts_per_bed_ratio_schema,
         )
-        returned_df = job.calculate_filled_posts_per_bed_ratio(test_df)
+        returned_df = job.calculate_filled_posts_per_bed_ratio(
+            test_df, IndCQC.ascwds_filled_posts_dedup
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_filled_posts_per_bed_ratio_rows,
             Schemas.expected_filled_posts_per_bed_ratio_schema,
