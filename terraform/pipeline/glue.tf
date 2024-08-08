@@ -578,9 +578,9 @@ module "validate_estimated_ind_cqc_filled_posts_data_job" {
 }
 
 
-module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
+module "validate_estimated_ml_ind_cqc_filled_posts_by_job_role_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "validate_estimated_ind_cqc_filled_posts_by_job_role_data.py"
+  script_name     = "validate_estimated_ml_ind_cqc_filled_posts_by_job_role_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -588,8 +588,8 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--estimated_ind_cqc_filled_posts_by_job_role_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
-    "--report_destination"                                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_cqc_filled_posts_by_job_role_data_report/"
+    "--estimated_ind_cqc_filled_posts_by_job_role_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts_by_job_role/"
+    "--report_destination"                                = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_ml_cqc_filled_posts_by_job_role_data_report/"
   }
 }
 

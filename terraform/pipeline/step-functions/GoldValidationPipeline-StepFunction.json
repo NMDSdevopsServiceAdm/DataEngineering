@@ -97,17 +97,17 @@
             }
           },
           {
-            "StartAt": "Run validate estimated ind cqc filled posts data job",
+            "StartAt": "Run validate estimated machine learning ind cqc filled posts data job",
             "States": {
-                "Run validate estimated ind cqc filled posts data job": {
+                "Run validate estimated machine learning ind cqc filled posts data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_estimated_ind_cqc_filled_posts_data_job_name}",
+                  "JobName": "${validate_estimated_ml_ind_cqc_filled_posts_data_job_name}",
                   "Arguments": {
                     "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_cqc_filled_posts_data_report/"
+                    "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_ml_ind_cqc_filled_posts_data_report/"
                   }
                 },
                 "End": true
