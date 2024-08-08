@@ -67,9 +67,7 @@ def calculate_rolling_sum(
     """
     df = df.withColumn(
         IndCqc.rolling_sum,
-        F.sum(col_to_sum).over(
-            define_window_specifications(IndCqc.unix_time, number_of_days)
-        ),
+        F.sum(col_to_sum).over(define_window_specifications(number_of_days)),
     )
     return df
 
@@ -93,9 +91,7 @@ def calculate_rolling_count(
     """
     df = df.withColumn(
         IndCqc.rolling_count,
-        F.count(col_to_count).over(
-            define_window_specifications(IndCqc.unix_time, number_of_days)
-        ),
+        F.count(col_to_count).over(define_window_specifications(number_of_days)),
     )
     return df
 
