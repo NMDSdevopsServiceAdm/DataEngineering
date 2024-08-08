@@ -2958,6 +2958,31 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     ]
     # fmt: on
 
+    filter_df_to_care_homes_with_known_beds_and_filled_posts_rows = [
+        ("01", "Y", None, None),
+        ("02", "Y", None, 0.0),
+        ("03", "Y", None, 1.0),
+        ("04", "Y", 0, None),
+        ("05", "Y", 0, 0.0),
+        ("06", "Y", 0, 1.0),
+        ("07", "Y", 1, None),
+        ("08", "Y", 1, 0.0),
+        ("09", "Y", 1, 1.0),
+        ("10", "N", None, None),
+        ("11", "N", None, 0.0),
+        ("12", "N", None, 1.0),
+        ("13", "N", 0, None),
+        ("14", "N", 0, 0.0),
+        ("15", "N", 0, 1.0),
+        ("16", "N", 1, None),
+        ("17", "N", 1, 0.0),
+        ("18", "N", 1, 1.0),
+    ]
+
+    expected_filtered_df_to_care_homes_with_known_beds_and_filled_posts_rows = [
+        ("09", "Y", 1, 1.0),
+    ]
+
     standardised_residual_percentile_cutoff_rows = [
         ("1", PrimaryServiceType.care_home_with_nursing, 0.54321),
         ("2", PrimaryServiceType.care_home_with_nursing, -3.2545),

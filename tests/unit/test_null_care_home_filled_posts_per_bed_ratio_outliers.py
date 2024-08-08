@@ -94,10 +94,25 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     def setUp(self) -> None:
         super().setUp()
 
-    def test_relevant_data_selected(self):
-        # TODO - replace test data with own test data and improve tests
-        df = job.select_relevant_data(self.unfiltered_ind_cqc_df)
-        self.assertEqual(df.count(), 20)
+        unfiltered_df = self.spark.createDataFrame(
+            Data.filter_df_to_care_homes_with_known_beds_and_filled_posts_rows,
+            Schemas.filter_df_to_care_homes_with_known_beds_and_filled_posts_schema,
+        )
+        self.returned_df = job.filter_df_to_care_homes_with_known_beds_and_filled_posts(
+            unfiltered_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filtered_df_to_care_homes_with_known_beds_and_filled_posts_rows,
+            Schemas.filter_df_to_care_homes_with_known_beds_and_filled_posts_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_filtered_dataframe_has_expected_number_of_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_filtered_dataframe_matches_expected_dataframe(self):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
 class SelectDataNotInSubsetTests(
