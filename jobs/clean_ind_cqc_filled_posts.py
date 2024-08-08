@@ -18,6 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+from utils.column_values.categorical_column_values import CareHome
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
@@ -166,19 +167,20 @@ def calculate_filled_posts_per_bed_ratio(
     input_df: DataFrame, filled_posts_column: str
 ) -> DataFrame:
     """
-    Add a column with the filled post per bed ratio.
-
-    This function adds a colum with the filled posts per bed ratio, using ascwds_filled_posts_deduplicated.
+    Add a column with the filled post per bed ratio for care homes.
 
     Args:
-        input_df (DataFrame): A dataframe containing the columns ascwds_filled_posts_deduplicated and numberofbeds.
+        input_df (DataFrame): A dataframe containing the given column, care_home and numberofbeds.
         filled_posts_column (str): The name of the column to use for calculating the ratio.
 
-    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio.
+    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
     """
     input_df = input_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
-        F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.care_home,
+            F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
+        ),
     )
 
     return input_df
