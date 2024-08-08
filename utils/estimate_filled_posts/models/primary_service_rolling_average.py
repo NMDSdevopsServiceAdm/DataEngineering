@@ -104,8 +104,6 @@ def define_window_specifications(unix_date_col: str, number_of_days: int) -> Win
     """
     Define the Window specification partitioned by primary service column.
 
-    Define the Window specification partitioned by primary service column.
-
     Args:
         unix_date_col (str): The name of the column containing unix timestamps.
         number_of_days (int): The number of days to use for the rolling average calculations.
