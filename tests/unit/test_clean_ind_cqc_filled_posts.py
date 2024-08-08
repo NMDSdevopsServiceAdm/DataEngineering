@@ -302,8 +302,6 @@ class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
             Data.expected_filled_posts_per_bed_ratio_rows,
             Schemas.expected_filled_posts_per_bed_ratio_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
