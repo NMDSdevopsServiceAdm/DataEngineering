@@ -2,7 +2,7 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_estimated_ind_cqc_filled_posts_data as job
+import jobs.validate_estimated_ml_ind_cqc_filled_posts_data as job
 
 from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsData as Data
 from tests.test_file_schemas import ValidateEstimatedIndCqcFilledPostsData as Schemas
