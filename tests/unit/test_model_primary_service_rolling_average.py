@@ -20,10 +20,11 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+        number_of_days = 88
         self.returned_df = job.model_primary_service_rolling_average(
             self.estimates_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
-            88,
+            number_of_days,
             IndCqc.rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -69,13 +70,14 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
 class CalculateRollingSumTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
+        number_of_days = 88
         self.rolling_sum_df = self.spark.createDataFrame(
             Data.rolling_sum_rows, Schemas.rolling_sum_schema
         )
         self.returned_rolling_sum_df = job.calculate_rolling_sum(
             self.rolling_sum_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
-            88,
+            number_of_days,
         )
         self.expected_rolling_sum_df = self.spark.createDataFrame(
             Data.expected_rolling_sum_rows, Schemas.expected_rolling_sum_schema
@@ -106,13 +108,14 @@ class CalculateRollingSumTests(ModelPrimaryServiceRollingAverageTests):
 class CalculateRollingCountTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self):
         super().setUp()
+        number_of_days = 88
         self.rolling_count_df = self.spark.createDataFrame(
             Data.rolling_count_rows, Schemas.rolling_count_schema
         )
         self.returned_rolling_count_df = job.calculate_rolling_count(
             self.rolling_count_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
-            88,
+            number_of_days,
         )
         self.expected_rolling_count_df = self.spark.createDataFrame(
             Data.expected_rolling_count_rows, Schemas.expected_rolling_count_schema
