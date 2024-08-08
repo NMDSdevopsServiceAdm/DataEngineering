@@ -4000,7 +4000,7 @@ class ASCWDSFilteringUtilsSchemas:
             ),
         ]
     )
-    update_cleaned_rows_schema = StructType(
+    update_filtering_rule_schema = StructType(
         [
             StructField(
                 IndCQC.location_id,
@@ -4014,16 +4014,6 @@ class ASCWDSFilteringUtilsSchemas:
             ),
             StructField(
                 IndCQC.ascwds_filtering_rule,
-                StringType(),
-                True,
-            ),
-            StructField(
-                IndCQC.filled_posts_per_bed_ratio,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.primary_service_type,
                 StringType(),
                 True,
             ),
