@@ -62,8 +62,6 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
             Data.expected_update_cleaned_rows_rows,
             Schemas.update_cleaned_rows_schema,
         )
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
