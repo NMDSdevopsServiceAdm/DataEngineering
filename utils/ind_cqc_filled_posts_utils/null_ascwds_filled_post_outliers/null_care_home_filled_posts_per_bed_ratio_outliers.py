@@ -89,8 +89,8 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
     """
     Filter dataframe to care homes with known beds and filled posts.
 
-    This function filters to the dataset to only include locations who should be included in the
-    overall filter which are care homes with one or more beds and one or more filled posts.
+    This function filters to the dataset to only include care homes with one or more beds and
+    one or more filled posts.
 
     Args:
         df (DataFrame): A dataframe of cleaned CQC locations.
