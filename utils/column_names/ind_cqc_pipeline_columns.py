@@ -102,7 +102,6 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     import_month_index: str = "import_month_index"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
-    include_in_count_of_filled_posts: str = "include_in_count_of_filled_posts"
     interpolation_model: str = "interpolation_model"
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
@@ -153,10 +152,9 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average: str = "rolling_average"
     rolling_average_model: str = "rolling_average_model"
-    rolling_count_of_filled_posts: str = "rolling_count_of_filled_posts"
-    rolling_sum_of_filled_posts: str = "rolling_sum_of_filled_posts"
+    rolling_count: str = "rolling_count"
+    rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
