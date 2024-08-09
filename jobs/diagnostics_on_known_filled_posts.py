@@ -117,6 +117,7 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
     """
     reshaped_df = create_empty_reshaped_dataframe()
     list_of_models = create_list_of_models()
+    print(list_of_models)
     for model in list_of_models:
         model_df = df.select(
             IndCQC.location_id,
