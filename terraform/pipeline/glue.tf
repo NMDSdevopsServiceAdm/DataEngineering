@@ -160,7 +160,7 @@ module "prepare_non_res_ascwds_ind_cqc_features_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_filled_posts_cleaned_source"                          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_non_ml_ind_cqc_filled_posts/"
+    "--ind_cqc_filled_posts_cleaned_source"                          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
     "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
     "--non_res_ascwds_without_dormancy_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
   }
@@ -562,9 +562,9 @@ module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
 }
 
 
-module "validate_estimated_ml_ind_cqc_filled_posts_data_job" {
+module "validate_estimated_ind_cqc_filled_posts_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "validate_estimated_ml_ind_cqc_filled_posts_data.py"
+  script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -572,8 +572,8 @@ module "validate_estimated_ml_ind_cqc_filled_posts_data_job" {
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--estimated_ind_cqc_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts/"
-    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=estimated_ml_ind_cqc_filled_posts_data_report/"
+    "--estimated_ind_cqc_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_cqc_filled_posts_data_report/"
   }
 }
 
@@ -685,14 +685,14 @@ module "prepare_care_home_ind_cqc_features_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_filled_posts_cleaned_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_non_ml_ind_cqc_filled_posts/"
+    "--ind_cqc_filled_posts_cleaned_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
     "--care_home_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
   }
 }
 
-module "estimate_non_ml_ind_cqc_filled_posts_job" {
+module "estimate_missing_ascwds_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_name       = "estimate_non_ml_ind_cqc_filled_posts.py"
+  script_name       = "estimate_missing_ascwds_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -701,13 +701,13 @@ module "estimate_non_ml_ind_cqc_filled_posts_job" {
 
   job_parameters = {
     "--cleaned_ind_cqc_source"               = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
-    "--estimated_non_ml_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_non_ml_ind_cqc_filled_posts/"
+    "--estimated_missing_ascwds_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
   }
 }
 
-module "estimate_ml_ind_cqc_filled_posts_job" {
+module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_name       = "estimate_ml_ind_cqc_filled_posts.py"
+  script_name       = "estimate_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -722,7 +722,7 @@ module "estimate_ml_ind_cqc_filled_posts_job" {
     "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/1.0.0/"
     "--non_res_without_dormancy_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
     "--non_res_without_dormancy_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/1.0.0/"
-    "--estimated_ml_ind_cqc_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_destination"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--ml_model_metrics_destination"             = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
   }
 }
@@ -735,7 +735,7 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts/"
+    "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
   }
 }
@@ -748,7 +748,7 @@ module "diagnostics_on_known_filled_posts_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--estimate_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ml_ind_cqc_filled_posts/"
+    "--estimate_filled_posts_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/"
     "--summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/"
     "--charts_destination"              = "${module.datasets_bucket.bucket_name}"
