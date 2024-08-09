@@ -48,9 +48,7 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
         input_df, care_homes_df
     )
 
-    data_to_filter_df = calculate_filled_posts_per_bed_ratio(care_homes_df)
-
-    data_to_filter_df = create_banded_bed_count_column(data_to_filter_df)
+    data_to_filter_df = create_banded_bed_count_column(care_homes_df)
 
     expected_filled_posts_per_banded_bed_count_df = (
         calculate_average_filled_posts_per_banded_bed_count(data_to_filter_df)
@@ -121,17 +119,6 @@ def select_data_not_in_subset_df(
     return output_df
 
 
-def calculate_filled_posts_per_bed_ratio(
-    input_df: DataFrame,
-) -> DataFrame:
-    input_df = input_df.withColumn(
-        NullOutlierColumns.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
-    )
-
-    return input_df
-
-
 def create_banded_bed_count_column(
     input_df: DataFrame,
 ) -> DataFrame:
@@ -154,7 +141,7 @@ def calculate_average_filled_posts_per_banded_bed_count(
     input_df: DataFrame,
 ) -> DataFrame:
     output_df = input_df.groupBy(F.col(NullOutlierColumns.number_of_beds_banded)).agg(
-        F.avg(NullOutlierColumns.filled_posts_per_bed_ratio).alias(
+        F.avg(IndCQC.filled_posts_per_bed_ratio).alias(
             NullOutlierColumns.avg_filled_posts_per_bed_ratio
         )
     )

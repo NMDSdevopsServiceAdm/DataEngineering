@@ -2585,6 +2585,33 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 2, 1), None),
     ]
 
+    filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home),
+        ("1-000000002", 2.0, 1, CareHome.care_home),
+        ("1-000000003", None, 100, CareHome.care_home),
+        ("1-000000004", 0.0, 1, CareHome.care_home),
+        ("1-000000005", 5.0, None, CareHome.care_home),
+        ("1-000000006", 2.0, 0, CareHome.care_home),
+        ("1-000000007", None, 0, CareHome.care_home),
+        ("1-000000008", 0.0, None, CareHome.care_home),
+        ("1-000000009", None, None, CareHome.care_home),
+        ("1-000000010", 0.0, 0, CareHome.care_home),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home),
+    ]
+    expected_filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
+        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
+        ("1-000000003", None, 100, CareHome.care_home, None),
+        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
+        ("1-000000005", 5.0, None, CareHome.care_home, None),
+        ("1-000000006", 2.0, 0, CareHome.care_home, None),
+        ("1-000000007", None, 0, CareHome.care_home, None),
+        ("1-000000008", 0.0, None, CareHome.care_home, None),
+        ("1-000000009", None, None, CareHome.care_home, None),
+        ("1-000000010", 0.0, 0, CareHome.care_home, None),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
+    ]
+
 
 @dataclass
 class ReconciliationData:
@@ -2902,59 +2929,59 @@ class NullAscwdsFilledPostOutliersData:
 class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: off
     unfiltered_ind_cqc_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0, AscwdsFilteringRule.populated),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated),
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated),
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated),
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated),
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated),
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated),
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated),
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated),
-        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated),
-        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated),
-        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated),
-        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated),
-        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated),
-        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated),
-        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated),
-        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0, AscwdsFilteringRule.populated),
-        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data),
-        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated),
-        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated),
-        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0, AscwdsFilteringRule.populated, 0.04),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated, 0.08),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated, 0.12),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated, 0.16),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated, 0.20),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated, 0.24),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated, 0.28),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated, 0.32),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated, 0.36),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated, 0.40),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated, 0.44),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated, 0.48),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated, 0.52),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated, 0.56),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated, 0.60),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated, 0.64),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated, 0.68),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated, 0.72),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated, 0.76),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 20.0, AscwdsFilteringRule.populated, 0.80),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data, None),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated, None),
+        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated, 0.92),
+        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated, None),
     ]
     # fmt: on
 
     # fmt: off
     expected_care_home_jobs_per_bed_ratio_filtered_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier),
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated),
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated),
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated),
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated),
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated),
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated),
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated),
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated),
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated),
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated),
-        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated),
-        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated),
-        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated),
-        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated),
-        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated),
-        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated),
-        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated),
-        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier),
-        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data),
-        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated),
-        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated),
-        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.04),
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated, 0.08),
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated, 0.12),
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated, 0.16),
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 5.0, 5.0, AscwdsFilteringRule.populated, 0.20),
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 6.0, 6.0, AscwdsFilteringRule.populated, 0.24),
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 7.0, 7.0, AscwdsFilteringRule.populated, 0.28),
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 8.0, 8.0, AscwdsFilteringRule.populated, 0.32),
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 9.0, 9.0, AscwdsFilteringRule.populated, 0.36),
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 10.0, 10.0, AscwdsFilteringRule.populated, 0.40),
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 11.0, 11.0, AscwdsFilteringRule.populated, 0.44),
+        ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 12.0, 12.0, AscwdsFilteringRule.populated, 0.48),
+        ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 13.0, 13.0, AscwdsFilteringRule.populated, 0.52),
+        ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 14.0, 14.0, AscwdsFilteringRule.populated, 0.56),
+        ("15", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 15.0, 15.0, AscwdsFilteringRule.populated, 0.60),
+        ("16", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 16.0, 16.0, AscwdsFilteringRule.populated, 0.64),
+        ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated, 0.68),
+        ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated, 0.72),
+        ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated, 0.76),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.80),
+        ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data, None),
+        ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated, None),
+        ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated, 0.92),
+        ("24", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 24.0, 24.0, AscwdsFilteringRule.populated, None),
     ]
     # fmt: on
 
@@ -3031,6 +3058,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             1.0,
             None,
             "filtering rule",
+            0.04,
             10.0,
         ),
         (
@@ -3042,6 +3070,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             2.0,
             2.0,
             "filtering rule",
+            0.08,
             20.0,
         ),
     ]
@@ -3056,6 +3085,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             3.0,
             3.0,
             "filtering rule",
+            0.12,
         ),
     ]
 
@@ -3069,6 +3099,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             1.0,
             None,
             "filtering rule",
+            0.04,
         ),
         (
             "02",
@@ -3079,6 +3110,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             2.0,
             2.0,
             "filtering rule",
+            0.08,
         ),
         (
             "03",
@@ -3089,6 +3121,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
             3.0,
             3.0,
             "filtering rule",
+            0.12,
         ),
     ]
 
@@ -6067,18 +6100,38 @@ class ASCWDSFilteringUtilsData:
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
     update_filtering_rule_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.populated),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+        (
+            "loc 1",
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            None,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 3",
+            None,
+            AscwdsFilteringRule.missing_data,
+        ),
     ]
     expected_update_filtering_rule_rows = [
-        ("loc 1", 10.0, AscwdsFilteringRule.populated),
+        (
+            "loc 1",
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
         (
             "loc 2",
             None,
             AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
         ),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+        (
+            "loc 3",
+            None,
+            AscwdsFilteringRule.missing_data,
+        ),
     ]
 
 

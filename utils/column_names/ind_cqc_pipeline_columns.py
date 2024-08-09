@@ -95,6 +95,7 @@ class IndCqcColumns:
     )
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
+    filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_unix_time: str = "filled_posts_unix_time"
     first_filled_posts: str = "first_filled_posts"
     first_rolling_average: str = "first_rolling_average"

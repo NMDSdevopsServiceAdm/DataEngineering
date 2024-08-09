@@ -68,7 +68,6 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
             Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
             Schemas.ind_cqc_schema,
         )
-
         returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
         expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
 
@@ -145,32 +144,6 @@ class SelectDataNotInSubsetTests(
         )
 
 
-class CalculateFilledPostsPerBedRatioTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_posts_per_bed_ratio(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-            ]
-        )
-        rows = [
-            ("1-000000001", 5.0, 100),
-            ("1-000000002", 2.0, 1),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_posts_per_bed_ratio(df)
-
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][NullOutlierColumns.filled_posts_per_bed_ratio], 0.05)
-        self.assertEqual(df[1][NullOutlierColumns.filled_posts_per_bed_ratio], 2.0)
-
-
 class CreateBandedBedCountColumnTests(
     NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
@@ -211,9 +184,7 @@ class CalculateAverageFilledPostsPerBandedBedCount(
                 StructField(
                     NullOutlierColumns.number_of_beds_banded, DoubleType(), True
                 ),
-                StructField(
-                    NullOutlierColumns.filled_posts_per_bed_ratio, DoubleType(), True
-                ),
+                StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             ]
         )
         rows = [
