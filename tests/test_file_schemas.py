@@ -1955,7 +1955,7 @@ class CareHomeFeaturesSchema:
 
 
 @dataclass
-class EstimateMLIndCQCFilledPostsSchemas:
+class EstimateIndCQCFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

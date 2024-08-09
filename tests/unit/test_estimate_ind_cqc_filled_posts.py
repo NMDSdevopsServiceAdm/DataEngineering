@@ -3,16 +3,16 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 
 
-import jobs.estimate_ml_ind_cqc_filled_posts as job
-from tests.test_file_data import EstimateMLIndCQCFilledPostsData as Data
-from tests.test_file_schemas import EstimateMLIndCQCFilledPostsSchemas as Schemas
+import jobs.estimate_ind_cqc_filled_posts as job
+from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
+from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
 
-class EstimateMLIndCQCFilledPostsTests(unittest.TestCase):
+class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     CARE_HOMES_FEATURES = "care home features"
     CARE_HOME_MODEL = (
@@ -44,9 +44,9 @@ class EstimateMLIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.estimate_ml_ind_cqc_filled_posts.model_non_res_without_dormancy")
-    @patch("jobs.estimate_ml_ind_cqc_filled_posts.model_non_res_with_dormancy")
-    @patch("jobs.estimate_ml_ind_cqc_filled_posts.model_care_homes")
+    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
+    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
+    @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,

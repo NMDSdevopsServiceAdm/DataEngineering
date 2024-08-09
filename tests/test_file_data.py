@@ -3255,7 +3255,7 @@ class CareHomeFeaturesData:
 
 
 @dataclass
-class EstimateMLIndCQCFilledPostsData:
+class EstimateIndCQCFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-1783948", date(2022, 2, 1), "South East", "South East", 0, ["Domiciliary care service"], "non-residential", 5, None, None, "N", "Independent", "Rural hamlet and isolated dwellings in a sparse setting", "Rural hamlet and isolated dwellings in a sparse setting", "rule_1", "Registered"),
