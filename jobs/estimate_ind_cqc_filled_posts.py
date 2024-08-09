@@ -44,6 +44,8 @@ cleaned_ind_cqc_columns = [
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
     IndCQC.current_region,
+    IndCQC.interpolation_model,
+    IndCQC.unix_time,
     Keys.year,
     Keys.month,
     Keys.day,
