@@ -3335,6 +3335,28 @@ class EstimateIndCQCFilledPostsData:
 
 
 @dataclass
+class EstimateMissingAscwdsFilledPostsData:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-1783948", date(2022, 2, 1), 0, "non-residential", None, None, "N", "rule_1"),
+        ("1-1783948", date(2022, 1, 1), 0, "non-residential", 67.0, 67.0, "N", "rule_2"),
+        ("1-348374832", date(2022, 1, 12), 0, "non-residential", 34.0, 34.0, "N", "rule_3"),
+        ("1-683746776", date(2022, 1, 1), 0, "non-residential", None, None, "N", "rule_1"),
+        ("1-10478686", date(2022, 1, 1), 0, "non-residential", None, None, "N", "rule_1"),
+        ("1-10235302415", date(2022, 1, 12), 0, "non-residential", None, None, "N", "rule_3"),
+        ("1-1060912125", date(2022, 1, 12), 0, "non-residential", None, None, "N", "rule_2"),
+        ("1-107095666", date(2022, 3, 1), 0, "non-residential", None, None, "N", "rule_3"),
+        ("1-108369587", date(2022, 3, 8), 0, "non-residential", None, None, "N", "rule_1"),
+        ("1-10758359583", date(2022, 3, 8), 0, "non-residential", None, None, "N", "rule_2"),
+        ("1-000000001", date(2022, 3, 8), 67, "Care home with nursing", None, None, "Y", "rule_1"),
+        ("1-10894414510", date(2022, 3, 8), 10, "Care home with nursing", 25.0, 25.0, "Y", "rule_3"),
+        ("1-108950835", date(2022, 3, 15), 20, "Care home without nursing", None, None, "Y", "rule_1"),
+        ("1-108967195", date(2022, 4, 22), 0, "non-residential", None, None, "N", "rule_3"),
+    ]
+    # fmt: on
+
+
+@dataclass
 class ModelPrimaryServiceRollingAverage:
     # fmt: off
     primary_service_rolling_average_rows = [
