@@ -8,7 +8,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 def model_primary_service_rolling_average(
-    df: DataFrame, column_to_average: str, number_of_days: int, model_column_name: str
+    df: DataFrame,
+    column_to_average: str,
+    number_of_days: int,
+    model_column_name: str,
+    care_home: bool,
 ) -> DataFrame:
     """
     Calculates the rolling average of a specified column over a given window of days.
@@ -24,6 +28,7 @@ def model_primary_service_rolling_average(
         column_to_average (str): The name of the column to average.
         number_of_days (int): The number of days to include in the rolling average time period.
         model_column_name (str): The name of the new column to store the rolling average.
+        care_home (bool): True if care home rolling average required, false if non-residential rolling average required.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
