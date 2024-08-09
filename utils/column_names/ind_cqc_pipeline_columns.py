@@ -33,6 +33,7 @@ class IndCqcColumns:
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
+    avg_filled_posts_per_bed_ratio: str = "avg_filled_posts_per_bed_ratio"
     avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir: str = (
         "avg_residuals_ascwds_filled_posts_dedup_clean_non_res_pir"
     )
@@ -89,6 +90,7 @@ class IndCqcColumns:
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
+    expected_filled_posts: str = "expected_filled_posts"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_non_res_with_dormancy_model: str = (
         "extrapolation_non_res_with_dormancy_model"
@@ -108,6 +110,7 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    lower_percentile: str = "lower_percentile"
     max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
     min_residual: str = "min_residual"
@@ -121,6 +124,7 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_banded: str = "number_of_beds_banded"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
@@ -163,4 +167,5 @@ class IndCqcColumns:
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
+    upper_percentile: str = "upper_percentile"
     worker_records_bounded: str = AWPClean.worker_records_bounded

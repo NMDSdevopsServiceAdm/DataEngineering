@@ -6,7 +6,6 @@ from pyspark.ml.feature import Bucketizer
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.null_outlier_columns import NullOutlierColumns
 from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
@@ -127,7 +126,7 @@ def create_banded_bed_count_column(
     set_banded_boundaries = Bucketizer(
         splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
         inputCol=IndCQC.number_of_beds,
-        outputCol=NullOutlierColumns.number_of_beds_banded,
+        outputCol=IndCQC.number_of_beds_banded,
     )
 
     number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
@@ -140,9 +139,9 @@ def create_banded_bed_count_column(
 def calculate_average_filled_posts_per_banded_bed_count(
     input_df: DataFrame,
 ) -> DataFrame:
-    output_df = input_df.groupBy(F.col(NullOutlierColumns.number_of_beds_banded)).agg(
+    output_df = input_df.groupBy(F.col(IndCQC.number_of_beds_banded)).agg(
         F.avg(IndCQC.filled_posts_per_bed_ratio).alias(
-            NullOutlierColumns.avg_filled_posts_per_bed_ratio
+            IndCQC.avg_filled_posts_per_bed_ratio
         )
     )
 
@@ -168,14 +167,13 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 ) -> DataFrame:
     df = df.join(
         expected_filled_posts_per_banded_bed_count_df,
-        NullOutlierColumns.number_of_beds_banded,
+        IndCQC.number_of_beds_banded,
         "left",
     )
 
     df = df.withColumn(
-        NullOutlierColumns.expected_filled_posts,
-        F.col(IndCQC.number_of_beds)
-        * F.col(NullOutlierColumns.avg_filled_posts_per_bed_ratio),
+        IndCQC.expected_filled_posts,
+        F.col(IndCQC.number_of_beds) * F.col(IndCQC.avg_filled_posts_per_bed_ratio),
     )
 
     return df
@@ -183,9 +181,9 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
 
 def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        NullOutlierColumns.residual,
+        IndCQC.residual,
         F.col(IndCQC.ascwds_filled_posts_dedup_clean)
-        - F.col(NullOutlierColumns.expected_filled_posts),
+        - F.col(IndCQC.expected_filled_posts),
     )
 
     return df
@@ -195,9 +193,8 @@ def calculate_filled_post_standardised_residual(
     df: DataFrame,
 ) -> DataFrame:
     df = df.withColumn(
-        NullOutlierColumns.standardised_residual,
-        F.col(NullOutlierColumns.residual)
-        / F.sqrt(F.col(NullOutlierColumns.expected_filled_posts)),
+        IndCQC.standardised_residual,
+        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.expected_filled_posts)),
     )
 
     return df
@@ -233,11 +230,11 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
 
     percentile_df = df.groupBy(IndCQC.primary_service_type).agg(
         F.expr(
-            f"percentile({NullOutlierColumns.standardised_residual}, array({lower_percentile}))"
-        )[0].alias(NullOutlierColumns.lower_percentile),
+            f"percentile({IndCQC.standardised_residual}, array({lower_percentile}))"
+        )[0].alias(IndCQC.lower_percentile),
         F.expr(
-            f"percentile({NullOutlierColumns.standardised_residual}, array({upper_percentile}))"
-        )[0].alias(NullOutlierColumns.upper_percentile),
+            f"percentile({IndCQC.standardised_residual}, array({upper_percentile}))"
+        )[0].alias(IndCQC.upper_percentile),
     )
 
     df = df.join(percentile_df, IndCQC.primary_service_type, "left")
@@ -264,14 +261,8 @@ def null_values_outside_of_standardised_residual_cutoffs(
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
-            (
-                F.col(NullOutlierColumns.standardised_residual)
-                < F.col(NullOutlierColumns.lower_percentile)
-            )
-            | (
-                F.col(NullOutlierColumns.standardised_residual)
-                > F.col(NullOutlierColumns.upper_percentile)
-            ),
+            (F.col(IndCQC.standardised_residual) < F.col(IndCQC.lower_percentile))
+            | (F.col(IndCQC.standardised_residual) > F.col(IndCQC.upper_percentile)),
             F.lit(None),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
