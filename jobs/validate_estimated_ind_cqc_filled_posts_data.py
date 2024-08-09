@@ -9,7 +9,7 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.validation.validation_rules.estimated_ml_ind_cqc_filled_posts_validation_rules import (
+from utils.validation.validation_rules.estimated_ind_cqc_filled_posts_validation_rules import (
     EstimatedIndCqcFilledPostsValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
@@ -34,10 +34,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_estimated_ind_cqc_filled_posts_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(estimated_ind_cqc_filled_posts_df, rules)
