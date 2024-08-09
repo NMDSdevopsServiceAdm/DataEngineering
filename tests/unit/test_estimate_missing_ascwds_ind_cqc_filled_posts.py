@@ -3,16 +3,16 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 
 
-import jobs.estimate_non_ml_ind_cqc_filled_posts as job
-from tests.test_file_data import EstimateNonMLIndCQCFilledPostsData as Data
-from tests.test_file_schemas import EstimateNonMLIndCQCFilledPostsSchemas as Schemas
+import jobs.estimate_missing_ascwds_ind_cqc_filled_posts as job
+from tests.test_file_data import EstimateMissingAscwdsFilledPostsData as Data
+from tests.test_file_schemas import EstimateMissingAscwdsFilledPostsSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
 
-class EstimateIndCQCFilledPostsTests(unittest.TestCase):
+class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
     partition_keys = [

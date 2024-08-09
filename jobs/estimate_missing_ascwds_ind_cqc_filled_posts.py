@@ -13,19 +13,19 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 def main(
     cleaned_ind_cqc_source: str,
-    estimated_non_ml_ind_cqc_destination: str,
+    estimated_missing_ascwds_filled_posts_destination: str,
 ) -> DataFrame:
     print("Estimating independent CQC filled posts...")
 
-    spark = utils.get_spark()
-
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
-    print(f"Exporting as parquet to {estimated_non_ml_ind_cqc_destination}")
+    print(
+        f"Exporting as parquet to {estimated_missing_ascwds_filled_posts_destination}"
+    )
 
     utils.write_to_parquet(
         cleaned_ind_cqc_df,
-        estimated_non_ml_ind_cqc_destination,
+        estimated_missing_ascwds_filled_posts_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -39,19 +39,19 @@ if __name__ == "__main__":
 
     (
         cleaned_ind_cqc_source,
-        estimated_non_ml_ind_cqc_destination,
+        estimated_missing_ascwds_filled_posts_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_ind_cqc_source",
             "Source s3 directory for cleaned_ind_cqc_filled_posts",
         ),
         (
-            "--estimated_non_ml_ind_cqc_destination",
+            "--estimated_missing_ascwds_filled_posts_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
     )
 
     main(
         cleaned_ind_cqc_source,
-        estimated_non_ml_ind_cqc_destination,
+        estimated_missing_ascwds_filled_posts_destination,
     )

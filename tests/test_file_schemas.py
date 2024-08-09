@@ -1987,7 +1987,7 @@ class EstimateIndCQCFilledPostsSchemas:
 
 
 @dataclass
-class EstimateNonMLIndCQCFilledPostsSchemas:
+class EstimateMissingAscwdsFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

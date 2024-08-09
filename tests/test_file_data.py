@@ -3277,7 +3277,7 @@ class EstimateIndCQCFilledPostsData:
 
 
 @dataclass
-class EstimateNonMLIndCQCFilledPostsData:
+class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-1783948", date(2022, 2, 1), 0, "non-residential", None, None, "N", "rule_1"),
