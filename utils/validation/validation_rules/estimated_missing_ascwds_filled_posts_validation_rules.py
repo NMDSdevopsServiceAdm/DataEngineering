@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import time
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
@@ -31,6 +32,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
             IndCqcColumns.ascwds_filtering_rule,
+            IndCqcColumns.unix_time,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -42,6 +44,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,
             IndCqcColumns.filled_posts_per_bed_ratio: 0.0,
+            IndCqcColumns.interpolation_model: 0.0,
+            IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
@@ -49,6 +53,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.total_staff_bounded: 3000,
             IndCqcColumns.worker_records_bounded: 3000,
             IndCqcColumns.filled_posts_per_bed_ratio: 15.0,
+            IndCqcColumns.interpolation_model: 3000.0,
+            IndCqcColumns.unix_time: int(time.time()),  # current unix time
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
