@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.null_outlier_columns import NullOutlierColumns
-from utils.column_values.categorical_column_values import AscwdsFilteringRule
+from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
@@ -99,7 +99,7 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
         (DataFrame): A dataframe filtered to care homes with known beds and known filled posts.
     """
     df = df.where(
-        (F.col(IndCQC.care_home) == "Y")
+        (F.col(IndCQC.care_home) == CareHome.care_home)
         & (
             F.col(IndCQC.number_of_beds).isNotNull()
             & (F.col(IndCQC.number_of_beds) > 0)

@@ -1,10 +1,5 @@
 import sys
-
-from pyspark.sql import (
-    DataFrame,
-    Window,
-)
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
@@ -18,6 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+from utils.column_values.categorical_column_values import CareHome
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
@@ -83,7 +79,7 @@ def populate_missing_care_home_number_of_beds(
 def filter_to_care_homes_with_known_beds(
     df: DataFrame,
 ) -> DataFrame:
-    df = df.filter(F.col(IndCQC.care_home) == "Y")
+    df = df.filter(F.col(IndCQC.care_home) == CareHome.care_home)
     df = df.filter(F.col(IndCQC.number_of_beds).isNotNull())
     return df
 
