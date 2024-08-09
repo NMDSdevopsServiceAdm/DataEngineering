@@ -122,6 +122,7 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
         NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.rolling_average_model,
+        care_home=True,  # This will break estimates but will be removed soon
     )
 
     cleaned_ind_cqc_df = (

@@ -24,8 +24,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.unix_time,
-            IndCqcColumns.estimate_filled_posts,
-            IndCqcColumns.estimate_filled_posts_source,
+            # IndCqcColumns.estimate_filled_posts, # temporarily removed until refactor is complete
+            # IndCqcColumns.estimate_filled_posts_source, # temporarily removed until refactor is complete
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
