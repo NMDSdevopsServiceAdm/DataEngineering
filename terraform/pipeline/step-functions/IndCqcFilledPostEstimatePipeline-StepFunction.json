@@ -196,7 +196,7 @@
                 "JobName": "${estimate_missing_ascwds_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
                   "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                  "--estimated_non_ml_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+                  "--estimated_missing_ascwds_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
                 }
               },
               "Next": "Feature engineering"
