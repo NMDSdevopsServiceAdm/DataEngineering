@@ -11,7 +11,6 @@ from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
-from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
@@ -82,15 +81,6 @@ def main(
     non_res_without_dormancy_features_df = utils.read_from_parquet(
         non_res_without_dormancy_features_source
     )
-
-    cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
-        cleaned_ind_cqc_df,
-        date_col=IndCQC.cqc_location_import_date,
-        date_format="yyyy-MM-dd",
-        new_col_name=IndCQC.unix_time,
-    )
-
-    cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
     cleaned_ind_cqc_df = model_care_homes(
         cleaned_ind_cqc_df,
