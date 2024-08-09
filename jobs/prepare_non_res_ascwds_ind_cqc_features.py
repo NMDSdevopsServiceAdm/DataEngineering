@@ -16,6 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import CareHome
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
@@ -201,7 +202,7 @@ def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe containing non-residential features data.
     """
-    return df.filter(F.col(IndCQC.care_home) == "N")
+    return df.filter(F.col(IndCQC.care_home) == CareHome.not_care_home)
 
 
 def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:

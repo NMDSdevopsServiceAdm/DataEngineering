@@ -122,7 +122,7 @@ class PIRType(ColumnValues):
 
 @dataclass
 class CareHome(ColumnValues):
-    """The possible values of the care home column in CQC PIR data"""
+    """The possible values of the care home column in CQC data"""
 
     care_home: str = "Y"
     not_care_home: str = "N"
