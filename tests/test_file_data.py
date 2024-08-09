@@ -5465,6 +5465,7 @@ class ValidateCleanedIndCqcData:
         ),
     ]
 
+
 @dataclass
 class ValidateEstimatedMissingAscwdsFilledPostsData:
     # fmt: off
@@ -5489,6 +5490,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsData:
             date(2024, 1, 1),
         ),
     ]
+
 
 @dataclass
 class ValidateCareHomeIndCqcFeaturesData:

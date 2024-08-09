@@ -3457,6 +3457,7 @@ class ValidateCleanedIndCqcData:
     )
     calculate_expected_size_schema = merged_ind_cqc_schema
 
+
 @dataclass
 class ValidateEstimatedMissingAscwdsFilledPostsData:
     cleaned_ind_cqc_schema = StructType(
@@ -3507,6 +3508,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsData:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
+
 
 @dataclass
 class ValidateCareHomeIndCqcFeaturesData:
