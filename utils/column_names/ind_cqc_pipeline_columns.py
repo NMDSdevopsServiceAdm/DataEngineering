@@ -157,7 +157,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_model: str = "rolling_average_model"
     rolling_count: str = "rolling_count"
     rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
