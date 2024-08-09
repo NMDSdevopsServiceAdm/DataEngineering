@@ -7,9 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
-    model_primary_service_rolling_average,
-)
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
@@ -117,13 +114,6 @@ def main(
         cleaned_ind_cqc_df, IndCQC.non_res_with_dormancy_model
     )
 
-    cleaned_ind_cqc_df = model_primary_service_rolling_average(
-        cleaned_ind_cqc_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        IndCQC.rolling_average_model,
-    )
-
     cleaned_ind_cqc_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             cleaned_ind_cqc_df,
@@ -135,7 +125,6 @@ def main(
                 IndCQC.care_home_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,
-                IndCQC.rolling_average_model,
             ],
         )
     )

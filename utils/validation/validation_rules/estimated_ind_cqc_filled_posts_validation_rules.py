@@ -24,8 +24,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.unix_time,
-            IndCqcColumns.estimate_filled_posts,
-            IndCqcColumns.estimate_filled_posts_source,
+            # IndCqcColumns.estimate_filled_posts,
+            # IndCqcColumns.estimate_filled_posts_source,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -39,7 +39,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.people_directly_employed_dedup: 1,
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
-            IndCqcColumns.rolling_average_model: 0.0,
             IndCqcColumns.interpolation_model: 0.0,
         },
         RuleName.max_values: {
@@ -50,7 +49,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.people_directly_employed_dedup: 10000,
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
-            IndCqcColumns.rolling_average_model: 3000.0,
             IndCqcColumns.extrapolation_care_home_model: 3000.0,
             IndCqcColumns.interpolation_model: 3000.0,
             IndCqcColumns.care_home_model: 3000.0,
