@@ -43,6 +43,25 @@
             }
           },
           {
+            "StartAt": "Run validate estimated missing ascwds filled posts data job",
+            "States": {
+              "Run validate estimated missing ascwds filled posts data job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_estimated_missing_ascwds_filled_posts_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
+                    "--estimated_missing_ascwds_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_missing_ascwds_filled_posts_report/"
+                  }
+                },
+                "ResultPath": null,
+                "End": true
+              }
+            }
+          },
+          {
             "StartAt": "Run validate care home ind cqc features data job",
             "States": {
                 "Run validate care home ind cqc features data job": {
