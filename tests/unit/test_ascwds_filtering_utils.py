@@ -11,7 +11,6 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.null_outlier_columns import NullOutlierColumns
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
     ascwds_filtering_utils as job,

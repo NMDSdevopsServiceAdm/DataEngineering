@@ -1504,6 +1504,21 @@ class CleanIndCQCData:
         ]
     )
 
+    filled_posts_per_bed_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )
+    expected_filled_posts_per_bed_ratio_schema = StructType(
+        [
+            *filled_posts_per_bed_ratio_schema,
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ReconciliationSchema:
@@ -1830,6 +1845,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
 
@@ -1991,6 +2007,22 @@ class EstimateIndCQCFilledPostsSchemas:
             ),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class EstimateMissingAscwdsFilledPostsSchemas:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
         ]
     )
 
@@ -4004,7 +4036,25 @@ class ASCWDSFilteringUtilsSchemas:
             ),
         ]
     )
-    update_filtering_rule_schema = expected_add_filtering_column_schema
+    update_filtering_rule_schema = StructType(
+        [
+            StructField(
+                IndCQC.location_id,
+                StringType(),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_filtering_rule,
+                StringType(),
+                True,
+            ),
+        ]
+    )
 
 
 @dataclass
