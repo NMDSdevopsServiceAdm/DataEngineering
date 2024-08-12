@@ -1,14 +1,30 @@
 import sys
 
+from dataclasses import dataclass
 from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+
+
+@dataclass
+class NumericalValues:
+    NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE = (
+        185  # Note: using 185 as a proxy for 6 months
+    )
+    NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE = (
+        185  # Note: using 185 as a proxy for 6 months
+    )
 
 
 def main(
@@ -18,6 +34,31 @@ def main(
     print("Estimating missing ASCWDS independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
+
+    estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
+        estimate_missing_ascwds_df,
+        date_col=IndCQC.cqc_location_import_date,
+        date_format="yyyy-MM-dd",
+        new_col_name=IndCQC.unix_time,
+    )
+
+    estimate_missing_ascwds_df = model_primary_service_rolling_average(
+        estimate_missing_ascwds_df,
+        IndCQC.filled_posts_per_bed_ratio,
+        NumericalValues.NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE,
+        IndCQC.rolling_average_care_home_posts_per_bed_model,
+        care_home=True,
+    )
+
+    estimate_missing_ascwds_df = model_primary_service_rolling_average(
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
+        IndCQC.rolling_average_non_res_model,
+        care_home=False,
+    )
+
+    estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
