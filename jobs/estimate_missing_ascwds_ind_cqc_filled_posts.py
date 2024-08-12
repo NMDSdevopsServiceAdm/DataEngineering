@@ -15,7 +15,7 @@ def main(
     cleaned_ind_cqc_source: str,
     estimated_missing_ascwds_ind_cqc_destination: str,
 ) -> DataFrame:
-    print("Estimating independent CQC filled posts...")
+    print("Estimating missing ASCWDS independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
@@ -28,11 +28,11 @@ def main(
         partitionKeys=PartitionKeys,
     )
 
-    print("Completed estimate independent CQC filled posts")
+    print("Completed estimate missing ASCWDS independent CQC filled posts")
 
 
 if __name__ == "__main__":
-    print("Spark job 'estimate_ind_cqc_filled_posts' starting...")
+    print("Spark job 'estimate_missing_ascwds_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         ),
         (
             "--estimated_missing_ascwds_ind_cqc_destination",
-            "Destination s3 directory for outputting estimates for filled posts",
+            "Destination s3 directory for outputting estimate missing ASCWDS filled posts",
         ),
     )
 
