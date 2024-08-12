@@ -1,13 +1,14 @@
 import sys
 
 from dataclasses import dataclass
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
@@ -31,6 +32,7 @@ def main(
     cleaned_ind_cqc_source: str,
     estimated_missing_ascwds_ind_cqc_destination: str,
 ) -> DataFrame:
+    """ """
     print("Estimating missing ASCWDS independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
@@ -42,20 +44,16 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    estimate_missing_ascwds_df = model_primary_service_rolling_average(
+    estimate_missing_ascwds_df = model_care_home_posts_per_bed_rolling_average(
         estimate_missing_ascwds_df,
-        IndCQC.filled_posts_per_bed_ratio,
         NumericalValues.NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE,
         IndCQC.rolling_average_care_home_posts_per_bed_model,
-        care_home=True,
     )
 
-    estimate_missing_ascwds_df = model_primary_service_rolling_average(
+    estimate_missing_ascwds_df = model_non_res_filled_post_rolling_average(
         estimate_missing_ascwds_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
         NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
         IndCQC.rolling_average_non_res_model,
-        care_home=False,
     )
 
     estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
@@ -70,6 +68,54 @@ def main(
     )
 
     print("Completed estimate missing ASCWDS independent CQC filled posts")
+
+
+def model_care_home_posts_per_bed_rolling_average(
+    df: DataFrame,
+    number_of_days: int,
+    model_column_name: str,
+) -> DataFrame:
+    """ """  # TODO - Add docstring
+    df = model_primary_service_rolling_average(
+        df,
+        IndCQC.filled_posts_per_bed_ratio,
+        number_of_days,
+        model_column_name,
+    )
+
+    df = df.withColumn(
+        model_column_name,
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.care_home,
+            F.col(model_column_name) * F.col(IndCQC.number_of_beds),
+        ),
+    )
+
+    return df
+
+
+def model_non_res_filled_post_rolling_average(
+    df: DataFrame,
+    number_of_days: int,
+    model_column_name: str,
+) -> DataFrame:
+    """ """  # TODO - Add docstring
+    df = model_primary_service_rolling_average(
+        df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        number_of_days,
+        model_column_name,
+    )
+
+    df = df.withColumn(
+        model_column_name,
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.not_care_home,
+            F.col(model_column_name),
+        ),
+    )
+
+    return df
 
 
 if __name__ == "__main__":
