@@ -32,7 +32,6 @@ def main(
     cleaned_ind_cqc_source: str,
     estimated_missing_ascwds_ind_cqc_destination: str,
 ) -> DataFrame:
-    """ """
     print("Estimating missing ASCWDS independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
@@ -75,7 +74,21 @@ def model_care_home_posts_per_bed_rolling_average(
     number_of_days: int,
     model_column_name: str,
 ) -> DataFrame:
-    """ """  # TODO - Add docstring
+    """
+    Estimate filled posts for care homes based on the rolling average of filled posts to bed ratio.
+
+    This function uses the primary_service_rolling_average model to calculate the average filled posts per bed
+    value over time. The rolling average ratios outputted from that model are multiplied by the number of beds
+    to give the equivalent rolling filled posts. Values are only populated in the new column for care homes.
+
+    Args:
+        df (DataFrame): The input DataFrame containing filled posts per bed ratio.
+        number_of_days (int): The number of days to include in the rolling average time period.
+        model_column_name (str): The name of the new column to store the rolling average.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing the rolling average.
+    """
     df = model_primary_service_rolling_average(
         df,
         IndCQC.filled_posts_per_bed_ratio,
@@ -99,7 +112,20 @@ def model_non_res_filled_post_rolling_average(
     number_of_days: int,
     model_column_name: str,
 ) -> DataFrame:
-    """ """  # TODO - Add docstring
+    """
+    Estimate filled posts for non res locations based on the rolling average of filled posts.
+
+    This function uses the primary_service_rolling_average model to calculate the average filled posts over
+    time. Values are only populated in the new column for non res locations.
+
+    Args:
+        df (DataFrame): The input DataFrame containing filled posts per bed ratio.
+        number_of_days (int): The number of days to include in the rolling average time period.
+        model_column_name (str): The name of the new column to store the rolling average.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing the rolling average.
+    """
     df = model_primary_service_rolling_average(
         df,
         IndCQC.ascwds_filled_posts_dedup_clean,
