@@ -4,8 +4,10 @@ from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -18,6 +20,15 @@ def main(
     print("Estimating independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
+
+    cleaned_ind_cqc_df = utils.create_unix_timestamp_variable_from_date_column(
+        cleaned_ind_cqc_df,
+        date_col=IndCQC.cqc_location_import_date,
+        date_format="yyyy-MM-dd",
+        new_col_name=IndCQC.unix_time,
+    )
+
+    cleaned_ind_cqc_df = model_interpolation(cleaned_ind_cqc_df)
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
