@@ -3760,7 +3760,9 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 IndCQC.extrapolation_non_res_with_dormancy_model, FloatType(), True
             ),
             StructField(
-                IndCQC.extrapolation_rolling_average_care_home_posts_per_bed_model, FloatType(), True
+                IndCQC.extrapolation_rolling_average_care_home_posts_per_bed_model,
+                FloatType(),
+                True,
             ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
