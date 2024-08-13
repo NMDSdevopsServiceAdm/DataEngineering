@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, Mock, ANY, call
+from unittest.mock import patch, Mock
 
 from pyspark.sql import WindowSpec
 
@@ -11,7 +11,6 @@ from tests.test_file_data import (
     DiagnosticsOnKnownFilledPostsData as Data,
 )
 from utils import utils
-from utils.column_values.categorical_column_values import CareHome
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
