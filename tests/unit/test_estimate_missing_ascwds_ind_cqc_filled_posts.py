@@ -57,6 +57,21 @@ class MainTests(EstimateMissingAscwdsFilledPostsTests):
         )
 
 
+class NumericalValuesTests(EstimateMissingAscwdsFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_number_of_days_in_care_home_rolling_average_value(self):
+        self.assertEqual(
+            job.NumericalValues.NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE, 185
+        )
+
+    def test_number_of_days_in_non_res_rolling_average_value(self):
+        self.assertEqual(
+            job.NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE, 185
+        )
+
+
 class ModelCareHomePostsPerBedRollingAverageTests(
     EstimateMissingAscwdsFilledPostsTests
 ):
