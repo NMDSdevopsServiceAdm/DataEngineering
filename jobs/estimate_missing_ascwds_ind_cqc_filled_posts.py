@@ -60,7 +60,7 @@ def main(
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
-        cleaned_ind_cqc_df,
+        estimate_missing_ascwds_df,
         estimated_missing_ascwds_ind_cqc_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
