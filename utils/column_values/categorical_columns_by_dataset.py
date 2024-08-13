@@ -154,6 +154,35 @@ class CleanedIndCQCCategoricalValues:
 
 
 @dataclass
+class EstimatedMissingAscwdsCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    sector_column_values = Sector(
+        IndCQC.cqc_sector, value_to_remove=Sector.local_authority
+    )
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
+    registration_status_column_values = RegistrationStatus(
+        IndCQC.registration_status,
+        value_to_remove=RegistrationStatus.deregistered,
+    )
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    current_region_column_values = Region(IndCQC.current_region)
+    contemporary_region_column_values = Region(IndCQC.contemporary_region)
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    current_cssr_column_values = CurrentCSSR(
+        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
+    )
+    contemporary_cssr_column_values = ContemporaryCSSR(
+        IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
+    )
+    ascwds_filled_posts_source_column_values = ASCWDSFilledPostsSource(
+        IndCQC.ascwds_filled_posts_source, contains_null_values=True
+    )
+    ascwds_filtering_rule_column_values = AscwdsFilteringRule(
+        IndCQC.ascwds_filtering_rule
+    )
+
+
+@dataclass
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     services_column_values = Services(IndCQC.gac_service_types)
