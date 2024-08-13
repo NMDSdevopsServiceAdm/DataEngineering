@@ -37,7 +37,7 @@ def main(
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
     estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
-        estimate_missing_ascwds_df,
+        cleaned_ind_cqc_df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
