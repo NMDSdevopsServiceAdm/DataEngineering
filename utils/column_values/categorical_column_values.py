@@ -448,7 +448,6 @@ class ASCWDSFilledPostsSource(ColumnValues):
 class EstimateFilledPostsSource(ColumnValues):
     """The possible values of the estimate filled posts source column in the independent CQC estimates pipeline"""
 
-    rolling_average_model: str = IndCQC.rolling_average_model
     care_home_model: str = IndCQC.care_home_model
     interpolation_model: str = IndCQC.interpolation_model
     extrapolation_care_home_model: str = IndCQC.extrapolation_care_home_model
