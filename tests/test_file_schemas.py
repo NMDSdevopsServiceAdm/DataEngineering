@@ -3721,7 +3721,6 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(IndCQC.interpolation_model, FloatType(), True),
