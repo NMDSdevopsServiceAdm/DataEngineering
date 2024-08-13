@@ -457,6 +457,10 @@ class EstimateFilledPostsSource(ColumnValues):
     extrapolation_non_res_with_dormancy_model: str = (
         IndCQC.extrapolation_non_res_with_dormancy_model
     )
+    rolling_average_care_home_posts_per_bed_model: str = (
+        IndCQC.rolling_average_care_home_posts_per_bed_model
+    )
+    rolling_average_non_res_model: str = IndCQC.rolling_average_non_res_model
 
 
 @dataclass

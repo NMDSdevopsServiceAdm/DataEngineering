@@ -5,7 +5,6 @@ from utils.utils import convert_days_to_unix_time
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-from utils.column_values.categorical_column_values import CareHome
 
 
 def model_primary_service_rolling_average(
@@ -13,7 +12,6 @@ def model_primary_service_rolling_average(
     column_to_average: str,
     number_of_days: int,
     model_column_name: str,
-    care_home: bool,
 ) -> DataFrame:
     """
     Calculates the rolling average of a specified column over a given window of days.
@@ -29,7 +27,6 @@ def model_primary_service_rolling_average(
         column_to_average (str): The name of the column to average.
         number_of_days (int): The number of days to include in the rolling average time period.
         model_column_name (str): The name of the new column to store the rolling average.
-        care_home (bool): True if care home rolling average required, false if non-residential rolling average required.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
@@ -50,21 +47,6 @@ def model_primary_service_rolling_average(
         IndCqc.rolling_count,
         IndCqc.rolling_sum,
     )
-    if care_home == True:
-        df = df.withColumn(
-            model_column_name,
-            F.when(
-                F.col(IndCqc.care_home) == CareHome.care_home, F.col(model_column_name)
-            ),
-        )
-    else:
-        df = df.withColumn(
-            model_column_name,
-            F.when(
-                F.col(IndCqc.care_home) == CareHome.not_care_home,
-                F.col(model_column_name),
-            ),
-        )
     return df
 
 

@@ -41,6 +41,8 @@ estimate_missing_ascwds_columns = [
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
     IndCQC.current_region,
+    IndCQC.rolling_average_care_home_posts_per_bed_model,
+    IndCQC.rolling_average_non_res_model,
     IndCQC.interpolation_model,
     IndCQC.unix_time,
     Keys.year,
@@ -80,36 +82,36 @@ def main(
         non_res_without_dormancy_features_source
     )
 
-    estimate_missing_ascwds_df = model_care_homes(
+    estimate_filled_posts_df = model_care_homes(
         estimate_missing_ascwds_df,
         care_home_features_df,
         care_home_model_source,
         ml_model_metrics_destination,
     )
 
-    estimate_missing_ascwds_df = model_non_res_with_dormancy(
-        estimate_missing_ascwds_df,
+    estimate_filled_posts_df = model_non_res_with_dormancy(
+        estimate_filled_posts_df,
         non_res_with_dormancy_features_df,
         non_res_with_dormancy_model_source,
         ml_model_metrics_destination,
     )
-    estimate_missing_ascwds_df = model_non_res_without_dormancy(
-        estimate_missing_ascwds_df,
+    estimate_filled_posts_df = model_non_res_without_dormancy(
+        estimate_filled_posts_df,
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
         ml_model_metrics_destination,
     )
 
-    estimate_missing_ascwds_df = model_extrapolation(
-        estimate_missing_ascwds_df, IndCQC.care_home_model
+    estimate_filled_posts_df = model_extrapolation(
+        estimate_filled_posts_df, IndCQC.care_home_model
     )
-    estimate_missing_ascwds_df = model_extrapolation(
-        estimate_missing_ascwds_df, IndCQC.non_res_with_dormancy_model
+    estimate_filled_posts_df = model_extrapolation(
+        estimate_filled_posts_df, IndCQC.non_res_with_dormancy_model
     )
 
-    estimate_missing_ascwds_df = (
+    estimate_filled_posts_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-            estimate_missing_ascwds_df,
+            estimate_filled_posts_df,
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 IndCQC.interpolation_model,
@@ -118,6 +120,7 @@ def main(
                 IndCQC.care_home_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,
+                IndCQC.rolling_average_non_res_model,
             ],
         )
     )
@@ -125,7 +128,7 @@ def main(
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
     utils.write_to_parquet(
-        estimate_missing_ascwds_df,
+        estimate_filled_posts_df,
         estimated_ind_cqc_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,

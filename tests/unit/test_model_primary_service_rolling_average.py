@@ -27,19 +27,18 @@ class MainModelTests(ModelPrimaryServiceRollingAverageTests):
             Data.primary_service_rolling_average_rows,
             Schemas.primary_service_rolling_average_schema,
         )
-        self.returned_care_home_df = job.model_primary_service_rolling_average(
+        self.returned_df = job.model_primary_service_rolling_average(
             self.estimates_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
             IndCqc.rolling_average_model,
-            care_home=True,
         )
-        self.expected_care_home_df = self.spark.createDataFrame(
-            Data.expected_care_home_primary_service_rolling_average_rows,
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_rolling_average_rows,
             Schemas.expected_primary_service_rolling_average_schema,
         )
-        self.returned_care_home_row_object = (
-            self.returned_care_home_df.select(
+        self.returned_row_object = (
+            self.returned_df.select(
                 IndCqc.location_id,
                 IndCqc.care_home,
                 IndCqc.unix_time,
@@ -50,66 +49,27 @@ class MainModelTests(ModelPrimaryServiceRollingAverageTests):
             .sort(IndCqc.location_id)
             .collect()
         )
-        self.expected_care_home_row_object = self.expected_care_home_df.sort(
-            IndCqc.location_id
-        ).collect()
+        self.expected_row_object = self.expected_df.sort(IndCqc.location_id).collect()
 
     def test_row_count_unchanged_after_running_full_job(self):
-        self.assertEqual(self.estimates_df.count(), self.returned_care_home_df.count())
+        self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
     def test_only_one_additional_column_returned(self):
         self.assertEqual(
-            len(self.estimates_df.columns) + 1, len(self.returned_care_home_df.columns)
+            len(self.estimates_df.columns) + 1, len(self.returned_df.columns)
         )
         self.assertEqual(
-            sorted(self.returned_care_home_df.columns),
-            sorted(self.expected_care_home_df.columns),
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
         )
 
-    def test_returned_rolling_average_model_values_match_expected_when_care_home_equals_true(
+    def test_returned_rolling_average_model_values_match_expected(
         self,
     ):
-        for i in range(len(self.returned_care_home_row_object)):
+        for i in range(len(self.returned_row_object)):
             self.assertEqual(
-                self.returned_care_home_row_object[i][IndCqc.rolling_average_model],
-                self.expected_care_home_row_object[i][IndCqc.rolling_average_model],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_rolling_average_model_values_match_expected_when_care_home_equals_false(
-        self,
-    ):
-        number_of_days = 88
-        returned_non_res_df = job.model_primary_service_rolling_average(
-            self.estimates_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            number_of_days,
-            IndCqc.rolling_average_model,
-            care_home=False,
-        )
-        expected_non_res_df = self.spark.createDataFrame(
-            Data.expected_non_res_primary_service_rolling_average_rows,
-            Schemas.expected_primary_service_rolling_average_schema,
-        )
-        returned_non_res_row_object = (
-            returned_non_res_df.select(
-                IndCqc.location_id,
-                IndCqc.care_home,
-                IndCqc.unix_time,
-                IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.primary_service_type,
-                IndCqc.rolling_average_model,
-            )
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        expected_non_res_row_object = expected_non_res_df.sort(
-            IndCqc.location_id
-        ).collect()
-        for i in range(len(returned_non_res_row_object)):
-            self.assertEqual(
-                returned_non_res_row_object[i][IndCqc.rolling_average_model],
-                expected_non_res_row_object[i][IndCqc.rolling_average_model],
+                self.returned_row_object[i][IndCqc.rolling_average_model],
+                self.expected_row_object[i][IndCqc.rolling_average_model],
                 f"Returned row {i} does not match expected",
             )
 
