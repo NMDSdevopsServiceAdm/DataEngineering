@@ -50,8 +50,6 @@ cleaned_ind_cqc_columns = [
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 366  # Note: using 366 as a proxy for 12 months
-
 
 def main(
     cleaned_ind_cqc_source: str,
