@@ -96,6 +96,9 @@ class IndCqcColumns:
         "extrapolation_non_res_with_dormancy_model"
     )
     extrapolation_ratio: str = "extrapolation_ratio"
+    extrapolation_rolling_average_care_home_posts_per_bed_model: str = (
+        "extrapolation_rolling_average_care_home_posts_per_bed_model"
+    )
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_unix_time: str = "filled_posts_unix_time"

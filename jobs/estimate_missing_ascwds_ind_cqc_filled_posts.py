@@ -13,6 +13,7 @@ from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -53,6 +54,10 @@ def main(
         estimate_missing_ascwds_df,
         NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
         IndCQC.rolling_average_non_res_model,
+    )
+
+    estimate_missing_ascwds_df = model_extrapolation(
+        estimate_missing_ascwds_df, IndCQC.rolling_average_care_home_posts_per_bed_model
     )
 
     estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
