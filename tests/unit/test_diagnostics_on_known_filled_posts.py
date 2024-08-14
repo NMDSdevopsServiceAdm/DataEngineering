@@ -96,8 +96,6 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsOnKnownFilledPostsTests):
             Schemas.expected_restructure_dataframe_schema,
         )
         self.returned_df = job.restructure_dataframe_to_column_wise(self.test_df)
-        self.returned_df.sort(IndCQC.estimate_source).show()
-        self.expected_df.sort(IndCQC.estimate_source).show()
 
     def test_restructure_dataframe_to_column_wise_has_correct_values(self):
         returned_data = self.returned_df.sort(IndCQC.estimate_source).collect()
