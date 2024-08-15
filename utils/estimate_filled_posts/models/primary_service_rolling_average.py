@@ -48,6 +48,6 @@ def define_window_specifications(number_of_days: int) -> Window:
     """
     return (
         Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(IndCqc.unix_time).cast("long"))
+        .orderBy(F.col(IndCqc.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
