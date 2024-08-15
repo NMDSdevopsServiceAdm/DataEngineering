@@ -102,7 +102,7 @@ def model_care_home_posts_per_bed_rolling_average(
         number_of_days,
         model_column_name,
     )
-
+    print(df.rdd.getNumPartitions())
     df = df.withColumn(
         model_column_name,
         F.when(
@@ -110,7 +110,7 @@ def model_care_home_posts_per_bed_rolling_average(
             F.col(model_column_name) * F.col(IndCQC.number_of_beds),
         ),
     )
-
+    print(df.rdd.getNumPartitions())
     return df
 
 

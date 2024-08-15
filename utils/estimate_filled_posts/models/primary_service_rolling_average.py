@@ -36,17 +36,20 @@ def model_primary_service_rolling_average(
         column_to_average,
         number_of_days,
     )
+    print(df.rdd.getNumPartitions())
     df = calculate_rolling_count(
         df,
         column_to_average,
         number_of_days,
     )
+    print(df.rdd.getNumPartitions())
     df = calculate_rolling_average(df, model_column_name)
-
+    print(df.rdd.getNumPartitions())
     df = df.drop(
         IndCqc.rolling_count,
         IndCqc.rolling_sum,
     )
+    print(df.rdd.getNumPartitions())
     return df
 
 
