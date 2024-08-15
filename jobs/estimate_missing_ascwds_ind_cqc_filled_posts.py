@@ -64,7 +64,7 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
         NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
-        IndCQC.rolling_average_non_res_model,
+        IndCQC.rolling_average_care_home_posts_per_bed_model,  # would need to rename
     )
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_care_home_posts_per_bed_model
