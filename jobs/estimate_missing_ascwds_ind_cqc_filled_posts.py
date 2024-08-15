@@ -37,31 +37,33 @@ def main(
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
+    print(cleaned_ind_cqc_df.rdd.getNumPartitions())
+
     estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
         cleaned_ind_cqc_df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
     )
-
+    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
     estimate_missing_ascwds_df = model_care_home_posts_per_bed_rolling_average(
         estimate_missing_ascwds_df,
         NumericalValues.NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE,
         IndCQC.rolling_average_care_home_posts_per_bed_model,
     )
-
+    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
     estimate_missing_ascwds_df = model_non_res_filled_post_rolling_average(
         estimate_missing_ascwds_df,
         NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
         IndCQC.rolling_average_non_res_model,
     )
-
+    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_care_home_posts_per_bed_model
     )
-
+    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
     estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
-
+    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
