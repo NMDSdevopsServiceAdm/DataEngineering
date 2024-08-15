@@ -11,6 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
+    combined_model_primary_service_rolling_average,
 )
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
@@ -45,25 +46,32 @@ def main(
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
     )
-    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
+    """
     estimate_missing_ascwds_df = model_care_home_posts_per_bed_rolling_average(
         estimate_missing_ascwds_df,
         NumericalValues.NUMBER_OF_DAYS_IN_CARE_HOME_ROLLING_AVERAGE,
         IndCQC.rolling_average_care_home_posts_per_bed_model,
     )
-    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
+
     estimate_missing_ascwds_df = model_non_res_filled_post_rolling_average(
         estimate_missing_ascwds_df,
         NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
         IndCQC.rolling_average_non_res_model,
     )
-    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
+    """
+    estimate_missing_ascwds_df = combined_model_primary_service_rolling_average(
+        estimate_missing_ascwds_df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.NUMBER_OF_DAYS_IN_NON_RES_ROLLING_AVERAGE,
+        IndCQC.rolling_average_non_res_model,
+    )
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_care_home_posts_per_bed_model
     )
-    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
+
     estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
-    print(estimate_missing_ascwds_df.rdd.getNumPartitions())
+
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
