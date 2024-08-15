@@ -31,6 +31,7 @@ def model_primary_service_rolling_average(
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
     """
+    starting_partitions = df.rdd.getNumPartitions()
     df = calculate_rolling_sum(
         df,
         column_to_average,
@@ -43,6 +44,7 @@ def model_primary_service_rolling_average(
         number_of_days,
     )
     print(df.rdd.getNumPartitions())
+    df = df.repartition(starting_partitions)
     df = calculate_rolling_average(df, model_column_name)
     print(df.rdd.getNumPartitions())
     df = df.drop(
