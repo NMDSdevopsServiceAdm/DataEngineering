@@ -2067,47 +2067,6 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
-    rolling_sum_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    expected_rolling_sum_schema = StructType(
-        [
-            *rolling_sum_schema,
-            StructField(IndCQC.rolling_sum, DoubleType(), True),
-        ]
-    )
-    rolling_count_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    expected_rolling_count_schema = StructType(
-        [
-            *rolling_count_schema,
-            StructField(IndCQC.rolling_count, DoubleType(), True),
-        ]
-    )
-    rolling_average_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.rolling_sum, DoubleType(), True),
-            StructField(IndCQC.rolling_count, DoubleType(), True),
-        ]
-    )
-    expected_rolling_average_schema = StructType(
-        [
-            *rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
-        ]
-    )
 
 
 @dataclass
