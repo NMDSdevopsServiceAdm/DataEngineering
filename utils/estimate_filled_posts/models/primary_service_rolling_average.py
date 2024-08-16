@@ -10,35 +10,6 @@ from utils.column_values.categorical_column_values import CareHome
 
 def model_primary_service_rolling_average(
     df: DataFrame,
-    column_to_average: str,
-    number_of_days: int,
-    model_column_name: str,
-) -> DataFrame:
-    """
-    Calculates the rolling average of a specified column over a given window of days.
-
-    Calculates the rolling average of a specified column over a given window of days. The
-    additional column will be added with the column name 'model_column_name'.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        column_to_average (str): The name of the column to average.
-        number_of_days (int): The number of days to include in the rolling average time period.
-        model_column_name (str): The name of the new column to store the rolling average.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing the rolling average.
-    """
-    df = df.withColumn(
-        model_column_name,
-        F.avg(column_to_average).over(define_window_specifications(number_of_days)),
-    )
-
-    return df
-
-
-def combined_model_primary_service_rolling_average(
-    df: DataFrame,
     care_home_column_to_average: str,
     non_res_column_to_average: str,
     number_of_days: int,
@@ -47,12 +18,13 @@ def combined_model_primary_service_rolling_average(
     """
     Calculates the rolling average of a specified column over a given window of days.
 
-    Calculates the rolling average of a specified column over a given window of days. The
+    Calculates the rolling average of a specified column over a given window of days for care homes and non residential locations separately. The
     additional column will be added with the column name 'model_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
-        column_to_average (str): The name of the column to average.
+        care_home_column_to_average (str): The name of the column to average for care homes.
+        non_res_column_to_average (str): The name of the column to average for non residential locations.
         number_of_days (int): The number of days to include in the rolling average time period.
         model_column_name (str): The name of the new column to store the rolling average.
 
