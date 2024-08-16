@@ -96,9 +96,7 @@ class IndCqcColumns:
         "extrapolation_non_res_with_dormancy_model"
     )
     extrapolation_ratio: str = "extrapolation_ratio"
-    extrapolation_rolling_average_care_home_posts_per_bed_model: str = (
-        "extrapolation_rolling_average_care_home_posts_per_bed_model"
-    )
+    extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_unix_time: str = "filled_posts_unix_time"
@@ -160,11 +158,7 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_care_home_posts_per_bed_model: str = (
-        "rolling_average_care_home_posts_per_bed_model"
-    )
     rolling_average_model: str = "rolling_average_model"
-    rolling_average_non_res_model: str = "rolling_average_non_res_model"
     rolling_count: str = "rolling_count"
     rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
