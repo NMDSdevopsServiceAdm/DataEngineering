@@ -5968,7 +5968,7 @@ class DiagnosticsOnKnownFilledPostsData:
             date(2024, 1, 1),
             PrimaryServiceType.care_home_only,
             10.0,
-            IndCQC.extrapolation_rolling_average_care_home_posts_per_bed_model,
+            IndCQC.extrapolation_rolling_average_model,
             11.0,
             "2024",
             "01",
