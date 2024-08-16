@@ -50,6 +50,7 @@ def main(
     )
 
     estimate_missing_ascwds_df = model_interpolation(estimate_missing_ascwds_df)
+    estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
