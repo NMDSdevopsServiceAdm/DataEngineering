@@ -24,7 +24,7 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
         )
         self.returned_df = job.model_primary_service_rolling_average(
             self.estimates_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
             IndCqc.rolling_average_model,
