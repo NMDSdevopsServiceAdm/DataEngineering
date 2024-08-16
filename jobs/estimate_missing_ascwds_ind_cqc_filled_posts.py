@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -64,6 +64,27 @@ def main(
 
 
 def merge_imputed_columns(df: DataFrame) -> DataFrame:
+    """
+    Merges the extrapolation and interpolation columns to create a new column.
+
+    This function merges the extrapolation and interpolation columns to create a new column called ascwds_filled_posts_imputed.
+
+    Args:
+        df (DataFrame): A dataframe with the columns extrapolation_rolling_average and interpolation_model.
+
+    Returns:
+        Dataframe: A dataframe with a new merged column called ascwds_filled_posts_imputed.
+    """
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_imputed,
+        F.when(
+            df[IndCQC.interpolation_model].isNotNull(),
+            F.col(IndCQC.interpolation_model),
+        ).when(
+            df[IndCQC.extrapolation_rolling_average_model].isNotNull(),
+            F.col(IndCQC.extrapolation_rolling_average_model),
+        ),
+    )
     return df
 
 
