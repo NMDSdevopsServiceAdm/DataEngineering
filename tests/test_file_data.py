@@ -2505,6 +2505,20 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanIndCQCData:
+    reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 2", "20220101", "2022", "01", "01"),
+        ("loc 2", "20220105", "2022", "01", "05"),
+        ("loc 3", "20220103", "2022", "01", "03"),
+        ("loc 3", "20220105", "2022", "01", "05"),
+        ("loc 3", "20220201", "2022", "02", "01"),
+    ]
+    expected_reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 2", "20220101", "2022", "01", "01"),
+        ("loc 3", "20220103", "2022", "01", "03"),
+        ("loc 3", "20220201", "2022", "02", "01"),
+    ]
     # fmt: off
     merged_rows_for_cleaning_job = [
         ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing"),

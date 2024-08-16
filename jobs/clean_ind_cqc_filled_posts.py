@@ -27,6 +27,8 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
+    locations_df = reduce_dataset_to_earliest_file_per_month(locations_df)
+
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 
@@ -68,6 +70,10 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
+    return df
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:

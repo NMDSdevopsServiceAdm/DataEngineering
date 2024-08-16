@@ -212,6 +212,28 @@ class MainTests(CleanIndFilledPostsTests):
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
 
 
+class ReduceDatasetToEarliestFilePerMonthTests(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
+        test_df = self.spark.createDataFrame(
+            Data.reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        returned_df = job.reduce_dataset_to_earliest_file_per_month(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        returned_df.show()
+        expected_df.show()
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id, Keys.import_date).collect(),
+            expected_df.collect(),
+        )
+
+
 class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
     def setUp(self):
         super().setUp()

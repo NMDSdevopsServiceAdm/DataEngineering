@@ -1459,6 +1459,16 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanIndCQCData:
+    reduce_dataset_to_earliest_file_per_month_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+
     merged_schema_for_cleaning_job = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
