@@ -41,8 +41,7 @@ estimate_missing_ascwds_columns = [
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
     IndCQC.current_region,
-    IndCQC.rolling_average_care_home_posts_per_bed_model,
-    IndCQC.rolling_average_non_res_model,
+    IndCQC.rolling_average_model,
     IndCQC.interpolation_model,
     IndCQC.extrapolation_rolling_average_care_home_posts_per_bed_model,
     IndCQC.unix_time,
@@ -121,7 +120,7 @@ def main(
                 IndCQC.care_home_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,
-                IndCQC.rolling_average_non_res_model,
+                IndCQC.rolling_average_model,
             ],
         )
     )
