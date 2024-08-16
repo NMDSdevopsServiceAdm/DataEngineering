@@ -31,8 +31,6 @@ def main(
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
-    print(cleaned_ind_cqc_df.rdd.getNumPartitions())
-
     estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
         cleaned_ind_cqc_df,
         date_col=IndCQC.cqc_location_import_date,
