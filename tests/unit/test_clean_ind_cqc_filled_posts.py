@@ -226,10 +226,8 @@ class ReduceDatasetToEarliestFilePerMonthTests(CleanIndFilledPostsTests):
             Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
             Schemas.reduce_dataset_to_earliest_file_per_month_schema,
         )
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(
-            returned_df.sort(IndCQC.location_id, Keys.import_date).collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
             expected_df.collect(),
         )
 

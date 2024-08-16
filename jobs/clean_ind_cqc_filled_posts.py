@@ -73,6 +73,10 @@ def main(
 
 
 def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
+    first_day_in_month = "first_day_in_month"
+    w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
+    df = df.withColumn(first_day_in_month, F.first(Keys.day).over(w))
+    df = df.where(df[first_day_in_month] == df[Keys.day]).drop(first_day_in_month)
     return df
 
 
