@@ -63,6 +63,10 @@ def main(
     print("Completed estimate missing ASCWDS independent CQC filled posts")
 
 
+def merge_imputed_columns(df: DataFrame) -> DataFrame:
+    return df
+
+
 if __name__ == "__main__":
     print("Spark job 'estimate_missing_ascwds_ind_cqc_filled_posts' starting...")
     print(f"Job parameters: {sys.argv}")

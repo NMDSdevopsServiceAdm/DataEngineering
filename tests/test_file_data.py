@@ -3354,6 +3354,20 @@ class EstimateMissingAscwdsFilledPostsData:
         ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
     ]
     # fmt: on
+    merge_imputed_columns_rows = [
+        ("loc 1", 10.0, None),
+        ("loc 2", None, 11.0),
+        ("loc 3", 12.0, 12.0),
+        ("loc 4", 13.0, 14.0), # This case should not appear in the data - illustrative only
+        ("loc 5", None, None),
+    ]
+    expected_merge_imputed_columns_rows = [
+        ("loc 1", 10.0, None, 10.0),
+        ("loc 2", None, 11.0, 11.0),
+        ("loc 3", 12.0, 12.0, 12.0),
+        ("loc 4", 13.0, 14.0, 14.0), # This case should not appear in the data - illustrative only
+        ("loc 5", None, None, None),
+    ]
 
 
 @dataclass

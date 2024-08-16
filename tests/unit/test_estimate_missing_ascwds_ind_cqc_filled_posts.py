@@ -65,5 +65,30 @@ class NumericalValuesTests(EstimateMissingAscwdsFilledPostsTests):
         self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 185)
 
 
+class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_merge_imputed_columns_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.merge_imputed_columns_rows, Schemas.merge_imputed_columns_schema
+        )
+        returned_df = job.merge_imputed_columns(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_imputed_columns_rows,
+            Schemas.expected_merge_imputed_columns_schema,
+        )
+        returned_df.show()
+        expected_df.show()
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_filled_posts_imputed],
+                expected_data[i][IndCQC.ascwds_filled_posts_imputed],
+                f"Returned row {i} does not match expected",
+            )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
