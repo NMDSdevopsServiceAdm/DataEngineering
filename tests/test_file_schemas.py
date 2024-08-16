@@ -2039,6 +2039,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
+
 @dataclass
 class ModelPrimaryServiceRollingAverage:
     primary_service_rolling_average_schema = StructType(
