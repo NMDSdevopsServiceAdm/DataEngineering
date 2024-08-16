@@ -5870,7 +5870,6 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             None,
-            None,
             11.0,
             10.0,
             "2024",
