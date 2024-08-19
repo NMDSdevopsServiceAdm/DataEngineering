@@ -2024,6 +2024,21 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
+    merge_imputed_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+        ]
+    )
+
+    expected_merge_imputed_columns_schema = StructType(
+        [
+            *merge_imputed_columns_schema,
+            StructField(IndCQC.ascwds_filled_posts_imputed, FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
