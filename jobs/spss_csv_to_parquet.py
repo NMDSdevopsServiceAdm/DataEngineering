@@ -13,10 +13,10 @@ def main(source, destination):
     )
     df_with_formatted_date = utils.format_date_fields(
         df_with_formatted_date,
-        raw_date_format="yyyy/MM/dd",
+        raw_date_format="yyyyMMdd",
         date_column_identifier="snapshot_date_formatted",
     )
-    utils.write_to_parquet(df_with_formatted_date, destination, False)
+    utils.write_to_parquet(df_with_formatted_date, destination)
 
 
 def collect_arguments():
