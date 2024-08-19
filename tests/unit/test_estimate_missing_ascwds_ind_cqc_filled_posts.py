@@ -78,8 +78,6 @@ class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
             Data.expected_merge_imputed_columns_rows,
             Schemas.expected_merge_imputed_columns_schema,
         )
-        returned_df.show()
-        expected_df.show()
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
