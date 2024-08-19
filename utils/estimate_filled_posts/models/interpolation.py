@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def model_interpolation(df: DataFrame) -> DataFrame:
-    known_value_df = filter_to_locations_with_a_known_value(df)
+def model_interpolation(df: DataFrame, column_to_interpolate: str) -> DataFrame:
+    known_value_df = filter_to_locations_with_a_known_value(df, column_to_interpolate)
 
     first_and_last_submission_date_df = (
         calculate_first_and_last_submission_date_per_location(known_value_df)
@@ -21,7 +21,9 @@ def model_interpolation(df: DataFrame) -> DataFrame:
 
     all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_value_df)
 
-    all_dates_df = interpolate_values_for_all_dates(all_dates_df)
+    all_dates_df = interpolate_values_for_all_dates(
+        all_dates_df, IndCqc.ascwds_filled_posts_dedup_clean
+    )
 
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 
@@ -74,7 +76,7 @@ def merge_known_values_with_exploded_dates(
     df: DataFrame, known_value_df: DataFrame
 ) -> DataFrame:
     df = leftouter_join_on_locationid_and_unix_time(df, known_value_df)
-    df = add_unix_time_for_known_value(df)
+    df = add_unix_time_for_known_value(df, IndCqc.ascwds_filled_posts_dedup_clean)
     return df
 
 
@@ -97,9 +99,13 @@ def add_unix_time_for_known_value(
     return df
 
 
-def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
-    df = input_previous_and_next_values_into_df(df)
-    df = calculate_interpolated_values_in_new_column(df, IndCqc.interpolation_model)
+def interpolate_values_for_all_dates(
+    df: DataFrame, column_to_interpolate: str
+) -> DataFrame:
+    df = input_previous_and_next_values_into_df(df, column_to_interpolate)
+    df = calculate_interpolated_values_in_new_column(
+        df, IndCqc.interpolation_model, column_to_interpolate
+    )
     return df
 
 
