@@ -8,11 +8,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def model_interpolation(df: DataFrame) -> DataFrame:
-    known_filled_posts_df = filter_to_locations_with_a_known_filled_posts(df)
+def model_interpolation(df: DataFrame, column_to_interpolate: str) -> DataFrame:
+    known_value_df = filter_to_locations_with_a_known_value(df, column_to_interpolate)
 
     first_and_last_submission_date_df = (
-        calculate_first_and_last_submission_date_per_location(known_filled_posts_df)
+        calculate_first_and_last_submission_date_per_location(known_value_df)
     )
 
     all_dates_df = convert_first_and_last_known_years_into_exploded_df(
@@ -20,22 +20,22 @@ def model_interpolation(df: DataFrame) -> DataFrame:
     )
 
     all_dates_df = merge_known_values_with_exploded_dates(
-        all_dates_df, known_filled_posts_df
+        all_dates_df, known_value_df, column_to_interpolate
     )
 
-    all_dates_df = interpolate_values_for_all_dates(all_dates_df)
+    all_dates_df = interpolate_values_for_all_dates(all_dates_df, column_to_interpolate)
 
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 
     return df
 
 
-def filter_to_locations_with_a_known_filled_posts(df: DataFrame) -> DataFrame:
-    df = df.select(
-        IndCqc.location_id, IndCqc.unix_time, IndCqc.ascwds_filled_posts_dedup_clean
-    )
+def filter_to_locations_with_a_known_value(
+    df: DataFrame, column_to_interpolate: str
+) -> DataFrame:
+    df = df.select(IndCqc.location_id, IndCqc.unix_time, column_to_interpolate)
 
-    df = df.where(F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull())
+    df = df.where(F.col(column_to_interpolate).isNotNull())
     return df
 
 
@@ -73,10 +73,10 @@ def create_date_range(
 
 
 def merge_known_values_with_exploded_dates(
-    df: DataFrame, known_filled_posts_df: DataFrame
+    df: DataFrame, known_value_df: DataFrame, column_to_interpolate: str
 ) -> DataFrame:
-    df = leftouter_join_on_locationid_and_unix_time(df, known_filled_posts_df)
-    df = add_unix_time_for_known_filled_posts(df)
+    df = leftouter_join_on_locationid_and_unix_time(df, known_value_df)
+    df = add_unix_time_for_known_value(df, column_to_interpolate)
     return df
 
 
@@ -86,35 +86,39 @@ def leftouter_join_on_locationid_and_unix_time(
     return df.join(other_df, [IndCqc.location_id, IndCqc.unix_time], "leftouter")
 
 
-def add_unix_time_for_known_filled_posts(df: DataFrame) -> DataFrame:
+def add_unix_time_for_known_value(
+    df: DataFrame, column_to_interpolate: str
+) -> DataFrame:
     df = df.withColumn(
-        IndCqc.filled_posts_unix_time,
+        IndCqc.value_unix_time,
         F.when(
-            (F.col(IndCqc.ascwds_filled_posts_dedup_clean).isNotNull()),
+            (F.col(column_to_interpolate).isNotNull()),
             F.col(IndCqc.unix_time),
         ).otherwise(F.lit(None)),
     )
     return df
 
 
-def interpolate_values_for_all_dates(df: DataFrame) -> DataFrame:
-    df = input_previous_and_next_values_into_df(df)
-    df = calculate_interpolated_values_in_new_column(df, IndCqc.interpolation_model)
+def interpolate_values_for_all_dates(
+    df: DataFrame, column_to_interpolate: str
+) -> DataFrame:
+    df = input_previous_and_next_values_into_df(df, column_to_interpolate)
+    df = calculate_interpolated_values_in_new_column(
+        df, IndCqc.interpolation_model, column_to_interpolate
+    )
     return df
 
 
-def input_previous_and_next_values_into_df(df: DataFrame) -> DataFrame:
+def input_previous_and_next_values_into_df(
+    df: DataFrame, column_to_interpolate: str
+) -> DataFrame:
+    df = get_previous_value_in_column(df, column_to_interpolate, IndCqc.previous_value)
     df = get_previous_value_in_column(
-        df, IndCqc.ascwds_filled_posts_dedup_clean, IndCqc.previous_filled_posts
+        df, IndCqc.value_unix_time, IndCqc.previous_value_unix_time
     )
-    df = get_previous_value_in_column(
-        df, IndCqc.filled_posts_unix_time, IndCqc.previous_filled_posts_unix_time
-    )
+    df = get_next_value_in_new_column(df, column_to_interpolate, IndCqc.next_value)
     df = get_next_value_in_new_column(
-        df, IndCqc.ascwds_filled_posts_dedup_clean, IndCqc.next_filled_posts
-    )
-    df = get_next_value_in_new_column(
-        df, IndCqc.filled_posts_unix_time, IndCqc.next_filled_posts_unix_time
+        df, IndCqc.value_unix_time, IndCqc.next_value_unix_time
     )
     return df
 
@@ -160,7 +164,7 @@ def create_window_for_next_value() -> Window:
 
 
 def calculate_interpolated_values_in_new_column(
-    df: DataFrame, new_column_name: str
+    df: DataFrame, new_column_name: str, column_to_interpolate: str
 ) -> DataFrame:
     interpol_udf = F.udf(interpolate_values, FloatType())
 
@@ -168,11 +172,11 @@ def calculate_interpolated_values_in_new_column(
         new_column_name,
         interpol_udf(
             IndCqc.unix_time,
-            IndCqc.previous_filled_posts_unix_time,
-            IndCqc.next_filled_posts_unix_time,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.previous_filled_posts,
-            IndCqc.next_filled_posts,
+            IndCqc.previous_value_unix_time,
+            IndCqc.next_value_unix_time,
+            column_to_interpolate,
+            IndCqc.previous_value,
+            IndCqc.next_value,
         ),
     )
     df = df.select(IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model)
@@ -182,18 +186,18 @@ def calculate_interpolated_values_in_new_column(
 
 def interpolate_values(
     unix_time: str,
-    previous_filled_posts_unix_time: str,
-    next_filled_posts_unix_time: str,
-    filled_posts: str,
-    previous_filled_posts: str,
-    next_filled_posts: str,
+    previous_value_unix_time: str,
+    next_value_unix_time: str,
+    value: str,
+    previous_value: str,
+    next_value: str,
 ) -> float:
-    if previous_filled_posts_unix_time == next_filled_posts_unix_time:
-        return filled_posts
+    if previous_value_unix_time == next_value_unix_time:
+        return value
     else:
-        filled_posts_per_unix_time_ratio = (
-            next_filled_posts - previous_filled_posts
-        ) / (next_filled_posts_unix_time - previous_filled_posts_unix_time)
-        return previous_filled_posts + filled_posts_per_unix_time_ratio * (
-            unix_time - previous_filled_posts_unix_time
+        value_per_unix_time_ratio = (next_value - previous_value) / (
+            next_value_unix_time - previous_value_unix_time
+        )
+        return previous_value + value_per_unix_time_ratio * (
+            unix_time - previous_value_unix_time
         )
