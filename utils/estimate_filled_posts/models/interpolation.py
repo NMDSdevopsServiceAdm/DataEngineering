@@ -113,7 +113,7 @@ def convert_first_and_last_known_years_into_exploded_df(df: DataFrame) -> DataFr
 
 def create_date_range(
     unix_start_time: int, unix_finish_time: int, step_size_in_days: int = 1
-) -> list[int]:
+) -> list:
     """
     Return a list of equally spaced points between unix_start_time and unix_finish_time with set stepsizes.
 
@@ -123,7 +123,7 @@ def create_date_range(
         step_size_in_days (int): A number of days to use as an interval.
 
     Retuns:
-        list[int]: A list of unix times between the start and end dates.
+        list: A list of unix times between the start and end dates.
     """
     unix_time_step = convert_days_to_unix_time(step_size_in_days)
 

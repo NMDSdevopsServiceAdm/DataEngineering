@@ -3714,6 +3714,11 @@ class DiagnosticsOnKnownFilledPostsSchemas:
                 FloatType(),
                 True,
             ),
+            StructField(
+                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(

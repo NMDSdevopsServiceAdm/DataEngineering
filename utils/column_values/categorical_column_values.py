@@ -452,6 +452,9 @@ class EstimateFilledPostsSource(ColumnValues):
     interpolation_model_ascwds_filled_posts_dedup_clean: str = (
         IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean
     )
+    interpolation_model_filled_posts_per_bed_ratio: str = (
+        IndCQC.interpolation_model_filled_posts_per_bed_ratio
+    )
     extrapolation_care_home_model: str = IndCQC.extrapolation_care_home_model
     ascwds_filled_posts_dedup_clean: str = IndCQC.ascwds_filled_posts_dedup_clean
     non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model

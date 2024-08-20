@@ -43,6 +43,7 @@ estimate_missing_ascwds_columns = [
     IndCQC.current_region,
     IndCQC.rolling_average_model,
     IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+    IndCQC.interpolation_model_filled_posts_per_bed_ratio,
     IndCQC.extrapolation_rolling_average_model,
     IndCQC.unix_time,
     Keys.year,
