@@ -50,7 +50,9 @@ def main(
     )
 
     estimate_missing_ascwds_df = model_interpolation(
-        estimate_missing_ascwds_df, IndCQC.ascwds_filled_posts_dedup_clean
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
     )
     estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
 
