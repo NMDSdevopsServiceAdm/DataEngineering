@@ -50,7 +50,9 @@ def main(
     )
 
     estimate_missing_ascwds_df = model_interpolation(
-        estimate_missing_ascwds_df, IndCQC.ascwds_filled_posts_dedup_clean
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
     )
     estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
 
@@ -73,7 +75,7 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     This function merges the extrapolation and interpolation columns to create a new column called ascwds_filled_posts_imputed.
 
     Args:
-        df (DataFrame): A dataframe with the columns extrapolation_rolling_average and interpolation_model.
+        df (DataFrame): A dataframe with the columns extrapolation_rolling_average and interpolation_model_ascwds_filled_posts_dedup_clean.
 
     Returns:
         Dataframe: A dataframe with a new merged column called ascwds_filled_posts_imputed.
@@ -81,8 +83,8 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_imputed,
         F.when(
-            df[IndCQC.interpolation_model].isNotNull(),
-            F.col(IndCQC.interpolation_model),
+            df[IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean].isNotNull(),
+            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
         ).when(
             df[IndCQC.extrapolation_rolling_average_model].isNotNull(),
             F.col(IndCQC.extrapolation_rolling_average_model),

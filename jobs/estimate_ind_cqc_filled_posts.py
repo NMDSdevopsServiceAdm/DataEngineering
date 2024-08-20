@@ -42,7 +42,7 @@ estimate_missing_ascwds_columns = [
     IndCQC.current_cssr,
     IndCQC.current_region,
     IndCQC.rolling_average_model,
-    IndCQC.interpolation_model,
+    IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
     IndCQC.extrapolation_rolling_average_model,
     IndCQC.unix_time,
     Keys.year,
@@ -114,7 +114,7 @@ def main(
             estimate_filled_posts_df,
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                IndCQC.interpolation_model,
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
                 IndCQC.extrapolation_care_home_model,
                 IndCQC.extrapolation_non_res_with_dormancy_model,
                 IndCQC.care_home_model,
