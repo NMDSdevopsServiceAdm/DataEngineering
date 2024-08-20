@@ -104,7 +104,7 @@ def interpolate_values_for_all_dates(
 ) -> DataFrame:
     df = input_previous_and_next_values_into_df(df, column_to_interpolate)
     df = calculate_interpolated_values_in_new_column(
-        df, IndCqc.interpolation_model, column_to_interpolate
+        df, new_column_name, column_to_interpolate
     )
     return df
 
@@ -179,7 +179,7 @@ def calculate_interpolated_values_in_new_column(
             IndCqc.next_value,
         ),
     )
-    df = df.select(IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model)
+    df = df.select(IndCqc.location_id, IndCqc.unix_time, new_column_name)
 
     return df
 
