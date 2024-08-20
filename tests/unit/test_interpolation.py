@@ -40,7 +40,11 @@ class TestModelInterpolation(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_model_interpolation_row_count_unchanged(self):
-        df = job.model_interpolation(self.interpolation_df)
+        df = job.model_interpolation(
+            self.interpolation_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
+        )
         self.assertEqual(df.count(), self.interpolation_df.count())
 
         self.assertEqual(
@@ -50,25 +54,41 @@ class TestModelInterpolation(unittest.TestCase):
                 IndCqc.unix_time,
                 IndCqc.cqc_location_import_date,
                 IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.interpolation_model,
+                IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
             ],
         )
 
     def test_model_interpolation_outputted_values_correct(self):
-        df = job.model_interpolation(self.interpolation_df)
+        df = job.model_interpolation(
+            self.interpolation_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
+        )
         df = df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
 
-        self.assertEqual(df[0][IndCqc.interpolation_model], None)
-        self.assertEqual(df[1][IndCqc.interpolation_model], 30.0)
-        self.assertEqual(df[2][IndCqc.interpolation_model], None)
+        self.assertEqual(
+            df[0][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], None
+        )
+        self.assertEqual(
+            df[1][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], 30.0
+        )
+        self.assertEqual(
+            df[2][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], None
+        )
 
-        self.assertEqual(df[5][IndCqc.interpolation_model], 4.5)
-        self.assertEqual(df[8][IndCqc.interpolation_model], 10.0)
-        self.assertEqual(df[9][IndCqc.interpolation_model], 15.0)
+        self.assertEqual(
+            df[5][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], 4.5
+        )
+        self.assertEqual(
+            df[8][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], 10.0
+        )
+        self.assertEqual(
+            df[9][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean], 15.0
+        )
 
-    def test_filter_to_locations_with_a_known_filled_posts(self):
-        filtered_df = job.filter_to_locations_with_a_known_filled_posts(
-            self.interpolation_df
+    def test_filter_to_locations_with_a_known_value(self):
+        filtered_df = job.filter_to_locations_with_a_known_value(
+            self.interpolation_df, IndCqc.ascwds_filled_posts_dedup_clean
         )
 
         self.assertEqual(filtered_df.count(), 5)
@@ -115,7 +135,9 @@ class TestModelInterpolation(unittest.TestCase):
 
     def test_merge_known_values_with_exploded_dates(self):
         output_df = job.merge_known_values_with_exploded_dates(
-            self.data_for_merging_exploded_df, self.data_for_merging_known_values_df
+            self.data_for_merging_exploded_df,
+            self.data_for_merging_known_values_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
         )
 
         self.assertEqual(output_df.count(), 5)
@@ -125,43 +147,71 @@ class TestModelInterpolation(unittest.TestCase):
                 IndCqc.location_id,
                 IndCqc.unix_time,
                 IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.filled_posts_unix_time,
+                IndCqc.value_unix_time,
             ],
         )
 
         output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
         self.assertEqual(output_df[0][IndCqc.ascwds_filled_posts_dedup_clean], None)
-        self.assertEqual(output_df[0][IndCqc.filled_posts_unix_time], None)
+        self.assertEqual(output_df[0][IndCqc.value_unix_time], None)
         self.assertEqual(output_df[1][IndCqc.ascwds_filled_posts_dedup_clean], 1.0)
-        self.assertEqual(output_df[1][IndCqc.filled_posts_unix_time], 1672704000)
+        self.assertEqual(output_df[1][IndCqc.value_unix_time], 1672704000)
         self.assertEqual(output_df[2][IndCqc.ascwds_filled_posts_dedup_clean], None)
-        self.assertEqual(output_df[2][IndCqc.filled_posts_unix_time], None)
+        self.assertEqual(output_df[2][IndCqc.value_unix_time], None)
         self.assertEqual(output_df[3][IndCqc.ascwds_filled_posts_dedup_clean], 2.5)
-        self.assertEqual(output_df[3][IndCqc.filled_posts_unix_time], 1672876800)
+        self.assertEqual(output_df[3][IndCqc.value_unix_time], 1672876800)
         self.assertEqual(output_df[4][IndCqc.ascwds_filled_posts_dedup_clean], 15.0)
-        self.assertEqual(output_df[4][IndCqc.filled_posts_unix_time], 1672790400)
+        self.assertEqual(output_df[4][IndCqc.value_unix_time], 1672790400)
 
     def test_interpolate_values_for_all_dates(self):
         output_df = job.interpolate_values_for_all_dates(
-            self.data_for_calculating_interpolated_values_df
+            self.data_for_calculating_interpolated_values_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
         )
 
         self.assertEqual(output_df.count(), 8)
         self.assertEqual(
             output_df.columns,
-            [IndCqc.location_id, IndCqc.unix_time, IndCqc.interpolation_model],
+            [
+                IndCqc.location_id,
+                IndCqc.unix_time,
+                IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
+            ],
         )
 
         output_df = output_df.sort(IndCqc.location_id).collect()
-        self.assertEqual(output_df[0][IndCqc.interpolation_model], 30.0)
-        self.assertEqual(output_df[1][IndCqc.interpolation_model], 4.0)
-        self.assertEqual(output_df[2][IndCqc.interpolation_model], 4.5)
-        self.assertEqual(output_df[3][IndCqc.interpolation_model], 5.0)
-        self.assertEqual(output_df[4][IndCqc.interpolation_model], 5.0)
-        self.assertAlmostEqual(
-            output_df[5][IndCqc.interpolation_model], 6.1666, places=3
+        self.assertEqual(
+            output_df[0][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            30.0,
+        )
+        self.assertEqual(
+            output_df[1][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            4.0,
+        )
+        self.assertEqual(
+            output_df[2][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            4.5,
+        )
+        self.assertEqual(
+            output_df[3][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            5.0,
+        )
+        self.assertEqual(
+            output_df[4][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            5.0,
         )
         self.assertAlmostEqual(
-            output_df[6][IndCqc.interpolation_model], 7.3333, places=3
+            output_df[5][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            6.1666,
+            places=3,
         )
-        self.assertEqual(output_df[7][IndCqc.interpolation_model], 8.5)
+        self.assertAlmostEqual(
+            output_df[6][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            7.3333,
+            places=3,
+        )
+        self.assertEqual(
+            output_df[7][IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean],
+            8.5,
+        )

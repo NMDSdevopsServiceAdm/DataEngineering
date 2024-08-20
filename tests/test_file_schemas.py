@@ -2041,7 +2041,11 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
-            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
         ]
     )
 
@@ -2364,7 +2368,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.filled_posts_unix_time, LongType(), True),
+            StructField(IndCQC.value_unix_time, LongType(), True),
         ]
     )
 
@@ -3575,7 +3579,11 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
             StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
-            StructField(IndCQC.interpolation_model, DoubleType(), True),
+            StructField(
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                DoubleType(),
+                True,
+            ),
             StructField(IndCQC.non_res_model, DoubleType(), True),
         ]
     )
@@ -3714,7 +3722,16 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
-            StructField(IndCQC.interpolation_model, FloatType(), True),
+            StructField(
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(

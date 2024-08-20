@@ -100,14 +100,18 @@ class IndCqcColumns:
     extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
-    filled_posts_unix_time: str = "filled_posts_unix_time"
     first_filled_posts: str = "first_filled_posts"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     import_month_index: str = "import_month_index"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
-    interpolation_model: str = "interpolation_model"
+    interpolation_model_ascwds_filled_posts_dedup_clean: str = (
+        "interpolation_model_ascwds_filled_posts_dedup_clean"
+    )
+    interpolation_model_filled_posts_per_bed_ratio: str = (
+        "interpolation_model_filled_posts_per_bed_ratio"
+    )
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
@@ -120,8 +124,8 @@ class IndCqcColumns:
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
     name: str = CQCLClean.name
-    next_filled_posts: str = "next_filled_posts"
-    next_filled_posts_unix_time: str = "next_filled_posts_unix_time"
+    next_value: str = "next_value"
+    next_value_unix_time: str = "next_value_unix_time"
     non_res_model: str = "non_res_with_pir_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
@@ -143,8 +147,8 @@ class IndCqcColumns:
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
     prediction: str = "prediction"
-    previous_filled_posts: str = "previous_filled_posts"
-    previous_filled_posts_unix_time: str = "previous_filled_posts_unix_time"
+    previous_value: str = "previous_value"
+    previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
@@ -170,4 +174,5 @@ class IndCqcColumns:
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
+    value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
