@@ -100,7 +100,7 @@ def add_unix_time_for_known_value(
 
 
 def interpolate_values_for_all_dates(
-    df: DataFrame, column_to_interpolate: str
+    df: DataFrame, column_to_interpolate: str, new_column_name: str
 ) -> DataFrame:
     df = input_previous_and_next_values_into_df(df, column_to_interpolate)
     df = calculate_interpolated_values_in_new_column(

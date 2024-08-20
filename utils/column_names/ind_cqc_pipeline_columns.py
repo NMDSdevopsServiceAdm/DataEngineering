@@ -107,6 +107,9 @@ class IndCqcColumns:
     import_month_index: str = "import_month_index"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
+    interpolation_model_ascwds_filled_posts_dedup_clean: str = (
+        "interpolation_model_ascwds_filled_posts_dedup_clean"
+    )
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
