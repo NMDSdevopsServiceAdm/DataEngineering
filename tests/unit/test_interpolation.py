@@ -71,7 +71,9 @@ class TestModelInterpolation(unittest.TestCase):
         self.assertEqual(df[9][IndCqc.interpolation_model], 15.0)
 
     def test_filter_to_locations_with_a_known_value(self):
-        filtered_df = job.filter_to_locations_with_a_known_value(self.interpolation_df)
+        filtered_df = job.filter_to_locations_with_a_known_value(
+            self.interpolation_df, IndCqc.ascwds_filled_posts_dedup_clean
+        )
 
         self.assertEqual(filtered_df.count(), 5)
         self.assertEqual(
