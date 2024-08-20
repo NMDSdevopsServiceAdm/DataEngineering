@@ -19,11 +19,11 @@ def model_interpolation(df: DataFrame, column_to_interpolate: str) -> DataFrame:
         first_and_last_submission_date_df
     )
 
-    all_dates_df = merge_known_values_with_exploded_dates(all_dates_df, known_value_df)
-
-    all_dates_df = interpolate_values_for_all_dates(
-        all_dates_df, IndCqc.ascwds_filled_posts_dedup_clean
+    all_dates_df = merge_known_values_with_exploded_dates(
+        all_dates_df, known_value_df, column_to_interpolate
     )
+
+    all_dates_df = interpolate_values_for_all_dates(all_dates_df, column_to_interpolate)
 
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 
@@ -73,10 +73,10 @@ def create_date_range(
 
 
 def merge_known_values_with_exploded_dates(
-    df: DataFrame, known_value_df: DataFrame
+    df: DataFrame, known_value_df: DataFrame, column_to_interpolate: str
 ) -> DataFrame:
     df = leftouter_join_on_locationid_and_unix_time(df, known_value_df)
-    df = add_unix_time_for_known_value(df, IndCqc.ascwds_filled_posts_dedup_clean)
+    df = add_unix_time_for_known_value(df, column_to_interpolate)
     return df
 
 

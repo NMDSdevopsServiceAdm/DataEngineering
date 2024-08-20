@@ -119,7 +119,9 @@ class TestModelInterpolation(unittest.TestCase):
 
     def test_merge_known_values_with_exploded_dates(self):
         output_df = job.merge_known_values_with_exploded_dates(
-            self.data_for_merging_exploded_df, self.data_for_merging_known_values_df
+            self.data_for_merging_exploded_df,
+            self.data_for_merging_known_values_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
         )
 
         self.assertEqual(output_df.count(), 5)
