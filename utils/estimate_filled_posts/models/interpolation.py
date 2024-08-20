@@ -8,7 +8,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-def model_interpolation(df: DataFrame, column_to_interpolate: str) -> DataFrame:
+def model_interpolation(
+    df: DataFrame, column_to_interpolate: str, new_column_name: str
+) -> DataFrame:
     known_value_df = filter_to_locations_with_a_known_value(df, column_to_interpolate)
 
     first_and_last_submission_date_df = (
@@ -23,7 +25,9 @@ def model_interpolation(df: DataFrame, column_to_interpolate: str) -> DataFrame:
         all_dates_df, known_value_df, column_to_interpolate
     )
 
-    all_dates_df = interpolate_values_for_all_dates(all_dates_df, column_to_interpolate)
+    all_dates_df = interpolate_values_for_all_dates(
+        all_dates_df, column_to_interpolate, new_column_name
+    )
 
     df = leftouter_join_on_locationid_and_unix_time(df, all_dates_df)
 

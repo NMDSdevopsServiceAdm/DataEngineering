@@ -41,7 +41,9 @@ class TestModelInterpolation(unittest.TestCase):
 
     def test_model_interpolation_row_count_unchanged(self):
         df = job.model_interpolation(
-            self.interpolation_df, IndCqc.ascwds_filled_posts_dedup_clean
+            self.interpolation_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
         )
         self.assertEqual(df.count(), self.interpolation_df.count())
 
@@ -58,7 +60,9 @@ class TestModelInterpolation(unittest.TestCase):
 
     def test_model_interpolation_outputted_values_correct(self):
         df = job.model_interpolation(
-            self.interpolation_df, IndCqc.ascwds_filled_posts_dedup_clean
+            self.interpolation_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.interpolation_model_ascwds_filled_posts_dedup_clean,
         )
         df = df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
 
