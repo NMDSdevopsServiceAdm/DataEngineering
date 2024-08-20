@@ -31,6 +31,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.care_home_model,
     IndCQC.extrapolation_care_home_model,
     IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+    IndCQC.interpolation_model_filled_posts_per_bed_ratio,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.extrapolation_non_res_with_dormancy_model,
