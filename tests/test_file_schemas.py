@@ -1166,7 +1166,7 @@ class CleaningUtilsSchemas:
             StructField(CQCL.location_id, StringType(), True),
         ]
     )
-    
+
     reduce_dataset_to_earliest_file_per_month_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
@@ -1469,8 +1469,6 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanIndCQCData:
-    
-
     merged_schema_for_cleaning_job = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
