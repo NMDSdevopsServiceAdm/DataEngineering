@@ -111,7 +111,7 @@ module "clean_ascwds_workplace_job" {
   script_name       = "clean_ascwds_workplace_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 6
+  number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
   glue_version      = "3.0"
@@ -320,13 +320,11 @@ module "flatten_cqc_ratings_job" {
 }
 
 module "clean_cqc_provider_data_job" {
-  source            = "../modules/glue-job"
-  script_name       = "clean_cqc_provider_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  worker_type       = "G.1X"
-  number_of_workers = 4
+  source          = "../modules/glue-job"
+  script_name     = "clean_cqc_provider_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
 
   job_parameters = {
     "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
@@ -341,7 +339,7 @@ module "clean_cqc_location_data_job" {
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
   worker_type       = "G.2X"
-  number_of_workers = 6
+  number_of_workers = 5
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0/"
@@ -503,14 +501,12 @@ module "validate_merged_ind_cqc_data_job" {
 }
 
 module "validate_cleaned_ind_cqc_data_job" {
-  source            = "../modules/glue-job"
-  script_name       = "validate_cleaned_ind_cqc_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
-  worker_type       = "G.1X"
-  number_of_workers = 6
+  source          = "../modules/glue-job"
+  script_name     = "validate_cleaned_ind_cqc_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--merged_ind_cqc_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
@@ -520,14 +516,12 @@ module "validate_cleaned_ind_cqc_data_job" {
 }
 
 module "validate_estimated_missing_ascwds_filled_posts_data_job" {
-  source            = "../modules/glue-job"
-  script_name       = "validate_estimated_missing_ascwds_filled_posts_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
-  worker_type       = "G.1X"
-  number_of_workers = 4
+  source          = "../modules/glue-job"
+  script_name     = "validate_estimated_missing_ascwds_filled_posts_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
@@ -716,7 +710,7 @@ module "estimate_missing_ascwds_ind_cqc_filled_posts_job" {
   script_name       = "estimate_missing_ascwds_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 8
+  number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
 
@@ -731,7 +725,7 @@ module "estimate_ind_cqc_filled_posts_job" {
   script_name       = "estimate_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 6
+  number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
 
