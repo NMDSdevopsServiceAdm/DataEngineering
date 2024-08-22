@@ -20,7 +20,7 @@ class FeatureEngineeringValueLabelsServices:
         "service_community_substance_misuse": CatValues.services_column_values.community_based_services_for_people_who_misuse_substances,
         "service_community_learning_disability": CatValues.services_column_values.community_based_services_for_people_with_a_learning_disability,
         "service_community_mental_health": CatValues.services_column_values.community_based_services_for_people_with_mental_health_needs,
-        "service_community_health_NA": CatValues.services_column_values.community_health_care_services_nurses_agency_only,
+        "service_community_health_nurse_agency": CatValues.services_column_values.community_health_care_services_nurses_agency_only,
         "service_community_health": CatValues.services_column_values.community_healthcare_service,
         "service_dental": CatValues.services_column_values.dental_service,
         "service_diagnostic": CatValues.services_column_values.diagnostic_and_screening_service,
