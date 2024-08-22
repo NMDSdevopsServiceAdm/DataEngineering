@@ -2029,7 +2029,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
             StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                IndCQC.interpolation_model,
                 FloatType(),
                 True,
             ),
