@@ -119,8 +119,8 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_imputed,
         F.when(
-            df[IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean].isNotNull(),
-            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
+            df[IndCQC.interpolation_model].isNotNull(),
+            F.col(IndCQC.interpolation_model),
         ).when(
             df[IndCQC.extrapolation_rolling_average_model].isNotNull(),
             F.col(IndCQC.extrapolation_rolling_average_model),
