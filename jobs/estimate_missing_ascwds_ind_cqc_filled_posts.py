@@ -73,6 +73,21 @@ def main(
     print("Completed estimate missing ASCWDS independent CQC filled posts")
 
 
+def merge_interpolated_values_into_interpolated_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Use the interpolated value columns to create a single column with interpolated values for care homes and non-res.
+
+    Args:
+        df (DataFrame): A dataframe with interpolated values.
+
+    Returns:
+        DataFrame: A dataframe with a single column with interpolated filled posts values.
+    """
+    return df
+
+
 def merge_imputed_columns(df: DataFrame) -> DataFrame:
     """
     Merges the extrapolation and interpolation columns to create a new column.

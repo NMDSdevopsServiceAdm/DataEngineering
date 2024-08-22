@@ -3389,6 +3389,17 @@ class EstimateMissingAscwdsFilledPostsData:
         ("loc 6", None, None, None),
     ]
 
+    merge_interpolated_values_rows = [
+        (
+            "loc 1",
+            PrimaryServiceType.care_home_only,
+            10.0,
+            0.2,
+        ),
+    ]
+
+    expected_merge_interpolated_values_rows = []
+
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:

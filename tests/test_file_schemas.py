@@ -2043,6 +2043,31 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
+    merge_interpolated_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+        ]
+    )
+
+    expected_merge_interpolated_values_schema = StructType(
+        [
+            *merge_interpolated_values_schema,
+            StructField(IndCQC.interpolation_model, FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
