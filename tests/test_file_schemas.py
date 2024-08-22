@@ -3403,6 +3403,9 @@ class ValidateCleanedIndCqcData:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
     cleaned_ind_cqc_schema = StructType(
@@ -3444,6 +3447,9 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
     calculate_expected_size_schema = merged_ind_cqc_schema

@@ -5,6 +5,7 @@ os.environ["SPARK_VERSION"] = "3.3"
 
 from pyspark.sql.dataframe import DataFrame
 
+from jobs.clean_ind_cqc_filled_posts import reduce_dataset_to_earliest_file_per_month
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -49,7 +50,7 @@ def main(
 def calculate_expected_size_of_cleaned_ind_cqc_dataset(
     merged_ind_cqc_df: DataFrame,
 ) -> int:
-    expected_size = merged_ind_cqc_df.count()
+    expected_size = reduce_dataset_to_earliest_file_per_month(merged_ind_cqc_df).count()
     return expected_size
 
 
