@@ -3735,12 +3735,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                IndCQC.interpolation_model,
                 FloatType(),
                 True,
             ),
