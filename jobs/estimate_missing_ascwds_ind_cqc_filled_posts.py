@@ -8,6 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
@@ -85,6 +86,21 @@ def merge_interpolated_values_into_interpolated_filled_posts(
     Returns:
         DataFrame: A dataframe with a single column with interpolated filled posts values.
     """
+    df = df.withColumn(
+        IndCQC.interpolation_model,
+        F.when(
+            df[IndCQC.primary_service_type] == PrimaryServiceType.non_residential,
+            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
+        ).when(
+            (df[IndCQC.primary_service_type] == PrimaryServiceType.care_home_only)
+            | (
+                df[IndCQC.primary_service_type]
+                == PrimaryServiceType.care_home_with_nursing
+            ),
+            F.col(IndCQC.interpolation_model_filled_posts_per_bed_ratio)
+            * F.col(IndCQC.number_of_beds),
+        ),
+    )
     return df
 
 
