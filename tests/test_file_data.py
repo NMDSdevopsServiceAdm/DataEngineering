@@ -2325,6 +2325,20 @@ class CleaningUtilsData:
         ("20191207", date(2019, 12, 7)),
         ("19081205", date(1908, 12, 5)),
     ]
+    reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 2", "20220105", "2022", "01", "05"),
+        ("loc 3", "20220205", "2022", "02", "05"),
+        ("loc 4", "20220207", "2022", "02", "07"),
+        ("loc 5", "20220301", "2022", "03", "01"),
+        ("loc 6", "20220402", "2022", "04", "02"),
+    ]
+    expected_reduce_dataset_to_earliest_file_per_month_rows = [
+        ("loc 1", "20220101", "2022", "01", "01"),
+        ("loc 3", "20220205", "2022", "02", "05"),
+        ("loc 5", "20220301", "2022", "03", "01"),
+        ("loc 6", "20220402", "2022", "04", "02"),
+    ]
 
 
 @dataclass
@@ -2505,20 +2519,7 @@ class IndCQCDataUtils:
 
 @dataclass
 class CleanIndCQCData:
-    reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", "20220101", "2022", "01", "01"),
-        ("loc 2", "20220105", "2022", "01", "05"),
-        ("loc 3", "20220205", "2022", "02", "05"),
-        ("loc 4", "20220207", "2022", "02", "07"),
-        ("loc 5", "20220301", "2022", "03", "01"),
-        ("loc 6", "20220402", "2022", "04", "02"),
-    ]
-    expected_reduce_dataset_to_earliest_file_per_month_rows = [
-        ("loc 1", "20220101", "2022", "01", "01"),
-        ("loc 3", "20220205", "2022", "02", "05"),
-        ("loc 5", "20220301", "2022", "03", "01"),
-        ("loc 6", "20220402", "2022", "04", "02"),
-    ]
+    
     # fmt: off
     merged_rows_for_cleaning_job = [
         ("1-1000001", "20220201", date(2020, 2, 1), "South East", "Surrey", "Rural", "Y", 0, 5, 82, None, "Care home without nursing", "2020", "01", "01"),

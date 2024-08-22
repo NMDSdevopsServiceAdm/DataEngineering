@@ -2,6 +2,7 @@ import sys
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
+from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -70,25 +71,6 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
-
-
-def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
-    """
-    Reduce the dataset to the first file of every month.
-
-    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
-
-    Args:
-        df (DataFrame): A dataframe containing the partition keys year, month and day.
-
-    Returns:
-        DataFrame: A dataframe with only the first import date of each month.
-    """
-    first_day_in_month = "first_day_in_month"
-    w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
-    df = df.withColumn(first_day_in_month, F.first(Keys.day).over(w))
-    df = df.where(df[first_day_in_month] == df[Keys.day]).drop(first_day_in_month)
-    return df
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
