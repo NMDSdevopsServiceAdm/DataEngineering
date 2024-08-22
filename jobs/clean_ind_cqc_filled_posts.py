@@ -73,6 +73,17 @@ def main(
 
 
 def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
+    """
+    Reduce the dataset to the first file of every month.
+
+    This function identifies the date of the first import date in each month and then filters the dataset to those import dates only.
+
+    Args:
+        df (DataFrame): A dataframe containing the partition keys year, month and day.
+
+    Returns:
+        DataFrame: A dataframe with only the first import date of each month.
+    """
     first_day_in_month = "first_day_in_month"
     w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
     df = df.withColumn(first_day_in_month, F.first(Keys.day).over(w))
