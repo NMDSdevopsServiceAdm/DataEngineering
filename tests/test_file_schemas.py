@@ -2057,7 +2057,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
                 FloatType(),
                 True,
             ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
         ]
     )
 

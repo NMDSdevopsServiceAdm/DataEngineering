@@ -3394,11 +3394,51 @@ class EstimateMissingAscwdsFilledPostsData:
             "loc 1",
             PrimaryServiceType.care_home_only,
             10.0,
-            0.2,
+            1.8,
+            5,
+        ),
+        (
+            "loc 2",
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.8,
+            5,
+        ),
+        (
+            "loc 3",
+            PrimaryServiceType.non_residential,
+            10.0,
+            1.8,
+            5,
         ),
     ]
 
-    expected_merge_interpolated_values_rows = []
+    expected_merge_interpolated_values_rows = [
+        (
+            "loc 1",
+            PrimaryServiceType.care_home_only,
+            10.0,
+            1.8,
+            5,
+            9.0,
+        ),
+        (
+            "loc 2",
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.8,
+            5,
+            9.0,
+        ),
+        (
+            "loc 3",
+            PrimaryServiceType.non_residential,
+            10.0,
+            1.8,
+            5,
+            10.0,
+        ),
+    ]
 
 
 @dataclass
