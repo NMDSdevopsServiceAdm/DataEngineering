@@ -1167,6 +1167,16 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    reduce_dataset_to_earliest_file_per_month_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.import_date, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
@@ -1473,6 +1483,9 @@ class CleanIndCQCData:
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
 
@@ -3390,6 +3403,9 @@ class ValidateCleanedIndCqcData:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
     cleaned_ind_cqc_schema = StructType(
@@ -3431,6 +3447,9 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
     calculate_expected_size_schema = merged_ind_cqc_schema

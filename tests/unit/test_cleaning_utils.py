@@ -21,6 +21,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 gender_labels: str = "gender_labels"
@@ -574,3 +575,23 @@ class TestCleaningUtilsAlignDates(unittest.TestCase):
         expected_columns = len(self.later_merged_dates_df.columns)
 
         self.assertEqual(returned_columns, expected_columns)
+
+
+class ReduceDatasetToEarliestFilePerMonthTests(unittest.TestCase):
+    def setUp(self):
+        self.spark = utils.get_spark()
+
+    def test_reduce_dataset_to_earliest_file_per_month_returns_correct_rows(self):
+        test_df = self.spark.createDataFrame(
+            Data.reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        returned_df = job.reduce_dataset_to_earliest_file_per_month(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_reduce_dataset_to_earliest_file_per_month_rows,
+            Schemas.reduce_dataset_to_earliest_file_per_month_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(),
+            expected_df.collect(),
+        )

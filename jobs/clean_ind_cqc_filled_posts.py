@@ -2,6 +2,7 @@ import sys
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
+from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -26,6 +27,8 @@ def main(
     print("Cleaning merged_ind_cqc dataset...")
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
+
+    locations_df = reduce_dataset_to_earliest_file_per_month(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
