@@ -148,6 +148,8 @@ def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFra
     Returns:
         DataFrame: A dataframe with locations changing care home status nulled.
     """
+    list_of_locations = create_list_of_locations_with_changing_care_home_status(df)
+    df = df.where(~df[IndCQC.location_id].isin(list_of_locations))
     return df
 
 
