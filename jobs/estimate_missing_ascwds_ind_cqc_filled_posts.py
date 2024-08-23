@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -161,7 +161,14 @@ def create_list_of_locations_with_changing_care_home_status(df: DataFrame) -> li
     Returns:
         list: A list of locations ids of locations with a changing care home status.
     """
-    return df
+    previous_carehome = "previous_carehome"
+    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+    df = df.withColumn(previous_carehome, F.lag(IndCQC.care_home).over(w))
+    df = df.where(df[IndCQC.care_home] != df[previous_carehome])
+    list_of_locations = (
+        df.select(IndCQC.location_id).distinct().rdd.flatMap(lambda x: x).collect()
+    )
+    return list_of_locations
 
 
 if __name__ == "__main__":
