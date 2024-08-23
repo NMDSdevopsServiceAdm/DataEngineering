@@ -132,8 +132,6 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
         self.returned_df = job.null_changing_carehome_status_from_imputed_columns(
             self.test_df
         )
-        self.returned_df.show()
-        self.expected_df.show()
 
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values(
         self,
