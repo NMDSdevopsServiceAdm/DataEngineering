@@ -39,7 +39,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.people_directly_employed_dedup: 1,
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
-            IndCqcColumns.interpolation_model_ascwds_filled_posts_dedup_clean: 0.0,
+            IndCqcColumns.interpolation_model: 0.0,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
@@ -50,7 +50,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
             IndCqcColumns.extrapolation_care_home_model: 3000.0,
-            IndCqcColumns.interpolation_model_ascwds_filled_posts_dedup_clean: 3000.0,
+            IndCqcColumns.interpolation_model: 3000.0,
             IndCqcColumns.care_home_model: 3000.0,
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,

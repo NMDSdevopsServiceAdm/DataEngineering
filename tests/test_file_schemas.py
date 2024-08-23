@@ -2042,7 +2042,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
             StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                IndCQC.interpolation_model,
                 FloatType(),
                 True,
             ),
@@ -2053,6 +2053,31 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         [
             *merge_imputed_columns_schema,
             StructField(IndCQC.ascwds_filled_posts_imputed, FloatType(), True),
+        ]
+    )
+
+    merge_interpolated_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(
+                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    expected_merge_interpolated_values_schema = StructType(
+        [
+            *merge_interpolated_values_schema,
+            StructField(IndCQC.interpolation_model, FloatType(), True),
         ]
     )
 
@@ -3729,12 +3754,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
             StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
+                IndCQC.interpolation_model,
                 FloatType(),
                 True,
             ),
