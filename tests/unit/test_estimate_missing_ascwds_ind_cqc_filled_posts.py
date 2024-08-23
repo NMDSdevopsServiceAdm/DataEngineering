@@ -116,5 +116,33 @@ class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
             )
 
 
+class NullChangingCarehomeStatusFromImputedColumnsTests(
+    EstimateMissingAscwdsFilledPostsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        returned_df = job.null_changing_carehome_status_from_imputed_columns(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_filled_posts_imputed],
+                expected_data[i][IndCQC.ascwds_filled_posts_imputed],
+                f"Returned row {i} does not match expected",
+            )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

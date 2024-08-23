@@ -67,6 +67,10 @@ def main(
     )
     estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
 
+    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
+        estimate_missing_ascwds_df
+    )
+
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
@@ -131,6 +135,19 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
             F.col(IndCQC.extrapolation_rolling_average_model),
         ),
     )
+    return df
+
+
+def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFrame:
+    """
+    Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
+
+    Args:
+        df (DataFrame): A dataframe contianing the columns location_id, carehome, and ascwds_filled_posts_imputed.
+
+    Returns:
+        DataFrame: A dataframe with locations changing care home status nulled.
+    """
     return df
 
 
