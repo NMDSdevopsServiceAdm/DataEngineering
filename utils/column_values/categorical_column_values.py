@@ -449,12 +449,7 @@ class EstimateFilledPostsSource(ColumnValues):
     """The possible values of the estimate filled posts source column in the independent CQC estimates pipeline"""
 
     care_home_model: str = IndCQC.care_home_model
-    interpolation_model_ascwds_filled_posts_dedup_clean: str = (
-        IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean
-    )
-    interpolation_model_filled_posts_per_bed_ratio: str = (
-        IndCQC.interpolation_model_filled_posts_per_bed_ratio
-    )
+    interpolation_model: str = IndCQC.interpolation_model
     extrapolation_care_home_model: str = IndCQC.extrapolation_care_home_model
     ascwds_filled_posts_dedup_clean: str = IndCQC.ascwds_filled_posts_dedup_clean
     non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model

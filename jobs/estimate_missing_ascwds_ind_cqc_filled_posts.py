@@ -1,13 +1,14 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
@@ -59,7 +60,16 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.interpolation_model_filled_posts_per_bed_ratio,
     )
+    estimate_missing_ascwds_df = (
+        merge_interpolated_values_into_interpolated_filled_posts(
+            estimate_missing_ascwds_df
+        )
+    )
     estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
+
+    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
+        estimate_missing_ascwds_df
+    )
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
@@ -71,6 +81,36 @@ def main(
     )
 
     print("Completed estimate missing ASCWDS independent CQC filled posts")
+
+
+def merge_interpolated_values_into_interpolated_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Use the interpolated value columns to create a single column with interpolated values for care homes and non-res.
+
+    Args:
+        df (DataFrame): A dataframe with interpolated values.
+
+    Returns:
+        DataFrame: A dataframe with a single column with interpolated filled posts values.
+    """
+    df = df.withColumn(
+        IndCQC.interpolation_model,
+        F.when(
+            df[IndCQC.primary_service_type] == PrimaryServiceType.non_residential,
+            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
+        ).when(
+            (df[IndCQC.primary_service_type] == PrimaryServiceType.care_home_only)
+            | (
+                df[IndCQC.primary_service_type]
+                == PrimaryServiceType.care_home_with_nursing
+            ),
+            F.col(IndCQC.interpolation_model_filled_posts_per_bed_ratio)
+            * F.col(IndCQC.number_of_beds),
+        ),
+    )
+    return df
 
 
 def merge_imputed_columns(df: DataFrame) -> DataFrame:
@@ -88,14 +128,55 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_imputed,
         F.when(
-            df[IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean].isNotNull(),
-            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
+            df[IndCQC.interpolation_model].isNotNull(),
+            F.col(IndCQC.interpolation_model),
         ).when(
             df[IndCQC.extrapolation_rolling_average_model].isNotNull(),
             F.col(IndCQC.extrapolation_rolling_average_model),
         ),
     )
     return df
+
+
+def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFrame:
+    """
+    Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
+
+    Args:
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, and ascwds_filled_posts_imputed.
+
+    Returns:
+        DataFrame: A dataframe with locations changing care home status nulled.
+    """
+    list_of_locations = create_list_of_locations_with_changing_care_home_status(df)
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_imputed,
+        F.when(
+            ~df[IndCQC.location_id].isin(list_of_locations),
+            F.col(IndCQC.ascwds_filled_posts_imputed),
+        ),
+    )
+    return df
+
+
+def create_list_of_locations_with_changing_care_home_status(df: DataFrame) -> list:
+    """
+    Creates a list of location ids for locations which change from care home to not care home, or vice-versa at some point in their history.
+
+    Args:
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, and ascwds_filled_posts_imputed.
+
+    Returns:
+        list: A list of locations ids of locations with a changing care home status.
+    """
+    previous_carehome = "previous_carehome"
+    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+    df = df.withColumn(previous_carehome, F.lag(IndCQC.care_home).over(w))
+    df = df.where(df[IndCQC.care_home] != df[previous_carehome])
+    list_of_locations = (
+        df.select(IndCQC.location_id).distinct().rdd.flatMap(lambda x: x).collect()
+    )
+    return list_of_locations
 
 
 if __name__ == "__main__":

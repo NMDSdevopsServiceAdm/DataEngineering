@@ -3403,6 +3403,79 @@ class EstimateMissingAscwdsFilledPostsData:
         ("loc 6", None, None, None),
     ]
 
+    merge_interpolated_values_rows = [
+        (
+            "loc 1",
+            PrimaryServiceType.care_home_only,
+            10.0,
+            1.8,
+            5,
+        ),
+        (
+            "loc 2",
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.8,
+            5,
+        ),
+        (
+            "loc 3",
+            PrimaryServiceType.non_residential,
+            10.0,
+            1.8,
+            5,
+        ),
+    ]
+
+    expected_merge_interpolated_values_rows = [
+        (
+            "loc 1",
+            PrimaryServiceType.care_home_only,
+            10.0,
+            1.8,
+            5,
+            9.0,
+        ),
+        (
+            "loc 2",
+            PrimaryServiceType.care_home_with_nursing,
+            10.0,
+            1.8,
+            5,
+            9.0,
+        ),
+        (
+            "loc 3",
+            PrimaryServiceType.non_residential,
+            10.0,
+            1.8,
+            5,
+            10.0,
+        ),
+    ]
+
+    null_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, 20.0),
+    ]
+    expected_null_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, None),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, None),
+    ]
+    expected_list_of_changing_carehome_statuses = ["loc 3", "loc 4"]
+
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -5832,7 +5905,6 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             10.0,
             10.0,
-            10.0,
             None,
             None,
             None,
@@ -5885,7 +5957,6 @@ class DiagnosticsOnKnownFilledPostsData:
             12.0,
             9.0,
             8.0,
-            14.0,
             None,
             None,
             None,
@@ -5939,20 +6010,8 @@ class DiagnosticsOnKnownFilledPostsData:
             date(2024, 1, 1),
             PrimaryServiceType.care_home_only,
             10.0,
-            IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
+            IndCQC.interpolation_model,
             8.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            PrimaryServiceType.care_home_only,
-            10.0,
-            IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-            14.0,
             "2024",
             "01",
             "01",
@@ -6025,48 +6084,48 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0),
     ]
     expected_calculate_distribution_mean_rows =[
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 15.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 15.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 35.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 35.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 55.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0, 55.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 55.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 55.0),
     ]
     expected_calculate_distribution_standard_deviation_rows =[
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 7.0710678118654755),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 7.0710678118654755),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 7.0710678118654755),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 7.0710678118654755),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 7.0710678118654755),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0, 7.0710678118654755),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 7.0710678118654755),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 7.0710678118654755),
     ]
     expected_calculate_distribution_kurtosis_rows =[
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, -2.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, -2.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, -2.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, -2.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, -2.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0, -2.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, -2.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, -2.0),
     ]
     expected_calculate_distribution_skewness_rows =[
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 0.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 0.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 0.0),
     ]
     expected_calculate_distribution_metrics_rows =[
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 15.0, 7.0710678118654755, -2.0, 0.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 20.0, 15.0, 7.0710678118654755, -2.0, 0.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 35.0, 7.0710678118654755, -2.0, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 40.0, 35.0, 7.0710678118654755, -2.0, 0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 55.0, 7.0710678118654755, -2.0, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 60.0, 55.0, 7.0710678118654755, -2.0, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 55.0, 7.0710678118654755, -2.0, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 60.0, 55.0, 7.0710678118654755, -2.0, 0.0),
     ]
     # fmt: on
 
@@ -6100,72 +6159,72 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4),
     ]
     expected_calculate_aggregate_residuals_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 15.0, 0.15, 10.0, -20.0, 0.5, 1.0, 1.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 15.0, 0.15, 10.0, -20.0, 0.5, 1.0, 1.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 35.0, 0.35, 30.0, -40.0, 0.0, 0.5, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  35.0, 0.35, 30.0, -40.0, 0.0, 0.5, 0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 55.0, 0.55, 50.0, -60.0, 0.0, 0.0, 0.0),
     ]
     expected_calculate_average_absolute_residual_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 15.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 15.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 35.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  35.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 55.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 55.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 55.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 55.0),
     ]
     expected_calculate_average_percentage_residual_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 0.15),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 0.15),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.35),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.35),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 0.55),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 0.55),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.55),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.55),
     ]
     expected_calculate_max_residual_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 10.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 10.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 30.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  30.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 50.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 50.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 50.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 50.0),
     ]
     expected_calculate_min_residual_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, -20.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, -20.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, -40.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  -40.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, -60.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, -60.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, -60.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, -60.0),
     ]
     expected_calculate_percentage_of_residuals_within_absolute_value_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 0.5),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 0.5),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     expected_calculate_percentage_of_residuals_within_percentage_value_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 1.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 1.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     expected_calculate_percentage_of_standardised_residuals_within_limit_rows = [
         ("loc 1", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 10.0, 10.0, 0.1, 0.9, 1.0),
         ("loc 2", PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, -20.0, 20.0, 0.2, 1.0, 1.0),
         ("loc 3", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 30.0, 30.0, 0.3, 1.1, 0.0),
         ("loc 4", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, -40.0, 40.0, 0.4, 1.2,  0.0),
-        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 50.0, 50.0, 0.5, 1.3, 0.0),
-        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, -60.0, 60.0, 0.6, 1.4, 0.0),
+        ("loc 5", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 50.0, 50.0, 0.5, 1.3, 0.0),
+        ("loc 6", PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, -60.0, 60.0, 0.6, 1.4, 0.0),
     ]
     
 
@@ -6174,13 +6233,13 @@ class DiagnosticsOnKnownFilledPostsData:
         ("loc 2", date(2024, 1, 1), PrimaryServiceType.care_home_only, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
         ("loc 3", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
         ("loc 4", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.care_home_model, 100.0, "2024", "01", "01", "20240101", 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
-        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
-        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        ("loc 5", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        ("loc 6", date(2024, 1, 1), PrimaryServiceType.care_home_with_nursing, 100.0, EstimateFilledPostsSource.interpolation_model, 100.0, "2024", "01", "01", "20240101", 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     expected_create_summary_dataframe_rows = [
         (PrimaryServiceType.care_home_only, EstimateFilledPostsSource.care_home_model, 1.0, 2.0, 3.0, 4.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0),
         (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.care_home_model, 2.0, 3.0, 4.0, 5.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
-        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
+        (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.interpolation_model, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
 
     # fmt: on
@@ -6255,7 +6314,7 @@ class CreateChartsForDiagnosticsData:
         ),
         (
             "loc 3",
-            EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean,
+            EstimateFilledPostsSource.interpolation_model,
             PrimaryServiceType.care_home_only,
             10.0,
             5.0,
@@ -6264,7 +6323,7 @@ class CreateChartsForDiagnosticsData:
         ),
         (
             "loc 4",
-            EstimateFilledPostsSource.interpolation_model_ascwds_filled_posts_dedup_clean,
+            EstimateFilledPostsSource.interpolation_model,
             PrimaryServiceType.non_residential,
             10.0,
             5.0,

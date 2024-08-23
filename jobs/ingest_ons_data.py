@@ -40,7 +40,7 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     df = utils.format_date_fields(df, raw_date_format="dd/MM/yyyy")
 
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(df, destination)
+    utils.write_to_parquet(df, destination, mode="overwrite")
 
 
 if __name__ == "__main__":

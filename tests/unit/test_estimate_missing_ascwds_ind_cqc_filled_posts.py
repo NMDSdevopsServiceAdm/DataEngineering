@@ -65,6 +65,34 @@ class NumericalValuesTests(EstimateMissingAscwdsFilledPostsTests):
         self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 185)
 
 
+class MergeInterpolatedValuesTests(EstimateMissingAscwdsFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_merge_interpolated_values_into_interpolated_filled_posts_returns_correct_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_interpolated_values_rows,
+            Schemas.merge_interpolated_values_schema,
+        )
+        returned_df = job.merge_interpolated_values_into_interpolated_filled_posts(
+            test_df
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_interpolated_values_rows,
+            Schemas.expected_merge_interpolated_values_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.interpolation_model],
+                expected_data[i][IndCQC.interpolation_model],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -86,6 +114,55 @@ class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
                 expected_data[i][IndCQC.ascwds_filled_posts_imputed],
                 f"Returned row {i} does not match expected",
             )
+
+
+class NullChangingCarehomeStatusFromImputedColumnsTests(
+    EstimateMissingAscwdsFilledPostsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        self.returned_df = job.null_changing_carehome_status_from_imputed_columns(
+            self.test_df
+        )
+
+    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        expected_data = self.expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_filled_posts_imputed],
+                expected_data[i][IndCQC.ascwds_filled_posts_imputed],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_row_count(
+        self,
+    ):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_create_list_of_locations_with_changing_care_home_status_returns_correct_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        returned_list = job.create_list_of_locations_with_changing_care_home_status(
+            test_df
+        )
+        expected_list = Data.expected_list_of_changing_carehome_statuses
+
+        self.assertEqual(returned_list, expected_list)
 
 
 if __name__ == "__main__":
