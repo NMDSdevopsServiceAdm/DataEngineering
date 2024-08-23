@@ -3454,6 +3454,28 @@ class EstimateMissingAscwdsFilledPostsData:
         ),
     ]
 
+    null_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, 20.0),
+    ]
+    expected_null_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, None),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, None),
+    ]
+    expected_list_of_changing_carehome_statuses = ["loc 3", "loc 4"]
+
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
