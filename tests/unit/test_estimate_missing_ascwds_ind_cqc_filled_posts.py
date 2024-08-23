@@ -143,6 +143,20 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
                 f"Returned row {i} does not match expected",
             )
 
+    def test_create_list_of_locations_with_changing_care_home_status_returns_correct_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_changing_carehome_status_rows,
+            Schemas.null_changing_carehome_status_schema,
+        )
+        returned_list = job.create_list_of_locations_with_changing_care_home_status(
+            test_df
+        )
+        expected_list = Data.expected_list_of_changing_carehome_statuses
+
+        self.assertEqual(returned_list, expected_list)
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

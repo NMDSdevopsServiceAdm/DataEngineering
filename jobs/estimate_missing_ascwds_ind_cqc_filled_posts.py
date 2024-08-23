@@ -143,10 +143,23 @@ def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFra
     Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
 
     Args:
-        df (DataFrame): A dataframe contianing the columns location_id, carehome, and ascwds_filled_posts_imputed.
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, and ascwds_filled_posts_imputed.
 
     Returns:
         DataFrame: A dataframe with locations changing care home status nulled.
+    """
+    return df
+
+
+def create_list_of_locations_with_changing_care_home_status(df: DataFrame) -> list:
+    """
+    Creates a list of location ids for locations which change from care home to not care home, or vice-versa at some point in their history.
+
+    Args:
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, and ascwds_filled_posts_imputed.
+
+    Returns:
+        list: A list of locations ids of locations with a changing care home status.
     """
     return df
 
