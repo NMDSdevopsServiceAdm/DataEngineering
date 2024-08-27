@@ -70,6 +70,7 @@ def main(
     )
     features_df = add_import_month_index_into_df(df=features_df)
 
+    # replicates recreation of bed ratio as per current model
     features_df = features_df.withColumn(
         IndCQC.rolling_average_care_home_posts_per_bed_model,
         F.round(
