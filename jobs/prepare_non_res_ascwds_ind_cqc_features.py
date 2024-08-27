@@ -16,8 +16,8 @@ from utils.feature_engineering_resources.feature_engineering_dormancy import (
 from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as RegionFeatures,
 )
-from utils.feature_engineering_resources.feature_engineering_rui import (
-    FeatureEngineeringValueLabelsRUI as RuiFeatures,
+from utils.feature_engineering_resources.feature_engineering_rural_urban import (
+    FeatureEngineeringValueLabelsRuralUrban as RuralUrbanFeatures,
 )
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
@@ -56,12 +56,12 @@ def main(
         lookup_dict=ServicesFeatures.labels_dict,
     )
 
-    rui_indicators = list(RuiFeatures.labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuiFeatures.labels_dict,
+            lookup_dict=RuralUrbanFeatures.labels_dict,
         )
     )
 
