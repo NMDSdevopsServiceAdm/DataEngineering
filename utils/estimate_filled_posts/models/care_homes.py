@@ -1,5 +1,5 @@
 from pyspark.ml.regression import GBTRegressionModel
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
@@ -30,6 +30,12 @@ def model_care_homes(
 
     locations_df = insert_predictions_into_locations(
         locations_df, care_home_predictions, IndCqc.care_home_model
+    )
+
+    # multiply ratio by beds to get final prediction
+    locations_df = locations_df.withColumn(
+        IndCqc.care_home_model,
+        F.col(IndCqc.care_home_model) * F.col(IndCqc.number_of_beds),
     )
 
     return locations_df
