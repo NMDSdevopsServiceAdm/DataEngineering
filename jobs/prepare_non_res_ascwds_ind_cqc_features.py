@@ -5,18 +5,23 @@ import pyspark.sql.functions as F
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-
-from utils.feature_engineering_dictionaries import (
-    SERVICES_LOOKUP as services_dict,
-    RURAL_URBAN_INDICATOR_LOOKUP as rural_urban_indicator_dict,
-    REGION_LOOKUP as ons_region_dict,
-    DORMANCY_LOOKUP as dormancy_dict,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
+from utils.feature_engineering_resources.feature_engineering_dormancy import (
+    FeatureEngineeringValueLabelsDormancy as DormancyFeatures,
+)
+from utils.feature_engineering_resources.feature_engineering_region import (
+    FeatureEngineeringValueLabelsRegion as RegionFeatures,
+)
+from utils.feature_engineering_resources.feature_engineering_rui import (
+    FeatureEngineeringValueLabelsRUI as RuiFeatures,
+)
+from utils.feature_engineering_resources.feature_engineering_services import (
+    FeatureEngineeringValueLabelsServices as ServicesFeatures,
+)
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
@@ -44,37 +49,37 @@ def main(
         col_to_check=IndCQC.services_offered,
     )
 
-    service_keys = list(services_dict.keys())
+    service_keys = list(ServicesFeatures.labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.services_offered,
-        lookup_dict=services_dict,
+        lookup_dict=ServicesFeatures.labels_dict,
     )
 
-    rui_indicators = list(rural_urban_indicator_dict.keys())
+    rui_indicators = list(RuiFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=rural_urban_indicator_dict,
+            lookup_dict=RuiFeatures.labels_dict,
         )
     )
 
-    regions = list(ons_region_dict.keys())
+    regions = list(RegionFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
-            lookup_dict=ons_region_dict,
+            lookup_dict=RegionFeatures.labels_dict,
         )
     )
 
-    dormancy = list(dormancy_dict.keys())
+    dormancy = list(DormancyFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.dormancy,
-            lookup_dict=dormancy_dict,
+            lookup_dict=DormancyFeatures.labels_dict,
         )
     )
 
