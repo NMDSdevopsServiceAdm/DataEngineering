@@ -154,6 +154,8 @@ def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFra
         F.when(
             ~df[IndCQC.location_id].isin(list_of_locations),
             F.col(IndCQC.ascwds_filled_posts_imputed),
+        ).otherwise(
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean),
         ),
     )
     return df
