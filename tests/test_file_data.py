@@ -3455,25 +3455,35 @@ class EstimateMissingAscwdsFilledPostsData:
     ]
 
     null_changing_carehome_status_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
-        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
-        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, 20.0),
-        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, 20.0),
-        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, 20.0),
-        ("loc 4", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0, None),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0, None),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 20.0, None),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, 20.0, None),
     ]
     expected_null_changing_carehome_status_rows = [
-        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0),
-        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0),
-        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0),
-        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0),
-        ("loc 3", date(2024, 1, 1), CareHome.care_home, None),
-        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, None),
-        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("loc 4", date(2024, 2, 1), CareHome.care_home, None),
+        ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0, None),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0, None),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 2", date(2024, 2, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, None, None),
+        ("loc 3", date(2024, 2, 1), CareHome.not_care_home, None, None),
+        ("loc 4", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("loc 4", date(2024, 2, 1), CareHome.care_home, None, None),
     ]
+
+    retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 20.0, None),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 20.0, 10.0),
+    ]
+    expected_retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("loc 1", date(2024, 2, 1), CareHome.care_home, 10.0, 10.0),
+    ]
+
     expected_list_of_changing_carehome_statuses = ["loc 3", "loc 4"]
 
 
