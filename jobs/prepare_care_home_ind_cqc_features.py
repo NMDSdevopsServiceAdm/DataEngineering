@@ -70,11 +70,18 @@ def main(
     )
     features_df = add_import_month_index_into_df(df=features_df)
 
+    features_df = features_df.withColumn(
+        IndCQC.rolling_average_care_home_posts_per_bed_model,
+        F.round(
+            F.col(IndCQC.rolling_average_model) / F.col(IndCQC.number_of_beds), scale=2
+        ),
+    )
+
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.import_month_index,
+            IndCQC.rolling_average_care_home_posts_per_bed_model,
         ]
         + service_keys
         + regions
