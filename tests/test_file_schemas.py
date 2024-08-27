@@ -2102,6 +2102,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
             ),
         ]
     )
+    retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema = null_changing_carehome_status_schema
 
 
 @dataclass
