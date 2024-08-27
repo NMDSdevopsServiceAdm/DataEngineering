@@ -6,7 +6,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 
 @dataclass
-class FeatureEngineeringValueLabelsRUI:
+class FeatureEngineeringValueLabelsRuralUrban:
     """The possible values of the current rui feature in the independent CQC estimates pipeline"""
 
     column_name: str = CatValues.current_rui_column_values.column_name

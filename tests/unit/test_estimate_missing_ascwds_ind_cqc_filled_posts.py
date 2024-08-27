@@ -133,11 +133,32 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             self.test_df
         )
 
-    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values(
+    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_no_ascwds_data_exists(
         self,
     ):
         returned_data = self.returned_df.sort(IndCQC.location_id).collect()
         expected_data = self.expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_filled_posts_imputed],
+                expected_data[i][IndCQC.ascwds_filled_posts_imputed],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_ascwds_data_exists(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows,
+            Schemas.retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows,
+            Schemas.retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema,
+        )
+        returned_df = job.null_changing_carehome_status_from_imputed_columns(test_df)
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
                 returned_data[i][IndCQC.ascwds_filled_posts_imputed],
