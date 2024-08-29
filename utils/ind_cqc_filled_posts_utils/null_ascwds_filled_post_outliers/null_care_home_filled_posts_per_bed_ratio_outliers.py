@@ -266,7 +266,7 @@ def null_values_outside_of_standardised_residual_cutoffs(
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
     aggregated_df = aggregate_bed_bands(df)
-    # join aggregated df into filtered df
+    df = df.join(aggregated_df, on=IndCQC.number_of_beds_banded, how="left")
     return df
 
 

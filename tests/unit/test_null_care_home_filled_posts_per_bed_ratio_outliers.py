@@ -504,15 +504,15 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
             Data.null_values_outside_of_standardised_residual_cutoff_rows,
             Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
-        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
+        self.returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
 
-        expected_df = self.spark.createDataFrame(
+        self.expected_df = self.spark.createDataFrame(
             Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
             Schemas.expected_null_values_outside_of_standardised_residual_cutoff_schema,
         )
 
-        self.returned_data = returned_df.sort(IndCQC.location_id).collect()
-        self.expected_data = expected_df.sort(IndCQC.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
 
     def test_value_nulled_when_below_lower_cutoff(self):
         self.assertEqual(
@@ -542,6 +542,20 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
         self.assertEqual(
             self.returned_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
             self.expected_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
+        )
+
+    def test_null_values_outside_of_standardised_residual_cutoffs_returns_correct_row_count(
+        self,
+    ):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_null_values_outside_of_standardised_residual_cutoffs_returns_df_with_correct_schema(
+        self,
+    ):
+        self.returned_df.printSchema()
+        self.expected_df.printSchema()
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
         )
 
 
