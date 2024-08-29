@@ -580,3 +580,49 @@ class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierT
         expected_data = expected_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class AggregateBedBandsTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.returned_df = job.aggregate_bed_bands(self.test_df)
+        self.expected_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_aggregate_bed_bands_returns_correct_result_for_min_value(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i]["min_value"],
+                self.expected_data[i]["min_value"],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_aggregate_bed_bands_returns_correct_result_for_max_value(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i]["max_value"],
+                self.expected_data[i]["max_value"],
+                f"Returned row {i} does not match expected",
+            )
+
+
+class WindsoriseNulledValuesTests(
+    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.returned_df = job.aggregate_bed_bands(self.test_df)
+        self.expected_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_windsorise_nulled_values_returns_correct_result(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                self.expected_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                f"Returned row {i} does not match expected",
+            )
