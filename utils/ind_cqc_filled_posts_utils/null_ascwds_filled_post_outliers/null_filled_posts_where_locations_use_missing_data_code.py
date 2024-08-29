@@ -21,7 +21,6 @@ def null_filled_posts_where_locations_use_missing_data_code(df: DataFrame) -> Da
     Returns:
         DataFrame: A data frame with 999 values nulled.
     """
-
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
