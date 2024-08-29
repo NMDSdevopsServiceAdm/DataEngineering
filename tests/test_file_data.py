@@ -3139,6 +3139,35 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ),
     ]
 
+    aggregate_bed_bands_rows = [
+        ("loc 1", 1.0, 1.0),
+        ("loc 2", 2.0, 1.0),
+        ("loc 3", None, 1.0),
+        ("loc 4", 3.0, 2.0),
+        ("loc 5", 4.0, 2.0),
+        ("loc 6", None, 2.0),
+    ]
+
+    expected_aggregate_bed_band_rows = [
+        (1.0, 1.0, 2.0),
+        (2.0, 3.0, 4.0),
+    ]
+
+    windsorise_nulled_values_rows = [
+        ("1", None, -2.50, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("2", 2.0, -1.23, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("3", 3.0, 0.00, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("4", 2.0, 1.23, -1.23, 1.23, 2.0, 3.0, 4.0),
+        ("5", None, 1.25, -1.23, 1.23, 2.0, 3.0, 4.0),
+    ]
+    expected_windsorise_nulled_values_rows = [
+        ("1", 1.0, -2.50, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("2", 2.0, -1.23, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("3", 3.0, 0.00, -1.23, 1.23, 1.0, 1.0, 2.0),
+        ("4", 2.0, 1.23, -1.23, 1.23, 2.0, 3.0, 4.0),
+        ("5", 4.0, 1.25, -1.23, 1.23, 2.0, 3.0, 4.0),
+    ]
+
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesData(object):

@@ -118,8 +118,10 @@ class IndCqcColumns:
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
     lower_percentile: str = "lower_percentile"
-    max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
+    max_residual: str = "max_residual"
+    min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"

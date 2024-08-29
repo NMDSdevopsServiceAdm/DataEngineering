@@ -585,25 +585,33 @@ class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierT
 class AggregateBedBandsTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.test_df = self.spark.createDataFrame(
+            Data.aggregate_bed_bands_rows, Schemas.aggregate_bed_bands_schema
+        )
         self.returned_df = job.aggregate_bed_bands(self.test_df)
-        self.expected_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_bed_band_rows,
+            Schemas.expected_aggregate_bed_bands_schema,
+        )
         self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
         self.expected_data = self.expected_df.collect()
+
+    def test_aggregate_bed_bands_returns_correct_result(self):
+        self.assertEqual(self.returned_data, self.expected_data)
 
     def test_aggregate_bed_bands_returns_correct_result_for_min_value(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i]["min_value"],
-                self.expected_data[i]["min_value"],
+                self.returned_data[i][IndCQC.min_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.min_filled_posts_per_bed_ratio],
                 f"Returned row {i} does not match expected",
             )
 
     def test_aggregate_bed_bands_returns_correct_result_for_max_value(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i]["max_value"],
-                self.expected_data[i]["max_value"],
+                self.returned_data[i][IndCQC.max_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.max_filled_posts_per_bed_ratio],
                 f"Returned row {i} does not match expected",
             )
 
@@ -613,9 +621,14 @@ class WindsoriseNulledValuesTests(
 ):
     def setUp(self) -> None:
         super().setUp()
-        self.test_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.test_df = self.spark.createDataFrame(
+            Data.windsorise_nulled_values_rows, Schemas.windsorise_nulled_values_schema
+        )
         self.returned_df = job.aggregate_bed_bands(self.test_df)
-        self.expected_df = self.spark.createDataFrame(Data.test, Schemas.test)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_windsorise_nulled_values_rows,
+            Schemas.windsorise_nulled_values_schema,
+        )
         self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
         self.expected_data = self.expected_df.collect()
 
