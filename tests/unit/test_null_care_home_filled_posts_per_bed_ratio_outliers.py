@@ -552,8 +552,6 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
     def test_null_values_outside_of_standardised_residual_cutoffs_returns_df_with_correct_schema(
         self,
     ):
-        self.returned_df.printSchema()
-        self.expected_df.printSchema()
         self.assertEqual(
             sorted(self.returned_df.columns), sorted(self.expected_df.columns)
         )
@@ -624,7 +622,7 @@ class WindsoriseNulledValuesTests(
         self.test_df = self.spark.createDataFrame(
             Data.windsorise_nulled_values_rows, Schemas.windsorise_nulled_values_schema
         )
-        self.returned_df = job.aggregate_bed_bands(self.test_df)
+        self.returned_df = job.windsorise_nulled_values(self.test_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_windsorise_nulled_values_rows,
             Schemas.windsorise_nulled_values_schema,
