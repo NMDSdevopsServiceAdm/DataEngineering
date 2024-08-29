@@ -593,27 +593,13 @@ class AggregateBedBandsTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlier
             Data.expected_aggregate_bed_band_rows,
             Schemas.expected_aggregate_bed_bands_schema,
         )
-        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.returned_data = self.returned_df.sort(
+            IndCQC.number_of_beds_banded
+        ).collect()
         self.expected_data = self.expected_df.collect()
 
     def test_aggregate_bed_bands_returns_correct_result(self):
         self.assertEqual(self.returned_data, self.expected_data)
-
-    def test_aggregate_bed_bands_returns_correct_result_for_min_value(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][IndCQC.min_filled_posts_per_bed_ratio],
-                self.expected_data[i][IndCQC.min_filled_posts_per_bed_ratio],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_aggregate_bed_bands_returns_correct_result_for_max_value(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][IndCQC.max_filled_posts_per_bed_ratio],
-                self.expected_data[i][IndCQC.max_filled_posts_per_bed_ratio],
-                f"Returned row {i} does not match expected",
-            )
 
 
 class WindsoriseNulledValuesTests(

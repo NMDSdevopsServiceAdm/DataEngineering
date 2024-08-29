@@ -281,6 +281,14 @@ def aggregate_bed_bands(df: DataFrame) -> DataFrame:
         DataFrame: An aggregated datframe containing min and max values by bed band.
     """
     # aggregate min and max on bed bands
+    df = df.groupBy(IndCQC.number_of_beds_banded).agg(
+        F.min(IndCQC.filled_posts_per_bed_ratio).alias(
+            IndCQC.min_filled_posts_per_bed_ratio
+        ),
+        F.max(IndCQC.filled_posts_per_bed_ratio).alias(
+            IndCQC.max_filled_posts_per_bed_ratio
+        ),
+    )
     return df
 
 
