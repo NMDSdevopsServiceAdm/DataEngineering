@@ -7,15 +7,6 @@ from tests.test_file_data import (
 from tests.test_file_schemas import (
     NullFilledPostsUsingMissingDataCodeSchema as Schemas,
 )
-
-from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
-    DoubleType,
-    IntegerType,
-)
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -51,4 +42,7 @@ class MainTests(NullFilledPostsUsingMissingDataCodeTests):
     def test_null_filled_posts_where_locations_use_missing_data_code_returns_correct_values(
         self,
     ):
-        self.assertEqual(self.expected_df.collect(), self.returned_df.collect())
+        self.assertEqual(
+            self.expected_df.collect(),
+            self.returned_df.sort(IndCQC.location_id).collect(),
+        )
