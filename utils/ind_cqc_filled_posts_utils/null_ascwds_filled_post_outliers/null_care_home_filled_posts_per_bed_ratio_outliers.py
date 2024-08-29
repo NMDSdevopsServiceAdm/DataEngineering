@@ -68,13 +68,12 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df
     )
 
-    output_df = combine_dataframes(
-        filtered_care_home_df, data_not_relevant_to_filter_df
-    )
+    filtered_care_home_df = update_filtering_rule(filtered_care_home_df)
 
-    output_df = update_filtering_rule(
-        output_df,
-        AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+    windsorised_care_home_df = windsorise_nulled_values(filtered_care_home_df)
+
+    output_df = combine_dataframes(
+        windsorised_care_home_df, data_not_relevant_to_filter_df
     )
 
     return output_df
@@ -266,7 +265,24 @@ def null_values_outside_of_standardised_residual_cutoffs(
             F.lit(None),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
+    # aggregate min and max on bed bands
+    # join aggregated df into filtered df
+    return df
 
+
+def windsorise_nulled_values(df: DataFrame) -> DataFrame:
+    """
+    Replace nulled values with max or min permitted values.
+
+    Args:
+        df (DataFrame): A dataframe containing nulled values.
+
+    Returns:
+        DataFrame: A dataFrame with windsorised values.
+    """
+    # when low end outlier, replace dedup clean with min value
+
+    # when high end outlierm replace dedup clean with max value
     return df
 
 
