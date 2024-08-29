@@ -68,7 +68,10 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df
     )
 
-    filtered_care_home_df = update_filtering_rule(filtered_care_home_df)
+    filtered_care_home_df = update_filtering_rule(
+        filtered_care_home_df,
+        AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+    )
 
     windsorised_care_home_df = windsorise_nulled_values(filtered_care_home_df)
 
@@ -280,7 +283,6 @@ def aggregate_bed_bands(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: An aggregated datframe containing min and max values by bed band.
     """
-    # aggregate min and max on bed bands
     df = df.groupBy(IndCQC.number_of_beds_banded).agg(
         F.min(IndCQC.filled_posts_per_bed_ratio).alias(
             IndCQC.min_filled_posts_per_bed_ratio
@@ -302,7 +304,6 @@ def windsorise_nulled_values(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataFrame with windsorised values.
     """
-    # when low end outlier, replace dedup clean with min value
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
@@ -315,7 +316,6 @@ def windsorise_nulled_values(df: DataFrame) -> DataFrame:
         )
         .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
-    # when high end outlierm replace dedup clean with max value
     return df
 
 

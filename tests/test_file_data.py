@@ -2972,7 +2972,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
 
     # fmt: off
     expected_care_home_jobs_per_bed_ratio_filtered_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.04),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 0.04, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.04),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated, 0.08),
         ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated, 0.12),
         ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated, 0.16),
@@ -2991,7 +2991,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
         ("17", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 17.0, 17.0, AscwdsFilteringRule.populated, 0.68),
         ("18", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 18.0, 18.0, AscwdsFilteringRule.populated, 0.72),
         ("19", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 19.0, 19.0, AscwdsFilteringRule.populated, 0.76),
-        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.80),
+        ("20", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 20.0, 0.8, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.80),
         ("21", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data, None),
         ("22", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 22.0, 22.0, AscwdsFilteringRule.populated, None),
         ("23", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 23.0, 23.0, AscwdsFilteringRule.populated, 0.92),

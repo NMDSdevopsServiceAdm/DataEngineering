@@ -69,7 +69,6 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
         )
         returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
         expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
-
         self.assertEqual(expected_data, returned_data)
 
 
@@ -82,7 +81,7 @@ class NumericalValuesTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTe
 
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
-            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.1
+            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.05
         )
 
 
