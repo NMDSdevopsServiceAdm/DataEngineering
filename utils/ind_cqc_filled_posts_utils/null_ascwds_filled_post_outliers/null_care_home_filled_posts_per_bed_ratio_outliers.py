@@ -265,8 +265,22 @@ def null_values_outside_of_standardised_residual_cutoffs(
             F.lit(None),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
-    # aggregate min and max on bed bands
+    aggregated_df = aggregate_bed_bands(df)
     # join aggregated df into filtered df
+    return df
+
+
+def aggregate_bed_bands(df: DataFrame) -> DataFrame:
+    """
+    Calculate min and max permitted values by bed band.
+
+    Args:
+        df (DataFrame): A dataframe containing nulled values.
+
+    Returns:
+        DataFrame: An aggregated datframe containing min and max values by bed band.
+    """
+    # aggregate min and max on bed bands
     return df
 
 
