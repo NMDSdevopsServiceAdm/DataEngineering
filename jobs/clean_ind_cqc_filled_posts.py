@@ -52,7 +52,7 @@ def main(
     )
 
     locations_df = null_ascwds_filled_post_outliers(locations_df)
-    """
+
     locations_df = calculate_filled_posts_per_bed_ratio(
         locations_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
@@ -62,7 +62,7 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.people_directly_employed_dedup,
     )
-    """
+
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.write_to_parquet(
