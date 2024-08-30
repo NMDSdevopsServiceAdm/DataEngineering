@@ -6373,6 +6373,6 @@ class NullFilledPostsUsingMissingDataCodeData:
     ]
     expected_null_filled_posts_using_missing_data_code_rows = [
         ("loc 1", 20.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.contained_missing_data_code),
+        ("loc 2", None, AscwdsFilteringRule.contained_invalid_missing_data_code),
         ("loc 3", None, AscwdsFilteringRule.missing_data),
     ]

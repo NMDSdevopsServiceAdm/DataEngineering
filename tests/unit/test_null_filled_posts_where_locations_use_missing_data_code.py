@@ -46,3 +46,13 @@ class MainTests(NullFilledPostsUsingMissingDataCodeTests):
             self.expected_df.collect(),
             self.returned_df.sort(IndCQC.location_id).collect(),
         )
+
+
+class MissingDataCodeTests(NullFilledPostsUsingMissingDataCodeTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_missing_data_code_is_correct(
+        self,
+    ):
+        self.assertEqual(job.INVALID_MISSING_DATA_CODE, 999.0)
