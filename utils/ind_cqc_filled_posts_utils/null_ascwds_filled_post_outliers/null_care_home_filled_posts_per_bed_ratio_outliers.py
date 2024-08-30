@@ -291,6 +291,7 @@ def aggregate_bed_bands(df: DataFrame) -> DataFrame:
             IndCQC.max_filled_posts_per_bed_ratio
         ),
     )
+    df.show()
     return df
 
 
