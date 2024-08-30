@@ -308,11 +308,11 @@ def windsorise_nulled_values(df: DataFrame) -> DataFrame:
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
             (F.col(IndCQC.standardised_residual) < F.col(IndCQC.lower_percentile)),
-            F.col(IndCQC.min_filled_posts_per_bed_ratio),
+            F.col(IndCQC.min_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
         )
         .when(
             (F.col(IndCQC.standardised_residual) > F.col(IndCQC.upper_percentile)),
-            F.col(IndCQC.max_filled_posts_per_bed_ratio),
+            F.col(IndCQC.max_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
         )
         .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
