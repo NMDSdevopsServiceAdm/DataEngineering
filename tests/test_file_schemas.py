@@ -1943,6 +1943,7 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.lower_percentile, DoubleType(), True),
             StructField(IndCQC.upper_percentile, DoubleType(), True),
             StructField(IndCQC.number_of_beds_banded, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
         ]
