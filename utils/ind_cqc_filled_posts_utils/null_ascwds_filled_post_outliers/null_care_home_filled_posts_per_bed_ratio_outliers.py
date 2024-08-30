@@ -75,11 +75,11 @@ def null_care_home_filled_posts_per_bed_ratio_outliers(
 
     windsorised_care_home_df = windsorise_nulled_values(filtered_care_home_df)
 
-    output_df = combine_dataframes(
-        windsorised_care_home_df, data_not_relevant_to_filter_df
-    )
+    # output_df = combine_dataframes(
+    #   windsorised_care_home_df, data_not_relevant_to_filter_df
+    # )
 
-    return output_df
+    return windsorised_care_home_df
 
 
 def filter_df_to_care_homes_with_known_beds_and_filled_posts(
