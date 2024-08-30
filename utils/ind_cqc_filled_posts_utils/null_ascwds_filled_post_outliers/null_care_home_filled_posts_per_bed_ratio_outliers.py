@@ -268,6 +268,14 @@ def null_values_outside_of_standardised_residual_cutoffs(
             F.lit(None),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
+    df = df.withColumn(
+        IndCQC.filled_posts_per_bed_ratio,
+        F.when(
+            (F.col(IndCQC.standardised_residual) < F.col(IndCQC.lower_percentile))
+            | (F.col(IndCQC.standardised_residual) > F.col(IndCQC.upper_percentile)),
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.filled_posts_per_bed_ratio)),
+    )
     aggregated_df = aggregate_bed_bands(df)
     df = df.join(aggregated_df, on=IndCQC.number_of_beds_banded, how="left")
     return df
@@ -291,6 +299,7 @@ def aggregate_bed_bands(df: DataFrame) -> DataFrame:
             IndCQC.max_filled_posts_per_bed_ratio
         ),
     )
+    df.show()
     return df
 
 
