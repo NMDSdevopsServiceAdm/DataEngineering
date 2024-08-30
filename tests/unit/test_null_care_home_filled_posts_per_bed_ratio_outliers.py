@@ -67,6 +67,7 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
             Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
             Schemas.ind_cqc_schema,
         )
+        self.returned_filtered_df.sort(IndCQC.location_id).show(n=25)
         returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
         expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
         self.assertEqual(expected_data, returned_data)
