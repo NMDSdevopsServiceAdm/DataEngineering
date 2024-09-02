@@ -38,6 +38,7 @@ class InvalidPostcodes:
         "HD1 1AD": "HD1 1RL",
         "HP20 1SN.": "HP20 1SN",
         "HU13 OEG": "HU13 0EG",
+        "HU13 0UF": "HU13 0JT",
         "HU17 ORH": "HU17 0RH",
         "HU21 0LS": "HU170LS",
         "L20 4QC": "L20 4QG",
