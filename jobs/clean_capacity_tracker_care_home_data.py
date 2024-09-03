@@ -110,6 +110,22 @@ def create_new_columns_with_totals(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with three additional columns with totals for agency staff, non agency staff, and combined agency and non agency staff.
     """
+    df = df.withColumn(
+        CTCHClean.non_agency_total_employed,
+        df[CTCH.nurses_employed]
+        + df[CTCH.care_workers_employed]
+        + df[CTCH.non_care_workers_employed],
+    )
+    df = df.withColumn(
+        CTCHClean.agency_total_employed,
+        df[CTCH.agency_nurses_employed]
+        + df[CTCH.agency_care_workers_employed]
+        + df[CTCH.agency_non_care_workers_employed],
+    )
+    df = df.withColumn(
+        CTCHClean.agency_and_non_agency_total_employed,
+        df[CTCHClean.agency_total_employed] + df[CTCHClean.non_agency_total_employed],
+    )
     return df
 
 

@@ -810,10 +810,10 @@ class CapacityTrackerCareHomeData:
     ]
 
     create_new_columns_with_totals_rows = [
-        ("loc 1", 1, 2, 3, 4, 5, 6),
+        ("loc 1", 1, 2, 3, 40, 50, 60),
     ]
     expected_create_new_columns_with_totals_rows = [
-        ("loc 1", 1, 2, 3, 4, 5, 6, 6, 15, 21),
+        ("loc 1", 1, 2, 3, 40, 50, 60, 6, 150, 156),
     ]
 
 
