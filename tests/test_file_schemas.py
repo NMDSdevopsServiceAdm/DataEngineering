@@ -13,7 +13,9 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -489,6 +491,23 @@ class CapacityTrackerCareHomeSchema:
             StructField("daysabsence", StringType(), True),
             StructField("lastupdatedutc", StringType(), True),
             StructField("lastupdatedbst", StringType(), True),
+        ]
+    )
+
+    capacity_tracker_care_home_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField("other column", StringType(), True),
         ]
     )
 

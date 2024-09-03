@@ -838,6 +838,10 @@ class CapacityTrackerCareHomeData:
 
     expected_rows = sample_rows
 
+    capacity_tracker_care_home_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6", "2024", "01", "01", "20240101", "other data"),
+    ]
+
 
 @dataclass
 class CapacityTrackerDomCareData:
