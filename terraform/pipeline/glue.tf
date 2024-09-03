@@ -107,12 +107,12 @@ module "clean_ascwds_worker_job" {
 }
 
 module "clean_capacity_tracker_care_home_job" {
-  source            = "../modules/glue-job"
-  script_name       = "clean_capacity_tracker_care_home_data.py"
-  glue_role         = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket   = module.pipeline_resources
-  datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  source          = "../modules/glue-job"
+  script_name     = "clean_capacity_tracker_care_home_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
 
   job_parameters = {
     "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home/"
