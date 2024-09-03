@@ -4,7 +4,24 @@ from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
+    CTCH.cqc_id,
+    CTCH.nurses_employed,
+    CTCH.care_workers_employed,
+    CTCH.non_care_workers_employed,
+    CTCH.agency_nurses_employed,
+    CTCH.agency_care_workers_employed,
+    CTCH.agency_non_care_workers_employed,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
 
 
 def main(
