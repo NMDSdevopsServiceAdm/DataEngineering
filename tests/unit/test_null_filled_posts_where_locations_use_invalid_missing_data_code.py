@@ -12,11 +12,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
-    null_filled_posts_where_locations_use_missing_data_code as job,
+    null_filled_posts_where_locations_use_invalid_missing_data_code as job,
 )
 
 
-class NullFilledPostsUsingMissingDataCodeTests(unittest.TestCase):
+class NullFilledPostsUsingInvalidMissingDataCodeTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(
@@ -27,7 +27,7 @@ class NullFilledPostsUsingMissingDataCodeTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class MainTests(NullFilledPostsUsingMissingDataCodeTests):
+class MainTests(NullFilledPostsUsingInvalidMissingDataCodeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -48,7 +48,7 @@ class MainTests(NullFilledPostsUsingMissingDataCodeTests):
         )
 
 
-class MissingDataCodeTests(NullFilledPostsUsingMissingDataCodeTests):
+class InvalidMissingDataCodeTests(NullFilledPostsUsingInvalidMissingDataCodeTests):
     def setUp(self) -> None:
         super().setUp()
 
