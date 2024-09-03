@@ -55,5 +55,28 @@ class MainTests(CapacityTrackerCareHomeTests):
         )
 
 
+class RemoveRowsWhereAgencyAndNonAgenyValuesMatchTests(CapacityTrackerCareHomeTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.remove_matching_agency_and_non_agency_rows,
+            Schemas.remove_matching_agency_and_non_agency_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_remove_matching_agency_and_non_agency_rows,
+            Schemas.remove_matching_agency_and_non_agency_schema,
+        )
+
+    def test_remove_rows_where_agency_and_non_agency_values_match_returns_correct_data(
+        self,
+    ):
+        returned_df = job.remove_rows_where_agency_and_non_agency_values_match(
+            self.test_df
+        )
+        self.assertEqual(
+            returned_df.sort(CTCH.cqc_id).collect(), self.expected_df.collect()
+        )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

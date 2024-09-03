@@ -51,6 +51,11 @@ def main(
         CTCHClean.capacity_tracker_import_date,
     )
     # Remove those with exactly same directly employed and non-directly employed
+    capacity_tracker_care_home_df = (
+        remove_rows_where_agency_and_non_agency_values_match(
+            capacity_tracker_care_home_df
+        )
+    )
     # add total agency column
     # add total non-agency column
     # add total agency and non agency column
@@ -67,6 +72,21 @@ def main(
             Keys.import_date,
         ],
     )
+
+
+def remove_rows_where_agency_and_non_agency_values_match(df: DataFrame) -> DataFrame:
+    """
+    Remove rows where the number of employed for a non-agency job role matches the corresponding agency job role.
+
+    Matching rows are removed as the likelihood of this number exactly matching is low and suggests that data quality may be poor.
+
+    Args:
+        df(DataFrame): A dataframe with capacity tracker care home data.
+
+    Returns:
+        DataFrame: A dataframe with suspect rows removed.
+    """
+    return df
 
 
 if __name__ == "__main__":

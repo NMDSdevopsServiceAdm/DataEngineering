@@ -494,6 +494,17 @@ class CapacityTrackerCareHomeSchema:
             StructField("other column", StringType(), True),
         ]
     )
+    remove_matching_agency_and_non_agency_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+        ]
+    )
 
 
 @dataclass

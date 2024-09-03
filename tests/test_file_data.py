@@ -795,6 +795,20 @@ class CapacityTrackerCareHomeData:
         ),
     ]
 
+    remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+        ("loc 2", "1", "2", "3", "1", "5", "6"),
+        ("loc 3", "1", "2", "3", "4", "2", "6"),
+        ("loc 4", "1", "2", "3", "4", "5", "3"),
+        ("loc 5", "1", "2", "3", "1", "2", "6"),
+        ("loc 6", "1", "2", "3", "1", "5", "3"),
+        ("loc 7", "1", "2", "3", "4", "2", "3"),
+        ("loc 8", "1", "2", "3", "1", "2", "3"),
+    ]
+    expected_remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+    ]
+
 
 @dataclass
 class CapacityTrackerDomCareData:
