@@ -22,6 +22,7 @@
         "Arguments": {
           "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=care_home/",
           "--cleaned_capacity_tracker_care_home_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
+        }
       },
       "Next": "Run capacity tracker crawler"
     },
