@@ -86,6 +86,14 @@ def remove_rows_where_agency_and_non_agency_values_match(df: DataFrame) -> DataF
     Returns:
         DataFrame: A dataframe with suspect rows removed.
     """
+    df = df.where(
+        (df[CTCH.nurses_employed] != df[CTCH.agency_nurses_employed])
+        & (df[CTCH.care_workers_employed] != df[CTCH.agency_care_workers_employed])
+        & (
+            df[CTCH.non_care_workers_employed]
+            != df[CTCH.agency_non_care_workers_employed]
+        )
+    )
     return df
 
 
