@@ -39,7 +39,7 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     df = utils.read_csv(source, delimiter)
 
     print(f"Exporting as parquet to {destination}")
-    utils.write_to_parquet(df, destination)
+    utils.write_to_parquet(df, destination, mode="overwrite")
 
 
 if __name__ == "__main__":
