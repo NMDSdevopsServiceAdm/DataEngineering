@@ -527,3 +527,4 @@ class AscwdsFilteringRule(ColumnValues):
     filtered_care_home_filled_posts_to_bed_ratio_outlier: str = (
         "filtered_care_home_filled_posts_bed_to_ratio_outlier"
     )
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
