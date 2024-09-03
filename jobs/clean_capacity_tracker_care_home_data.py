@@ -40,25 +40,19 @@ def main(
         CTCH.agency_care_workers_employed,
         CTCH.agency_non_care_workers_employed,
     ]
-    # change numbers to ints
     capacity_tracker_care_home_df = cUtils.cast_to_int(
         capacity_tracker_care_home_df, columns_to_cast_to_integers
     )
-    # add import date column
     capacity_tracker_care_home_df = cUtils.column_to_date(
         capacity_tracker_care_home_df,
         Keys.import_date,
         CTCHClean.capacity_tracker_import_date,
     )
-    # Remove those with exactly same directly employed and non-directly employed
     capacity_tracker_care_home_df = (
         remove_rows_where_agency_and_non_agency_values_match(
             capacity_tracker_care_home_df
         )
     )
-    # add total agency column
-    # add total non-agency column
-    # add total agency and non agency column
     capacity_tracker_care_home_df = create_new_columns_with_totals(
         capacity_tracker_care_home_df
     )
