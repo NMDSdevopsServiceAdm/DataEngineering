@@ -3,7 +3,9 @@ from datetime import date
 
 from pyspark.ml.linalg import Vectors
 
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -839,7 +841,20 @@ class CapacityTrackerCareHomeData:
     expected_rows = sample_rows
 
     capacity_tracker_care_home_rows = [
-        ("loc 1", "1", "2", "3", "4", "5", "6", "2024", "01", "01", "20240101", "other data"),
+        (
+            "loc 1",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            "other data",
+        ),
     ]
 
 

@@ -29,7 +29,7 @@ def main(
     cleaned_capacity_tracker_care_home_destination: str,
 ):
     capacity_tracker_care_home_df = utils.read_from_parquet(
-        capacity_tracker_care_home_source,
+        capacity_tracker_care_home_source, CAPACITY_TRACKER_CARE_HOME_COLUMNS
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
