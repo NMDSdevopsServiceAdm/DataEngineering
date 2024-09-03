@@ -59,6 +59,9 @@ def main(
     # add total agency column
     # add total non-agency column
     # add total agency and non agency column
+    capacity_tracker_care_home_df = create_new_columns_with_totals(
+        capacity_tracker_care_home_df
+    )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
     utils.write_to_parquet(
@@ -94,6 +97,19 @@ def remove_rows_where_agency_and_non_agency_values_match(df: DataFrame) -> DataF
             != df[CTCH.agency_non_care_workers_employed]
         )
     )
+    return df
+
+
+def create_new_columns_with_totals(df: DataFrame) -> DataFrame:
+    """
+    Adds new columns with totals for agency staff, non agency staff, and combined agency and non agency staff.
+
+    Args:
+        df(DataFrame): A dataframe with capacity tracker care home data.
+
+    Returns:
+        DataFrame: A dataframe with three additional columns with totals for agency staff, non agency staff, and combined agency and non agency staff.
+    """
     return df
 
 

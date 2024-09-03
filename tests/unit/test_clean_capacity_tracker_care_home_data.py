@@ -78,5 +78,26 @@ class RemoveRowsWhereAgencyAndNonAgenyValuesMatchTests(CapacityTrackerCareHomeTe
         )
 
 
+class CreateNewColumnsWithTotalsTests(CapacityTrackerCareHomeTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.create_new_columns_with_totals_rows,
+            Schemas.create_new_columns_with_totals_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_new_columns_with_totals_rows,
+            Schemas.expected_create_new_columns_with_totals_schema,
+        )
+
+    def test_create_new_columns_with_totals_returns_correct_data(
+        self,
+    ):
+        returned_df = job.create_new_columns_with_totals(self.test_df)
+        self.assertEqual(
+            returned_df.sort(CTCH.cqc_id).collect(), self.expected_df.collect()
+        )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

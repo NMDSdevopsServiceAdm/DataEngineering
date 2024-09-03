@@ -809,6 +809,13 @@ class CapacityTrackerCareHomeData:
         ("loc 1", "1", "2", "3", "4", "5", "6"),
     ]
 
+    create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 4, 5, 6),
+    ]
+    expected_create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 4, 5, 6, 6, 15, 21),
+    ]
+
 
 @dataclass
 class CapacityTrackerDomCareData:

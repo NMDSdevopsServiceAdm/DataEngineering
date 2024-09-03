@@ -48,3 +48,6 @@ class CapacityTrackerCareHomeColumns:
 @dataclass
 class CapacityTrackerCareHomeCleanColumns:
     capacity_tracker_import_date: str = "capacity_tracker_import_date"
+    agency_total_employed: str = "agency_total_employed"
+    non_agency_total_employed: str = "non_agency_total_employed"
+    agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"

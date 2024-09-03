@@ -15,6 +15,7 @@ from pyspark.sql.types import (
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -503,6 +504,27 @@ class CapacityTrackerCareHomeSchema:
             StructField(CTCH.agency_nurses_employed, StringType(), True),
             StructField(CTCH.agency_care_workers_employed, StringType(), True),
             StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+        ]
+    )
+    create_new_columns_with_totals_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, IntegerType(), True),
+            StructField(CTCH.care_workers_employed, IntegerType(), True),
+            StructField(CTCH.non_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_nurses_employed, IntegerType(), True),
+            StructField(CTCH.agency_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, IntegerType(), True),
+        ]
+    )
+    expected_create_new_columns_with_totals_schema = StructType(
+        [
+            *create_new_columns_with_totals_schema,
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
         ]
     )
 
