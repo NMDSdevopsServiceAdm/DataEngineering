@@ -126,7 +126,7 @@ resource "aws_sfn_state_machine" "ingest_and_clean_capacity_tracker_data_state_m
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestAndCleanCapacityTrackerDataPipeline-StepFunction.json", {
-    ingest_capacity_tracker_data_job_name     = module.ingest_capacity_tracker_data.job_name
+    ingest_capacity_tracker_data_job_name     = module.ingest_capacity_tracker_data_job.job_name
     clean_capacity_tracker_care_home_job_name = module.clean_capacity_tracker_care_home_job.job_name
     capacity_tracker_crawler_name             = module.capacity_tracker_crawler.crawler_name
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
