@@ -827,4 +827,11 @@ module "dpr_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
+module "capacity_tracker_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "capacity_tracker"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
 
