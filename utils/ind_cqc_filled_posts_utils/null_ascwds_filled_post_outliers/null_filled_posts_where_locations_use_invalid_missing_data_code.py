@@ -13,7 +13,9 @@ INVALID_MISSING_DATA_CODE = (
 )
 
 
-def null_filled_posts_where_locations_use_missing_data_code(df: DataFrame) -> DataFrame:
+def null_filled_posts_where_locations_use_invalid_missing_data_code(
+    df: DataFrame,
+) -> DataFrame:
     """
     Null rows where locations have 999 in ascwds_filled_posts_dedup_clean.
 

@@ -4185,8 +4185,8 @@ class CreateChartsForDiagnosticsSchemas:
 
 
 @dataclass
-class NullFilledPostsUsingMissingDataCodeSchema:
-    null_filled_posts_using_missing_data_code_schema = StructType(
+class NullFilledPostsUsingInvalidMissingDataCodeSchema:
+    null_filled_posts_using_invalid_missing_data_code_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
