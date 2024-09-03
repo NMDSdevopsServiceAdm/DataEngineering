@@ -17,7 +17,7 @@ def null_filled_posts_where_locations_use_missing_data_code(df: DataFrame) -> Da
     """
     Null rows where locations have 999 in ascwds_filled_posts_dedup_clean.
 
-    '999' is used elsewhere in ASCWDS to represent not known. Whilst that isn't the case for filled posts (i.e. the raw variables total staff and worker records), upon investigation, all 999 entries at the time of investigation do not look to be an accurate reflection of that location's staff so we are removing them for data quality.
+    '999' is used elsewhere in ASCWDS to represent not known. Whilst that isn't the case for filled posts (i.e. the raw variables total staff), upon investigation, all 999 entries at the time of investigation do not look to be an accurate reflection of that location's staff so we are removing them for data quality.
 
     Args:
         df(DataFrame): A dataframe with ascwds_filled_posts_dedup_clean.
