@@ -32,6 +32,13 @@ def main(
         capacity_tracker_care_home_source, CAPACITY_TRACKER_CARE_HOME_COLUMNS
     )
 
+    # change numbers to ints
+    # add import date column
+    # Remove those with exactly same directly employed and non-directly employed
+    # add total agency column
+    # add total non-agency column
+    # add total agency and non agency column
+
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
     utils.write_to_parquet(
         capacity_tracker_care_home_df,
