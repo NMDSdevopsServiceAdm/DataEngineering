@@ -6,6 +6,7 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -31,9 +32,24 @@ def main(
     capacity_tracker_care_home_df = utils.read_from_parquet(
         capacity_tracker_care_home_source, CAPACITY_TRACKER_CARE_HOME_COLUMNS
     )
-
+    columns_to_cast_to_integers = [
+        CTCH.nurses_employed,
+        CTCH.care_workers_employed,
+        CTCH.non_care_workers_employed,
+        CTCH.agency_nurses_employed,
+        CTCH.agency_care_workers_employed,
+        CTCH.agency_non_care_workers_employed,
+    ]
     # change numbers to ints
+    capacity_tracker_care_home_df = cUtils.cast_to_int(
+        capacity_tracker_care_home_df, columns_to_cast_to_integers
+    )
     # add import date column
+    capacity_tracker_care_home_df = cUtils.column_to_date(
+        capacity_tracker_care_home_df,
+        Keys.import_date,
+        CTCHClean.capacity_tracker_import_date,
+    )
     # Remove those with exactly same directly employed and non-directly employed
     # add total agency column
     # add total non-agency column

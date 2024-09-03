@@ -43,3 +43,8 @@ class CapacityTrackerCareHomeColumns:
     sub_icb: str = "subicb"
     used_beds: str = "usedbeds"
     workforce_status: str = "workforcestatus"
+
+
+@dataclass
+class CapacityTrackerCareHomeCleanColumns:
+    capacity_tracker_import_date: str = "capacity_tracker_import_date"
