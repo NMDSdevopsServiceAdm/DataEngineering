@@ -79,13 +79,13 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df, IndCQC.filled_posts_per_bed_ratio
     )
 
-    output_df = combine_dataframes(
-        filtered_care_home_df, data_not_relevant_to_filter_df
+    filtered_care_home_df = update_filtering_rule(
+        filtered_care_home_df,
+        AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
     )
 
-    output_df = update_filtering_rule(
-        output_df,
-        AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+    output_df = combine_dataframes(
+        filtered_care_home_df, data_not_relevant_to_filter_df
     )
 
     return output_df
