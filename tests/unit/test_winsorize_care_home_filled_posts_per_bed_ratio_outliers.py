@@ -202,52 +202,6 @@ class CalculateAverageFilledPostsPerBandedBedCount(
         )
 
 
-class CalculateStandardisedResidualsTests(
-    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_standardised_residuals(self):
-        expected_filled_posts_schema = StructType(
-            [
-                StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-                StructField(
-                    IndCQC.avg_filled_posts_per_bed_ratio,
-                    DoubleType(),
-                    True,
-                ),
-            ]
-        )
-        expected_filled_posts_rows = [
-            (0.0, 1.4),
-            (1.0, 1.28),
-        ]
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-            ]
-        )
-        rows = [
-            ("1", 10, 16.0, 0.0),
-            ("2", 50, 80.0, 1.0),
-            ("3", 50, 10.0, 1.0),
-        ]
-        expected_filled_posts_df = self.spark.createDataFrame(
-            expected_filled_posts_rows, expected_filled_posts_schema
-        )
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_standardised_residuals(df, expected_filled_posts_df)
-        self.assertEqual(df.count(), 3)
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.standardised_residual], 0.53452, places=2)
-        self.assertAlmostEquals(df[1][IndCQC.standardised_residual], 2.0, places=2)
-        self.assertAlmostEquals(df[2][IndCQC.standardised_residual], -6.75, places=2)
-
-
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
@@ -293,58 +247,30 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
         self.assertAlmostEquals(df[1][IndCQC.expected_filled_posts], 75.7575, places=3)
 
 
-class CalculateFilledPostResidualsTests(
-    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_post_residuals(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.expected_filled_posts, DoubleType(), True),
-            ]
-        )
-        rows = [
-            ("1", 10.0, 8.76544),
-            ("2", 10.0, 10.0),
-            ("3", 10.0, 11.23456),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_post_residuals(df)
-
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.residual], 1.23456, places=3)
-        self.assertAlmostEquals(df[1][IndCQC.residual], 0.0, places=3)
-        self.assertAlmostEquals(df[2][IndCQC.residual], -1.23456, places=3)
-
-
 class CalculateFilledPostStandardisedResidualsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_filled_post_standardised_residual(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.residual, DoubleType(), True),
-                StructField(IndCQC.expected_filled_posts, DoubleType(), True),
-            ]
+        calculate_standardised_residuals_df = self.spark.createDataFrame(
+            Data.calculate_standardised_residuals_rows,
+            Schemas.calculate_standardised_residuals_schema,
         )
-        rows = [
-            ("1", 11.11111, 4.0),
-            ("2", 17.75, 25.0),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_post_standardised_residual(df)
+        self.returned_df = job.calculate_filled_post_standardised_residual(
+            calculate_standardised_residuals_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_standardised_residuals_rows,
+            Schemas.expected_calculate_standardised_residuals_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.standardised_residual], 5.55556, places=2)
-        self.assertAlmostEquals(df[1][IndCQC.standardised_residual], 3.55, places=2)
+    def test_calculate_filled_post_standardised_residual_matches_expected_dataframe(
+        self,
+    ):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
 class CalculateLowerAndUpperStandardisedResidualCutoffTests(

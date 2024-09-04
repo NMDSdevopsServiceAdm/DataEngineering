@@ -59,9 +59,11 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         calculate_average_filled_posts_per_banded_bed_count(data_to_filter_df)
     )
 
-    data_to_filter_df = calculate_standardised_residuals(
+    data_to_filter_df = calculate_expected_filled_posts_based_on_number_of_beds(
         data_to_filter_df, expected_filled_posts_per_banded_bed_count_df
     )
+
+    data_to_filter_df = calculate_filled_post_standardised_residual(data_to_filter_df)
 
     data_to_filter_df = (
         calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
@@ -157,19 +159,6 @@ def calculate_average_filled_posts_per_banded_bed_count(
     return output_df
 
 
-def calculate_standardised_residuals(
-    df: DataFrame,
-    expected_filled_posts_per_banded_bed_count_df: DataFrame,
-) -> DataFrame:
-    df = calculate_expected_filled_posts_based_on_number_of_beds(
-        df, expected_filled_posts_per_banded_bed_count_df
-    )
-    df = calculate_filled_post_residuals(df)
-    df = calculate_filled_post_standardised_residual(df)
-
-    return df
-
-
 def calculate_expected_filled_posts_based_on_number_of_beds(
     df: DataFrame,
     expected_filled_posts_per_banded_bed_count_df: DataFrame,
@@ -188,22 +177,30 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
     return df
 
 
-def calculate_filled_post_residuals(df: DataFrame) -> DataFrame:
-    df = df.withColumn(
-        IndCQC.residual,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean)
-        - F.col(IndCQC.expected_filled_posts),
-    )
-
-    return df
-
-
 def calculate_filled_post_standardised_residual(
     df: DataFrame,
 ) -> DataFrame:
+    """
+    Calculate the standardised residual for filled posts and adds as a new column.
+
+    This function computes the standardised residual for filled posts by subtracting the
+    expected filled posts from the actual filled posts (residuals) and then dividing by
+    the square root of the expected filled posts. The result is added as a new column.
+
+    Args:
+        df (DataFrame): DataFrame containing 'ascwds_filled_posts_dedup_clean' and
+                       'expected_filled_posts'.
+
+    Returns:
+        DataFrame: DataFrame with the additional calculated 'standardised_residual' column.
+    """
     df = df.withColumn(
         IndCQC.standardised_residual,
-        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.expected_filled_posts)),
+        (
+            F.col(IndCQC.ascwds_filled_posts_dedup_clean)
+            - F.col(IndCQC.expected_filled_posts)
+        )
+        / F.sqrt(F.col(IndCQC.expected_filled_posts)),
     )
 
     return df

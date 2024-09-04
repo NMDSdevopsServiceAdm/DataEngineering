@@ -3083,6 +3083,15 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("09", "Y", 1, 1.0),
     ]
 
+    calculate_standardised_residuals_rows = [
+        ("1", 55.5, 64.0),
+        ("2", 25.0, 16.0),
+    ]
+    expected_calculate_standardised_residuals_rows = [
+        ("1", 55.5, 64.0, -1.0625),
+        ("2", 25.0, 16.0, 2.25),
+    ]
+
     standardised_residual_percentile_cutoff_rows = [
         ("1", PrimaryServiceType.care_home_with_nursing, 0.54321),
         ("2", PrimaryServiceType.care_home_with_nursing, -3.2545),
