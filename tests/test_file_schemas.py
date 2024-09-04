@@ -1851,7 +1851,7 @@ class ReconciliationSchema:
 
 
 @dataclass
-class NullAscwdsFilledPostOutliersSchema:
+class CleanAscwdsFilledPostOutliersSchema:
     unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1865,7 +1865,7 @@ class NullAscwdsFilledPostOutliersSchema:
 
 
 @dataclass
-class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
+class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

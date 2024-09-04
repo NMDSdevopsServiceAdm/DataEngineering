@@ -2950,7 +2950,7 @@ class ReconciliationData:
 
 
 @dataclass
-class NullAscwdsFilledPostOutliersData:
+class CleanAscwdsFilledPostOutliersData:
     unfiltered_ind_cqc_rows = [
         ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0),
@@ -2959,7 +2959,7 @@ class NullAscwdsFilledPostOutliersData:
 
 
 @dataclass
-class RemoveCareHomeFilledPostsPerBedRatioOutliersData:
+class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
     # fmt: off
     unfiltered_ind_cqc_rows = [
         ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, 1.0, AscwdsFilteringRule.populated, 0.04),
