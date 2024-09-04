@@ -71,7 +71,10 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     )
 
     filtered_care_home_df = null_values_outside_of_standardised_residual_cutoffs(
-        data_to_filter_df
+        data_to_filter_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+    filtered_care_home_df = null_values_outside_of_standardised_residual_cutoffs(
+        data_to_filter_df, IndCQC.filled_posts_per_bed_ratio
     )
 
     output_df = combine_dataframes(
@@ -249,28 +252,28 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
 
 
 def null_values_outside_of_standardised_residual_cutoffs(
-    df: DataFrame,
+    df: DataFrame, column_to_null: str
 ) -> DataFrame:
     """
-    Converts filled post values to null if the standardised residuals are outside the percentile cutoffs.
+    Converts values in the specified column to null if the standardised residuals are outside the percentile cutoffs.
 
-    If the standardised_residual value is outside of the lower and upper percentile cutoffs then
-    ascwds_filled_posts_dedup_clean is replaced with a null value. Otherwise (if the value is within the
-    cutoffs), the original value for ascwds_filled_posts_dedup_clean remains.
+    If the standardised_residual value is outside of the lower and upper percentile cutoffs then the column_to_null
+    is replaced with a null value. Otherwise (if the value is within the cutoffs), the original value remains.
 
     Args:
         df (DataFrame): The input dataframe containing standardised residuals and percentiles.
+        column_to_null (string): The column with values which should be converted to nulls.
 
     Returns:
         DataFrame: A dataFrame with null values removed based on the specified cutoffs.
     """
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        column_to_null,
         F.when(
             (F.col(IndCQC.standardised_residual) < F.col(IndCQC.lower_percentile))
             | (F.col(IndCQC.standardised_residual) > F.col(IndCQC.upper_percentile)),
             F.lit(None),
-        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+        ).otherwise(F.col(column_to_null)),
     )
 
     return df

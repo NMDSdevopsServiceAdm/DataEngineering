@@ -505,7 +505,9 @@ class NullValuesOutsideOfStandardisedResidualCutoffsTests(
             Data.null_values_outside_of_standardised_residual_cutoff_rows,
             Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
         )
-        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
+        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(
+            df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
