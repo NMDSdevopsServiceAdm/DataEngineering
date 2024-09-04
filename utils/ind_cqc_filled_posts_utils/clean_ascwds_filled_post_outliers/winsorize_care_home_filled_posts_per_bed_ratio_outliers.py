@@ -104,7 +104,7 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
         df (DataFrame): A dataframe of cleaned CQC locations.
 
     Returns:
-        (DataFrame): A dataframe filtered to care homes with known beds and known filled posts.
+        DataFrame: A dataframe filtered to care homes with known beds and known filled posts.
     """
     df = df.where(
         (F.col(IndCQC.care_home) == CareHome.care_home)
