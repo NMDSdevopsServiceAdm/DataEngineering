@@ -16,6 +16,8 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_f
 class NumericalValues:
     DECIMAL_PLACES_TO_ROUND_TO: int = 5
     PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
+    MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF: float = 0.75
+    MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF: float = 5.0
 
 
 def winsorize_care_home_filled_posts_per_bed_ratio_outliers(

@@ -86,6 +86,12 @@ class NumericalValuesTests(
             job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.05
         )
 
+    def test_minimum_permitted_lower_ratio_cutoff_value(self):
+        self.assertEqual(job.NumericalValues.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF, 0.75)
+
+    def test_minimum_permitted_upper_ratio_cutoff_value(self):
+        self.assertEqual(job.NumericalValues.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF, 5.0)
+
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
