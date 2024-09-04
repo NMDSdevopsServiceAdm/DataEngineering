@@ -84,6 +84,10 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
     )
 
+    # TODO: calculate min and max filled posts per bed ratio
+    # TODO: replace with max of 0.75 (min) or 5.0 (max)
+    # TODO: winsorize nulled values
+
     output_df = combine_dataframes(
         filtered_care_home_df, data_not_relevant_to_filter_df
     )
