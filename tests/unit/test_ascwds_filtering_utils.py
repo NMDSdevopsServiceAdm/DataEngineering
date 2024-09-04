@@ -56,7 +56,7 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
         )
         returned_df = job.update_filtering_rule(
             test_df,
-            AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+            AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_update_filtering_rule_rows,

@@ -3011,7 +3011,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
     # fmt: off
     expected_care_home_jobs_per_bed_ratio_filtered_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 0.04),
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 1.0, None, AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier, 0.04),
         ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 2.0, 2.0, AscwdsFilteringRule.populated, 0.08),
         ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 3.0, 3.0, AscwdsFilteringRule.populated, 0.12),
         ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 4.0, 4.0, AscwdsFilteringRule.populated, 0.16),
@@ -3050,7 +3050,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 37.0, 37.0, AscwdsFilteringRule.populated, 1.48),
         ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 38.0, 38.0, AscwdsFilteringRule.populated, 1.52),
         ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 39.0, 39.0, AscwdsFilteringRule.populated, 1.56),
-        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, None, AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier, 1.60),
+        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 40.0, None, AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier, 1.60),
         ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, AscwdsFilteringRule.missing_data, None),
         ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0, AscwdsFilteringRule.populated, None),
         ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0, AscwdsFilteringRule.populated, 0.92),
@@ -6359,7 +6359,7 @@ class ASCWDSFilteringUtilsData:
         (
             "loc 2",
             None,
-            AscwdsFilteringRule.filtered_care_home_filled_posts_to_bed_ratio_outlier,
+            AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
         ),
         (
             "loc 3",

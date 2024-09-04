@@ -1890,18 +1890,18 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     )
 
     calculate_standardised_residuals_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.expected_filled_posts, DoubleType(), True),
-            ]
-        )
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.expected_filled_posts, DoubleType(), True),
+        ]
+    )
     expected_calculate_standardised_residuals_schema = StructType(
-            [
-                *calculate_standardised_residuals_schema,
-                StructField(IndCQC.standardised_residual, DoubleType(), True),
-            ]
-        )
+        [
+            *calculate_standardised_residuals_schema,
+            StructField(IndCQC.standardised_residual, DoubleType(), True),
+        ]
+    )
 
     standardised_residual_percentile_cutoff_schema = StructType(
         [
