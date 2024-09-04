@@ -78,7 +78,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         data_to_filter_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
     filtered_care_home_df = null_values_outside_of_standardised_residual_cutoffs(
-        data_to_filter_df, IndCQC.filled_posts_per_bed_ratio
+        filtered_care_home_df, IndCQC.filled_posts_per_bed_ratio
     )
 
     filtered_care_home_df = update_filtering_rule(
