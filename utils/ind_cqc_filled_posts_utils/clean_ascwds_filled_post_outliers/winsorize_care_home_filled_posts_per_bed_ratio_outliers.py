@@ -80,7 +80,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     winsorized_df = winsorize_outliers(care_homes_df)
 
-    # TODO: how do we want to identify winsorized values?
+    # TODO: do we want to identify which values have been winsorized? how?
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
 
@@ -281,7 +281,9 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
 
     Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
     the majority of ratio between 0.75 and 5.0 were closely matched to each other. However, outside of these ratio
-    the quality of matches decreased significantly.
+    the quality of matches decreased significantly. However, for small care homes (lower number of beds) the ratios
+    then to be higher than 0.75 and 5.0 so we are using the standardised residual percentile cutoffs if they come
+    out higher than these minimum permitted ratios.
 
     Args:
         df (DataFrame): Input DataFrame.
@@ -345,7 +347,7 @@ def winsorize_outliers(
 
     Outliers are detected using the filled_posts_per_bed_ratio. For ratios which fall outside of the minimum or
     maximum permitted ratios, the ascwds_filled_posts_dedup_clean is recalculated by multiplying the min/max
-    permitted ratio by the number_of_beds. The filled_posts_per_bed_ratio is then recalculated
+    permitted ratio by the number_of_beds. The filled_posts_per_bed_ratio is then winsorized.
 
     Args:
         df (DataFrame): Input DataFrame.
