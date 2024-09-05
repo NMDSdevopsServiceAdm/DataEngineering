@@ -84,8 +84,6 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
 
-    output_df.sort(IndCQC.location_id).show(50)
-
     return output_df
 
 
