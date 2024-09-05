@@ -15,7 +15,7 @@ from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_fi
 @dataclass
 class NumericalValues:
     DECIMAL_PLACES_TO_ROUND_TO: int = 5
-    PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.1
+    PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
 
 
 def null_care_home_filled_posts_per_bed_ratio_outliers(
