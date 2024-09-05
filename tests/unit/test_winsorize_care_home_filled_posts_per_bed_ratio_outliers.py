@@ -526,6 +526,33 @@ class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(
             )
 
 
+class SetMinimumPermittedRatioTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_returned_data_matches_expected_data(self):
+        TEST_MIN_VALUE: float = 0.75
+
+        care_home_df = self.spark.createDataFrame(
+            Data.set_minimum_permitted_ratio_rows,
+            Schemas.set_minimum_permitted_ratio_schema,
+        )
+        returned_df = job.set_minimum_permitted_ratio(
+            care_home_df, IndCQC.filled_posts_per_bed_ratio, TEST_MIN_VALUE
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_set_minimum_permitted_ratio_rows,
+            Schemas.set_minimum_permitted_ratio_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class CombineDataframeTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):

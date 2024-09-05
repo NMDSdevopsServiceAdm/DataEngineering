@@ -78,7 +78,6 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         care_homes_df
     )
 
-    # TODO: replace with max of 0.75 (min) or 5.0 (max)
     # TODO: winsorize nulled values
 
     # TODO: this will need amending to account for those inside boundaries but
@@ -300,7 +299,41 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
         ),
     )
 
+    aggregated_df = set_minimum_permitted_ratio(
+        aggregated_df,
+        IndCQC.min_filled_posts_per_bed_ratio,
+        NumericalValues.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF,
+    )
+    aggregated_df = set_minimum_permitted_ratio(
+        aggregated_df,
+        IndCQC.max_filled_posts_per_bed_ratio,
+        NumericalValues.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF,
+    )
+
     df = df.join(aggregated_df, IndCQC.number_of_beds_banded, "left")
+
+    return df
+
+
+def set_minimum_permitted_ratio(
+    df: DataFrame,
+    column_name: str,
+    minimum_permitted_ratio: float,
+) -> DataFrame:
+    """
+    Replaces the value in the desired column with the minimum value of the current value or minimum_permitted_ratio.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column_name (str): The name of the column to be modified.
+        minimum_permitted_ratio (float): The minimum value that any entry in the column should have.
+
+    Returns:
+        DataFrame: A new DataFrame with the specified column values adjusted to meet the minimum permitted ratio.
+    """
+    df = df.withColumn(
+        column_name, F.greatest(F.col(column_name), F.lit(minimum_permitted_ratio))
+    )
 
     return df
 

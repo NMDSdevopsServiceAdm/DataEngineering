@@ -1958,6 +1958,13 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
+    set_minimum_permitted_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+
     combine_dataframes_care_home_schema = StructType(
         [
             *ind_cqc_schema,
