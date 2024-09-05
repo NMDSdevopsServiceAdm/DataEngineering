@@ -284,6 +284,10 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     will identify the minumum and maximum permitted ratios. Two columns will be added as a result, one containing
     the minimum filled_posts_per_bed_ratio and one containing the maximum filled_posts_per_bed_ratio.
 
+    Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
+    the majority of ratio between 0.75 and 5.0 were closely matched to each other. However, outside of these ratio
+    the quality of matches decreased significantly.
+
     Args:
         df (DataFrame): Input DataFrame.
 
