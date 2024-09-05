@@ -78,16 +78,14 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         care_homes_df
     )
 
-    # TODO: winsorize nulled values
+    winsorized_df = winsorize_outliers(care_homes_df)
 
     # TODO: this will need amending to account for those inside boundaries but
-    filtered_care_home_df = update_filtering_rule(
-        filtered_care_home_df,
+    winsorized_df = update_filtering_rule(
+        winsorized_df,
         AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
     )
-    output_df = combine_dataframes(
-        filtered_care_home_df, data_not_relevant_to_filter_df
-    )
+    output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
 
     return output_df
 
@@ -340,6 +338,58 @@ def set_minimum_permitted_ratio(
     )
 
     return df
+
+
+def winsorize_outliers(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Replace ascwds_filled_posts_dedup_clean and filled_posts_per_bed_ratio with min or max permitted values.
+
+    Outliers are detected using the filled_posts_per_bed_ratio. For ratios which fall outside of the minimum or
+    maximum permitted ratios, the ascwds_filled_posts_dedup_clean is recalculated by multiplying the min/max
+    permitted ratio by the number_of_beds. The filled_posts_per_bed_ratio is then recalculated
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with outliers winsorized.
+    """
+    lower_bound_condition = F.col(IndCQC.filled_posts_per_bed_ratio) < F.col(
+        IndCQC.min_filled_posts_per_bed_ratio
+    )
+    upper_bound_condition = F.col(IndCQC.filled_posts_per_bed_ratio) > F.col(
+        IndCQC.max_filled_posts_per_bed_ratio
+    )
+
+    winsorized_df = df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        F.when(
+            lower_bound_condition,
+            F.col(IndCQC.min_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
+        )
+        .when(
+            upper_bound_condition,
+            F.col(IndCQC.max_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
+        )
+        .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+    )
+
+    winsorized_df = winsorized_df.withColumn(
+        IndCQC.filled_posts_per_bed_ratio,
+        F.when(
+            lower_bound_condition,
+            F.col(IndCQC.min_filled_posts_per_bed_ratio),
+        )
+        .when(
+            upper_bound_condition,
+            F.col(IndCQC.max_filled_posts_per_bed_ratio),
+        )
+        .otherwise(F.col(IndCQC.filled_posts_per_bed_ratio)),
+    )
+
+    return winsorized_df
 
 
 def combine_dataframes(

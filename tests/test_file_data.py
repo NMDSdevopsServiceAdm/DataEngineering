@@ -3173,6 +3173,17 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("6", None, 2.0, 3.21, 5.0),
     ]
 
+    winsorize_outliers_rows = [
+        ("1", 9.0, 15, 0.6, 1.0, 5.0),
+        ("2", 30.0, 15, 2.0, 1.0, 5.0),
+        ("3", 90.0, 15, 6.0, 1.0, 5.0),
+    ]
+    expected_winsorize_outliers_rows = [
+        ("1", 15.0, 15, 1.0, 1.0, 5.0),
+        ("2", 30.0, 15, 2.0, 1.0, 5.0),
+        ("3", 75.0, 15, 5.0, 1.0, 5.0),
+    ]
+
     set_minimum_permitted_ratio_rows = [
         ("1", 0.05),
         ("2", 2.55),

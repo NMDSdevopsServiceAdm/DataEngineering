@@ -553,6 +553,43 @@ class SetMinimumPermittedRatioTests(
         self.assertEqual(returned_data, expected_data)
 
 
+class WinsorizeOutliersTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.care_home_df = self.spark.createDataFrame(
+            Data.winsorize_outliers_rows,
+            Schemas.winsorize_outliers_schema,
+        )
+        self.returned_df = job.winsorize_outliers(self.care_home_df)
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_winsorize_outliers_rows,
+            Schemas.winsorize_outliers_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+
+    def test_returned_filled_post_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                self.expected_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_filled_posts_per_bed_ratio_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class CombineDataframeTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
