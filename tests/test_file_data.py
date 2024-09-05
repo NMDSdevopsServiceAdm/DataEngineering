@@ -3202,7 +3202,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             1.0,
             None,
-            "filtering rule",
             0.04,
             10.0,
         ),
@@ -3214,7 +3213,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             2.0,
             2.0,
-            "filtering rule",
             0.08,
             20.0,
         ),
@@ -3229,7 +3227,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             3.0,
             3.0,
-            "filtering rule",
             0.12,
         ),
     ]
@@ -3243,7 +3240,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             1.0,
             None,
-            "filtering rule",
             0.04,
         ),
         (
@@ -3254,7 +3250,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             2.0,
             2.0,
-            "filtering rule",
             0.08,
         ),
         (
@@ -3265,7 +3260,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             25,
             3.0,
             3.0,
-            "filtering rule",
             0.12,
         ),
     ]
