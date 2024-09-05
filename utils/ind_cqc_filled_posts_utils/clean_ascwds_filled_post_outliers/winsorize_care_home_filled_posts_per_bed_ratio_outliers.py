@@ -264,14 +264,14 @@ def duplicate_ratios_within_standardised_residual_cutoffs(df: DataFrame) -> Data
     """
     Creates a column with the filled_posts_per_bed_ratio values when the standardised residuals are inside the percentile cutoffs.
 
-    If the standardised_residual value is outside of the lower and upper percentile cutoffs then the column_to_null
-    is replaced with a null value. Otherwise (if the value is within the cutoffs), the original value remains.
+    If the standardised_residual value is within the lower and upper percentile cutoffs then the filled_posts_per_bed_ratio value
+    is duplicated into the new filled_posts_per_bed_ratio_within_std_resids column. Otherwise a null value is entered.
 
     Args:
-        df (DataFrame): The input dataframe containing standardised residuals and percentiles.
+        df (DataFrame): The input dataframe containing filled_posts_per_bed_ratio, standardised residuals and percentiles.
 
     Returns:
-        DataFrame: A dataFrame with null values removed based on the specified cutoffs.
+        DataFrame: A dataFrame with filled_posts_per_bed_ratio_within_std_resids populated.
     """
     df = df.withColumn(
         IndCQC.filled_posts_per_bed_ratio_within_std_resids,
