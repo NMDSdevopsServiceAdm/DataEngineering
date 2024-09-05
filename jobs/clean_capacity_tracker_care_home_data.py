@@ -73,9 +73,9 @@ def main(
 
 def remove_rows_where_agency_and_non_agency_values_match(df: DataFrame) -> DataFrame:
     """
-    Remove rows where the number of employed for a non-agency job role matches the corresponding agency job role.
+    Remove rows where the number of employed for non-agency job roles matches the corresponding agency job roles.
 
-    Matching rows are removed as the likelihood of this number exactly matching is low and suggests that data quality may be poor.
+    Matching rows are removed as the likelihood of these numbers exactly matching is low and suggests that data quality may be poor.
 
     Args:
         df(DataFrame): A dataframe with capacity tracker care home data.
@@ -85,8 +85,8 @@ def remove_rows_where_agency_and_non_agency_values_match(df: DataFrame) -> DataF
     """
     df = df.where(
         (df[CTCH.nurses_employed] != df[CTCH.agency_nurses_employed])
-        & (df[CTCH.care_workers_employed] != df[CTCH.agency_care_workers_employed])
-        & (
+        | (df[CTCH.care_workers_employed] != df[CTCH.agency_care_workers_employed])
+        | (
             df[CTCH.non_care_workers_employed]
             != df[CTCH.agency_non_care_workers_employed]
         )
