@@ -1908,7 +1908,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )

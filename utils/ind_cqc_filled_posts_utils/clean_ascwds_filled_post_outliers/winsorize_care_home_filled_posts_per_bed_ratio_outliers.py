@@ -80,12 +80,11 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     winsorized_df = winsorize_outliers(care_homes_df)
 
-    # TODO: this will need amending to account for those inside boundaries but
-    winsorized_df = update_filtering_rule(
-        winsorized_df,
-        AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
-    )
+    # TODO: how do we want to identify winsorized values?
+
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
+
+    output_df.sort(IndCQC.location_id).show(50)
 
     return output_df
 
