@@ -1923,13 +1923,19 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         )
     )
 
-    null_values_outside_of_standardised_residual_cutoff_schema = StructType(
+    duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.standardised_residual, DoubleType(), True),
             StructField(IndCQC.lower_percentile, DoubleType(), True),
             StructField(IndCQC.upper_percentile, DoubleType(), True),
+        ]
+    )
+    expected_duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
+        [
+            *duplicate_ratios_within_standardised_residual_cutoff_schema,
+            StructField(IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True),
         ]
     )
 

@@ -427,56 +427,54 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         )
 
 
-class NullValuesOutsideOfStandardisedResidualCutoffsTests(
+class DuplicateRatiosWithinStandardisedResidualCutoffsTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
         df = self.spark.createDataFrame(
-            Data.null_values_outside_of_standardised_residual_cutoff_rows,
-            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
+            Data.duplicate_ratios_within_standardised_residual_cutoff_rows,
+            Schemas.duplicate_ratios_within_standardised_residual_cutoff_schema,
         )
-        returned_df = job.null_values_outside_of_standardised_residual_cutoffs(
-            df, IndCQC.ascwds_filled_posts_dedup_clean
-        )
+        returned_df = job.duplicate_ratios_within_standardised_residual_cutoffs(df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
-            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
+            Data.expected_duplicate_ratios_within_standardised_residual_cutoff_rows,
+            Schemas.expected_duplicate_ratios_within_standardised_residual_cutoff_schema,
         )
 
         self.returned_data = returned_df.sort(IndCQC.location_id).collect()
         self.expected_data = expected_df.sort(IndCQC.location_id).collect()
 
-    def test_value_nulled_when_below_lower_cutoff(self):
+    def test_ratio_not_duplicated_when_below_lower_cutoff(self):
         self.assertEqual(
-            self.returned_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.returned_data[0][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[0][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
         )
 
-    def test_value_not_nulled_when_equal_to_lower_cutoff(self):
+    def test_ratio_duplicated_when_equal_to_lower_cutoff(self):
         self.assertEqual(
-            self.returned_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.returned_data[1][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[1][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
         )
 
-    def test_value_not_nulled_when_in_between_cutoffs(self):
+    def test_ratio_duplicated_when_in_between_cutoffs(self):
         self.assertEqual(
-            self.returned_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.returned_data[2][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[2][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
         )
 
-    def test_value_not_nulled_when_equal_to_upper_cutoff(self):
+    def test_ratio_duplicated_when_equal_to_upper_cutoff(self):
         self.assertEqual(
-            self.returned_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.returned_data[3][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[3][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
         )
 
-    def test_value_nulled_when_above_upper_cutoff(self):
+    def test_ratio_not_duplicated_when_above_upper_cutoff(self):
         self.assertEqual(
-            self.returned_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
+            self.returned_data[4][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[4][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
         )
 
 

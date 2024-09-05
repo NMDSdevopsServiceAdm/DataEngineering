@@ -100,6 +100,9 @@ class IndCqcColumns:
     extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
+    filled_posts_per_bed_ratio_within_std_resids: str = (
+        "filled_posts_per_bed_ratio_within_std_resids"
+    )
     first_filled_posts: str = "first_filled_posts"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
@@ -120,6 +123,8 @@ class IndCqcColumns:
     lower_percentile: str = "lower_percentile"
     max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
+    min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
