@@ -3129,6 +3129,23 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("5", 5.0, 1.25, -1.23, 1.23, None),
     ]
 
+    min_and_max_permitted_ratios_rows = [
+        ("1", 1.0, 1.0),
+        ("2", 2.0, 1.0),
+        ("3", None, 1.0),
+        ("4", 3.21, 2.0),
+        ("5", 4.88, 2.0),
+        ("6", None, 2.0),
+    ]
+    expected_min_and_max_permitted_ratios_rows = [
+        ("1", 1.0, 1.0, 1.0, 2.0),
+        ("2", 2.0, 1.0, 1.0, 2.0),
+        ("3", None, 1.0, 1.0, 2.0),
+        ("4", 3.21, 2.0, 3.21, 4.88),
+        ("5", 4.88, 2.0, 3.21, 4.88),
+        ("6", None, 2.0, 3.21, 4.88),
+    ]
+
     combine_dataframes_care_home_rows = [
         (
             "01",

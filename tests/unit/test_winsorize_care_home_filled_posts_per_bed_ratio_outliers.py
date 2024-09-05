@@ -478,6 +478,54 @@ class DuplicateRatiosWithinStandardisedResidualCutoffsTests(
         )
 
 
+class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.care_home_df = self.spark.createDataFrame(
+            Data.min_and_max_permitted_ratios_rows,
+            Schemas.min_and_max_permitted_ratios_schema,
+        )
+        self.returned_df = (
+            job.calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
+                self.care_home_df
+            )
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_min_and_max_permitted_ratios_rows,
+            Schemas.expected_min_and_max_permitted_ratios_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+
+    def test_returned_data_has_same_number_of_rows_as_original_df(self):
+        self.assertEqual(self.returned_df.count(), self.care_home_df.count())
+
+    def test_returned_data_has_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_returned_min_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.min_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.min_filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_max_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.max_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.max_filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class CombineDataframeTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):

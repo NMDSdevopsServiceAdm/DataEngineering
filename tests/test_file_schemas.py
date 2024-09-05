@@ -1935,7 +1935,26 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     expected_duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
         [
             *duplicate_ratios_within_standardised_residual_cutoff_schema,
-            StructField(IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True
+            ),
+        ]
+    )
+
+    min_and_max_permitted_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True
+            ),
+            StructField(IndCQC.number_of_beds_banded, FloatType(), True),
+        ]
+    )
+    expected_min_and_max_permitted_ratios_schema = StructType(
+        [
+            *min_and_max_permitted_ratios_schema,
+            StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
 

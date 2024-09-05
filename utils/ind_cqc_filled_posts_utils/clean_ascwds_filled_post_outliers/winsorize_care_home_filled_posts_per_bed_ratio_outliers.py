@@ -72,11 +72,11 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
     )
 
+    care_homes_df = duplicate_ratios_within_standardised_residual_cutoffs(care_homes_df)
+
     care_homes_df = calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
         care_homes_df
     )
-
-    # TODO: calculate min and max filled posts per bed ratio
 
     # TODO: replace with max of 0.75 (min) or 5.0 (max)
     # TODO: winsorize nulled values
@@ -250,16 +250,6 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
     return df
 
 
-def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
-    df: DataFrame,
-) -> DataFrame:
-    # calculate permitted ratios based on std res
-    # max and min permitted
-    # replace permitted with magic cutoffs
-
-    return df
-
-
 def duplicate_ratios_within_standardised_residual_cutoffs(df: DataFrame) -> DataFrame:
     """
     Creates a column with the filled_posts_per_bed_ratio values when the standardised residuals are inside the percentile cutoffs.
@@ -291,24 +281,21 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     """
     Calculates the minimum and maximum permitted filled_posts_per_bed_ratio values and adds them as new columns.
 
-    Outlier values in the filled_posts_per_bed_ratio column have been nulled so this function will identify the
-    minumum and maximum permitted
-    Two columns will be added as a result, one containing the lower percentile of standardised_residual and
-    one containing the upper percentile of standardised_residual.
+    Outlier values in the filled_posts_per_bed_ratio_within_std_resids column have been nulled so this function
+    will identify the minumum and maximum permitted ratios. Two columns will be added as a result, one containing
+    the minimum filled_posts_per_bed_ratio and one containing the maximum filled_posts_per_bed_ratio.
 
     Args:
         df (DataFrame): Input DataFrame.
-        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as
-        outliers). Must be less than 1 (equivalent to 100%).
 
     Returns:
-        DataFrame: DataFrame with additional columns for both the lower and upper percentile values for standardised residuals.
+        DataFrame: DataFrame with additional columns for both the min and max permitted filled_posts_per_bed_ratio.
     """
     aggregated_df = df.groupBy(IndCQC.number_of_beds_banded).agg(
-        F.min(IndCQC.filled_posts_per_bed_ratio).alias(
+        F.min(IndCQC.filled_posts_per_bed_ratio_within_std_resids).alias(
             IndCQC.min_filled_posts_per_bed_ratio
         ),
-        F.max(IndCQC.filled_posts_per_bed_ratio).alias(
+        F.max(IndCQC.filled_posts_per_bed_ratio_within_std_resids).alias(
             IndCQC.max_filled_posts_per_bed_ratio
         ),
     )
