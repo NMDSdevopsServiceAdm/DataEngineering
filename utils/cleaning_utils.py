@@ -1,9 +1,9 @@
 from pyspark.sql import (
     DataFrame,
     Window,
+    functions as F,
 )
-
-import pyspark.sql.functions as F
+from pyspark.sql.types import IntegerType
 
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -194,4 +194,10 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(Keys.year, Keys.month).orderBy(Keys.day)
     df = df.withColumn(earliest_day_in_month, F.first(Keys.day).over(w))
     df = df.where(df[earliest_day_in_month] == df[Keys.day]).drop(earliest_day_in_month)
+    return df
+
+
+def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
+    for column in column_names:
+        df = df.withColumn(column, df[column].cast(IntegerType()))
     return df

@@ -75,45 +75,6 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
-class CastToIntTests(CleanASCWDSWorkplaceDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_cast_to_int_returns_strings_formatted_as_ints_to_ints(self):
-        cast_to_int_df = self.spark.createDataFrame(
-            Data.cast_to_int_rows, Schemas.cast_to_int_schema
-        )
-        cast_to_int_expected_df = self.spark.createDataFrame(
-            Data.cast_to_int_expected_rows, Schemas.cast_to_int_expected_schema
-        )
-
-        returned_df = job.cast_to_int(cast_to_int_df, self.filled_posts_columns)
-
-        returned_data = returned_df.sort(AWP.location_id).collect()
-        expected_data = cast_to_int_expected_df.sort(AWP.location_id).collect()
-
-        self.assertEqual(expected_data, returned_data)
-
-    def test_cast_to_int_returns_strings_not_formatted_as_ints_as_none(self):
-        cast_to_int_with_errors_df = self.spark.createDataFrame(
-            Data.cast_to_int_errors_rows, Schemas.cast_to_int_schema
-        )
-        cast_to_int_with_errors_expected_df = self.spark.createDataFrame(
-            Data.cast_to_int_errors_expected_rows, Schemas.cast_to_int_expected_schema
-        )
-
-        returned_df = job.cast_to_int(
-            cast_to_int_with_errors_df, self.filled_posts_columns
-        )
-
-        returned_data = returned_df.sort(AWP.location_id).collect()
-        expected_data = cast_to_int_with_errors_expected_df.sort(
-            AWP.location_id
-        ).collect()
-
-        self.assertEqual(expected_data, returned_data)
-
-
 class CreatePurgedDfsForReconciliationAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()

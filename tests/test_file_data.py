@@ -248,68 +248,6 @@ class ASCWDSWorkplaceData:
         ),
     ]
 
-    cast_to_int_rows = [
-        (
-            "loc 1",
-            "20",
-            "18",
-        ),
-    ]
-
-    cast_to_int_errors_rows = [
-        (
-            "loc 1",
-            "20",
-            "18",
-        ),
-        (
-            "loc 2",
-            "ZO",
-            "18",
-        ),
-        (
-            "loc 3",
-            "20",
-            "IB",
-        ),
-        (
-            "loc 4",
-            "ZO",
-            "IB",
-        ),
-    ]
-
-    cast_to_int_expected_rows = [
-        (
-            "loc 1",
-            20,
-            18,
-        ),
-    ]
-
-    cast_to_int_errors_expected_rows = [
-        (
-            "loc 1",
-            20,
-            18,
-        ),
-        (
-            "loc 2",
-            None,
-            18,
-        ),
-        (
-            "loc 3",
-            20,
-            None,
-        ),
-        (
-            "loc 4",
-            None,
-            None,
-        ),
-    ]
-
     small_location_rows = [
         (
             "loc-1",
@@ -855,6 +793,33 @@ class CapacityTrackerCareHomeData:
             "20240101",
             "other data",
         ),
+    ]
+
+    remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+        ("loc 2", "1", "2", "3", "1", "5", "6"),
+        ("loc 3", "1", "2", "3", "4", "2", "6"),
+        ("loc 4", "1", "2", "3", "4", "5", "3"),
+        ("loc 5", "1", "2", "3", "1", "2", "6"),
+        ("loc 6", "1", "2", "3", "1", "5", "3"),
+        ("loc 7", "1", "2", "3", "4", "2", "3"),
+        ("loc 8", "1", "2", "3", "1", "2", "3"),
+    ]
+    expected_remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+        ("loc 2", "1", "2", "3", "1", "5", "6"),
+        ("loc 3", "1", "2", "3", "4", "2", "6"),
+        ("loc 4", "1", "2", "3", "4", "5", "3"),
+        ("loc 5", "1", "2", "3", "1", "2", "6"),
+        ("loc 6", "1", "2", "3", "1", "5", "3"),
+        ("loc 7", "1", "2", "3", "4", "2", "3"),
+    ]
+
+    create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 40, 50, 60),
+    ]
+    expected_create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 40, 50, 60, 6, 150, 156),
     ]
 
 
@@ -2357,6 +2322,68 @@ class CleaningUtilsData:
         ("loc 3", "20220205", "2022", "02", "05"),
         ("loc 5", "20220301", "2022", "03", "01"),
         ("loc 6", "20220402", "2022", "04", "02"),
+    ]
+
+    cast_to_int_rows = [
+        (
+            "loc 1",
+            "20",
+            "18",
+        ),
+    ]
+
+    cast_to_int_errors_rows = [
+        (
+            "loc 1",
+            "20",
+            "18",
+        ),
+        (
+            "loc 2",
+            "ZO",
+            "18",
+        ),
+        (
+            "loc 3",
+            "20",
+            "IB",
+        ),
+        (
+            "loc 4",
+            "ZO",
+            "IB",
+        ),
+    ]
+
+    cast_to_int_expected_rows = [
+        (
+            "loc 1",
+            20,
+            18,
+        ),
+    ]
+
+    cast_to_int_errors_expected_rows = [
+        (
+            "loc 1",
+            20,
+            18,
+        ),
+        (
+            "loc 2",
+            None,
+            18,
+        ),
+        (
+            "loc 3",
+            20,
+            None,
+        ),
+        (
+            "loc 4",
+            None,
+            None,
+        ),
     ]
 
 

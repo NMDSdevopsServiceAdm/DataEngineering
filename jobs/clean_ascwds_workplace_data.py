@@ -88,7 +88,7 @@ def main(
         ascwds_workplace_df
     )
 
-    ascwds_workplace_df = cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
+    ascwds_workplace_df = cUtils.cast_to_int(ascwds_workplace_df, COLUMNS_TO_BOUND)
 
     ascwds_workplace_df = cUtils.set_column_bounds(
         ascwds_workplace_df,
@@ -125,12 +125,6 @@ def main(
         mode="overwrite",
         partitionKeys=partition_keys,
     )
-
-
-def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
-    for column in column_names:
-        df = df.withColumn(column, df[column].cast(IntegerType()))
-    return df
 
 
 def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
