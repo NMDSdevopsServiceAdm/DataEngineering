@@ -79,7 +79,9 @@ class Services(ColumnValues):
     hospice_services: str = "Hospice services"
     domiciliary_care_service: str = "Domiciliary care service"
     remote_clinical_advice_service: str = "Remote clinical advice service"
-    acute_services_without_overnight_beds: str = "Acute services without overnight beds / listed acute services with or without overnight beds"
+    acute_services_without_overnight_beds: str = (
+        "Acute services without overnight beds / listed acute services with or without overnight beds"
+    )
     specialist_college_service: str = "Specialist college service"
     ambulance_service: str = "Ambulance service"
     extra_care_housing_services: str = "Extra Care housing services"
@@ -109,7 +111,9 @@ class Services(ColumnValues):
     rehabilitation_services: str = "Rehabilitation services"
     doctors_treatment_service: str = "Doctors treatment service"
     hospice_services_at_home: str = "Hospice services at home"
-    hospital_services_for_people_with_mental_health_needs: str = "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    hospital_services_for_people_with_mental_health_needs: str = (
+        "Hospital services for people with mental health needs, learning disabilities and problems with substance misuse"
+    )
 
 
 @dataclass
@@ -528,3 +532,6 @@ class AscwdsFilteringRule(ColumnValues):
         "filtered_care_home_filled_posts_bed_to_ratio_outlier"
     )
     contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+    care_home_location_was_grouped_provider: str = (
+        "care_home_location_was_grouped_provider"
+    )

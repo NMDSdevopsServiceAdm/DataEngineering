@@ -1,5 +1,8 @@
 from pyspark.sql import DataFrame, functions as F
 
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     add_filtering_rule_column,
 )
@@ -9,9 +12,8 @@ from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_care
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_filled_posts_where_locations_use_invalid_missing_data_code import (
     null_filled_posts_where_locations_use_invalid_missing_data_code,
 )
-
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
+from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_grouped_providers import (
+    null_grouped_providers,
 )
 
 
@@ -35,6 +37,7 @@ def null_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
     )
     df = add_filtering_rule_column(df)
     df = null_filled_posts_where_locations_use_invalid_missing_data_code(df)
+    df = null_grouped_providers(df)
     filtered_df = null_care_home_filled_posts_per_bed_ratio_outliers(df)
 
     return filtered_df
