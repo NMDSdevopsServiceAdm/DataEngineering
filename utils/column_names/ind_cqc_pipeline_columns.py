@@ -117,6 +117,11 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    locations_at_provider: str = "locations_at_provider"
+    locations_in_ascwds_at_provider: str = "locations_in_ascwds_at_provider"
+    locations_in_ascwds_with_data_at_provider: str = (
+        "locations_in_ascwds_with_data_at_provider"
+    )
     lower_percentile: str = "lower_percentile"
     max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
@@ -131,6 +136,7 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
