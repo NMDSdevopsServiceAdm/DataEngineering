@@ -6469,88 +6469,72 @@ class NullGroupedProvidersData:
     null_grouped_providers_rows = []
     expected_null_grouped_providers_rows = []
     # fmt: off
-    null_care_home_grouped_providers_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 2", date(2024, 1, 1), "N", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 2", date(2024, 1, 8), "N", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 2", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 2", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 3", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 3", date(2024, 1, 8), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 3", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 3", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 3", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 3", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 4", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 4", date(2024, 1, 8), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 4", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 4", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 5", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 5", date(2024, 1, 8), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 5", date(2024, 1, 1), "Y", "estab 2", 60.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 5", date(2024, 1, 8), "Y", "estab 2", 60.0, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 5", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 5", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 6", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 6", date(2024, 1, 8), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 6", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 6", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 6", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 7", date(2024, 1, 1), "Y", "estab 1", 24.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 7", date(2024, 1, 8), "Y", "estab 1", 24.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 7", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 7", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 7", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 7", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
+    null_care_home_grouped_providers_where_grouped_provider_exists_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
     ]
-    expected_null_care_home_grouped_providers_rows = [
+    expected_null_care_home_grouped_providers_where_grouped_provider_exists_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 2", date(2024, 1, 1), "N", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 2", date(2024, 1, 8), "N", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 2", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 2", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_grouped_provider_does_not_exist_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_grouped_provider_does_not_exist_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_all_locations_are_non_residential_rows = [
+        ("loc 1", "prov 2", date(2024, 1, 1), "N", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_all_locations_are_non_residential_rows = [
+        ("loc 1", "prov 2", date(2024, 1, 1), "N", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 2", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_some_locations_are_non_residential_but_grouped_provider_is_care_home_rows = [
+        ("loc 1", "prov 3", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 3", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_some_locations_are_non_residential_but_grouped_provider_is_care_home_rows = [
         ("loc 1", "prov 3", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 1", "prov 3", date(2024, 1, 8), "Y", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 3", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 3", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 3", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 3", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 4", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 4", date(2024, 1, 8), "Y", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 4", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 4", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 5", date(2024, 1, 1), "Y", "estab 1", 50.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 5", date(2024, 1, 8), "Y", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 5", date(2024, 1, 1), "Y", "estab 2", 60.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 5", date(2024, 1, 8), "Y", "estab 2", 60.0, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 5", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 5", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 6", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 6", date(2024, 1, 8), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 6", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 6", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 6", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 7", date(2024, 1, 1), "Y", "estab 1", 24.0, 4, AscwdsFilteringRule.populated),
-        ("loc 1", "prov 7", date(2024, 1, 8), "Y", "estab 1", 20.0, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 7", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 7", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 7", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.populated),
-        ("loc 3", "prov 7", date(2024, 1, 8), "N", None, None, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 3", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_not_enough_locations_rows = [
+        ("loc 1", "prov 4", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 4", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_not_enough_locations_rows = [
+        ("loc 1", "prov 4", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 4", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_multiple_locations_in_ascwds_rows = [
+        ("loc 1", "prov 5", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 5", date(2024, 1, 1), "Y", "estab 2", 14.0, 4, AscwdsFilteringRule.populated),
+        ("loc 3", "prov 5", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_multiple_locations_in_ascwds_rows = [
+        ("loc 1", "prov 5", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 5", date(2024, 1, 1), "Y", "estab 2", 14.0, 4, AscwdsFilteringRule.populated),
+        ("loc 3", "prov 5", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    null_care_home_grouped_providers_where_no_ascwds_data_rows = [
+        ("loc 1", "prov 6", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 2", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_care_home_grouped_providers_where_no_ascwds_data_rows = [
+        ("loc 1", "prov 6", date(2024, 1, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 2", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 6", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
     ]
     # fmt: on
