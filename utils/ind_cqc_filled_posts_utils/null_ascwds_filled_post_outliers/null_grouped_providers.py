@@ -13,6 +13,8 @@ from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_fi
 
 @dataclass
 class NullGroupedProvidersConfig:
+    """Configuration values for defining grouped providers"""
+
     max_locations_at_provider = 2
     single_location_in_ascwds = 1
     no_locations_with_data = 0
