@@ -63,8 +63,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_grouped_provider_exists_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -83,8 +81,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_grouped_provider_does_not_exist_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -103,8 +99,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_all_locations_are_non_residential_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -123,8 +117,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_some_locations_are_non_residential_but_grouped_provider_is_care_home_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -143,8 +135,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_not_enough_locations_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -163,8 +153,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_multiple_locations_in_ascwds_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
@@ -183,8 +171,6 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
             Data.expected_null_care_home_grouped_providers_where_no_ascwds_data_rows,
             Schemas.null_grouped_providers_schema,
         )
-        returned_df.sort(IndCQC.location_id).show()
-        expected_df.show()
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
