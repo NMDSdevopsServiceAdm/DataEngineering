@@ -1888,6 +1888,7 @@ class NullAscwdsFilledPostOutliersSchema:
     unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
