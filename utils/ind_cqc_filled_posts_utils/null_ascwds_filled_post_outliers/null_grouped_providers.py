@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -7,6 +9,13 @@ from utils.column_values.categorical_column_values import AscwdsFilteringRule, C
 from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
+
+
+@dataclass
+class NullGroupedProvidersConfig:
+    max_locations_at_provider = 2
+    single_location_in_ascwds = 1
+    no_locations_with_data = 0
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -55,9 +64,18 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
             (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.locations_at_provider] > 2)
-            & (df[IndCQC.locations_in_ascwds_at_provider] == 1)
-            & (df[IndCQC.locations_in_ascwds_with_data_at_provider] > 0)
+            & (
+                df[IndCQC.locations_at_provider]
+                > NullGroupedProvidersConfig.max_locations_at_provider
+            )
+            & (
+                df[IndCQC.locations_in_ascwds_at_provider]
+                == NullGroupedProvidersConfig.single_location_in_ascwds
+            )
+            & (
+                df[IndCQC.locations_in_ascwds_with_data_at_provider]
+                > NullGroupedProvidersConfig.no_locations_with_data
+            )
             & (
                 df[IndCQC.ascwds_filled_posts_dedup_clean]
                 > df[IndCQC.number_of_beds_at_provider]
