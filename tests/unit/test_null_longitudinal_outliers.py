@@ -40,9 +40,13 @@ class MainTests(NullLongitudinalOutliersTests):
     def test_null_longitudinal_outliers_returns_correct_values(
         self,
     ):
-        self.returned_df.sort(IndCQC.cqc_location_import_date).show()
+        self.returned_df.sort(
+            IndCQC.location_id, IndCQC.cqc_location_import_date
+        ).show()
         self.expected_df.show()
         self.assertEqual(
             self.expected_df.collect(),
-            self.returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            self.returned_df.sort(
+                IndCQC.location_id, IndCQC.cqc_location_import_date
+            ).collect(),
         )

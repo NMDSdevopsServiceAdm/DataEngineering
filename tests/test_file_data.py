@@ -6481,6 +6481,7 @@ class NullLongitudinalOutliersData:
         ("loc 1", date(2024, 1, 11), 1.0, 20.0, AscwdsFilteringRule.populated),
         ("loc 1", date(2024, 1, 12), 10.0, 20.0, AscwdsFilteringRule.populated),
         ("loc 1", date(2024, 1, 13), None, None, AscwdsFilteringRule.missing_data),
+        ("loc 2", date(2024, 1, 1), 2.0, 20.0, AscwdsFilteringRule.populated),
     ]
     expected_null_longitudinal_outliers_rows = [
         ("loc 1", date(2024, 1, 1), 1.0, 20.0, AscwdsFilteringRule.populated),
@@ -6496,5 +6497,6 @@ class NullLongitudinalOutliersData:
         ("loc 1", date(2024, 1, 11), 1.0, 20.0, AscwdsFilteringRule.populated),
         ("loc 1", date(2024, 1, 12), None, None, AscwdsFilteringRule.longitudinal_outlier),
         ("loc 1", date(2024, 1, 13), None, None, AscwdsFilteringRule.missing_data),
+        ("loc 2", date(2024, 1, 1), 2.0, 20.0, AscwdsFilteringRule.populated), 
     ]
     # fmt: on

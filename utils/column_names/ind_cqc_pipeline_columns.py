@@ -117,9 +117,12 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    location_mean: str = "location_mean"
     lower_percentile: str = "lower_percentile"
     max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
+    max_permitted_value: str = "max_permitted_value"
+    min_permitted_value: str = "min_permitted_value"
     min_residual: str = "min_residual"
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
@@ -170,6 +173,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
     specialisms: str = CQCLClean.specialisms
+    standard_deviation: str = "standard_deviation"
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
