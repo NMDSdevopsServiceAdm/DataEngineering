@@ -6466,9 +6466,15 @@ class NullFilledPostsUsingInvalidMissingDataCodeData:
 
 @dataclass
 class NullGroupedProvidersData:
-    null_grouped_providers_rows = []
-    expected_null_grouped_providers_rows = []
     # fmt: off
+    null_grouped_providers_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
+    ]
     null_care_home_grouped_providers_where_grouped_provider_exists_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
         ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
