@@ -6462,3 +6462,11 @@ class NullFilledPostsUsingInvalidMissingDataCodeData:
         ("loc 2", None, AscwdsFilteringRule.contained_invalid_missing_data_code),
         ("loc 3", None, AscwdsFilteringRule.missing_data),
     ]
+
+
+@dataclass
+class NullGroupedProvidersData:
+    null_grouped_providers_rows = []
+    expected_null_grouped_providers_rows = []
+    null_care_home_grouped_providers_rows = []
+    expected_null_care_home_grouped_providers_rows = []
