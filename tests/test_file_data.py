@@ -6462,3 +6462,37 @@ class NullFilledPostsUsingInvalidMissingDataCodeData:
         ("loc 2", None, AscwdsFilteringRule.contained_invalid_missing_data_code),
         ("loc 3", None, AscwdsFilteringRule.missing_data),
     ]
+
+
+@dataclass
+class NullLongitudinalOutliersData:
+    null_longitudinal_outliers_rows = [
+        ("loc 1", date(2024, 1, 1), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 2), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 3), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 4), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 5), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 6), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 7), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 8), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 9), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 10), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 11), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 12), 100.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 13), None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_null_longitudinal_outliers_rows = [
+        ("loc 1", date(2024, 1, 1), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 2), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 3), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 4), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 5), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 6), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 7), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 8), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 9), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 10), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 11), 10.0, AscwdsFilteringRule.populated),
+        ("loc 1", date(2024, 1, 12), None, AscwdsFilteringRule.longitudinal_outlier),
+        ("loc 1", date(2024, 1, 13), None, AscwdsFilteringRule.missing_data),
+    ]

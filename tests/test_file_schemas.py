@@ -4245,3 +4245,15 @@ class NullFilledPostsUsingInvalidMissingDataCodeSchema:
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
+
+
+@dataclass
+class NullLongitudinalOutliersSchema:
+    null_longitudinal_outliers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+        ]
+    )
