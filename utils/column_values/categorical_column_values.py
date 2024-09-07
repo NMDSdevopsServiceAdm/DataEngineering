@@ -524,7 +524,4 @@ class InAscwds(ColumnValues):
 class AscwdsFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
-    winsorized_care_home_filled_posts_to_bed_ratio_outlier: str = (
-        "winsorized_care_home_filled_posts_to_bed_ratio_outlier"
-    )
     contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
