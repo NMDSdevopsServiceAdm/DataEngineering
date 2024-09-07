@@ -12,7 +12,7 @@ from utils.column_values.categorical_column_values import CareHome
 @dataclass
 class NumericalValues:
     DECIMAL_PLACES_TO_ROUND_TO: int = 5
-    PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
+    PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS: float = 0.05
     MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF: float = 0.75
     MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF: float = 5.0
 

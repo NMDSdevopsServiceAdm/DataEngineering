@@ -83,7 +83,7 @@ class NumericalValuesTests(
 
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
-            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.05
+            job.NumericalValues.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
         )
 
     def test_minimum_permitted_lower_ratio_cutoff_value(self):
