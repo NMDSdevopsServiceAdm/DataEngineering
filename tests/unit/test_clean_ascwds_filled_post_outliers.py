@@ -22,8 +22,14 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
     @patch(
         "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers.winsorize_care_home_filled_posts_per_bed_ratio_outliers"
     )
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_ascwds_filled_post_outliers.null_longitudinal_outliers"
+    )
     def test_functions_are_called(
-        self, winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock
+        self,
+        winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock,
+        null_longitudinal_outliers_mock: Mock,
     ):
         job.clean_ascwds_filled_post_outliers(self.unfiltered_ind_cqc_df)
         winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock.assert_called_once()
+        null_longitudinal_outliers_mock.assert_called_once()
