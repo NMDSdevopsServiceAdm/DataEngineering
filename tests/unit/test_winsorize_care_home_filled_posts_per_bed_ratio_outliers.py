@@ -72,25 +72,26 @@ class MainTests(WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
         self.assertEqual(expected_data, returned_data)
 
 
-class NumericalValuesTests(
+class SetValuesForWinsorizationTests(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_decimal_places_to_round_to_value(self):
-        self.assertEqual(job.NumericalValues.DECIMAL_PLACES_TO_ROUND_TO, 5)
-
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
-            job.NumericalValues.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
+            job.SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
         )
 
     def test_minimum_permitted_lower_ratio_cutoff_value(self):
-        self.assertEqual(job.NumericalValues.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF, 0.75)
+        self.assertEqual(
+            job.SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF, 0.75
+        )
 
     def test_minimum_permitted_upper_ratio_cutoff_value(self):
-        self.assertEqual(job.NumericalValues.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF, 5.0)
+        self.assertEqual(
+            job.SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF, 5.0
+        )
 
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(

@@ -10,8 +10,16 @@ from utils.column_values.categorical_column_values import CareHome
 
 
 @dataclass
-class NumericalValues:
-    DECIMAL_PLACES_TO_ROUND_TO: int = 5
+class SetValuesForWinsorization:
+    """
+    Set numerical values for winsorization process.
+
+    Attributes:
+        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS (float): Sets the proportion of data to identify as outliers (where 0.05 is 5%, which would identify the top and bottom 2.5% as outliers)
+        MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF (float): Sets the lowest minimum filled_posts_per_bed_ratio permitted
+        MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF (float): Sets the lowest maximum filled_posts_per_bed_ratio permitted
+    """
+
     PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS: float = 0.05
     MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF: float = 0.75
     MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF: float = 5.0
@@ -45,8 +53,6 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     Returns:
         DataFrame: A dataFrame with outlier values winsorized.
     """
-    numerical_value = NumericalValues()
-
     care_homes_df = filter_df_to_care_homes_with_known_beds_and_filled_posts(input_df)
     data_not_relevant_to_filter_df = select_data_not_in_subset_df(
         input_df, care_homes_df
@@ -66,7 +72,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     care_homes_df = calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
         care_homes_df,
-        numerical_value.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS,
+        SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS,
     )
 
     care_homes_df = duplicate_ratios_within_standardised_residual_cutoffs(care_homes_df)
@@ -300,12 +306,12 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     aggregated_df = set_minimum_permitted_ratio(
         aggregated_df,
         IndCQC.min_filled_posts_per_bed_ratio,
-        NumericalValues.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF,
+        SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF,
     )
     aggregated_df = set_minimum_permitted_ratio(
         aggregated_df,
         IndCQC.max_filled_posts_per_bed_ratio,
-        NumericalValues.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF,
+        SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF,
     )
 
     df = df.join(aggregated_df, IndCQC.number_of_beds_banded, "left")
