@@ -352,21 +352,16 @@ def winsorize_outliers(
     Returns:
         DataFrame: DataFrame with outliers winsorized.
     """
-    lower_bound_condition = F.col(IndCQC.filled_posts_per_bed_ratio) < F.col(
-        IndCQC.min_filled_posts_per_bed_ratio
-    )
-    upper_bound_condition = F.col(IndCQC.filled_posts_per_bed_ratio) > F.col(
-        IndCQC.max_filled_posts_per_bed_ratio
-    )
-
     winsorized_df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
-            lower_bound_condition,
+            F.col(IndCQC.filled_posts_per_bed_ratio)
+            < F.col(IndCQC.min_filled_posts_per_bed_ratio),
             F.col(IndCQC.min_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
         )
         .when(
-            upper_bound_condition,
+            F.col(IndCQC.filled_posts_per_bed_ratio)
+            > F.col(IndCQC.max_filled_posts_per_bed_ratio),
             F.col(IndCQC.max_filled_posts_per_bed_ratio) * F.col(IndCQC.number_of_beds),
         )
         .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
@@ -374,15 +369,7 @@ def winsorize_outliers(
 
     winsorized_df = winsorized_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
-        F.when(
-            lower_bound_condition,
-            F.col(IndCQC.min_filled_posts_per_bed_ratio),
-        )
-        .when(
-            upper_bound_condition,
-            F.col(IndCQC.max_filled_posts_per_bed_ratio),
-        )
-        .otherwise(F.col(IndCQC.filled_posts_per_bed_ratio)),
+        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
     )
 
     return winsorized_df
