@@ -33,7 +33,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
         between actual and expected filled posts) are calculated, followed by the standardised residuals (residuals divided
         by the squart root of the filled post figure). The values at the top and bottom end of the standarised residuals
         are deemed to be outliers. The proportion of data to be identified as outliers is determined by the value of
-        PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS.
+        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS.
 
     Winsorization:
         Filled post figures deemed outliers will be replaced by less extreme values calculated during the winsorization
@@ -66,7 +66,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     care_homes_df = calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
         care_homes_df,
-        numerical_value.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS,
+        numerical_value.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS,
     )
 
     care_homes_df = duplicate_ratios_within_standardised_residual_cutoffs(care_homes_df)
