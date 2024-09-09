@@ -6,8 +6,8 @@ from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
-from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.null_ascwds_filled_post_outliers import (
-    null_ascwds_filled_post_outliers,
+from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
+    clean_ascwds_filled_post_outliers,
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -51,7 +51,7 @@ def main(
         locations_df, IndCQC.ascwds_filled_posts_dedup
     )
 
-    locations_df = null_ascwds_filled_post_outliers(locations_df)
+    locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = calculate_filled_posts_per_bed_ratio(
         locations_df, IndCQC.ascwds_filled_posts_dedup_clean
