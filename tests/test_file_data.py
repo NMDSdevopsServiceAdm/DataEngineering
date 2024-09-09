@@ -3203,8 +3203,8 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             1.0,
             None,
             0.04,
-            10.0,
             AscwdsFilteringRule.populated,
+            10.0,
         ),
         (
             "02",
@@ -3215,8 +3215,8 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
             2.0,
             2.0,
             0.08,
-            20.0,
             AscwdsFilteringRule.populated,
+            20.0,
         ),
     ]
 
