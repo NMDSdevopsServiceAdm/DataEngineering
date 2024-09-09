@@ -14,8 +14,17 @@ class SetValuesForWinsorization:
     """
     Set numerical values for winsorization process.
 
+    We are identifying the top and bottom 2.5% of entries as outliers (which combine to 0.05/5% of data points to remove)
+
+    Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
+    the majority of ratios between 0.75 and 5.0 were closely matched to each other. However, outside of these ratios
+    the quality of matches decreased significantly. However, for small care homes (lower number of beds) the ratios
+    then to be higher than 0.75 and 5.0 so we are using the standardised residual percentile cutoffs if they come
+    out higher than these minimum permitted ratios.
+
     Attributes:
-        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS (float): Sets the proportion of data to identify as outliers (where 0.05 is 5%, which would identify the top and bottom 2.5% as outliers)
+        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS (float): Sets the proportion of data to identify as outliers (where
+            0.05 represents 5%, which would identify the top and bottom 2.5% as outliers)
         MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF (float): Sets the lowest minimum filled_posts_per_bed_ratio permitted
         MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF (float): Sets the lowest maximum filled_posts_per_bed_ratio permitted
     """
@@ -332,7 +341,7 @@ def calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
     the minimum filled_posts_per_bed_ratio and one containing the maximum filled_posts_per_bed_ratio.
 
     Following investigation with ASCWDS data alongside Capacity Tracker tracker data we were able to validate that
-    the majority of ratio between 0.75 and 5.0 were closely matched to each other. However, outside of these ratio
+    the majority of ratios between 0.75 and 5.0 were closely matched to each other. However, outside of these ratios
     the quality of matches decreased significantly. However, for small care homes (lower number of beds) the ratios
     then to be higher than 0.75 and 5.0 so we are using the standardised residual percentile cutoffs if they come
     out higher than these minimum permitted ratios.
