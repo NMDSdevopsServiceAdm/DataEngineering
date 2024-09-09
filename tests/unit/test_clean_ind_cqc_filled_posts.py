@@ -48,14 +48,14 @@ class MainTests(CleanIndFilledPostsTests):
 
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
-    @patch("jobs.clean_ind_cqc_filled_posts.null_ascwds_filled_post_outliers")
+    @patch("jobs.clean_ind_cqc_filled_posts.clean_ascwds_filled_post_outliers")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock,
         calculate_ascwds_filled_posts_mock: Mock,
-        null_ascwds_filled_post_outliers: Mock,
+        clean_ascwds_filled_post_outliers: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -67,7 +67,7 @@ class MainTests(CleanIndFilledPostsTests):
         )
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
-        null_ascwds_filled_post_outliers.assert_called_once()
+        clean_ascwds_filled_post_outliers.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
 
         write_to_parquet_mock.assert_called_once_with(
