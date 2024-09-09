@@ -123,6 +123,16 @@ def filter_df_to_care_homes_with_known_beds_and_filled_posts(
 def select_data_not_in_subset_df(
     complete_df: DataFrame, subset_df: DataFrame
 ) -> DataFrame:
+    """
+    Selects rows from the complete DataFrame that are not present in the subset DataFrame.
+
+    Args:
+        complete_df (DataFrame): The DataFrame containing all available data.
+        subset_df (DataFrame): The DataFrame containing the subset of data to exclude.
+
+    Returns:
+        DataFrame: A new DataFrame containing only the rows from complete_df that are not in subset_df.
+    """
     output_df = complete_df.exceptAll(subset_df)
 
     return output_df
@@ -131,6 +141,17 @@ def select_data_not_in_subset_df(
 def create_banded_bed_count_column(
     input_df: DataFrame,
 ) -> DataFrame:
+    """
+    Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
+
+    This function uses a Bucketizer to categorise the number of beds into specified bands. The banded bed counts are joined into the original DataFrame.
+
+    Args:
+        input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
+
+    Returns:
+        DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
+    """
     number_of_beds_df = input_df.select(IndCQC.number_of_beds).dropDuplicates()
 
     set_banded_boundaries = Bucketizer(
@@ -149,6 +170,18 @@ def create_banded_bed_count_column(
 def calculate_average_filled_posts_per_banded_bed_count(
     input_df: DataFrame,
 ) -> DataFrame:
+    """
+    Calculate the average filled posts per bed ratio for each banded bed count.
+
+    This function groups the input DataFrame by the number of banded beds and calculates
+    the average filled posts per bed ratio for each group.
+
+    Args:
+        input_df (DataFrame): A DataFrame containing the columns 'number_of_beds_banded' and 'filled_posts_per_bed_ratio'.
+
+    Returns:
+        DataFrame: A DataFrame with the number of banded beds and the corresponding average filled posts per bed ratio.
+    """
     output_df = input_df.groupBy(F.col(IndCQC.number_of_beds_banded)).agg(
         F.avg(IndCQC.filled_posts_per_bed_ratio).alias(
             IndCQC.avg_filled_posts_per_bed_ratio
@@ -162,6 +195,22 @@ def calculate_expected_filled_posts_based_on_number_of_beds(
     df: DataFrame,
     expected_filled_posts_per_banded_bed_count_df: DataFrame,
 ) -> DataFrame:
+    """
+    Calculates the expected number of filled posts based on the number of beds and average filled posts per bed ratio.
+
+    This function joins the input DataFrame with another DataFrame containing the average
+    filled posts per bed ratio for each banded bed count. It then calculates the expected
+    number of filled posts for each row by multiplying the number of beds by the average
+    filled posts per bed ratio.
+
+    Args:
+        df (DataFrame): A DataFrame containing the columns 'number_of_beds' and 'number_of_beds_banded'.
+        expected_filled_posts_per_banded_bed_count_df (DataFrame): A DataFrame containing the columns
+            'number_of_beds_banded' and 'avg_filled_posts_per_bed_ratio'.
+
+    Returns:
+        DataFrame: A DataFrame with the additional column 'expected_filled_posts'.
+    """
     df = df.join(
         expected_filled_posts_per_banded_bed_count_df,
         IndCQC.number_of_beds_banded,
