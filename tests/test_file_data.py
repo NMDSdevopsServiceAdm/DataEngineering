@@ -6416,7 +6416,7 @@ class ASCWDSFilteringUtilsData:
         (
             "loc 2",
             None,
-            AscwdsFilteringRule.winsorized_care_home_filled_posts_to_bed_ratio_outlier,
+            AscwdsFilteringRule.contained_invalid_missing_data_code,
         ),
         (
             "loc 3",
