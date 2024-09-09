@@ -81,15 +81,21 @@ def calculate_max_and_min_permitted_values(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with maximum and minimum permitted values for filled_posts_per_bed_ratio for each location defined.
     """
     permitted_number_of_standard_deviations_from_mean = 3
-    w = Window.partitionBy(IndCQC.location_id).rowsBetween(
-        Window.unboundedPreceding, Window.unboundedFollowing
-    )
     df = df.withColumn(
-        IndCQC.location_mean, F.mean(IndCQC.filled_posts_per_bed_ratio).over(w)
+        IndCQC.location_mean,
+        F.mean(IndCQC.filled_posts_per_bed_ratio).over(
+            Window.partitionBy(IndCQC.location_id).rowsBetween(
+                Window.unboundedPreceding, Window.unboundedFollowing
+            )
+        ),
     )
     df = df.withColumn(
         IndCQC.standard_deviation,
-        F.stddev_samp(IndCQC.filled_posts_per_bed_ratio).over(w),
+        F.stddev_samp(IndCQC.filled_posts_per_bed_ratio).over(
+            Window.partitionBy(IndCQC.primary_service_type).rowsBetween(
+                Window.unboundedPreceding, Window.unboundedFollowing
+            )
+        ),
     )
     df = df.withColumn(
         IndCQC.max_permitted_value,
