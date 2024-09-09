@@ -83,7 +83,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     winsorized_df = winsorize_outliers(care_homes_df)
 
-    # TODO: do we want to identify which values have been winsorized? how?
+    # TODO: identify which values have been winsorized
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
 
