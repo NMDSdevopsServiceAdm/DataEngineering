@@ -7,7 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
-from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
 
@@ -18,27 +18,33 @@ class NumericalValues:
     PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS: float = 0.05
 
 
-def null_care_home_filled_posts_per_bed_ratio_outliers(
+def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     input_df: DataFrame,
 ) -> DataFrame:
     """
-    Converts filled post values to nulls if they are outliers based on their filled posts per bed ratio.
+    Winsorize ASCWDS filled posts by limiting the values of outliers based on their filled posts per bed ratio.
 
-    This function is designed to convert filled post figures for care homes which are deemed outliers to
-    null based on the ratio between filled posts and number of beds. The number of beds are banded into
-    categorical groups and the average 'filled post per bed' ratio is calculated which becomes the ratio
-    to determine the 'expected filled posts' for each banded number of bed group. The residuals (the
-    difference between actual and expected) are calculated, followed by the standardised residuals
-    (residuals divided by the squart root of the filled post figure). The values at the top and bottom
-    end of the standarised residuals are deemed to be outliers (based on percentiles) and the filled post
-    figures in ascwds_filled_posts_dedup_clean are converted to null values. Non-care home data is not included
-    in this particular filter so this part of the dataframe will be unchanged.
+    This function is designed to identify outliers based on the ratio between filled posts and the number of beds at care
+    homes and winsorize those outliers. Winsorization is the process of replacing outliers with a less extreme value.
+    Non-care home data is not included in this particular filter so this part of the dataset will remain unchanged.
+
+    Outlier detection:
+        The number of beds at each location are banded into categorical groups and the average 'filled post per bed' ratio
+        in each band is used to determine the 'expected filled posts' for each location. The residuals (the difference
+        between actual and expected filled posts) are calculated, followed by the standardised residuals (residuals divided
+        by the squart root of the filled post figure). The values at the top and bottom end of the standarised residuals
+        are deemed to be outliers. The proportion of data to be identified as outliers is determined by the value of
+        PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS.
+
+    Winsorization:
+        Filled post figures deemed outliers will be replaced by less extreme values calculated during the winsorization
+        process.
 
     Args:
         df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
 
     Returns:
-        DataFrame: A dataFrame with outlier values converted to null values.
+        DataFrame: A dataFrame with outlier values winsorized.
     """
     numerical_value = NumericalValues()
 
