@@ -63,7 +63,7 @@ def null_outlying_values(df: DataFrame) -> DataFrame:
             | (df[IndCQC.filled_posts_per_bed_ratio] < df[IndCQC.min_permitted_value]),
             None,
         ).otherwise(df[IndCQC.filled_posts_per_bed_ratio]),
-    )
+    )  # do we need this sections?
 
     return df
 
