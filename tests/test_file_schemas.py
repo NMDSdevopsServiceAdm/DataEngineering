@@ -15,6 +15,7 @@ from pyspark.sql.types import (
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -131,22 +132,6 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
-        ]
-    )
-
-    cast_to_int_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.total_staff, StringType(), True),
-            StructField(AWP.worker_records, StringType(), True),
-        ]
-    )
-
-    cast_to_int_expected_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.total_staff, IntegerType(), True),
-            StructField(AWP.worker_records, IntegerType(), True),
         ]
     )
 
@@ -508,6 +493,38 @@ class CapacityTrackerCareHomeSchema:
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
+        ]
+    )
+    remove_matching_agency_and_non_agency_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+        ]
+    )
+    create_new_columns_with_totals_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, IntegerType(), True),
+            StructField(CTCH.care_workers_employed, IntegerType(), True),
+            StructField(CTCH.non_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_nurses_employed, IntegerType(), True),
+            StructField(CTCH.agency_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, IntegerType(), True),
+        ]
+    )
+    expected_create_new_columns_with_totals_schema = StructType(
+        [
+            *create_new_columns_with_totals_schema,
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
         ]
     )
 
@@ -1193,6 +1210,22 @@ class CleaningUtilsSchemas:
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
+        ]
+    )
+
+    cast_to_int_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, StringType(), True),
+            StructField(AWP.worker_records, StringType(), True),
+        ]
+    )
+
+    cast_to_int_expected_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, IntegerType(), True),
+            StructField(AWP.worker_records, IntegerType(), True),
         ]
     )
 
