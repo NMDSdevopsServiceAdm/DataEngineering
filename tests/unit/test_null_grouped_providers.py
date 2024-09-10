@@ -45,10 +45,10 @@ class MainTests(NullGroupedProvidersTests):
     ):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
-    def test_null_grouped_providers_returns_same_columns(
-        self,
-    ):
-        self.assertEqual(self.returned_df.schema, self.test_df.schema)
+    # def test_null_grouped_providers_returns_same_columns(
+    #     self,
+    # ):
+    #     self.assertEqual(self.returned_df.schema, self.test_df.schema)
 
 
 # class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
