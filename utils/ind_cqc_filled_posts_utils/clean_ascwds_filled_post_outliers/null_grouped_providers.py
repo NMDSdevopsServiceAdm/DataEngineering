@@ -47,14 +47,14 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     """
     df = calculate_data_for_grouped_provider_identification(df)
     df = null_values_which_meet_the_grouped_provider_criteria(df)
-    df = df.drop(
-        *[
-            IndCQC.locations_at_provider,
-            IndCQC.locations_in_ascwds_at_provider,
-            IndCQC.locations_in_ascwds_with_data_at_provider,
-            IndCQC.number_of_beds_at_provider,
-        ]
-    )
+    # df = df.drop(
+    #     *[
+    #         IndCQC.locations_at_provider,
+    #         IndCQC.locations_in_ascwds_at_provider,
+    #         IndCQC.locations_in_ascwds_with_data_at_provider,
+    #         IndCQC.number_of_beds_at_provider,
+    #     ]
+    # )
     df = update_filtering_rule(
         df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
     )
@@ -110,7 +110,7 @@ def null_values_which_meet_the_grouped_provider_criteria(df: DataFrame) -> DataF
             (df[IndCQC.care_home] == CareHome.care_home)
             & (
                 df[IndCQC.locations_at_provider]
-                > NullGroupedProvidersConfig.max_locations_at_provider
+                >= NullGroupedProvidersConfig.max_locations_at_provider
             )
             & (
                 df[IndCQC.locations_in_ascwds_at_provider]
