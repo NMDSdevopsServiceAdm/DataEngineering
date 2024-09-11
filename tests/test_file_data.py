@@ -2978,35 +2978,13 @@ class ReconciliationData:
 
 @dataclass
 class CleanAscwdsFilledPostOutliersData:
+    # fmt: off
     unfiltered_ind_cqc_rows = [
-        (
-            "01",
-            "prov 1",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            30.0,
-        ),
-        (
-            "02",
-            "prov 1",
-            date(2023, 1, 1),
-            "Y",
-            PrimaryServiceType.care_home_only,
-            25,
-            35.0,
-        ),
-        (
-            "03",
-            "prov 1",
-            date(2023, 1, 1),
-            "N",
-            PrimaryServiceType.non_residential,
-            None,
-            8.0,
-        ),
+        ("01", "prov 1", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 30.0),
+        ("02", "prov 1", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, 35.0),
+        ("03", "prov 1", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, None, 8.0),
     ]
+    # fmt: on
 
 
 @dataclass
