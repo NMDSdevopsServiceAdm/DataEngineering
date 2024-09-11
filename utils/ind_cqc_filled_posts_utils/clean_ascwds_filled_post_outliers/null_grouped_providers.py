@@ -29,23 +29,10 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with grouped providers' data nulled.
     """
+    df = calculate_data_for_grouped_provider_identification(df)
+
     df = null_care_home_grouped_providers(df)
     df = null_non_residential_grouped_providers(df)
-    return df
-
-
-def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
-    """
-    Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one care home location.
-
-    Args:
-        df (DataFrame): A dataframe with independent cqc data.
-
-    Returns:
-        DataFrame: A dataframe with grouped providers' care home data nulled.
-    """
-    df = calculate_data_for_grouped_provider_identification(df)
-    df = null_values_which_meet_the_grouped_provider_criteria(df)
     df = df.drop(
         *[
             IndCQC.locations_at_provider_count,
@@ -53,9 +40,6 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
             IndCQC.locations_in_ascwds_with_data_at_provider_count,
             IndCQC.number_of_beds_at_provider,
         ]
-    )
-    df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
     )
     return df
 
@@ -90,6 +74,23 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         IndCQC.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(w)
     )
 
+    return df
+
+
+def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
+    """
+    Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one care home location.
+
+    Args:
+        df (DataFrame): A dataframe with independent cqc data.
+
+    Returns:
+        DataFrame: A dataframe with grouped providers' care home data nulled.
+    """
+    df = null_values_which_meet_the_grouped_provider_criteria(df)
+    df = update_filtering_rule(
+        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
+    )
     return df
 
 

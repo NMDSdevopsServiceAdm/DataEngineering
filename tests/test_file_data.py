@@ -6498,6 +6498,41 @@ class NullGroupedProvidersData:
         ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 4, AscwdsFilteringRule.populated),
         ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, 4, AscwdsFilteringRule.missing_data),
     ]
+
+    calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, AscwdsFilteringRule.populated),
+    ]
+    expected_calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated, 1, 1, 1, 4),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, AscwdsFilteringRule.populated, 1, 1, 0, 4),
+        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, AscwdsFilteringRule.missing_data, 1, 0, 0, 5),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, AscwdsFilteringRule.populated, 1, 1, 1, None),
+    ]
+
+    calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, AscwdsFilteringRule.populated),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, AscwdsFilteringRule.missing_data),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, AscwdsFilteringRule.missing_data),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, AscwdsFilteringRule.populated),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, AscwdsFilteringRule.missing_data),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, AscwdsFilteringRule.missing_data),
+    ]
+    expected_calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated, 2, 2, 2, 7),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, AscwdsFilteringRule.populated, 2, 2, 2, 7),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated, 2, 1, 1, 9),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, AscwdsFilteringRule.missing_data, 2, 1, 1, 9),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, AscwdsFilteringRule.missing_data, 2, 1, 0, 6),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, AscwdsFilteringRule.populated, 2, 1, 0, 6),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, AscwdsFilteringRule.missing_data, 2, 0, 0, None),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, AscwdsFilteringRule.missing_data, 2, 0, 0, None),
+    ]
+
     null_care_home_grouped_providers_where_grouped_provider_exists_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
         ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),

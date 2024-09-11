@@ -4262,3 +4262,22 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
+
+    calculate_data_for_grouped_provider_identification_schema = (
+        null_grouped_providers_schema
+    )
+    expected_calculate_data_for_grouped_provider_identification_schema = StructType(
+        [
+            *calculate_data_for_grouped_provider_identification_schema,
+            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(
+                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                IntegerType(),
+                True,
+            ),
+            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+        ]
+    )
