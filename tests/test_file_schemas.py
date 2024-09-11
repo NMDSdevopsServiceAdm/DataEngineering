@@ -4260,12 +4260,21 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
 
-    calculate_data_for_grouped_provider_identification_schema = (
-        null_grouped_providers_schema
+    calculate_data_for_grouped_provider_identification_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
     )
     expected_calculate_data_for_grouped_provider_identification_schema = StructType(
         [
@@ -4305,5 +4314,18 @@ class NullGroupedProvidersSchema:
                 BooleanType(),
                 True,
             ),
+        ]
+    )
+
+    null_care_home_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.potential_grouped_provider, BooleanType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )

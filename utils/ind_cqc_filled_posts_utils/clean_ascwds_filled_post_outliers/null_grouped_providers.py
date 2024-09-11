@@ -15,8 +15,10 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_f
 class NullGroupedProvidersConfig:
     """Configuration values for defining grouped providers"""
 
-    multiple_locations_at_provider_identifier = 2
-    single_location_identifier = 1
+    multiple_locations_at_provider_identifier: int = 2
+    single_location_identifier: int = 1
+    number_of_beds_at_provider_multiplier: int = 3
+    number_of_beds_at_location_multiplier: int = 4
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -123,47 +125,36 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with grouped providers' care home data nulled.
     """
-    df = null_values_which_meet_the_grouped_provider_criteria(df)
-    df = update_filtering_rule(
-        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
-    )
-    return df
-
-
-def null_values_which_meet_the_grouped_provider_criteria(df: DataFrame) -> DataFrame:
-    """
-    Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one care home location.
-
-    Args:
-        df (DataFrame): A dataframe with grouped provider identification columns added.
-
-    Returns:
-        DataFrame: A dataframe with grouped providers' care home data nulled.
-    """
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
             (df[IndCQC.care_home] == CareHome.care_home)
+            & (df[IndCQC.potential_grouped_provider] == True)
             & (
-                df[IndCQC.locations_at_provider_count]
-                >= NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
-            )
-            & (
-                df[IndCQC.locations_in_ascwds_at_provider_count]
-                == NullGroupedProvidersConfig.single_location_identifier
-            )
-            & (
-                df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
-                == NullGroupedProvidersConfig.single_location_identifier
-            )
-            & (
-                df[IndCQC.ascwds_filled_posts_dedup_clean]
-                > df[IndCQC.number_of_beds_at_provider]
+                (
+                    df[IndCQC.ascwds_filled_posts_dedup_clean]
+                    >= NullGroupedProvidersConfig.number_of_beds_at_location_multiplier
+                    * df[IndCQC.number_of_beds]
+                )
+                | (
+                    df[IndCQC.ascwds_filled_posts_dedup_clean]
+                    >= NullGroupedProvidersConfig.number_of_beds_at_provider_multiplier
+                    * df[IndCQC.number_of_beds_at_provider]
+                )
             ),
             None,
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
 
+    # TODO create a generic function to recalculate the ratio following filled post amendments (we recalculate the ratio several times during the filtering process)
+    df = df.withColumn(
+        IndCQC.filled_posts_per_bed_ratio,
+        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
+    )
+
+    df = update_filtering_rule(
+        df, rule_name=AscwdsFilteringRule.care_home_location_was_grouped_provider
+    )
     return df
 
 
