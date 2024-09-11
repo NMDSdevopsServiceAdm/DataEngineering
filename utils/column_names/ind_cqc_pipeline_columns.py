@@ -117,10 +117,10 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
-    locations_at_provider: str = "locations_at_provider"
-    locations_in_ascwds_at_provider: str = "locations_in_ascwds_at_provider"
-    locations_in_ascwds_with_data_at_provider: str = (
-        "locations_in_ascwds_with_data_at_provider"
+    locations_at_provider_count: str = "locations_at_provider_count"
+    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
+    locations_in_ascwds_with_data_at_provider_count: str = (
+        "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
     max_residual: str = "max_residual"

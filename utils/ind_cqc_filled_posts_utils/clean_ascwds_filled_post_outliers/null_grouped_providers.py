@@ -15,9 +15,8 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_f
 class NullGroupedProvidersConfig:
     """Configuration values for defining grouped providers"""
 
-    max_locations_at_provider = 2
-    single_location_in_ascwds = 1
-    no_locations_with_data = 0
+    multiple_locations_at_provider_identifier = 2
+    single_location_identifier = 1
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -49,9 +48,9 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     df = null_values_which_meet_the_grouped_provider_criteria(df)
     df = df.drop(
         *[
-            IndCQC.locations_at_provider,
-            IndCQC.locations_in_ascwds_at_provider,
-            IndCQC.locations_in_ascwds_with_data_at_provider,
+            IndCQC.locations_at_provider_count,
+            IndCQC.locations_in_ascwds_at_provider_count,
+            IndCQC.locations_in_ascwds_with_data_at_provider_count,
             IndCQC.number_of_beds_at_provider,
         ]
     )
@@ -77,14 +76,14 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         [IndCQC.provider_id, IndCQC.cqc_location_import_date]
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     df = df.withColumn(
-        IndCQC.locations_at_provider, F.count(df[IndCQC.location_id]).over(w)
+        IndCQC.locations_at_provider_count, F.count(df[IndCQC.location_id]).over(w)
     )
     df = df.withColumn(
-        IndCQC.locations_in_ascwds_at_provider,
+        IndCQC.locations_in_ascwds_at_provider_count,
         F.count(df[IndCQC.establishment_id]).over(w),
     )
     df = df.withColumn(
-        IndCQC.locations_in_ascwds_with_data_at_provider,
+        IndCQC.locations_in_ascwds_with_data_at_provider_count,
         F.count(df[IndCQC.ascwds_filled_posts_dedup_clean]).over(w),
     )
     df = df.withColumn(
@@ -109,16 +108,16 @@ def null_values_which_meet_the_grouped_provider_criteria(df: DataFrame) -> DataF
         F.when(
             (df[IndCQC.care_home] == CareHome.care_home)
             & (
-                df[IndCQC.locations_at_provider]
-                > NullGroupedProvidersConfig.max_locations_at_provider
+                df[IndCQC.locations_at_provider_count]
+                > NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
             )
             & (
-                df[IndCQC.locations_in_ascwds_at_provider]
-                == NullGroupedProvidersConfig.single_location_in_ascwds
+                df[IndCQC.locations_in_ascwds_at_provider_count]
+                == NullGroupedProvidersConfig.single_location_identifier
             )
             & (
-                df[IndCQC.locations_in_ascwds_with_data_at_provider]
-                > NullGroupedProvidersConfig.no_locations_with_data
+                df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
+                == NullGroupedProvidersConfig.single_location_identifier
             )
             & (
                 df[IndCQC.ascwds_filled_posts_dedup_clean]
