@@ -109,7 +109,7 @@ def null_values_which_meet_the_grouped_provider_criteria(df: DataFrame) -> DataF
             (df[IndCQC.care_home] == CareHome.care_home)
             & (
                 df[IndCQC.locations_at_provider_count]
-                > NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
+                >= NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
             )
             & (
                 df[IndCQC.locations_in_ascwds_at_provider_count]
