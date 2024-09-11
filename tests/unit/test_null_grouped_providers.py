@@ -21,10 +21,6 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
 class NullGroupedProvidersTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_df = self.spark.createDataFrame(
-            Data.null_grouped_providers_rows,
-            Schemas.null_grouped_providers_schema,
-        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
@@ -33,6 +29,10 @@ class MainTests(NullGroupedProvidersTests):
     def setUp(self) -> None:
         super().setUp()
 
+        self.test_df = self.spark.createDataFrame(
+            Data.null_grouped_providers_rows,
+            Schemas.null_grouped_providers_schema,
+        )
         self.returned_df = job.null_grouped_providers(self.test_df)
 
     def test_null_grouped_providers_runs(
