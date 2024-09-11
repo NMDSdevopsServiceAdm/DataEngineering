@@ -11,6 +11,7 @@ from pyspark.sql.types import (
     DateType,
     LongType,
     DoubleType,
+    BooleanType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -4279,5 +4280,30 @@ class NullGroupedProvidersSchema:
                 True,
             ),
             StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+        ]
+    )
+
+    identify_potential_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(
+                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                IntegerType(),
+                True,
+            ),
+        ]
+    )
+    expected_identify_potential_grouped_providers_schema = StructType(
+        [
+            *identify_potential_grouped_providers_schema,
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                BooleanType(),
+                True,
+            ),
         ]
     )

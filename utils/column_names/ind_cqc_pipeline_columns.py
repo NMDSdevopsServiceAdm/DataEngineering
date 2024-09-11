@@ -153,6 +153,7 @@ class IndCqcColumns:
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
+    potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"

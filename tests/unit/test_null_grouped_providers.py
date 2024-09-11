@@ -98,6 +98,28 @@ class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTes
         )
 
 
+class IdentifyPotentialGroupedProviderTests(NullGroupedProvidersTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_identify_potential_grouped_providers_returns_correct_rows(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.identify_potential_grouped_providers_rows,
+            Schemas.identify_potential_grouped_providers_schema,
+        )
+        returned_df = job.identify_potential_grouped_providers(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_identify_potential_grouped_providers_rows,
+            Schemas.expected_identify_potential_grouped_providers_schema,
+        )
+        self.assertEqual(
+            expected_df.collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )
+
+
 # class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
 #     def setUp(self) -> None:
 #         super().setUp()

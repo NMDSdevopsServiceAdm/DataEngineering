@@ -6533,6 +6533,29 @@ class NullGroupedProvidersData:
         ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, AscwdsFilteringRule.missing_data, 2, 0, 0, None),
     ]
 
+    identify_potential_grouped_providers_rows = [
+        ("1", 1, 1, 1),
+        ("2", 1, 1, 0),
+        ("3", 1, 0, 0),
+        ("4", 2, 2, 2),
+        ("5", 2, 2, 1),
+        ("6", 2, 2, 0),
+        ("7", 2, 1, 1),
+        ("8", 2, 1, 0),
+        ("9", 5, 1, 1),
+    ]
+    expected_identify_potential_grouped_providers_rows = [
+        ("1", 1, 1, 1, False),
+        ("2", 1, 1, 0, False),
+        ("3", 1, 0, 0, False),
+        ("4", 2, 2, 2, False),
+        ("5", 2, 2, 1, False),
+        ("6", 2, 2, 0, False),
+        ("7", 2, 1, 1, True),
+        ("8", 2, 1, 0, False),
+        ("9", 5, 1, 1, True),
+    ]
+
     null_care_home_grouped_providers_where_grouped_provider_exists_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, AscwdsFilteringRule.populated),
         ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None, 4, AscwdsFilteringRule.missing_data),

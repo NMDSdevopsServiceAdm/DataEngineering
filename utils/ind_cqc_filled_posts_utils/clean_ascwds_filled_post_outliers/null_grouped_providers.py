@@ -30,6 +30,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with grouped providers' data nulled.
     """
     df = calculate_data_for_grouped_provider_identification(df)
+    df = identify_potential_grouped_providers(df)
 
     df = null_care_home_grouped_providers(df)
     df = null_non_residential_grouped_providers(df)
@@ -39,6 +40,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
             IndCQC.locations_in_ascwds_at_provider_count,
             IndCQC.locations_in_ascwds_with_data_at_provider_count,
             IndCQC.number_of_beds_at_provider,
+            IndCQC.potential_grouped_provider,
         ]
     )
     return df
@@ -72,6 +74,40 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
     )
     df = df.withColumn(
         IndCQC.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(w)
+    )
+
+    return df
+
+
+def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
+    """
+    Identifies whether a location is potentially a grouped provider.
+
+    A potential grouped provider is identified on the basis that the provider has multiple locations but only one of those locations is in ASCWDS and provides filled post data. This function creates a column called potential_grouped_provider with True if the location is a potential grouped provider and False if not.
+
+    Args:
+        df (DataFrame): A dataframe with independent cqc data.
+
+    Returns:
+        DataFrame: A dataframe with the new binary variable potential_grouped_provider.
+    """
+    df = df.withColumn(
+        IndCQC.potential_grouped_provider,
+        F.when(
+            (
+                df[IndCQC.locations_at_provider_count]
+                >= NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
+            )
+            & (
+                df[IndCQC.locations_in_ascwds_at_provider_count]
+                == NullGroupedProvidersConfig.single_location_identifier
+            )
+            & (
+                df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
+                == NullGroupedProvidersConfig.single_location_identifier
+            ),
+            F.lit(True),
+        ).otherwise(F.lit(False)),
     )
 
     return df
