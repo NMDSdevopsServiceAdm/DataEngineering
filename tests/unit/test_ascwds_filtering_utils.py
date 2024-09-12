@@ -76,7 +76,7 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
         )
         returned_df = job.update_filtering_rule(
             test_df,
-            AscwdsFilteringRule.contained_invalid_missing_data_code,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_update_filtering_rule_populated_to_winsorised_rows,

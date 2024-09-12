@@ -63,7 +63,7 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
                 != (F.col(IndCQC.ascwds_filled_posts_dedup))
             )
             & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
-            F.lit(AscwdsFilteringRule.winsorised_beds_ratio_outlier),
+            F.lit(rule_name),
         )
         .otherwise(F.col(IndCQC.ascwds_filtering_rule)),
     )
