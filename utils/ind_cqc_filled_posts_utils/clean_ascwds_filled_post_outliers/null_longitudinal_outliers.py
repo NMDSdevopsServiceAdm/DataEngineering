@@ -25,7 +25,7 @@ def null_longitudinal_outliers(
     """
     df = calculate_max_and_min_permitted_values(df)
     df = null_outlying_values(df)
-
+    """
     df = df.drop(
         *[
             IndCQC.location_mean,
@@ -34,6 +34,7 @@ def null_longitudinal_outliers(
             IndCQC.min_permitted_value,
         ]
     )
+    """
     df = update_filtering_rule(df, AscwdsFilteringRule.longitudinal_outlier)
     return df
 
@@ -81,7 +82,7 @@ def calculate_max_and_min_permitted_values(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with maximum and minimum permitted values for filled_posts_per_bed_ratio for each location defined.
     """
     permitted_number_of_standard_deviations_from_mean = (
-        5  # temporary change for testing
+        1  # temporary change for testing
     )
     df = df.withColumn(
         IndCQC.location_mean,
