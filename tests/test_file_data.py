@@ -6398,38 +6398,112 @@ class ASCWDSFilteringUtilsData:
         ("loc 1", 10.0, AscwdsFilteringRule.populated),
         ("loc 2", None, AscwdsFilteringRule.missing_data),
     ]
-    update_filtering_rule_rows = [
+    update_filtering_rule_populated_to_nulled_rows = [
         (
             "loc 1",
+            10.0,
             10.0,
             AscwdsFilteringRule.populated,
         ),
         (
             "loc 2",
+            10.0,
             None,
             AscwdsFilteringRule.populated,
         ),
         (
             "loc 3",
+            10.0,
             None,
             AscwdsFilteringRule.missing_data,
         ),
     ]
-    expected_update_filtering_rule_rows = [
+    update_filtering_rule_populated_to_winsorised_rows = [
         (
             "loc 1",
+            10.0,
+            9.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 3",
+            10.0,
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    update_filtering_rule_winsorised_to_nulled_rows = [
+        (
+            "loc 1",
+            10.0,
+            9.0,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+        ),
+        (
+            "loc 2",
+            10.0,
+            None,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+        ),
+    ]
+    expected_update_filtering_rule_populated_to_nulled_rows = [
+        (
+            "loc 1",
+            10.0,
             10.0,
             AscwdsFilteringRule.populated,
         ),
         (
             "loc 2",
+            10.0,
             None,
             AscwdsFilteringRule.contained_invalid_missing_data_code,
         ),
         (
             "loc 3",
+            10.0,
             None,
             AscwdsFilteringRule.missing_data,
+        ),
+    ]
+    expected_update_filtering_rule_populated_to_winsorised_rows = [
+        (
+            "loc 1",
+            10.0,
+            9.0,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+        ),
+        (
+            "loc 2",
+            10.0,
+            11.0,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+        ),
+        (
+            "loc 3",
+            10.0,
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    expected_update_filtering_rule_winsorised_to_nulled_rows = [
+        (
+            "loc 1",
+            10.0,
+            9.0,
+            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+        ),
+        (
+            "loc 2",
+            10.0,
+            None,
+            AscwdsFilteringRule.contained_invalid_missing_data_code,
         ),
     ]
 

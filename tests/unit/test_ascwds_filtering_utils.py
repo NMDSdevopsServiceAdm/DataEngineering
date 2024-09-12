@@ -48,18 +48,57 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_update_filtering_rule(
+    def test_update_filtering_rule_returns_correct_labels_when_populated_values_are_nulled(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.update_filtering_rule_rows, Schemas.update_filtering_rule_schema
+            Data.update_filtering_rule_populated_to_nulled_rows,
+            Schemas.update_filtering_rule_schema,
         )
         returned_df = job.update_filtering_rule(
             test_df,
             AscwdsFilteringRule.contained_invalid_missing_data_code,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_update_filtering_rule_rows,
+            Data.expected_update_filtering_rule_populated_to_nulled_rows,
+            Schemas.update_filtering_rule_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_update_filtering_rule_returns_correct_labels_when_populated_values_are_winsorised(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.update_filtering_rule_populated_to_winsorised_rows,
+            Schemas.update_filtering_rule_schema,
+        )
+        returned_df = job.update_filtering_rule(
+            test_df,
+            AscwdsFilteringRule.contained_invalid_missing_data_code,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_update_filtering_rule_populated_to_winsorised_rows,
+            Schemas.update_filtering_rule_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+    def test_update_filtering_rule_returns_correct_labels_when_winsorised_values_are_nulled(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.update_filtering_rule_winsorised_to_nulled_rows,
+            Schemas.update_filtering_rule_schema,
+        )
+        returned_df = job.update_filtering_rule(
+            test_df,
+            AscwdsFilteringRule.contained_invalid_missing_data_code,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_update_filtering_rule_winsorised_to_nulled_rows,
             Schemas.update_filtering_rule_schema,
         )
         self.assertEqual(

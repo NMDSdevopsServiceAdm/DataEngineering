@@ -4267,6 +4267,11 @@ class ASCWDSFilteringUtilsSchemas:
                 True,
             ),
             StructField(
+                IndCQC.ascwds_filled_posts_dedup,
+                FloatType(),
+                True,
+            ),
+            StructField(
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
