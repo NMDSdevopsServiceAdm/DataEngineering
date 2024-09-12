@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.feature import Bucketizer
 
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -431,9 +432,8 @@ def winsorize_outliers(
         .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
 
-    winsorized_df = winsorized_df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
+    winsorized_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        winsorized_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
     return winsorized_df
