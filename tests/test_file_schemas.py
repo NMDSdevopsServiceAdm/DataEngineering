@@ -1970,13 +1970,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
         ]
     )
 
-    expected_null_values_outside_of_standardised_residual_cutoff_schema = StructType(
-        [
-            *null_values_outside_of_standardised_residual_cutoff_schema,
-            StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
     expected_duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
         [
             *duplicate_ratios_within_standardised_residual_cutoff_schema,
