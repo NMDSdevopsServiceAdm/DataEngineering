@@ -2385,7 +2385,7 @@ class CleaningUtilsData:
             None,
         ),
     ]
-    
+
     filled_posts_per_bed_ratio_rows = [
         ("1-000000001", 5.0, 100, CareHome.care_home),
         ("1-000000002", 2.0, 1, CareHome.care_home),
@@ -2671,7 +2671,6 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 1, 1), 3),
         ("2", 3, date(2024, 2, 1), None),
     ]
-
 
 
 @dataclass
