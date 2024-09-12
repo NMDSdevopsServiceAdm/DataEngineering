@@ -2003,6 +2003,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     winsorize_outliers_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
