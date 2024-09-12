@@ -2385,6 +2385,33 @@ class CleaningUtilsData:
             None,
         ),
     ]
+    
+    filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home),
+        ("1-000000002", 2.0, 1, CareHome.care_home),
+        ("1-000000003", None, 100, CareHome.care_home),
+        ("1-000000004", 0.0, 1, CareHome.care_home),
+        ("1-000000005", 5.0, None, CareHome.care_home),
+        ("1-000000006", 2.0, 0, CareHome.care_home),
+        ("1-000000007", None, 0, CareHome.care_home),
+        ("1-000000008", 0.0, None, CareHome.care_home),
+        ("1-000000009", None, None, CareHome.care_home),
+        ("1-000000010", 0.0, 0, CareHome.care_home),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home),
+    ]
+    expected_filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
+        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
+        ("1-000000003", None, 100, CareHome.care_home, None),
+        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
+        ("1-000000005", 5.0, None, CareHome.care_home, None),
+        ("1-000000006", 2.0, 0, CareHome.care_home, None),
+        ("1-000000007", None, 0, CareHome.care_home, None),
+        ("1-000000008", 0.0, None, CareHome.care_home, None),
+        ("1-000000009", None, None, CareHome.care_home, None),
+        ("1-000000010", 0.0, 0, CareHome.care_home, None),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
+    ]
 
 
 @dataclass
@@ -2645,32 +2672,6 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 2, 1), None),
     ]
 
-    filled_posts_per_bed_ratio_rows = [
-        ("1-000000001", 5.0, 100, CareHome.care_home),
-        ("1-000000002", 2.0, 1, CareHome.care_home),
-        ("1-000000003", None, 100, CareHome.care_home),
-        ("1-000000004", 0.0, 1, CareHome.care_home),
-        ("1-000000005", 5.0, None, CareHome.care_home),
-        ("1-000000006", 2.0, 0, CareHome.care_home),
-        ("1-000000007", None, 0, CareHome.care_home),
-        ("1-000000008", 0.0, None, CareHome.care_home),
-        ("1-000000009", None, None, CareHome.care_home),
-        ("1-000000010", 0.0, 0, CareHome.care_home),
-        ("1-000000011", 4.0, 10, CareHome.not_care_home),
-    ]
-    expected_filled_posts_per_bed_ratio_rows = [
-        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
-        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
-        ("1-000000003", None, 100, CareHome.care_home, None),
-        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
-        ("1-000000005", 5.0, None, CareHome.care_home, None),
-        ("1-000000006", 2.0, 0, CareHome.care_home, None),
-        ("1-000000007", None, 0, CareHome.care_home, None),
-        ("1-000000008", 0.0, None, CareHome.care_home, None),
-        ("1-000000009", None, None, CareHome.care_home, None),
-        ("1-000000010", 0.0, 0, CareHome.care_home, None),
-        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
-    ]
 
 
 @dataclass
