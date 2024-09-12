@@ -74,7 +74,7 @@ def main(
     features_df = features_df.withColumn(
         IndCQC.rolling_average_care_home_posts_per_bed_model,
         F.round(
-            F.col(IndCQC.rolling_average_model) / F.col(IndCQC.number_of_beds), scale=2
+            F.col(IndCQC.rolling_average_model) / F.col(IndCQC.number_of_beds), scale=3
         ),
     )
 
