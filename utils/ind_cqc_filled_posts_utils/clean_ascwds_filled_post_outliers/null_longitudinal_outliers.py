@@ -80,7 +80,9 @@ def calculate_max_and_min_permitted_values(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with maximum and minimum permitted values for filled_posts_per_bed_ratio for each location defined.
     """
-    permitted_number_of_standard_deviations_from_mean = 3
+    permitted_number_of_standard_deviations_from_mean = (
+        5  # temporary change for testing
+    )
     df = df.withColumn(
         IndCQC.location_mean,
         F.mean(IndCQC.filled_posts_per_bed_ratio).over(

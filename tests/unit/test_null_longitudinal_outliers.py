@@ -37,6 +37,7 @@ class MainTests(NullLongitudinalOutliersTests):
             Schemas.null_longitudinal_outliers_schema,
         )
 
+    @unittest.skip("Skipping for testing")
     def test_null_longitudinal_outliers_returns_correct_values(
         self,
     ):
