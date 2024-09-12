@@ -47,8 +47,24 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
         IndCQC.ascwds_filtering_rule,
         F.when(
             (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNull())
-            & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
+            & (
+                (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated)
+                | (
+                    F.col(IndCQC.ascwds_filtering_rule)
+                    == AscwdsFilteringRule.winsorised_beds_ratio_outlier
+                )
+            ),
             F.lit(rule_name),
-        ).otherwise(F.col(IndCQC.ascwds_filtering_rule)),
+        )
+        .when(
+            (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
+            & (
+                F.col(IndCQC.ascwds_filled_posts_dedup_clean)
+                != (F.col(IndCQC.ascwds_filled_posts_dedup))
+            )
+            & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
+            F.lit(AscwdsFilteringRule.winsorised_beds_ratio_outlier),
+        )
+        .otherwise(F.col(IndCQC.ascwds_filtering_rule)),
     )
     return df
