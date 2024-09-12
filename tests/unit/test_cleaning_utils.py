@@ -641,9 +641,9 @@ class CastToIntTests(unittest.TestCase):
         self.assertEqual(expected_data, returned_data)
 
 
-class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
+class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
     def setUp(self) -> None:
-        super().setUp()
+        self.spark = utils.get_spark()
 
     def test_calculate_filled_posts_per_bed_ratio(self):
         test_df = self.spark.createDataFrame(
