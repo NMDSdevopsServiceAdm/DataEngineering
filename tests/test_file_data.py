@@ -6574,14 +6574,14 @@ class CreateChartsForDiagnosticsData:
 @dataclass
 class NullFilledPostsUsingInvalidMissingDataCodeData:
     null_filled_posts_using_invalid_missing_data_code_rows = [
-        ("loc 1", 20.0, AscwdsFilteringRule.populated),
-        ("loc 2", 999.0, AscwdsFilteringRule.populated),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+        ("loc 1", 20.0, 20.0, AscwdsFilteringRule.populated),
+        ("loc 2", 999.0, 999.0, AscwdsFilteringRule.populated),
+        ("loc 3", None, None, AscwdsFilteringRule.missing_data),
     ]
     expected_null_filled_posts_using_invalid_missing_data_code_rows = [
-        ("loc 1", 20.0, AscwdsFilteringRule.populated),
-        ("loc 2", None, AscwdsFilteringRule.contained_invalid_missing_data_code),
-        ("loc 3", None, AscwdsFilteringRule.missing_data),
+        ("loc 1", 20.0, 20.0, AscwdsFilteringRule.populated),
+        ("loc 2", 999.0, None, AscwdsFilteringRule.contained_invalid_missing_data_code),
+        ("loc 3", None, None, AscwdsFilteringRule.missing_data),
     ]
 
 

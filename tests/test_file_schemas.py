@@ -4306,6 +4306,7 @@ class NullFilledPostsUsingInvalidMissingDataCodeSchema:
     null_filled_posts_using_invalid_missing_data_code_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
