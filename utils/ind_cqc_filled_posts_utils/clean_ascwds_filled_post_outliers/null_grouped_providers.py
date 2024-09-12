@@ -13,17 +13,31 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_f
 
 @dataclass
 class NullGroupedProvidersConfig:
-    """Configuration values for defining grouped providers"""
+    """Configuration values for defining grouped providers
 
-    multiple_locations_at_provider_identifier: int = 2
-    single_location_identifier: int = 1
-    number_of_beds_at_provider_multiplier: int = 3
-    number_of_beds_at_location_multiplier: int = 4
+    Attributes:
+        MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER (int): Identifier for providers with multiple locations.
+        SINGLE_LOCATION_IDENTIFIER (int): Identifier for a single location.
+        NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
+        NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
+    """
+
+    MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER: int = 2
+    SINGLE_LOCATION_IDENTIFIER: int = 1
+    NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER: int = 3
+    NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER: int = 4
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one location.
+
+    Following analysis of ASCWDS data and contacting some providers, we discovered that some providers were submitting
+    their entire workforce against one location in ASCWDS, which makes it appear that this location is particularly large.
+    We analysed ASCWDS data alongside CQC and Capacity Tracker tracker data to investigate instances where a singular
+    location within a provider had submitted data to ASCWDS in order to determine how to determine which locations looked
+    genuine and which appeared to be the entire workforce. Care homes and non residential locations have been analysed
+    separately.
 
     Args:
         df (DataFrame): A dataframe with independent cqc data.
@@ -58,7 +72,7 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         df (DataFrame): A dataframe with independent cqc data.
 
     Returns:
-        DataFrame: A dataframe with the new variables locations_at_provider, locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider and number_of_beds_at_provider..
+        DataFrame: A dataframe with the new variables locations_at_provider, locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider and number_of_beds_at_provider.
     """
     w = Window.partitionBy(
         [IndCQC.provider_id, IndCQC.cqc_location_import_date]
@@ -91,22 +105,22 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe with independent cqc data.
 
     Returns:
-        DataFrame: A dataframe with the new binary variable potential_grouped_provider.
+        DataFrame: A dataframe with the new Boolean variable potential_grouped_provider.
     """
     df = df.withColumn(
         IndCQC.potential_grouped_provider,
         F.when(
             (
                 df[IndCQC.locations_at_provider_count]
-                >= NullGroupedProvidersConfig.multiple_locations_at_provider_identifier
+                >= NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER
             )
             & (
                 df[IndCQC.locations_in_ascwds_at_provider_count]
-                == NullGroupedProvidersConfig.single_location_identifier
+                == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             )
             & (
                 df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
-                == NullGroupedProvidersConfig.single_location_identifier
+                == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             ),
             F.lit(True),
         ).otherwise(F.lit(False)),
@@ -118,6 +132,10 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
 def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one care home location.
+
+    By comparing ASCWDS against Capacity Tracker data, there was a large drop in accuracy between the values once filled
+    posts were at least triple the number of beds in the whole provider, or at least quadruple the number of beds in that
+    particular location.
 
     Args:
         df (DataFrame): A dataframe with independent cqc data.
@@ -133,12 +151,12 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
             & (
                 (
                     df[IndCQC.ascwds_filled_posts_dedup_clean]
-                    >= NullGroupedProvidersConfig.number_of_beds_at_location_multiplier
+                    >= NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER
                     * df[IndCQC.number_of_beds]
                 )
                 | (
                     df[IndCQC.ascwds_filled_posts_dedup_clean]
-                    >= NullGroupedProvidersConfig.number_of_beds_at_provider_multiplier
+                    >= NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER
                     * df[IndCQC.number_of_beds_at_provider]
                 )
             ),
