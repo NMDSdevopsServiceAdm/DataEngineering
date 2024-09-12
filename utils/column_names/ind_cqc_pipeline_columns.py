@@ -100,6 +100,9 @@ class IndCqcColumns:
     extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
+    filled_posts_per_bed_ratio_within_std_resids: str = (
+        "filled_posts_per_bed_ratio_within_std_resids"
+    )
     first_filled_posts: str = "first_filled_posts"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
@@ -117,6 +120,11 @@ class IndCqcColumns:
     last_rolling_average: str = "last_rolling_average"
     last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
+    locations_at_provider_count: str = "locations_at_provider_count"
+    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
+    locations_in_ascwds_with_data_at_provider_count: str = (
+        "locations_in_ascwds_with_data_at_provider_count"
+    )
     lower_percentile: str = "lower_percentile"
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
@@ -133,6 +141,7 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
+    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
@@ -149,6 +158,7 @@ class IndCqcColumns:
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
+    potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"

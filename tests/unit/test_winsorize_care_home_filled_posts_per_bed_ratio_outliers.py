@@ -1,13 +1,6 @@
 import unittest
 import warnings
 
-from tests.test_file_data import (
-    RemoveCareHomeFilledPostsPerBedRatioOutliersData as Data,
-)
-from tests.test_file_schemas import (
-    RemoveCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
-)
-
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -20,12 +13,18 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.ind_cqc_filled_posts_utils.null_ascwds_filled_post_outliers import (
-    null_care_home_filled_posts_per_bed_ratio_outliers as job,
+from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
+    winsorize_care_home_filled_posts_per_bed_ratio_outliers as job,
+)
+from tests.test_file_data import (
+    WinsorizeCareHomeFilledPostsPerBedRatioOutliersData as Data,
+)
+from tests.test_file_schemas import (
+    WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
 
 
-class NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
+class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
         self.unfiltered_ind_cqc_df = self.spark.createDataFrame(
@@ -36,12 +35,12 @@ class NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+class MainTests(WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
     def setUp(self) -> None:
         super().setUp()
 
         self.returned_filtered_df = (
-            job.null_care_home_filled_posts_per_bed_ratio_outliers(
+            job.winsorize_care_home_filled_posts_per_bed_ratio_outliers(
                 self.unfiltered_ind_cqc_df
             )
         )
@@ -67,27 +66,36 @@ class MainTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
             Data.expected_care_home_jobs_per_bed_ratio_filtered_rows,
             Schemas.ind_cqc_schema,
         )
-        self.returned_filtered_df.sort(IndCQC.location_id).show(n=25)
         returned_data = self.returned_filtered_df.sort(IndCQC.location_id).collect()
         expected_data = expected_filtered_df.sort(IndCQC.location_id).collect()
+
         self.assertEqual(expected_data, returned_data)
 
 
-class NumericalValuesTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+class SetValuesForWinsorizationTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_decimal_places_to_round_to_value(self):
-        self.assertEqual(job.NumericalValues.DECIMAL_PLACES_TO_ROUND_TO, 5)
-
     def test_percentage_of_data_to_remove_as_outliers_value(self):
         self.assertEqual(
-            job.NumericalValues.PERCENTAGE_OF_DATE_TO_REMOVE_AS_OUTLIERS, 0.05
+            job.SetValuesForWinsorization.PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS, 0.05
+        )
+
+    def test_minimum_permitted_lower_ratio_cutoff_value(self):
+        self.assertEqual(
+            job.SetValuesForWinsorization.MINIMUM_PERMITTED_LOWER_RATIO_CUTOFF, 0.75
+        )
+
+    def test_minimum_permitted_upper_ratio_cutoff_value(self):
+        self.assertEqual(
+            job.SetValuesForWinsorization.MINIMUM_PERMITTED_UPPER_RATIO_CUTOFF, 5.0
         )
 
 
 class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -114,7 +122,7 @@ class FilterToCareHomesWithKnownBedsAndFilledPostsTests(
 
 
 class SelectDataNotInSubsetTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -144,7 +152,7 @@ class SelectDataNotInSubsetTests(
 
 
 class CreateBandedBedCountColumnTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -171,7 +179,7 @@ class CreateBandedBedCountColumnTests(
 
 
 class CalculateAverageFilledPostsPerBandedBedCount(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -201,54 +209,8 @@ class CalculateAverageFilledPostsPerBandedBedCount(
         )
 
 
-class CalculateStandardisedResidualsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_standardised_residuals(self):
-        expected_filled_posts_schema = StructType(
-            [
-                StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-                StructField(
-                    IndCQC.avg_filled_posts_per_bed_ratio,
-                    DoubleType(),
-                    True,
-                ),
-            ]
-        )
-        expected_filled_posts_rows = [
-            (0.0, 1.4),
-            (1.0, 1.28),
-        ]
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-            ]
-        )
-        rows = [
-            ("1", 10, 16.0, 0.0),
-            ("2", 50, 80.0, 1.0),
-            ("3", 50, 10.0, 1.0),
-        ]
-        expected_filled_posts_df = self.spark.createDataFrame(
-            expected_filled_posts_rows, expected_filled_posts_schema
-        )
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_standardised_residuals(df, expected_filled_posts_df)
-        self.assertEqual(df.count(), 3)
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.standardised_residual], 0.53452, places=2)
-        self.assertAlmostEquals(df[1][IndCQC.standardised_residual], 2.0, places=2)
-        self.assertAlmostEquals(df[2][IndCQC.standardised_residual], -6.75, places=2)
-
-
 class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -292,62 +254,34 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
         self.assertAlmostEquals(df[1][IndCQC.expected_filled_posts], 75.7575, places=3)
 
 
-class CalculateFilledPostResidualsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_post_residuals(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-                StructField(IndCQC.expected_filled_posts, DoubleType(), True),
-            ]
-        )
-        rows = [
-            ("1", 10.0, 8.76544),
-            ("2", 10.0, 10.0),
-            ("3", 10.0, 11.23456),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_post_residuals(df)
-
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.residual], 1.23456, places=3)
-        self.assertAlmostEquals(df[1][IndCQC.residual], 0.0, places=3)
-        self.assertAlmostEquals(df[2][IndCQC.residual], -1.23456, places=3)
-
-
 class CalculateFilledPostStandardisedResidualsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_filled_post_standardised_residual(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.residual, DoubleType(), True),
-                StructField(IndCQC.expected_filled_posts, DoubleType(), True),
-            ]
+        calculate_standardised_residuals_df = self.spark.createDataFrame(
+            Data.calculate_standardised_residuals_rows,
+            Schemas.calculate_standardised_residuals_schema,
         )
-        rows = [
-            ("1", 11.11111, 4.0),
-            ("2", 17.75, 25.0),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.calculate_filled_post_standardised_residual(df)
+        self.returned_df = job.calculate_filled_post_standardised_residual(
+            calculate_standardised_residuals_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_standardised_residuals_rows,
+            Schemas.expected_calculate_standardised_residuals_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.standardised_residual], 5.55556, places=2)
-        self.assertAlmostEquals(df[1][IndCQC.standardised_residual], 3.55, places=2)
+    def test_calculate_filled_post_standardised_residual_matches_expected_dataframe(
+        self,
+    ):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
 class CalculateLowerAndUpperStandardisedResidualCutoffTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -494,70 +428,172 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
         )
 
 
-class NullValuesOutsideOfStandardisedResidualCutoffsTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+class DuplicateRatiosWithinStandardisedResidualCutoffsTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
         df = self.spark.createDataFrame(
-            Data.null_values_outside_of_standardised_residual_cutoff_rows,
-            Schemas.null_values_outside_of_standardised_residual_cutoff_schema,
+            Data.duplicate_ratios_within_standardised_residual_cutoff_rows,
+            Schemas.duplicate_ratios_within_standardised_residual_cutoff_schema,
         )
-        self.returned_df = job.null_values_outside_of_standardised_residual_cutoffs(df)
+        returned_df = job.duplicate_ratios_within_standardised_residual_cutoffs(df)
 
+        expected_df = self.spark.createDataFrame(
+            Data.expected_duplicate_ratios_within_standardised_residual_cutoff_rows,
+            Schemas.expected_duplicate_ratios_within_standardised_residual_cutoff_schema,
+        )
+
+        self.returned_data = returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+    def test_ratio_not_duplicated_when_below_lower_cutoff(self):
+        self.assertEqual(
+            self.returned_data[0][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[0][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+        )
+
+    def test_ratio_duplicated_when_equal_to_lower_cutoff(self):
+        self.assertEqual(
+            self.returned_data[1][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[1][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+        )
+
+    def test_ratio_duplicated_when_in_between_cutoffs(self):
+        self.assertEqual(
+            self.returned_data[2][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[2][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+        )
+
+    def test_ratio_duplicated_when_equal_to_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[3][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[3][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+        )
+
+    def test_ratio_not_duplicated_when_above_upper_cutoff(self):
+        self.assertEqual(
+            self.returned_data[4][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+            self.expected_data[4][IndCQC.filled_posts_per_bed_ratio_within_std_resids],
+        )
+
+
+class CalculateMinAndMaxPermittedFilledPostPerBedRatiosTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.care_home_df = self.spark.createDataFrame(
+            Data.min_and_max_permitted_ratios_rows,
+            Schemas.min_and_max_permitted_ratios_schema,
+        )
+        self.returned_df = (
+            job.calculate_min_and_max_permitted_filled_posts_per_bed_ratios(
+                self.care_home_df
+            )
+        )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_null_values_outside_of_standardised_residual_cutoff_rows,
-            Schemas.expected_null_values_outside_of_standardised_residual_cutoff_schema,
+            Data.expected_min_and_max_permitted_ratios_rows,
+            Schemas.expected_min_and_max_permitted_ratios_schema,
         )
 
         self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
         self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
 
-    def test_value_nulled_when_below_lower_cutoff(self):
-        self.assertEqual(
-            self.returned_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[0][IndCQC.ascwds_filled_posts_dedup_clean],
-        )
+    def test_returned_data_has_same_number_of_rows_as_original_df(self):
+        self.assertEqual(self.returned_df.count(), self.care_home_df.count())
 
-    def test_value_not_nulled_when_equal_to_lower_cutoff(self):
-        self.assertEqual(
-            self.returned_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[1][IndCQC.ascwds_filled_posts_dedup_clean],
-        )
-
-    def test_value_not_nulled_when_in_between_cutoffs(self):
-        self.assertEqual(
-            self.returned_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[2][IndCQC.ascwds_filled_posts_dedup_clean],
-        )
-
-    def test_value_not_nulled_when_equal_to_upper_cutoff(self):
-        self.assertEqual(
-            self.returned_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[3][IndCQC.ascwds_filled_posts_dedup_clean],
-        )
-
-    def test_value_nulled_when_above_upper_cutoff(self):
-        self.assertEqual(
-            self.returned_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
-            self.expected_data[4][IndCQC.ascwds_filled_posts_dedup_clean],
-        )
-
-    def test_null_values_outside_of_standardised_residual_cutoffs_returns_correct_row_count(
-        self,
-    ):
-        self.assertEqual(self.returned_df.count(), self.expected_df.count())
-
-    def test_null_values_outside_of_standardised_residual_cutoffs_returns_df_with_correct_schema(
-        self,
-    ):
+    def test_returned_data_has_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns), sorted(self.expected_df.columns)
         )
 
+    def test_returned_min_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.min_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.min_filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
 
-class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
+    def test_returned_max_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.max_filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.max_filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
+
+
+class SetMinimumPermittedRatioTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_returned_data_matches_expected_data(self):
+        TEST_MIN_VALUE: float = 0.75
+
+        care_home_df = self.spark.createDataFrame(
+            Data.set_minimum_permitted_ratio_rows,
+            Schemas.set_minimum_permitted_ratio_schema,
+        )
+        returned_df = job.set_minimum_permitted_ratio(
+            care_home_df, IndCQC.filled_posts_per_bed_ratio, TEST_MIN_VALUE
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_set_minimum_permitted_ratio_rows,
+            Schemas.set_minimum_permitted_ratio_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
+class WinsorizeOutliersTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.care_home_df = self.spark.createDataFrame(
+            Data.winsorize_outliers_rows,
+            Schemas.winsorize_outliers_schema,
+        )
+        self.returned_df = job.winsorize_outliers(self.care_home_df)
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_winsorize_outliers_rows,
+            Schemas.winsorize_outliers_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+
+    def test_returned_filled_post_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                self.expected_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_filled_posts_per_bed_ratio_values_match_expected(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCQC.filled_posts_per_bed_ratio],
+                self.expected_data[i][IndCQC.filled_posts_per_bed_ratio],
+                f"Returned row {i} does not match expected",
+            )
+
+
+class CombineDataframeTests(
+    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
+):
     def setUp(self) -> None:
         super().setUp()
 
@@ -592,48 +628,3 @@ class CombineDataframeTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierT
         expected_data = expected_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(returned_data, expected_data)
-
-
-class AggregateBedBandsTests(NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            Data.aggregate_bed_bands_rows, Schemas.aggregate_bed_bands_schema
-        )
-        self.returned_df = job.aggregate_bed_bands(self.test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_aggregate_bed_band_rows,
-            Schemas.expected_aggregate_bed_bands_schema,
-        )
-        self.returned_data = self.returned_df.sort(
-            IndCQC.number_of_beds_banded
-        ).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_aggregate_bed_bands_returns_correct_result(self):
-        self.assertEqual(self.returned_data, self.expected_data)
-
-
-class WindsoriseNulledValuesTests(
-    NullAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            Data.windsorise_nulled_values_rows, Schemas.windsorise_nulled_values_schema
-        )
-        self.returned_df = job.windsorise_nulled_values(self.test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_windsorise_nulled_values_rows,
-            Schemas.windsorise_nulled_values_schema,
-        )
-        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_windsorise_nulled_values_returns_correct_result(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
-                self.expected_data[i][IndCQC.ascwds_filled_posts_dedup_clean],
-                f"Returned row {i} does not match expected",
-            )

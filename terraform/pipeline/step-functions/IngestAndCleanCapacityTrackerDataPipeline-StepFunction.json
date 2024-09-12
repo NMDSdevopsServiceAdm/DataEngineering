@@ -1,0 +1,42 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Ingest Capacity Tracker data",
+  "States": {
+    "Ingest Capacity Tracker data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${ingest_capacity_tracker_data_job_name}",
+        "Arguments": {
+          "--source": "s3://sfc-data-engineering-raw/domain=capacity_tracker/",
+          "--destination": "${dataset_bucket_uri}/domain=capacity_tracker/"
+        }
+      },
+      "Next": "Clean capacity tracker care home data"
+    },
+    "Clean capacity tracker care home data": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${clean_capacity_tracker_care_home_job_name}",
+        "Arguments": {
+          "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=care_home/",
+          "--cleaned_capacity_tracker_care_home_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
+        }
+      },
+      "Next": "Run capacity tracker crawler"
+    },
+    "Run capacity tracker crawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+        "Input": {
+          "crawler_name": "${capacity_tracker_crawler_name}",
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "End": true
+    }
+  }
+}

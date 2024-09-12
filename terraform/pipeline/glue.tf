@@ -106,6 +106,20 @@ module "clean_ascwds_worker_job" {
   }
 }
 
+module "clean_capacity_tracker_care_home_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_capacity_tracker_care_home_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home/"
+    "--cleaned_capacity_tracker_care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
+  }
+}
+
 module "clean_ascwds_workplace_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_workplace_data.py"
@@ -823,6 +837,13 @@ module "ons_crawler" {
 module "dpr_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "DPR"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
+module "capacity_tracker_crawler" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "capacity_tracker"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

@@ -11,9 +11,13 @@ from pyspark.sql.types import (
     DateType,
     LongType,
     DoubleType,
+    BooleanType,
 )
 
-from utils.column_names.capacity_tracker_columns import CapacityTrackerColumns as CT
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -129,22 +133,6 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
-        ]
-    )
-
-    cast_to_int_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.total_staff, StringType(), True),
-            StructField(AWP.worker_records, StringType(), True),
-        ]
-    )
-
-    cast_to_int_expected_schema = StructType(
-        [
-            StructField(AWP.location_id, StringType(), True),
-            StructField(AWP.total_staff, IntegerType(), True),
-            StructField(AWP.worker_records, IntegerType(), True),
         ]
     )
 
@@ -489,6 +477,55 @@ class CapacityTrackerCareHomeSchema:
             StructField("daysabsence", StringType(), True),
             StructField("lastupdatedutc", StringType(), True),
             StructField("lastupdatedbst", StringType(), True),
+        ]
+    )
+
+    capacity_tracker_care_home_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    remove_matching_agency_and_non_agency_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+        ]
+    )
+    create_new_columns_with_totals_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, IntegerType(), True),
+            StructField(CTCH.care_workers_employed, IntegerType(), True),
+            StructField(CTCH.non_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_nurses_employed, IntegerType(), True),
+            StructField(CTCH.agency_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, IntegerType(), True),
+        ]
+    )
+    expected_create_new_columns_with_totals_schema = StructType(
+        [
+            *create_new_columns_with_totals_schema,
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
         ]
     )
 
@@ -1177,6 +1214,22 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    cast_to_int_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, StringType(), True),
+            StructField(AWP.worker_records, StringType(), True),
+        ]
+    )
+
+    cast_to_int_expected_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.total_staff, IntegerType(), True),
+            StructField(AWP.worker_records, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
@@ -1832,10 +1885,11 @@ class ReconciliationSchema:
 
 
 @dataclass
-class NullAscwdsFilledPostOutliersSchema:
+class CleanAscwdsFilledPostOutliersSchema:
     unfiltered_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
@@ -1846,7 +1900,7 @@ class NullAscwdsFilledPostOutliersSchema:
 
 
 @dataclass
-class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
+class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
     ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1856,8 +1910,8 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
 
@@ -1867,6 +1921,20 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+
+    calculate_standardised_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.expected_filled_posts, DoubleType(), True),
+        ]
+    )
+    expected_calculate_standardised_residuals_schema = StructType(
+        [
+            *calculate_standardised_residuals_schema,
+            StructField(IndCQC.standardised_residual, DoubleType(), True),
         ]
     )
 
@@ -1890,10 +1958,10 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
         )
     )
 
-    null_values_outside_of_standardised_residual_cutoff_schema = StructType(
+    duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.standardised_residual, DoubleType(), True),
             StructField(IndCQC.lower_percentile, DoubleType(), True),
             StructField(IndCQC.upper_percentile, DoubleType(), True),
@@ -1907,6 +1975,49 @@ class RemoveCareHomeFilledPostsPerBedRatioOutliersSchema:
             *null_values_outside_of_standardised_residual_cutoff_schema,
             StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+    expected_duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
+        [
+            *duplicate_ratios_within_standardised_residual_cutoff_schema,
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True
+            ),
+        ]
+    )
+
+    min_and_max_permitted_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio_within_std_resids, DoubleType(), True
+            ),
+            StructField(IndCQC.number_of_beds_banded, FloatType(), True),
+        ]
+    )
+    expected_min_and_max_permitted_ratios_schema = StructType(
+        [
+            *min_and_max_permitted_ratios_schema,
+            StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+
+    set_minimum_permitted_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+
+    winsorize_outliers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
+            StructField(IndCQC.min_filled_posts_per_bed_ratio, FloatType(), True),
+            StructField(IndCQC.max_filled_posts_per_bed_ratio, FloatType(), True),
         ]
     )
 
@@ -4219,5 +4330,98 @@ class CreateChartsForDiagnosticsSchemas:
             StructField(IndCQC.absolute_residual, FloatType(), True),
             StructField(IndCQC.standardised_residual, FloatType(), True),
             StructField(IndCQC.percentage_residual, FloatType(), True),
+        ]
+    )
+
+
+@dataclass
+class NullFilledPostsUsingInvalidMissingDataCodeSchema:
+    null_filled_posts_using_invalid_missing_data_code_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class NullGroupedProvidersSchema:
+    null_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+        ]
+    )
+
+    calculate_data_for_grouped_provider_identification_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+    expected_calculate_data_for_grouped_provider_identification_schema = StructType(
+        [
+            *calculate_data_for_grouped_provider_identification_schema,
+            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(
+                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                IntegerType(),
+                True,
+            ),
+            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+        ]
+    )
+
+    identify_potential_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(
+                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                IntegerType(),
+                True,
+            ),
+        ]
+    )
+    expected_identify_potential_grouped_providers_schema = StructType(
+        [
+            *identify_potential_grouped_providers_schema,
+            StructField(
+                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                BooleanType(),
+                True,
+            ),
+        ]
+    )
+
+    null_care_home_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.potential_grouped_provider, BooleanType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )

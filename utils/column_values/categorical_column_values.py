@@ -524,6 +524,7 @@ class InAscwds(ColumnValues):
 class AscwdsFilteringRule(ColumnValues):
     populated: str = "populated"
     missing_data: str = "missing_data"
-    filtered_care_home_filled_posts_to_bed_ratio_outlier: str = (
-        "filtered_care_home_filled_posts_bed_to_ratio_outlier"
+    contained_invalid_missing_data_code: str = "contained_invalid_missing_data_code"
+    care_home_location_was_grouped_provider: str = (
+        "care_home_location_was_grouped_provider"
     )
