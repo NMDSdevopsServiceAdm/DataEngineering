@@ -286,26 +286,5 @@ class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
         self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
 
 
-class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_posts_per_bed_ratio(self):
-        test_df = self.spark.createDataFrame(
-            Data.filled_posts_per_bed_ratio_rows,
-            Schemas.filled_posts_per_bed_ratio_schema,
-        )
-        returned_df = job.calculate_filled_posts_per_bed_ratio(
-            test_df, IndCQC.ascwds_filled_posts_dedup
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filled_posts_per_bed_ratio_rows,
-            Schemas.expected_filled_posts_per_bed_ratio_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

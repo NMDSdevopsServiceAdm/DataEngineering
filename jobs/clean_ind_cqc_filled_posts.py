@@ -2,7 +2,12 @@ import sys
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
-from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
+import utils.cleaning_utils as cUtils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
+from utils.column_values.categorical_column_values import CareHome
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -10,11 +15,6 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_as
     clean_ascwds_filled_post_outliers,
 )
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-from utils.column_values.categorical_column_values import CareHome
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
@@ -28,7 +28,7 @@ def main(
 
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
-    locations_df = reduce_dataset_to_earliest_file_per_month(locations_df)
+    locations_df = cUtils.reduce_dataset_to_earliest_file_per_month(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
@@ -47,13 +47,13 @@ def main(
         IndCQC.ascwds_filled_posts_dedup,
     )
 
-    locations_df = calculate_filled_posts_per_bed_ratio(
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df, IndCQC.ascwds_filled_posts_dedup
     )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
-    locations_df = calculate_filled_posts_per_bed_ratio(
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
@@ -159,29 +159,6 @@ def create_column_with_repeated_values_removed(
     df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
 
     return df_without_repeated_values
-
-
-def calculate_filled_posts_per_bed_ratio(
-    input_df: DataFrame, filled_posts_column: str
-) -> DataFrame:
-    """
-    Add a column with the filled post per bed ratio for care homes.
-
-    Args:
-        input_df (DataFrame): A dataframe containing the given column, care_home and numberofbeds.
-        filled_posts_column (str): The name of the column to use for calculating the ratio.
-
-    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
-    """
-    input_df = input_df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio,
-        F.when(
-            F.col(IndCQC.care_home) == CareHome.care_home,
-            F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
-        ),
-    )
-
-    return input_df
 
 
 if __name__ == "__main__":

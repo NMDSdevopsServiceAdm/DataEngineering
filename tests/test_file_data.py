@@ -2386,6 +2386,33 @@ class CleaningUtilsData:
         ),
     ]
 
+    filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home),
+        ("1-000000002", 2.0, 1, CareHome.care_home),
+        ("1-000000003", None, 100, CareHome.care_home),
+        ("1-000000004", 0.0, 1, CareHome.care_home),
+        ("1-000000005", 5.0, None, CareHome.care_home),
+        ("1-000000006", 2.0, 0, CareHome.care_home),
+        ("1-000000007", None, 0, CareHome.care_home),
+        ("1-000000008", 0.0, None, CareHome.care_home),
+        ("1-000000009", None, None, CareHome.care_home),
+        ("1-000000010", 0.0, 0, CareHome.care_home),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home),
+    ]
+    expected_filled_posts_per_bed_ratio_rows = [
+        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
+        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
+        ("1-000000003", None, 100, CareHome.care_home, None),
+        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
+        ("1-000000005", 5.0, None, CareHome.care_home, None),
+        ("1-000000006", 2.0, 0, CareHome.care_home, None),
+        ("1-000000007", None, 0, CareHome.care_home, None),
+        ("1-000000008", 0.0, None, CareHome.care_home, None),
+        ("1-000000009", None, None, CareHome.care_home, None),
+        ("1-000000010", 0.0, 0, CareHome.care_home, None),
+        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
+    ]
+
 
 @dataclass
 class MergeIndCQCData:
@@ -2643,33 +2670,6 @@ class CleanIndCQCData:
         ("2", 9, date(2023, 4, 1), 9),
         ("2", 3, date(2024, 1, 1), 3),
         ("2", 3, date(2024, 2, 1), None),
-    ]
-
-    filled_posts_per_bed_ratio_rows = [
-        ("1-000000001", 5.0, 100, CareHome.care_home),
-        ("1-000000002", 2.0, 1, CareHome.care_home),
-        ("1-000000003", None, 100, CareHome.care_home),
-        ("1-000000004", 0.0, 1, CareHome.care_home),
-        ("1-000000005", 5.0, None, CareHome.care_home),
-        ("1-000000006", 2.0, 0, CareHome.care_home),
-        ("1-000000007", None, 0, CareHome.care_home),
-        ("1-000000008", 0.0, None, CareHome.care_home),
-        ("1-000000009", None, None, CareHome.care_home),
-        ("1-000000010", 0.0, 0, CareHome.care_home),
-        ("1-000000011", 4.0, 10, CareHome.not_care_home),
-    ]
-    expected_filled_posts_per_bed_ratio_rows = [
-        ("1-000000001", 5.0, 100, CareHome.care_home, 0.05),
-        ("1-000000002", 2.0, 1, CareHome.care_home, 2.0),
-        ("1-000000003", None, 100, CareHome.care_home, None),
-        ("1-000000004", 0.0, 1, CareHome.care_home, 0.0),
-        ("1-000000005", 5.0, None, CareHome.care_home, None),
-        ("1-000000006", 2.0, 0, CareHome.care_home, None),
-        ("1-000000007", None, 0, CareHome.care_home, None),
-        ("1-000000008", 0.0, None, CareHome.care_home, None),
-        ("1-000000009", None, None, CareHome.care_home, None),
-        ("1-000000010", 0.0, 0, CareHome.care_home, None),
-        ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
 
 
@@ -3176,14 +3176,14 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
     ]
 
     winsorize_outliers_rows = [
-        ("1", 9.0, 15, 0.6, 1.0, 5.0),
-        ("2", 30.0, 15, 2.0, 1.0, 5.0),
-        ("3", 90.0, 15, 6.0, 1.0, 5.0),
+        ("1", CareHome.care_home, 9.0, 15, 0.6, 1.0, 5.0),
+        ("2", CareHome.care_home, 30.0, 15, 2.0, 1.0, 5.0),
+        ("3", CareHome.care_home, 90.0, 15, 6.0, 1.0, 5.0),
     ]
     expected_winsorize_outliers_rows = [
-        ("1", 15.0, 15, 1.0, 1.0, 5.0),
-        ("2", 30.0, 15, 2.0, 1.0, 5.0),
-        ("3", 75.0, 15, 5.0, 1.0, 5.0),
+        ("1", CareHome.care_home, 15.0, 15, 1.0, 1.0, 5.0),
+        ("2", CareHome.care_home, 30.0, 15, 2.0, 1.0, 5.0),
+        ("3", CareHome.care_home, 75.0, 15, 5.0, 1.0, 5.0),
     ]
 
     set_minimum_permitted_ratio_rows = [

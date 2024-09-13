@@ -639,3 +639,24 @@ class CastToIntTests(unittest.TestCase):
         ).collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
+
+    def test_calculate_filled_posts_per_bed_ratio(self):
+        test_df = self.spark.createDataFrame(
+            Data.filled_posts_per_bed_ratio_rows,
+            Schemas.filled_posts_per_bed_ratio_schema,
+        )
+        returned_df = job.calculate_filled_posts_per_bed_ratio(
+            test_df, IndCQC.ascwds_filled_posts_dedup
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filled_posts_per_bed_ratio_rows,
+            Schemas.expected_filled_posts_per_bed_ratio_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
