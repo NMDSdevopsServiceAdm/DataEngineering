@@ -2105,6 +2105,73 @@ class CQCLocationsData:
     )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
 
+    add_column_related_location_rows = [
+        ("loc 1", None),
+        ("loc 2", []),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+        ),
+    ]
+    expected_add_column_related_location_rows = [
+        ("loc 1", None, "N"),
+        ("loc 2", [], "N"),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+            "Y",
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+            "Y",
+        ),
+    ]
+
 
 @dataclass
 class UtilsData:

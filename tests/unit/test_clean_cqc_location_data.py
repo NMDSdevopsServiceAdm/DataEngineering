@@ -659,5 +659,22 @@ class ImputeMissingDataFromProviderDataset(CleanCQCLocationDatasetTests):
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 
+class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_column_related_location_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_column_related_location_rows,
+            Schemas.add_column_related_location_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_column_related_location_rows,
+            Schemas.expected_add_column_related_location_schema,
+        )
+        returned_df = job.add_column_related_location(test_df)
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

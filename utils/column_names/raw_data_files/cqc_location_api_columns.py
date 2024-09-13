@@ -75,6 +75,7 @@ class NewCqcLocationApiColumns:
     registration_status: str = "registrationStatus"
     regulated_activities: str = "regulatedActivities"
     related_documents: str = "relatedDocuments"
+    related_location: str = "related_location"
     related_location_id: str = "relatedLocationId"
     related_location_name: str = "relatedLocationName"
     relationships: str = "relationships"
