@@ -1909,6 +1909,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
@@ -4268,6 +4269,11 @@ class ASCWDSFilteringUtilsSchemas:
                 True,
             ),
             StructField(
+                IndCQC.ascwds_filled_posts_dedup,
+                FloatType(),
+                True,
+            ),
+            StructField(
                 IndCQC.ascwds_filled_posts_dedup_clean,
                 FloatType(),
                 True,
@@ -4301,6 +4307,7 @@ class NullFilledPostsUsingInvalidMissingDataCodeSchema:
     null_filled_posts_using_invalid_missing_data_code_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
@@ -4316,6 +4323,7 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
@@ -4379,6 +4387,7 @@ class NullGroupedProvidersSchema:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),

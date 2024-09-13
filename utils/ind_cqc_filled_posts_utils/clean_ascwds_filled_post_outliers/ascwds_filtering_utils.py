@@ -32,12 +32,16 @@ def add_filtering_rule_column(df: DataFrame) -> DataFrame:
 
 def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
     """
-    Update filtering rule for rows where data was present but is now missing.
+    Update filtering rule for rows where data has changed.
 
-    This function adds updates the filtering rule where it was listed as "populated" but the current filtering rule has just nullified the data in ascwds_filled_posts_dedup_clean. The new values will be the name of the filter applied.
+    This function updates the filtering rule in 2 cases:
+    1) where it was listed as "populated" or a "winsorized_beds_ratio_outlier" but the current filtering rule has just nullified
+    the data in ascwds_filled_posts_dedup_clean.
+    2) where it was listed as "populated" and the cleaned data is different to when it was deduplicated.
+    The new values will be the name of the filter passed to the function.
 
     Args:
-        df (DataFrame): A dataframe containing ascwds_filled_posts_dedup_clean and ascwds_filtering_rule after a new rules has been applied.
+        df (DataFrame): A dataframe containing ascwds_filled_posts_dedup, ascwds_filled_posts_dedup_clean and ascwds_filtering_rule after a new rule has been applied.
         rule_name (str): The name of the rule that has just been applied.
 
     Returns:
@@ -47,8 +51,24 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
         IndCQC.ascwds_filtering_rule,
         F.when(
             (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNull())
+            & (
+                (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated)
+                | (
+                    F.col(IndCQC.ascwds_filtering_rule)
+                    == AscwdsFilteringRule.winsorized_beds_ratio_outlier
+                )
+            ),
+            F.lit(rule_name),
+        )
+        .when(
+            (F.col(IndCQC.ascwds_filled_posts_dedup_clean).isNotNull())
+            & (
+                F.col(IndCQC.ascwds_filled_posts_dedup_clean)
+                != (F.col(IndCQC.ascwds_filled_posts_dedup))
+            )
             & (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated),
             F.lit(rule_name),
-        ).otherwise(F.col(IndCQC.ascwds_filtering_rule)),
+        )
+        .otherwise(F.col(IndCQC.ascwds_filtering_rule)),
     )
     return df
