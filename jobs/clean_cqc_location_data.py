@@ -23,6 +23,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     RegistrationStatus,
     Services,
+    RelatedLocation,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -346,6 +347,13 @@ def add_column_related_location(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with a column stating whther the locaiton has a related location or not.
     """
+    df = df.withColumn(
+        CQCLClean.related_location,
+        F.when(
+            F.size(df[CQCL.relationships]) > 0,
+            F.lit(RelatedLocation.has_related_location),
+        ).otherwise(F.lit(RelatedLocation.no_related_location)),
+    )
     return df
 
 
