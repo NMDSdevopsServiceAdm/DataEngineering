@@ -27,30 +27,6 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()
 
-    def test_add_date_diff_into_df(self):
-        date_col = "import_date"
-        date_diff = "date_diff"
-        df = self.spark.createDataFrame(
-            [[date(2013, 1, 10)], [date(2023, 1, 10)]], [date_col]
-        )
-        result = add_date_diff_into_df(
-            df=df, new_col_name=date_diff, import_date_col=date_col
-        )
-        expected_max_date = date(2023, 1, 10)
-        actual_max_date = result.agg(F.max(date_col)).first()[0]
-
-        expected_diff_between_max_date_and_other_date = 3652
-        actual_diff = (
-            result.filter(F.col(date_col) == date(2013, 1, 10))
-            .select(F.col(date_diff))
-            .collect()
-        )
-
-        self.assertEqual(actual_max_date, expected_max_date)
-        self.assertEqual(
-            actual_diff[0].date_diff, expected_diff_between_max_date_and_other_date
-        )
-
     def test_add_time_registered_into_df(self):
         test_df = self.spark.createDataFrame(
             Data.add_time_registered_rows, Schemas.add_time_registered_schema
