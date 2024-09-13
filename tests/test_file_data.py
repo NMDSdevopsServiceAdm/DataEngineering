@@ -27,6 +27,7 @@ from utils.column_values.categorical_column_values import (
     Services,
     EstimateFilledPostsSource,
     AscwdsFilteringRule,
+    RelatedLocation,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -2138,8 +2139,8 @@ class CQCLocationsData:
         ),
     ]
     expected_add_column_related_location_rows = [
-        ("loc 1", None, "N"),
-        ("loc 2", [], "N"),
+        ("loc 1", None, RelatedLocation.no_related_location),
+        ("loc 2", [], RelatedLocation.no_related_location),
         (
             "loc 3",
             [
@@ -2150,7 +2151,7 @@ class CQCLocationsData:
                     CQCL.reason: "reason",
                 }
             ],
-            "Y",
+            RelatedLocation.has_related_location,
         ),
         (
             "loc 4",
@@ -2168,7 +2169,7 @@ class CQCLocationsData:
                     CQCL.reason: "reason",
                 },
             ],
-            "Y",
+            RelatedLocation.has_related_location,
         ),
     ]
 
