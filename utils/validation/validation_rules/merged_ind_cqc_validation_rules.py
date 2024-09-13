@@ -30,6 +30,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
+            IndCqcColumns.related_location,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -58,6 +59,7 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
             IndCqcColumns.current_rural_urban_indicator_2011: CatValues.current_rui_column_values.categorical_values,
+            IndCqcColumns.related_location: CatValues.related_location_column_values.categorical_values,
         },
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
@@ -70,5 +72,6 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             IndCqcColumns.current_rural_urban_indicator_2011: CatValues.current_rui_column_values.count_of_categorical_values,
+            IndCqcColumns.related_location: CatValues.related_location_column_values.count_of_categorical_values,
         },
     }
