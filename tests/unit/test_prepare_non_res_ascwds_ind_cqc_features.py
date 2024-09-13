@@ -53,7 +53,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.WITHOUT_DORMANCY_DESTINATION,
         )
 
-        self.assertEqual(add_array_column_count_to_data_mock.call_count, 1)
+        self.assertEqual(add_array_column_count_to_data_mock.call_count, 3)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,

@@ -48,13 +48,15 @@ def main(
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
+    features_df.printSchema()
     features_df = add_array_column_count_to_data(
-        df=non_res_locations_df,
+        df=features_df,
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.regulated_activities,
     )
+    features_df.printSchema()
     features_df = add_array_column_count_to_data(
-        df=non_res_locations_df,
+        df=features_df,
         new_col_name=IndCQC.specialism_count,
         col_to_check=IndCQC.specialisms,
     )
@@ -91,6 +93,12 @@ def main(
             categorical_col_name=IndCQC.dormancy,
             lookup_dict=DormancyFeatures.labels_dict,
         )
+    )
+
+    features_df = add_date_diff_into_df(
+        df=features_df,
+        new_col_name=IndCQC.date_diff,
+        import_date_col=IndCQC.cqc_location_import_date,
     )
 
     features_df = add_time_registered_into_df(
