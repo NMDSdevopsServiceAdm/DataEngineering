@@ -2413,6 +2413,17 @@ class CleaningUtilsData:
         ("1-000000011", 4.0, 10, CareHome.not_care_home, None),
     ]
 
+    filled_posts_from_beds_and_ratio_rows = [
+        ("loc 1", 0.5, 10),
+        ("loc 2", None, 10),
+        ("loc 3", 0.5, None),
+    ]
+    expected_filled_posts_from_beds_and_ratio_rows = [
+        ("loc 1", 0.5, 10, 5.0),
+        ("loc 2", None, 10, None),
+        ("loc 3", 0.5, None, None),
+    ]
+
 
 @dataclass
 class MergeIndCQCData:

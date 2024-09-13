@@ -228,3 +228,24 @@ def calculate_filled_posts_per_bed_ratio(
     )
 
     return input_df
+
+
+def calculate_filled_posts_from_beds_and_ratio(
+    df: DataFrame, ratio_column: str, new_column_name: str
+) -> DataFrame:
+    """
+    Calculate a column with the number of filled posts, based on the number of beds and the given beds ratio column.
+
+    Args:
+        df(DataFrame): A dataframe with number_of_beds and a beds ratio column.
+        ratio_column(str): The name of the beds ratio column to use.
+        new_column_name(str): The name of the column to fill.
+
+    Returns:
+        DataFrame: A dataframe with the new calculated filled posts column.
+    """
+    df = df.withColumn(
+        new_column_name,
+        F.col(ratio_column) * F.col(IndCQC.number_of_beds),
+    )
+    return df

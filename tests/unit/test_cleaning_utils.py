@@ -660,3 +660,24 @@ class CalculateFilledPostsPerBedRatioTests(unittest.TestCase):
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
+
+
+class CalculateFilledPostsFromBedsAndRatioTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.spark = utils.get_spark()
+
+    def test_calculate_filled_posts_from_beds_and_ratio(self):
+        test_df = self.spark.createDataFrame(
+            Data.filled_posts_from_beds_and_ratio_rows,
+            Schemas.filled_posts_from_beds_and_ratio_schema,
+        )
+        returned_df = job.calculate_filled_posts_from_beds_and_ratio(
+            test_df, IndCQC.filled_posts_per_bed_ratio, IndCQC.care_home_model
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filled_posts_from_beds_and_ratio_rows,
+            Schemas.expected_filled_posts_from_beds_and_ratio_schema,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )

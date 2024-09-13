@@ -1245,6 +1245,20 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    filled_posts_from_beds_and_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+    expected_filled_posts_from_beds_and_ratio_schema = StructType(
+        [
+            *filled_posts_from_beds_and_ratio_schema,
+            StructField(IndCQC.care_home_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
