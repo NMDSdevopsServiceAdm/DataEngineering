@@ -2117,7 +2117,11 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), True),
-            StructField(IndCQC.rolling_average_model_filled_posts_per_bed_ratio, FloatType(), True),
+            StructField(
+                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -2268,7 +2272,11 @@ class ModelPrimaryServiceRollingAverage:
         [
             *primary_service_rolling_average_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model_filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(
+                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                DoubleType(),
+                True,
+            ),
         ]
     )
 
