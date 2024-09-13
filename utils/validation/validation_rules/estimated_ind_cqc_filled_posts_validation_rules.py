@@ -33,7 +33,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 1,
-            IndCqcColumns.people_directly_employed: 1,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
             IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.people_directly_employed_dedup: 1,
@@ -43,7 +42,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
-            IndCqcColumns.people_directly_employed: 10000,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
             # IndCqcColumns.estimate_filled_posts: 3000.0, # temporarily removed until non res models are fixed
             IndCqcColumns.people_directly_employed_dedup: 10000,
