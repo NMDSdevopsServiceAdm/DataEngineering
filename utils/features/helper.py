@@ -44,6 +44,17 @@ def convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
 def add_array_column_count_to_data(
     df: DataFrame, new_col_name: str, col_to_check: str
 ) -> DataFrame:
+    """
+    Add a new column with the count of items in an array column.
+
+    Args:
+        df(DataFrame): A dataframe with an array column.
+        new_col_name(str): A name for the new column with the count of items.
+        col_to_check(str): The name of the array column.
+
+    Returns:
+        DataFrame: A dataframe with an extra column with the count of items in hte specified array.
+    """
     return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
 
 
