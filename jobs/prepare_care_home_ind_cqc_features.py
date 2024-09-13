@@ -72,7 +72,7 @@ def main(
 
     # replicates recreation of bed ratio as per current model
     features_df = features_df.withColumn(
-        IndCQC.rolling_average_care_home_posts_per_bed_model,
+        IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
         F.round(
             F.col(IndCQC.rolling_average_model) / F.col(IndCQC.number_of_beds), scale=3
         ),
@@ -82,7 +82,7 @@ def main(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.rolling_average_care_home_posts_per_bed_model,
+            IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
         ]
         + service_keys
         + regions

@@ -2267,6 +2267,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             *primary_service_rolling_average_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model_filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
 

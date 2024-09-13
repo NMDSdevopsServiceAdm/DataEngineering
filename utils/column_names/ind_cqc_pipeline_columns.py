@@ -176,8 +176,8 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_care_home_posts_per_bed_model: str = (
-        "rolling_average_care_home_posts_per_bed_model"
+    rolling_average_model_filled_posts_per_bed_ratio: str = (
+        "rolling_average_model_filled_posts_per_bed_ratio"
     )
     rolling_average_model: str = "rolling_average_model"
     rolling_count: str = "rolling_count"

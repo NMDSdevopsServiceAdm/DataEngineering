@@ -41,6 +41,7 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
                 IndCqc.ascwds_filled_posts_dedup_clean,
                 IndCqc.primary_service_type,
                 IndCqc.rolling_average_model,
+                IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
             )
             .sort(IndCqc.location_id)
             .collect()
@@ -50,10 +51,11 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    def test_only_one_additional_column_returned(self):
+    def test_two_additional_columns_returned(self):
         self.assertEqual(
-            len(self.estimates_df.columns) + 1, len(self.returned_df.columns)
+            len(self.estimates_df.columns) + 2, len(self.returned_df.columns)
         )
+
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),

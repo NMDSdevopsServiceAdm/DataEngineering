@@ -32,14 +32,26 @@ def model_primary_service_rolling_average(
         DataFrame: The input DataFrame with the new column containing the rolling average.
     """
     window = define_window_specifications(number_of_days)
+    temp_col = "temp_col"
+    df = df.withColumn(
+        temp_col,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            (F.avg(care_home_column_to_average).over(window)),
+        ).otherwise(F.avg(non_res_column_to_average).over(window)),
+    )
+    df = df.withColumn(
+        IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
+        F.when(F.col(IndCqc.care_home) == CareHome.care_home, (F.col(temp_col))),
+    )
     df = df.withColumn(
         model_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            (F.avg(care_home_column_to_average).over(window))
-            * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.avg(non_res_column_to_average).over(window)),
+            (F.col(temp_col)) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(temp_col)),
     )
+    df = df.drop(temp_col)
 
     return df
 
