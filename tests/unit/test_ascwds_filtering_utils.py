@@ -67,30 +67,30 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_update_filtering_rule_returns_correct_labels_when_populated_values_are_winsorised(
+    def test_update_filtering_rule_returns_correct_labels_when_populated_values_are_winsorized(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.update_filtering_rule_populated_to_winsorised_rows,
+            Data.update_filtering_rule_populated_to_winsorized_rows,
             Schemas.update_filtering_rule_schema,
         )
         returned_df = job.update_filtering_rule(
             test_df,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_update_filtering_rule_populated_to_winsorised_rows,
+            Data.expected_update_filtering_rule_populated_to_winsorized_rows,
             Schemas.update_filtering_rule_schema,
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_update_filtering_rule_returns_correct_labels_when_winsorised_values_are_nulled(
+    def test_update_filtering_rule_returns_correct_labels_when_winsorized_values_are_nulled(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.update_filtering_rule_winsorised_to_nulled_rows,
+            Data.update_filtering_rule_winsorized_to_nulled_rows,
             Schemas.update_filtering_rule_schema,
         )
         returned_df = job.update_filtering_rule(
@@ -98,7 +98,7 @@ class UpdateFilteringRuleTests(ASCWDSFilteringUtilsTests):
             AscwdsFilteringRule.contained_invalid_missing_data_code,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_update_filtering_rule_winsorised_to_nulled_rows,
+            Data.expected_update_filtering_rule_winsorized_to_nulled_rows,
             Schemas.update_filtering_rule_schema,
         )
         self.assertEqual(

@@ -35,7 +35,7 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
     Update filtering rule for rows where data has changed.
 
     This function updates the filtering rule in 2 cases:
-    1) where it was listed as "populated" or a "winsorised_beds_ratio_outlier" but the current filtering rule has just nullified
+    1) where it was listed as "populated" or a "winsorized_beds_ratio_outlier" but the current filtering rule has just nullified
     the data in ascwds_filled_posts_dedup_clean.
     2) where it was listed as "populated" and the cleaned data is different to when it was deduplicated.
     The new values will be the name of the filter passed to the function.
@@ -55,7 +55,7 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
                 (F.col(IndCQC.ascwds_filtering_rule) == AscwdsFilteringRule.populated)
                 | (
                     F.col(IndCQC.ascwds_filtering_rule)
-                    == AscwdsFilteringRule.winsorised_beds_ratio_outlier
+                    == AscwdsFilteringRule.winsorized_beds_ratio_outlier
                 )
             ),
             F.lit(rule_name),

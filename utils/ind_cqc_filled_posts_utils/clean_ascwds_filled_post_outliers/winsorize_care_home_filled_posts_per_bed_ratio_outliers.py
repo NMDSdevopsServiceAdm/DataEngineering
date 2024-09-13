@@ -96,7 +96,7 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     winsorized_df = winsorize_outliers(care_homes_df)
 
     winsorized_df = update_filtering_rule(
-        winsorized_df, AscwdsFilteringRule.winsorised_beds_ratio_outlier
+        winsorized_df, AscwdsFilteringRule.winsorized_beds_ratio_outlier
     )
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)

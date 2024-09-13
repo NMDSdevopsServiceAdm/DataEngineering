@@ -3040,17 +3040,17 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
     # fmt: off
     expected_care_home_jobs_per_bed_ratio_filtered_rows = [
-        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 2.0, 2.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 4.0, 4.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 6.0, 6.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 8.0, 8.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 10.0, 10.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 15.0, 15.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 20.0, 20.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 25.0, 25.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 30.0, 30.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 35.0, 35.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
-        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 37.0, 37.0, 37.5, 0.75, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
+        ("01", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 2.0, 2.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("02", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 4.0, 4.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("03", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 6.0, 6.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("04", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 8.0, 8.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("05", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 10.0, 10.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("06", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 15.0, 15.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("07", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 20.0, 20.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("08", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 25.0, 25.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("09", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 30.0, 30.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("10", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 35.0, 35.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
+        ("11", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 37.0, 37.0, 37.5, 0.75, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
         ("12", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 37.5, 37.5, 37.5, 0.75, AscwdsFilteringRule.populated),
         ("13", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 38.0, 38.0, 38.0, 0.76, AscwdsFilteringRule.populated),
         ("14", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 39.0, 39.0, 39.0, 0.78, AscwdsFilteringRule.populated),
@@ -3079,7 +3079,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
         ("37", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 62.0, 62.0, 62.0, 1.24, AscwdsFilteringRule.populated),
         ("38", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 63.0, 63.0, 63.0, 1.26, AscwdsFilteringRule.populated),
         ("39", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 250.0, 250.0, 250.0, 5.0, AscwdsFilteringRule.populated),
-        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 500.0, 500.0, 250.0, 5.0, AscwdsFilteringRule.winsorised_beds_ratio_outlier), # winsorized
+        ("40", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 50, 500.0, 500.0, 250.0, 5.0, AscwdsFilteringRule.winsorized_beds_ratio_outlier), # winsorized
         ("41", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, 25, None, None, None, None, AscwdsFilteringRule.missing_data),
         ("42", date(2023, 1, 1), "Y", PrimaryServiceType.care_home_only, None, 42.0, 42.0, 42.0, None, AscwdsFilteringRule.populated),
         ("43", date(2023, 1, 1), "N", PrimaryServiceType.non_residential, 25, 43.0, 43.0, 43.0, 0.92, AscwdsFilteringRule.populated),
@@ -6424,7 +6424,7 @@ class ASCWDSFilteringUtilsData:
             AscwdsFilteringRule.missing_data,
         ),
     ]
-    update_filtering_rule_populated_to_winsorised_rows = [
+    update_filtering_rule_populated_to_winsorized_rows = [
         (
             "loc 1",
             10.0,
@@ -6444,18 +6444,18 @@ class ASCWDSFilteringUtilsData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    update_filtering_rule_winsorised_to_nulled_rows = [
+    update_filtering_rule_winsorized_to_nulled_rows = [
         (
             "loc 1",
             10.0,
             9.0,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         ),
         (
             "loc 2",
             10.0,
             None,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         ),
     ]
     expected_update_filtering_rule_populated_to_nulled_rows = [
@@ -6478,18 +6478,18 @@ class ASCWDSFilteringUtilsData:
             AscwdsFilteringRule.missing_data,
         ),
     ]
-    expected_update_filtering_rule_populated_to_winsorised_rows = [
+    expected_update_filtering_rule_populated_to_winsorized_rows = [
         (
             "loc 1",
             10.0,
             9.0,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         ),
         (
             "loc 2",
             10.0,
             11.0,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         ),
         (
             "loc 3",
@@ -6498,12 +6498,12 @@ class ASCWDSFilteringUtilsData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    expected_update_filtering_rule_winsorised_to_nulled_rows = [
+    expected_update_filtering_rule_winsorized_to_nulled_rows = [
         (
             "loc 1",
             10.0,
             9.0,
-            AscwdsFilteringRule.winsorised_beds_ratio_outlier,
+            AscwdsFilteringRule.winsorized_beds_ratio_outlier,
         ),
         (
             "loc 2",
