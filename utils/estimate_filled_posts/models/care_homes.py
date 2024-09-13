@@ -1,13 +1,14 @@
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import DataFrame, functions as F
 
+from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 from utils.estimate_filled_posts.insert_predictions_into_locations import (
     insert_predictions_into_locations,
 )
 from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
 
 
 def model_care_homes(
@@ -32,10 +33,8 @@ def model_care_homes(
         locations_df, care_home_predictions, IndCqc.care_home_model
     )
 
-    # multiply ratio by beds to get final prediction
-    locations_df = locations_df.withColumn(
-        IndCqc.care_home_model,
-        F.col(IndCqc.care_home_model) * F.col(IndCqc.number_of_beds),
+    locations_df = calculate_filled_posts_from_beds_and_ratio(
+        locations_df, IndCqc.care_home_model, IndCqc.care_home_model
     )
 
     return locations_df
