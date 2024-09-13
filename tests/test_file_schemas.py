@@ -2119,7 +2119,7 @@ class EstimateIndCQCFilledPostsSchemas:
                 True,
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
