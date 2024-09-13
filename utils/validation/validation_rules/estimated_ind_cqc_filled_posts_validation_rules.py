@@ -24,8 +24,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.unix_time,
-            # IndCqcColumns.estimate_filled_posts, # temporarily removed until refactor is complete
-            # IndCqcColumns.estimate_filled_posts_source, # temporarily removed until refactor is complete
+            IndCqcColumns.estimate_filled_posts,  # temporarily removed until refactor is complete
+            IndCqcColumns.estimate_filled_posts_source,  # temporarily removed until refactor is complete
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -70,6 +70,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-            # IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values, # temporarily removed during refactor
+            IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,  # temporarily removed during refactor
         },
     }
