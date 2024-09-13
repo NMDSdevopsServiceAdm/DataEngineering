@@ -2039,34 +2039,6 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
     expected_combined_dataframes_schema = combine_dataframes_non_care_home_schema
 
-    aggregate_bed_bands_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.number_of_beds_banded, FloatType(), True),
-        ]
-    )
-    expected_aggregate_bed_bands_schema = StructType(
-        [
-            StructField(IndCQC.number_of_beds_banded, FloatType(), True),
-            StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
-    windsorise_nulled_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.standardised_residual, DoubleType(), True),
-            StructField(IndCQC.lower_percentile, DoubleType(), True),
-            StructField(IndCQC.upper_percentile, DoubleType(), True),
-            StructField(IndCQC.number_of_beds_banded, FloatType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.min_filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.max_filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
-
 
 @dataclass
 class NonResAscwdsWithDormancyFeaturesSchema(object):
