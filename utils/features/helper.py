@@ -41,7 +41,7 @@ def convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
     return df
 
 
-def add_service_count_to_data(
+def add_array_column_count_to_data(
     df: DataFrame, new_col_name: str, col_to_check: str
 ) -> DataFrame:
     return df.withColumn(new_col_name, F.size(F.col(col_to_check)))

@@ -25,6 +25,7 @@ class PartitionKeys:
 @dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
+    activity_count: str = "activity_count"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
@@ -184,6 +185,7 @@ class IndCqcColumns:
     rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
+    specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"

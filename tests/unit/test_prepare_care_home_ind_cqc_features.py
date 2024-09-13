@@ -36,12 +36,12 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         "jobs.prepare_care_home_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
     )
     @patch("jobs.prepare_care_home_ind_cqc_features.column_expansion_with_dict")
-    @patch("jobs.prepare_care_home_ind_cqc_features.add_service_count_to_data")
+    @patch("jobs.prepare_care_home_ind_cqc_features.add_array_column_count_to_data")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
-        add_service_count_to_data_mock: Mock,
+        add_array_column_count_to_data_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
         add_import_month_index_into_df_mock: Mock,
@@ -55,7 +55,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             self.CARE_HOME_FEATURES_DIR,
         )
 
-        self.assertEqual(add_service_count_to_data_mock.call_count, 1)
+        self.assertEqual(add_array_column_count_to_data_mock.call_count, 1)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
