@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from pyspark.sql import DataFrame, functions as F, Window
 
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -164,10 +165,8 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
 
-    # TODO create a generic function to recalculate the ratio following filled post amendments (we recalculate the ratio several times during the filtering process)
-    df = df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
+    df = cUtils.calculate_filled_posts_per_bed_ratio(
+        df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
     df = update_filtering_rule(

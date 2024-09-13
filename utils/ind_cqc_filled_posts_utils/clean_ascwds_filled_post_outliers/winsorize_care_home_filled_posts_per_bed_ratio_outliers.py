@@ -3,10 +3,14 @@ from dataclasses import dataclass
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.feature import Bucketizer
 
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-from utils.column_values.categorical_column_values import CareHome
+from utils.column_values.categorical_column_values import CareHome, AscwdsFilteringRule
+from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+    update_filtering_rule,
+)
 
 
 @dataclass
@@ -92,7 +96,9 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
 
     winsorized_df = winsorize_outliers(care_homes_df)
 
-    # TODO: identify which values have been winsorized
+    winsorized_df = update_filtering_rule(
+        winsorized_df, AscwdsFilteringRule.winsorized_beds_ratio_outlier
+    )
 
     output_df = combine_dataframes(winsorized_df, data_not_relevant_to_filter_df)
 
@@ -431,9 +437,8 @@ def winsorize_outliers(
         .otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
 
-    winsorized_df = winsorized_df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio,
-        F.col(IndCQC.ascwds_filled_posts_dedup_clean) / F.col(IndCQC.number_of_beds),
+    winsorized_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        winsorized_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
     return winsorized_df
