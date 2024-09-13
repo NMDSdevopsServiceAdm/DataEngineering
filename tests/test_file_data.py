@@ -1192,6 +1192,14 @@ class CQCLocationsData:
                     },
                 },
             ],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
             "2020-01-01",
         ),
     ]

@@ -906,6 +906,21 @@ class CQCLocationsSchema:
                 ),
                 True,
             ),
+            StructField(
+                CQCL.relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
             StructField(Keys.import_date, StringType(), True),
         ]
     )
