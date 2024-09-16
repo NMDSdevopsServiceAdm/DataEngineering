@@ -58,7 +58,9 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsUtilsTests):
             Data.expected_restructure_dataframe_rows,
             Schemas.expected_restructure_dataframe_schema,
         )
-        self.returned_df = job.restructure_dataframe_to_column_wise(self.test_df)
+        self.returned_df = job.restructure_dataframe_to_column_wise(
+            self.test_df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
 
     def test_restructure_dataframe_to_column_wise_has_correct_values(self):
         returned_data = self.returned_df.sort(IndCQC.estimate_source).collect()
@@ -203,7 +205,9 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
         )
-        returned_df = job.calculate_residual(test_df)
+        returned_df = job.calculate_residual(
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_residual_rows,
             Schemas.expected_calculate_residual_schema,
@@ -227,7 +231,9 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
         )
-        returned_df = job.calculate_percentage_residual(test_df)
+        returned_df = job.calculate_percentage_residual(
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_percentage_residual_rows,
             Schemas.expected_calculate_percentage_residual_schema,
@@ -239,7 +245,9 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
             Data.expected_calculate_residual_rows,
             Schemas.expected_calculate_residual_schema,
         )
-        returned_df = job.calculate_standardised_residual(test_df)
+        returned_df = job.calculate_standardised_residual(
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_standardised_residual_rows,
             Schemas.expected_calculate_standardised_residual_schema,
@@ -258,7 +266,9 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
             Data.calculate_residuals_rows,
             Schemas.calculate_residuals_schema,
         )
-        returned_df = job.calculate_residuals(test_df)
+        returned_df = job.calculate_residuals(
+            test_df, IndCQC.ascwds_filled_posts_dedup_clean
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_residuals_rows,
             Schemas.expected_calculate_residuals_schema,

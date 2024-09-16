@@ -31,7 +31,9 @@ def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
     return df.filter(df[column].isNotNull())
 
 
-def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
+def restructure_dataframe_to_column_wise(
+    df: DataFrame, column_for_comparison: str
+) -> DataFrame:
     """
     Reshapes the dataframe so that all estimated values are in one column.
 
@@ -43,18 +45,19 @@ def restructure_dataframe_to_column_wise(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe of estimates with each model's values in a different column.
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: A dataframe of estimates with each model's values in a single column and a column of corresponding model names.
     """
-    reshaped_df = create_empty_reshaped_dataframe()
+    reshaped_df = create_empty_reshaped_dataframe(column_for_comparison)
     list_of_models = create_list_of_models()
     for model in list_of_models:
         model_df = df.select(
             IndCQC.location_id,
             IndCQC.cqc_location_import_date,
             IndCQC.primary_service_type,
-            IndCQC.ascwds_filled_posts_dedup_clean,
+            column_for_comparison,
             model,
             Keys.year,
             Keys.month,
@@ -84,11 +87,14 @@ def create_list_of_models():
     return list_of_models
 
 
-def create_empty_reshaped_dataframe():
+def create_empty_reshaped_dataframe(column_for_comparison: str):
     """
     Creates an empty dataframe to define it's structure.
 
     This function creates a new, empty dataframe which uses a predefined schema with columns for the estimate's source and value.
+
+    Args:
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: An empty dataframe with the predefined schema.
@@ -100,7 +106,7 @@ def create_empty_reshaped_dataframe():
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean,
+                column_for_comparison,
                 FloatType(),
                 True,
             ),
@@ -240,7 +246,7 @@ def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
     return df
 
 
-def calculate_residuals(df: DataFrame) -> DataFrame:
+def calculate_residuals(df: DataFrame, column_for_comparison: str) -> DataFrame:
     """
     Adds columns with residuals.
 
@@ -249,18 +255,19 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: A dataframe with two additional columns containing residuals.
     """
-    df = calculate_residual(df)
+    df = calculate_residual(df, column_for_comparison)
     df = calculate_absolute_residual(df)
-    df = calculate_percentage_residual(df)
-    df = calculate_standardised_residual(df)
+    df = calculate_percentage_residual(df, column_for_comparison)
+    df = calculate_standardised_residual(df, column_for_comparison)
     return df
 
 
-def calculate_residual(df: DataFrame) -> DataFrame:
+def calculate_residual(df: DataFrame, column_for_comparison: str) -> DataFrame:
     """
     Adds column with the residual.
 
@@ -268,13 +275,14 @@ def calculate_residual(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe with ascwds_filled_posts_deduplicated_clean and estimate_value.
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the residual.
     """
     df = df.withColumn(
         IndCQC.residual,
-        F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_dedup_clean),
+        F.col(IndCQC.estimate_value) - F.col(column_for_comparison),
     )
     return df
 
@@ -286,7 +294,7 @@ def calculate_absolute_residual(df: DataFrame) -> DataFrame:
     This function adds a columns to the dataset containing the absolute residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
+        df (DataFrame): A dataframe with a calculated residual.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the absolute residual.
@@ -298,41 +306,47 @@ def calculate_absolute_residual(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_percentage_residual(df: DataFrame) -> DataFrame:
+def calculate_percentage_residual(
+    df: DataFrame, column_for_comparison: str
+) -> DataFrame:
     """
     Adds column with the percentage residual.
 
     This function adds a columns to the dataset containing the percentage residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
+        df (DataFrame): A dataframe with a column for comparison and estimate_value.
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage residual.
     """
     df = df.withColumn(
         IndCQC.percentage_residual,
-        (F.col(IndCQC.estimate_value) - F.col(IndCQC.ascwds_filled_posts_dedup_clean))
+        (F.col(IndCQC.estimate_value) - F.col(column_for_comparison))
         / F.col(IndCQC.estimate_value),
     )
     return df
 
 
-def calculate_standardised_residual(df: DataFrame) -> DataFrame:
+def calculate_standardised_residual(
+    df: DataFrame, column_for_comparison: str
+) -> DataFrame:
     """
     Adds column with the standardised residual.
 
     This function adds a columns to the dataset containing the standardised residual.
 
     Args:
-        df (DataFrame): A dataframe with ascwds_filled_posts_dedup_clean and estimate_value.
+        df (DataFrame): A dataframe with a column for comparison and estimate_value.
+        column_for_comparison (str): The column of values to use for calculating residuals.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the standardised residual.
     """
     df = df.withColumn(
         IndCQC.standardised_residual,
-        F.col(IndCQC.residual) / F.sqrt(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+        F.col(IndCQC.residual) / F.sqrt(F.col(column_for_comparison)),
     )
     return df
 
@@ -453,7 +467,7 @@ def calculate_percentage_of_residuals_within_absolute_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within an absolute value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_dedup_clean
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
         and absolute_residual.
         window (Window): A window for aggregating the residuals.
         absolute_value_cutoff (float): The threshold absolute value.
@@ -480,7 +494,7 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within a percentage value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source, ascwds_filled_posts_dedup_clean
+        df (DataFrame): A dataframe with primary_service_type, estimate_source
         and percentage_residual.
         window (Window): A window for aggregating the residuals.
         percentage_value_cutoff (float): The threshold percentage.
