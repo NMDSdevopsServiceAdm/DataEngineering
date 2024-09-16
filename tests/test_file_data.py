@@ -1195,6 +1195,25 @@ class CQCLocationsData:
         ),
     ]
 
+    impute_missing_gac_service_types_rows = [
+        ("1-001", date(2024, 1, 1), []),
+        ("1-001", date(2024, 2, 1), [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 3, 1), []),
+        ("1-001", date(2024, 5, 1), [{"name": "Name B", "description": "Desc B"}]),
+        ("1-001", date(2024, 6, 1), []),
+        ("1-002", date(2024, 1, 1), []),
+        ("1-002", date(2024, 2, 1), []),
+    ]
+    expected_impute_missing_gac_service_types_rows = [
+        ("1-001", date(2024, 1, 1), [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 2, 1), [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 5, 1), [{"name": "Name B", "description": "Desc B"}]),
+        ("1-001", date(2024, 6, 1), [{"name": "Name B", "description": "Desc B"}]),
+        ("1-002", date(2024, 1, 1), []),
+        ("1-002", date(2024, 2, 1), []),
+    ]
+
     list_of_services_rows = [
         (
             "location1",

@@ -13,13 +13,16 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 
 @dataclass
 class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
-    import_date: str = "import_date"
-    services_offered: str = "services_offered"
-    primary_service_type: str = "primary_service_type"
-    cqc_sector: str = CQCPClean.cqc_sector
-    provider_name: str = "provider_name"
     cqc_location_import_date: str = "cqc_location_import_date"
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
+    cqc_sector: str = CQCPClean.cqc_sector
+    import_date: str = "import_date"
+    imputed_gac_service_types: str = (
+        "imputed" + NewCqcLocationApiColumns.gac_service_types
+    )
+    imputed_registration_date: str = "imputed_registration_date"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
-    imputed_registration_date: str = "imputed_registration_date"
+    primary_service_type: str = "primary_service_type"
+    provider_name: str = "provider_name"
+    services_offered: str = "services_offered"
