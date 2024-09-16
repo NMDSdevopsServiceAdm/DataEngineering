@@ -949,7 +949,7 @@ class CQCLocationsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(
-                CQCL.gac_service_types,
+                CQCLClean.imputed_gac_service_types,
                 ArrayType(
                     StructType(
                         [
@@ -966,7 +966,7 @@ class CQCLocationsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(
-                CQCL.gac_service_types,
+                CQCLClean.imputed_gac_service_types,
                 ArrayType(
                     StructType(
                         [

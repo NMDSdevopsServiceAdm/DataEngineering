@@ -103,7 +103,7 @@ def main(
 
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    # impute missing gac_service_types
+    registered_locations_df = impute_missing_gac_service_types(registered_locations_df)
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -361,7 +361,8 @@ def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
 
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     cqc_loc_df = cqc_loc_df.withColumn(
-        CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
+        CQCLClean.services_offered,
+        F.col(CQCLClean.imputed_gac_service_types).description,
     )
     return cqc_loc_df
 
@@ -371,14 +372,14 @@ def allocate_primary_service_type(df: DataFrame):
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
-                df[CQCL.gac_service_types].description,
+                F.col(CQCLClean.imputed_gac_service_types).description,
                 "Care home service with nursing",
             ),
             PrimaryServiceType.care_home_with_nursing,
         )
         .when(
             F.array_contains(
-                df[CQCL.gac_service_types].description,
+                F.col(CQCLClean.imputed_gac_service_types).description,
                 "Care home service without nursing",
             ),
             PrimaryServiceType.care_home_only,
