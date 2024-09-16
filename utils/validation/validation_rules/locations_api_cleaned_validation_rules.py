@@ -35,7 +35,6 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.current_cssr,
             CQCLClean.current_region,
             CQCLClean.current_rural_urban_ind_11,
-            CQCLClean.related_location,
         ],
         RuleName.index_columns: [
             CQCLClean.location_id,

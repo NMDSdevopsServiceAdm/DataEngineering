@@ -352,7 +352,10 @@ def add_column_related_location(df: DataFrame) -> DataFrame:
         F.when(
             F.size(df[CQCL.relationships]) > 0,
             F.lit(RelatedLocation.has_related_location),
-        ).otherwise(F.lit(RelatedLocation.no_related_location)),
+        ).when(
+            F.size(df[CQCL.relationships]) == 0,
+            F.lit(RelatedLocation.no_related_location),
+        ),
     )
     return df
 
