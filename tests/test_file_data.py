@@ -929,6 +929,10 @@ class CapacityTrackerNonResData:
 
     expected_rows = sample_rows
 
+    capacity_tracker_non_res_rows = [
+        ("loc 1", "12", "2024", "01", "01", "20240101", "other data"),
+    ]
+
 
 @dataclass
 class CQCpirData:

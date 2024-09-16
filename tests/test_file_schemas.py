@@ -17,6 +17,8 @@ from pyspark.sql.types import (
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
+    CapacityTrackerNonResColumns as CTNR,
+    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -565,6 +567,17 @@ class CapacityTrackerNonResSchema:
             StructField("usersnhsla", StringType(), True),
             StructField("usersselffunded", StringType(), True),
             StructField("returnedpocpercent", StringType(), True),
+        ]
+    )
+    capacity_tracker_non_res_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField("other column", StringType(), True),
         ]
     )
 
