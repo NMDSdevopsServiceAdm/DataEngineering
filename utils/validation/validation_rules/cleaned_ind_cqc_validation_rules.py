@@ -31,7 +31,6 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
             IndCqcColumns.ascwds_filtering_rule,
-            IndCqcColumns.related_location,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
