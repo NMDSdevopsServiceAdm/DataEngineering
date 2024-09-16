@@ -5,7 +5,11 @@ from pyspark.sql import (
 )
 from pyspark.sql.types import IntegerType
 
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
+from utils.column_values.categorical_column_values import CareHome
 
 key: str = "key"
 value: str = "value"
@@ -200,4 +204,48 @@ def reduce_dataset_to_earliest_file_per_month(df: DataFrame) -> DataFrame:
 def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
     for column in column_names:
         df = df.withColumn(column, df[column].cast(IntegerType()))
+    return df
+
+
+def calculate_filled_posts_per_bed_ratio(
+    input_df: DataFrame, filled_posts_column: str
+) -> DataFrame:
+    """
+    Add a column with the filled post per bed ratio for care homes.
+
+    Args:
+        input_df (DataFrame): A dataframe containing the given column, care_home and numberofbeds.
+        filled_posts_column (str): The name of the column to use for calculating the ratio.
+
+    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
+    """
+    input_df = input_df.withColumn(
+        IndCQC.filled_posts_per_bed_ratio,
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.care_home,
+            F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
+        ),
+    )
+
+    return input_df
+
+
+def calculate_filled_posts_from_beds_and_ratio(
+    df: DataFrame, ratio_column: str, new_column_name: str
+) -> DataFrame:
+    """
+    Calculate a column with the number of filled posts, based on the number of beds and the given beds ratio column.
+
+    Args:
+        df(DataFrame): A dataframe with number_of_beds and a beds ratio column.
+        ratio_column(str): The name of the beds ratio column to use.
+        new_column_name(str): The name of the column to fill.
+
+    Returns:
+        DataFrame: A dataframe with the new calculated filled posts column.
+    """
+    df = df.withColumn(
+        new_column_name,
+        F.col(ratio_column) * F.col(IndCQC.number_of_beds),
+    )
     return df

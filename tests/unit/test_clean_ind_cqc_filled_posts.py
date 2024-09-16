@@ -48,14 +48,14 @@ class MainTests(CleanIndFilledPostsTests):
 
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
-    @patch("jobs.clean_ind_cqc_filled_posts.null_ascwds_filled_post_outliers")
+    @patch("jobs.clean_ind_cqc_filled_posts.clean_ascwds_filled_post_outliers")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock,
         calculate_ascwds_filled_posts_mock: Mock,
-        null_ascwds_filled_post_outliers: Mock,
+        clean_ascwds_filled_post_outliers: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -67,7 +67,7 @@ class MainTests(CleanIndFilledPostsTests):
         )
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
-        null_ascwds_filled_post_outliers.assert_called_once()
+        clean_ascwds_filled_post_outliers.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
 
         write_to_parquet_mock.assert_called_once_with(
@@ -284,27 +284,6 @@ class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
 
     def test_returned_df_has_same_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_purge_outdated_df.count())
-
-
-class CalculateFilledPostsPerBedRatioTests(CleanIndFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_filled_posts_per_bed_ratio(self):
-        test_df = self.spark.createDataFrame(
-            Data.filled_posts_per_bed_ratio_rows,
-            Schemas.filled_posts_per_bed_ratio_schema,
-        )
-        returned_df = job.calculate_filled_posts_per_bed_ratio(
-            test_df, IndCQC.ascwds_filled_posts_dedup
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filled_posts_per_bed_ratio_rows,
-            Schemas.expected_filled_posts_per_bed_ratio_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
 
 
 if __name__ == "__main__":
