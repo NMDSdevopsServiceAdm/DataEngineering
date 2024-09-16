@@ -305,6 +305,45 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df
 
 
+def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
+    w_future = Window.partitionBy(CQCL.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+    w_historic = w_future.rowsBetween(
+        Window.unboundedPreceding, Window.unboundedFollowing
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.when(
+            F.size(F.col(CQCL.gac_service_types)) > 0,
+            F.col(CQCL.gac_service_types),
+        ).otherwise(F.lit(None)),
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.coalesce(
+            F.col(CQCLClean.imputed_gac_service_types),
+            F.last(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
+                w_future
+            ),
+        ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.coalesce(
+            F.col(CQCLClean.imputed_gac_service_types),
+            F.first(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
+                w_historic
+            ),
+        ),
+    )
+
+    return df
+
+
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     cqc_loc_df = cqc_loc_df.withColumn(
         CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
