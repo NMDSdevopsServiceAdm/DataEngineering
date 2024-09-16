@@ -3525,7 +3525,7 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
-                CQCLClean.imputed_gac_service_types,
+                CQCL.gac_service_types,
                 ArrayType(
                     StructType(
                         [
