@@ -1195,24 +1195,32 @@ class CQCLocationsData:
         ),
     ]
 
+    # fmt: off
     impute_missing_gac_service_types_rows = [
         ("1-001", date(2024, 1, 1), []),
-        ("1-001", date(2024, 2, 1), [{"name": "Name A", "description": "Desc A"}]),
-        ("1-001", date(2024, 3, 1), []),
-        ("1-001", date(2024, 5, 1), [{"name": "Name B", "description": "Desc B"}]),
-        ("1-001", date(2024, 6, 1), []),
+        ("1-001", date(2024, 2, 1), None),
+        ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 4, 1), []),
+        ("1-001", date(2024, 5, 1), None),
+        ("1-001", date(2024, 6, 1), [{"name": "Name B", "description": "Desc B"}]),
+        ("1-001", date(2024, 7, 1), None),
+        ("1-001", date(2024, 8, 1), []),
         ("1-002", date(2024, 1, 1), []),
-        ("1-002", date(2024, 2, 1), []),
+        ("1-002", date(2024, 2, 1), None),
     ]
     expected_impute_missing_gac_service_types_rows = [
-        ("1-001", date(2024, 1, 1), [{"name": "Name A", "description": "Desc A"}]),
-        ("1-001", date(2024, 2, 1), [{"name": "Name A", "description": "Desc A"}]),
-        ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}]),
-        ("1-001", date(2024, 5, 1), [{"name": "Name B", "description": "Desc B"}]),
-        ("1-001", date(2024, 6, 1), [{"name": "Name B", "description": "Desc B"}]),
-        ("1-002", date(2024, 1, 1), []),
-        ("1-002", date(2024, 2, 1), []),
+        ("1-001", date(2024, 1, 1), [], [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 2, 1), None, [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}], [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 4, 1), [], [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 5, 1), None, [{"name": "Name A", "description": "Desc A"}]),
+        ("1-001", date(2024, 6, 1), [{"name": "Name B", "description": "Desc B"}], [{"name": "Name B", "description": "Desc B"}]),
+        ("1-001", date(2024, 7, 1), None, [{"name": "Name B", "description": "Desc B"}]),
+        ("1-001", date(2024, 8, 1), [], [{"name": "Name B", "description": "Desc B"}]),
+        ("1-002", date(2024, 1, 1), [], None),
+        ("1-002", date(2024, 2, 1), None, None),
     ]
+    # fmt: off
 
     list_of_services_rows = [
         (

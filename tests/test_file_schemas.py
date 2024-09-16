@@ -913,7 +913,7 @@ class CQCLocationsSchema:
     impute_missing_gac_service_types_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
                 CQCL.gac_service_types,
                 ArrayType(
