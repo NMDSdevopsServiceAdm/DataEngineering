@@ -1,27 +1,23 @@
 import unittest
 import warnings
-from unittest.mock import ANY, Mock, patch
-from pyspark.sql import DataFrame, functions as F
 from dataclasses import asdict
+from unittest.mock import ANY, Mock, patch
+
+from pyspark.sql import DataFrame, functions as F
 
 import jobs.clean_cqc_location_data as job
-
 from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
-
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLCleaned,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLCleaned,
-)
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
 )
 
 
