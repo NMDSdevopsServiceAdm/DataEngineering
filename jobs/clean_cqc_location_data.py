@@ -306,6 +306,21 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
 
 def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
+    """
+    Imputes missing 'gac_service_types' in the DataFrame by filling with known values from other imports.
+
+    The function performs the following steps:
+    1. Creates a new column 'imputed_gac_service_types' which copies 'gac_service_types' if it contains data,
+       and sets it to None if the array is empty.
+    2. Fills the missing values in 'imputed_gac_service_types' with the previous known value within the partition.
+    3. Fills any remaining missing values in 'imputed_gac_service_types' with the future known value within the partition.
+
+    Args:
+        df (DataFrame): Input DataFrame containing 'location_id', 'cqc_location_import_date', and 'gac_service_types'.
+
+    Returns:
+        DataFrame: DataFrame with the 'imputed_gac_service_types' column containing imputed values.
+    """
     w_future = Window.partitionBy(CQCL.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
