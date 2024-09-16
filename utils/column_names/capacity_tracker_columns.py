@@ -55,39 +55,37 @@ class CapacityTrackerCareHomeCleanColumns:
 
 @dataclass
 class CapacityTrackerNonResColumns:
-    can_provider_more_hours: str = "can_provider_more_hours"
-    confirmed_save: str = "confirmed_save"
-    covid_confirmed_and_suspected: str = "covid_confirmed_and_suspected"
-    covid_notes: str = "covid_notes"
+    can_provider_more_hours: str = "canprovidermorehours"
+    confirmed_save: str = "confirmedsave"
+    covid_vaccination_autumn_23: str = "covid_vaccination_autumn_23"
     covid_vaccination_full_course: str = "covid_vaccination_full_course"
-    cqc_care_workers_absent: str = "cqc_care_workers_absent"
-    cqc_care_workers_employed: str = "cqc_care_workers_employed"
-    cqc_id: str = CapacityTrackerCareHomeColumns.cqc_id
-    cqc_survey_last_updated_bst: str = "cqc_survey_last_updated_bst"
-    cqc_survey_last_updated_utc: str = "cqc_survey_last_updated_utc"
-    cqc_survey_last_updated_utc_formatted: str = "cqc_survey_last_updated_utc_formatted"
-    days_absence_dom_care: str = "days_absence_dom_care"
-    extra_hours_count: str = "extra_hours_count"
-    has_cqc_ppe_issues: str = "has_cqc_ppe_issues"
-    hours_absence_dom_care: str = "hours_absence_dom_care"
-    hours_agency_dom_care: str = "hours_agency_dom_care"
-    hours_overtime_dom_care: str = "hours_overtime_dom_care"
-    hours_paid_dom_care: str = "hours_paid_dom_care"
-    icb: str = CapacityTrackerCareHomeColumns.icb
-    la_region_name: str = "la_region_name"
-    legacy_covid_confirmed: str = "legacy_covid_confirmed"
-    legacy_covid_suspected: str = "legacy_covid_suspected"
-    local_authority: str = CapacityTrackerCareHomeColumns.local_authority
-    localauthority: str = CapacityTrackerCareHomeColumns.localauthority
-    location: str = CapacityTrackerCareHomeColumns.location
-    lrf: str = CapacityTrackerCareHomeColumns.lrf
-    ods_code: str = CapacityTrackerCareHomeColumns.ods_code
-    region: str = CapacityTrackerCareHomeColumns.region
-    return_poc_percent: str = "return_poc_percent"
-    service_user_count: str = "service_user_count"
-    sub_icb: str = CapacityTrackerCareHomeColumns.sub_icb
-    users_nhs_la: str = "users_nhs_la"
-    users_self_funded: str = "users_self_funded"
+    cqc_care_workers_absent: str = "cqccareworkersabsent"
+    cqc_care_workers_employed: str = "cqccareworkersemployed"
+    cqc_id: str = "cqcid"
+    cqc_survey_last_updated_bst: str = "cqcsurveylastupdatedbst"
+    cqc_survey_last_updated_utc: str = "cqcsurveylastupdatedutc"
+    days_absence_dom_care: str = "daysabsencedomcare"
+    extra_hours_count: str = "extrahourscount"
+    flu_vaccination_autumn_23: str = "flu_vaccination_autumn_23"
+    hours_absence_dom_care: str = "hoursabsencedomcare"
+    hours_agency_dom_care: str = "hoursagencydomcare"
+    hours_overtime_dom_care: str = "hoursovertimedomcare"
+    hours_paid_dom_care: str = "hourspaiddomcare"
+    icb_name: str = "icbname"
+    la_name: str = "laname"
+    la_region_name: str = "laregionname"
+    legacy_covid_confirmed: str = "legacycovidconfirmed"
+    legacy_covid_suspected: str = "legacycovidsuspected"
+    local_authority: str = "local_authority"
+    location: str = "location"
+    lrf_name: str = "lrfname"
+    ods_code: str = "odscode"
+    region_name: str = "regionname"
+    returned_poc_percent: str = "returnedpocpercent"
+    service_user_count: str = "serviceusercount"
+    sub_icb_name: str = "subicbname"
+    users_nhs_la: str = "usersnhsla"
+    users_self_funded: str = "usersselffunded"
 
 
 @dataclass
