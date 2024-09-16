@@ -526,3 +526,9 @@ class AscwdsFilteringRule(ColumnValues):
         "care_home_location_was_grouped_provider"
     )
     winsorized_beds_ratio_outlier: str = "winsorized_beds_ratio_outlier"
+
+
+@dataclass
+class RelatedLocation(ColumnValues):
+    has_related_location: str = "Y"
+    no_related_location: str = "N"

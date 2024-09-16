@@ -906,6 +906,21 @@ class CQCLocationsSchema:
                 ),
                 True,
             ),
+            StructField(
+                CQCL.relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
             StructField(Keys.import_date, StringType(), True),
         ]
     )
@@ -1098,6 +1113,33 @@ class CQCLocationsSchema:
                     StringType(),
                 ),
             ),
+        ]
+    )
+    add_column_related_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCL.relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+
+    expected_add_column_related_location_schema = StructType(
+        [
+            *add_column_related_location_schema,
+            StructField(CQCLClean.related_location, StringType(), True),
         ]
     )
 
