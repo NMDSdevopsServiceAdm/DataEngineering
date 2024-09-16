@@ -74,7 +74,7 @@ def main(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.import_month_index,
+            IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
         ]
         + service_keys
         + regions

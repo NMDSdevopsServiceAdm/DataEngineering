@@ -458,9 +458,6 @@ class EstimateFilledPostsSource(ColumnValues):
         IndCQC.extrapolation_non_res_with_dormancy_model
     )
     rolling_average_model: str = IndCQC.rolling_average_model
-    extrapolation_rolling_average_model: str = (
-        IndCQC.extrapolation_rolling_average_model
-    )
 
 
 @dataclass
