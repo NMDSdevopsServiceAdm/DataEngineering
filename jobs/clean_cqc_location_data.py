@@ -107,6 +107,7 @@ def main(
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
+    # TODO - recreate carehome column following impute_missing_gac_service_types using primary_service_type column
 
     registered_locations_df = join_cqc_provider_data(
         registered_locations_df, cqc_provider_df
