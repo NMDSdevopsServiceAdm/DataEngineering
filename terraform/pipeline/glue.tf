@@ -120,6 +120,20 @@ module "clean_capacity_tracker_care_home_job" {
   }
 }
 
+module "clean_capacity_tracker_non_res_job" {
+  source          = "../modules/glue-job"
+  script_name     = "clean_capacity_tracker_non_res_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--capacity_tracker_non_res_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential/"
+    "--cleaned_capacity_tracker_non_res_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential_cleaned/"
+  }
+}
+
 module "clean_ascwds_workplace_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_workplace_data.py"
