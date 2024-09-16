@@ -1,5 +1,5 @@
 from pyspark.ml.regression import GBTRegressionModel
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
 
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import (
