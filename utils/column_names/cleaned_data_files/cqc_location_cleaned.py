@@ -25,4 +25,5 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     ons_current_import_date: str = ONSClean.current_ons_import_date
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
+    related_location: str = "related_location"
     services_offered: str = "services_offered"

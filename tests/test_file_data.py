@@ -27,6 +27,7 @@ from utils.column_values.categorical_column_values import (
     Services,
     EstimateFilledPostsSource,
     AscwdsFilteringRule,
+    RelatedLocation,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -1191,6 +1192,14 @@ class CQCLocationsData:
                     },
                 },
             ],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
             "2020-01-01",
         ),
     ]
@@ -2131,6 +2140,73 @@ class CQCLocationsData:
         test_empty_array_specialist_colleges_rows
     )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
+
+    add_column_related_location_rows = [
+        ("loc 1", None),
+        ("loc 2", []),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+        ),
+    ]
+    expected_add_column_related_location_rows = [
+        ("loc 1", None, None),
+        ("loc 2", [], RelatedLocation.no_related_location),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+            RelatedLocation.has_related_location,
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+            RelatedLocation.has_related_location,
+        ),
+    ]
 
 
 @dataclass
