@@ -3938,7 +3938,6 @@ class DiagnosticsOnKnownFilledPostsSchemas:
 
 @dataclass
 class DiagnosticsUtilsSchemas:
-
     filter_to_known_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
