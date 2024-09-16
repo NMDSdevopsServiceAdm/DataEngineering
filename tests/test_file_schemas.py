@@ -574,6 +574,7 @@ class CapacityTrackerNonResSchema:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
             StructField(CTNR.hours_paid_dom_care, StringType(), True),
+            StructField(CTNR.service_user_count, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),

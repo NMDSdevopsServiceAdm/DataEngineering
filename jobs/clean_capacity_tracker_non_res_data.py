@@ -11,6 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
     CTNR.cqc_care_workers_employed,
+    CTNR.service_user_count,
     CTNR.hours_paid_dom_care,
     Keys.year,
     Keys.month,
