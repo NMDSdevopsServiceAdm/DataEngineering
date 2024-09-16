@@ -1,32 +1,26 @@
 import sys
-import pyspark.sql.functions as F
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import FloatType, StringType
+
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
-
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    PrimaryServiceType,
-    RegistrationStatus,
-    Sector,
-)
+from utils.column_values.categorical_column_values import Sector
+
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -43,7 +37,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
     CQCLClean.regulated_activities,
-    CQCLClean.gac_service_types,
+    CQCLClean.imputed_gac_service_types,
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,
