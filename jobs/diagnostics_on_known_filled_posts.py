@@ -51,7 +51,9 @@ def main(
     filled_posts_df = dUtils.filter_to_known_values(
         filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
-    filled_posts_df = dUtils.restructure_dataframe_to_column_wise(filled_posts_df)
+    filled_posts_df = dUtils.restructure_dataframe_to_column_wise(
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
     filled_posts_df = dUtils.filter_to_known_values(
         filled_posts_df, IndCQC.estimate_value
     )
@@ -59,7 +61,9 @@ def main(
     window = dUtils.create_window_for_model_and_service_splits()
 
     filled_posts_df = dUtils.calculate_distribution_metrics(filled_posts_df, window)
-    filled_posts_df = dUtils.calculate_residuals(filled_posts_df)
+    filled_posts_df = dUtils.calculate_residuals(
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
     filled_posts_df = dUtils.calculate_aggregate_residuals(
         filled_posts_df,
         window,
