@@ -51,11 +51,7 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    def test_two_additional_columns_returned(self):
-        self.assertEqual(
-            len(self.estimates_df.columns) + 2, len(self.returned_df.columns)
-        )
-
+    def test_model_primary_service_rolling_average_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),

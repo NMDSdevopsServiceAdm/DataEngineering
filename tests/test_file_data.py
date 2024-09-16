@@ -27,6 +27,7 @@ from utils.column_values.categorical_column_values import (
     Services,
     EstimateFilledPostsSource,
     AscwdsFilteringRule,
+    RelatedLocation,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
@@ -1191,6 +1192,14 @@ class CQCLocationsData:
                     },
                 },
             ],
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
             "2020-01-01",
         ),
     ]
@@ -2104,6 +2113,73 @@ class CQCLocationsData:
         test_empty_array_specialist_colleges_rows
     )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
+
+    add_column_related_location_rows = [
+        ("loc 1", None),
+        ("loc 2", []),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+        ),
+    ]
+    expected_add_column_related_location_rows = [
+        ("loc 1", None, None),
+        ("loc 2", [], RelatedLocation.no_related_location),
+        (
+            "loc 3",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                }
+            ],
+            RelatedLocation.has_related_location,
+        ),
+        (
+            "loc 4",
+            [
+                {
+                    CQCL.related_location_id: "1",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+                {
+                    CQCL.related_location_id: "2",
+                    CQCL.related_location_name: "name",
+                    CQCL.type: "type",
+                    CQCL.reason: "reason",
+                },
+            ],
+            RelatedLocation.has_related_location,
+        ),
+    ]
 
 
 @dataclass
@@ -3701,7 +3777,7 @@ class ModelPrimaryServiceRollingAverage:
         ("1-000000007", "Y", 1675209600, 20.0, None, PrimaryServiceType.care_home_only, 10, 87.5, 8.75),
         ("1-000000008", "Y", 1677628800, 20.0, None, PrimaryServiceType.care_home_only, 10, 130.0, 13.0),
         ("1-000000009", "Y", 1680303600, 20.0, None, PrimaryServiceType.care_home_only, 10, 300.0, 30.0),
-        ("1-000000010", "Y", 1682895600, 20.0, None, PrimaryServiceType.care_home_only, 10, 350.0, 30.0),
+        ("1-000000010", "Y", 1682895600, 20.0, None, PrimaryServiceType.care_home_only, 10, 350.0, 35.0),
         ("1-000000011", "Y", 1714518000, 20.0, None, PrimaryServiceType.care_home_only, 10, None, None),
         ("1-000000012", "Y", 1672531200, 20.0, 14.0, PrimaryServiceType.care_home_with_nursing, 10, 150.0, 15.0),
         ("1-000000013", "Y", 1672531200, 20.0, 16.0, PrimaryServiceType.care_home_with_nursing, 10, 150.0, 15.0),

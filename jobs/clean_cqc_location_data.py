@@ -23,6 +23,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     RegistrationStatus,
     Services,
+    RelatedLocation,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -50,6 +51,7 @@ cqc_location_api_cols_to_import = [
     CQCL.regulated_activities,
     CQCL.specialisms,
     CQCL.type,
+    CQCL.relationships,
     Keys.import_date,
     Keys.year,
     Keys.month,
@@ -107,6 +109,7 @@ def main(
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
+    registered_locations_df = add_column_related_location(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
         registered_locations_df, cqc_provider_df
@@ -330,6 +333,29 @@ def allocate_primary_service_type(df: DataFrame):
             PrimaryServiceType.care_home_only,
         )
         .otherwise(PrimaryServiceType.non_residential),
+    )
+    return df
+
+
+def add_column_related_location(df: DataFrame) -> DataFrame:
+    """
+    Adds a column which flags whether the location has a related previous location or not
+
+    Args:
+        df(DataFrame): A dataframe with the relationships column.
+
+    Returns:
+        DataFrame: A dataframe with a column stating whther the locaiton has a related location or not.
+    """
+    df = df.withColumn(
+        CQCLClean.related_location,
+        F.when(
+            F.size(df[CQCL.relationships]) > 0,
+            F.lit(RelatedLocation.has_related_location),
+        ).when(
+            F.size(df[CQCL.relationships]) == 0,
+            F.lit(RelatedLocation.no_related_location),
+        ),
     )
     return df
 
