@@ -673,7 +673,9 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
             Schemas.expected_add_column_related_location_schema,
         )
         returned_df = job.add_column_related_location(test_df)
-        self.assertEqual(expected_df.collect(), returned_df.collect())
+        self.assertEqual(
+            expected_df.collect(), returned_df.sort(CQCL.location_id).collect()
+        )
 
 
 if __name__ == "__main__":
