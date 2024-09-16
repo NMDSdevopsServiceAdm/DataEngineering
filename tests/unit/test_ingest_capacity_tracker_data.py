@@ -7,10 +7,10 @@ import jobs.ingest_capacity_tracker_data as job
 from utils import utils
 
 from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
-from tests.test_file_data import CapacityTrackerDomCareData as DomCareData
+from tests.test_file_data import CapacityTrackerNonResData as DomCareData
 
 from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
-from tests.test_file_schemas import CapacityTrackerDomCareSchema as DomCareSchema
+from tests.test_file_schemas import CapacityTrackerNonResSchema as DomCareSchema
 
 
 class IngestCapacityTrackerDataTests(unittest.TestCase):

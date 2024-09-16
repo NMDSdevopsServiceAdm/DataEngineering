@@ -530,7 +530,7 @@ class CapacityTrackerCareHomeSchema:
 
 
 @dataclass
-class CapacityTrackerDomCareSchema:
+class CapacityTrackerNonResSchema:
     sample_schema = StructType(
         [
             StructField("local_authority", StringType(), True),

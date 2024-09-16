@@ -824,7 +824,7 @@ class CapacityTrackerCareHomeData:
 
 
 @dataclass
-class CapacityTrackerDomCareData:
+class CapacityTrackerNonResData:
     sample_rows = [
         (
             "Barnsley Metropolitan Borough Council",
