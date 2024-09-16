@@ -12,14 +12,14 @@ class FeatureEngineeringValueLabelsRuralUrban:
     column_name: str = CatValues.current_rui_column_values.column_name
 
     labels_dict = {
-        "indicator_1": CatValues.current_rui_column_values.rural_hamlet_sparse,
-        "indicator_2": CatValues.current_rui_column_values.rural_hamlet,
-        "indicator_3": CatValues.current_rui_column_values.rural_village,
-        "indicator_4": CatValues.current_rui_column_values.rural_town_sparse,
-        "indicator_5": CatValues.current_rui_column_values.rural_town,
-        "indicator_6": CatValues.current_rui_column_values.urban_city_sparse,
-        "indicator_7": CatValues.current_rui_column_values.urban_city,
-        "indicator_8": CatValues.current_rui_column_values.urban_major,
-        "indicator_9": CatValues.current_rui_column_values.urban_minor,
-        "indicator_10": CatValues.current_rui_column_values.rural_village_sparse,
+        "rui_rural_hamlet": CatValues.current_rui_column_values.rural_hamlet,
+        "rui_rural_hamlet_sparse": CatValues.current_rui_column_values.rural_hamlet_sparse,
+        "rui_rural_town": CatValues.current_rui_column_values.rural_town,
+        "rui_rural_town_sparse": CatValues.current_rui_column_values.rural_town_sparse,
+        "rui_rural_village": CatValues.current_rui_column_values.rural_village,
+        "rui_rural_village_sparse": CatValues.current_rui_column_values.rural_village_sparse,
+        "rui_urban_city": CatValues.current_rui_column_values.urban_city,
+        "rui_urban_city_sparse": CatValues.current_rui_column_values.urban_city_sparse,
+        "rui_urban_major": CatValues.current_rui_column_values.urban_major,
+        "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
     }

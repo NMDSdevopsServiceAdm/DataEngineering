@@ -126,9 +126,9 @@ class IndCqcColumns:
         "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
-    max_residual: str = "max_residual"
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
+    max_residual: str = "max_residual"
     min_filled_posts_per_bed_ratio: str = "min_filled_posts_per_bed_ratio"
     min_residual: str = "min_residual"
     model_name: str = "model_name"
@@ -176,6 +176,9 @@ class IndCqcColumns:
     )
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
+    )
+    rolling_average_model_filled_posts_per_bed_ratio: str = (
+        "rolling_average_model_filled_posts_per_bed_ratio"
     )
     rolling_average_model: str = "rolling_average_model"
     rolling_count: str = "rolling_count"

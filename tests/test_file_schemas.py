@@ -1287,6 +1287,20 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    filled_posts_from_beds_and_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+        ]
+    )
+    expected_filled_posts_from_beds_and_ratio_schema = StructType(
+        [
+            *filled_posts_from_beds_and_ratio_schema,
+            StructField(IndCQC.care_home_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
@@ -2010,6 +2024,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
             StructField(IndCQC.upper_percentile, DoubleType(), True),
         ]
     )
+
     expected_duplicate_ratios_within_standardised_residual_cutoff_schema = StructType(
         [
             *duplicate_ratios_within_standardised_residual_cutoff_schema,
@@ -2129,6 +2144,12 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(
+                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -2279,6 +2300,11 @@ class ModelPrimaryServiceRollingAverage:
         [
             *primary_service_rolling_average_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(
+                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                DoubleType(),
+                True,
+            ),
         ]
     )
 
@@ -3942,11 +3968,6 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(
                 IndCQC.extrapolation_non_res_with_dormancy_model, FloatType(), True
-            ),
-            StructField(
-                IndCQC.extrapolation_rolling_average_model,
-                FloatType(),
-                True,
             ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
