@@ -798,6 +798,23 @@ module "diagnostics_on_known_filled_posts_job" {
   }
 }
 
+module "diagnostics_on_capacity_tracker_job" {
+  source          = "../modules/glue-job"
+  script_name     = "diagnostics_on_capacity_tracker.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimate_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
+    "--capacity_tracker_non_res_source"           = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential_cleaned/"
+    "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_name}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
+    "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/"
+    "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_name}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
+  }
+}
+
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
