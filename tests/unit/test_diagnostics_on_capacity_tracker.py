@@ -29,6 +29,13 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
             Data.estimate_filled_posts_rows,
             Schemas.estimate_filled_posts_schema,
         )
+        self.ct_care_home_df = self.spark.createDataFrame(
+            Data.capacity_tracker_care_home_rows,
+            Schemas.capacity_tracker_care_home_schema,
+        )
+        self.ct_non_res_df = self.spark.createDataFrame(
+            Data.capacity_tracker_non_res_rows, Schemas.capacity_tracker_non_res_schema
+        )
 
 
 class MainTests(DiagnosticsOnCapacityTrackerTests):
@@ -42,7 +49,11 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
-        read_from_parquet_patch.return_value = self.estimate_jobs_df
+        read_from_parquet_patch.side_effect = [
+            self.estimate_jobs_df,
+            self.ct_care_home_df,
+            self.ct_non_res_df,
+        ]
 
         job.main(
             self.ESTIMATED_FILLED_POSTS_SOURCE,
