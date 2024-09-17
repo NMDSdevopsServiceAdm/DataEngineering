@@ -169,6 +169,7 @@ def join_capacity_tracker_data(
     Returns:
         DataFrame: A dataframe containing filled posts data with capacity tracker data joined in.
     """
+    capacity_tracker_df = capacity_tracker_df.drop(*partition_keys)
     if care_home == True:
         filled_posts_df = cUtils.add_aligned_date_column(
             filled_posts_df,
@@ -177,7 +178,7 @@ def join_capacity_tracker_data(
             CTCHClean.capacity_tracker_import_date,
         )
         capacity_tracker_df = capacity_tracker_df.withColumnRenamed(
-            IndCQC.location_id, CTCHClean.cqc_id
+            CTCHClean.cqc_id, IndCQC.location_id
         )
     else:
         filled_posts_df = cUtils.add_aligned_date_column(
@@ -187,7 +188,7 @@ def join_capacity_tracker_data(
             CTNRClean.capacity_tracker_import_date,
         )
         capacity_tracker_df = capacity_tracker_df.withColumnRenamed(
-            IndCQC.location_id, CTNRClean.cqc_id
+            CTNRClean.cqc_id, IndCQC.location_id
         )
 
     joined_df = filled_posts_df.join(

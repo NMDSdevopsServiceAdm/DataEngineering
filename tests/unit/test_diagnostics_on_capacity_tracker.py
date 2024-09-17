@@ -70,8 +70,11 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
+        self.join_capacity_tracker_df = self.spark.createDataFrame(
+            Data.join_capacity_tracker_rows, Schemas.estimate_filled_posts_schema
+        )
         self.returned_df = job.join_capacity_tracker_data(
-            self.estimate_jobs_df, self.ct_care_home_df
+            self.join_capacity_tracker_df, self.ct_care_home_df, care_home=True
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_joined_rows, Schemas.expected_joined_schema
@@ -85,10 +88,14 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def test_join_capacity_tracker_data_correctly_joins_data(self):
         self.assertEqual(
             self.returned_df.select(self.expected_df.columns)
-            .sort(IndCQC.location_id)
+            .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
             .collect(),
-            self.expected_df.collect(),
+            self.expected_df.sort(
+                IndCQC.location_id, IndCQC.cqc_location_import_date
+            ).collect(),
         )
+
+    # TODO: add tests for non res
 
 
 if __name__ == "__main__":

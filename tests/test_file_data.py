@@ -6237,6 +6237,43 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
     ]
 
+    join_capacity_tracker_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 2),
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
     expected_joined_rows = [
         (
             "loc 1",
@@ -6254,9 +6291,9 @@ class DiagnosticsOnCapacityTrackerData:
             "01",
             "01",
             "20240101",
-            date(2024, 1, 1), 
-            8, 
-            3, 
+            date(2024, 1, 1),
+            8,
+            3,
             11,
         ),
         (
@@ -6275,9 +6312,9 @@ class DiagnosticsOnCapacityTrackerData:
             "01",
             "01",
             "20240101",
-            date(2024, 2, 1), 
-            8, 
-            3, 
+            date(2024, 2, 1),
+            8,
+            3,
             11,
         ),
     ]

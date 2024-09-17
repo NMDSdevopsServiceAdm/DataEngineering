@@ -4102,7 +4102,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
     expected_joined_schema = StructType(
         [
             *estimate_filled_posts_schema,
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), False),
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
             StructField(
