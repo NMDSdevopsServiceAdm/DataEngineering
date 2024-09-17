@@ -4027,6 +4027,9 @@ class DiagnosticsOnKnownFilledPostsSchemas:
         ]
     )
 
+
+@dataclass
+class DiagnosticsUtilsSchemas:
     filter_to_known_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -4042,7 +4045,32 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ),
         ]
     )
-    restructure_dataframe_schema = estimate_filled_posts_schema
+    restructure_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(
+                IndCQC.interpolation_model,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(
+                IndCQC.extrapolation_non_res_with_dormancy_model, FloatType(), True
+            ),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
     expected_restructure_dataframe_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
