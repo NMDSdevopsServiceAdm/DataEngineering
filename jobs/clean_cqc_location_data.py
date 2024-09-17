@@ -319,10 +319,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     """
     cqc_loc_df = cqc_loc_df.withColumn(
         CQCLClean.services_offered,
-        F.transform(
-            F.col(CQCLClean.gac_service_types),
-            lambda x: x.getField(CQCL.description),
-        ),
+        cqc_loc_df[CQCLClean.gac_service_types][CQCL.description],
     )
     return cqc_loc_df
 
@@ -346,20 +343,14 @@ def allocate_primary_service_type(df: DataFrame):
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
-                F.transform(
-                    F.col(CQCLClean.gac_service_types),
-                    lambda x: x.getField(CQCL.description),
-                ),
+                df[CQCLClean.gac_service_types][CQCL.description],
                 "Care home service with nursing",
             ),
             PrimaryServiceType.care_home_with_nursing,
         )
         .when(
             F.array_contains(
-                F.transform(
-                    F.col(CQCLClean.gac_service_types),
-                    lambda x: x.getField(CQCL.description),
-                ),
+                df[CQCLClean.gac_service_types][CQCL.description],
                 "Care home service without nursing",
             ),
             PrimaryServiceType.care_home_only,
