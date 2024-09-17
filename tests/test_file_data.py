@@ -6179,7 +6179,6 @@ class DiagnosticsOnCapacityTrackerData:
         (
             "loc 1",
             date(2024, 1, 1),
-            10.0,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -6197,7 +6196,6 @@ class DiagnosticsOnCapacityTrackerData:
         (
             "loc 2",
             date(2024, 1, 1),
-            10.0,
             PrimaryServiceType.non_residential,
             10.0,
             None,
