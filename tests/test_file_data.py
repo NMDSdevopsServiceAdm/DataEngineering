@@ -6240,10 +6240,11 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
     ]
 
-    join_capacity_tracker_rows = [
+    join_capacity_tracker_care_home_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
+            CareHome.care_home,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -6261,6 +6262,7 @@ class DiagnosticsOnCapacityTrackerData:
         (
             "loc 1",
             date(2024, 2, 2),
+            CareHome.care_home,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -6277,10 +6279,11 @@ class DiagnosticsOnCapacityTrackerData:
         ),
     ]
 
-    expected_joined_rows = [
+    expected_joined_care_home_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
+            CareHome.care_home,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -6302,6 +6305,7 @@ class DiagnosticsOnCapacityTrackerData:
         (
             "loc 1",
             date(2024, 2, 2),
+            CareHome.care_home,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
@@ -6319,6 +6323,50 @@ class DiagnosticsOnCapacityTrackerData:
             8,
             3,
             11,
+        ),
+    ]
+
+    join_capacity_tracker_non_res_rows = [
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            PrimaryServiceType.non_residential,
+            10.0,
+            None,
+            None,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+    expected_joined_non_res_rows = [
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            PrimaryServiceType.non_residential,
+            10.0,
+            None,
+            None,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            date(2024, 1, 1),
+            10,
+            80,
         ),
     ]
 

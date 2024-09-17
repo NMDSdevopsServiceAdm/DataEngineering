@@ -113,7 +113,6 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    care_home_diagnostics_df.printSchema()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df, column_for_comparison
     )
@@ -140,7 +139,8 @@ def run_diagnostics_for_care_homes(
 
 
 def run_diagnostics_for_non_residential(
-    filled_posts_df: DataFrame, ct_non_res_df: DataFrame
+    filled_posts_df: DataFrame,
+    ct_non_res_df: DataFrame,
 ) -> DataFrame:
     """
     Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
@@ -148,13 +148,17 @@ def run_diagnostics_for_non_residential(
     Args:
         filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
         ct_non_res_df(DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
-        column_for_comparison(str): A column to use from the capacity tracker data for calculating residuals.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
     """
-    # TODO: Set up diagnostics for non res
-    return filled_posts_df
+    filled_posts_df = utils.select_rows_with_value(
+        filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
+    )
+    non_res_diagnostics_df = join_capacity_tracker_data(
+        filled_posts_df, ct_non_res_df, care_home=False
+    )
+    return non_res_diagnostics_df
 
 
 def join_capacity_tracker_data(

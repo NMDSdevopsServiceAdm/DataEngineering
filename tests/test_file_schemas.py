@@ -4100,7 +4100,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
         ]
     )
 
-    expected_joined_schema = StructType(
+    expected_joined_care_home_schema = StructType(
         [
             *estimate_filled_posts_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
@@ -4109,6 +4109,14 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(
                 CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
             ),
+        ]
+    )
+    expected_joined_non_res_schema = StructType(
+        [
+            *estimate_filled_posts_schema,
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
 

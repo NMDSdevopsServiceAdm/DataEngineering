@@ -72,33 +72,64 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
-        self.join_capacity_tracker_df = self.spark.createDataFrame(
-            Data.join_capacity_tracker_rows, Schemas.estimate_filled_posts_schema
+        self.join_capacity_tracker_care_home_df = self.spark.createDataFrame(
+            Data.join_capacity_tracker_care_home_rows, Schemas.estimate_filled_posts_schema
         )
-        self.returned_df = job.join_capacity_tracker_data(
-            self.join_capacity_tracker_df, self.ct_care_home_df, care_home=True
+        self.returned_care_home_df = job.join_capacity_tracker_data(
+            self.join_capacity_tracker_care_home_df, self.ct_care_home_df, care_home=True
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_joined_rows, Schemas.expected_joined_schema
+        self.expected_care_home_df = self.spark.createDataFrame(
+            Data.expected_joined_care_home_rows, Schemas.expected_joined_care_home_schema
+        )
+        self.join_capacity_tracker_non_res_df = self.spark.createDataFrame(
+            Data.join_capacity_tracker_non_res_rows, Schemas.estimate_filled_posts_schema
+        )
+        self.returned_non_res_df = job.join_capacity_tracker_data(
+            self.join_capacity_tracker_non_res_df, self.ct_non_res_df, care_home=False
+        )
+        self.expected_non_res_df = self.spark.createDataFrame(
+            Data.expected_joined_non_res_rows, Schemas.expected_joined_non_res_schema
         )
 
-    def test_join_capacity_tracker_data_adds_correct_columns(self):
+    def test_join_capacity_tracker_data_adds_correct_columns_when_care_home_is_true(
+        self,
+    ):
         self.assertEqual(
-            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+            sorted(self.returned_care_home_df.columns),
+            sorted(self.expected_care_home_df.columns),
         )
 
-    def test_join_capacity_tracker_data_correctly_joins_data(self):
+    def test_join_capacity_tracker_data_correctly_joins_data_when_care_home_is_true(
+        self,
+    ):
         self.assertEqual(
-            self.returned_df.select(self.expected_df.columns)
+            self.returned_care_home_df.select(self.expected_care_home_df.columns)
             .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
             .collect(),
-            self.expected_df.sort(
+            self.expected_care_home_df.sort(
                 IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
         )
 
-    # TODO: add tests for non res
+    def test_join_capacity_tracker_data_adds_correct_columns_when_care_home_is_false(
+        self,
+    ):
+        self.assertEqual(
+            sorted(self.returned_non_res_df.columns),
+            sorted(self.expected_non_res_df.columns),
+        )
 
+    def test_join_capacity_tracker_data_correctly_joins_data_when_care_home_is_false(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_non_res_df.select(self.expected_non_res_df.columns)
+            .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
+            .collect(),
+            self.expected_non_res_df.sort(
+                IndCQC.location_id, IndCQC.cqc_location_import_date
+            ).collect(),
+        )
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
