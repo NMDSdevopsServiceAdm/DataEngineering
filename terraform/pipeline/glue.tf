@@ -809,9 +809,9 @@ module "diagnostics_on_capacity_tracker_job" {
     "--estimate_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
     "--capacity_tracker_non_res_source"           = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential_cleaned/"
-    "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_name}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
+    "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
     "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/"
-    "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_name}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
+    "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
   }
 }
 
