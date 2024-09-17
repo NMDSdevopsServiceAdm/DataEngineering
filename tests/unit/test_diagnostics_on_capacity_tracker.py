@@ -64,7 +64,31 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 2)
+        self.assertEqual(write_to_parquet_patch.call_count, 3)
+
+
+class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.returned_df = job.join_capacity_tracker_data(
+            self.estimate_jobs_df, self.ct_care_home_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_joined_rows, Schemas.expected_joined_schema
+        )
+
+    def test_join_capacity_tracker_data_adds_correct_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_join_capacity_tracker_data_correctly_joins_data(self):
+        self.assertEqual(
+            self.returned_df.select(self.expected_df.columns)
+            .sort(IndCQC.location_id)
+            .collect(),
+            self.expected_df.collect(),
+        )
 
 
 if __name__ == "__main__":
