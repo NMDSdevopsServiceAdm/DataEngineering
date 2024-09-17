@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
+    CareHome,
 )
 from utils.validation.validation_rules.non_res_ascwds_inc_dormancy_ind_cqc_features_validation_rules import (
     NonResASCWDSIncDormancyIndCqcFeaturesValidationRules as Rules,
@@ -79,10 +79,7 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
         int: The number of rows expected in the non res ascwds inc dormancy ind cqc features dataset.
     """
     expected_size = cleaned_ind_cqc_df.where(
-        (
-            cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == PrimaryServiceType.non_residential
-        )
+        (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
         & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
     ).count()
     return expected_size
