@@ -8,7 +8,7 @@ from utils.utils import get_spark
 from utils.features.helper import (
     add_date_diff_into_df,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_service_count_to_data,
+    add_array_column_count_to_data,
     vectorise_dataframe,
     add_time_registered_into_df,
     add_import_month_index_into_df,
@@ -84,13 +84,13 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         result_rows = result.collect()
         self.assertEqual(result_rows[0].indicator_1, 1)
 
-    def test_add_service_count_to_data(self):
+    def test_add_array_column_count_to_data(self):
         cols = ["location", "services"]
         new_col_name = "service_count"
         rows = [("1", ["service_1", "service_2", "service_3"]), ("2", ["service_1"])]
         df = self.spark.createDataFrame(rows, cols)
 
-        result = add_service_count_to_data(
+        result = add_array_column_count_to_data(
             df=df, new_col_name=new_col_name, col_to_check="services"
         )
         rows = result.collect()

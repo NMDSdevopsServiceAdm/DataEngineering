@@ -46,6 +46,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.gac_service_types,
     CQCLClean.services_offered,
     CQCLClean.specialisms,
+    CQCLClean.related_location,
     CQCLClean.primary_service_type,
     ONSClean.contemporary_ons_import_date,
     ONSClean.contemporary_cssr,

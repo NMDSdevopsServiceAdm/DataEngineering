@@ -25,6 +25,7 @@ class PartitionKeys:
 @dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
+    activity_count: str = "activity_count"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
@@ -43,6 +44,8 @@ class IndCqcColumns:
     )
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
+    code: str = CQCLClean.code
+    contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
     contemporary_cssr: str = ONSClean.contemporary_cssr
@@ -154,6 +157,10 @@ class IndCqcColumns:
         "percentage_of_standardised_residuals_within_limit"
     )
     percentage_residual: str = "percentage_residual"
+    person_family_name: str = CQCLClean.person_family_name
+    person_given_name: str = CQCLClean.person_given_name
+    person_roles: str = CQCLClean.person_roles
+    person_title: str = CQCLClean.person_title
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
@@ -169,6 +176,7 @@ class IndCqcColumns:
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     regulated_activities: str = CQCLClean.regulated_activities
+    related_location: str = CQCLClean.related_location
     residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"
@@ -184,6 +192,7 @@ class IndCqcColumns:
     rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
+    specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
