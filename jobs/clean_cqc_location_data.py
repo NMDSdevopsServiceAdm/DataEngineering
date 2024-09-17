@@ -1,11 +1,10 @@
 import sys
 import warnings
 
-from utils import utils
-import utils.cleaning_utils as cUtils
-
 from pyspark.sql import DataFrame, Window, functions as F
 
+from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -309,25 +308,49 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
 
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called 'services_offered' which contains an array of descriptions from the 'imputed_gac_service_types' field.
+
+    Args:
+        cqc_loc_df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        DataFrame: The DataFrame with the new 'services_offered' column added.
+    """
     cqc_loc_df = cqc_loc_df.withColumn(
-        CQCLClean.services_offered, cqc_loc_df[CQCL.gac_service_types].description
+        CQCLClean.services_offered,
+        cqc_loc_df[CQCLClean.gac_service_types][CQCL.description],
     )
     return cqc_loc_df
 
 
 def allocate_primary_service_type(df: DataFrame):
+    """
+    Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+
+    primary_service_type is allocated in the following order:
+    1) Firstly identify all locations who offer "Care home service with nursing"
+    2) Of those who don't, identify all locations who offer "Care home service without nursing"
+    3) All other locations are identified as being non residential
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        DataFrame: The DataFrame with the new 'primary_service_type' column added.
+    """
     df = df.withColumn(
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
-                df[CQCL.gac_service_types].description,
+                df[CQCLClean.gac_service_types][CQCL.description],
                 "Care home service with nursing",
             ),
             PrimaryServiceType.care_home_with_nursing,
         )
         .when(
             F.array_contains(
-                df[CQCL.gac_service_types].description,
+                df[CQCLClean.gac_service_types][CQCL.description],
                 "Care home service without nursing",
             ),
             PrimaryServiceType.care_home_only,
@@ -362,8 +385,7 @@ def add_column_related_location(df: DataFrame) -> DataFrame:
 
 def remove_specialist_colleges(df: DataFrame):
     """
-    Removes rows where 'Specialist college service' is the only service listed
-    in 'services_offered'.
+    Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
 
     We do not include locations which are only specialist colleges in our
     estimates. This function identifies and removes the ones listed in the locations dataset.
