@@ -19,8 +19,9 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
     CAPACITY_TRACKER_CARE_HOME_SOURCE = "a/directory"
     CAPACITY_TRACKER_NON_RES_SOURCE = "other/directory"
-    DIAGNOSTICS_DESTINATION = "some/other/directory"
-    SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
+    CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
+    CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
+    NON_RES_DIAGNOSTICS_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
@@ -59,8 +60,9 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
             self.ESTIMATED_FILLED_POSTS_SOURCE,
             self.CAPACITY_TRACKER_CARE_HOME_SOURCE,
             self.CAPACITY_TRACKER_NON_RES_SOURCE,
-            self.DIAGNOSTICS_DESTINATION,
-            self.SUMMARY_DIAGNOSTICS_DESTINATION,
+            self.CARE_HOME_DIAGNOSTICS_DESTINATION,
+            self.CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION,
+            self.NON_RES_DIAGNOSTICS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)

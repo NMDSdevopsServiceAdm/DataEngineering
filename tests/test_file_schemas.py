@@ -4048,6 +4048,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),

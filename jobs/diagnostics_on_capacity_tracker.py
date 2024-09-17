@@ -20,6 +20,7 @@ partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
+    IndCQC.care_home,
     IndCQC.primary_service_type,
     IndCQC.rolling_average_model,
     IndCQC.care_home_model,
@@ -109,12 +110,12 @@ def run_diagnostics_for_care_homes(
     ct_care_home_df = dUtils.filter_to_known_values(
         ct_care_home_df, column_for_comparison
     )
-    filled_posts_df = join_capacity_tracker_data(
+    care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    care_home_diagnostics_df = filled_posts_df.join(ct_care_home_df)
+    care_home_diagnostics_df.printSchema()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df, IndCQC.ascwds_filled_posts_dedup_clean
+        care_home_diagnostics_df, column_for_comparison
     )
     care_home_diagnostics_df = dUtils.filter_to_known_values(
         care_home_diagnostics_df, IndCQC.estimate_value
@@ -126,7 +127,7 @@ def run_diagnostics_for_care_homes(
         care_home_diagnostics_df, window
     )
     care_home_diagnostics_df = dUtils.calculate_residuals(
-        care_home_diagnostics_df, IndCQC.ascwds_filled_posts_dedup_clean
+        care_home_diagnostics_df, column_for_comparison
     )
     care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
         care_home_diagnostics_df,
@@ -139,7 +140,7 @@ def run_diagnostics_for_care_homes(
 
 
 def run_diagnostics_for_non_residential(
-    filled_posts_df: DataFrame, ct_non_res_df: DataFrame, column_for_comparison: str
+    filled_posts_df: DataFrame, ct_non_res_df: DataFrame
 ) -> DataFrame:
     """
     Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
