@@ -51,3 +51,59 @@ class CapacityTrackerCareHomeCleanColumns:
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
+
+
+@dataclass
+class CapacityTrackerNonResColumns:
+    can_provider_more_hours: str = "canprovidermorehours"
+    confirmed_save: str = "confirmedsave"
+    covid_vaccination_autumn_23: str = "covid_vaccination_autumn_23"
+    covid_vaccination_full_course: str = "covid_vaccination_full_course"
+    covid19_count: str = "covid19count"
+    covid19_suspected_count: str = "covid19suspectedcount"
+    covid_confirmed_and_suspected: str = "covidconfirmedandsuspected"
+    covid_notes: str = "covidnotes"
+    cqc_car_eworkers_absent: str = "cqccareworkersabsent"
+    cqc_care_workers_employed: str = "cqccareworkersemployed"
+    cqc_id: str = "cqcid"
+    cqc_survey_last_updated_bst: str = "cqcsurveylastupdatedbst"
+    cqc_survey_last_updated_utc: str = "cqcsurveylastupdatedutc"
+    daysa_bsence_dom_care: str = "daysabsencedomcare"
+    extra_hours_count: str = "extrahourscount"
+    flu_vaccination_autumn_23: str = "flu_vaccination_autumn_23"
+    has_cqc_ppe_issues: str = "hascqcppeissues"
+    hours_absence_dom_care: str = "hoursabsencedomcare"
+    hours_agency_dom_care: str = "hoursagencydomcare"
+    hours_overtime_dom_care: str = "hoursovertimedomcare"
+    hours_paid_dom_care: str = "hourspaiddomcare"
+    icb_name: str = "icbname"
+    la_name: str = "laname"
+    la_region_name: str = "laregionname"
+    legacy_covid_confirmed: str = "legacycovidconfirmed"
+    legacy_covid_suspected: str = "legacycovidsuspected"
+    local_authority: str = "local_authority"
+    location: str = "location"
+    lrf_name: str = "lrfname"
+    ods_code: str = "odscode"
+    ppe_aprons: str = "ppeaprons"
+    ppe_eyes: str = "ppeeyes"
+    ppe_gloves: str = "ppegloves"
+    ppe_masks: str = "ppemasks"
+    ppe_sanitiser: str = "ppesanitiser"
+    received_covid_vaccination_booster: str = "received_covid_vaccination_booster"
+    received_covid_vaccination_dose_1: str = "received_covid_vaccination_dose_1"
+    received_covid_vaccination_dose_2: str = "received_covid_vaccination_dose_2"
+    received_flu_vaccination: str = "received_flu_vaccination"
+    region_name: str = "regionname"
+    returned_poc_percent: str = "returnedpocpercent"
+    service_user_count: str = "serviceusercount"
+    sub_icb_name: str = "subicbname"
+    users_nhs_la: str = "usersnhsla"
+    users_self_funded: str = "usersselffunded"
+
+
+@dataclass
+class CapacityTrackerNonResCleanColumns:
+    capacity_tracker_import_date: str = (
+        CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
+    )
