@@ -2098,8 +2098,58 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
                 ),
                 True,
             ),
+            StructField(
+                IndCQC.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(IndCQC.name, StringType(), True),
+                            StructField(IndCQC.code, StringType(), True),
+                            StructField(
+                                IndCQC.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                IndCQC.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                IndCQC.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                IndCQC.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                IndCQC.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+            StructField(
+                IndCQC.specialisms,
+                ArrayType(
+                    StructType([StructField(IndCQC.name, StringType(), True)]), True
+                ),
+                True,
+            ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(Keys.year, StringType(), True),
