@@ -5,22 +5,17 @@ from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-    contemporary_geography_columns,
-    current_geography_columns,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
 )
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -28,6 +23,11 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     Services,
     RelatedLocation,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+    contemporary_geography_columns,
+    current_geography_columns,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 from utils.raw_data_adjustments import remove_records_from_locations_data
@@ -109,8 +109,9 @@ def main(
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
-    registered_locations_df = add_column_related_location(registered_locations_df)
     # TODO - recreate carehome column following impute_missing_gac_service_types using primary_service_type column
+
+    registered_locations_df = add_column_related_location(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
         registered_locations_df, cqc_provider_df
