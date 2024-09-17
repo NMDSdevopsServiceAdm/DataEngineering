@@ -4043,6 +4043,64 @@ class DiagnosticsOnKnownFilledPostsSchemas:
 
 
 @dataclass
+class DiagnosticsOnCapacityTrackerSchemas:
+    estimate_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.care_home_model, FloatType(), True),
+            StructField(IndCQC.extrapolation_care_home_model, FloatType(), True),
+            StructField(
+                IndCQC.interpolation_model,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(
+                IndCQC.extrapolation_non_res_with_dormancy_model, FloatType(), True
+            ),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    capacity_tracker_care_home_schema = StructType(
+        [
+            StructField(CTCHClean.cqc_id, StringType(), False),
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), False),
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    capacity_tracker_non_res_schema = StructType(
+        [
+            StructField(CTNRClean.cqc_id, StringType(), False),
+            StructField(CTNRClean.capacity_tracker_import_date, DateType(), False),
+            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(CTNRClean.service_user_count, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class DiagnosticsUtilsSchemas:
     filter_to_known_values_schema = StructType(
         [

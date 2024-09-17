@@ -6172,6 +6172,32 @@ class DiagnosticsOnKnownFilledPostsData:
         ),
     ]
 
+@dataclass
+class DiagnosticsOnCapacityTrackerData:
+    estimate_filled_posts_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
+    capacity_tracker_care_home_rows =[
+        ("loc 1", date(2024, 1, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
+    ]
+    capacity_tracker_non_res_rows =[]
 
 @dataclass
 class DiagnosticsUtilsData:

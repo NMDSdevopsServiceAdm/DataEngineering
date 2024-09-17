@@ -1,0 +1,133 @@
+import sys
+
+from pyspark.sql import DataFrame
+
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+    PartitionKeys as Keys,
+)
+
+from utils.diagnostics_utils import diagnostics_utils as dUtils
+
+partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+estimate_filled_posts_columns: list = [
+    IndCQC.location_id,
+    IndCQC.cqc_location_import_date,
+    IndCQC.primary_service_type,
+    IndCQC.rolling_average_model,
+    IndCQC.care_home_model,
+    IndCQC.extrapolation_care_home_model,
+    IndCQC.interpolation_model,
+    IndCQC.non_res_with_dormancy_model,
+    IndCQC.non_res_without_dormancy_model,
+    IndCQC.extrapolation_non_res_with_dormancy_model,
+    IndCQC.extrapolation_rolling_average_model,
+    IndCQC.estimate_filled_posts,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+absolute_value_cutoff: float = 10.0
+percentage_value_cutoff: float = 0.25
+standardised_value_cutoff: float = 1.0
+
+
+def main(
+    estimate_filled_posts_source,
+    capacity_tracker_care_home_source,
+    capacity_tracker_non_res_source,
+    diagnostics_destination,
+    summary_diagnostics_destination,
+):
+    print("Creating diagnostics for capacity tracker data")
+
+    filled_posts_df: DataFrame = utils.read_from_parquet(
+        estimate_filled_posts_source, estimate_filled_posts_columns
+    )
+    # read in both CT datasets
+    # filter both datasets
+
+    filled_posts_df = dUtils.filter_to_known_values(
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+    # join datasets into estimates - have separate datasets for CH and non res?
+    filled_posts_df = dUtils.restructure_dataframe_to_column_wise(
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+    filled_posts_df = dUtils.filter_to_known_values(
+        filled_posts_df, IndCQC.estimate_value
+    )
+
+    window = dUtils.create_window_for_model_and_service_splits()
+
+    filled_posts_df = dUtils.calculate_distribution_metrics(filled_posts_df, window)
+    filled_posts_df = dUtils.calculate_residuals(
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+    )
+    filled_posts_df = dUtils.calculate_aggregate_residuals(
+        filled_posts_df,
+        window,
+        absolute_value_cutoff,
+        percentage_value_cutoff,
+        standardised_value_cutoff,
+    )
+    summary_df = dUtils.create_summary_diagnostics_table(filled_posts_df)
+
+    utils.write_to_parquet(
+        filled_posts_df,
+        diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=partition_keys,
+    )
+    utils.write_to_parquet(
+        summary_df,
+        summary_diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=[IndCQC.primary_service_type],
+    )
+
+
+if __name__ == "__main__":
+    print("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
+    print(f"Job parameters: {sys.argv}")
+
+    (
+        estimate_filled_posts_source,
+        capacity_tracker_care_home_source,
+        capacity_tracker_non_res_source,
+        diagnostics_destination,
+        summary_diagnostics_destination,
+    ) = utils.collect_arguments(
+        (
+            "--estimate_filled_posts_source",
+            "Source s3 directory for job_estimates",
+        ),
+        (
+            "--capacity_tracker_care_home_source",
+            "Source s3 directory for capacity tracker care home cleaned data",
+        ),
+        (
+            "--capacity_tracker_non_res_source",
+            "Source s3 directory for capacity tracker non residential cleaned data",
+        ),
+        (
+            "--diagnostics_destination",
+            "A destination directory for outputting full diagnostics tables.",
+        ),
+        (
+            "--summary_diagnostics_destination",
+            "A destination directory for outputting summary diagnostics tables.",
+        ),
+    )
+
+    main(
+        estimate_filled_posts_source,
+        capacity_tracker_care_home_source,
+        capacity_tracker_non_res_source,
+        diagnostics_destination,
+        summary_diagnostics_destination,
+    )
+
+    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
