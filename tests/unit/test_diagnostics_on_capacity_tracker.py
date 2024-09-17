@@ -73,16 +73,21 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
         self.join_capacity_tracker_care_home_df = self.spark.createDataFrame(
-            Data.join_capacity_tracker_care_home_rows, Schemas.estimate_filled_posts_schema
+            Data.join_capacity_tracker_care_home_rows,
+            Schemas.estimate_filled_posts_schema,
         )
         self.returned_care_home_df = job.join_capacity_tracker_data(
-            self.join_capacity_tracker_care_home_df, self.ct_care_home_df, care_home=True
+            self.join_capacity_tracker_care_home_df,
+            self.ct_care_home_df,
+            care_home=True,
         )
         self.expected_care_home_df = self.spark.createDataFrame(
-            Data.expected_joined_care_home_rows, Schemas.expected_joined_care_home_schema
+            Data.expected_joined_care_home_rows,
+            Schemas.expected_joined_care_home_schema,
         )
         self.join_capacity_tracker_non_res_df = self.spark.createDataFrame(
-            Data.join_capacity_tracker_non_res_rows, Schemas.estimate_filled_posts_schema
+            Data.join_capacity_tracker_non_res_rows,
+            Schemas.estimate_filled_posts_schema,
         )
         self.returned_non_res_df = job.join_capacity_tracker_data(
             self.join_capacity_tracker_non_res_df, self.ct_non_res_df, care_home=False
@@ -130,6 +135,7 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
                 IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
         )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
