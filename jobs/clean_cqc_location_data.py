@@ -310,8 +310,10 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     """
     Adds a new column called 'services_offered' which contains an array of descriptions from the 'imputed_gac_service_types' field.
+
     Args:
         cqc_loc_df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
     Returns:
         DataFrame: The DataFrame with the new 'services_offered' column added.
     """
@@ -328,12 +330,15 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
 def allocate_primary_service_type(df: DataFrame):
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+
     primary_service_type is allocated in the following order:
     1) Firstly identify all locations who offer "Care home service with nursing"
     2) Of those who don't, identify all locations who offer "Care home service without nursing"
     3) All other locations are identified as being non residential
+
     Args:
         df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
     Returns:
         DataFrame: The DataFrame with the new 'primary_service_type' column added.
     """
