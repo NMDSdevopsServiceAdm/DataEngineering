@@ -23,3 +23,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     services_offered: str = "services_offered"
+    related_location: str = "related_location"

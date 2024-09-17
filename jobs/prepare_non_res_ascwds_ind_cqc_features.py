@@ -25,7 +25,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
-    add_service_count_to_data,
+    add_array_column_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_date_diff_into_df,
     add_time_registered_into_df,
@@ -43,10 +43,20 @@ def main(
 
     non_res_locations_df = filter_df_to_non_res_only(locations_df)
 
-    features_df = add_service_count_to_data(
+    features_df = add_array_column_count_to_data(
         df=non_res_locations_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
+    )
+    features_df = add_array_column_count_to_data(
+        df=features_df,
+        new_col_name=IndCQC.activity_count,
+        col_to_check=IndCQC.regulated_activities,
+    )
+    features_df = add_array_column_count_to_data(
+        df=features_df,
+        new_col_name=IndCQC.specialism_count,
+        col_to_check=IndCQC.specialisms,
     )
 
     service_keys = list(ServicesFeatures.labels_dict.keys())
@@ -98,8 +108,10 @@ def main(
     list_for_vectorisation_with_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
+            IndCQC.activity_count,
+            IndCQC.specialism_count,
             IndCQC.time_registered,
-            IndCQC.date_diff,
+            IndCQC.rolling_average_model,
         ]
         + dormancy
         + service_keys
@@ -115,11 +127,13 @@ def main(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
+        IndCQC.current_rural_urban_indicator_2011,
         IndCQC.dormancy,
-        IndCQC.care_home,
+        IndCQC.service_count,
+        IndCQC.activity_count,
+        IndCQC.specialism_count,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.imputed_registration_date,
-        IndCQC.date_diff,
         IndCQC.time_registered,
         IndCQC.features,
         Keys.year,

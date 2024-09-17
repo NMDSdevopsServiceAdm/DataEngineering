@@ -7,10 +7,10 @@ import jobs.ingest_capacity_tracker_data as job
 from utils import utils
 
 from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
-from tests.test_file_data import CapacityTrackerDomCareData as DomCareData
+from tests.test_file_data import CapacityTrackerNonResData as NonResData
 
 from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
-from tests.test_file_schemas import CapacityTrackerDomCareSchema as DomCareSchema
+from tests.test_file_schemas import CapacityTrackerNonResSchema as NonResSchema
 
 
 class IngestCapacityTrackerDataTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             CareHomeData.sample_rows, CareHomeSchema.sample_schema
         )
         self.test_domcare_df = self.spark.createDataFrame(
-            DomCareData.sample_rows, DomCareSchema.sample_schema
+            NonResData.sample_rows, NonResSchema.sample_schema
         )
         self.object_list = [
             "directory/path/some-data-file.csv",
@@ -36,7 +36,7 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             CareHomeData.expected_rows, CareHomeSchema.sample_schema
         )
         self.expected_domcare_df = self.spark.createDataFrame(
-            DomCareData.expected_rows, DomCareSchema.sample_schema
+            NonResData.expected_rows, NonResSchema.sample_schema
         )
 
     @patch("utils.utils.read_partial_csv_content")
