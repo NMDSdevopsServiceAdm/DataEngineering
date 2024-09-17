@@ -11,11 +11,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_values.categorical_column_values import (
     LocationType,
