@@ -18,9 +18,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-
-from utils.column_values.categorical_column_values import InAscwds
-from utils.column_values.categorical_column_values import CQCLatestRating
+from utils.column_values.categorical_column_values import CQCLatestRating, InAscwds
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -37,7 +35,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
     CQCLClean.regulated_activities,
-    CQCLClean.gac_service_types,
+    CQCLClean.imputed_gac_service_types,
     CQCLClean.services_offered,
     CQCLClean.specialisms,
     CQCLClean.primary_service_type,

@@ -1,14 +1,13 @@
 import unittest
 import warnings
-from unittest.mock import ANY, Mock, patch
-from pyspark.sql import DataFrame, functions as F
 from dataclasses import asdict
+from unittest.mock import ANY, Mock, patch
+
+from pyspark.sql import DataFrame, functions as F
 
 import jobs.clean_cqc_location_data as job
-
 from tests.test_file_data import CQCLocationsData as Data
 from tests.test_file_schemas import CQCLocationsSchema as Schemas
-
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -19,9 +18,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
-)
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
 )
 
 
@@ -230,6 +226,46 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
             df_with_invalid_postcodes_removed.sort(CQCL.location_id).collect(),
             expected_postcode_df.sort(CQCL.location_id).collect(),
         )
+
+
+class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_impute_missing_gac_service_types_df = self.spark.createDataFrame(
+            Data.impute_missing_gac_service_types_rows,
+            Schemas.impute_missing_gac_service_types_schema,
+        )
+        self.returned_df = job.impute_missing_gac_service_types(
+            self.test_impute_missing_gac_service_types_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_impute_missing_gac_service_types_rows,
+            Schemas.expected_impute_missing_gac_service_types_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            CQCL.location_id, CQCLCleaned.cqc_location_import_date
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_impute_missing_gac_service_types_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_original_gac_service_types_remains_unchanged(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][CQCL.gac_service_types],
+                self.expected_data[i][CQCL.gac_service_types],
+                f"Returned value in row {i} does not match original",
+            )
+
+    def test_impute_missing_gac_service_types_returns_expected_imputed_data(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][CQCLCleaned.imputed_gac_service_types],
+                self.expected_data[i][CQCLCleaned.imputed_gac_service_types],
+                f"Returned value in row {i} does not match expected",
+            )
 
 
 class ListServicesOfferedTests(CleanCQCLocationDatasetTests):

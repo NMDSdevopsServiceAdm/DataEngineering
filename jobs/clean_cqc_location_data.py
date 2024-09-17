@@ -105,9 +105,12 @@ def main(
 
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
+    registered_locations_df = impute_missing_gac_service_types(registered_locations_df)
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
+    # TODO - recreate carehome column following impute_missing_gac_service_types using primary_service_type column
+
     registered_locations_df = add_column_related_location(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
@@ -307,6 +310,60 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df
 
 
+def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
+    """
+    Imputes missing gacservicetypes in the DataFrame by filling with known values from other imports.
+
+    The function performs the following steps:
+    1. Creates a new column 'imputed_gac_service_types' which copies gac_service_types if it contains data,
+       and sets it to None if the array is empty.
+    2. Fills the missing values in 'imputed_gac_service_types' with the previous known value within the partition.
+    3. Fills any remaining missing values in 'imputed_gac_service_types' with the future known value within the partition.
+
+    Args:
+        df (DataFrame): Input DataFrame containing 'location_id', 'cqc_location_import_date', and 'gac_service_types'.
+
+    Returns:
+        DataFrame: DataFrame with the 'imputed_gac_service_types' column containing imputed values.
+    """
+    w_future = Window.partitionBy(CQCL.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+    w_historic = w_future.rowsBetween(
+        Window.unboundedPreceding, Window.unboundedFollowing
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.when(
+            F.size(F.col(CQCL.gac_service_types)) > 0,
+            F.col(CQCL.gac_service_types),
+        ).otherwise(F.lit(None)),
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.coalesce(
+            F.col(CQCLClean.imputed_gac_service_types),
+            F.last(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
+                w_future
+            ),
+        ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.imputed_gac_service_types,
+        F.coalesce(
+            F.col(CQCLClean.imputed_gac_service_types),
+            F.first(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
+                w_historic
+            ),
+        ),
+    )
+
+    return df
+
+
 def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     """
     Adds a new column called 'services_offered' which contains an array of descriptions from the 'imputed_gac_service_types' field.
@@ -319,7 +376,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     """
     cqc_loc_df = cqc_loc_df.withColumn(
         CQCLClean.services_offered,
-        cqc_loc_df[CQCLClean.gac_service_types][CQCL.description],
+        cqc_loc_df[CQCLClean.imputed_gac_service_types][CQCL.description],
     )
     return cqc_loc_df
 
@@ -343,14 +400,14 @@ def allocate_primary_service_type(df: DataFrame):
         CQCLClean.primary_service_type,
         F.when(
             F.array_contains(
-                df[CQCLClean.gac_service_types][CQCL.description],
+                df[CQCLClean.imputed_gac_service_types][CQCL.description],
                 "Care home service with nursing",
             ),
             PrimaryServiceType.care_home_with_nursing,
         )
         .when(
             F.array_contains(
-                df[CQCLClean.gac_service_types][CQCL.description],
+                df[CQCLClean.imputed_gac_service_types][CQCL.description],
                 "Care home service without nursing",
             ),
             PrimaryServiceType.care_home_only,

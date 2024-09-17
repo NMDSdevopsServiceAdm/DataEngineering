@@ -938,12 +938,47 @@ class CQCLocationsSchema:
             StructField(Keys.import_date, StringType(), True),
         ]
     )
+
+    impute_missing_gac_service_types_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_impute_missing_gac_service_types_schema = StructType(
+        [
+            *impute_missing_gac_service_types_schema,
+            StructField(
+                CQCLClean.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+
     primary_service_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(
-                CQCL.gac_service_types,
+                CQCLClean.imputed_gac_service_types,
                 ArrayType(
                     StructType(
                         [
@@ -960,7 +995,7 @@ class CQCLocationsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(
-                CQCL.gac_service_types,
+                CQCLClean.imputed_gac_service_types,
                 ArrayType(
                     StructType(
                         [
