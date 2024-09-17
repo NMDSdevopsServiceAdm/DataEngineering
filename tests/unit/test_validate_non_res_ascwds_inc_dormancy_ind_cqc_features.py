@@ -8,7 +8,7 @@ from tests.test_file_data import (
     ValidateNonResASCWDSIncDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSIndCqcFeaturesData as Schemas,
+    ValidateNonResASCWDSIndCqcFeaturesSchema as Schemas,
 )
 
 from utils import utils

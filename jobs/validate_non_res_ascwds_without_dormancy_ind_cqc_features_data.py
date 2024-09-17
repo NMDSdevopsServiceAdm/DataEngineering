@@ -8,12 +8,10 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import (
-    PrimaryServiceType,
+    CareHome,
 )
 from utils.validation.validation_rules.non_res_ascwds_without_dormancy_ind_cqc_features_validation_rules import (
     NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules as Rules,
@@ -29,7 +27,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ind_cqc_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
-    IndCQC.primary_service_type,
+    IndCQC.care_home,
     IndCQC.dormancy,
 ]
 
@@ -79,10 +77,7 @@ def calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_
         int: The number of rows expected in the non res ascwds without dormancy ind cqc features dataset.
     """
     expected_size = cleaned_ind_cqc_df.where(
-        (
-            cleaned_ind_cqc_df[IndCQC.primary_service_type]
-            == PrimaryServiceType.non_residential
-        )
+        (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
     ).count()
     return expected_size
 
