@@ -18,11 +18,12 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_values.categorical_column_values import (
+    CareHome,
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
-    Services,
     RelatedLocation,
+    Services,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -109,7 +110,9 @@ def main(
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
-    # TODO - recreate carehome column following impute_missing_gac_service_types using primary_service_type column
+    registered_locations_df = realign_carehome_column_with_primary_service(
+        registered_locations_df
+    )
 
     registered_locations_df = add_column_related_location(registered_locations_df)
 
@@ -413,6 +416,36 @@ def allocate_primary_service_type(df: DataFrame):
             PrimaryServiceType.care_home_only,
         )
         .otherwise(PrimaryServiceType.non_residential),
+    )
+    return df
+
+
+def realign_carehome_column_with_primary_service(df: DataFrame):
+    """
+    Allocates the location as a care_home if primary_service_type is a care home.
+
+    Following some missing values in CQC data, the services were imputed. The care_home column is automatically given
+    'N' if service is missing. Therefore if imputed service values implied the location was a care home then the
+    care_home column needs assigning 'Y'.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'primary_service_type' column.
+
+    Returns:
+        DataFrame: The DataFrame with the 'care_home' column realigned with the 'primary_service_type' column.
+    """
+    df = df.withColumn(
+        CQCLClean.care_home,
+        F.when(
+            F.col(CQCLClean.primary_service_type)
+            == PrimaryServiceType.care_home_with_nursing,
+            CareHome.care_home,
+        )
+        .when(
+            F.col(CQCLClean.primary_service_type) == PrimaryServiceType.care_home_only,
+            CareHome.care_home,
+        )
+        .otherwise(CareHome.not_care_home),
     )
     return df
 

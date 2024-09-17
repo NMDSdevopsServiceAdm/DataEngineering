@@ -1009,6 +1009,14 @@ class CQCLocationsSchema:
         ]
     )
 
+    realign_carehome_column_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCLClean.primary_service_type, StringType(), True),
+        ]
+    )
+
     small_location_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),

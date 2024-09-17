@@ -330,6 +330,28 @@ class AllocatePrimaryServiceTests(CleanCQCLocationDatasetTests):
         self.assertEqual(output_df.collect(), expected_df.collect())
 
 
+class RealignCareHomeColumnWthPrimaryServiceTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        test_realign_carehome_column_df = self.spark.createDataFrame(
+            Data.realign_carehome_column_rows,
+            Schemas.realign_carehome_column_schema,
+        )
+        returned_df = job.realign_carehome_column_with_primary_service(
+            test_realign_carehome_column_df
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_realign_carehome_column_rows,
+            Schemas.realign_carehome_column_schema,
+        )
+
+        self.returned_data = returned_df.sort(CQCL.location_id).collect()
+        self.expected_data = expected_df.collect()
+
+    def test_care_home_values_match_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
 class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()

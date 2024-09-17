@@ -1566,6 +1566,24 @@ class CQCLocationsData:
             PrimaryServiceType.care_home_with_nursing,
         ),
     ]
+
+    realign_carehome_column_rows = [
+        ("1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("2", CareHome.not_care_home, PrimaryServiceType.care_home_only),
+        ("3", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("4", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing),
+        ("5", CareHome.care_home, PrimaryServiceType.non_residential),
+        ("6", CareHome.not_care_home, PrimaryServiceType.non_residential),
+    ]
+    expected_realign_carehome_column_rows = [
+        ("1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("2", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("3", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("4", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("5", CareHome.not_care_home, PrimaryServiceType.non_residential),
+        ("6", CareHome.not_care_home, PrimaryServiceType.non_residential),
+    ]
+
     small_location_rows = [
         (
             "loc-1",
