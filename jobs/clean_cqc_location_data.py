@@ -437,15 +437,16 @@ def realign_carehome_column_with_primary_service(df: DataFrame):
     df = df.withColumn(
         CQCLClean.care_home,
         F.when(
-            F.col(CQCLClean.primary_service_type)
-            == PrimaryServiceType.care_home_with_nursing,
+            (
+                F.col(CQCLClean.primary_service_type)
+                == PrimaryServiceType.care_home_with_nursing
+            )
+            | (
+                F.col(CQCLClean.primary_service_type)
+                == PrimaryServiceType.care_home_only
+            ),
             CareHome.care_home,
-        )
-        .when(
-            F.col(CQCLClean.primary_service_type) == PrimaryServiceType.care_home_only,
-            CareHome.care_home,
-        )
-        .otherwise(CareHome.not_care_home),
+        ).otherwise(CareHome.not_care_home),
     )
     return df
 
