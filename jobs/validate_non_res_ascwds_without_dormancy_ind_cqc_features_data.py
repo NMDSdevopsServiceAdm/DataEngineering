@@ -1,8 +1,6 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
-
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -10,9 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.column_values.categorical_column_values import (
-    CareHome,
-)
+from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rules.non_res_ascwds_without_dormancy_ind_cqc_features_validation_rules import (
     NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules as Rules,
 )
@@ -22,6 +18,7 @@ from utils.validation.validation_utils import (
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
+os.environ["SPARK_VERSION"] = "3.3"
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_ind_cqc_columns_to_import = [
