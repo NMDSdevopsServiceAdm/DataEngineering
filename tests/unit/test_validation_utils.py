@@ -410,6 +410,24 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class CheckMutualInformation(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.has_mutual_information_rule = Data.has_mutual_information_rule
+
+    def test_create_check_of_mutual_information(self):
+        test_df = self.spark.createDataFrame(
+            Data.has_mutual_information_rows,
+            Schemas.has_mutual_information_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_has_mutual_information_rows, Schemas.validation_schema
+        )
+        returned_df = job.validate_dataset(test_df, self.has_mutual_information_rule)
+        returned_df.show(truncate=False)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class AddColumnWithLengthOfString(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()

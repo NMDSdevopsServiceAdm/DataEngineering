@@ -3580,6 +3580,13 @@ class ValidationUtils:
             StructField(Validation.location_id_length, IntegerType(), True),
         ]
     )
+    has_mutual_information_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+        ]
+    )
 
 
 @dataclass

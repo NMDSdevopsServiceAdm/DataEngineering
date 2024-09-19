@@ -5716,6 +5716,23 @@ class ValidationUtils:
 
     check_rows = fewer_distinct_values_result_rows
 
+    has_mutual_information_rows = [
+        ("loc 1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("loc 2", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("loc 3", CareHome.not_care_home, PrimaryServiceType.non_residential),
+        # ("loc 4", CareHome.care_home, PrimaryServiceType.care_home_only),
+        # ("loc 5", CareHome.care_home, PrimaryServiceType.care_home_only),
+        # ("loc 6", CareHome.care_home, PrimaryServiceType.care_home_only),
+    ]
+    expected_has_mutual_information_rows = []
+
+    has_mutual_information_rule = {
+        RuleName.mutual_information: [
+            IndCQC.care_home,
+            IndCQC.primary_service_type,
+        ]
+    }
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:

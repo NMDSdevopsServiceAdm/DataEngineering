@@ -14,7 +14,9 @@ from pyspark.sql import (
 )
 
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
 from utils.validation.validation_rule_names import RuleNames as RuleToCheck
 
 
@@ -58,6 +60,9 @@ def add_checks_to_run(
                     column_name, rule[column_name]
                 )
                 run = run.addCheck(check)
+        elif rule_name == RuleToCheck.mutual_information:
+            check = create_check_of_care_home_and_primary_service_type(rule)
+            run = run.addCheck(check)
         else:
             raise ValueError("Unknown rule to check")
     return run
@@ -139,6 +144,20 @@ def create_check_of_number_of_distinct_values(
         binningUdf=None,
         maxBins=distinct_values,
         hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
+    )
+    return check
+
+
+def create_check_of_care_home_and_primary_service_type(rule: list) -> Check:
+    spark = utils.get_spark()
+    check = Check(
+        spark, CheckLevel.Warning, "carehome and primary_service_type are linked"
+    )
+    check = check.satisfies(
+        ("carehome = 'Y' AND primary_service_type = 'care_home_with_nursing'"),
+        "test",
+        lambda x: x == 1,
+        f"Test",
     )
     return check
 
