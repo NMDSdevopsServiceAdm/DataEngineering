@@ -156,9 +156,9 @@ jobs:
       - run:
           name: Package PyDeequ
           command: |
-            pip install -t ./target pydeequ==1.2.0
-            cd target && zip -r pydeequ-1.2.0.zip pydeequ && cd ..
-            mv target/pydeequ-1.2.0.zip dependencies/pydeequ-1.2.0.zip
+            pip install -t ./target pydeequ==1.4.0
+            cd target && zip -r pydeequ-1.4.0.zip pydeequ && cd ..
+            mv target/pydeequ-1.4.0.zip dependencies/pydeequ-1.4.0.zip
             rm -rf target
 
       - aws-s3/sync:
