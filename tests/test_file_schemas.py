@@ -3585,6 +3585,7 @@ class ValidationUtils:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField("test", IntegerType(), True),
         ]
     )
 

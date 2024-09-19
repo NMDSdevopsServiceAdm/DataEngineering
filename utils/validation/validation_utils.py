@@ -154,10 +154,10 @@ def create_check_of_care_home_and_primary_service_type(rule: list) -> Check:
         spark, CheckLevel.Warning, "carehome and primary_service_type are linked"
     )
     check = check.satisfies(
-        ("carehome = 'Y' AND primary_service_type = 'care_home_with_nursing'"),
-        "test",
-        lambda x: x == 1,
-        f"Test",
+        columnCondition=("test > 0"),
+        constraintName="test",
+        assertion=lambda x: x == 1,
+        hint="test",
     )
     return check
 
