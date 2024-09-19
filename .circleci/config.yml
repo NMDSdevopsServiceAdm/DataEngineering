@@ -151,7 +151,7 @@ jobs:
       - run:
           name: Download Deequ jar
           command: |
-            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.4-spark-3.3/deequ-2.0.4-spark-3.3.jar -O dependencies/deequ-2.0.4-spark-3.3.jar
+            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.7-spark-3.3/deequ-2.0.7-spark-3.3.jar -O dependencies/deequ-2.0.7-spark-3.3.jar
 
       - run:
           name: Package PyDeequ
