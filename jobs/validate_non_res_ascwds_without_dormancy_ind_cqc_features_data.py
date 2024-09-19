@@ -1,6 +1,7 @@
 import os
 import sys
 
+# SPARK_VERSION needs to be set before pydeequ is imported
 os.environ["SPARK_VERSION"] = "3.3"
 
 from pyspark.sql.dataframe import DataFrame
@@ -10,9 +11,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.column_values.categorical_column_values import (
-    CareHome,
-)
+from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rules.non_res_ascwds_without_dormancy_ind_cqc_features_validation_rules import (
     NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules as Rules,
 )
@@ -29,6 +28,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.location_id,
     IndCQC.care_home,
     IndCQC.dormancy,
+    IndCQC.imputed_gac_service_types,
 ]
 
 
@@ -46,10 +46,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(
@@ -78,6 +78,7 @@ def calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_
     """
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
+        & (cleaned_ind_cqc_df[IndCQC.imputed_gac_service_types].isNotNull())
     ).count()
     return expected_size
 
