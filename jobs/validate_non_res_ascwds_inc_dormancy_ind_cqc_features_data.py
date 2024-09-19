@@ -1,6 +1,9 @@
 import os
 import sys
 
+# SPARK_VERSION needs to be set before pydeequ is imported
+os.environ["SPARK_VERSION"] = "3.3"
+
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
@@ -18,7 +21,6 @@ from utils.validation.validation_utils import (
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
-os.environ["SPARK_VERSION"] = "3.3"
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_ind_cqc_columns_to_import = [
@@ -44,10 +46,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(
