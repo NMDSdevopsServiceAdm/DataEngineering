@@ -5914,16 +5914,16 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
 
     calculate_expected_size_rows = [
         ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
         ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
         ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000010", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000011", date(2024, 1, 1), None, "Y", None),
+        ("1-000000010", date(2024, 1, 1), None, "Y", None),
+        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000012", date(2024, 1, 1), None, None, None),
     ]
     # fmt: on
@@ -5948,16 +5948,16 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
 
     calculate_expected_size_rows = [
         ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
         ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
         ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000010", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000011", date(2024, 1, 1), None, "Y", None),
+        ("1-000000010", date(2024, 1, 1), None, "Y", None),
+        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
         ("1-000000012", date(2024, 1, 1), None, None, None),
     ]
     # fmt: on
