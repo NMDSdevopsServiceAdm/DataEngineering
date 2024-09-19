@@ -111,6 +111,7 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     import_month_index: str = "import_month_index"
+    imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
     interpolation_model_ascwds_filled_posts_dedup_clean: str = (

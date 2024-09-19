@@ -1566,6 +1566,24 @@ class CQCLocationsData:
             PrimaryServiceType.care_home_with_nursing,
         ),
     ]
+
+    realign_carehome_column_rows = [
+        ("1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("2", CareHome.not_care_home, PrimaryServiceType.care_home_only),
+        ("3", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("4", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing),
+        ("5", CareHome.care_home, PrimaryServiceType.non_residential),
+        ("6", CareHome.not_care_home, PrimaryServiceType.non_residential),
+    ]
+    expected_realign_carehome_column_rows = [
+        ("1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("2", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("3", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("4", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("5", CareHome.not_care_home, PrimaryServiceType.non_residential),
+        ("6", CareHome.not_care_home, PrimaryServiceType.non_residential),
+    ]
+
     small_location_rows = [
         (
             "loc-1",
@@ -5922,10 +5940,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, "Y"),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "Y"),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, "Y"),
-        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, "Y"),
+        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "N", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, "N", [{"name": "Name", "description": "Desc"}]),
     ]
 
     non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
@@ -5936,18 +5954,18 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y"),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y"),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, "Y"),
-        ("1-000000002", date(2024, 1, 9), None, "Y"),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, "N"),
-        ("1-000000004", date(2024, 1, 1), CareHome.care_home, "N"),
-        ("1-000000003", date(2024, 1, 9), CareHome.not_care_home, "N"),
-        ("1-000000004", date(2024, 1, 9), None, "N"),
-        ("1-000000005", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-000000006", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-000000005", date(2024, 1, 9), CareHome.not_care_home, None),
-        ("1-000000006", date(2024, 1, 9), None, None),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
+        ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000010", date(2024, 1, 1), None, "Y", None),
+        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000012", date(2024, 1, 1), None, None, None),
     ]
     # fmt: on
 
@@ -5956,10 +5974,10 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
 class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, None),
-        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, None),
+        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
     ]
 
     non_res_ascwds_without_dormancy_ind_cqc_features_rows = [
@@ -5970,18 +5988,18 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y"),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y"),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, "Y"),
-        ("1-000000002", date(2024, 1, 9), None, "Y"),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, "N"),
-        ("1-000000004", date(2024, 1, 1), CareHome.care_home, "N"),
-        ("1-000000003", date(2024, 1, 9), CareHome.not_care_home, "N"),
-        ("1-000000004", date(2024, 1, 9), None, "N"),
-        ("1-000000005", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-000000006", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-000000005", date(2024, 1, 9), CareHome.not_care_home, None),
-        ("1-000000006", date(2024, 1, 9), None, None),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
+        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
+        ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
+        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
+        ("1-000000010", date(2024, 1, 1), None, "Y", None),
+        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-000000012", date(2024, 1, 1), None, None, None),
     ]
     # fmt: on
 
@@ -6219,6 +6237,204 @@ class DiagnosticsOnKnownFilledPostsData:
             "01",
             "01",
             "20240101",
+        ),
+    ]
+
+
+@dataclass
+class DiagnosticsOnCapacityTrackerData:
+    estimate_filled_posts_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 2),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            PrimaryServiceType.non_residential,
+            10.0,
+            None,
+            None,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
+    capacity_tracker_care_home_rows = [
+        ("loc 1", date(2024, 1, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
+        ("loc 1", date(2024, 2, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
+    ]
+    capacity_tracker_non_res_rows = [
+        ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
+    ]
+
+    join_capacity_tracker_care_home_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 2),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
+    expected_joined_care_home_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            date(2024, 1, 1),
+            8,
+            3,
+            11,
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 2),
+            CareHome.care_home,
+            PrimaryServiceType.care_home_only,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            None,
+            None,
+            None,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            date(2024, 2, 1),
+            8,
+            3,
+            11,
+        ),
+    ]
+
+    join_capacity_tracker_non_res_rows = [
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            PrimaryServiceType.non_residential,
+            10.0,
+            None,
+            None,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+    expected_joined_non_res_rows = [
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            PrimaryServiceType.non_residential,
+            10.0,
+            None,
+            None,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            date(2024, 1, 1),
+            10,
+            80,
         ),
     ]
 

@@ -46,7 +46,7 @@ class CapacityTrackerCareHomeColumns:
 
 
 @dataclass
-class CapacityTrackerCareHomeCleanColumns:
+class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
     capacity_tracker_import_date: str = "capacity_tracker_import_date"
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
@@ -103,7 +103,7 @@ class CapacityTrackerNonResColumns:
 
 
 @dataclass
-class CapacityTrackerNonResCleanColumns:
+class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )
