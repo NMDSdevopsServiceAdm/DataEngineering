@@ -143,7 +143,6 @@ def create_check_of_number_of_distinct_values(
     return check
 
 
-# test commit
 def add_column_with_length_of_string(
     df: DataFrame, column_names: list[str]
 ) -> DataFrame:
