@@ -3594,7 +3594,7 @@ class ValidationUtils:
             StructField(Validation.location_id_length, IntegerType(), True),
         ]
     )
-    care_home_and_primary_service_type_schema = StructType(
+    custom_type_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),

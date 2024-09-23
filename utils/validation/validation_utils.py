@@ -17,7 +17,10 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
-from utils.validation.validation_rule_names import RuleNames as RuleToCheck
+from utils.validation.validation_rule_names import (
+    RuleNames as RuleToCheck,
+    CustomTypeArguments,
+)
 
 
 def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:
@@ -60,8 +63,12 @@ def add_checks_to_run(
                     column_name, rule[column_name]
                 )
                 run = run.addCheck(check)
-        elif rule_name == RuleToCheck.care_home_and_primary_service_type_related:
-            check = create_check_of_care_home_and_primary_service_type(rule)
+        elif rule_name == RuleToCheck.custom_type:
+            check = create_check_of_custom_type(
+                rule[CustomTypeArguments.column_condition],
+                rule[CustomTypeArguments.constraint_name],
+                rule[CustomTypeArguments.hint],
+            )
             run = run.addCheck(check)
         else:
             raise ValueError("Unknown rule to check")
@@ -148,16 +155,14 @@ def create_check_of_number_of_distinct_values(
     return check
 
 
-def create_check_of_care_home_and_primary_service_type(rule: str) -> Check:
+def create_check_of_custom_type(rule: str, constraint_name: str, hint: str) -> Check:
     spark = utils.get_spark()
-    check = Check(
-        spark, CheckLevel.Warning, "carehome and primary_service_type are related"
-    )
+    check = Check(spark, CheckLevel.Warning, "custom type")
     check = check.satisfies(
         columnCondition=rule,
-        constraintName="care_home_and_primary_service_type_related",
+        constraintName=constraint_name,
         assertion=lambda x: x == 1,
-        hint="The data in carehome and primary_service_type should be related.",
+        hint=hint,
     )
     return check
 

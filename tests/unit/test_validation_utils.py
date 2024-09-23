@@ -413,41 +413,35 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
 class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
-        self.care_home_and_primary_service_type_rule = (
-            Data.care_home_and_primary_service_type_rule
-        )
+        self.custom_type_rule = Data.custom_type_rule
 
-    def test_create_check_of_care_home_and_primary_service_type_when_values_are_related(
+    def test_create_check_of_custom_type_when_values_are_related(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.care_home_and_primary_service_type_related_rows,
-            Schemas.care_home_and_primary_service_type_schema,
+            Data.custom_type_related_rows,
+            Schemas.custom_type_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_care_home_and_primary_service_type_related_rows,
+            Data.expected_custom_type_related_rows,
             Schemas.validation_schema,
         )
-        returned_df = job.validate_dataset(
-            test_df, self.care_home_and_primary_service_type_rule
-        )
+        returned_df = job.validate_dataset(test_df, self.custom_type_rule)
         returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_create_check_of_care_home_and_primary_service_type_when_values_are_not_related(
+    def test_create_check_of_custom_type_when_values_are_not_related(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.care_home_and_primary_service_type_unrelated_rows,
-            Schemas.care_home_and_primary_service_type_schema,
+            Data.custom_type_unrelated_rows,
+            Schemas.custom_type_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_care_home_and_primary_service_type_unrelated_rows,
+            Data.expected_custom_type_unrelated_rows,
             Schemas.validation_schema,
         )
-        returned_df = job.validate_dataset(
-            test_df, self.care_home_and_primary_service_type_rule
-        )
+        returned_df = job.validate_dataset(test_df, self.custom_type_rule)
         returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

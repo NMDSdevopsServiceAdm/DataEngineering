@@ -10,6 +10,11 @@ class RuleNames:
     max_values: str = "max_values"
     categorical_values_in_columns: str = "categorical_values_in_columns"
     distinct_values: str = "distinct_values"
-    care_home_and_primary_service_type_related: str = (
-        "care_home_and_primary_service_type_related"
-    )
+    custom_type: str = "custom_type"
+
+
+@dataclass
+class CustomTypeArguments:
+    column_condition: str = "column_condition"
+    constraint_name: str = "constraint_name"
+    hint: str = "hint"

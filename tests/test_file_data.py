@@ -39,6 +39,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
+from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -5739,37 +5740,37 @@ class ValidationUtils:
 
     check_rows = fewer_distinct_values_result_rows
 
-    care_home_and_primary_service_type_rule = {
-        RuleName.care_home_and_primary_service_type_related: "(carehome = 'N' AND primary_service_type = 'non-residential') OR (carehome = 'Y' AND primary_service_type = 'Care home with nursing') OR (carehome = 'Y' AND primary_service_type = 'Care home without nursing')"
+    custom_type_rule = {
+        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type
     }
 
-    care_home_and_primary_service_type_related_rows = [
+    custom_type_related_rows = [
         ("loc 1", CareHome.care_home, PrimaryServiceType.care_home_only),
         ("loc 2", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
         ("loc 3", CareHome.not_care_home, PrimaryServiceType.non_residential),
     ]
-    expected_care_home_and_primary_service_type_related_rows = [
+    expected_custom_type_related_rows = [
         (
-            "carehome and primary_service_type are related",
+            "custom type",
             "Warning",
             "Success",
-            "ComplianceConstraint(Compliance(care_home_and_primary_service_type_related,(carehome = 'N' AND primary_service_type = 'non-residential') OR (carehome = 'Y' AND primary_service_type = 'Care home with nursing') OR (carehome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
+            "ComplianceConstraint(Compliance(care_home_and_primary_service_type,(carehome = 'N' AND primary_service_type = 'non-residential') OR (carehome = 'Y' AND primary_service_type = 'Care home with nursing') OR (carehome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
             "Success",
             "",
         ),
     ]
 
-    care_home_and_primary_service_type_unrelated_rows = [
+    custom_type_unrelated_rows = [
         ("loc 1", CareHome.care_home, PrimaryServiceType.non_residential),
         ("loc 2", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing),
         ("loc 3", CareHome.not_care_home, PrimaryServiceType.care_home_only),
     ]
-    expected_care_home_and_primary_service_type_unrelated_rows = [
+    expected_custom_type_unrelated_rows = [
         (
-            "carehome and primary_service_type are related",
+            "custom type",
             "Warning",
             "Warning",
-            "ComplianceConstraint(Compliance(care_home_and_primary_service_type_related,(carehome = 'N' AND primary_service_type = 'non-residential') OR (carehome = 'Y' AND primary_service_type = 'Care home with nursing') OR (carehome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
+            "ComplianceConstraint(Compliance(care_home_and_primary_service_type,(carehome = 'N' AND primary_service_type = 'non-residential') OR (carehome = 'Y' AND primary_service_type = 'Care home with nursing') OR (carehome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! The data in carehome and primary_service_type should be related.",
         ),
