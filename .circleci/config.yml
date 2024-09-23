@@ -151,14 +151,14 @@ jobs:
       - run:
           name: Download Deequ jar
           command: |
-            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.4-spark-3.3/deequ-2.0.4-spark-3.3.jar -O dependencies/deequ-2.0.4-spark-3.3.jar
+            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.7-spark-3.3/deequ-2.0.7-spark-3.3.jar -O dependencies/deequ-2.0.7-spark-3.3.jar
 
       - run:
           name: Package PyDeequ
           command: |
-            pip install -t ./target pydeequ==1.2.0
-            cd target && zip -r pydeequ-1.2.0.zip pydeequ && cd ..
-            mv target/pydeequ-1.2.0.zip dependencies/pydeequ-1.2.0.zip
+            pip install -t ./target pydeequ==1.4.0
+            cd target && zip -r pydeequ-1.4.0.zip pydeequ && cd ..
+            mv target/pydeequ-1.4.0.zip dependencies/pydeequ-1.4.0.zip
             rm -rf target
 
       - aws-s3/sync:
