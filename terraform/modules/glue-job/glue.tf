@@ -15,8 +15,8 @@ resource "aws_glue_job" "glue_job" {
 
   default_arguments = merge(var.job_parameters,
     {
-      "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip,${var.resource_bucket.bucket_uri}/dependencies/pydeequ-1.2.0.zip"
-      "--extra-jars"                       = "${var.resource_bucket.bucket_uri}/dependencies/deequ-2.0.4-spark-3.3.jar"
+      "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip,${var.resource_bucket.bucket_uri}/dependencies/pydeequ-1.4.0.zip"
+      "--extra-jars"                       = "${var.resource_bucket.bucket_uri}/dependencies/deequ-2.0.7-spark-3.3.jar"
       "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
       "--enable-continuous-cloudwatch-log" = "true"
       "--enable-auto-scaling"              = var.worker_type == "Standard" ? "false" : "true"
