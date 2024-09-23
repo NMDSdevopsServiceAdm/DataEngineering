@@ -14,9 +14,7 @@ from pyspark.sql import (
 )
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
 from utils.validation.validation_rule_names import (
     RuleNames as RuleToCheck,
     CustomTypeArguments,
