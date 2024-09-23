@@ -410,20 +410,25 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CheckMutualInformation(ValidateUtilsTests):
+class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
-        self.has_mutual_information_rule = Data.has_mutual_information_rule
+        self.care_home_and_primary_service_type_rule = (
+            Data.care_home_and_primary_service_type_rule
+        )
 
-    def test_create_check_of_mutual_information(self):
+    def test_create_check_of_care_home_and_primary_service_type(self):
         test_df = self.spark.createDataFrame(
-            Data.has_mutual_information_rows,
-            Schemas.has_mutual_information_schema,
+            Data.care_home_and_primary_service_type_rows,
+            Schemas.care_home_and_primary_service_type_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_has_mutual_information_rows, Schemas.validation_schema
+            Data.expected_care_home_and_primary_service_type_rows,
+            Schemas.validation_schema,
         )
-        returned_df = job.validate_dataset(test_df, self.has_mutual_information_rule)
+        returned_df = job.validate_dataset(
+            test_df, self.care_home_and_primary_service_type_rule
+        )
         returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

@@ -10,4 +10,6 @@ class RuleNames:
     max_values: str = "max_values"
     categorical_values_in_columns: str = "categorical_values_in_columns"
     distinct_values: str = "distinct_values"
-    mutual_information: str = "mutual_information"
+    care_home_and_primary_service_type_related: str = (
+        "care_home_and_primary_service_type_related"
+    )

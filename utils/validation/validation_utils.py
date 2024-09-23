@@ -60,7 +60,7 @@ def add_checks_to_run(
                     column_name, rule[column_name]
                 )
                 run = run.addCheck(check)
-        elif rule_name == RuleToCheck.mutual_information:
+        elif rule_name == RuleToCheck.care_home_and_primary_service_type_related:
             check = create_check_of_care_home_and_primary_service_type(rule)
             run = run.addCheck(check)
         else:
@@ -148,16 +148,16 @@ def create_check_of_number_of_distinct_values(
     return check
 
 
-def create_check_of_care_home_and_primary_service_type(rule: list) -> Check:
+def create_check_of_care_home_and_primary_service_type(rule: str) -> Check:
     spark = utils.get_spark()
     check = Check(
-        spark, CheckLevel.Warning, "carehome and primary_service_type are linked"
+        spark, CheckLevel.Warning, "carehome and primary_service_type are related"
     )
     check = check.satisfies(
-        columnCondition=("test > 0"),
-        constraintName="test",
+        columnCondition=rule,
+        constraintName="care_home_and_primary_service_type_related",
         assertion=lambda x: x == 1,
-        hint="test",
+        hint="The data in carehome and primary_service_type should be related.",
     )
     return check
 
