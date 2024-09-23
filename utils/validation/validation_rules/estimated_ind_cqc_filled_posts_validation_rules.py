@@ -7,6 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
 )
+from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -70,4 +71,5 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
             IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
         },
+        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }

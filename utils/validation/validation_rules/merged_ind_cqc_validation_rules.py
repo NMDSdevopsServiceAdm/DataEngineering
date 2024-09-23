@@ -6,6 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_columns_by_dataset import (
     MergedIndCQCCategoricalValues as CatValues,
 )
+from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -73,4 +74,5 @@ class MergedIndCqcValidationRules:
             IndCqcColumns.current_rural_urban_indicator_2011: CatValues.current_rui_column_values.count_of_categorical_values,
             IndCqcColumns.related_location: CatValues.related_location_column_values.count_of_categorical_values,
         },
+        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }
