@@ -427,7 +427,6 @@ class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
             Schemas.validation_schema,
         )
         returned_df = job.validate_dataset(test_df, self.custom_type_rule)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_create_check_of_custom_type_when_values_are_not_related(
@@ -442,7 +441,6 @@ class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
             Schemas.validation_schema,
         )
         returned_df = job.validate_dataset(test_df, self.custom_type_rule)
-        returned_df.show(truncate=False)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
