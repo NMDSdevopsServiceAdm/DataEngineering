@@ -40,9 +40,9 @@ def model_extrapolation_and_interpolation(
         window_spec,
     )
 
-    df = model_interpolation(
-        df, column_with_null_values, model_column_name, interpolation_model_column_name
-    )
+    # df = model_interpolation(
+    #     df, column_with_null_values, model_column_name, interpolation_model_column_name
+    # )
 
     return df
 
