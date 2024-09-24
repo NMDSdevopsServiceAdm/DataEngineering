@@ -223,6 +223,7 @@ def extrapolation_backwards(
             * (F.col(model_to_extrapolate_from) / F.col(IndCqc.first_model_value)),
         ),
     )
+    df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 
     return df
 
