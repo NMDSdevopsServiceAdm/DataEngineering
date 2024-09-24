@@ -153,18 +153,14 @@ def calculate_lagged_column_value_when_data_last_submitted(
         DataFrame: The DataFrame with the new lagged column.
     """
     df = df.withColumn(
-        "temp_col",
+        new_column_name,
         F.last(
             F.when(
                 F.col(column_with_null_values).isNotNull(),
                 F.col(column_name),
             ),
             ignorenulls=True,
-        ).over(window_spec),
-    )
-
-    df = df.withColumn(new_column_name, F.lag("temp_col", 1).over(window_spec)).drop(
-        "temp_col"
+        ).over(window_spec.rowsBetween(Window.unboundedPreceding, -1)),
     )
 
     return df
