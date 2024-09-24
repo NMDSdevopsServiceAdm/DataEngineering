@@ -172,12 +172,12 @@ def calculate_extrapolation_forwards(
     """
     Calculates the forward extrapolation based on a specified model and adds it as a new column 'extrapolation_forwards'.
 
-    Parameters:
-    df (DataFrame): The input DataFrame containing the columns 'previous_non_null_value', 'previous_model_value', and the specified model column.
-    model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
+    Args:
+        df (DataFrame): The input DataFrame containing the columns 'previous_non_null_value', 'previous_model_value', and the specified model column.
+        model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
 
     Returns:
-    DataFrame: The DataFrame with the added 'extrapolation_forwards' column.
+        DataFrame: The DataFrame with the added 'extrapolation_forwards' column.
     """
     df = df.withColumn(
         IndCqc.extrapolation_forwards,
@@ -230,13 +230,13 @@ def get_first_non_null_value(
     """
     Adds a column 'first_non_null_value' with the first non-null value of '<column_with_null_values>' over the entire window.
 
-    Parameters:
-    df (DataFrame): The input DataFrame.
+    Args:
+        df (DataFrame): The input DataFrame.
         column_with_null_values (str): The name of the column with null values in.
-    window_spec (Window): The window specification to use for the calculation.
+        window_spec (Window): The window specification to use for the calculation.
 
     Returns:
-    DataFrame: The DataFrame with the added 'first_non_null_value' column.
+        DataFrame: The DataFrame with the added 'first_non_null_value' column.
     """
     window_spec_all_data = window_spec.rowsBetween(
         Window.unboundedPreceding, Window.unboundedFollowing
