@@ -12,9 +12,9 @@ def model_extrapolation_and_interpolation(
     model_column_name: str,
 ) -> DataFrame:
     """
-    Extrapolates and interpolates
+    Extrapolates and interpolates non-null values in 'column_with_null_values' based on the rate of change of values in 'model_column_name' and adds them as new columns.
 
-    Fills null values in a specified column by using the rate of change in a specified model column to
+    Calculates currently null values in a specified column by using the rate of change in a specified model column to
     extrapolate and interpolate values. This process creates two additional columns: one with extrapolated
     values and one with interpolated values.
 
