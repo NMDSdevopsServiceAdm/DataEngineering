@@ -28,9 +28,10 @@ def model_extrapolation_and_interpolation(
     """
     window_spec = define_window_spec()
 
-    extrapolation_model_column_name, interpolation_model_column_name = (
-        create_new_column_names(model_column_name)
-    )
+    (
+        extrapolation_model_column_name,
+        interpolation_model_column_name,
+    ) = create_new_column_names(model_column_name)
 
     df = model_extrapolation(
         df,
