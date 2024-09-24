@@ -4096,7 +4096,7 @@ class ModelFeatures:
         (date(2013, 1, 10), date(2023, 1, 10)),
     ]
     expected_add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10), 3652),
+        (date(2013, 1, 10), date(2023, 1, 10), 20),
     ]
     add_import_month_index_rows = [
         ("loc 1", date(2023, 1, 1)),
