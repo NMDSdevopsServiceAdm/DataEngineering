@@ -410,6 +410,40 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class CheckCareHomeAndPrimaryServiceType(ValidateUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.custom_type_rule = Data.custom_type_rule
+
+    def test_create_check_of_custom_type_when_values_are_related(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.custom_type_related_rows,
+            Schemas.custom_type_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_custom_type_related_rows,
+            Schemas.validation_schema,
+        )
+        returned_df = job.validate_dataset(test_df, self.custom_type_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_create_check_of_custom_type_when_values_are_not_related(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.custom_type_unrelated_rows,
+            Schemas.custom_type_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_custom_type_unrelated_rows,
+            Schemas.validation_schema,
+        )
+        returned_df = job.validate_dataset(test_df, self.custom_type_rule)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class AddColumnWithLengthOfString(ValidateUtilsTests):
     def setUp(self) -> None:
         super().setUp()
