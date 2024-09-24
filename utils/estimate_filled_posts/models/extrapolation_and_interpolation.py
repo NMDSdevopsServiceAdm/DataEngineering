@@ -1,31 +1,63 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
+from typing import Tuple
 
-from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.estimate_filled_posts.models.extrapolation_new import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 def model_extrapolation_and_interpolation(
     df: DataFrame,
+    column_with_null_values: str,
     model_column_name: str,
-    column_to_interpolate: str,
-    new_column_name: str,
 ) -> DataFrame:
     """
-    Adds two new columns, one with extrapolated values and one with interpolated values.
+    Extrapolates and interpolates
 
-    The function prepares the dataset with features present in both models before calling each model separately.
+    Fills null values in a specified column by using the rate of change in a specified model column to
+    extrapolate and interpolate values. This process creates two additional columns: one with extrapolated
+    values and one with interpolated values.
 
     Args:
-        df (DataFrame): A dataframe with a column to interpolate.
-        model_column_name (str): The model which contains the trned for extrapolation for follow
-        column_to_interpolate (str): The name of the column that needs interpolating.
-        new_column_name (str): The name of the new column with interpolated values.
+        df (DataFrame): The input DataFrame containing the columns to be extrapolated and interpolated.
+        column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
+        model_column_name (str): The name of the column containing the model values used for extrapolation and interpolation.
 
     Returns:
-        DataFrame: A dataframe with a new column containing interpolated values.
+        DataFrame: The DataFrame with the added columns for extrapolated and interpolated values.
     """
-    df = model_extrapolation(df, model_column_name)
+    window_spec = define_window_spec()
 
-    df = model_interpolation(df, column_to_interpolate, new_column_name)
+    extrapolation_model_column_name, interpolation_model_column_name = (
+        create_new_column_names(model_column_name)
+    )
+
+    df = model_extrapolation(
+        df,
+        column_with_null_values,
+        model_column_name,
+        extrapolation_model_column_name,
+        window_spec,
+    )
+
+    df = model_interpolation(
+        df, column_with_null_values, model_column_name, interpolation_model_column_name
+    )
 
     return df
+
+
+def define_window_spec() -> Window:
+    """
+    Defines a window specification which is partitioned by 'location_id' and ordered by 'unix_time'.
+
+    Returns:
+        Window: The window specification partitioned by 'location_id' and ordered by 'unix_time'.
+    """
+    return Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+
+
+def create_new_column_names(model_column_name: str) -> Tuple[str, str]:
+    extrapolation_model_column_name = "extrapolation_" + model_column_name
+    interpolation_model_column_name = "interpolation_" + model_column_name
+    return extrapolation_model_column_name, interpolation_model_column_name

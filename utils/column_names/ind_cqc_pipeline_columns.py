@@ -95,7 +95,9 @@ class IndCqcColumns:
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
+    extrapolation_backwards: str = "extrapolation_backwards"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
+    extrapolation_forwards: str = "extrapolation_forwards"
     extrapolation_non_res_with_dormancy_model: str = (
         "extrapolation_non_res_with_dormancy_model"
     )
@@ -107,6 +109,8 @@ class IndCqcColumns:
         "filled_posts_per_bed_ratio_within_std_resids"
     )
     first_filled_posts: str = "first_filled_posts"
+    first_model_value: str = "first_model_value"
+    first_non_null_value: str = "first_non_null_value"
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
@@ -168,6 +172,8 @@ class IndCqcColumns:
     )
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    previous_model_value: str = "previous_model_value"
+    previous_non_null_value: str = "previous_non_null_value"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
