@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from pyspark.sql import Window
+from pyspark.sql import Window, WindowSpec
 
 import utils.estimate_filled_posts.models.extrapolation_new as job
 from utils import utils
@@ -15,6 +15,15 @@ from tests.test_file_schemas import ModelExtrapolationNew as Schemas
 class TestModelExtrapolation(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
+class MainTests(TestModelExtrapolation):
+    def setUp(self) -> None:
+        super().setUp()
+
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_new_rows, Schemas.extrapolation_schema
         )
@@ -23,15 +32,27 @@ class TestModelExtrapolation(unittest.TestCase):
         self.window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
             IndCqc.unix_time
         )
-
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-    def test_model_extrapolation_row_count_unchanged(self):
-        output_df = job.model_extrapolation(
+        self.returned_df = job.model_extrapolation(
             self.extrapolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             self.model_column_name,
             self.extrapolation_model_column_name,
         )
-        self.assertEqual(output_df.count(), self.extrapolation_df.count())
+
+    def test_model_extrapolation_row_count_unchanged(self):
+        self.assertEqual(self.returned_df.count(), self.extrapolation_df.count())
+
+    def test_model_extrapolation_and_interpolation_returns_new_columns(self):
+        self.assertIn(self.extrapolation_model_column_name, self.returned_df.columns)
+
+
+class DefineWindowSpecsTests(TestModelExtrapolation):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_define_window_spec_return_type(self):
+        returned_window_specs = job.define_window_specs()
+        self.assertIsInstance(returned_window_specs, tuple)
+        self.assertEqual(len(returned_window_specs), 2)
+        self.assertIsInstance(returned_window_specs[0], WindowSpec)
+        self.assertIsInstance(returned_window_specs[1], WindowSpec)

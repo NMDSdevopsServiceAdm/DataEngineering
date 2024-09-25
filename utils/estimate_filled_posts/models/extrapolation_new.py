@@ -27,7 +27,7 @@ def model_extrapolation(
     Returns:
         DataFrame: The DataFrame with the extrapolated values in the specified column.
     """
-    window_spec_all_rows, window_spec_lagged = define_window_spec()
+    window_spec_all_rows, window_spec_lagged = define_window_specs()
 
     df = calculate_first_and_last_submission_dates(
         df, column_with_null_values, window_spec_all_rows
@@ -44,7 +44,7 @@ def model_extrapolation(
     return df
 
 
-def define_window_spec() -> Tuple[Window, Window]:
+def define_window_specs() -> Tuple[Window, Window]:
     """
     Defines a window specification which is partitioned by 'location_id' and ordered by 'unix_time'.
 
