@@ -129,3 +129,119 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
 
     def test_returned_values_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class TestGetSelectedValueFunction(TestModelExtrapolation):
+    def setUp(self):
+        super().setUp()
+        self.w = (
+            Window.partitionBy(IndCqc.location_id)
+            .orderBy(IndCqc.unix_time)
+            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_min(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_min_selection_rows, Schemas.test_get_selected_value
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_min_selection_rows,
+            Schemas.expected_test_get_selected_value,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.rolling_average_model,
+            "new_column",
+            selection="min",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_max(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_max_selection_rows, Schemas.test_get_selected_value
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_max_selection_rows,
+            Schemas.expected_test_get_selected_value,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.rolling_average_model,
+            "new_column",
+            selection="max",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_first(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_first_selection_rows, Schemas.test_get_selected_value
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_first_selection_rows,
+            Schemas.expected_test_get_selected_value,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.rolling_average_model,
+            "new_column",
+            selection="first",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_last(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_last_selection_rows, Schemas.test_get_selected_value
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_last_selection_rows,
+            Schemas.expected_test_get_selected_value,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.rolling_average_model,
+            "new_column",
+            selection="last",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_last_selection_rows, Schemas.test_get_selected_value
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.get_selected_value(
+                test_df,
+                self.w,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.rolling_average_model,
+                "new_column",
+                selection="other",
+            )
+
+        self.assertTrue(
+            "Error: The selection parameter 'other' was not found. Please use 'min', 'max', 'first', or 'last'.",
+            "Exception does not contain the correct error message",
+        )

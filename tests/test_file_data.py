@@ -3927,6 +3927,47 @@ class ModelExtrapolationNew:
         ("1-003", 1677628800, None, None, None),
     ]
 
+    test_min_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, None, 25.0),
+    ]
+    expected_test_min_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0, 50.0),
+        ("loc 1", 2, 2.0, 50.0, 50.0),
+        ("loc 1", 3, None, 25.0, 50.0),
+    ]
+    test_max_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, None, 25.0),
+    ]
+    expected_test_max_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0, 100.0),
+        ("loc 1", 2, 2.0, 50.0, 100.0),
+        ("loc 1", 3, None, 25.0, 100.0),
+    ]
+    test_first_selection_rows = [
+        ("loc 1", 1, None, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, 3.0, 25.0),
+    ]
+    expected_test_first_selection_rows = [
+        ("loc 1", 1, None, 100.0, 50.0),
+        ("loc 1", 2, 2.0, 50.0, 50.0),
+        ("loc 1", 3, 3.0, 25.0, 50.0),
+    ]
+    test_last_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, None, 25.0),
+    ]
+    expected_test_last_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0, 50.0),
+        ("loc 1", 2, 2.0, 50.0, 50.0),
+        ("loc 1", 3, None, 25.0, 50.0),
+    ]
+
 
 @dataclass
 class ModelExtrapolation:

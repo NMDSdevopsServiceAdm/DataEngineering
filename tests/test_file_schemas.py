@@ -2436,7 +2436,7 @@ class ModelExtrapolationNew:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.rolling_average_model, DoubleType(), False),
@@ -2446,17 +2446,30 @@ class ModelExtrapolationNew:
     first_and_last_submission_dates_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
     expected_first_and_last_submission_dates_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.first_submission_time, LongType(), True),
-            StructField(IndCQC.last_submission_time, LongType(), True),
+            *first_and_last_submission_dates_schema,
+            StructField(IndCQC.first_submission_time, IntegerType(), True),
+            StructField(IndCQC.last_submission_time, IntegerType(), True),
+        ]
+    )
+
+    test_get_selected_value = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+        ]
+    )
+    expected_test_get_selected_value = StructType(
+        [
+            *test_get_selected_value,
+            StructField("new_column", FloatType(), True),
         ]
     )
 
