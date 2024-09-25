@@ -61,28 +61,40 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
     def setUp(self) -> None:
         super().setUp()
 
+        self.input_df = self.spark.createDataFrame(
+            Data.first_and_last_submission_dates_rows,
+            Schemas.first_and_last_submission_dates_schema,
+        )
         self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.unix_time)
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
-
         self.returned_df = job.calculate_first_and_last_submission_dates(
-            self.extrapolation_df,
+            self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
         )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_first_and_last_submission_dates_rows,
+            Schemas.expected_first_and_last_submission_dates_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
     @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
     def test_calculate_first_and_last_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
     ):
-        get_selected_value_mock.return_value = self.extrapolation_df
+        get_selected_value_mock.return_value = self.input_df
 
         job.calculate_first_and_last_submission_dates(
-            self.extrapolation_df,
+            self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
         )
@@ -90,16 +102,15 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
         self.assertEqual(get_selected_value_mock.call_count, 2)
 
         get_selected_value_mock.assert_any_call(
-            self.extrapolation_df,
+            self.input_df,
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.unix_time,
             IndCqc.first_submission_time,
             "min",
         )
-
         get_selected_value_mock.assert_any_call(
-            self.extrapolation_df,
+            self.input_df,
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.unix_time,
@@ -110,8 +121,11 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
     def test_calculate_first_and_last_submission_dates_returns_same_number_of_rows(
         self,
     ):
-        self.assertEqual(self.extrapolation_df.count(), self.returned_df.count())
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
 
     def test_model_extrapolation_and_interpolation_returns_new_columns(self):
         self.assertIn(IndCqc.first_submission_time, self.returned_df.columns)
         self.assertIn(IndCqc.last_submission_time, self.returned_df.columns)
+
+    def test_returned_values_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)
