@@ -33,6 +33,5 @@ class TestModelExtrapolation(unittest.TestCase):
             IndCqc.ascwds_filled_posts_dedup_clean,
             self.model_column_name,
             self.extrapolation_model_column_name,
-            self.window_spec,
         )
         self.assertEqual(output_df.count(), self.extrapolation_df.count())
