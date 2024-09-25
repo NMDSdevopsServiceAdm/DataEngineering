@@ -1,6 +1,6 @@
 import unittest
-import warnings
 from unittest.mock import Mock, patch
+import warnings
 
 import utils.estimate_filled_posts.models.extrapolation_and_interpolation as job
 from utils import utils
