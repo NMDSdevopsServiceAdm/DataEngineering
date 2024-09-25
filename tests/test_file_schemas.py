@@ -2457,11 +2457,35 @@ class ModelExtrapolationNew:
         ]
     )
 
+    extrapolation_backwards_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.first_submission_time, IntegerType(), True),
+            StructField(IndCQC.last_submission_time, IntegerType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), False),
+        ]
+    )
+    expected_extrapolation_backwards_schema = StructType(
+        [
+            *extrapolation_backwards_schema,
+            StructField(IndCQC.extrapolation_backwards, FloatType(), True),
+        ]
+    )
+    extrapolation_backwards_mock_schema = StructType(
+        [
+            *extrapolation_backwards_schema,
+            StructField(IndCQC.first_non_null_value, FloatType(), True),
+            StructField(IndCQC.first_model_value, FloatType(), False),
+        ]
+    )
+
     combine_extrapolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.last_submission_time, IntegerType(), True),
             StructField(IndCQC.extrapolation_forwards, FloatType(), True),
