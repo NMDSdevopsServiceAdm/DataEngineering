@@ -131,6 +131,11 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
+# TODO - test extrapolation_forwards
+# TODO - test extrapolation_backwards
+# TODO - test combine_extrapolation
+
+
 class TestGetSelectedValueFunction(TestModelExtrapolation):
     def setUp(self):
         super().setUp()
@@ -142,11 +147,11 @@ class TestGetSelectedValueFunction(TestModelExtrapolation):
 
     def test_get_selected_value_returns_correct_values_when_selection_equals_min(self):
         test_df = self.spark.createDataFrame(
-            Data.test_min_selection_rows, Schemas.test_get_selected_value
+            Data.test_min_selection_rows, Schemas.get_selected_value_schema
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_test_min_selection_rows,
-            Schemas.expected_test_get_selected_value,
+            Schemas.expected_get_selected_value_schema,
         )
         returned_df = job.get_selected_value(
             test_df,
@@ -163,11 +168,11 @@ class TestGetSelectedValueFunction(TestModelExtrapolation):
 
     def test_get_selected_value_returns_correct_values_when_selection_equals_max(self):
         test_df = self.spark.createDataFrame(
-            Data.test_max_selection_rows, Schemas.test_get_selected_value
+            Data.test_max_selection_rows, Schemas.get_selected_value_schema
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_test_max_selection_rows,
-            Schemas.expected_test_get_selected_value,
+            Schemas.expected_get_selected_value_schema,
         )
         returned_df = job.get_selected_value(
             test_df,
@@ -186,11 +191,11 @@ class TestGetSelectedValueFunction(TestModelExtrapolation):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.test_first_selection_rows, Schemas.test_get_selected_value
+            Data.test_first_selection_rows, Schemas.get_selected_value_schema
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_test_first_selection_rows,
-            Schemas.expected_test_get_selected_value,
+            Schemas.expected_get_selected_value_schema,
         )
         returned_df = job.get_selected_value(
             test_df,
@@ -207,11 +212,11 @@ class TestGetSelectedValueFunction(TestModelExtrapolation):
 
     def test_get_selected_value_returns_correct_values_when_selection_equals_last(self):
         test_df = self.spark.createDataFrame(
-            Data.test_last_selection_rows, Schemas.test_get_selected_value
+            Data.test_last_selection_rows, Schemas.get_selected_value_schema
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_test_last_selection_rows,
-            Schemas.expected_test_get_selected_value,
+            Schemas.expected_get_selected_value_schema,
         )
         returned_df = job.get_selected_value(
             test_df,
@@ -228,7 +233,7 @@ class TestGetSelectedValueFunction(TestModelExtrapolation):
 
     def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
         test_df = self.spark.createDataFrame(
-            Data.test_last_selection_rows, Schemas.test_get_selected_value
+            Data.test_last_selection_rows, Schemas.get_selected_value_schema
         )
 
         with self.assertRaises(ValueError) as context:

@@ -2458,7 +2458,9 @@ class ModelExtrapolationNew:
         ]
     )
 
-    test_get_selected_value = StructType(
+
+
+    get_selected_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
@@ -2466,9 +2468,9 @@ class ModelExtrapolationNew:
             StructField(IndCQC.rolling_average_model, FloatType(), True),
         ]
     )
-    expected_test_get_selected_value = StructType(
+    expected_get_selected_value_schema = StructType(
         [
-            *test_get_selected_value,
+            *get_selected_value_schema,
             StructField("new_column", FloatType(), True),
         ]
     )
