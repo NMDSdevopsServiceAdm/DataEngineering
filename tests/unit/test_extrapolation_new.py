@@ -13,7 +13,7 @@ from tests.test_file_data import ModelExtrapolationNew as Data
 from tests.test_file_schemas import ModelExtrapolationNew as Schemas
 
 
-class TestModelExtrapolation(unittest.TestCase):
+class ModelExtrapolationTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
@@ -27,7 +27,7 @@ class TestModelExtrapolation(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-class MainTests(TestModelExtrapolation):
+class MainTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -45,7 +45,7 @@ class MainTests(TestModelExtrapolation):
         self.assertIn(self.extrapolation_model_column_name, self.returned_df.columns)
 
 
-class DefineWindowSpecsTests(TestModelExtrapolation):
+class DefineWindowSpecsTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -57,7 +57,7 @@ class DefineWindowSpecsTests(TestModelExtrapolation):
         self.assertIsInstance(returned_window_specs[1], WindowSpec)
 
 
-class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
+class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -133,10 +133,42 @@ class CalculateFirstAndLastSubmissionDatesTests(TestModelExtrapolation):
 
 # TODO - test extrapolation_forwards
 # TODO - test extrapolation_backwards
-# TODO - test combine_extrapolation
 
 
-class TestGetSelectedValueFunction(TestModelExtrapolation):
+class CombineExtrapolationTests(ModelExtrapolationTests):
+    def setUp(self):
+        super().setUp()
+
+        self.extrapolation_model_name = "extrapolation_model_name"
+        test_combine_extrapolation_df = self.spark.createDataFrame(
+            Data.combine_extrapolation_rows,
+            Schemas.combine_extrapolation_schema,
+        )
+        self.returned_df = job.combine_extrapolation(
+            test_combine_extrapolation_df, self.extrapolation_model_name
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_extrapolation_rows,
+            Schemas.expected_combine_extrapolation_schema,
+        )
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_extrapolation_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_extrapolation_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][self.extrapolation_model_name],
+                self.expected_data[i][self.extrapolation_model_name],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
+class GetSelectedValueFunctionTests(ModelExtrapolationTests):
     def setUp(self):
         super().setUp()
         self.w = (

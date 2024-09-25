@@ -3895,17 +3895,17 @@ class ModelExtrapolationAndInterpolation:
 @dataclass
 class ModelExtrapolationNew:
     extrapolation_new_rows = [
-        ("1-001", date(2023, 1, 1), 1672531200, 15.0, PrimaryServiceType.care_home_only, 15.0),
-        ("1-001", date(2023, 2, 1), 1675209600, None, PrimaryServiceType.care_home_only, 15.1),
-        ("1-001", date(2023, 3, 1), 1677628800, 30.0, PrimaryServiceType.care_home_only, 15.2),
-        ("1-002", date(2023, 1, 1), 1672531200, 4.0, PrimaryServiceType.non_residential, 50.3),
-        ("1-002", date(2023, 2, 1), 1675209600, None, PrimaryServiceType.non_residential, 50.5),
-        ("1-002", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
-        ("1-002", date(2023, 4, 1), 1680303600, None, PrimaryServiceType.non_residential, 50.1),
-        ("1-003", date(2023, 1, 1), 1672531200, None, PrimaryServiceType.non_residential, 50.3),
-        ("1-003", date(2023, 2, 1), 1675209600, 20.0, PrimaryServiceType.non_residential, 50.5),
-        ("1-003", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
-        ("1-004", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
+        ("1-001", date(2023, 1, 1), 1672531200, 15.0, 15.0),
+        ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
+        ("1-001", date(2023, 3, 1), 1677628800, 30.0, 15.2),
+        ("1-002", date(2023, 1, 1), 1672531200, 4.0, 50.3),
+        ("1-002", date(2023, 2, 1), 1675209600, None, 50.5),
+        ("1-002", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-002", date(2023, 4, 1), 1680303600, None, 50.1),
+        ("1-003", date(2023, 1, 1), 1672531200, None, 50.3),
+        ("1-003", date(2023, 2, 1), 1675209600, 20.0, 50.5),
+        ("1-003", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
     ]
 
     first_and_last_submission_dates_rows = [
@@ -3925,6 +3925,25 @@ class ModelExtrapolationNew:
         ("1-002", 1675209600, 4.0, 1675209600, 1675209600),
         ("1-002", 1677628800, None, 1675209600, 1675209600),
         ("1-003", 1677628800, None, None, None),
+    ]
+
+    combine_extrapolation_rows = [
+        ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, 20.0),
+        ("1-001", 1675209600, None, 1672531200, 1677628800, 11.0, 21.0),
+        ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 12.0, 22.0),
+        ("1-002", 1672531200, None, 1675209600, 1675209600, 13.0, 23.0),
+        ("1-002", 1675209600, 4.0, 1675209600, 1675209600, 14.0, 24.0),
+        ("1-002", 1677628800, None, 1675209600, 1675209600, 15.0, 25.0),
+        ("1-003", 1677628800, None, None, None, None, None),
+    ]
+    expected_combine_extrapolation_rows = [
+        ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 15.0, 15.0, None),
+        ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, 25.0, None),
+        ("1-001", 1677628800, 30.0, 1672531200, 1677628800, 30.0, 30.0, None),
+        ("1-002", 1672531200, None, 1675209600, 1675209600, 3.0, 2.0, 2.0),
+        ("1-002", 1675209600, 4.0, 1675209600, 1675209600, 4.0, 4.0, None),
+        ("1-002", 1677628800, None, 1675209600, 1675209600, 5.0, 6.0, 5.0),
+        ("1-003", 1677628800, None, None, None, None, None, None),
     ]
 
     test_min_selection_rows = [
