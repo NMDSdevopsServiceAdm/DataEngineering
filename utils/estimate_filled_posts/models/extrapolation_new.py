@@ -134,32 +134,15 @@ def extrapolation_forwards(
         "last",
     )
 
-    df = calculate_extrapolation_forwards(df, model_to_extrapolate_from)
-
-    df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
-
-    return df
-
-
-def calculate_extrapolation_forwards(
-    df: DataFrame, model_to_extrapolate_from: str
-) -> DataFrame:
-    """
-    Calculates the forward extrapolation based on a specified model and adds it as a new column 'extrapolation_forwards'.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the columns 'previous_non_null_value', 'previous_model_value', and the specified model column.
-        model_to_extrapolate_from (str): The name of the column representing the model to extrapolate from.
-
-    Returns:
-        DataFrame: The DataFrame with the added 'extrapolation_forwards' column.
-    """
     df = df.withColumn(
         IndCqc.extrapolation_forwards,
         F.col(IndCqc.previous_non_null_value)
         * F.col(model_to_extrapolate_from)
         / F.col(IndCqc.previous_model_value),
     )
+
+    df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
+
     return df
 
 
