@@ -1,9 +1,10 @@
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame
 from typing import Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.estimate_filled_posts.models.extrapolation_new import model_extrapolation
-from utils.estimate_filled_posts.models.interpolation import model_interpolation
+
+# from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 def model_extrapolation_and_interpolation(
@@ -26,8 +27,6 @@ def model_extrapolation_and_interpolation(
     Returns:
         DataFrame: The DataFrame with the added columns for extrapolated and interpolated values.
     """
-    window_spec = define_window_spec()
-
     (
         extrapolation_model_column_name,
         interpolation_model_column_name,
@@ -38,9 +37,9 @@ def model_extrapolation_and_interpolation(
         column_with_null_values,
         model_column_name,
         extrapolation_model_column_name,
-        window_spec,
     )
 
+    # TODO - Interpolation process
     # df = model_interpolation(
     #     df, column_with_null_values, model_column_name, interpolation_model_column_name
     # )
@@ -48,17 +47,16 @@ def model_extrapolation_and_interpolation(
     return df
 
 
-def define_window_spec() -> Window:
+def create_new_column_names(model_column_name: str) -> Tuple[str, str]:
     """
-    Defines a window specification which is partitioned by 'location_id' and ordered by 'unix_time'.
+    Generate new column names for extrapolation and interpolation outputs.
+
+    Args:
+        model_column_name (str): The name of the model column to use.
 
     Returns:
-        Window: The window specification partitioned by 'location_id' and ordered by 'unix_time'.
+        Tuple[str, str]: A tuple containing the extrapolation model column name and the interpolation model column name.
     """
-    return Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
-
-
-def create_new_column_names(model_column_name: str) -> Tuple[str, str]:
     extrapolation_model_column_name = "extrapolation_" + model_column_name
     interpolation_model_column_name = "interpolation_" + model_column_name
     return extrapolation_model_column_name, interpolation_model_column_name
