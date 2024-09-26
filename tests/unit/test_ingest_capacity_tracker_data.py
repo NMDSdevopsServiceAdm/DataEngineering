@@ -105,5 +105,4 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
         expected_columns = NonResData.expected_columns
         returned_df = job.remove_invalid_characters_from_column_names(test_df)
         returned_columns = returned_df.columns
-        print(returned_columns)
         self.assertEqual(sorted(returned_columns), sorted(expected_columns))
