@@ -39,6 +39,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
+from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -4095,7 +4096,7 @@ class ModelFeatures:
         (date(2013, 1, 10), date(2023, 1, 10)),
     ]
     expected_add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10), 3652),
+        (date(2013, 1, 10), date(2023, 1, 10), 20),
     ]
     add_import_month_index_rows = [
         ("loc 1", date(2023, 1, 1)),
@@ -5310,7 +5311,7 @@ class ValidationUtils:
             "Index columns are unique",
             "Warning",
             "Success",
-            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None,None))",
             "Success",
             "",
         ),
@@ -5320,7 +5321,7 @@ class ValidationUtils:
             "Index columns are unique",
             "Warning",
             "Warning",
-            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! Uniqueness should be 1.",
         ),
@@ -5358,7 +5359,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Success",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Success",
             "",
         ),
@@ -5368,7 +5369,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Warning",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
         ),
@@ -5378,7 +5379,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Success",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Success",
             "",
         ),
@@ -5386,7 +5387,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Success",
-            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None,None))",
             "Success",
             "",
         ),
@@ -5396,7 +5397,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Warning",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
         ),
@@ -5404,7 +5405,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Warning",
-            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None,None))",
             "Success",
             "",
         ),
@@ -5414,7 +5415,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Warning",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! Completeness of locationId should be 1.",
         ),
@@ -5422,7 +5423,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Warning",
-            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! Completeness of cqc_location_import_date should be 1.",
         ),
@@ -5456,7 +5457,7 @@ class ValidationUtils:
             "Index columns are unique",
             "Warning",
             "Success",
-            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None))",
+            "UniquenessConstraint(Uniqueness(Stream(locationId, ?),None,None))",
             "Success",
             "",
         ),
@@ -5464,7 +5465,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Success",
-            "CompletenessConstraint(Completeness(locationId,None))",
+            "CompletenessConstraint(Completeness(locationId,None,None))",
             "Success",
             "",
         ),
@@ -5472,7 +5473,7 @@ class ValidationUtils:
             "Column is complete",
             "Warning",
             "Success",
-            "CompletenessConstraint(Completeness(cqc_location_import_date,None))",
+            "CompletenessConstraint(Completeness(cqc_location_import_date,None,None))",
             "Success",
             "",
         ),
@@ -5512,7 +5513,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "MinimumConstraint(Minimum(numberOfBeds,None,None))",
             "Success",
             "",
         ),
@@ -5522,7 +5523,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Warning",
-            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "MinimumConstraint(Minimum(numberOfBeds,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
         ),
@@ -5532,7 +5533,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Warning",
-            "MinimumConstraint(Minimum(numberOfBeds,None))",
+            "MinimumConstraint(Minimum(numberOfBeds,None,None))",
             "Failure",
             "Value: 0.0 does not meet the constraint requirement! The minimum value for numberOfBeds should be 1.",
         ),
@@ -5540,7 +5541,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(people_directly_employed,None))",
+            "MinimumConstraint(Minimum(people_directly_employed,None,None))",
             "Success",
             "",
         ),
@@ -5575,7 +5576,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "MaximumConstraint(Maximum(numberOfBeds,None,None))",
             "Success",
             "",
         ),
@@ -5585,7 +5586,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Warning",
-            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "MaximumConstraint(Maximum(numberOfBeds,None,None))",
             "Failure",
             "Value: 11.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
         ),
@@ -5595,7 +5596,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Warning",
-            "MaximumConstraint(Maximum(numberOfBeds,None))",
+            "MaximumConstraint(Maximum(numberOfBeds,None,None))",
             "Failure",
             "Value: 20.0 does not meet the constraint requirement! The maximum value for numberOfBeds should be 10.",
         ),
@@ -5603,7 +5604,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(people_directly_employed,None))",
+            "MaximumConstraint(Maximum(people_directly_employed,None,None))",
             "Success",
             "",
         ),
@@ -5633,7 +5634,7 @@ class ValidationUtils:
             "Categorical values are in list of expected values",
             "Warning",
             "Success",
-            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector),None))",
             "Success",
             "",
         ),
@@ -5643,7 +5644,7 @@ class ValidationUtils:
             "Categorical values are in list of expected values",
             "Warning",
             "Warning",
-            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector)))",
+            "ComplianceConstraint(Compliance(cqc_sector contained in Independent,Local authority,`cqc_sector` IS NULL OR `cqc_sector` IN ('Independent','Local authority'),None,List(cqc_sector),None))",
             "Failure",
             "Value: 0.6666666666666666 does not meet the constraint requirement! Values in cqc_sector should be one of :['Independent', 'Local authority'].",
         ),
@@ -5738,6 +5739,42 @@ class ValidationUtils:
     ]
 
     check_rows = fewer_distinct_values_result_rows
+
+    custom_type_rule = {
+        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type
+    }
+
+    custom_type_related_rows = [
+        ("loc 1", CareHome.care_home, PrimaryServiceType.care_home_only),
+        ("loc 2", CareHome.care_home, PrimaryServiceType.care_home_with_nursing),
+        ("loc 3", CareHome.not_care_home, PrimaryServiceType.non_residential),
+    ]
+    expected_custom_type_related_rows = [
+        (
+            "custom type",
+            "Warning",
+            "Success",
+            "ComplianceConstraint(Compliance(care_home_and_primary_service_type,(careHome = 'N' AND primary_service_type = 'non-residential') OR (careHome = 'Y' AND primary_service_type = 'Care home with nursing') OR (careHome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
+            "Success",
+            "",
+        ),
+    ]
+
+    custom_type_unrelated_rows = [
+        ("loc 1", CareHome.care_home, PrimaryServiceType.non_residential),
+        ("loc 2", CareHome.not_care_home, PrimaryServiceType.care_home_with_nursing),
+        ("loc 3", CareHome.not_care_home, PrimaryServiceType.care_home_only),
+    ]
+    expected_custom_type_unrelated_rows = [
+        (
+            "custom type",
+            "Warning",
+            "Warning",
+            "ComplianceConstraint(Compliance(care_home_and_primary_service_type,(careHome = 'N' AND primary_service_type = 'non-residential') OR (careHome = 'Y' AND primary_service_type = 'Care home with nursing') OR (careHome = 'Y' AND primary_service_type = 'Care home without nursing'),None,List(),None))",
+            "Failure",
+            "Value: 0.0 does not meet the constraint requirement! The data in carehome and primary_service_type should be related.",
+        ),
+    ]
 
 
 @dataclass

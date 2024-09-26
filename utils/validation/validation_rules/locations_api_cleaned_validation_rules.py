@@ -9,6 +9,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 from utils.column_names.validation_table_columns import (
     Validation,
 )
+from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
@@ -76,4 +77,5 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.current_rural_urban_ind_11: CatValues.current_rui_column_values.count_of_categorical_values,
             CQCLClean.related_location: CatValues.related_location_column_values.count_of_categorical_values,
         },
+        RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }
