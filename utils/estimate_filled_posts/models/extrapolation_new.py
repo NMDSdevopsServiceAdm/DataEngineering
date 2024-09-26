@@ -155,7 +155,7 @@ def extrapolation_backwards(
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
-    Calculates the backward extrapolation based on the first filled posts and the first modelled value, and adds it as a new column 'extrapolation_backwards'.
+    Calculates the backward extrapolation based on the first non null value and the first modelled value, and adds it as a new column 'extrapolation_backwards'.
 
     Args:
         df (DataFrame): The input DataFrame.
