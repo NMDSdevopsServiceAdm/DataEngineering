@@ -39,16 +39,21 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
         f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
     )
     df = utils.read_csv(source, delimiter)
-    df = remove_spaces_from_column_names(df)
+    df = remove_invalid_characters_from_column_names(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination, mode="overwrite")
 
 
-def remove_spaces_from_column_names(df: DataFrame) -> DataFrame:
+def remove_invalid_characters_from_column_names(df: DataFrame) -> DataFrame:
     df_columns = df.columns
     for column in df_columns:
         df = df.withColumnRenamed(column, column.replace(" ", "_"))
+        column = column.replace(" ", "_")
+        df = df.withColumnRenamed(column, column.replace("(", ""))
+        column = column.replace("(", "")
+        df = df.withColumnRenamed(column, column.replace(")", ""))
+
     return df
 
 

@@ -936,10 +936,16 @@ class CapacityTrackerNonResData:
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
     ]
 
-    remove_spaces_from_column_names_rows = [
-        ("loc 1", "some data", "other data"),
+    remove_invalid_characters_from_column_names_rows = [
+        ("loc 1", "some data", "other data", "another data", "more data"),
     ]
-    expected_columns = [CTNR.cqc_id, "column_with_spaces", "column_without_spaces"]
+    expected_columns = [
+        CTNR.cqc_id,
+        "column_with_spaces",
+        "column_without_spaces",
+        "column_with_brackets",
+        "column_with_brackets_and_spaces",
+    ]
 
 
 @dataclass
