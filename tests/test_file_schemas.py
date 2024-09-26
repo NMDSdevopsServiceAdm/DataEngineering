@@ -2457,6 +2457,28 @@ class ModelExtrapolationNew:
         ]
     )
 
+    extrapolation_forwards_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), False),
+        ]
+    )
+    expected_extrapolation_forwards_schema = StructType(
+        [
+            *extrapolation_forwards_schema,
+            StructField(IndCQC.extrapolation_backwards, FloatType(), True),
+        ]
+    )
+    extrapolation_forwards_mock_schema = StructType(
+        [
+            *extrapolation_forwards_schema,
+            StructField(IndCQC.previous_non_null_value, FloatType(), True),
+            StructField(IndCQC.previous_model_value, FloatType(), False),
+        ]
+    )
+
     extrapolation_backwards_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
