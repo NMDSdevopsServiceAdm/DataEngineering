@@ -46,10 +46,14 @@ def model_extrapolation(
 
 def define_window_specs() -> Tuple[Window, Window]:
     """
-    Defines a window specification which is partitioned by 'location_id' and ordered by 'unix_time'.
+    Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
+
+    The first window specification ('window_spec_all_rows') includes all rows in the partition.
+    The second window specification ('window_spec_lagged') includes all rows from the start of the partition up to the
+    current row, excluding the current row.
 
     Returns:
-        Window: The window specification partitioned by 'location_id' and ordered by 'unix_time'.
+        Tuple[Window, Window]: A tuple containing the two window specifications.
     """
     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
 
