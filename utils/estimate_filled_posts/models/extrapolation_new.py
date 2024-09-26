@@ -104,9 +104,9 @@ def extrapolation_forwards(
     window_spec: Window,
 ) -> DataFrame:
     """
-    Adds a new column with forward extrapolated values.
+    Calculates the backward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
-    The function controls the stages within the forward extrapolation process.
+    Calculates the backward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
@@ -153,6 +153,8 @@ def extrapolation_backwards(
     window_spec: Window,
 ) -> DataFrame:
     """
+    Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
+
     Calculates the backward extrapolation based on the first filled posts and the first modelled value, and adds it as a new column 'extrapolation_backwards'.
 
     Args:
