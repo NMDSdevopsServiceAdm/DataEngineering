@@ -45,6 +45,9 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
 
 
 def remove_spaces_from_column_names(df: DataFrame) -> DataFrame:
+    df_columns = df.columns
+    for column in df_columns:
+        df = df.withColumnRenamed(column, column.replace(" ", "_"))
     return df
 
 
