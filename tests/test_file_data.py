@@ -6270,6 +6270,7 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             10.0,
+            10.0,
             "2024",
             "01",
             "01",

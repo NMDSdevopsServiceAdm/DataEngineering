@@ -4108,6 +4108,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(
                 IndCQC.extrapolation_non_res_with_dormancy_model, FloatType(), True
             ),
+            StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
