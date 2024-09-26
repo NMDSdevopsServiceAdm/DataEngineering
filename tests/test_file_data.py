@@ -5,6 +5,7 @@ from pyspark.ml.linalg import Vectors
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -934,6 +935,11 @@ class CapacityTrackerNonResData:
     capacity_tracker_non_res_rows = [
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
     ]
+
+    remove_spaces_from_column_names_rows = [
+        ("loc 1", "some data", "other data"),
+    ]
+    expected_columns = [CTNR.cqc_id, "column_with_spaces", "column_without_spaces"]
 
 
 @dataclass

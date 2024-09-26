@@ -96,3 +96,14 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
         self.assertEqual(
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
+
+    def test_remove_spaces_from_column_names(self):
+        test_df = self.spark.createDataFrame(
+            NonResData.remove_spaces_from_column_names_rows,
+            NonResSchema.remove_spaces_from_column_names_schema,
+        )
+        expected_columns = NonResData.expected_columns
+        returned_df = job.remove_spaces_from_column_names(test_df)
+        returned_columns = returned_df.columns
+
+        self.assertEqual(sorted(returned_columns), sorted(expected_columns))

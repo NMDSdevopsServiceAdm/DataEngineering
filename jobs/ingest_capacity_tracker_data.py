@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import DataFrame
+
 from utils import utils
 
 
@@ -40,6 +42,10 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination, mode="overwrite")
+
+
+def remove_spaces_from_column_names(df: DataFrame) -> DataFrame:
+    return df
 
 
 if __name__ == "__main__":
