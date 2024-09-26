@@ -104,6 +104,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
+    cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = impute_missing_gac_service_types(registered_locations_df)
@@ -310,6 +311,14 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
     map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
     df = df.withColumn(CQCL.postal_code, map_func(F.col(CQCL.postal_code)))
+    return df
+
+
+def impute_historic_relationships(df: DataFrame) -> DataFrame:
+    # Create temp column with backdated relationships
+
+    # if degregistered, copy value. if registered, only keep where Predecessor
+
     return df
 
 
