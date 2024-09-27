@@ -545,21 +545,21 @@ def realign_carehome_column_with_primary_service(df: DataFrame):
 
 def add_column_related_location(df: DataFrame) -> DataFrame:
     """
-    Adds a column which flags whether the location has a related previous location or not
+    Adds a column which flags whether the location was related to a previous location or not
 
     Args:
-        df(DataFrame): A dataframe with the relationships column.
+        df(DataFrame): A dataframe with the imputed_relationships column.
 
     Returns:
-        DataFrame: A dataframe with a column stating whther the locaiton has a related location or not.
+        DataFrame: A dataframe with a column stating whether the location was related to a previous location or not.
     """
     df = df.withColumn(
         CQCLClean.related_location,
         F.when(
-            F.size(df[CQCL.relationships]) > 0,
+            F.size(F.col(CQCLClean.imputed_relationships)) > 0,
             F.lit(RelatedLocation.has_related_location),
         ).when(
-            F.size(df[CQCL.relationships]) == 0,
+            F.size(F.col(CQCLClean.imputed_relationships)) == 0,
             F.lit(RelatedLocation.no_related_location),
         ),
     )

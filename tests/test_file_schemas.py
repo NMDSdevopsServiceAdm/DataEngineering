@@ -1262,7 +1262,7 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
-                CQCL.relationships,
+                CQCLClean.imputed_relationships,
                 ArrayType(
                     StructType(
                         [
