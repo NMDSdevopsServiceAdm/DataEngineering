@@ -228,6 +228,104 @@ class InvalidPostCodesTests(CleanCQCLocationDatasetTests):
         )
 
 
+class ImputeHistoricRelationshipsTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_impute_historic_relationships_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        self.returned_df = job.impute_historic_relationships(
+            self.test_impute_historic_relationships_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.expected_data = self.expected_df.collect()
+
+    def test_impute_relationships_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_impute_relationships_returns_same_number_of_rows(self):
+        self.assertTrue(
+            self.test_impute_historic_relationships_df.count(), self.returned_df.count()
+        )
+
+    def test_original_relationships_remains_unchanged(self):
+        returned_data = self.returned_df.orderBy(
+            CQCL.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            F.col(f"{CQCLCleaned.relationships}.{CQCL.related_location_id}"),
+        ).collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][CQCL.relationships],
+                self.expected_data[i][CQCL.relationships],
+                f"Returned value in row {i} does not match original",
+            )
+
+    def test_impute_relationships_returns_expected_imputed_data(self):
+        returned_data = self.returned_df.orderBy(
+            CQCL.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            F.col(f"{CQCLCleaned.imputed_relationships}.{CQCL.related_location_id}"),
+        ).collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][CQCLCleaned.imputed_relationships],
+                self.expected_data[i][CQCLCleaned.imputed_relationships],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
+class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_get_relationships_where_type_is_predecessor_df = (
+            self.spark.createDataFrame(
+                Data.get_relationships_where_type_is_predecessor_rows,
+                Schemas.get_relationships_where_type_is_predecessor_schema,
+            )
+        )
+        self.returned_df = job.get_relationships_where_type_is_predecessor(
+            self.test_get_relationships_where_type_is_predecessor_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_get_relationships_where_type_is_predecessor_rows,
+            Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+        self.expected_data = self.expected_df.collect()
+
+    def test_get_relationships_where_type_is_predecessor_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_get_relationships_where_type_is_predecessor_returns_same_number_of_rows(
+        self,
+    ):
+        self.assertTrue(
+            self.test_get_relationships_where_type_is_predecessor_df.count(),
+            self.returned_df.count(),
+        )
+
+    def test_relationships_predecessors_only_returns_expected_data(self):
+        returned_data = self.returned_df.orderBy(
+            CQCL.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            F.col(
+                f"{CQCLCleaned.relationships_predecessors_only}.{CQCL.related_location_id}"
+            ),
+        ).collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][CQCLCleaned.relationships_predecessors_only],
+                self.expected_data[i][CQCLCleaned.relationships_predecessors_only],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
 class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
