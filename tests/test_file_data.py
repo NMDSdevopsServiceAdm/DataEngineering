@@ -1209,6 +1209,550 @@ class CQCLocationsData:
         ),
     ]
 
+    impute_historic_relationships_rows = [
+        ("1-001", date(2024, 1, 1), RegistrationStatus.registered, None),
+        ("1-002", date(2024, 1, 1), RegistrationStatus.registered, None),
+        (
+            "1-002",
+            date(2024, 2, 1),
+            RegistrationStatus.registered,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        ("1-003", date(2024, 1, 1), RegistrationStatus.registered, None),
+        (
+            "1-003",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+        ),
+        ("1-004", date(2024, 1, 1), RegistrationStatus.registered, None),
+        (
+            "1-004",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        ("1-005", date(2024, 1, 1), RegistrationStatus.registered, None),
+        (
+            "1-005",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0051",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0052",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0053",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        ("1-006", date(2024, 1, 1), RegistrationStatus.deregistered, None),
+        (
+            "1-006",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0061",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0062",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0063",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        ("1-007", date(2024, 1, 1), RegistrationStatus.registered, None),
+        (
+            "1-007",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0071",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-007",
+            date(2024, 3, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0072",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+    ]
+    expected_impute_historic_relationships_rows = [
+        ("1-001", date(2024, 1, 1), RegistrationStatus.registered, None, None),
+        (
+            "1-002",
+            date(2024, 1, 1),
+            RegistrationStatus.registered,
+            None,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-002",
+            date(2024, 2, 1),
+            RegistrationStatus.registered,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        ("1-003", date(2024, 1, 1), RegistrationStatus.registered, None, None),
+        (
+            "1-003",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 1, 1),
+            RegistrationStatus.registered,
+            None,
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-005",
+            date(2024, 1, 1),
+            RegistrationStatus.registered,
+            None,
+            [
+                {
+                    CQCL.related_location_id: "1-0053",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0052",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        (
+            "1-005",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0051",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0052",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0053",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0051",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0052",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0053",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        (
+            "1-006",
+            date(2024, 1, 1),
+            RegistrationStatus.deregistered,
+            None,
+            [
+                {
+                    CQCL.related_location_id: "1-0061",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0062",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0063",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        (
+            "1-006",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0061",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0062",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0063",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0061",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0062",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0063",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+        (
+            "1-007",
+            date(2024, 1, 1),
+            RegistrationStatus.registered,
+            None,
+            [
+                {
+                    CQCL.related_location_id: "1-0071",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-007",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0071",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0071",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-007",
+            date(2024, 3, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0072",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0072",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+    ]
+
+    get_relationships_where_type_is_predecessor_rows = [
+        ("1-001", date(2024, 1, 1), RegistrationStatus.deregistered, None),
+        (
+            "1-002",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+        ),
+        (
+            "1-003",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0042",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0043",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+    ]
+    expected_get_relationships_where_type_is_predecessor_rows = [
+        ("1-001", date(2024, 1, 1), RegistrationStatus.deregistered, None, None),
+        (
+            "1-002",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+            None,
+        ),
+        (
+            "1-003",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0041",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                },
+                {
+                    CQCL.related_location_id: "1-0042",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0043",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0042",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+                {
+                    CQCL.related_location_id: "1-0043",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                },
+            ],
+        ),
+    ]
+
     # fmt: off
     impute_missing_gac_service_types_rows = [
         ("1-001", date(2024, 1, 1), []),
@@ -1234,7 +1778,7 @@ class CQCLocationsData:
         ("1-002", date(2024, 1, 1), [], None),
         ("1-002", date(2024, 2, 1), None, None),
     ]
-    # fmt: off
+    # fmt: on
 
     list_of_services_rows = [
         (
