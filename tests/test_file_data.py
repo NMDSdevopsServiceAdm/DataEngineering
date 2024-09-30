@@ -2741,7 +2741,7 @@ class CQCLocationsData:
         ),
     ]
     expected_add_column_related_location_rows = [
-        ("loc 1", None, None),
+        ("loc 1", None, RelatedLocation.no_related_location),
         ("loc 2", [], RelatedLocation.no_related_location),
         (
             "loc 3",
