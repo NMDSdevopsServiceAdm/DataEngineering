@@ -56,11 +56,8 @@ def remove_invalid_characters_from_column_names(df: DataFrame) -> DataFrame:
     """
     df_columns = df.columns
     for column in df_columns:
-        df = df.withColumnRenamed(column, column.replace(" ", "_"))
-        column = column.replace(" ", "_")
-        df = df.withColumnRenamed(column, column.replace("(", ""))
-        column = column.replace("(", "")
-        df = df.withColumnRenamed(column, column.replace(")", ""))
+        new_column = column.replace(" ", "_").replace("(", "").replace(")", "")
+        df = df.withColumnRenamed(column, new_column)
     return df
 
 
