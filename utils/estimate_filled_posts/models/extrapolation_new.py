@@ -39,7 +39,6 @@ def model_extrapolation(
         df, column_with_null_values, model_to_extrapolate_from, window_spec_all_rows
     )
     df = combine_extrapolation(df, extrapolated_column_name)
-    df.sort(IndCqc.location_id, IndCqc.unix_time).show(50)
 
     return df
 
