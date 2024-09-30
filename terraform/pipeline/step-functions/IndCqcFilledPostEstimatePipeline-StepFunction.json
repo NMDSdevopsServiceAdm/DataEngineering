@@ -326,9 +326,9 @@
             }
           },
           {
-            "StartAt": "Start sliver validation",
+            "StartAt": "Start silver validation",
             "States": {
-              "Start sliver validation": {
+              "Start silver validation": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::states:startExecution.sync:2",
                 "Parameters": {
