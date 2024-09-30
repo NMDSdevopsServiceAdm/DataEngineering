@@ -232,47 +232,101 @@ class ImputeHistoricRelationshipsTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_impute_historic_relationships_df = self.spark.createDataFrame(
-            Data.impute_historic_relationships_rows,
+    def test_impute_historic_relationships_where_type_is_none_returns_none(self):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_is_none_returns_none_rows,
             Schemas.impute_historic_relationships_schema,
         )
-        self.returned_df = job.impute_historic_relationships(
-            self.test_impute_historic_relationships_df
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_impute_historic_relationships_rows,
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_is_none_returns_none_rows,
             Schemas.expected_impute_historic_relationships_schema,
         )
-        self.expected_data = self.expected_df.collect()
-        self.returned_data = self.returned_df.orderBy(
-            CQCL.location_id,
-            CQCLCleaned.cqc_location_import_date,
-            F.col(f"{CQCLCleaned.imputed_relationships}.{CQCL.related_location_id}"),
-        ).collect()
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_impute_relationships_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
-
-    def test_impute_relationships_returns_same_number_of_rows(self):
-        self.assertTrue(
-            self.test_impute_historic_relationships_df.count(), self.returned_df.count()
+    def test_impute_historic_relationships_where_where_type_is_predecessor_returns_predecessor(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            Schemas.impute_historic_relationships_schema,
         )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_original_relationships_remains_unchanged(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][CQCL.relationships],
-                self.expected_data[i][CQCL.relationships],
-                f"Returned value in row {i} does not match original",
-            )
+    def test_impute_historic_relationships_where_type_is_successor_returns_none_when_registered(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_is_successor_returns_none_when_registered_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_is_successor_returns_none_when_registered_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_impute_relationships_returns_expected_imputed_data(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][CQCLCleaned.imputed_relationships],
-                self.expected_data[i][CQCLCleaned.imputed_relationships],
-                f"Returned value in row {i} does not match expected",
-            )
+    def test_impute_historic_relationships_where_type_is_successor_returns_successor_when_deregistered(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_is_successor_returns_successor_when_deregistered_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_is_successor_returns_successor_when_deregistered_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_impute_historic_relationships_where_type_has_both_types_only_returns_predecessors_when_registered(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_has_both_types_only_returns_predecessors_when_registered_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_has_both_types_only_returns_predecessors_when_registered_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_impute_historic_relationships_where_type_has_both_types_returns_original_values_when_deregistered(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_type_has_both_types_returns_original_values_when_deregistered_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_type_has_both_types_returns_original_values_when_deregistered_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_impute_historic_relationships_where_different_relationships_over_time_returns_first_found(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.impute_historic_relationships_where_different_relationships_over_time_returns_first_found_rows,
+            Schemas.impute_historic_relationships_schema,
+        )
+        returned_df = job.impute_historic_relationships(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_impute_historic_relationships_where_different_relationships_over_time_returns_first_found_rows,
+            Schemas.expected_impute_historic_relationships_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
