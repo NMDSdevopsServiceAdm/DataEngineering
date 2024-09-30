@@ -73,9 +73,7 @@ class LocationsApiCleanedCategoricalValues:
     current_rui_column_values = RUI(CQCLClean.current_rural_urban_ind_11)
     current_cssr_column_values = CurrentCSSR(CQCLClean.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(CQCLClean.contemporary_cssr)
-    related_location_column_values = RelatedLocation(
-        CQCLClean.related_location, contains_null_values=True
-    )
+    related_location_column_values = RelatedLocation(CQCLClean.related_location)
 
 
 @dataclass
@@ -126,9 +124,7 @@ class MergedIndCQCCategoricalValues:
     contemporary_cssr_column_values = ContemporaryCSSR(
         IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
     )
-    related_location_column_values = RelatedLocation(
-        CQCLClean.related_location, contains_null_values=True
-    )
+    related_location_column_values = RelatedLocation(CQCLClean.related_location)
 
 
 @dataclass
@@ -158,9 +154,7 @@ class CleanedIndCQCCategoricalValues:
     ascwds_filtering_rule_column_values = AscwdsFilteringRule(
         IndCQC.ascwds_filtering_rule
     )
-    related_location_column_values = RelatedLocation(
-        CQCLClean.related_location, contains_null_values=True
-    )
+    related_location_column_values = RelatedLocation(CQCLClean.related_location)
 
 
 @dataclass
