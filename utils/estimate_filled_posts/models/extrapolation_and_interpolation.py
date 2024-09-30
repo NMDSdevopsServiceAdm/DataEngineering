@@ -3,8 +3,7 @@ from typing import Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.estimate_filled_posts.models.extrapolation_new import model_extrapolation
-
-# from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from utils.estimate_filled_posts.models.interpolation_new import model_interpolation
 
 
 def model_extrapolation_and_interpolation(
@@ -38,11 +37,12 @@ def model_extrapolation_and_interpolation(
         model_column_name,
         extrapolation_model_column_name,
     )
-
-    # TODO - Interpolation process
-    # df = model_interpolation(
-    #     df, column_with_null_values, model_column_name, interpolation_model_column_name
-    # )
+    df = model_interpolation(
+        df,
+        column_with_null_values,
+        model_column_name,
+        interpolation_model_column_name,
+    )
 
     return df
 
