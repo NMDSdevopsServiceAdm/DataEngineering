@@ -17,6 +17,7 @@ CAPACITY_TRACKER_NON_RES_COLUMNS = [
     Keys.day,
     Keys.import_date,
 ]
+OUTLIER_CUTOFF = 5000
 
 
 def main(
@@ -36,6 +37,13 @@ def main(
         capacity_tracker_non_res_df,
         Keys.import_date,
         CTNRClean.capacity_tracker_import_date,
+    )
+    columns_to_bound = [CTNR.cqc_care_workers_employed, CTNR.service_user_count]
+    capacity_tracker_non_res_df = cUtils.set_bounds_for_columns(
+        capacity_tracker_non_res_df,
+        columns_to_bound,
+        columns_to_bound,
+        upper_limit=OUTLIER_CUTOFF,
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
