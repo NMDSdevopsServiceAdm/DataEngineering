@@ -582,6 +582,16 @@ class CapacityTrackerNonResSchema:
         ]
     )
 
+    remove_invalid_characters_from_column_names_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField("column with spaces", StringType(), True),
+            StructField("column_without_spaces", StringType(), True),
+            StructField("column_with_brackets()", StringType(), True),
+            StructField("column_with_brackets and spaces()", StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCLocationsSchema:
