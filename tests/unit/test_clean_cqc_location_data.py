@@ -279,43 +279,53 @@ class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_get_relationships_where_type_is_predecessor_df = (
-            self.spark.createDataFrame(
-                Data.get_relationships_where_type_is_predecessor_rows,
-                Schemas.get_relationships_where_type_is_predecessor_schema,
-            )
+    def test_get_relationships_where_type_is_none_returns_none(self):
+        test_df = self.spark.createDataFrame(
+            Data.get_relationships_where_type_is_none_returns_none_rows,
+            Schemas.get_relationships_where_type_is_predecessor_schema,
         )
-        self.returned_df = job.get_relationships_where_type_is_predecessor(
-            self.test_get_relationships_where_type_is_predecessor_df
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_get_relationships_where_type_is_predecessor_rows,
+        returned_df = job.get_relationships_where_type_is_predecessor(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_get_relationships_where_type_is_none_returns_none_rows,
             Schemas.expected_get_relationships_where_type_is_predecessor_schema,
         )
-        self.expected_data = self.expected_df.collect()
-        self.returned_data = self.returned_df.orderBy(
-            CQCL.location_id,
-            CQCLCleaned.cqc_location_import_date,
-        ).collect()
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_get_relationships_where_type_is_predecessor_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
-
-    def test_get_relationships_where_type_is_predecessor_returns_same_number_of_rows(
-        self,
-    ):
-        self.assertTrue(
-            self.test_get_relationships_where_type_is_predecessor_df.count(),
-            self.returned_df.count(),
+    def test_get_relationships_where_type_is_successor_returns_none(self):
+        test_df = self.spark.createDataFrame(
+            Data.get_relationships_where_type_is_successor_returns_none_rows,
+            Schemas.get_relationships_where_type_is_predecessor_schema,
         )
+        returned_df = job.get_relationships_where_type_is_predecessor(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_get_relationships_where_type_is_successor_returns_none_rows,
+            Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_relationships_predecessors_only_returns_expected_data(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][CQCLCleaned.relationships_predecessors_only],
-                self.expected_data[i][CQCLCleaned.relationships_predecessors_only],
-                f"Returned value in row {i} does not match expected",
-            )
+    def test_get_relationships_where_type_is_predecessor_returns_predecessor(self):
+        test_df = self.spark.createDataFrame(
+            Data.get_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_df = job.get_relationships_where_type_is_predecessor(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_get_relationships_where_type_is_predecessor_returns_predecessor_rows,
+            Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_get_relationships_where_type_has_both_types_only_returns_predecessor(self):
+        test_df = self.spark.createDataFrame(
+            Data.get_relationships_where_type_has_both_types_only_returns_predecessor_rows,
+            Schemas.get_relationships_where_type_is_predecessor_schema,
+        )
+        returned_df = job.get_relationships_where_type_is_predecessor(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_get_relationships_where_type_has_both_types_only_returns_predecessor_rows,
+            Schemas.expected_get_relationships_where_type_is_predecessor_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):

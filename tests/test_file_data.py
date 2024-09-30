@@ -1633,8 +1633,13 @@ class CQCLocationsData:
         ),
     ]
 
-    get_relationships_where_type_is_predecessor_rows = [
+    get_relationships_where_type_is_none_returns_none_rows = [
         ("1-001", date(2024, 1, 1), RegistrationStatus.deregistered, None),
+    ]
+    expected_get_relationships_where_type_is_none_returns_none_rows = [
+        ("1-001", date(2024, 1, 1), RegistrationStatus.deregistered, None, None),
+    ]
+    get_relationships_where_type_is_successor_returns_none_rows = [
         (
             "1-002",
             date(2024, 2, 1),
@@ -1648,6 +1653,24 @@ class CQCLocationsData:
                 }
             ],
         ),
+    ]
+    expected_get_relationships_where_type_is_successor_returns_none_rows = [
+        (
+            "1-002",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0021",
+                    CQCL.related_location_name: "Name after",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "Location Move",
+                }
+            ],
+            None,
+        ),
+    ]
+    get_relationships_where_type_is_predecessor_returns_predecessor_rows = [
         (
             "1-003",
             date(2024, 2, 1),
@@ -1661,6 +1684,31 @@ class CQCLocationsData:
                 }
             ],
         ),
+    ]
+    expected_get_relationships_where_type_is_predecessor_returns_predecessor_rows = [
+        (
+            "1-003",
+            date(2024, 2, 1),
+            RegistrationStatus.deregistered,
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "1-0031",
+                    CQCL.related_location_name: "Name before",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "New Provider",
+                }
+            ],
+        ),
+    ]
+    get_relationships_where_type_has_both_types_only_returns_predecessor_rows = [
         (
             "1-004",
             date(2024, 2, 1),
@@ -1687,43 +1735,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_get_relationships_where_type_is_predecessor_rows = [
-        ("1-001", date(2024, 1, 1), RegistrationStatus.deregistered, None, None),
-        (
-            "1-002",
-            date(2024, 2, 1),
-            RegistrationStatus.deregistered,
-            [
-                {
-                    CQCL.related_location_id: "1-0021",
-                    CQCL.related_location_name: "Name after",
-                    CQCL.type: "HSCA Successor",
-                    CQCL.reason: "Location Move",
-                }
-            ],
-            None,
-        ),
-        (
-            "1-003",
-            date(2024, 2, 1),
-            RegistrationStatus.deregistered,
-            [
-                {
-                    CQCL.related_location_id: "1-0031",
-                    CQCL.related_location_name: "Name before",
-                    CQCL.type: "HSCA Predecessor",
-                    CQCL.reason: "New Provider",
-                }
-            ],
-            [
-                {
-                    CQCL.related_location_id: "1-0031",
-                    CQCL.related_location_name: "Name before",
-                    CQCL.type: "HSCA Predecessor",
-                    CQCL.reason: "New Provider",
-                }
-            ],
-        ),
+    expected_get_relationships_where_type_has_both_types_only_returns_predecessor_rows = [
         (
             "1-004",
             date(2024, 2, 1),
