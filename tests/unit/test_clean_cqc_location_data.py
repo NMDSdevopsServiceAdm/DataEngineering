@@ -244,6 +244,11 @@ class ImputeHistoricRelationshipsTests(CleanCQCLocationDatasetTests):
             Schemas.expected_impute_historic_relationships_schema,
         )
         self.expected_data = self.expected_df.collect()
+        self.returned_data = self.returned_df.orderBy(
+            CQCL.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            F.col(f"{CQCLCleaned.imputed_relationships}.{CQCL.related_location_id}"),
+        ).collect()
 
     def test_impute_relationships_returns_expected_columns(self):
         self.assertTrue(self.returned_df.columns, self.expected_df.columns)
@@ -254,27 +259,17 @@ class ImputeHistoricRelationshipsTests(CleanCQCLocationDatasetTests):
         )
 
     def test_original_relationships_remains_unchanged(self):
-        returned_data = self.returned_df.orderBy(
-            CQCL.location_id,
-            CQCLCleaned.cqc_location_import_date,
-            F.col(f"{CQCLCleaned.relationships}.{CQCL.related_location_id}"),
-        ).collect()
-        for i in range(len(returned_data)):
+        for i in range(len(self.returned_data)):
             self.assertEqual(
-                returned_data[i][CQCL.relationships],
+                self.returned_data[i][CQCL.relationships],
                 self.expected_data[i][CQCL.relationships],
                 f"Returned value in row {i} does not match original",
             )
 
     def test_impute_relationships_returns_expected_imputed_data(self):
-        returned_data = self.returned_df.orderBy(
-            CQCL.location_id,
-            CQCLCleaned.cqc_location_import_date,
-            F.col(f"{CQCLCleaned.imputed_relationships}.{CQCL.related_location_id}"),
-        ).collect()
-        for i in range(len(returned_data)):
+        for i in range(len(self.returned_data)):
             self.assertEqual(
-                returned_data[i][CQCLCleaned.imputed_relationships],
+                self.returned_data[i][CQCLCleaned.imputed_relationships],
                 self.expected_data[i][CQCLCleaned.imputed_relationships],
                 f"Returned value in row {i} does not match expected",
             )
@@ -298,6 +293,10 @@ class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
             Schemas.expected_get_relationships_where_type_is_predecessor_schema,
         )
         self.expected_data = self.expected_df.collect()
+        self.returned_data = self.returned_df.orderBy(
+            CQCL.location_id,
+            CQCLCleaned.cqc_location_import_date,
+        ).collect()
 
     def test_get_relationships_where_type_is_predecessor_returns_expected_columns(self):
         self.assertTrue(self.returned_df.columns, self.expected_df.columns)
@@ -311,16 +310,9 @@ class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
         )
 
     def test_relationships_predecessors_only_returns_expected_data(self):
-        returned_data = self.returned_df.orderBy(
-            CQCL.location_id,
-            CQCLCleaned.cqc_location_import_date,
-            F.col(
-                f"{CQCLCleaned.relationships_predecessors_only}.{CQCL.related_location_id}"
-            ),
-        ).collect()
-        for i in range(len(returned_data)):
+        for i in range(len(self.returned_data)):
             self.assertEqual(
-                returned_data[i][CQCLCleaned.relationships_predecessors_only],
+                self.returned_data[i][CQCLCleaned.relationships_predecessors_only],
                 self.expected_data[i][CQCLCleaned.relationships_predecessors_only],
                 f"Returned value in row {i} does not match expected",
             )
