@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import DataFrame
+
 from utils import utils
 
 
@@ -37,9 +39,26 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
         f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
     )
     df = utils.read_csv(source, delimiter)
+    df = remove_invalid_characters_from_column_names(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination, mode="overwrite")
+
+
+def remove_invalid_characters_from_column_names(df: DataFrame) -> DataFrame:
+    """
+    Replaces invalid characters in column names with characters to match names in current files.
+
+    Args:
+        df(DataFrame): A dataframe with capacity tracker data
+    Returns:
+        DataFrame: A dataframe with invalid characters in column names with characters to match names in current files.
+    """
+    df_columns = df.columns
+    for column in df_columns:
+        new_column = column.replace(" ", "_").replace("(", "").replace(")", "")
+        df = df.withColumnRenamed(column, new_column)
+    return df
 
 
 if __name__ == "__main__":
