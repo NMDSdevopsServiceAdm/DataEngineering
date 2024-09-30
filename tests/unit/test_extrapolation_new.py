@@ -71,7 +71,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             .orderBy(IndCqc.unix_time)
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
-        self.returned_df = job.calculate_first_and_last_submission_dates(
+        self.returned_df = job.calculate_first_and_final_submission_dates(
             self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
@@ -87,13 +87,13 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         self.expected_data = self.expected_df.collect()
 
     @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
-    def test_calculate_first_and_last_submission_dates_calls_correct_functions(
+    def test_calculate_first_and_final_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
     ):
         get_selected_value_mock.return_value = self.input_df
 
-        job.calculate_first_and_last_submission_dates(
+        job.calculate_first_and_final_submission_dates(
             self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
@@ -114,18 +114,18 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.unix_time,
-            IndCqc.last_submission_time,
+            IndCqc.final_submission_time,
             "max",
         )
 
-    def test_calculate_first_and_last_submission_dates_returns_same_number_of_rows(
+    def test_calculate_first_and_final_submission_dates_returns_same_number_of_rows(
         self,
     ):
         self.assertEqual(self.input_df.count(), self.returned_df.count())
 
-    def test_calculate_first_and_last_submission_dates_returns_new_columns(self):
+    def test_calculate_first_and_final_submission_dates_returns_new_columns(self):
         self.assertIn(IndCqc.first_submission_time, self.returned_df.columns)
-        self.assertIn(IndCqc.last_submission_time, self.returned_df.columns)
+        self.assertIn(IndCqc.final_submission_time, self.returned_df.columns)
 
     def test_returned_values_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
