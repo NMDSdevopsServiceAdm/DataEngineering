@@ -382,7 +382,6 @@ def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with an additional column for 'HSCA Predecessor' relationships.
     """
-    df.sort(CQCL.location_id, CQCLClean.cqc_location_import_date).show(truncate=False)
     distinct_df = df.select(
         CQCL.location_id, CQCLClean.first_known_relationships
     ).distinct()
