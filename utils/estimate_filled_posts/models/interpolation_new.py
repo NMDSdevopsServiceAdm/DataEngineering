@@ -114,6 +114,18 @@ def calculate_proportion_of_time_between_submissions(
     window_spec_backwards: Window,
     window_spec_forwards: Window,
 ) -> DataFrame:
+    """
+    Calculates the proportion of time, based on unix_time of each row, between two non-null submission times.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        column_with_null_values (str): The name of the column that contains null values.
+        window_spec_backwards (Window): The window specification for getting the unix_time of the previous non-null value.
+        window_spec_forward (Window): The window specification for getting the unix_time of the next non-null value.
+
+    Returns:
+        DataFrame: The DataFrame with the new column added.
+    """
     df = get_selected_value(
         df,
         window_spec_backwards,
