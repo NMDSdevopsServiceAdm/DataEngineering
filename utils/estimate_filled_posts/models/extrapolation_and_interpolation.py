@@ -40,8 +40,13 @@ def model_extrapolation_and_interpolation(
     df = model_interpolation(
         df,
         column_with_null_values,
-        model_column_name,
         interpolation_model_column_name,
+    )
+    df = df.drop(
+        IndCqc.extrapolation_backwards,
+        IndCqc.extrapolation_forwards,
+        IndCqc.extrapolation_residual,
+        IndCqc.proportion_of_time_between_submissions,
     )
 
     return df
