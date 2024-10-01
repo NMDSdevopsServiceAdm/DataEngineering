@@ -5048,6 +5048,28 @@ class ModelInterpolationNew:
         ("1-001", date(2024, 6, 1), 1717200000, None, 15.3, None),
     ]
 
+    time_between_submissions_rows = [
+        ("1-001", date(2024, 2, 1), 1000000200, None),
+        ("1-001", date(2024, 3, 1), 1000000300, 5.0),
+        ("1-001", date(2024, 4, 1), 1000000400, None),
+        ("1-001", date(2024, 5, 1), 1000000500, None),
+        ("1-001", date(2024, 6, 1), 1000000600, None),
+        ("1-001", date(2024, 7, 1), 1000000700, 15.0),
+        ("1-001", date(2023, 8, 1), 1000000800, None),
+    ]
+    expected_time_between_submissions_rows = [
+        ("1-001", date(2024, 2, 1), 1000000200, None, None),
+        ("1-001", date(2024, 3, 1), 1000000300, 5.0, None),
+        ("1-001", date(2024, 4, 1), 1000000400, None, 0.25),
+        ("1-001", date(2024, 5, 1), 1000000500, None, 0.5),
+        ("1-001", date(2024, 6, 1), 1000000600, None, 0.75),
+        ("1-001", date(2024, 7, 1), 1000000700, 15.0, None),
+        ("1-001", date(2023, 8, 1), 1000000800, None, None),
+    ]
+    time_between_submissions_mock_rows = [
+        ("1-001", date(2024, 2, 1), 12345, None, 12345, 12345),
+    ]
+
 
 @dataclass
 class ModelExtrapolation:

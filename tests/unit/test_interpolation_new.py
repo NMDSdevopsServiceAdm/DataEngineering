@@ -144,3 +144,91 @@ class CalculateResidualsTests(ModelInterpolationTests):
                 expected_data[i][IndCqc.extrapolation_residual],
                 f"Returned value in row {i} does not match expected",
             )
+
+
+class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
+        self.window_spec_backwards = (
+            Window.partitionBy(IndCqc.location_id)
+            .orderBy(IndCqc.unix_time)
+            .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+        )
+        self.window_spec_forward = (
+            Window.partitionBy(IndCqc.location_id)
+            .orderBy(IndCqc.unix_time)
+            .rowsBetween(Window.currentRow, Window.unboundedFollowing)
+        )
+        self.input_df = self.spark.createDataFrame(
+            Data.time_between_submissions_rows,
+            Schemas.time_between_submissions_schema,
+        )
+        self.mock_df = self.spark.createDataFrame(
+            Data.time_between_submissions_mock_rows,
+            Schemas.time_between_submissions_mock_schema,
+        )
+        self.returned_df = job.calculate_proportion_of_time_between_submissions(
+            self.input_df,
+            self.column_with_null_values,
+            self.window_spec_backwards,
+            self.window_spec_forward,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_time_between_submissions_rows,
+            Schemas.expected_time_between_submissions_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    @patch("utils.estimate_filled_posts.models.interpolation_new.get_selected_value")
+    def test_calculate_proportion_of_time_between_submissions_calls_correct_functions(
+        self,
+        get_selected_value_mock: Mock,
+    ):
+        get_selected_value_mock.return_value = self.mock_df
+
+        job.calculate_proportion_of_time_between_submissions(
+            self.input_df,
+            self.column_with_null_values,
+            self.window_spec_backwards,
+            self.window_spec_forward,
+        )
+
+        self.assertEqual(get_selected_value_mock.call_count, 2)
+
+        get_selected_value_mock.assert_any_call(
+            self.input_df,
+            self.window_spec_backwards,
+            self.column_with_null_values,
+            IndCqc.unix_time,
+            IndCqc.previous_submission_time,
+            "last",
+        )
+        get_selected_value_mock.assert_any_call(
+            ANY,
+            self.window_spec_forward,
+            self.column_with_null_values,
+            IndCqc.unix_time,
+            IndCqc.next_submission_time,
+            "first",
+        )
+
+    def test_calculate_proportion_of_time_between_submissions_returns_same_number_of_rows(
+        self,
+    ):
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
+
+    def test_proportion_of_time_between_submissions_added_as_a_new_column(self):
+        self.assertIn(
+            IndCqc.proportion_of_time_between_submissions, self.returned_df.columns
+        )
+
+    def test_returned_proportion_of_time_between_submissions_values_match_expected(
+        self,
+    ):
+        self.assertEqual(self.returned_data, self.expected_data)

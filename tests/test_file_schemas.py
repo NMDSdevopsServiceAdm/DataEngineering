@@ -2638,7 +2638,7 @@ class ModelInterpolationNew:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
@@ -2648,7 +2648,7 @@ class ModelInterpolationNew:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
@@ -2657,6 +2657,28 @@ class ModelInterpolationNew:
         [
             *calculate_residual_schema,
             StructField(IndCQC.extrapolation_residual, DoubleType(), True),
+        ]
+    )
+
+    time_between_submissions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_time_between_submissions_schema = StructType(
+        [
+            *time_between_submissions_schema,
+            StructField(IndCQC.proportion_of_time_between_submissions, DoubleType(), True),
+        ]
+    )
+    time_between_submissions_mock_schema = StructType(
+        [
+            *time_between_submissions_schema,
+            StructField(IndCQC.previous_submission_time, IntegerType(), True),
+            StructField(IndCQC.next_submission_time, IntegerType(), False),
         ]
     )
 
