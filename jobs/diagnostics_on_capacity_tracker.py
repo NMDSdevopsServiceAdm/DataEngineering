@@ -31,6 +31,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.extrapolation_non_res_with_dormancy_model,
     IndCQC.extrapolation_rolling_average_model,
     IndCQC.estimate_filled_posts,
+    IndCQC.current_region,
+    IndCQC.current_cssr,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -155,6 +157,7 @@ def run_diagnostics_for_non_residential(
     filled_posts_df = utils.select_rows_with_value(
         filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
     )
+    filled_posts_df = add_org_size_column(filled_posts_df)
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
@@ -202,6 +205,13 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def add_org_size_column(df: DataFrame) -> DataFrame:
+    """
+    Adds a column with banded sizes
+    """
+    return df
 
 
 if __name__ == "__main__":
