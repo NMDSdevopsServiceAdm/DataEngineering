@@ -102,12 +102,14 @@ class IndCqcColumns:
         "extrapolation_non_res_with_dormancy_model"
     )
     extrapolation_ratio: str = "extrapolation_ratio"
+    extrapolation_residual: str = "extrapolation_residual"
     extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
     )
+    final_submission_time: str = "final_submission_time"
     first_filled_posts: str = "first_filled_posts"
     first_model_value: str = "first_model_value"
     first_non_null_value: str = "first_non_null_value"
@@ -126,7 +128,6 @@ class IndCqcColumns:
     )
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
-    last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
     locations_at_provider_count: str = "locations_at_provider_count"
     locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
@@ -143,6 +144,7 @@ class IndCqcColumns:
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
     name: str = CQCLClean.name
+    next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
     non_res_model: str = "non_res_with_pir_model"
@@ -174,9 +176,13 @@ class IndCqcColumns:
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
+    previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
+    proportion_of_time_between_submissions: str = (
+        "proportion_of_time_between_submissions"
+    )
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
