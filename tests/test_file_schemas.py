@@ -1743,6 +1743,21 @@ class IndCQCDataUtils:
         ]
     )
 
+    get_selected_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.rolling_average_model, FloatType(), True),
+        ]
+    )
+    expected_get_selected_value_schema = StructType(
+        [
+            *get_selected_value_schema,
+            StructField("new_column", FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleanIndCQCData:
@@ -2614,21 +2629,6 @@ class ModelExtrapolationNew:
         [
             *combine_extrapolation_schema,
             StructField("extrapolation_model_name", FloatType(), True),
-        ]
-    )
-
-    get_selected_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
-        ]
-    )
-    expected_get_selected_value_schema = StructType(
-        [
-            *get_selected_value_schema,
-            StructField("new_column", FloatType(), True),
         ]
     )
 

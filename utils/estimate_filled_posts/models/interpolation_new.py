@@ -4,6 +4,7 @@ from typing import Tuple
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 def model_interpolation(
@@ -116,68 +117,4 @@ def calculate_proportion_of_time_between_submissions(
         ),
     ).drop(IndCqc.previous_submission_time, IndCqc.next_submission_time)
 
-    return df
-
-
-def get_selected_value(
-    df: DataFrame,
-    window_spec: Window,
-    column_with_null_values: str,
-    column_with_data: str,
-    new_column: str,
-    selection: str,
-) -> DataFrame:
-    """
-    Creates a new column with the selected value (min, max, first or last) from a given column.
-
-    This function creates a new column by selecting a specified value over a given window on a given dataframe. It will
-    only select values in the column with data that have null values in the original column.
-
-    Args:
-        df (DataFrame): A dataframe containing the supplied columns.
-        window_spec (Window): A window describing how to prepare the dataframe.
-        column_with_null_values (str): A column with missing data.
-        column_with_data (str): A column with data for all the rows that column_with_null_values has data. This can be column_with_null_values itself.
-        new_column (str): The name of the new column containing the resulting selected values.
-        selection (str): One of 'min', 'max', 'first', or 'last'. This determines which pyspark window function will be used.
-
-    Returns:
-        DataFrame: A dataframe containing a new column with the selected value populated through each window.
-
-    Raises:
-        ValueError: If 'selection' is not one of the four permitted pyspark window functions.
-    """
-    if selection == "min":
-        method: function = F.min
-    elif selection == "max":
-        method: function = F.max
-    elif selection == "first":
-        method: function = F.first
-    elif selection == "last":
-        method: function = F.last
-    else:
-        raise ValueError(
-            f"Error: The selection parameter '{selection}' was not found. Please use 'min', 'max', 'first', or 'last'."
-        )
-    if (selection == "min") | (selection == "max"):
-        df = df.withColumn(
-            new_column,
-            method(
-                F.when(
-                    F.col(column_with_null_values).isNotNull(),
-                    F.col(column_with_data),
-                )
-            ).over(window_spec),
-        )
-    else:
-        df = df.withColumn(
-            new_column,
-            method(
-                F.when(
-                    F.col(column_with_null_values).isNotNull(),
-                    F.col(column_with_data),
-                ),
-                ignorenulls=True,
-            ).over(window_spec),
-        )
     return df
