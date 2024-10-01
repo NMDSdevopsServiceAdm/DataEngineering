@@ -28,9 +28,7 @@ def model_interpolation(
     """
     window_spec_backwards, window_spec_forwards = define_window_specs()
 
-    df = calculate_residual_between_non_null_value_and_extrapolation_forwards(
-        df, column_with_null_values, window_spec_forwards
-    )
+    df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
@@ -68,9 +66,24 @@ def define_window_specs() -> Tuple[Window, Window]:
     return window_spec_backwards, window_spec_forward
 
 
-def calculate_residual_between_non_null_value_and_extrapolation_forwards(
+def calculate_residuals(
     df: DataFrame, column_with_null_values: str, window_spec_forward: Window
 ) -> DataFrame:
+    """
+    Calculate the residual between non-null values and the extrapolation_forwards value.
+
+    This function computes the residuals between non-null values in a specified column and the forward extrapolated values.
+    It creates a temporary column to store the difference between the non-null values and the extrapolated values, then calculates
+    the first non-null residual over a specified window and assigns it to a new column.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        column_with_null_values (str): The name of the column that contains null values.
+        window_spec_forward (Window): The window specification for getting the next residual value.
+
+    Returns:
+        DataFrame: The DataFrame with the calculated residuals in a new column.
+    """
     temp_col: str = "temp_col"
     df = df.withColumn(
         temp_col,

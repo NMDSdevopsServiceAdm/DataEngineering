@@ -2644,6 +2644,22 @@ class ModelInterpolationNew:
         ]
     )
 
+    calculate_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
+        ]
+    )
+    expected_calculate_residual_schema = StructType(
+        [
+            *calculate_residual_schema,
+            StructField(IndCQC.extrapolation_residual, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelExtrapolation:

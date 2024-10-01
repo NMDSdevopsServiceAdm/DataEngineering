@@ -53,3 +53,94 @@ class DefineWindowSpecsTests(ModelInterpolationTests):
         self.assertEqual(len(returned_window_specs), 2)
         self.assertIsInstance(returned_window_specs[0], WindowSpec)
         self.assertIsInstance(returned_window_specs[1], WindowSpec)
+
+
+class CalculateResidualsTests(ModelInterpolationTests):
+    def setUp(self):
+        super().setUp()
+
+        self.window_spec: Window = (
+            Window.partitionBy(IndCqc.location_id)
+            .orderBy(IndCqc.unix_time)
+            .rowsBetween(Window.currentRow, Window.unboundedFollowing)
+        )
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_residual_returns_none_when_extrapolation_forwards_is_none_rows,
+            Schemas.calculate_residual_schema,
+        )
+        self.returned_df = job.calculate_residuals(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            self.window_spec,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_returns_none_when_extrapolation_forwards_is_none_rows,
+            Schemas.expected_calculate_residual_schema,
+        )
+
+    def test_calculate_residuals_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_interpolation_returns_none_when_extrapolation_forwards_is_none(
+        self,
+    ):
+        returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        expected_data = self.expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.extrapolation_residual],
+                expected_data[i][IndCqc.extrapolation_residual],
+                f"Returned value in row {i} does not match expected",
+            )
+
+    def test_combine_interpolation_returns_expected_values_when_extrapolation_forwards_is_known(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residual_returns_expected_values_when_extrapolation_forwards_is_known_rows,
+            Schemas.calculate_residual_schema,
+        )
+        returned_df = job.calculate_residuals(
+            test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            self.window_spec,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_returns_expected_values_when_extrapolation_forwards_is_known_rows,
+            Schemas.expected_calculate_residual_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.extrapolation_residual],
+                expected_data[i][IndCqc.extrapolation_residual],
+                f"Returned value in row {i} does not match expected",
+            )
+
+    def test_combine_interpolation_returns_none_date_after_final_non_null_submission(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residual_returns_none_date_after_final_non_null_submission_rows,
+            Schemas.calculate_residual_schema,
+        )
+        returned_df = job.calculate_residuals(
+            test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            self.window_spec,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residual_returns_none_date_after_final_non_null_submission_rows,
+            Schemas.expected_calculate_residual_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.extrapolation_residual],
+                expected_data[i][IndCqc.extrapolation_residual],
+                f"Returned value in row {i} does not match expected",
+            )

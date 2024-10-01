@@ -5017,6 +5017,37 @@ class ModelInterpolationNew:
         ("1-001", date(2024, 6, 1), 1717200000, None, 13.93),
     ]
 
+    calculate_residual_returns_none_when_extrapolation_forwards_is_none_rows = [
+        ("1-001", date(2023, 1, 1), 1672531200, None, None),
+        ("1-001", date(2023, 3, 1), 1677628800, 40.0, None),
+    ]
+    expected_calculate_residual_returns_none_when_extrapolation_forwards_is_none_rows = [
+        ("1-001", date(2023, 1, 1), 1672531200, None, None, None),
+        ("1-001", date(2023, 3, 1), 1677628800, 40.0, None, None),
+    ]
+    calculate_residual_returns_expected_values_when_extrapolation_forwards_is_known_rows = [
+        ("1-001", date(2023, 4, 1), 1680307200, None, 42.0),
+        ("1-001", date(2023, 5, 1), 1682899200, None, 44.0),
+        ("1-001", date(2024, 3, 1), 1709251200, 5.0, 52.0),
+        ("1-001", date(2024, 4, 1), 1711929600, None, 5.1),
+        ("1-001", date(2024, 5, 1), 1714521600, 15.0, 5.2),
+    ]
+    expected_calculate_residual_returns_expected_values_when_extrapolation_forwards_is_known_rows = [
+        ("1-001", date(2023, 4, 1), 1680307200, None, 42.0, -47.0),
+        ("1-001", date(2023, 5, 1), 1682899200, None, 44.0, -47.0),
+        ("1-001", date(2024, 3, 1), 1709251200, 5.0, 52.0, -47.0),
+        ("1-001", date(2024, 4, 1), 1711929600, None, 5.1, 9.8),
+        ("1-001", date(2024, 5, 1), 1714521600, 15.0, 5.2, 9.8),
+    ]
+    calculate_residual_returns_none_date_after_final_non_null_submission_rows = [
+        ("1-001", date(2024, 5, 1), 1714521600, 15.0, 5.2),
+        ("1-001", date(2024, 6, 1), 1717200000, None, 15.3),
+    ]
+    expected_calculate_residual_returns_none_date_after_final_non_null_submission_rows = [
+        ("1-001", date(2024, 5, 1), 1714521600, 15.0, 5.2, 9.8),
+        ("1-001", date(2024, 6, 1), 1717200000, None, 15.3, None),
+    ]
+
 
 @dataclass
 class ModelExtrapolation:
