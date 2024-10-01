@@ -50,7 +50,7 @@ def define_window_specs() -> Tuple[Window, Window]:
     """
     Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
 
-    The first window specification ('window_spec_all_rows') includes all rows in the partition.
+    The first window specification ('window_spec_backwards') includes all rows up to the current row.
     The second window specification ('window_spec_forward') includes all rows from the current row onwards.
 
     Returns:

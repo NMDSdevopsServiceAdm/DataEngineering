@@ -41,3 +41,15 @@ class MainTests(ModelInterpolationTests):
 
     def test_model_interpolation_and_interpolation_returns_new_columns(self):
         self.assertIn(self.interpolation_model_column_name, self.returned_df.columns)
+
+
+class DefineWindowSpecsTests(ModelInterpolationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_define_window_spec_return_type(self):
+        returned_window_specs = job.define_window_specs()
+        self.assertIsInstance(returned_window_specs, tuple)
+        self.assertEqual(len(returned_window_specs), 2)
+        self.assertIsInstance(returned_window_specs[0], WindowSpec)
+        self.assertIsInstance(returned_window_specs[1], WindowSpec)
