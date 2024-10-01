@@ -97,7 +97,7 @@ def calculate_first_and_final_submission_dates(
         column_with_null_values,
         IndCqc.unix_time,
         IndCqc.final_submission_time,
-        "max",
+        "last",
     )
     return df
 
