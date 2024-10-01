@@ -108,9 +108,9 @@ def extrapolation_forwards(
     window_spec: Window,
 ) -> DataFrame:
     """
-    Calculates the backward extrapolation and adds it as a new column 'extrapolation_forwards'.
+    Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
-    Calculates the backward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
+    Calculates the forward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
@@ -237,11 +237,31 @@ def get_selected_value(
     new_column: str,
     selection: str,
 ) -> DataFrame:
+    """
+    Creates a new column with the selected value (first or last) from a given column.
+
+    This function creates a new column by selecting a specified value over a given window on a given dataframe. It will
+    only select values in the column with data that have null values in the original column.
+
+    Args:
+        df (DataFrame): A dataframe containing the supplied columns.
+        window_spec (Window): A window describing how to prepare the dataframe.
+        column_with_null_values (str): A column with missing data.
+        column_with_data (str): A column with data for all the rows that column_with_null_values has data. This can be column_with_null_values itself.
+        new_column (str): The name of the new column containing the resulting selected values.
+        selection (str): One of 'first' or 'last'. This determines which pyspark window function will be used.
+
+    Returns:
+        DataFrame: A dataframe containing a new column with the selected value populated through each window.
+
+    Raises:
+        ValueError: If 'selection' is not one of the two permitted pyspark window functions.
+    """
     selection_methods = {"first": F.first, "last": F.last}
 
     if selection not in selection_methods:
         raise ValueError(
-            f"Error: The selection parameter '{selection}' was not found. Please use 'first', or 'last'."
+            f"Error: The selection parameter '{selection}' was not found. Please use 'first' or 'last'."
         )
 
     method = selection_methods[selection]
