@@ -4,7 +4,6 @@ from datetime import date
 from pyspark.ml.linalg import Vectors
 
 from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
     CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -4881,44 +4880,24 @@ class ModelPrimaryServiceRollingAverage:
 
 @dataclass
 class ModelExtrapolationAndInterpolation:
-    # fmt: off
-    extrapolation_and_interpolation_rows = [ # TODO consider slimming down this data once the function is complete
-        ("1-001", date(2023, 1, 1), 1672531200, 15.0, PrimaryServiceType.care_home_only, 15.0),
-        ("1-001", date(2023, 2, 1), 1675209600, None, PrimaryServiceType.care_home_only, 15.1),
-        ("1-001", date(2023, 3, 1), 1677628800, 30.0, PrimaryServiceType.care_home_only, 15.2),
-        ("1-002", date(2023, 1, 1), 1672531200, 4.0, PrimaryServiceType.non_residential, 50.3),
-        ("1-002", date(2023, 2, 1), 1675209600, None, PrimaryServiceType.non_residential, 50.5),
-        ("1-002", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
-        ("1-002", date(2023, 4, 1), 1680303600, None, PrimaryServiceType.non_residential, 50.1),
-        ("1-003", date(2023, 1, 1), 1672531200, None, PrimaryServiceType.non_residential, 50.3),
-        ("1-003", date(2023, 2, 1), 1675209600, 20.0, PrimaryServiceType.non_residential, 50.5),
-        ("1-003", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
-        ("1-004", date(2023, 3, 1), 1677628800, None, PrimaryServiceType.non_residential, 50.7),
-        ("1-005", date(2023, 1, 1), 1672531200, None, PrimaryServiceType.non_residential, 1000.0),
-        ("1-005", date(2023, 2, 1), 1675209600, None, PrimaryServiceType.non_residential, 1050.0),
-        ("1-005", date(2023, 3, 1), 1677628800, 40.0, PrimaryServiceType.non_residential, 1000.0),
-        ("1-005", date(2023, 4, 1), 1680307200, None, PrimaryServiceType.non_residential, 1050.0),
-        ("1-005", date(2023, 5, 1), 1682899200, None, PrimaryServiceType.non_residential, 1100.0),
-        ("1-005", date(2023, 6, 1), 1685577600, None, PrimaryServiceType.non_residential, 1150.0),
-        ("1-005", date(2023, 7, 1), 1688169600, None, PrimaryServiceType.non_residential, 1200.0),
-        ("1-005", date(2023, 8, 1), 1690848000, None, PrimaryServiceType.non_residential, 1250.0),
-        ("1-005", date(2023, 9, 1), 1693526400, None, PrimaryServiceType.non_residential, 1300.0),
-        ("1-005", date(2023, 10, 1), 1696118400, None, PrimaryServiceType.non_residential, 1350.0),
-        ("1-005", date(2023, 11, 1), 1698796800, None, PrimaryServiceType.non_residential, 1400.0),
-        ("1-005", date(2023, 12, 1), 1701388800, None, PrimaryServiceType.non_residential, 1450.0),
-        ("1-005", date(2024, 1, 1), 1704067200, None, PrimaryServiceType.non_residential, 1400.0),
-        ("1-005", date(2024, 2, 1), 1706745600, None, PrimaryServiceType.non_residential, 1350.0),
-        ("1-005", date(2024, 3, 1), 1709251200, 5.0, PrimaryServiceType.non_residential, 1300.0),
-        ("1-005", date(2024, 4, 1), 1711929600, None, PrimaryServiceType.non_residential, 1380.0),
-        ("1-005", date(2024, 5, 1), 1714521600, 15.0, PrimaryServiceType.non_residential, 1400.0),
-        ("1-005", date(2024, 6, 1), 1717200000, None, PrimaryServiceType.non_residential, 1300.0),
+    extrapolation_and_interpolation_rows = [
+        ("1-001", date(2023, 1, 1), 1672531200, 10.0, 15.0),
+        ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
+        ("1-001", date(2023, 3, 1), 1677628800, 30.0, 15.2),
+        ("1-002", date(2023, 1, 1), 1672531200, 4.0, 50.3),
+        ("1-002", date(2023, 2, 1), 1675209600, None, 50.5),
+        ("1-002", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-002", date(2023, 4, 1), 1680303600, None, 50.1),
+        ("1-003", date(2023, 1, 1), 1672531200, None, 50.3),
+        ("1-003", date(2023, 2, 1), 1675209600, 20.0, 50.5),
+        ("1-003", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
     ]
-    # fmt: on
 
 
 @dataclass
 class ModelExtrapolationNew:
-    extrapolation_new_rows = [
+    extrapolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, 15.0, 15.0),
         ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
         ("1-001", date(2023, 3, 1), 1677628800, 30.0, 15.2),
@@ -5012,6 +4991,30 @@ class ModelExtrapolationNew:
         ("1-002", 1675209600, 4.0, 1675209600, 1675209600, 4.0, 4.0, None),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 5.0, 6.0, 5.0),
         ("1-003", 1677628800, None, None, None, None, None, None),
+    ]
+
+
+@dataclass
+class ModelInterpolationNew:
+    interpolation_rows = [
+        ("1-001", date(2023, 1, 1), 1672531200, None, 1000.0),
+        ("1-001", date(2023, 2, 1), 1675209600, None, 1050.0),
+        ("1-001", date(2023, 3, 1), 1677628800, 40.0, 1000.0),
+        ("1-001", date(2023, 4, 1), 1680307200, None, 1050.0),
+        ("1-001", date(2023, 5, 1), 1682899200, None, 1100.0),
+        ("1-001", date(2023, 6, 1), 1685577600, None, 1150.0),
+        ("1-001", date(2023, 7, 1), 1688169600, None, 1200.0),
+        ("1-001", date(2023, 8, 1), 1690848000, None, 1250.0),
+        ("1-001", date(2023, 9, 1), 1693526400, None, 1300.0),
+        ("1-001", date(2023, 10, 1), 1696118400, None, 1350.0),
+        ("1-001", date(2023, 11, 1), 1698796800, None, 1400.0),
+        ("1-001", date(2023, 12, 1), 1701388800, None, 1450.0),
+        ("1-001", date(2024, 1, 1), 1704067200, None, 1400.0),
+        ("1-001", date(2024, 2, 1), 1706745600, None, 1350.0),
+        ("1-001", date(2024, 3, 1), 1709251200, 5.0, 1300.0),
+        ("1-001", date(2024, 4, 1), 1711929600, None, 1380.0),
+        ("1-001", date(2024, 5, 1), 1714521600, 15.0, 1400.0),
+        ("1-001", date(2024, 6, 1), 1717200000, None, 1300.0),
     ]
 
 

@@ -18,7 +18,7 @@ class ModelExtrapolationTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.extrapolation_df = self.spark.createDataFrame(
-            Data.extrapolation_new_rows, Schemas.extrapolation_schema
+            Data.extrapolation_rows, Schemas.extrapolation_schema
         )
         self.extrapolation_model_column_name = "extrapolation_rolling_average_model"
         self.model_column_name = IndCqc.rolling_average_model
