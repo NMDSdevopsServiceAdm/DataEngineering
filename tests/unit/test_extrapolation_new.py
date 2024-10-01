@@ -107,7 +107,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.column_with_null_values,
             IndCqc.unix_time,
             IndCqc.first_submission_time,
-            "min",
+            "first",
         )
         get_selected_value_mock.assert_any_call(
             self.input_df,
@@ -115,7 +115,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.column_with_null_values,
             IndCqc.unix_time,
             IndCqc.final_submission_time,
-            "max",
+            "last",
         )
 
     def test_calculate_first_and_final_submission_dates_returns_same_number_of_rows(
@@ -333,48 +333,6 @@ class GetSelectedValueFunctionTests(ModelExtrapolationTests):
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
 
-    def test_get_selected_value_returns_correct_values_when_selection_equals_min(self):
-        test_df = self.spark.createDataFrame(
-            Data.test_min_selection_rows, Schemas.get_selected_value_schema
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_test_min_selection_rows,
-            Schemas.expected_get_selected_value_schema,
-        )
-        returned_df = job.get_selected_value(
-            test_df,
-            self.w,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.rolling_average_model,
-            "new_column",
-            selection="min",
-        )
-        self.assertEqual(
-            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
-            expected_df.collect(),
-        )
-
-    def test_get_selected_value_returns_correct_values_when_selection_equals_max(self):
-        test_df = self.spark.createDataFrame(
-            Data.test_max_selection_rows, Schemas.get_selected_value_schema
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_test_max_selection_rows,
-            Schemas.expected_get_selected_value_schema,
-        )
-        returned_df = job.get_selected_value(
-            test_df,
-            self.w,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.rolling_average_model,
-            "new_column",
-            selection="max",
-        )
-        self.assertEqual(
-            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
-            expected_df.collect(),
-        )
-
     def test_get_selected_value_returns_correct_values_when_selection_equals_first(
         self,
     ):
@@ -435,6 +393,6 @@ class GetSelectedValueFunctionTests(ModelExtrapolationTests):
             )
 
         self.assertTrue(
-            "Error: The selection parameter 'other' was not found. Please use 'min', 'max', 'first', or 'last'.",
+            "Error: The selection parameter 'other' was not found. Please use 'first', or 'last'.",
             "Exception does not contain the correct error message",
         )
