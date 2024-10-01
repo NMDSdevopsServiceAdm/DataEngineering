@@ -36,16 +36,16 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
             self.model_column_name,
         )
 
-    # @patch(
-    #     "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_interpolation"
-    # )
+    @patch(
+        "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_interpolation"
+    )
     @patch(
         "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_extrapolation"
     )
     def test_model_extrapolation_and_interpolation_runs(
         self,
         model_extrapolation_mock: Mock,
-        # model_interpolation_mock: Mock,
+        model_interpolation_mock: Mock,
     ):
         job.model_extrapolation_and_interpolation(
             self.extrapolation_and_interpolation_df,
@@ -54,7 +54,7 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
         )
 
         model_extrapolation_mock.assert_called_once()
-        # model_interpolation_mock.assert_called_once()
+        model_interpolation_mock.assert_called_once()
 
     def test_model_extrapolation_and_interpolation_returns_same_number_of_rows(self):
         self.assertEqual(
@@ -63,10 +63,10 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
 
     def test_model_extrapolation_and_interpolation_returns_new_columns(self):
         extrapolation_model_column_name = "extrapolation_" + self.model_column_name
-        # interpolation_model_column_name = "interpolation_" + self.model_column_name
+        interpolation_model_column_name = "interpolation_" + self.model_column_name
 
         self.assertIn(extrapolation_model_column_name, self.returned_df.columns)
-        # self.assertIn(interpolation_model_column_name, self.returned_df.columns)
+        self.assertIn(interpolation_model_column_name, self.returned_df.columns)
 
 
 class CreateNewColumnNamesTests(ModelExtrapolationAndInterpolationTests):
