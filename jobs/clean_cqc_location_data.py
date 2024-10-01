@@ -318,7 +318,11 @@ def impute_historic_relationships(df: DataFrame) -> DataFrame:
     """
     Imputes historic relationships for locations in the given DataFrame.
 
-    This function performs the following steps:
+    If a location is 'Deregistered' it can have both Predecessors (a previous linked location) and
+    Successors (the location it was linked to after closing). A 'Registered' location can only have
+    Predecessors. As we are backdating data, locations which were Deregistered when the 'relationship'
+    data was first added will need any references to Successors removing when they were previously
+    Registered. In order to do this, the function performs the following steps:
     1. Creates a window specification to partition by location_id and order by cqc_location_import_date.
     2. Adds a column 'first_known_relationships' with the first non-null relationship for each location.
     3. Filters the relationships to include only those of type 'HSCA Predecessor'.
