@@ -393,6 +393,6 @@ class GetSelectedValueFunctionTests(ModelExtrapolationTests):
             )
 
         self.assertTrue(
-            "Error: The selection parameter 'other' was not found. Please use 'first', or 'last'.",
+            "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
             "Exception does not contain the correct error message",
         )
