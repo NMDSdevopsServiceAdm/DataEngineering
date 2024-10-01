@@ -88,7 +88,7 @@ def calculate_first_and_last_submission_dates(
         column_with_null_values,
         IndCqc.unix_time,
         IndCqc.first_submission_time,
-        "min",
+        "first",
     )
     df = get_selected_value(
         df,
@@ -96,7 +96,7 @@ def calculate_first_and_last_submission_dates(
         column_with_null_values,
         IndCqc.unix_time,
         IndCqc.last_submission_time,
-        "max",
+        "last",
     )
     return df
 
@@ -238,7 +238,7 @@ def get_selected_value(
     selection: str,
 ) -> DataFrame:
     """
-    Creates a new column with the selected value (min, max, first or last) from a given column.
+    Creates a new column with the selected value (first or last) from a given column.
 
     This function creates a new column by selecting a specified value over a given window on a given dataframe. It will
     only select values in the column with data that have null values in the original column.
@@ -249,45 +249,29 @@ def get_selected_value(
         column_with_null_values (str): A column with missing data.
         column_with_data (str): A column with data for all the rows that column_with_null_values has data. This can be column_with_null_values itself.
         new_column (str): The name of the new column containing the resulting selected values.
-        selection (str): One of 'min', 'max', 'first', or 'last'. This determines which pyspark window function will be used.
+        selection (str): One of 'first' or 'last'. This determines which pyspark window function will be used.
 
     Returns:
         DataFrame: A dataframe containing a new column with the selected value populated through each window.
 
     Raises:
-        ValueError: If 'selection' is not one of the four permitted pyspark window functions.
+        ValueError: If 'selection' is not one of the two permitted pyspark window functions.
     """
-    if selection == "min":
-        method: function = F.min
-    elif selection == "max":
-        method: function = F.max
-    elif selection == "first":
-        method: function = F.first
-    elif selection == "last":
-        method: function = F.last
-    else:
+    selection_methods = {"first": F.first, "last": F.last}
+
+    if selection not in selection_methods:
         raise ValueError(
-            f"Error: The selection parameter '{selection}' was not found. Please use 'min', 'max', 'first', or 'last'."
+            f"Error: The selection parameter '{selection}' was not found. Please use 'first' or 'last'."
         )
-    if (selection == "min") | (selection == "max"):
-        df = df.withColumn(
-            new_column,
-            method(
-                F.when(
-                    F.col(column_with_null_values).isNotNull(),
-                    F.col(column_with_data),
-                )
-            ).over(window_spec),
-        )
-    else:
-        df = df.withColumn(
-            new_column,
-            method(
-                F.when(
-                    F.col(column_with_null_values).isNotNull(),
-                    F.col(column_with_data),
-                ),
-                ignorenulls=True,
-            ).over(window_spec),
-        )
+
+    method = selection_methods[selection]
+
+    df = df.withColumn(
+        new_column,
+        method(
+            F.when(F.col(column_with_null_values).isNotNull(), F.col(column_with_data)),
+            ignorenulls=True,
+        ).over(window_spec),
+    )
+
     return df
