@@ -104,6 +104,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
 
+    cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
     registered_locations_df = impute_missing_gac_service_types(registered_locations_df)
@@ -313,6 +314,100 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df
 
 
+def impute_historic_relationships(df: DataFrame) -> DataFrame:
+    """
+    Imputes historic relationships for locations in the given DataFrame.
+
+    If a location is 'Deregistered' it can have both Predecessors (a previous linked location) and
+    Successors (the location it was linked to after closing). A 'Registered' location can only have
+    Predecessors. As we are backdating data, locations which were Deregistered when the 'relationship'
+    data was first added will need any references to Successors removing when they were previously
+    Registered. In order to do this, the function performs the following steps:
+    1. Creates a window specification to partition by location_id and order by cqc_location_import_date.
+    2. Adds a column 'first_known_relationships' with the first non-null relationship for each location.
+    3. Filters the relationships to include only those of type 'HSCA Predecessor'.
+    4. Adds a column 'imputed_relationships' based on the following conditions:
+       - If 'relationships' is not null, use 'relationships'.
+       - If 'registration_status' is 'deregistered', use 'first_known_relationships'.
+       - If 'registration_status' is 'registered', use 'relationships_predecessors_only'.
+    5. Drops the intermediate columns 'first_known_relationships' and 'relationships_predecessors_only'.
+
+    Args:
+        df (DataFrame): Input DataFrame containing location data and relationships.
+
+    Returns:
+        DataFrame: DataFrame with imputed historic relationships.
+    """
+    w = (
+        Window.partitionBy(CQCL.location_id)
+        .orderBy(CQCLClean.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+    df = df.withColumn(
+        CQCLClean.first_known_relationships,
+        F.first(CQCL.relationships, ignorenulls=True).over(w),
+    )
+    df = get_relationships_where_type_is_predecessor(df)
+
+    df = df.withColumn(
+        CQCLClean.imputed_relationships,
+        F.when(F.col(CQCL.relationships).isNotNull(), F.col(CQCL.relationships))
+        .when(
+            (F.col(CQCL.registration_status) == RegistrationStatus.deregistered),
+            F.col(CQCLClean.first_known_relationships),
+        )
+        .when(
+            (F.col(CQCL.registration_status) == RegistrationStatus.registered),
+            F.col(CQCLClean.relationships_predecessors_only),
+        ),
+    )
+    df = df.drop(
+        CQCLClean.first_known_relationships,
+        CQCLClean.relationships_predecessors_only,
+    )
+
+    return df
+
+
+def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
+    """
+    Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
+
+    This function performs the following steps:
+    1. Selects distinct location_id and first_known_relationships columns.
+    2. Explodes the first_known_relationships column to create a row for each relationship.
+    3. Filters the exploded relationships to include only those of type 'HSCA Predecessor'.
+    4. Groups by location_id and collects the set of 'HSCA Predecessor' relationships.
+    5. Joins the original DataFrame with the aggregated DataFrame on location_id.
+
+    Args:
+        df (DataFrame): Input DataFrame containing location data and relationships.
+
+    Returns:
+        DataFrame: DataFrame with an additional column for 'HSCA Predecessor' relationships.
+    """
+    distinct_df = df.select(
+        CQCL.location_id, CQCLClean.first_known_relationships
+    ).distinct()
+
+    exploded_df = distinct_df.withColumn(
+        CQCLClean.relationships_exploded,
+        F.explode(CQCLClean.first_known_relationships),
+    )
+    predecessors_df = exploded_df.filter(
+        F.col(f"{CQCLClean.relationships_exploded}.{CQCL.type}") == "HSCA Predecessor"
+    )
+    aggregated_predecessors_df = predecessors_df.groupby(CQCL.location_id).agg(
+        F.collect_set(CQCLClean.relationships_exploded).alias(
+            CQCLClean.relationships_predecessors_only
+        )
+    )
+
+    df = df.join(aggregated_predecessors_df, CQCL.location_id, "left")
+
+    return df
+
+
 def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
     """
     Imputes missing gacservicetypes in the DataFrame by filling with known values from other imports.
@@ -453,21 +548,20 @@ def realign_carehome_column_with_primary_service(df: DataFrame):
 
 def add_column_related_location(df: DataFrame) -> DataFrame:
     """
-    Adds a column which flags whether the location has a related previous location or not
+    Adds a column which flags whether the location was related to a previous location or not
 
     Args:
-        df(DataFrame): A dataframe with the relationships column.
+        df(DataFrame): A dataframe with the imputed_relationships column.
 
     Returns:
-        DataFrame: A dataframe with a column stating whther the locaiton has a related location or not.
+        DataFrame: A dataframe with a column stating whether the location was related to a previous location or not.
     """
     df = df.withColumn(
         CQCLClean.related_location,
         F.when(
-            F.size(df[CQCL.relationships]) > 0,
+            F.size(F.col(CQCLClean.imputed_relationships)) > 0,
             F.lit(RelatedLocation.has_related_location),
-        ).when(
-            F.size(df[CQCL.relationships]) == 0,
+        ).otherwise(
             F.lit(RelatedLocation.no_related_location),
         ),
     )

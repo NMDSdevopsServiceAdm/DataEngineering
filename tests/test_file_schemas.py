@@ -949,6 +949,92 @@ class CQCLocationsSchema:
         ]
     )
 
+    impute_historic_relationships_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_impute_historic_relationships_schema = StructType(
+        [
+            *impute_historic_relationships_schema,
+            StructField(
+                CQCLClean.imputed_relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+
+    get_relationships_where_type_is_predecessor_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCLClean.first_known_relationships,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_get_relationships_where_type_is_predecessor_schema = StructType(
+        [
+            *get_relationships_where_type_is_predecessor_schema,
+            StructField(
+                CQCLClean.relationships_predecessors_only,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.related_location_id, StringType(), True),
+                            StructField(CQCL.related_location_name, StringType(), True),
+                            StructField(CQCL.type, StringType(), True),
+                            StructField(CQCL.reason, StringType(), True),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+
     impute_missing_gac_service_types_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1186,7 +1272,7 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
-                CQCL.relationships,
+                CQCLClean.imputed_relationships,
                 ArrayType(
                     StructType(
                         [
