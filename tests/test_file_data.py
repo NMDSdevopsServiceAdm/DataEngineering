@@ -1632,13 +1632,13 @@ class CQCLocationsData:
             ],
         ),
     ]
-    impute_historic_relationships_where_type_is_none_returns_none_rows = [
+    impute_historic_relationships_when_type_is_none_returns_none_rows = [
         ("1-001", date(2024, 1, 1), RegistrationStatus.registered, None),
     ]
-    expected_impute_historic_relationships_where_type_is_none_returns_none_rows = [
+    expected_impute_historic_relationships_when_type_is_none_returns_none_rows = [
         ("1-001", date(2024, 1, 1), RegistrationStatus.registered, None, None),
     ]
-    impute_historic_relationships_where_type_is_predecessor_returns_predecessor_rows = [
+    impute_historic_relationships_when_type_is_predecessor_returns_predecessor_rows = [
         ("1-002", date(2024, 1, 1), RegistrationStatus.registered, None),
         (
             "1-002",
@@ -1654,7 +1654,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_impute_historic_relationships_where_type_is_predecessor_returns_predecessor_rows = [
+    expected_impute_historic_relationships_when_type_is_predecessor_returns_predecessor_rows = [
         (
             "1-002",
             date(2024, 1, 1),
@@ -1691,7 +1691,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    impute_historic_relationships_where_type_is_successor_returns_none_when_registered_rows = [
+    impute_historic_relationships_when_type_is_successor_returns_none_when_registered_rows = [
         ("1-003", date(2024, 1, 1), RegistrationStatus.registered, None),
         (
             "1-003",
@@ -1707,7 +1707,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_impute_historic_relationships_where_type_is_successor_returns_none_when_registered_rows = [
+    expected_impute_historic_relationships_when_type_is_successor_returns_none_when_registered_rows = [
         ("1-003", date(2024, 1, 1), RegistrationStatus.registered, None, None),
         (
             "1-003",
@@ -1731,7 +1731,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    impute_historic_relationships_where_type_is_successor_returns_successor_when_deregistered_rows = [
+    impute_historic_relationships_when_type_is_successor_returns_successor_when_deregistered_rows = [
         ("1-004", date(2024, 1, 1), RegistrationStatus.deregistered, None),
         (
             "1-004",
@@ -1747,7 +1747,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_impute_historic_relationships_where_type_is_successor_returns_successor_when_deregistered_rows = [
+    expected_impute_historic_relationships_when_type_is_successor_returns_successor_when_deregistered_rows = [
         (
             "1-004",
             date(2024, 1, 1),
@@ -1784,7 +1784,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    impute_historic_relationships_where_type_has_both_types_only_returns_predecessors_when_registered_rows = [
+    impute_historic_relationships_when_type_has_both_types_only_returns_predecessors_when_registered_rows = [
         ("1-005", date(2024, 1, 1), RegistrationStatus.registered, None),
         (
             "1-005",
@@ -1812,7 +1812,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_impute_historic_relationships_where_type_has_both_types_only_returns_predecessors_when_registered_rows = [
+    expected_impute_historic_relationships_when_type_has_both_types_only_returns_predecessors_when_registered_rows = [
         (
             "1-005",
             date(2024, 1, 1),
@@ -1879,7 +1879,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    impute_historic_relationships_where_type_has_both_types_returns_original_values_when_deregistered_rows = [
+    impute_historic_relationships_when_type_has_both_types_returns_original_values_when_deregistered_rows = [
         ("1-006", date(2024, 1, 1), RegistrationStatus.deregistered, None),
         (
             "1-006",
@@ -1907,7 +1907,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_impute_historic_relationships_where_type_has_both_types_returns_original_values_when_deregistered_rows = [
+    expected_impute_historic_relationships_when_type_has_both_types_returns_original_values_when_deregistered_rows = [
         (
             "1-006",
             date(2024, 1, 1),
