@@ -12,6 +12,20 @@ def model_interpolation(
     column_with_null_values: str,
     interpolated_column_name: str,
 ) -> DataFrame:
+    """
+    Perform interpolation on a column with null values and adds as a new column.
+
+    This function uses the extrapolation_forwards values as a trend line to guide interpolated predictions
+    between two non-null values and inputs the interpolated results into a new column.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        column_with_null_values (str): The name of the column that contains null values to be interpolated.
+        interpolated_column_name (str): The name of the new column to store interpolated values.
+
+    Returns:
+        DataFrame: The DataFrame with the interpolated values in the specified column.
+    """
     window_spec_backwards, window_spec_forwards = define_window_specs()
 
     df = calculate_residual_between_non_null_value_and_extrapolation_forwards(
