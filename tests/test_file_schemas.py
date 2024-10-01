@@ -2671,7 +2671,9 @@ class ModelInterpolationNew:
     expected_time_between_submissions_schema = StructType(
         [
             *time_between_submissions_schema,
-            StructField(IndCQC.proportion_of_time_between_submissions, DoubleType(), True),
+            StructField(
+                IndCQC.proportion_of_time_between_submissions, DoubleType(), True
+            ),
         ]
     )
     time_between_submissions_mock_schema = StructType(
