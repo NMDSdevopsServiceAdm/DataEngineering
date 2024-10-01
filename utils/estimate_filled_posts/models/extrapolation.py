@@ -62,7 +62,7 @@ def add_filled_posts_and_model_value_for_first_and_last_submission(
 
     df = add_filled_posts_and_modelled_value_for_specific_time_period(
         df,
-        IndCqc.last_submission_time,
+        IndCqc.final_submission_time,
         IndCqc.last_filled_posts,
         model_column_name,
         last_model_column_name,
@@ -87,7 +87,7 @@ def add_first_and_last_submission_date_cols(df: DataFrame) -> DataFrame:
         IndCqc.location_id
     ).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
-        F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
+        F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.final_submission_time),
     )
 
     return left_join_on_locationid(df, first_and_last_submission_date_df)
@@ -119,7 +119,7 @@ def add_extrapolated_values(
 ) -> DataFrame:
     df_with_extrapolation_models = extrapolation_df.where(
         (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time))
-        | (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time))
+        | (F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time))
     )
 
     df_with_extrapolation_models = create_extrapolation_ratio_column(
@@ -155,7 +155,7 @@ def create_extrapolation_ratio_column(
                 / F.col(first_model_column_name)
             ),
         ).when(
-            (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time)),
+            (F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time)),
             (
                 1
                 + (F.col(model_column_name) - F.col(last_model_column_name))
@@ -176,7 +176,7 @@ def create_extrapolation_model_column(
             (F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time)),
             (F.col(IndCqc.first_filled_posts) * F.col(IndCqc.extrapolation_ratio)),
         ).when(
-            (F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time)),
+            (F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time)),
             (F.col(IndCqc.last_filled_posts) * F.col(IndCqc.extrapolation_ratio)),
         ),
     )
