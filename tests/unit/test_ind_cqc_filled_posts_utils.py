@@ -1,6 +1,8 @@
 import unittest
 import warnings
 
+from pyspark.sql import Window
+
 from tests.test_file_data import IndCQCDataUtils as Data
 from tests.test_file_schemas import IndCQCDataUtils as Schemas
 
@@ -12,14 +14,14 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 import utils.ind_cqc_filled_posts_utils.utils as job
 
 
-class TestPopulateEstimateFilledPostsAndSource(unittest.TestCase):
+class TestIndCqcFilledPostUtils(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class TestFilledPostsAndSourceAdded(TestPopulateEstimateFilledPostsAndSource):
+class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
     def setUp(self) -> None:
         super().setUp()
         self.input_df = self.spark.createDataFrame(
@@ -51,7 +53,7 @@ class TestFilledPostsAndSourceAdded(TestPopulateEstimateFilledPostsAndSource):
         self.assertEqual(expected_data, returned_data)
 
 
-class TestSourceDescriptionAdded(TestPopulateEstimateFilledPostsAndSource):
+class TestSourceDescriptionAdded(TestIndCqcFilledPostUtils):
     def setUp(self) -> None:
         super().setUp()
 
@@ -75,3 +77,77 @@ class TestSourceDescriptionAdded(TestPopulateEstimateFilledPostsAndSource):
 
         self.assertEqual(returned_df.count(), expected_df.count())
         self.assertEqual(expected_data, returned_data)
+
+
+class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
+    def setUp(self):
+        super().setUp()
+        self.w = (
+            Window.partitionBy(IndCQC.location_id)
+            .orderBy(IndCQC.unix_time)
+            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_first(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.test_first_selection_rows, Schemas.get_selected_value_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_first_selection_rows,
+            Schemas.expected_get_selected_value_schema,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            IndCQC.rolling_average_model,
+            "new_column",
+            selection="first",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_returns_correct_values_when_selection_equals_last(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_last_selection_rows, Schemas.get_selected_value_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_test_last_selection_rows,
+            Schemas.expected_get_selected_value_schema,
+        )
+        returned_df = job.get_selected_value(
+            test_df,
+            self.w,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            IndCQC.rolling_average_model,
+            "new_column",
+            selection="last",
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+    def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
+        test_df = self.spark.createDataFrame(
+            Data.test_last_selection_rows, Schemas.get_selected_value_schema
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.get_selected_value(
+                test_df,
+                self.w,
+                IndCQC.ascwds_filled_posts_dedup_clean,
+                IndCQC.rolling_average_model,
+                "new_column",
+                selection="other",
+            )
+
+        self.assertTrue(
+            "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
+            "Exception does not contain the correct error message",
+        )
