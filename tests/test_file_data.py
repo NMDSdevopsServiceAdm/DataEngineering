@@ -4,7 +4,6 @@ from datetime import date
 from pyspark.ml.linalg import Vectors
 
 from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
     CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
