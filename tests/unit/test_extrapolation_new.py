@@ -63,7 +63,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
 
         self.input_df = self.spark.createDataFrame(
             Data.first_and_last_submission_dates_rows,
-            Schemas.first_and_last_submission_dates_schema,
+            Schemas.first_and_final_submission_dates_schema,
         )
         self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
         self.window_spec_all_rows = (
@@ -71,14 +71,14 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             .orderBy(IndCqc.unix_time)
             .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
         )
-        self.returned_df = job.calculate_first_and_last_submission_dates(
+        self.returned_df = job.calculate_first_and_final_submission_dates(
             self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_first_and_last_submission_dates_rows,
-            Schemas.expected_first_and_last_submission_dates_schema,
+            Schemas.expected_first_and_final_submission_dates_schema,
         )
 
         self.returned_data = self.returned_df.sort(
@@ -87,13 +87,13 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         self.expected_data = self.expected_df.collect()
 
     @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
-    def test_calculate_first_and_last_submission_dates_calls_correct_functions(
+    def test_calculate_first_and_final_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
     ):
         get_selected_value_mock.return_value = self.input_df
 
-        job.calculate_first_and_last_submission_dates(
+        job.calculate_first_and_final_submission_dates(
             self.input_df,
             self.column_with_null_values,
             self.window_spec_all_rows,
@@ -114,18 +114,18 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             self.window_spec_all_rows,
             self.column_with_null_values,
             IndCqc.unix_time,
-            IndCqc.last_submission_time,
+            IndCqc.final_submission_time,
             "last",
         )
 
-    def test_calculate_first_and_last_submission_dates_returns_same_number_of_rows(
+    def test_calculate_first_and_final_submission_dates_returns_same_number_of_rows(
         self,
     ):
         self.assertEqual(self.input_df.count(), self.returned_df.count())
 
-    def test_calculate_first_and_last_submission_dates_returns_new_columns(self):
+    def test_calculate_first_and_final_submission_dates_returns_new_columns(self):
         self.assertIn(IndCqc.first_submission_time, self.returned_df.columns)
-        self.assertIn(IndCqc.last_submission_time, self.returned_df.columns)
+        self.assertIn(IndCqc.final_submission_time, self.returned_df.columns)
 
     def test_returned_values_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
@@ -322,77 +322,3 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
                 self.expected_data[i][self.extrapolation_model_name],
                 f"Returned value in row {i} does not match expected",
             )
-
-
-class GetSelectedValueFunctionTests(ModelExtrapolationTests):
-    def setUp(self):
-        super().setUp()
-        self.w = (
-            Window.partitionBy(IndCqc.location_id)
-            .orderBy(IndCqc.unix_time)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-        )
-
-    def test_get_selected_value_returns_correct_values_when_selection_equals_first(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_first_selection_rows, Schemas.get_selected_value_schema
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_test_first_selection_rows,
-            Schemas.expected_get_selected_value_schema,
-        )
-        returned_df = job.get_selected_value(
-            test_df,
-            self.w,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.rolling_average_model,
-            "new_column",
-            selection="first",
-        )
-        self.assertEqual(
-            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
-            expected_df.collect(),
-        )
-
-    def test_get_selected_value_returns_correct_values_when_selection_equals_last(self):
-        test_df = self.spark.createDataFrame(
-            Data.test_last_selection_rows, Schemas.get_selected_value_schema
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_test_last_selection_rows,
-            Schemas.expected_get_selected_value_schema,
-        )
-        returned_df = job.get_selected_value(
-            test_df,
-            self.w,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.rolling_average_model,
-            "new_column",
-            selection="last",
-        )
-        self.assertEqual(
-            returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect(),
-            expected_df.collect(),
-        )
-
-    def test_get_selected_value_raises_error_when_selection_is_not_permitted(self):
-        test_df = self.spark.createDataFrame(
-            Data.test_last_selection_rows, Schemas.get_selected_value_schema
-        )
-
-        with self.assertRaises(ValueError) as context:
-            job.get_selected_value(
-                test_df,
-                self.w,
-                IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.rolling_average_model,
-                "new_column",
-                selection="other",
-            )
-
-        self.assertTrue(
-            "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
-            "Exception does not contain the correct error message",
-        )

@@ -131,13 +131,13 @@ class TestModelExtrapolation(unittest.TestCase):
 
         output_df = output_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
         self.assertEqual(output_df[0][IndCqc.first_submission_time], 1675209600)
-        self.assertEqual(output_df[0][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[0][IndCqc.final_submission_time], 1675209600)
         self.assertEqual(output_df[2][IndCqc.first_submission_time], 1675209600)
-        self.assertEqual(output_df[2][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[2][IndCqc.final_submission_time], 1675209600)
         self.assertEqual(output_df[3][IndCqc.first_submission_time], 1672531200)
-        self.assertEqual(output_df[3][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[3][IndCqc.final_submission_time], 1675209600)
         self.assertEqual(output_df[5][IndCqc.first_submission_time], 1672531200)
-        self.assertEqual(output_df[5][IndCqc.last_submission_time], 1675209600)
+        self.assertEqual(output_df[5][IndCqc.final_submission_time], 1675209600)
 
     def test_add_filled_posts_and_model_value_for_first_and_last_submission(
         self,

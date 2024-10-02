@@ -108,6 +108,7 @@ class IndCqcColumns:
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
     )
+    final_submission_time: str = "final_submission_time"
     first_filled_posts: str = "first_filled_posts"
     first_model_value: str = "first_model_value"
     first_non_null_value: str = "first_non_null_value"
@@ -126,7 +127,6 @@ class IndCqcColumns:
     )
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
-    last_submission_time: str = "last_submission_time"
     location_id: str = CQCLClean.location_id
     locations_at_provider_count: str = "locations_at_provider_count"
     locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
