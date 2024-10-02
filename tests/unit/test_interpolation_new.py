@@ -20,7 +20,9 @@ class ModelInterpolationTests(unittest.TestCase):
         self.interpolation_df = self.spark.createDataFrame(
             Data.interpolation_rows, Schemas.interpolation_schema
         )
-        self.interpolation_model_column_name = "interpolation_rolling_average_model"
+        self.interpolation_model_column_name = (
+            "interpolation_filled_posts_rolling_average_model"
+        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)

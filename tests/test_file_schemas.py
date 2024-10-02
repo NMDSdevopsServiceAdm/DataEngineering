@@ -2533,9 +2533,9 @@ class ModelExtrapolationAndInterpolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField("null_values_column", DoubleType(), True),
+            StructField("trend_model", DoubleType(), True),
         ]
     )
 

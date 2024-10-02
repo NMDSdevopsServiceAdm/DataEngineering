@@ -29,7 +29,7 @@ def model_extrapolation_and_interpolation(
     (
         extrapolation_model_column_name,
         interpolation_model_column_name,
-    ) = create_new_column_names(model_column_name)
+    ) = create_new_column_names(column_with_null_values, model_column_name)
 
     df = model_extrapolation(
         df,
@@ -52,16 +52,31 @@ def model_extrapolation_and_interpolation(
     return df
 
 
-def create_new_column_names(model_column_name: str) -> Tuple[str, str]:
+def create_new_column_names(
+    column_with_null_values: str, model_column_name: str
+) -> Tuple[str, str]:
     """
     Generate new column names for extrapolation and interpolation outputs.
 
+    Generates new column names for extrapolation and interpolation outputs which includes the name of the column with
+    null values and the model name which trend line the process is following. For example:
+        - 'filled_posts' using the 'rolling_average_model' trend would become
+          'extrapolation_filled_posts_rolling_average_model".
+        - 'filled_posts_per_bed_ratio' using the 'care_home_model' trend would become
+          'extrapolation_filled_posts_per_bed_ratio_care_home_model".
+
+
     Args:
+        column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
         model_column_name (str): The name of the model column to use.
 
     Returns:
         Tuple[str, str]: A tuple containing the extrapolation model column name and the interpolation model column name.
     """
-    extrapolation_model_column_name = "extrapolation_" + model_column_name
-    interpolation_model_column_name = "interpolation_" + model_column_name
+    extrapolation_model_column_name = (
+        "extrapolation_" + column_with_null_values + "_" + model_column_name
+    )
+    interpolation_model_column_name = (
+        "interpolation_" + column_with_null_values + "_" + model_column_name
+    )
     return extrapolation_model_column_name, interpolation_model_column_name
