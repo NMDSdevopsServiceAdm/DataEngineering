@@ -2552,16 +2552,16 @@ class ModelExtrapolationNew:
         ]
     )
 
-    first_and_last_submission_dates_schema = StructType(
+    first_and_final_submission_dates_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
-    expected_first_and_last_submission_dates_schema = StructType(
+    expected_first_and_final_submission_dates_schema = StructType(
         [
-            *first_and_last_submission_dates_schema,
+            *first_and_final_submission_dates_schema,
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
         ]

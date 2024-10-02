@@ -63,7 +63,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
 
         self.input_df = self.spark.createDataFrame(
             Data.first_and_last_submission_dates_rows,
-            Schemas.first_and_last_submission_dates_schema,
+            Schemas.first_and_final_submission_dates_schema,
         )
         self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
         self.window_spec_all_rows = (
@@ -78,7 +78,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_first_and_last_submission_dates_rows,
-            Schemas.expected_first_and_last_submission_dates_schema,
+            Schemas.expected_first_and_final_submission_dates_schema,
         )
 
         self.returned_data = self.returned_df.sort(
