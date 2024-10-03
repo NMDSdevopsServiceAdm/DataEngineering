@@ -2535,7 +2535,6 @@ class ModelExtrapolationAndInterpolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, LongType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
