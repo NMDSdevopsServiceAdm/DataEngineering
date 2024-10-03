@@ -59,11 +59,8 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
         )
 
     def test_model_extrapolation_and_interpolation_returns_new_columns(self):
-        extrapolation_model_column_name = "extrapolation_null_values_column_trend_model"
-        interpolation_model_column_name = "interpolation_null_values_column_trend_model"
-
-        self.assertIn(extrapolation_model_column_name, self.returned_df.columns)
-        self.assertIn(interpolation_model_column_name, self.returned_df.columns)
+        self.assertIn(Data.extrapolation_model_column_name, self.returned_df.columns)
+        self.assertIn(Data.interpolation_model_column_name, self.returned_df.columns)
 
 
 class CreateNewColumnNamesTests(ModelExtrapolationAndInterpolationTests):

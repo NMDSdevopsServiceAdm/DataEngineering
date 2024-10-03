@@ -4894,6 +4894,9 @@ class ModelExtrapolationAndInterpolation:
         ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
     ]
 
+    extrapolation_model_column_name = "extrapolation_null_values_column_trend_model"
+    interpolation_model_column_name = "interpolation_null_values_column_trend_model"
+
 
 @dataclass
 class ModelExtrapolationNew:
