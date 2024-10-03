@@ -16,7 +16,7 @@ def model_extrapolation(
     """
     Perform extrapolation on a column with null values using specified models.
 
-    This function calculates the first and last submission dates, performs forward and backward extrapolation,
+    This function calculates the first and final submission dates, performs forward and backward extrapolation,
     and combines the extrapolated results into a new column.
 
     Args:
@@ -30,7 +30,7 @@ def model_extrapolation(
     """
     window_spec_all_rows, window_spec_lagged = define_window_specs()
 
-    df = calculate_first_and_last_submission_dates(
+    df = calculate_first_and_final_submission_dates(
         df, column_with_null_values, window_spec_all_rows
     )
     df = extrapolation_forwards(
@@ -66,14 +66,14 @@ def define_window_specs() -> Tuple[Window, Window]:
     return window_spec_all_rows, window_spec_lagged
 
 
-def calculate_first_and_last_submission_dates(
+def calculate_first_and_final_submission_dates(
     df: DataFrame, column_with_null_values: str, window_spec: Window
 ) -> DataFrame:
     """
-    Calculates the first and last submission dates based on the '<column_with_null_values>' column.
+    Calculates the first and final submission dates based on the '<column_with_null_values>' column.
 
-    Calculates the first and last submission dates based on the '<column_with_null_values>' column
-    and adds them as new columns 'first_submission_time' and 'last_submission_time'.
+    Calculates the first and final submission dates based on the '<column_with_null_values>' column
+    and adds them as new columns 'first_submission_time' and 'final_submission_time'.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -81,7 +81,7 @@ def calculate_first_and_last_submission_dates(
         window_spec (Window): The window specification to use for the calculation.
 
     Returns:
-        DataFrame: The DataFrame with the added 'first_submission_time' and 'last_submission_time' columns.
+        DataFrame: The DataFrame with the added 'first_submission_time' and 'final_submission_time' columns.
     """
     df = get_selected_value(
         df,
@@ -96,7 +96,7 @@ def calculate_first_and_last_submission_dates(
         window_spec,
         column_with_null_values,
         IndCqc.unix_time,
-        IndCqc.last_submission_time,
+        IndCqc.final_submission_time,
         "last",
     )
     return df
@@ -109,9 +109,9 @@ def extrapolation_forwards(
     window_spec: Window,
 ) -> DataFrame:
     """
-    Calculates the backward extrapolation and adds it as a new column 'extrapolation_forwards'.
+    Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
-    Calculates the backward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
+    Calculates the forward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
@@ -207,11 +207,11 @@ def combine_extrapolation(df: DataFrame, extrapolated_column_name: str) -> DataF
     Combines forward and backward extrapolation values into a single column based on the specified model.
 
     This function creates a new column named '<extrapolated_column_name>' which contains:
-    - Forward extrapolation values if 'unix_time' is greater than the 'last_submission_time'.
+    - Forward extrapolation values if 'unix_time' is greater than the 'final_submission_time'.
     - Backward extrapolation values if 'unix_time' is less than the 'first_submission_time'.
 
     Args:
-        df (DataFrame): The input DataFrame containing the columns 'unix_time', 'first_submission_time', 'last_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
+        df (DataFrame): The input DataFrame containing the columns 'unix_time', 'first_submission_time', 'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
         model_to_extrapolate_from (str): The name of the model column used for extrapolation.
 
     Returns:
@@ -220,7 +220,7 @@ def combine_extrapolation(df: DataFrame, extrapolated_column_name: str) -> DataF
     df = df.withColumn(
         extrapolated_column_name,
         F.when(
-            F.col(IndCqc.unix_time) > F.col(IndCqc.last_submission_time),
+            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
             F.col(IndCqc.extrapolation_forwards),
         ).when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),

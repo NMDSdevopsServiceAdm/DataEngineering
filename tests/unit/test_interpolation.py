@@ -112,15 +112,15 @@ class TestModelInterpolation(unittest.TestCase):
             [
                 IndCqc.location_id,
                 IndCqc.first_submission_time,
-                IndCqc.last_submission_time,
+                IndCqc.final_submission_time,
             ],
         )
 
         output_df = output_df.sort(IndCqc.location_id).collect()
         self.assertEqual(output_df[0][IndCqc.first_submission_time], 1672617600)
-        self.assertEqual(output_df[0][IndCqc.last_submission_time], 1672617600)
+        self.assertEqual(output_df[0][IndCqc.final_submission_time], 1672617600)
         self.assertEqual(output_df[1][IndCqc.first_submission_time], 1672704000)
-        self.assertEqual(output_df[1][IndCqc.last_submission_time], 1673222400)
+        self.assertEqual(output_df[1][IndCqc.final_submission_time], 1673222400)
 
     def test_convert_first_and_last_known_years_into_exploded_df(self):
         df = job.convert_first_and_last_known_years_into_exploded_df(

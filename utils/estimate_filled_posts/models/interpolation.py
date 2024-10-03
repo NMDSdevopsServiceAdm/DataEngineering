@@ -82,7 +82,7 @@ def calculate_first_and_last_submission_date_per_location(df: DataFrame) -> Data
     """
     df = df.groupBy(IndCqc.location_id).agg(
         F.min(IndCqc.unix_time).cast("integer").alias(IndCqc.first_submission_time),
-        F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.last_submission_time),
+        F.max(IndCqc.unix_time).cast("integer").alias(IndCqc.final_submission_time),
     )
     return df
 
@@ -94,7 +94,7 @@ def convert_first_and_last_known_years_into_exploded_df(df: DataFrame) -> DataFr
     This function creates a dataframe with rows in between the first and last submission date for each location id.
 
     Args:
-        df (DataFrame): A dataframe with the columns location_id and unix_time, first_submission_time, and last_submission_time.
+        df (DataFrame): A dataframe with the columns location_id and unix_time, first_submission_time, and final_submission_time.
 
     Retuns:
         DataFrame: A dataframe with rows in between the first and last submission date for each location id.
@@ -104,9 +104,9 @@ def convert_first_and_last_known_years_into_exploded_df(df: DataFrame) -> DataFr
     df = df.withColumn(
         IndCqc.unix_time,
         F.explode(
-            date_range_udf(IndCqc.first_submission_time, IndCqc.last_submission_time)
+            date_range_udf(IndCqc.first_submission_time, IndCqc.final_submission_time)
         ),
-    ).drop(IndCqc.first_submission_time, IndCqc.last_submission_time)
+    ).drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
 
     return df
 
