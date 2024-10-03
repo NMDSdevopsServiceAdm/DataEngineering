@@ -20,9 +20,6 @@ class ModelInterpolationTests(unittest.TestCase):
         self.interpolation_df = self.spark.createDataFrame(
             Data.interpolation_rows, Schemas.interpolation_schema
         )
-        self.interpolation_model_column_name = (
-            "interpolation_filled_posts_rolling_average_model"
-        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -35,14 +32,13 @@ class MainTests(ModelInterpolationTests):
         self.returned_df = job.model_interpolation(
             self.interpolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
-            self.interpolation_model_column_name,
         )
 
     def test_model_interpolation_row_count_unchanged(self):
         self.assertEqual(self.returned_df.count(), self.interpolation_df.count())
 
     def test_model_interpolation_returns_new_column(self):
-        self.assertIn(self.interpolation_model_column_name, self.returned_df.columns)
+        self.assertIn(IndCqc.interpolation_model, self.returned_df.columns)
 
 
 class DefineWindowSpecsTests(ModelInterpolationTests):
