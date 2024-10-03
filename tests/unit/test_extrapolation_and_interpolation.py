@@ -5,8 +5,12 @@ import warnings
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 import utils.estimate_filled_posts.models.extrapolation_and_interpolation as job
 from utils import utils
-from tests.test_file_data import ModelImputationData as Data
-from tests.test_file_schemas import ModelImputationSchemas as Schemas
+from tests.test_file_data import (
+    ModelImputationWithExtrapolationAndInterpolationData as Data,
+)
+from tests.test_file_schemas import (
+    ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
+)
 
 
 class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):

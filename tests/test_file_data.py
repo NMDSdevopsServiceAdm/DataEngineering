@@ -4879,7 +4879,7 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
-class ModelImputationData:
+class ModelImputationWithExtrapolationAndInterpolationData:
     imputation_with_extrapolation_and_interpolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, 10.0, 15.0),
         ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
