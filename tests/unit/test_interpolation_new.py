@@ -41,7 +41,7 @@ class MainTests(ModelInterpolationTests):
     def test_model_interpolation_row_count_unchanged(self):
         self.assertEqual(self.returned_df.count(), self.interpolation_df.count())
 
-    def test_model_interpolation_and_interpolation_returns_new_columns(self):
+    def test_model_interpolation_returns_new_column(self):
         self.assertIn(self.interpolation_model_column_name, self.returned_df.columns)
 
 
@@ -83,7 +83,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
     def test_calculate_residuals_returns_expected_columns(self):
         self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
-    def test_combine_interpolation_returns_none_when_extrapolation_forwards_is_none(
+    def test_calculate_residuals_returns_none_when_extrapolation_forwards_is_none(
         self,
     ):
         returned_data = self.returned_df.sort(
@@ -97,7 +97,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
                 f"Returned value in row {i} does not match expected",
             )
 
-    def test_combine_interpolation_returns_expected_values_when_extrapolation_forwards_is_known(
+    def test_calculate_residuals_returns_expected_values_when_extrapolation_forwards_is_known(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -122,7 +122,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
                 f"Returned value in row {i} does not match expected",
             )
 
-    def test_combine_interpolation_returns_none_date_after_final_non_null_submission(
+    def test_calculate_residuals_returns_none_date_after_final_non_null_submission(
         self,
     ):
         test_df = self.spark.createDataFrame(
