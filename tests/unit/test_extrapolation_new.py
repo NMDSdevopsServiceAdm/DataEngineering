@@ -20,7 +20,6 @@ class ModelExtrapolationTests(unittest.TestCase):
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_rows, Schemas.extrapolation_schema
         )
-        self.extrapolation_model_column_name = "extrapolation_rolling_average_model"
         self.model_column_name = IndCqc.rolling_average_model
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -35,7 +34,6 @@ class MainTests(ModelExtrapolationTests):
             self.extrapolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             self.model_column_name,
-            self.extrapolation_model_column_name,
         )
 
     def test_model_extrapolation_row_count_unchanged(self):
@@ -44,7 +42,7 @@ class MainTests(ModelExtrapolationTests):
     def test_model_extrapolation_returns_new_column(
         self,
     ):
-        self.assertIn(self.extrapolation_model_column_name, self.returned_df.columns)
+        self.assertIn(IndCqc.extrapolation_model, self.returned_df.columns)
 
 
 class DefineWindowSpecsTests(ModelExtrapolationTests):

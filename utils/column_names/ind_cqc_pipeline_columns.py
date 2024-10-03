@@ -98,6 +98,7 @@ class IndCqcColumns:
     extrapolation_backwards: str = "extrapolation_backwards"
     extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_forwards: str = "extrapolation_forwards"
+    extrapolation_model: str = "extrapolation_model"
     extrapolation_non_res_with_dormancy_model: str = (
         "extrapolation_non_res_with_dormancy_model"
     )

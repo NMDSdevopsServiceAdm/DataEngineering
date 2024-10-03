@@ -11,7 +11,6 @@ def model_extrapolation(
     df: DataFrame,
     column_with_null_values: str,
     model_to_extrapolate_from: str,
-    extrapolated_column_name: str,
 ) -> DataFrame:
     """
     Perform extrapolation on a column with null values using specified models.
@@ -26,7 +25,7 @@ def model_extrapolation(
         extrapolated_column_name (str): The name of the new column to store extrapolated values.
 
     Returns:
-        DataFrame: The DataFrame with the extrapolated values in the specified column.
+        DataFrame: The DataFrame with the extrapolated values in the 'extrapolation_model' column.
     """
     window_spec_all_rows, window_spec_lagged = define_window_specs()
 
@@ -39,7 +38,7 @@ def model_extrapolation(
     df = extrapolation_backwards(
         df, column_with_null_values, model_to_extrapolate_from, window_spec_all_rows
     )
-    df = combine_extrapolation(df, extrapolated_column_name)
+    df = combine_extrapolation(df)
     df = df.drop(IndCqc.first_submission_time, IndCqc.final_submission_time)
 
     return df
@@ -202,23 +201,23 @@ def extrapolation_backwards(
     return df
 
 
-def combine_extrapolation(df: DataFrame, extrapolated_column_name: str) -> DataFrame:
+def combine_extrapolation(df: DataFrame) -> DataFrame:
     """
     Combines forward and backward extrapolation values into a single column based on the specified model.
 
-    This function creates a new column named '<extrapolated_column_name>' which contains:
+    This function creates a new column named 'extrapolation_model' which contains:
     - Forward extrapolation values if 'unix_time' is greater than the 'final_submission_time'.
     - Backward extrapolation values if 'unix_time' is less than the 'first_submission_time'.
 
     Args:
-        df (DataFrame): The input DataFrame containing the columns 'unix_time', 'first_submission_time', 'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
-        model_to_extrapolate_from (str): The name of the model column used for extrapolation.
+        df (DataFrame): The input DataFrame containing the columns 'unix_time', 'first_submission_time',
+            'final_submission_time', 'extrapolation_forwards', and 'extrapolation_backwards'.
 
     Returns:
         DataFrame: The DataFrame with the added combined extrapolation column.
     """
     df = df.withColumn(
-        extrapolated_column_name,
+        IndCqc.extrapolation_model,
         F.when(
             F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
             F.col(IndCqc.extrapolation_forwards),
