@@ -47,7 +47,7 @@ def add_filled_posts_and_model_value_for_first_and_last_submission(
     df: DataFrame,
     model_column_name: str,
 ) -> DataFrame:
-    first_model_column_name, last_model_column_name = create_new_column_names(
+    first_model_column_name, last_model_column_name = create_imputation_model_names(
         model_column_name
     )
     df = add_first_and_last_submission_date_cols(df)
@@ -71,7 +71,7 @@ def add_filled_posts_and_model_value_for_first_and_last_submission(
     return df
 
 
-def create_new_column_names(model_column_name: str) -> tuple:
+def create_imputation_model_names(model_column_name: str) -> tuple:
     model_name = model_column_name[:-6]
     first_model_column_name = "first_" + model_name
     last_model_column_name = "last_" + model_name
@@ -142,7 +142,7 @@ def add_extrapolated_values(
 def create_extrapolation_ratio_column(
     df: DataFrame, model_column_name: str
 ) -> DataFrame:
-    first_model_column_name, last_model_column_name = create_new_column_names(
+    first_model_column_name, last_model_column_name = create_imputation_model_names(
         model_column_name
     )
     df_with_extrapolation_ratio_column = df.withColumn(
