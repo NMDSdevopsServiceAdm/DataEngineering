@@ -2533,9 +2533,9 @@ class ModelExtrapolationAndInterpolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField("null_values_column", DoubleType(), True),
+            StructField("trend_model", DoubleType(), True),
         ]
     )
 
@@ -2628,6 +2628,59 @@ class ModelExtrapolationNew:
         [
             *combine_extrapolation_schema,
             StructField("extrapolation_model_name", FloatType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelInterpolationNew:
+    interpolation_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
+        ]
+    )
+
+    calculate_residual_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
+        ]
+    )
+    expected_calculate_residual_schema = StructType(
+        [
+            *calculate_residual_schema,
+            StructField(IndCQC.extrapolation_residual, DoubleType(), True),
+        ]
+    )
+
+    time_between_submissions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_time_between_submissions_schema = StructType(
+        [
+            *time_between_submissions_schema,
+            StructField(
+                IndCQC.proportion_of_time_between_submissions, DoubleType(), True
+            ),
+        ]
+    )
+    time_between_submissions_mock_schema = StructType(
+        [
+            *time_between_submissions_schema,
+            StructField(IndCQC.previous_submission_time, IntegerType(), True),
+            StructField(IndCQC.next_submission_time, IntegerType(), False),
         ]
     )
 
