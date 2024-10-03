@@ -295,14 +295,11 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
     def setUp(self):
         super().setUp()
 
-        self.extrapolation_model_name = "extrapolation_model_name"
         test_combine_extrapolation_df = self.spark.createDataFrame(
             Data.combine_extrapolation_rows,
             Schemas.combine_extrapolation_schema,
         )
-        self.returned_df = job.combine_extrapolation(
-            test_combine_extrapolation_df, self.extrapolation_model_name
-        )
+        self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_combine_extrapolation_rows,
             Schemas.expected_combine_extrapolation_schema,
@@ -318,7 +315,7 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
     def test_combine_extrapolation_returns_expected_values(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][self.extrapolation_model_name],
-                self.expected_data[i][self.extrapolation_model_name],
+                self.returned_data[i][IndCqc.extrapolation_model],
+                self.expected_data[i][IndCqc.extrapolation_model],
                 f"Returned value in row {i} does not match expected",
             )

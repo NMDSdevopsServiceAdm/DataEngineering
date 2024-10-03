@@ -2642,7 +2642,7 @@ class ModelExtrapolationNew:
     expected_combine_extrapolation_schema = StructType(
         [
             *combine_extrapolation_schema,
-            StructField("extrapolation_model_name", FloatType(), True),
+            StructField(IndCQC.extrapolation_model, FloatType(), True),
         ]
     )
 
