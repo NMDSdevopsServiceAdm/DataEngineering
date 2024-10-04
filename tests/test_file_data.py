@@ -4894,8 +4894,31 @@ class ModelImputationWithExtrapolationAndInterpolationData:
         ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
     ]
 
-    extrapolation_model_column_name = "extrapolation_null_values_column_trend_model"
-    interpolation_model_column_name = "interpolation_null_values_column_trend_model"
+    column_with_null_values_name: str = "null_values"
+    model_column_name: str = "trend_model"
+    imputation_model_column_name: str = "imputation_null_values_trend_model"
+    expected_column_name = imputation_model_column_name
+
+    imputation_model_rows = [
+        ("1-001", None, None, None),
+        ("1-002", None, None, 30.0),
+        ("1-003", None, 20.0, None),
+        ("1-004", None, 20.0, 30.0),
+        ("1-005", 10.0, None, None),
+        ("1-006", 10.0, None, 30.0),
+        ("1-007", 10.0, 20.0, None),
+        ("1-008", 10.0, 20.0, 30.0),
+    ]
+    expected_imputation_model_rows = [
+        ("1-001", None, None, None, None),
+        ("1-002", None, None, 30.0, 30.0),
+        ("1-003", None, 20.0, None, 20.0),
+        ("1-004", None, 20.0, 30.0, 20.0),
+        ("1-005", 10.0, None, None, 10.0),
+        ("1-006", 10.0, None, 30.0, 10.0),
+        ("1-007", 10.0, 20.0, None, 10.0),
+        ("1-008", 10.0, 20.0, 30.0, 10.0),
+    ]
 
 
 @dataclass

@@ -20,7 +20,6 @@ class ModelExtrapolationTests(unittest.TestCase):
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_rows, Schemas.extrapolation_schema
         )
-        self.extrapolation_model_column_name = "extrapolation_rolling_average_model"
         self.model_column_name = IndCqc.rolling_average_model
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -35,14 +34,13 @@ class MainTests(ModelExtrapolationTests):
             self.extrapolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             self.model_column_name,
-            self.extrapolation_model_column_name,
         )
 
     def test_model_extrapolation_row_count_unchanged(self):
         self.assertEqual(self.returned_df.count(), self.extrapolation_df.count())
 
-    def test_model_extrapolation_and_interpolation_returns_new_columns(self):
-        self.assertIn(self.extrapolation_model_column_name, self.returned_df.columns)
+    def test_model_extrapolation_returns_new_column(self):
+        self.assertIn(IndCqc.extrapolation_model, self.returned_df.columns)
 
 
 class DefineWindowSpecsTests(ModelExtrapolationTests):
@@ -295,14 +293,11 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
     def setUp(self):
         super().setUp()
 
-        self.extrapolation_model_name = "extrapolation_model_name"
         test_combine_extrapolation_df = self.spark.createDataFrame(
             Data.combine_extrapolation_rows,
             Schemas.combine_extrapolation_schema,
         )
-        self.returned_df = job.combine_extrapolation(
-            test_combine_extrapolation_df, self.extrapolation_model_name
-        )
+        self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_combine_extrapolation_rows,
             Schemas.expected_combine_extrapolation_schema,
@@ -318,7 +313,7 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
     def test_combine_extrapolation_returns_expected_values(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][self.extrapolation_model_name],
-                self.expected_data[i][self.extrapolation_model_name],
+                self.returned_data[i][IndCqc.extrapolation_model],
+                self.expected_data[i][IndCqc.extrapolation_model],
                 f"Returned value in row {i} does not match expected",
             )

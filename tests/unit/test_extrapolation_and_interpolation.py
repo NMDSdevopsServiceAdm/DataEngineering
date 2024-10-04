@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 import warnings
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 import utils.estimate_filled_posts.models.extrapolation_and_interpolation as job
 from utils import utils
 from tests.test_file_data import (
@@ -30,13 +31,10 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
                 Schemas.imputation_with_extrapolation_and_interpolation_schema,
             )
         )
-        self.column_with_null_values: str = "null_values_column"
-        self.model_column_name: str = "trend_model"
-
         self.returned_df = job.model_imputation_with_extrapolation_and_interpolation(
             self.imputation_with_extrapolation_and_interpolation_df,
-            self.column_with_null_values,
-            self.model_column_name,
+            Data.column_with_null_values_name,
+            Data.model_column_name,
         )
 
     @patch(
@@ -52,8 +50,8 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
     ):
         job.model_imputation_with_extrapolation_and_interpolation(
             self.imputation_with_extrapolation_and_interpolation_df,
-            self.column_with_null_values,
-            self.model_column_name,
+            Data.column_with_null_values_name,
+            Data.model_column_name,
         )
 
         model_extrapolation_mock.assert_called_once()
@@ -67,26 +65,47 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             self.returned_df.count(),
         )
 
-    def test_model_imputation_with_extrapolation_and_interpolation_returns_new_columns(
+    def test_model_imputation_with_extrapolation_and_interpolation_returns_new_column(
         self,
     ):
-        self.assertIn(Data.extrapolation_model_column_name, self.returned_df.columns)
-        self.assertIn(Data.interpolation_model_column_name, self.returned_df.columns)
+        self.assertIn(Data.imputation_model_column_name, self.returned_df.columns)
 
 
-class CreateNewColumnNamesTests(ModelImputationWithExtrapolationAndInterpolationTests):
+class CreateImputationModelNameTests(
+    ModelImputationWithExtrapolationAndInterpolationTests
+):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_create_new_column_names_returns_expected_strings(self):
-        null_column_name: str = "filled_posts"
-        model_column_name: str = "trend_model"
-        expected_column_names = (
-            "extrapolation_filled_posts_trend_model",
-            "interpolation_filled_posts_trend_model",
+    def test_create_imputation_model_name_returns_expected_column_name(self):
+        self.assertEqual(
+            job.create_imputation_model_name(
+                Data.column_with_null_values_name, Data.model_column_name
+            ),
+            Data.expected_column_name,
         )
 
-        self.assertEqual(
-            job.create_new_column_names(null_column_name, model_column_name),
-            expected_column_names,
+
+class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_imputation_model_returns_correct_values(self):
+        null_value_column: str = "null_values"
+        imputation_model: str = "imputation_model"
+        test_df = self.spark.createDataFrame(
+            Data.imputation_model_rows, Schemas.imputation_model_schema
         )
+        returned_df = job.model_imputation(test_df, null_value_column, imputation_model)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_imputation_model_rows,
+            Schemas.expected_imputation_model_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][imputation_model],
+                expected_data[i][imputation_model],
+                f"Returned row {i} does not match expected",
+            )
