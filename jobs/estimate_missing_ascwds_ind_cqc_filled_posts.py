@@ -12,6 +12,9 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 from utils.estimate_filled_posts.models.interpolation import (
     model_interpolation,
 )  # TODO remove
@@ -50,6 +53,18 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.rolling_average_model,
     )
+
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.rolling_average_model,
+    )
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.rolling_average_model,
+    )
+
     estimate_missing_ascwds_df = model_extrapolation(  # TODO remove
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
     )
