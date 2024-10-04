@@ -6,7 +6,7 @@ from utils.estimate_filled_posts.models.extrapolation_new import model_extrapola
 from utils.estimate_filled_posts.models.interpolation_new import model_interpolation
 
 
-def model_extrapolation_and_interpolation(
+def model_imputation_with_extrapolation_and_interpolation(
     df: DataFrame,
     column_with_null_values: str,
     model_column_name: str,

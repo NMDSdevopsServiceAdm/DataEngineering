@@ -4,11 +4,15 @@ import warnings
 
 import utils.estimate_filled_posts.models.extrapolation_and_interpolation as job
 from utils import utils
-from tests.test_file_data import ModelExtrapolationAndInterpolation as Data
-from tests.test_file_schemas import ModelExtrapolationAndInterpolation as Schemas
+from tests.test_file_data import (
+    ModelImputationWithExtrapolationAndInterpolationData as Data,
+)
+from tests.test_file_schemas import (
+    ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
+)
 
 
-class ModelExtrapolationAndInterpolationTests(unittest.TestCase):
+class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
@@ -16,19 +20,21 @@ class ModelExtrapolationAndInterpolationTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-class MainTests(ModelExtrapolationAndInterpolationTests):
+class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.extrapolation_and_interpolation_df = self.spark.createDataFrame(
-            Data.extrapolation_and_interpolation_rows,
-            Schemas.extrapolation_and_interpolation_schema,
+        self.imputation_with_extrapolation_and_interpolation_df = (
+            self.spark.createDataFrame(
+                Data.imputation_with_extrapolation_and_interpolation_rows,
+                Schemas.imputation_with_extrapolation_and_interpolation_schema,
+            )
         )
         self.column_with_null_values: str = "null_values_column"
         self.model_column_name: str = "trend_model"
 
-        self.returned_df = job.model_extrapolation_and_interpolation(
-            self.extrapolation_and_interpolation_df,
+        self.returned_df = job.model_imputation_with_extrapolation_and_interpolation(
+            self.imputation_with_extrapolation_and_interpolation_df,
             self.column_with_null_values,
             self.model_column_name,
         )
@@ -39,13 +45,13 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
     @patch(
         "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_extrapolation"
     )
-    def test_model_extrapolation_and_interpolation_runs(
+    def test_model_imputation_with_extrapolation_and_interpolation_runs(
         self,
         model_extrapolation_mock: Mock,
         model_interpolation_mock: Mock,
     ):
-        job.model_extrapolation_and_interpolation(
-            self.extrapolation_and_interpolation_df,
+        job.model_imputation_with_extrapolation_and_interpolation(
+            self.imputation_with_extrapolation_and_interpolation_df,
             self.column_with_null_values,
             self.model_column_name,
         )
@@ -53,17 +59,22 @@ class MainTests(ModelExtrapolationAndInterpolationTests):
         model_extrapolation_mock.assert_called_once()
         model_interpolation_mock.assert_called_once()
 
-    def test_model_extrapolation_and_interpolation_returns_same_number_of_rows(self):
+    def test_model_imputation_with_extrapolation_and_interpolation_returns_same_number_of_rows(
+        self,
+    ):
         self.assertEqual(
-            self.extrapolation_and_interpolation_df.count(), self.returned_df.count()
+            self.imputation_with_extrapolation_and_interpolation_df.count(),
+            self.returned_df.count(),
         )
 
-    def test_model_extrapolation_and_interpolation_returns_new_columns(self):
+    def test_model_imputation_with_extrapolation_and_interpolation_returns_new_columns(
+        self,
+    ):
         self.assertIn(Data.extrapolation_model_column_name, self.returned_df.columns)
         self.assertIn(Data.interpolation_model_column_name, self.returned_df.columns)
 
 
-class CreateNewColumnNamesTests(ModelExtrapolationAndInterpolationTests):
+class CreateNewColumnNamesTests(ModelImputationWithExtrapolationAndInterpolationTests):
     def setUp(self) -> None:
         super().setUp()
 
