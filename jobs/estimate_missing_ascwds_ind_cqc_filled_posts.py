@@ -71,11 +71,11 @@ def main(
     )
     estimate_missing_ascwds_df = merge_imputed_columns(
         estimate_missing_ascwds_df
-    )  # TODO duplicate first as a check with new data then remove
+    )  # TODO remove - no longer required
 
     estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(  # TODO duplicate first as a check with new data then remove
         estimate_missing_ascwds_df
-    )
+    )  # TODO edit to take the imputation column as an input and repeat twice, once for each imputation col
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
