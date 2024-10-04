@@ -2528,8 +2528,8 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
-class ModelExtrapolationAndInterpolation:
-    extrapolation_and_interpolation_schema = StructType(
+class ModelImputationWithExtrapolationAndInterpolationSchemas:
+    imputation_with_extrapolation_and_interpolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
