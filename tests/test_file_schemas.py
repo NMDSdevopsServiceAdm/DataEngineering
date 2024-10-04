@@ -2528,14 +2528,29 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
-class ModelExtrapolationAndInterpolation:
-    extrapolation_and_interpolation_schema = StructType(
+class ModelImputationWithExtrapolationAndInterpolationSchemas:
+    imputation_with_extrapolation_and_interpolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField("null_values_column", DoubleType(), True),
+            StructField("null_values", DoubleType(), True),
             StructField("trend_model", DoubleType(), True),
+        ]
+    )
+
+    imputation_model_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("null_values", DoubleType(), True),
+            StructField(IndCQC.extrapolation_model, DoubleType(), True),
+            StructField(IndCQC.interpolation_model, DoubleType(), True),
+        ]
+    )
+    expected_imputation_model_schema = StructType(
+        [
+            *imputation_model_schema,
+            StructField("imputation_model", DoubleType(), True),
         ]
     )
 
@@ -2627,7 +2642,7 @@ class ModelExtrapolationNew:
     expected_combine_extrapolation_schema = StructType(
         [
             *combine_extrapolation_schema,
-            StructField("extrapolation_model_name", FloatType(), True),
+            StructField(IndCQC.extrapolation_model, FloatType(), True),
         ]
     )
 

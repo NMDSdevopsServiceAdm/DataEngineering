@@ -10,21 +10,19 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 def model_interpolation(
     df: DataFrame,
     column_with_null_values: str,
-    interpolated_column_name: str,
 ) -> DataFrame:
     """
-    Perform interpolation on a column with null values and adds as a new column.
+    Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
 
     This function uses the extrapolation_forwards values as a trend line to guide interpolated predictions
-    between two non-null values and inputs the interpolated results into a new column.
+    between two non-null values and inputs the interpolated results into a new column called 'interpolation_model'.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
-        interpolated_column_name (str): The name of the new column to store interpolated values.
 
     Returns:
-        DataFrame: The DataFrame with the interpolated values in the specified column.
+        DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
     """
     window_spec_backwards, window_spec_forwards = define_window_specs()
 
@@ -35,7 +33,7 @@ def model_interpolation(
     )
 
     df = df.withColumn(
-        interpolated_column_name,
+        IndCqc.interpolation_model,
         F.col(IndCqc.extrapolation_forwards)
         + F.col(IndCqc.extrapolation_residual)
         * F.col(IndCqc.proportion_of_time_between_submissions),
