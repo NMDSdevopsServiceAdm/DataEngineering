@@ -39,9 +39,7 @@ class MainTests(ModelExtrapolationTests):
     def test_model_extrapolation_row_count_unchanged(self):
         self.assertEqual(self.returned_df.count(), self.extrapolation_df.count())
 
-    def test_model_extrapolation_returns_new_column(
-        self,
-    ):
+    def test_model_extrapolation_returns_new_column(self):
         self.assertIn(IndCqc.extrapolation_model, self.returned_df.columns)
 
 
