@@ -130,7 +130,7 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Schemas.null_changing_carehome_status_schema,
         )
         self.returned_df = job.null_changing_carehome_status_from_imputed_columns(
-            self.test_df
+            self.test_df, IndCQC.ascwds_filled_posts_imputed
         )
 
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_no_ascwds_data_exists(
@@ -156,7 +156,9 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Data.expected_retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows,
             Schemas.retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema,
         )
-        returned_df = job.null_changing_carehome_status_from_imputed_columns(test_df)
+        returned_df = job.null_changing_carehome_status_from_imputed_columns(
+            test_df, IndCQC.ascwds_filled_posts_imputed
+        )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
@@ -179,7 +181,7 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Schemas.null_changing_carehome_status_schema,
         )
         returned_list = job.create_list_of_locations_with_changing_care_home_status(
-            test_df
+            test_df, IndCQC.ascwds_filled_posts_imputed
         )
         expected_list = Data.expected_list_of_changing_carehome_statuses
 
