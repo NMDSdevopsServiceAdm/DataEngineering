@@ -181,7 +181,7 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Schemas.null_changing_carehome_status_schema,
         )
         returned_list = job.create_list_of_locations_with_changing_care_home_status(
-            test_df, IndCQC.ascwds_filled_posts_imputed
+            test_df
         )
         expected_list = Data.expected_list_of_changing_carehome_statuses
 
