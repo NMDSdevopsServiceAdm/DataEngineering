@@ -174,7 +174,7 @@ def null_changing_carehome_status_from_imputed_columns(
     This function nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history. If those locations have a value for ascwds_filled_posts_dedup_clean, that value is used instead, otherwise the value is nulled.
 
     Args:
-        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and ascwds_filled_posts_imputed.
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and '<imputed_column_name>'.
 
     Returns:
         DataFrame: A dataframe with locations changing care home status nulled, unless they have ascwds_filled_posts_dedup_clean data available.
