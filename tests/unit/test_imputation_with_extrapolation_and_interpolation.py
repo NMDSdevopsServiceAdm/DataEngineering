@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import warnings
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.models.extrapolation_and_interpolation as job
+import utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation as job
 from utils import utils
 from tests.test_file_data import (
     ModelImputationWithExtrapolationAndInterpolationData as Data,
@@ -38,10 +38,10 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
         )
 
     @patch(
-        "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_interpolation"
+        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_interpolation"
     )
     @patch(
-        "utils.estimate_filled_posts.models.extrapolation_and_interpolation.model_extrapolation"
+        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_extrapolation"
     )
     def test_model_imputation_with_extrapolation_and_interpolation_runs(
         self,
