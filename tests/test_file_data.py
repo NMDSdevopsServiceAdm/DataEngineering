@@ -4881,17 +4881,91 @@ class ModelPrimaryServiceRollingAverage:
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:
     imputation_with_extrapolation_and_interpolation_rows = [
-        ("1-001", date(2023, 1, 1), 1672531200, 10.0, 15.0),
-        ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
-        ("1-001", date(2023, 3, 1), 1677628800, 30.0, 15.2),
-        ("1-002", date(2023, 1, 1), 1672531200, 4.0, 50.3),
-        ("1-002", date(2023, 2, 1), 1675209600, None, 50.5),
-        ("1-002", date(2023, 3, 1), 1677628800, None, 50.7),
-        ("1-002", date(2023, 4, 1), 1680303600, None, 50.1),
-        ("1-003", date(2023, 1, 1), 1672531200, None, 50.3),
-        ("1-003", date(2023, 2, 1), 1675209600, 20.0, 50.5),
-        ("1-003", date(2023, 3, 1), 1677628800, None, 50.7),
-        ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-001", date(2023, 1, 1), 1672531200, CareHome.care_home, 10.0, 15.0),
+        ("1-001", date(2023, 2, 1), 1675209600, CareHome.care_home, None, 15.1),
+        ("1-001", date(2023, 3, 1), 1677628800, CareHome.care_home, 30.0, 15.2),
+        ("1-002", date(2023, 1, 1), 1672531200, CareHome.not_care_home, 4.0, 50.3),
+        ("1-002", date(2023, 2, 1), 1675209600, CareHome.not_care_home, None, 50.5),
+        ("1-002", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
+        ("1-002", date(2023, 4, 1), 1680303600, CareHome.not_care_home, None, 50.1),
+        ("1-003", date(2023, 1, 1), 1672531200, CareHome.not_care_home, None, 50.3),
+        ("1-003", date(2023, 2, 1), 1675209600, CareHome.not_care_home, 20.0, 50.5),
+        ("1-003", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
+        ("1-004", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
+    ]
+
+    split_dataset_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 2, 1), CareHome.care_home, 20.0),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, 30.0),
+        ("1-004", date(2024, 2, 1), CareHome.not_care_home, None),
+        ("1-005", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-005", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("1-006", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-008", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+    ]
+    expected_split_dataset_imputation_df_when_true_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0, True),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, None, True),
+        ("1-003", date(2024, 2, 1), CareHome.care_home, 20.0, True),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, 30.0, True),
+    ]
+    expected_split_dataset_non_imputation_df_when_true_rows = [
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-004", date(2024, 2, 1), CareHome.not_care_home, None, False),
+        ("1-005", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-005", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
+        ("1-006", date(2024, 1, 1), CareHome.not_care_home, 10.0, True),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None, False),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None, True),
+        ("1-008", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
+    ]
+    expected_split_dataset_imputation_df_when_false_rows = [
+        ("1-005", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
+        ("1-006", date(2024, 1, 1), CareHome.not_care_home, 10.0, True),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None, True),
+        ("1-008", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
+    ]
+    expected_split_dataset_non_imputation_df_when_false_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0, True),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, None, True),
+        ("1-003", date(2024, 2, 1), CareHome.care_home, 20.0, True),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, 30.0, True),
+        ("1-004", date(2024, 2, 1), CareHome.not_care_home, None, False),
+        ("1-005", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None, False),
+    ]
+
+    non_null_submission_when_locations_have_a_non_null_value_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-002", date(2024, 2, 1), CareHome.care_home, 20.0),
+    ]
+    expected_non_null_submission_when_locations_have_a_non_null_value_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0, True),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None, True),
+        ("1-002", date(2024, 2, 1), CareHome.care_home, 20.0, True),
+    ]
+    non_null_submission_when_location_only_has_null_value_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-001", date(2024, 2, 1), CareHome.care_home, None),
+    ]
+    expected_non_null_submission_when_location_only_has_null_value_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-001", date(2024, 2, 1), CareHome.care_home, None, False),
+    ]
+    non_null_submission_when_a_location_has_both_care_home_options_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 30.0),
+    ]
+    expected_non_null_submission_when_a_location_has_both_care_home_options_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 30.0, True),
     ]
 
     column_with_null_values_name: str = "null_values"

@@ -130,7 +130,7 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Schemas.null_changing_carehome_status_schema,
         )
         self.returned_df = job.null_changing_carehome_status_from_imputed_columns(
-            self.test_df, IndCQC.ascwds_filled_posts_imputed
+            self.test_df
         )
 
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_no_ascwds_data_exists(
@@ -156,9 +156,7 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             Data.expected_retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_rows,
             Schemas.retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema,
         )
-        returned_df = job.null_changing_carehome_status_from_imputed_columns(
-            test_df, IndCQC.ascwds_filled_posts_imputed
-        )
+        returned_df = job.null_changing_carehome_status_from_imputed_columns(test_df)
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):

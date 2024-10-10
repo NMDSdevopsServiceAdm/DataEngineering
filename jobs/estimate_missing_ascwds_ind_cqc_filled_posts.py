@@ -15,12 +15,8 @@ from utils.estimate_filled_posts.models.primary_service_rolling_average import (
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.interpolation import (
-    model_interpolation,
-)  # TODO remove
-from utils.estimate_filled_posts.models.extrapolation import (
-    model_extrapolation,
-)  # TODO remove
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -58,45 +54,42 @@ def main(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.rolling_average_model,
-    )
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df, IndCQC.imputation_filled_posts_rolling_average_model
+        care_home=False,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_average_model,
-    )
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df,
-        IndCQC.imputation_posts_per_bed_ratio_rolling_average_model,
+        IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+        care_home=True,
     )
 
-    estimate_missing_ascwds_df = model_extrapolation(  # TODO remove
+    estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
-    )
+    )  # TODO remove
 
-    estimate_missing_ascwds_df = model_interpolation(  # TODO remove
+    estimate_missing_ascwds_df = model_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-    )
-    estimate_missing_ascwds_df = model_interpolation(  # TODO remove
+    )  # TODO remove
+    estimate_missing_ascwds_df = model_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-    )
-    estimate_missing_ascwds_df = merge_interpolated_values_into_interpolated_filled_posts(  # TODO function no longer required - remove inc tests, schemas and data
+    )  # TODO remove
+    estimate_missing_ascwds_df = (
+        merge_interpolated_values_into_interpolated_filled_posts(
+            estimate_missing_ascwds_df
+        )
+    )  # TODO function no longer required
+    estimate_missing_ascwds_df = merge_imputed_columns(
         estimate_missing_ascwds_df
-    )
-    estimate_missing_ascwds_df = merge_imputed_columns(  # TODO function no longer required - remove inc tests, schemas and data
-        estimate_missing_ascwds_df
-    )
+    )  # TODO function no longer required
 
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(  # TODO remove this call (function itself still used)
-        estimate_missing_ascwds_df, IndCQC.ascwds_filled_posts_imputed
-    )
+    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
+        estimate_missing_ascwds_df
+    )  # TODO check if the function is still required
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
@@ -165,26 +158,24 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     return df
 
 
-def null_changing_carehome_status_from_imputed_columns(
-    df: DataFrame, imputed_column_name: str
-) -> DataFrame:
+def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFrame:
     """
     Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
 
     This function nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history. If those locations have a value for ascwds_filled_posts_dedup_clean, that value is used instead, otherwise the value is nulled.
 
     Args:
-        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and '<imputed_column_name>'.
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and ascwds_filled_posts_imputed.
 
     Returns:
         DataFrame: A dataframe with locations changing care home status nulled, unless they have ascwds_filled_posts_dedup_clean data available.
     """
     list_of_locations = create_list_of_locations_with_changing_care_home_status(df)
     df = df.withColumn(
-        imputed_column_name,
+        IndCQC.ascwds_filled_posts_imputed,
         F.when(
             ~df[IndCQC.location_id].isin(list_of_locations),
-            F.col(imputed_column_name),
+            F.col(IndCQC.ascwds_filled_posts_imputed),
         ).otherwise(
             F.col(IndCQC.ascwds_filled_posts_dedup_clean),
         ),
