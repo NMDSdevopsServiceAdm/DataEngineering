@@ -122,8 +122,12 @@ class IndCqcColumns:
     imputation_filled_posts_rolling_average_model: str = (
         "imputation_" + ascwds_filled_posts_dedup_clean + "_rolling_average_model"
     )
-    imputation_posts_per_bed_ratio_rolling_average_model: str = (
-        "imputation_" + filled_posts_per_bed_ratio + "_rolling_average_model"
+    imputation_posts_per_bed_ratio_rolling_average_model_filled_posts_per_bed_ratio: (
+        str
+    ) = (
+        "imputation_"
+        + filled_posts_per_bed_ratio
+        + "_rolling_average_model_filled_posts_per_bed_ratio"
     )
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_registration_date: str = CQCLClean.imputed_registration_date
