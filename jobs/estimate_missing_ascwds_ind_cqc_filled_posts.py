@@ -88,7 +88,7 @@ def main(
     )  # TODO function no longer required
 
     estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df, IndCQC.ascwds_filled_posts_imputed
+        estimate_missing_ascwds_df
     )  # TODO check if the function is still required
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
@@ -158,26 +158,24 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
     return df
 
 
-def null_changing_carehome_status_from_imputed_columns(
-    df: DataFrame, imputed_column_name: str
-) -> DataFrame:
+def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFrame:
     """
     Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
 
     This function nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history. If those locations have a value for ascwds_filled_posts_dedup_clean, that value is used instead, otherwise the value is nulled.
 
     Args:
-        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and '<imputed_column_name>'.
+        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and ascwds_filled_posts_imputed.
 
     Returns:
         DataFrame: A dataframe with locations changing care home status nulled, unless they have ascwds_filled_posts_dedup_clean data available.
     """
     list_of_locations = create_list_of_locations_with_changing_care_home_status(df)
     df = df.withColumn(
-        imputed_column_name,
+        IndCQC.ascwds_filled_posts_imputed,
         F.when(
             ~df[IndCQC.location_id].isin(list_of_locations),
-            F.col(imputed_column_name),
+            F.col(IndCQC.ascwds_filled_posts_imputed),
         ).otherwise(
             F.col(IndCQC.ascwds_filled_posts_dedup_clean),
         ),
