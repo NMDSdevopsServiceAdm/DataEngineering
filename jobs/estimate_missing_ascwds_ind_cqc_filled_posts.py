@@ -58,19 +58,14 @@ def main(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.rolling_average_model,
-    )
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df, IndCQC.imputation_filled_posts_rolling_average_model
+        care_home=False,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
-    )
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df,
-        IndCQC.imputation_posts_per_bed_ratio_rolling_average_model,
+        care_home=True,
     )
 
     estimate_missing_ascwds_df = model_extrapolation(  # TODO remove
@@ -94,7 +89,7 @@ def main(
         estimate_missing_ascwds_df
     )
 
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(  # TODO remove this call (function itself still used)
+    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(  # TODO check if the function is still required
         estimate_missing_ascwds_df, IndCQC.ascwds_filled_posts_imputed
     )
 
