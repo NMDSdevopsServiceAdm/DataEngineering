@@ -40,7 +40,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             care_home=False,
         )
 
-    @unittest.skip("debugging")
     @patch(
         "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_interpolation"
     )
@@ -62,7 +61,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
         model_extrapolation_mock.assert_called_once()
         model_interpolation_mock.assert_called_once()
 
-    @unittest.skip("debugging")
     def test_model_imputation_with_extrapolation_and_interpolation_returns_same_number_of_rows(
         self,
     ):
@@ -83,7 +81,6 @@ class CreateImputationModelNameTests(
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("debugging")
     def test_create_imputation_model_name_returns_expected_column_name(self):
         self.assertEqual(
             job.create_imputation_model_name(
@@ -247,7 +244,6 @@ class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("debugging")
     def test_imputation_model_returns_correct_values(self):
         imputation_model: str = "imputation_model"
         test_df = self.spark.createDataFrame(
