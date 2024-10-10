@@ -117,6 +117,7 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
+    has_non_null_value: str = "has_non_null_value"
     import_month_index: str = "import_month_index"
     imputation_filled_posts_rolling_average_model: str = (
         "imputation_" + ascwds_filled_posts_dedup_clean + "_rolling_average_model"

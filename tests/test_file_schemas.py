@@ -2542,6 +2542,21 @@ class ModelImputationWithExtrapolationAndInterpolationSchemas:
         ]
     )
 
+    non_null_submission_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_with_null_values, DoubleType(), True),
+        ]
+    )
+    expected_non_null_submission_schema = StructType(
+        [
+            *non_null_submission_schema,
+            StructField(IndCQC.has_non_null_value, BooleanType(), True),
+        ]
+    )
+
     imputation_model_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

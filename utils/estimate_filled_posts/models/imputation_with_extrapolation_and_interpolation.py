@@ -97,6 +97,35 @@ def create_imputation_model_name(
     return imputation_model_column_name
 
 
+def identify_locations_with_a_non_null_submission(
+    df: DataFrame, column_with_null_values: str
+) -> DataFrame:
+    """
+    Identifies locations with at least one non-null submission in the specified column.
+
+    This function adds a new column to the DataFrame indicating whether each location
+    has ever had a non-null value in the specified column. The new column will contain
+    True if there is at least one non-null value for the location, and False otherwise.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        column_with_null_values (str): The name of the column to check for non-null values.
+
+    Returns:
+        DataFrame: A new DataFrame with an additional column indicating the presence of non-null values.
+    """
+    w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
+
+    df = df.withColumn(
+        IndCqc.has_non_null_value,
+        F.max(
+            F.when(F.col(column_with_null_values).isNotNull(), True).otherwise(False)
+        ).over(w),
+    )
+
+    return df
+
+
 def model_imputation(
     df: DataFrame, column_with_null_values: str, imputation_model_column_name: str
 ) -> DataFrame:

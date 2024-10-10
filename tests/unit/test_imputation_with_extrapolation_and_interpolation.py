@@ -88,6 +88,76 @@ class CreateImputationModelNameTests(
         )
 
 
+class IdentifyLocationsWithANonNullSubmissionTests(
+    ModelImputationWithExtrapolationAndInterpolationTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_returned_dataframe_has_expected_values_when_locations_have_a_non_null_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.non_null_submission_when_locations_have_a_non_null_value_rows,
+            Schemas.non_null_submission_schema,
+        )
+        returned_df = job.identify_locations_with_a_non_null_submission(
+            test_df, self.null_value_column
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_non_null_submission_when_locations_have_a_non_null_value_rows,
+            Schemas.expected_non_null_submission_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_returned_dataframe_has_expected_values_when_location_only_has_null_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.non_null_submission_when_location_only_has_null_value_rows,
+            Schemas.non_null_submission_schema,
+        )
+        returned_df = job.identify_locations_with_a_non_null_submission(
+            test_df, self.null_value_column
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_non_null_submission_when_location_only_has_null_value_rows,
+            Schemas.expected_non_null_submission_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_returned_dataframe_has_expected_values_when_location_has_both_care_home_options(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.non_null_submission_when_a_location_has_both_care_home_options_rows,
+            Schemas.non_null_submission_schema,
+        )
+        returned_df = job.identify_locations_with_a_non_null_submission(
+            test_df, self.null_value_column
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_non_null_submission_when_a_location_has_both_care_home_options_rows,
+            Schemas.expected_non_null_submission_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
     def setUp(self) -> None:
         super().setUp()
