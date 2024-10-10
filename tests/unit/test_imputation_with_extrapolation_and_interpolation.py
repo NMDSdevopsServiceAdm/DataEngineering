@@ -90,6 +90,86 @@ class CreateImputationModelNameTests(
         )
 
 
+class SplitDatasetForImputationTests(
+    ModelImputationWithExtrapolationAndInterpolationTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.split_dataset_rows,
+            Schemas.split_dataset_for_imputation_schema,
+        )
+        (
+            self.returned_imputation_df_when_true,
+            self.returned_non_imputation_df_when_true,
+        ) = job.split_dataset_for_imputation(
+            test_df, self.null_value_column, care_home=True
+        )
+        (
+            self.returned_imputation_df_when_false,
+            self.returned_non_imputation_df_when_false,
+        ) = job.split_dataset_for_imputation(
+            test_df, self.null_value_column, care_home=False
+        )
+
+    def test_returned_imputation_dataframe_has_expected_rows_when_care_home_is_true(
+        self,
+    ):
+        returned_data = self.returned_imputation_df_when_true.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_split_dataset_imputation_df_when_true_rows,
+            Schemas.expected_split_dataset_for_imputation_schema,
+        )
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_returned_non_imputation_dataframe_has_expected_rows_when_care_home_is_true(
+        self,
+    ):
+        returned_data = self.returned_non_imputation_df_when_true.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_split_dataset_non_imputation_df_when_true_rows,
+            Schemas.expected_split_dataset_for_imputation_schema,
+        )
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_returned_imputation_dataframe_has_expected_rows_when_care_home_is_false(
+        self,
+    ):
+        returned_data = self.returned_imputation_df_when_false.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_split_dataset_imputation_df_when_false_rows,
+            Schemas.expected_split_dataset_for_imputation_schema,
+        )
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_returned_non_imputation_dataframe_has_expected_rows_when_care_home_is_false(
+        self,
+    ):
+        returned_data = self.returned_non_imputation_df_when_false.sort(
+            IndCqc.location_id, IndCqc.cqc_location_import_date
+        ).collect()
+        expected_df = self.spark.createDataFrame(
+            Data.expected_split_dataset_non_imputation_df_when_false_rows,
+            Schemas.expected_split_dataset_for_imputation_schema,
+        )
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class IdentifyLocationsWithANonNullSubmissionTests(
     ModelImputationWithExtrapolationAndInterpolationTests
 ):

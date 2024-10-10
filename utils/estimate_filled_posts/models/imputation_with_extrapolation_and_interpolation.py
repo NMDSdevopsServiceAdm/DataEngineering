@@ -97,6 +97,41 @@ def create_imputation_model_name(
     return imputation_model_column_name
 
 
+def split_dataset_for_imputation(
+    df: DataFrame, column_with_null_values: str, care_home: bool
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Splits the dataset into two based on whther or not the rows meet the criteria for imputation.
+
+    Splits the dataset into two based on the presence of non-null values in a specified column
+    and whether the care_home column matches the provided argument.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column_with_null_values (str): The column to check for non-null values.
+        care_home (bool): True if imputation is for care homes, False if it is for non residential.
+
+    Returns:
+        Tuple[DataFrame, DataFrame]: A tuple containing two DataFrames:
+            - imputation_df: DataFrame with rows meeting the criteria for imputation.
+            - non_imputation_df: DataFrame with rows not meeting the criteria.
+    """
+    if care_home == True:
+        care_home_filter_value: str = CareHome.care_home
+    else:
+        care_home_filter_value: str = CareHome.not_care_home
+
+    df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
+
+    imputation_df = df.where(
+        (F.col(IndCqc.care_home) == care_home_filter_value)
+        & (F.col(IndCqc.has_non_null_value) == True)
+    )
+    non_imputation_df = df.exceptAll(imputation_df)
+
+    return imputation_df, non_imputation_df
+
+
 def identify_locations_with_a_non_null_submission(
     df: DataFrame, column_with_null_values: str
 ) -> DataFrame:
