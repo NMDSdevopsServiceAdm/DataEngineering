@@ -54,14 +54,14 @@ def main(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.rolling_average_model,
-        care_home=False,
+        False,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
-        care_home=True,
+        True,
     )
 
     estimate_missing_ascwds_df = model_extrapolation(
