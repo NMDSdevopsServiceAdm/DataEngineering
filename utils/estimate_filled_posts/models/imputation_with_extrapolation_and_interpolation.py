@@ -1,6 +1,8 @@
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
+from typing import Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.extrapolation_new import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation_new import model_interpolation
 
@@ -9,21 +11,26 @@ def model_imputation_with_extrapolation_and_interpolation(
     df: DataFrame,
     column_with_null_values: str,
     model_column_name: str,
+    care_home: bool,
 ) -> DataFrame:
     """
     Create a new column of imputed values based on known values and null values being extrapolated and interpolated.
 
-    This function creates a new column of data which takes non-null values from a column containing null values, and populates
-    the null values based on the rate of change of values in '<model_column_name>'. Values before the first known submission and
-    after the last known submission are extrapolated based on the rate of change of the '<model_column_name>'. Values in between
-    non-null values are interpolated using the rate of change of the '<model_column_name>' but the trend is adapted so that the
-    end point matches the next non-null value. A new column is added which includes the name of the '<column_with_null_values>'
-    and the '<model_column_name>'.
+    This function first splits the dataset into two, one which is relevant for imputation (based on the care_home status of the
+    location and only for locations who have at least one non-null value) and another which includes all other rows not relevant
+    to imputation.
+    The imputation model is carried out in two steps, extrapolation and interpolation, which both populate null values based on
+    the rate of change of values in '<model_column_name>'. Values before the first known submission in 'column_with_null_values'
+    and after the last known submission are extrapolated based on the rate of change of the '<model_column_name>'. Values in
+    between the non-null values are interpolated using the rate of change of the '<model_column_name>' but the trend is adapted
+    so that the end point matches the next non-null value. A new column is added which includes the name of the
+    '<column_with_null_values>' and the '<model_column_name>'.
 
     Args:
         df (DataFrame): The input DataFrame containing the columns to be extrapolated and interpolated.
         column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
         model_column_name (str): The name of the column containing the model values used for extrapolation and interpolation.
+        care_home (bool): True if imputation is for care homes, False if it is for non residential.
 
     Returns:
         DataFrame: The DataFrame with the added column for imputed values.
@@ -32,26 +39,35 @@ def model_imputation_with_extrapolation_and_interpolation(
         column_with_null_values, model_column_name
     )
 
-    df = model_extrapolation(
-        df,
+    imputed_df, non_imputed_df = split_dataset_for_imputation(
+        df, column_with_null_values, care_home
+    )
+
+    imputed_df = model_extrapolation(
+        imputed_df,
         column_with_null_values,
         model_column_name,
     )
-    df = model_interpolation(
-        df,
+    imputed_df = model_interpolation(
+        imputed_df,
         column_with_null_values,
     )
-    df = model_imputation(df, column_with_null_values, imputation_model_column_name)
-    df = df.drop(
+    imputed_df = model_imputation(
+        imputed_df, column_with_null_values, imputation_model_column_name
+    )
+
+    combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
+
+    combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
         IndCqc.extrapolation_residual,
         IndCqc.proportion_of_time_between_submissions,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
+        IndCqc.has_non_null_value,
     )
-
-    return df
+    return combined_df
 
 
 def create_imputation_model_name(

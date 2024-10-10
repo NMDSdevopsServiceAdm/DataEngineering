@@ -4881,17 +4881,17 @@ class ModelPrimaryServiceRollingAverage:
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:
     imputation_with_extrapolation_and_interpolation_rows = [
-        ("1-001", date(2023, 1, 1), 1672531200, 10.0, 15.0),
-        ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
-        ("1-001", date(2023, 3, 1), 1677628800, 30.0, 15.2),
-        ("1-002", date(2023, 1, 1), 1672531200, 4.0, 50.3),
-        ("1-002", date(2023, 2, 1), 1675209600, None, 50.5),
-        ("1-002", date(2023, 3, 1), 1677628800, None, 50.7),
-        ("1-002", date(2023, 4, 1), 1680303600, None, 50.1),
-        ("1-003", date(2023, 1, 1), 1672531200, None, 50.3),
-        ("1-003", date(2023, 2, 1), 1675209600, 20.0, 50.5),
-        ("1-003", date(2023, 3, 1), 1677628800, None, 50.7),
-        ("1-004", date(2023, 3, 1), 1677628800, None, 50.7),
+        ("1-001", date(2023, 1, 1), 1672531200, CareHome.care_home, 10.0, 15.0),
+        ("1-001", date(2023, 2, 1), 1675209600, CareHome.care_home, None, 15.1),
+        ("1-001", date(2023, 3, 1), 1677628800, CareHome.care_home, 30.0, 15.2),
+        ("1-002", date(2023, 1, 1), 1672531200, CareHome.not_care_home, 4.0, 50.3),
+        ("1-002", date(2023, 2, 1), 1675209600, CareHome.not_care_home, None, 50.5),
+        ("1-002", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
+        ("1-002", date(2023, 4, 1), 1680303600, CareHome.not_care_home, None, 50.1),
+        ("1-003", date(2023, 1, 1), 1672531200, CareHome.not_care_home, None, 50.3),
+        ("1-003", date(2023, 2, 1), 1675209600, CareHome.not_care_home, 20.0, 50.5),
+        ("1-003", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
+        ("1-004", date(2023, 3, 1), 1677628800, CareHome.not_care_home, None, 50.7),
     ]
 
     column_with_null_values_name: str = "null_values"

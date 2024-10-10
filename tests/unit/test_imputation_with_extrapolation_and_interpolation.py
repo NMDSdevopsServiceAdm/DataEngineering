@@ -17,6 +17,8 @@ class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+        self.null_value_column: str = "null_values"
+
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -91,12 +93,13 @@ class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests
         super().setUp()
 
     def test_imputation_model_returns_correct_values(self):
-        null_value_column: str = "null_values"
         imputation_model: str = "imputation_model"
         test_df = self.spark.createDataFrame(
             Data.imputation_model_rows, Schemas.imputation_model_schema
         )
-        returned_df = job.model_imputation(test_df, null_value_column, imputation_model)
+        returned_df = job.model_imputation(
+            test_df, self.null_value_column, imputation_model
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_imputation_model_rows,
             Schemas.expected_imputation_model_schema,
