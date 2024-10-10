@@ -62,7 +62,6 @@ class NumericalValuesTests(EstimateMissingAscwdsFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("debugging")
     def test_number_of_days_in_rolling_average_value(self):
         self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 185)
 
@@ -71,7 +70,6 @@ class MergeInterpolatedValuesTests(EstimateMissingAscwdsFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("debugging")
     def test_merge_interpolated_values_into_interpolated_filled_posts_returns_correct_values(
         self,
     ):
@@ -100,7 +98,6 @@ class MergeImputedColumnsTests(EstimateMissingAscwdsFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @unittest.skip("debugging")
     def test_merge_imputed_columns_returns_correct_values(self):
         test_df = self.spark.createDataFrame(
             Data.merge_imputed_columns_rows, Schemas.merge_imputed_columns_schema
@@ -137,7 +134,6 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
             self.test_df
         )
 
-    @unittest.skip("debugging")
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_no_ascwds_data_exists(
         self,
     ):
@@ -150,7 +146,6 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
                 f"Returned row {i} does not match expected",
             )
 
-    @unittest.skip("debugging")
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_values_when_ascwds_data_exists(
         self,
     ):
@@ -172,13 +167,11 @@ class NullChangingCarehomeStatusFromImputedColumnsTests(
                 f"Returned row {i} does not match expected",
             )
 
-    @unittest.skip("debugging")
     def test_null_changing_carehome_status_from_imputed_columns_returns_correct_row_count(
         self,
     ):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
-    @unittest.skip("debugging")
     def test_create_list_of_locations_with_changing_care_home_status_returns_correct_values(
         self,
     ):
