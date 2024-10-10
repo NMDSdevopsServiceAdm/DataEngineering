@@ -37,6 +37,7 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             self.imputation_with_extrapolation_and_interpolation_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
+            care_home=False,
         )
 
     @patch(
@@ -54,6 +55,7 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             self.imputation_with_extrapolation_and_interpolation_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
+            care_home=False,
         )
 
         model_extrapolation_mock.assert_called_once()
