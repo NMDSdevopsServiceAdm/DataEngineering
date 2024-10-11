@@ -68,24 +68,23 @@ def main(
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
     )  # TODO remove
-    estimate_missing_ascwds_df.show()
+
     estimate_missing_ascwds_df = model_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.interpolation_model_filled_posts_per_bed_ratio,
     )  # TODO remove
-    estimate_missing_ascwds_df.show()
+
     estimate_missing_ascwds_df = (
         merge_interpolated_values_into_interpolated_filled_posts(
             estimate_missing_ascwds_df
         )
     )  # TODO function no longer required
-    estimate_missing_ascwds_df.show()
+
     estimate_missing_ascwds_df = merge_imputed_columns(
         estimate_missing_ascwds_df
     )  # TODO function no longer required
-    estimate_missing_ascwds_df.printSchema()
-    estimate_missing_ascwds_df.show()
+
     """
     estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
         estimate_missing_ascwds_df
