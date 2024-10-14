@@ -34,12 +34,14 @@ def main(
     print("Estimating missing ASCWDS independent CQC filled posts...")
 
     cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
+
     estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
         cleaned_ind_cqc_df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
     )
+
     estimate_missing_ascwds_df = model_primary_service_rolling_average(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
@@ -88,11 +90,10 @@ def main(
         estimate_missing_ascwds_df
     )  # TODO function no longer required
 
-    """
     estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
         estimate_missing_ascwds_df
     )  # TODO check if the function is still required
-    """
+
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
