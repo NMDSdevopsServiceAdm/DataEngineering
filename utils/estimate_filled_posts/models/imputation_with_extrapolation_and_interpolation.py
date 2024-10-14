@@ -141,7 +141,8 @@ def identify_locations_with_a_non_null_submission(
 
     This function adds a new column to the DataFrame indicating whether each location
     has ever had a non-null value in the specified column. The new column will contain
-    True if there is at least one non-null value for the location, and False otherwise.
+    True if there is at least one non-null value at any point in time for the location
+    and False otherwise.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
