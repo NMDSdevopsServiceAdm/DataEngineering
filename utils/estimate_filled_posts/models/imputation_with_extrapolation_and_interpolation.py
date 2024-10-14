@@ -65,7 +65,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         IndCqc.proportion_of_time_between_submissions,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
-        IndCqc.has_non_null_value,
+        # IndCqc.has_non_null_value,
     )
     return combined_df
 
