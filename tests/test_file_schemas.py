@@ -2547,7 +2547,6 @@ class ModelImputationWithExtrapolationAndInterpolationSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(column_with_null_values, DoubleType(), True),
             StructField(IndCQC.has_non_null_value, BooleanType(), True),
         ]
     )
