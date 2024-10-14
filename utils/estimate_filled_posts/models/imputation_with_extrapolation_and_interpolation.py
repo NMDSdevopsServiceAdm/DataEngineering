@@ -38,7 +38,6 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputation_model_column_name = create_imputation_model_name(
         column_with_null_values, model_column_name
     )
-    print(f"Row count at start: {df.count()}")
 
     df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
 
@@ -57,16 +56,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         imputed_df, column_with_null_values, imputation_model_column_name
     )
 
-    print("unionByName (before)")
-    print(f"Row count of imputed_df: {imputed_df.count()}")
-    print(f"Row count of non_imputed_df: {non_imputed_df.count()}")
-
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
-
-    print("unionByName (after)")
-    print(f"Row count of imputed_df: {imputed_df.count()}")
-    print(f"Row count of non_imputed_df: {non_imputed_df.count()}")
-    print(f"Row count of combined_df: {combined_df.count()}")
 
     combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
@@ -138,11 +128,6 @@ def split_dataset_for_imputation(
         (F.col(IndCqc.care_home) != care_home_filter_value)
         | (F.col(IndCqc.has_non_null_value) == False)
     )
-
-    print(f"split_dataset_for_imputation when care_home is {care_home_filter_value}")
-    print(f"Row count of df: {df.count()}")
-    print(f"Row count of imputation_df: {imputation_df.count()}")
-    print(f"Row count of non_imputation_df: {non_imputation_df.count()}")
 
     return imputation_df, non_imputation_df
 

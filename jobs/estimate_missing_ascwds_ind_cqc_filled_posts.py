@@ -47,27 +47,21 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.rolling_average_model,
     )
-    print(
-        f"Row count in estimate_missing_ascwds_df before {estimate_missing_ascwds_df.count()}"
-    )
+
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.rolling_average_model,
         False,
     )
-    print(
-        f"Row count in estimate_missing_ascwds_df after 1st {estimate_missing_ascwds_df.count()}"
-    )
+
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
         True,
     )
-    print(
-        f"Row count in estimate_missing_ascwds_df after 2nd {estimate_missing_ascwds_df.count()}"
-    )
+
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
     )  # TODO remove
