@@ -134,9 +134,7 @@ def split_dataset_for_imputation(
         (F.col(IndCqc.care_home) == care_home_filter_value)
         & (F.col(IndCqc.has_non_null_value) == True)
     )
-    non_imputation_df = df.exceptAll(imputation_df)
-    non_imputation_subtract_df = df.subtract(imputation_df)
-    non_imputation_defined_df = df.where(
+    non_imputation_df = df.where(
         (F.col(IndCqc.care_home) != care_home_filter_value)
         | (F.col(IndCqc.has_non_null_value) == False)
     )
@@ -145,12 +143,6 @@ def split_dataset_for_imputation(
     print(f"Row count of df: {df.count()}")
     print(f"Row count of imputation_df: {imputation_df.count()}")
     print(f"Row count of non_imputation_df: {non_imputation_df.count()}")
-    print(
-        f"Row count of non_imputation_subtract_df: {non_imputation_subtract_df.count()}"
-    )
-    print(
-        f"Row count of non_imputation_defined_df: {non_imputation_defined_df.count()}"
-    )
 
     return imputation_df, non_imputation_df
 
