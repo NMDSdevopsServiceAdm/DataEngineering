@@ -39,9 +39,9 @@ def model_imputation_with_extrapolation_and_interpolation(
         column_with_null_values, model_column_name
     )
 
-    imputed_df, non_imputed_df = split_dataset_for_imputation(
-        df, column_with_null_values, care_home
-    )
+    df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
+
+    imputed_df, non_imputed_df = split_dataset_for_imputation(df, care_home)
 
     imputed_df = model_extrapolation(
         imputed_df,
@@ -103,7 +103,7 @@ def create_imputation_model_name(
 
 
 def split_dataset_for_imputation(
-    df: DataFrame, column_with_null_values: str, care_home: bool
+    df: DataFrame, care_home: bool
 ) -> Tuple[DataFrame, DataFrame]:
     """
     Splits the dataset into two based on whther or not the rows meet the criteria for imputation.
@@ -113,7 +113,6 @@ def split_dataset_for_imputation(
 
     Args:
         df (DataFrame): The input DataFrame.
-        column_with_null_values (str): The column to check for non-null values.
         care_home (bool): True if imputation is for care homes, False if it is for non residential.
 
     Returns:
@@ -126,22 +125,26 @@ def split_dataset_for_imputation(
     else:
         care_home_filter_value: str = CareHome.not_care_home
 
-    df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
-
     imputation_df = df.where(
         (F.col(IndCqc.care_home) == care_home_filter_value)
         & (F.col(IndCqc.has_non_null_value) == True)
     )
     non_imputation_df = df.exceptAll(imputation_df)
     non_imputation_subtract_df = df.subtract(imputation_df)
+    non_imputation_defined_df = df.where(
+        (F.col(IndCqc.care_home) != care_home_filter_value)
+        | (F.col(IndCqc.has_non_null_value) == False)
+    )
 
-    print("split_dataset_for_imputation")
-    print(f"Column with null values: {column_with_null_values}")
+    print(f"split_dataset_for_imputation when care_home is {care_home_filter_value}")
     print(f"Row count of df: {df.count()}")
     print(f"Row count of imputation_df: {imputation_df.count()}")
     print(f"Row count of non_imputation_df: {non_imputation_df.count()}")
     print(
         f"Row count of non_imputation_subtract_df: {non_imputation_subtract_df.count()}"
+    )
+    print(
+        f"Row count of non_imputation_defined_df: {non_imputation_defined_df.count()}"
     )
 
     return imputation_df, non_imputation_df

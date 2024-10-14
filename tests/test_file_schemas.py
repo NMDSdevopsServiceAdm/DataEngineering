@@ -2548,11 +2548,6 @@ class ModelImputationWithExtrapolationAndInterpolationSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(column_with_null_values, DoubleType(), True),
-        ]
-    )
-    expected_split_dataset_for_imputation_schema = StructType(
-        [
-            *split_dataset_for_imputation_schema,
             StructField(IndCQC.has_non_null_value, BooleanType(), True),
         ]
     )

@@ -4895,18 +4895,18 @@ class ModelImputationWithExtrapolationAndInterpolationData:
     ]
 
     split_dataset_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0),
-        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 2, 1), CareHome.care_home, 20.0),
-        ("1-004", date(2024, 1, 1), CareHome.care_home, 30.0),
-        ("1-004", date(2024, 2, 1), CareHome.not_care_home, None),
-        ("1-005", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-005", date(2024, 2, 1), CareHome.not_care_home, 20.0),
-        ("1-006", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-008", date(2024, 2, 1), CareHome.not_care_home, 20.0),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0, True),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, None, True),
+        ("1-003", date(2024, 2, 1), CareHome.care_home, 20.0, True),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, 30.0, True),
+        ("1-004", date(2024, 2, 1), CareHome.not_care_home, None, False),
+        ("1-005", date(2024, 1, 1), CareHome.care_home, None, False),
+        ("1-005", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
+        ("1-006", date(2024, 1, 1), CareHome.not_care_home, 10.0, True),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None, False),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None, True),
+        ("1-008", date(2024, 2, 1), CareHome.not_care_home, 20.0, True),
     ]
     expected_split_dataset_imputation_df_when_true_rows = [
         ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0, True),
