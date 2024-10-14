@@ -67,6 +67,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         IndCqc.interpolation_model,
         IndCqc.has_non_null_value,
     )
+
     return combined_df
 
 
@@ -101,7 +102,7 @@ def split_dataset_for_imputation(
     df: DataFrame, care_home: bool
 ) -> Tuple[DataFrame, DataFrame]:
     """
-    Splits the dataset into two based on whther or not the rows meet the criteria for imputation.
+    Splits the dataset into two based on whether or not the rows meet the criteria for imputation.
 
     Splits the dataset into two based on the presence of non-null values in a specified column
     and whether the care_home column matches the provided argument.
