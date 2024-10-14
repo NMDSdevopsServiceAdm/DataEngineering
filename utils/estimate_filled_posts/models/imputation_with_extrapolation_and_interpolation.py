@@ -58,6 +58,11 @@ def model_imputation_with_extrapolation_and_interpolation(
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
 
+    print("unionByName")
+    print(f"Row count of imputed_df: {imputed_df.count()}")
+    print(f"Row count of non_imputed_df: {non_imputed_df.count()}")
+    print(f"Row count of combined_df: {combined_df.count()}")
+
     combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
@@ -128,6 +133,16 @@ def split_dataset_for_imputation(
         & (F.col(IndCqc.has_non_null_value) == True)
     )
     non_imputation_df = df.exceptAll(imputation_df)
+    non_imputation_subtract_df = df.subtract(imputation_df)
+
+    print("split_dataset_for_imputation")
+    print(f"Column with null values: {column_with_null_values}")
+    print(f"Row count of df: {df.count()}")
+    print(f"Row count of imputation_df: {imputation_df.count()}")
+    print(f"Row count of non_imputation_df: {non_imputation_df.count()}")
+    print(
+        f"Row count of non_imputation_subtract_df: {non_imputation_subtract_df.count()}"
+    )
 
     return imputation_df, non_imputation_df
 
