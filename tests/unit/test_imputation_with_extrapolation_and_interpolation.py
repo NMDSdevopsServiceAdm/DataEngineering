@@ -214,7 +214,7 @@ class IdentifyLocationsWithANonNullSubmissionTests(
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_returned_dataframe_has_expected_values_when_location_has_both_care_home_options(
+    def test_returned_dataframe_has_expected_values_when_location_is_care_home_and_non_res_at_different_points_in_time(
         self,
     ):
         test_df = self.spark.createDataFrame(
