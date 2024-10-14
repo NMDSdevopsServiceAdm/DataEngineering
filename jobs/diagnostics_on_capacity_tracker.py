@@ -31,6 +31,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.extrapolation_non_res_with_dormancy_model,
     IndCQC.extrapolation_rolling_average_model,
     IndCQC.estimate_filled_posts,
+    IndCQC.current_region,
+    IndCQC.current_cssr,
     Keys.year,
     Keys.month,
     Keys.day,
