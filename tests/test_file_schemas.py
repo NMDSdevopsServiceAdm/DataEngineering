@@ -2975,52 +2975,6 @@ class MLModelMetrics:
     r2_metric_schema = predictions_schema
 
 
-@dataclass
-class ModelInterpolation:
-    interpolation_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    calculating_submission_dates_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    creating_timeseries_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.first_submission_time, IntegerType(), False),
-            StructField(IndCQC.final_submission_time, IntegerType(), True),
-        ]
-    )
-    merging_exploded_data_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-        ]
-    )
-    merging_known_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    calculating_interpolated_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.value_unix_time, LongType(), True),
-        ]
-    )
-
 
 @dataclass
 class ValidateMergedIndCqcData:
